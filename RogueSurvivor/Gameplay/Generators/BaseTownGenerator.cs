@@ -1160,61 +1160,32 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       this.PlaceDoor(map, point.X, point.Y, this.m_Game.GameTiles.FLOOR_OFFICE, this.MakeObjCharDoor());
       Rectangle rect2;
       Rectangle rect3;
+      rectangle1 = b.BuildingRect;
       if (flag)
       {
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local1 = @rect2;
-        int left1 = rect1.Left;
-        rectangle1 = b.BuildingRect;
-        int top1 = rectangle1.Top;
-        int width1 = rect1.Width;
+        int left = rect1.Left;
+        int top = rectangle1.Top;
+        int width = rect1.Width;
         int num1 = 1 + rect1.Top;
-        rectangle1 = b.BuildingRect;
-        int top2 = rectangle1.Top;
-        int height1 = num1 - top2;
-        // ISSUE: explicit reference operation
-        ^local1 = new Rectangle(left1, top1, width1, height1);
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local2 = @rect3;
-        int left2 = rect1.Left;
+        int height1 = num1 - top;
+        rect2 = new Rectangle(left, top, width, height1);
         int y2 = rect1.Bottom - 1;
-        int width2 = rect1.Width;
-        int num2 = 1;
-        rectangle1 = b.BuildingRect;
         int bottom = rectangle1.Bottom;
-        int height2 = num2 + bottom - rect1.Bottom;
-        // ISSUE: explicit reference operation
-        ^local2 = new Rectangle(left2, y2, width2, height2);
+        int height2 = 1 + bottom - rect1.Bottom;
+        rect3 = new Rectangle(left, y2, width, height2);
       }
       else
       {
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local1 = @rect2;
-        rectangle1 = b.BuildingRect;
-        int left1 = rectangle1.Left;
-        int top1 = rect1.Top;
+        int left = rectangle1.Left;
+        int top = rect1.Top;
         int num1 = 1 + rect1.Left;
-        rectangle1 = b.BuildingRect;
-        int left2 = rectangle1.Left;
-        int width1 = num1 - left2;
-        int height1 = rect1.Height;
-        // ISSUE: explicit reference operation
-        ^local1 = new Rectangle(left1, top1, width1, height1);
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local2 = @rect3;
+        int width1 = num1 - left;
+        int height = rect1.Height;
+        rect2 = new Rectangle(left, top, width1, height);
         int x2 = rect1.Right - 1;
-        int top2 = rect1.Top;
-        int num2 = 1;
-        rectangle1 = b.BuildingRect;
         int right = rectangle1.Right;
-        int width2 = num2 + right - rect1.Right;
-        int height2 = rect1.Height;
-        // ISSUE: explicit reference operation
-        ^local2 = new Rectangle(x2, top2, width2, height2);
+        int width2 = 1 + right - rect1.Right;
+        rect3 = new Rectangle(x2, top, width2, height);
       }
       List<Rectangle> list1 = new List<Rectangle>();
       this.MakeRoomsPlan(map, ref list1, rect2, 4);

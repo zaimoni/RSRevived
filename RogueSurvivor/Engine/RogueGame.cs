@@ -12329,26 +12329,15 @@ label_89:;
           }
         }
       }
-      Point point1;
-      // ISSUE: explicit reference operation
-      // ISSUE: variable of a reference type
-      Point& local = @point1;
-      int num1 = 750;
-      Location location = this.m_Player.Location;
-      Point position = location.Position;
+      Point position = this.m_Player.Location.Position;
       int num2 = position.X * 2;
-      int x1 = num1 + num2;
-      int num3 = 475;
-      location = this.m_Player.Location;
-      position = location.Position;
+      int x1 = 750 + num2;
       int num4 = position.Y * 2;
-      int y1 = num3 + num4;
-      // ISSUE: explicit reference operation
-      ^local = new Point(x1, y1);
-      this.m_UI.UI_DrawImage("mini_player_position", point1.X - 1, point1.Y - 1);
-    }
+      int y1 = 475 + num4;
+      this.m_UI.UI_DrawImage("mini_player_position", x1 - 1, y1 - 1);
+      }
 
-    public void DrawActorStatus(Actor actor, int gx, int gy)
+        public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
       gy += 14;
