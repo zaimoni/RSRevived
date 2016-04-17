@@ -877,20 +877,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Point point1 = new Point();
         point1.X = this.m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2;
         point1.Y = this.m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2;
-        Point point2;
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Point& local = @point2;
         int num1 = point1.X - 1;
         rectangle = b.InsideRect;
         int left2 = rectangle.Left;
         int x2 = num1 + left2;
         int num2 = point1.Y - 1;
-        rectangle = b.InsideRect;
         int top2 = rectangle.Top;
         int y2 = num2 + top2;
-        // ISSUE: explicit reference operation
-        ^local = new Point(x2, y2);
+        Point point2 = new Point(x2, y2);
         this.AddExit(shopBasement, point1, map, point2, "Tiles\\Decoration\\stairs_up", true);
         this.AddExit(map, point2, shopBasement, point1, "Tiles\\Decoration\\stairs_down", true);
         if (map.GetMapObjectAt(point2) != null)
