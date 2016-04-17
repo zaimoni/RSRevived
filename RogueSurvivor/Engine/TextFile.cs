@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine
         while (!streamReader.EndOfStream)
           this.m_RawLines.Add(streamReader.ReadLine());
         streamReader.Close();
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("done!", (object) fileName));
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
       }
       catch (Exception ex)
@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Engine
       {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Saving text file {0}...", (object) fileName));
         File.WriteAllLines(fileName, this.m_RawLines.ToArray());
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("done!", (object) fileName));
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
       }
       catch (Exception ex)
