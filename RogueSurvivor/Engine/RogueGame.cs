@@ -853,6 +853,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 break;
             }
+            break;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1000,6 +1001,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 break;
             }
+            break;
           case Keys.Escape:
             flag2 = false;
             flag1 = false;
@@ -1080,6 +1082,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 break;
             }
+            break;
           case Keys.Escape:
             flag2 = false;
             flag1 = false;
@@ -1161,6 +1164,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 break;
             }
+            break;
           case Keys.Escape:
             flag2 = false;
             flag1 = false;
@@ -1293,6 +1297,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 break;
             }
+            break;
           case Keys.Escape:
             flag2 = false;
             flag1 = false;
@@ -1771,6 +1776,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.ShamblersUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
+            break;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1904,6 +1910,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.ShamblersUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
+            break;
           case Keys.Down:
             currentChoice = (currentChoice + 1) % entries.Length;
             break;
@@ -6009,6 +6016,7 @@ label_89:;
                   directives.Courage = ActorCourage.COWARD;
                   break;
               }
+              break;
           }
         }
       }
