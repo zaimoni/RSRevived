@@ -4739,7 +4739,7 @@ label_89:;
       int num = this.m_Rules.ActorDamageVsCorpses(a);
       if (player)
       {
-        this.AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse.", (object) this.Conjugate(a, this.VERB_FEAST_ON), (object) c.DeadGuy.Name, (object) num)));
+        this.AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse.", (object) this.Conjugate(a, this.VERB_FEAST_ON), (object) c.DeadGuy.Name)));
         this.m_MusicManager.Play(GameSounds.UNDEAD_EAT);
       }
       this.InflictDamageToCorpse(c, (float) num);
