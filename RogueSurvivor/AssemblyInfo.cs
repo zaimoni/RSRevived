@@ -13,6 +13,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("0.9.0.0")]
 [assembly: AssemblyConfiguration("")]
 [assembly: NeutralResourcesLanguage("en")]
-[assembly: Extension]
 [assembly: AssemblyTitle("Rogue Survivor alpha 9")]
 [assembly: AssemblyVersion("0.9.0.0")]
