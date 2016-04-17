@@ -285,17 +285,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         this.TileFill(surface, this.m_Game.GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         this.m_SurfaceBlocks.Remove(block);
         BaseTownGenerator.Block b1 = new BaseTownGenerator.Block(block.Rectangle);
-        Point exitPosition;
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Point& local = @exitPosition;
-        int x = b1.BuildingRect.Left + b1.BuildingRect.Width / 2;
-        int top = b1.BuildingRect.Top;
         buildingRect = b1.BuildingRect;
+        int x = buildingRect.Left + buildingRect.Width / 2;
+        int top = buildingRect.Top;
         int num2 = buildingRect.Height / 2;
         int y = top + num2;
-        // ISSUE: explicit reference operation
-        ^local = new Point(x, y);
+        Point exitPosition = new Point(x, y);
         this.MakeSewersMaintenanceBuilding(surface, true, b1, sewers, exitPosition);
         BaseTownGenerator.Block b2 = new BaseTownGenerator.Block(block.Rectangle);
         this.MakeSewersMaintenanceBuilding(sewers, false, b2, surface, exitPosition);
