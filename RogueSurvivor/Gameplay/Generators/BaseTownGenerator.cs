@@ -1096,64 +1096,44 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Point point;
       if (direction == Direction.N)
       {
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local = @rect1;
         int x2 = x1 - 1;
         rectangle1 = b.InsideRect;
         int y2 = rectangle1.Top + 3;
-        int width = 3;
         rectangle1 = b.BuildingRect;
         int height = rectangle1.Height - 1 - 3;
-        // ISSUE: explicit reference operation
-        ^local = new Rectangle(x2, y2, width, height);
+        rect1 = new Rectangle(x2, y2, 3, height);
         point = new Point(rect1.Left + 1, rect1.Top);
       }
       else if (direction == Direction.S)
       {
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local = @rect1;
         int x2 = x1 - 1;
         rectangle1 = b.BuildingRect;
         int top = rectangle1.Top;
-        int width = 3;
         rectangle1 = b.BuildingRect;
         int height = rectangle1.Height - 1 - 3;
-        // ISSUE: explicit reference operation
-        ^local = new Rectangle(x2, top, width, height);
+        rect1 = new Rectangle(x2, top, 3, height);
         point = new Point(rect1.Left + 1, rect1.Bottom - 1);
       }
       else if (direction == Direction.E)
       {
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local = @rect1;
         rectangle1 = b.BuildingRect;
         int left = rectangle1.Left;
         int y2 = y1 - 1;
         rectangle1 = b.BuildingRect;
         int width = rectangle1.Width - 1 - 3;
-        int height = 3;
-        // ISSUE: explicit reference operation
-        ^local = new Rectangle(left, y2, width, height);
+        rect1 = new Rectangle(left, y2, width, 3);
         point = new Point(rect1.Right - 1, rect1.Top + 1);
       }
       else
       {
         if (direction != Direction.W)
           throw new InvalidOperationException("unhandled door side");
-        // ISSUE: explicit reference operation
-        // ISSUE: variable of a reference type
-        Rectangle& local = @rect1;
         rectangle1 = b.InsideRect;
         int x2 = rectangle1.Left + 3;
         int y2 = y1 - 1;
         rectangle1 = b.BuildingRect;
         int width = rectangle1.Width - 1 - 3;
-        int height = 3;
-        // ISSUE: explicit reference operation
-        ^local = new Rectangle(x2, y2, width, height);
+        rect1 = new Rectangle(x2, y2, width, 3);
         point = new Point(rect1.Left, rect1.Top + 1);
       }
       this.TileRectangle(map, this.m_Game.GameTiles.WALL_CHAR_OFFICE, rect1);
