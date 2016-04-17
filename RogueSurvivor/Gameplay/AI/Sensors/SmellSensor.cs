@@ -1,0 +1,76 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: djack.RogueSurvivor.Gameplay.AI.Sensors.SmellSensor
+// Assembly: RogueSurvivor, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null
+// MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
+// Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
+
+using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Engine.AI;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+
+namespace djack.RogueSurvivor.Gameplay.AI.Sensors
+{
+  [Serializable]
+  internal class SmellSensor : Sensor
+  {
+    private Odor m_OdorToSmell;
+    private List<Percept> m_List;
+
+    public List<Percept> Scents
+    {
+      get
+      {
+        return this.m_List;
+      }
+    }
+
+    public SmellSensor(Odor odorToSmell)
+    {
+      this.m_OdorToSmell = odorToSmell;
+      this.m_List = new List<Percept>(9);
+    }
+
+    public override List<Percept> Sense(RogueGame game, Actor actor)
+    {
+      this.m_List.Clear();
+      int num = game.Rules.ActorSmellThreshold(actor);
+      int x1 = actor.Location.Position.X - 1;
+      int x2 = actor.Location.Position.X + 1;
+      int y1 = actor.Location.Position.Y - 1;
+      int y2 = actor.Location.Position.Y + 1;
+      actor.Location.Map.TrimToBounds(ref x1, ref y1);
+      actor.Location.Map.TrimToBounds(ref x2, ref y2);
+      int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
+      Point position = new Point();
+      for (int index1 = x1; index1 <= x2; ++index1)
+      {
+        position.X = index1;
+        for (int index2 = y1; index2 <= y2; ++index2)
+        {
+          position.Y = index2;
+          int scentByOdorAt = actor.Location.Map.GetScentByOdorAt(this.m_OdorToSmell, position);
+          if (scentByOdorAt >= 0 && scentByOdorAt >= num)
+            this.m_List.Add(new Percept((object) new SmellSensor.AIScent(this.m_OdorToSmell, scentByOdorAt), turnCounter, new Location(actor.Location.Map, position)));
+        }
+      }
+      return this.m_List;
+    }
+
+    [Serializable]
+    public class AIScent
+    {
+      public Odor Odor { get; private set; }
+
+      public int Strength { get; private set; }
+
+      public AIScent(Odor odor, int strength)
+      {
+        this.Odor = odor;
+        this.Strength = strength;
+      }
+    }
+  }
+}

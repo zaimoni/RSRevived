@@ -1,0 +1,309 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: djack.RogueSurvivor.Data.Inventory
+// Assembly: RogueSurvivor, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null
+// MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
+// Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
+
+using System;
+using System.Collections.Generic;
+
+namespace djack.RogueSurvivor.Data
+{
+  [Serializable]
+  internal class Inventory
+  {
+    private List<Item> m_Items;
+    private int m_MaxCapacity;
+
+    public IEnumerable<Item> Items
+    {
+      get
+      {
+        return (IEnumerable<Item>) this.m_Items;
+      }
+    }
+
+    public int CountItems
+    {
+      get
+      {
+        return this.m_Items.Count;
+      }
+    }
+
+    public Item this[int index]
+    {
+      get
+      {
+        if (index < 0 || index >= this.m_Items.Count)
+          return (Item) null;
+        return this.m_Items[index];
+      }
+    }
+
+    public int MaxCapacity
+    {
+      get
+      {
+        return this.m_MaxCapacity;
+      }
+      set
+      {
+        this.m_MaxCapacity = value;
+      }
+    }
+
+    public bool IsEmpty
+    {
+      get
+      {
+        return this.m_Items.Count == 0;
+      }
+    }
+
+    public bool IsFull
+    {
+      get
+      {
+        return this.m_Items.Count >= this.m_MaxCapacity;
+      }
+    }
+
+    public Item TopItem
+    {
+      get
+      {
+        if (this.m_Items.Count == 0)
+          return (Item) null;
+        return this.m_Items[this.m_Items.Count - 1];
+      }
+    }
+
+    public Item BottomItem
+    {
+      get
+      {
+        if (this.m_Items.Count == 0)
+          return (Item) null;
+        return this.m_Items[0];
+      }
+    }
+
+    public Inventory(int maxCapacity)
+    {
+      if (maxCapacity < 0)
+        throw new ArgumentOutOfRangeException("maxCapacity < 0");
+      this.m_MaxCapacity = maxCapacity;
+      this.m_Items = new List<Item>(1);
+    }
+
+    public bool AddAll(Item it)
+    {
+      if (it == null)
+        throw new ArgumentNullException("it");
+      int stackedQuantity;
+      List<Item> itemsStackableWith = this.GetItemsStackableWith(it, out stackedQuantity);
+      if (stackedQuantity == it.Quantity)
+      {
+        int quantity = it.Quantity;
+        foreach (Item to in itemsStackableWith)
+        {
+          int addThis = Math.Min(to.Model.StackingLimit - to.Quantity, quantity);
+          this.AddToStack(it, addThis, to);
+          quantity -= addThis;
+          if (quantity <= 0)
+            break;
+        }
+        return true;
+      }
+      if (this.IsFull)
+        return false;
+      this.m_Items.Add(it);
+      return true;
+    }
+
+    public bool AddAsMuchAsPossible(Item it, out int quantityAdded)
+    {
+      if (it == null)
+        throw new ArgumentNullException("it");
+      int quantity = it.Quantity;
+      int stackedQuantity;
+      List<Item> itemsStackableWith = this.GetItemsStackableWith(it, out stackedQuantity);
+      if (itemsStackableWith != null)
+      {
+        quantityAdded = 0;
+        foreach (Item to in itemsStackableWith)
+        {
+          int stack = this.AddToStack(it, it.Quantity - quantityAdded, to);
+          quantityAdded += stack;
+        }
+        if (quantityAdded < it.Quantity)
+        {
+          it.Quantity -= quantityAdded;
+          if (!this.IsFull)
+          {
+            this.m_Items.Add(it);
+            quantityAdded = quantity;
+          }
+        }
+        else
+          it.Quantity = 0;
+        return true;
+      }
+      if (this.IsFull)
+      {
+        quantityAdded = 0;
+        return false;
+      }
+      quantityAdded = it.Quantity;
+      this.m_Items.Add(it);
+      return true;
+    }
+
+    public bool CanAddAtLeastOne(Item it)
+    {
+      if (it == null)
+        throw new ArgumentNullException("it");
+      if (!this.IsFull)
+        return true;
+      int stackedQuantity;
+      return this.GetItemsStackableWith(it, out stackedQuantity) != null;
+    }
+
+    public void RemoveAllQuantity(Item it)
+    {
+      this.m_Items.Remove(it);
+    }
+
+    public void Consume(Item it)
+    {
+      if (--it.Quantity > 0)
+        return;
+      this.m_Items.Remove(it);
+    }
+
+    private int AddToStack(Item from, int addThis, Item to)
+    {
+      int num = 0;
+      for (; addThis > 0 && to.Quantity < to.Model.StackingLimit; --addThis)
+      {
+        ++to.Quantity;
+        ++num;
+      }
+      return num;
+    }
+
+    private List<Item> GetItemsStackableWith(Item it, out int stackedQuantity)
+    {
+      stackedQuantity = 0;
+      if (!it.Model.IsStackable)
+        return (List<Item>) null;
+      List<Item> objList = (List<Item>) null;
+      foreach (Item mItem in this.m_Items)
+      {
+        if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped)
+        {
+          if (objList == null)
+            objList = new List<Item>(this.m_Items.Count);
+          objList.Add(mItem);
+          int val2 = mItem.Model.StackingLimit - mItem.Quantity;
+          int num = Math.Min(it.Quantity - stackedQuantity, val2);
+          stackedQuantity += num;
+          if (stackedQuantity == it.Quantity)
+            break;
+        }
+      }
+      return objList;
+    }
+
+    private Item GetBestDestackable(Item it)
+    {
+      if (!it.Model.IsStackable)
+        return (Item) null;
+      Item obj = (Item) null;
+      foreach (Item mItem in this.m_Items)
+      {
+        if (mItem.Model == it.Model && (obj == null || mItem.Quantity < obj.Quantity))
+          obj = mItem;
+      }
+      return obj;
+    }
+
+    public bool Contains(Item it)
+    {
+      return this.m_Items.Contains(it);
+    }
+
+    public Item GetFirstByModel(ItemModel model)
+    {
+      foreach (Item mItem in this.m_Items)
+      {
+        if (mItem.Model == model)
+          return mItem;
+      }
+      return (Item) null;
+    }
+
+    public bool HasItemOfType(Type tt)
+    {
+      return this.GetFirstByType(tt) != null;
+    }
+
+    public Item GetFirstByType(Type tt)
+    {
+      foreach (Item mItem in this.m_Items)
+      {
+        if (mItem.GetType() == tt)
+          return mItem;
+      }
+      return (Item) null;
+    }
+
+    public List<_T_> GetItemsByType<_T_>() where _T_ : Item
+    {
+      List<_T_> tList = (List<_T_>) null;
+      Type type = typeof (_T_);
+      foreach (Item mItem in this.m_Items)
+      {
+        if (mItem.GetType() == type)
+        {
+          if (tList == null)
+            tList = new List<_T_>(this.m_Items.Count);
+          tList.Add(mItem as _T_);
+        }
+      }
+      return tList;
+    }
+
+    public Item GetFirstMatching(Predicate<Item> fn)
+    {
+      foreach (Item mItem in this.m_Items)
+      {
+        if (fn(mItem))
+          return mItem;
+      }
+      return (Item) null;
+    }
+
+    public int CountItemsMatching(Predicate<Item> fn)
+    {
+      int num = 0;
+      foreach (Item mItem in this.m_Items)
+      {
+        if (fn(mItem))
+          ++num;
+      }
+      return num;
+    }
+
+    public bool HasItemMatching(Predicate<Item> fn)
+    {
+      foreach (Item mItem in this.m_Items)
+      {
+        if (fn(mItem))
+          return true;
+      }
+      return false;
+    }
+  }
+}
