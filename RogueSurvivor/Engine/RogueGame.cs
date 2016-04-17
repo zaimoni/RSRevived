@@ -407,9 +407,9 @@ namespace djack.RogueSurvivor.Engine
         case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
           this.m_MusicManager = (ISoundManager) new MDXSoundManager();
           break;
-        case SetupConfig.eSound.SOUND_SFML:
-          this.m_MusicManager = (ISoundManager) new SFMLSoundManager();
-          break;
+//        case SetupConfig.eSound.SOUND_SFML:
+//          this.m_MusicManager = (ISoundManager) new SFMLSoundManager();
+//          break;
         default:
           this.m_MusicManager = (ISoundManager) new NullSoundManager();
           break;

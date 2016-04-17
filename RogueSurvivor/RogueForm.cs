@@ -56,9 +56,9 @@ namespace djack.RogueSurvivor
         this.Text += " (GDI+)";
       switch (SetupConfig.Sound)
       {
-        case SetupConfig.eSound.SOUND_SFML:
-          this.Text += " (sndSFML)";
-          break;
+//        case SetupConfig.eSound.SOUND_SFML:
+//          this.Text += " (sndSFML)";
+//          break;
         case SetupConfig.eSound.SOUND_NOSOUND:
           this.Text += " (nosound)";
           break;

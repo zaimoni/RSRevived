@@ -184,7 +184,6 @@
     <Compile Include="Engine\InputTranslator.cs" />
     <Compile Include="Engine\MDXSoundManager.cs" />
     <Compile Include="Engine\MessageManager.cs" />
-    <Compile Include="Engine\SFMLSoundManager.cs" />
     <Compile Include="Engine\Achievement.cs" />
     <Compile Include="Engine\DifficultySide.cs" />
     <Compile Include="Engine\Scoring.cs" />

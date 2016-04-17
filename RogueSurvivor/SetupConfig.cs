@@ -83,8 +83,8 @@ namespace djack.RogueSurvivor
     {
       if (s == SetupConfig.eSound.SOUND_MANAGED_DIRECTX.ToString())
         return SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
-      if (s == SetupConfig.eSound.SOUND_SFML.ToString())
-        return SetupConfig.eSound.SOUND_SFML;
+//      if (s == SetupConfig.eSound.SOUND_SFML.ToString())
+//        return SetupConfig.eSound.SOUND_SFML;
       return s == SetupConfig.eSound.SOUND_NOSOUND.ToString() ? SetupConfig.eSound.SOUND_NOSOUND : SetupConfig.eSound.SOUND_INVALID;
     }
 
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor
     {
       SOUND_INVALID,
       SOUND_MANAGED_DIRECTX,
-      SOUND_SFML,
+      SOUND_SFML_XXX,    // breaking this as the DLLs aren't compatible with the MSIL architecture
       SOUND_NOSOUND,
       _COUNT,
     }
