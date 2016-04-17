@@ -12079,7 +12079,6 @@ label_89:;
 
     public void DrawCorpsesList(List<Corpse> list, string title, int slots, int gx, int gy)
     {
-      int num1 = 0;
       int num2 = list == null ? 0 : list.Count;
       if (num2 > 0)
         title = title + " : " + (object) num2;
@@ -12088,7 +12087,6 @@ label_89:;
       gy += 14;
       int gx1 = gx;
       int gy1 = gy;
-      num1 = 0;
       for (int index = 0; index < slots; ++index)
       {
         this.m_UI.UI_DrawImage("Items\\itemslot", gx1, gy1);
@@ -12442,8 +12440,6 @@ label_89:;
       gy += 14;
       Attack attack2 = this.m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, (Actor) null);
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
-      int num2;
-      int num3 = num2 = 0;
       if (itemRangedWeapon != null)
       {
         int ammo = itemRangedWeapon.Ammo;
