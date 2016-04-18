@@ -26,35 +26,32 @@ namespace djack.RogueSurvivor
 
     public static void Clear()
     {
-      Monitor.Enter(Logger.s_Mutex);
-      Logger.s_Lines.Clear();
-      Monitor.Exit(Logger.s_Mutex);
+      lock (Logger.s_Mutex) { Logger.s_Lines.Clear(); }
     }
 
     public static void CreateFile()
     {
-      Monitor.Enter(Logger.s_Mutex);
-      if (File.Exists(Logger.LogFilePath()))
-        File.Delete(Logger.LogFilePath());
-      Directory.CreateDirectory(SetupConfig.DirPath);
-      using (StreamWriter text = File.CreateText(Logger.LogFilePath()))
-        text.Close();
-      Monitor.Exit(Logger.s_Mutex);
+      lock (Logger.s_Mutex) {
+        if (File.Exists(Logger.LogFilePath()))
+          File.Delete(Logger.LogFilePath());
+        Directory.CreateDirectory(SetupConfig.DirPath);
+        using (StreamWriter text = File.CreateText(Logger.LogFilePath()))
+          text.Close();
+      }
     }
 
     public static void WriteLine(Logger.Stage stage, string text)
     {
-      Monitor.Enter(Logger.s_Mutex);
-      string str = string.Format("{0} {1} : {2}", (object) Logger.s_Lines.Count, (object) Logger.StageToString(stage), (object) text);
-      Logger.s_Lines.Add(str);
-      Console.Out.WriteLine(str);
-      using (StreamWriter streamWriter = File.AppendText(Logger.LogFilePath()))
-      {
-        streamWriter.WriteLine(str);
-        streamWriter.Flush();
-        streamWriter.Close();
+      lock (Logger.s_Mutex) {
+        string str = string.Format("{0} {1} : {2}", (object)Logger.s_Lines.Count, (object)Logger.StageToString(stage), (object)text);
+        Logger.s_Lines.Add(str);
+        Console.Out.WriteLine(str);
+        using (StreamWriter streamWriter = File.AppendText(Logger.LogFilePath())) {
+          streamWriter.WriteLine(str);
+          streamWriter.Flush();
+          streamWriter.Close();
+        }
       }
-      Monitor.Exit(Logger.s_Mutex);
     }
 
     private static string LogFilePath()
