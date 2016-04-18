@@ -13,67 +13,36 @@ namespace djack.RogueSurvivor.Data
   internal class Faction
   {
     private List<Faction> m_Enemies = new List<Faction>(1);
-    private int m_ID;
-    private string m_Name;
-    private string m_MemberName;
 
-    public int ID
-    {
-      get
-      {
-        return this.m_ID;
-      }
-      set
-      {
-        this.m_ID = value;
-      }
-    }
-
-    public string Name
-    {
-      get
-      {
-        return this.m_Name;
-      }
-    }
-
-    public string MemberName
-    {
-      get
-      {
-        return this.m_MemberName;
-      }
-    }
-
+    public int ID { get; set; }
+    public string Name { get; private set; }
+    public string MemberName { get; private set; }
     public bool LeadOnlyBySameFaction { get; set; }
 
     public IEnumerable<Faction> Enemies
     {
       get
       {
-        return (IEnumerable<Faction>) this.m_Enemies;
+        return (IEnumerable<Faction>) m_Enemies;
       }
     }
 
     public Faction(string name, string memberName)
     {
-      if (name == null)
-        throw new ArgumentNullException("name");
-      if (memberName == null)
-        throw new ArgumentNullException("memberName");
-      this.m_Name = name;
-      this.m_MemberName = memberName;
+      if (name == null) throw new ArgumentNullException("name");
+      if (memberName == null) throw new ArgumentNullException("memberName");
+      Name = name;
+      MemberName = memberName;
     }
 
     public void AddEnemy(Faction other)
     {
-      this.m_Enemies.Add(other);
+      m_Enemies.Add(other);
     }
 
     public virtual bool IsEnemyOf(Faction other)
     {
-      if (other != this)
-        return this.m_Enemies.Contains(other);
+      if (other != this) return m_Enemies.Contains(other);
       return false;
     }
   }
