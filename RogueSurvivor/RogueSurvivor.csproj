@@ -61,15 +61,9 @@
     <Reference Include="Microsoft.DirectX.Direct3D" />
     <Reference Include="Microsoft.DirectX.Direct3DX" />
     <Reference Include="Microsoft.DirectX.AudioVideoPlayback" />
-    <Reference Include="sfmlnet-audio">
-      <HintPath>lib\sfmlnet-audio.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.DirectX" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
-    <Reference Include="sfmlnet-window">
-      <HintPath>lib\sfmlnet-window.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RogueForm.cs">
