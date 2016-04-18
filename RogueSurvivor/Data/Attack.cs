@@ -15,15 +15,10 @@ namespace djack.RogueSurvivor.Data
     public static readonly Attack BLANK = new Attack(AttackKind.PHYSICAL, new Verb("<blank>"), 0, 0, 0, 0);
 
     public AttackKind Kind { get; private set; }
-
     public Verb Verb { get; private set; }
-
     public int HitValue { get; private set; }
-
     public int DamageValue { get; private set; }
-
     public int StaminaPenalty { get; private set; }
-
     public int Range { get; private set; }
 
     public int EfficientRange
@@ -34,27 +29,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty, int range)
+    public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty = 0, int range = 0)
     {
-      this = new Attack();
-      if (verb == null)
-        throw new ArgumentNullException("verb");
-      this.Kind = kind;
-      this.Verb = verb;
-      this.HitValue = hitValue;
-      this.DamageValue = damageValue;
-      this.StaminaPenalty = staminaPenalty;
-      this.Range = range;
-    }
-
-    public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue)
-    {
-      this = new Attack(kind, verb, hitValue, damageValue, 0, 0);
-    }
-
-    public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty)
-    {
-      this = new Attack(kind, verb, hitValue, damageValue, staminaPenalty, 0);
+      if (verb == null) throw new ArgumentNullException("verb");
+      Kind = kind;
+      Verb = verb;
+      HitValue = hitValue;
+      DamageValue = damageValue;
+      StaminaPenalty = staminaPenalty;
+      Range = range;
     }
   }
 }
