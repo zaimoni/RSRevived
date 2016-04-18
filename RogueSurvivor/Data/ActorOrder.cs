@@ -11,49 +11,33 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class ActorOrder
   {
-    private ActorTasks m_Task;
-    private Location m_Location;
-
-    public ActorTasks Task
-    {
-      get
-      {
-        return this.m_Task;
-      }
-    }
-
-    public Location Location
-    {
-      get
-      {
-        return this.m_Location;
-      }
-    }
+    public ActorTasks Task { get; private set; }
+    public Location Location { get; private set; }
 
     public ActorOrder(ActorTasks task, Location location)
     {
-      this.m_Task = task;
-      this.m_Location = location;
+      Task = task;
+      Location = location;
     }
 
     public override string ToString()
     {
-      switch (this.m_Task)
+      switch (Task)
       {
         case ActorTasks.BARRICADE_ONE:
-          return string.Format("barricade one ({0},{1})", (object) this.m_Location.Position.X, (object) this.m_Location.Position.Y);
+          return string.Format("barricade one ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.BARRICADE_MAX:
-          return string.Format("barricade max ({0},{1})", (object) this.m_Location.Position.X, (object) this.m_Location.Position.Y);
+          return string.Format("barricade max ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.GUARD:
-          return string.Format("guard ({0},{1})", (object) this.m_Location.Position.X, (object) this.m_Location.Position.Y);
+          return string.Format("guard ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.PATROL:
-          return string.Format("patrol ({0},{1})", (object) this.m_Location.Position.X, (object) this.m_Location.Position.Y);
+          return string.Format("patrol ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.DROP_ALL_ITEMS:
           return "drop all items";
         case ActorTasks.BUILD_SMALL_FORTIFICATION:
-          return string.Format("build small fortification ({0},{1})", (object) this.m_Location.Position.X, (object) this.m_Location.Position.Y);
+          return string.Format("build small fortification ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.BUILD_LARGE_FORTIFICATION:
-          return string.Format("build large fortification ({0},{1})", (object) this.m_Location.Position.X, (object) this.m_Location.Position.Y);
+          return string.Format("build large fortification ({0},{1})", (object) Location.Position.X, (object) Location.Position.Y);
         case ActorTasks.REPORT_EVENTS:
           return "reporting events to leader";
         case ActorTasks.SLEEP_NOW:
