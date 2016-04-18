@@ -12641,16 +12641,12 @@ label_89:;
 
     private void AddOverlay(RogueGame.Overlay o)
     {
-      Monitor.Enter((object) this.m_Overlays);
-      this.m_Overlays.Add(o);
-      Monitor.Exit((object) this.m_Overlays);
+      lock(m_Overlays) { m_Overlays.Add(o); }
     }
 
     private void ClearOverlays()
     {
-      Monitor.Enter((object) this.m_Overlays);
-      this.m_Overlays.Clear();
-      Monitor.Exit((object) this.m_Overlays);
+      lock(m_Overlays) { m_Overlays.Clear(); }
     }
 
     private Point MapToScreen(Point mapPosition)
