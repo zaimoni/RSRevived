@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   {
     private int m_ModelID;
     private int m_Quantity;
-    private DollPart m_EquipedPart;
+    public DollPart EquippedPart { get; set; }
 
     public ItemModel Model
     {
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.Model.ImageID;
+        return Model.ImageID;
       }
     }
 
@@ -35,10 +35,9 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        ItemModel model = this.Model;
-        if (model.IsProper)
-          return model.SingleName;
-        if (this.m_Quantity > 1 || model.IsPlural)
+        ItemModel model = Model;
+        if (model.IsProper) return model.SingleName;
+        if (m_Quantity > 1 || model.IsPlural)
           return "some " + model.PluralName;
         return "the " + model.SingleName;
       }
@@ -48,10 +47,9 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        ItemModel model = this.Model;
-        if (model.IsProper)
-          return model.SingleName;
-        if (this.m_Quantity > 1 || model.IsPlural)
+        ItemModel model = Model;
+        if (model.IsProper) return model.SingleName;
+        if (m_Quantity > 1 || model.IsPlural)
           return "some " + model.PluralName;
         if (model.IsAn)
           return "an " + model.SingleName;
@@ -63,14 +61,13 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Quantity;
+        return m_Quantity;
       }
       set
       {
-        this.m_Quantity = value;
-        if (this.m_Quantity >= 0)
-          return;
-        this.m_Quantity = 0;
+        m_Quantity = value;
+        if (m_Quantity >= 0) return;
+        m_Quantity = 0;
       }
     }
 
@@ -78,22 +75,10 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        ItemModel model = this.Model;
+        ItemModel model = Model;
         if (model.IsStackable)
-          return this.m_Quantity < model.StackingLimit;
+          return m_Quantity < model.StackingLimit;
         return false;
-      }
-    }
-
-    public DollPart EquippedPart
-    {
-      get
-      {
-        return this.m_EquipedPart;
-      }
-      set
-      {
-        this.m_EquipedPart = value;
       }
     }
 
@@ -101,19 +86,18 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_EquipedPart != DollPart.NONE;
+        return EquippedPart != DollPart.NONE;
       }
     }
 
     public bool IsUnique { get; set; }
-
     public bool IsForbiddenToAI { get; set; }
 
     public Item(ItemModel model)
     {
-      this.m_ModelID = model.ID;
-      this.m_Quantity = 1;
-      this.m_EquipedPart = DollPart.NONE;
+      m_ModelID = model.ID;
+      m_Quantity = 1;
+      EquippedPart = DollPart.NONE;
     }
   }
 }
