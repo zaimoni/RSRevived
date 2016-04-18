@@ -58,10 +58,6 @@
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Core" />
-    <Reference Include="Microsoft.DirectX.Direct3D" />
-    <Reference Include="Microsoft.DirectX.Direct3DX" />
-    <Reference Include="Microsoft.DirectX.AudioVideoPlayback" />
-    <Reference Include="Microsoft.DirectX" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
   </ItemGroup>
@@ -179,7 +175,6 @@
     <Compile Include="Engine\RogueGame.cs" />
     <Compile Include="Engine\LOS.cs" />
     <Compile Include="Engine\InputTranslator.cs" />
-    <Compile Include="Engine\MDXSoundManager.cs" />
     <Compile Include="Engine\MessageManager.cs" />
     <Compile Include="Engine\Achievement.cs" />
     <Compile Include="Engine\DifficultySide.cs" />
