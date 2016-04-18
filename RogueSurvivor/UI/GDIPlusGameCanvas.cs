@@ -18,7 +18,6 @@ namespace djack.RogueSurvivor.UI
 {
   public class GDIPlusGameCanvas : UserControl, IGameCanvas
   {
-    private bool m_NeedRedraw = true;
     private Color m_ClearColor = Color.CornflowerBlue;
     private List<GDIPlusGameCanvas.IGfx> m_Gfxs = new List<GDIPlusGameCanvas.IGfx>(100);
     private Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
@@ -32,19 +31,7 @@ namespace djack.RogueSurvivor.UI
     private IContainer components;
 
     public bool ShowFPS { get; set; }
-
-    public bool NeedRedraw
-    {
-      get
-      {
-        return this.m_NeedRedraw;
-      }
-      set
-      {
-        this.m_NeedRedraw = value;
-      }
-    }
-
+    public bool NeedRedraw { get; set; }
     public Point MouseLocation { get; set; }
 
     public float ScaleX
@@ -70,6 +57,7 @@ namespace djack.RogueSurvivor.UI
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public GDIPlusGameCanvas()
     {
+      NeedRedraw = true;
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas::InitializeComponent");
       this.InitializeComponent();
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create render image");
@@ -126,22 +114,19 @@ namespace djack.RogueSurvivor.UI
     protected override void OnPaint(PaintEventArgs e)
     {
       double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
-      if (this.NeedRedraw)
-      {
-        this.DoDraw(this.m_RenderGraphics);
-        this.m_NeedRedraw = false;
+      if (NeedRedraw) {
+        DoDraw(this.m_RenderGraphics);
+        NeedRedraw = false;
       }
-      if ((double) this.ScaleX == 1.0 && (double) this.ScaleY == 1.0)
-        e.Graphics.DrawImageUnscaled((Image) this.m_RenderImage, 0, 0);
+      if ((double) ScaleX == 1.0 && (double) ScaleY == 1.0)
+        e.Graphics.DrawImageUnscaled((Image) m_RenderImage, 0, 0);
       else
-        e.Graphics.DrawImage((Image) this.m_RenderImage, this.m_RogueForm.ClientRectangle);
+        e.Graphics.DrawImage((Image) m_RenderImage, m_RogueForm.ClientRectangle);
       double totalMilliseconds2 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
-      if (!this.ShowFPS)
-        return;
+      if (!ShowFPS) return;
       double num = totalMilliseconds2 - totalMilliseconds1;
-      if (num == 0.0)
-        num = double.Epsilon;
-      e.Graphics.DrawString(string.Format("Frame time={0:F} FPS={1:F}", (object) num, (object) (1000.0 / num)), this.Font, Brushes.Yellow, (float) (this.ClientRectangle.Right - 200), (float) (this.ClientRectangle.Bottom - 64));
+      if (num == 0.0) num = double.Epsilon;
+      e.Graphics.DrawString(string.Format("Frame time={0:F} FPS={1:F}", (object) num, (object) (1000.0 / num)), Font, Brushes.Yellow, (float) (ClientRectangle.Right - 200), (float) (ClientRectangle.Bottom - 64));
     }
 
     private void DoDraw(Graphics g)
@@ -169,15 +154,15 @@ namespace djack.RogueSurvivor.UI
 
     public void Clear(Color clearColor)
     {
-      this.m_ClearColor = clearColor;
-      this.m_Gfxs.Clear();
-      this.m_NeedRedraw = true;
+      m_ClearColor = clearColor;
+      m_Gfxs.Clear();
+      NeedRedraw = true;
     }
 
     public void AddImage(Image img, int x, int y)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImage(img, x, y));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImage(img, x, y));
+      NeedRedraw = true;
     }
 
     public void AddImage(Image img, int x, int y, Color color)
@@ -187,38 +172,38 @@ namespace djack.RogueSurvivor.UI
 
     public void AddImageTransform(Image img, int x, int y, float rotation, float scale)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImageTransform(img, rotation, scale, x, y));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImageTransform(img, rotation, scale, x, y));
+      NeedRedraw = true;
     }
 
     public void AddTransparentImage(float alpha, Image img, int x, int y)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxTransparentImage(alpha, img, x, y));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxTransparentImage(alpha, img, x, y));
+      NeedRedraw = true;
     }
 
     public void AddPoint(Color color, int x, int y)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxRect(this.GetPen(color), new Rectangle(x, y, 1, 1)));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxRect(this.GetPen(color), new Rectangle(x, y, 1, 1)));
+      NeedRedraw = true;
     }
 
     public void AddLine(Color color, int xFrom, int yFrom, int xTo, int yTo)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxLine(this.GetPen(color), xFrom, yFrom, xTo, yTo));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxLine(this.GetPen(color), xFrom, yFrom, xTo, yTo));
+      NeedRedraw = true;
     }
 
     public void AddString(Font font, Color color, string text, int gx, int gy)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxString(color, font, text, gx, gy));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxString(color, font, text, gx, gy));
+      NeedRedraw = true;
     }
 
     public void AddRect(Color color, Rectangle rect)
     {
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxRect(this.GetPen(color), rect));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxRect(this.GetPen(color), rect));
+      NeedRedraw = true;
     }
 
     private Pen GetPen(Color color)
@@ -235,13 +220,13 @@ namespace djack.RogueSurvivor.UI
     public void AddFilledRect(Color color, Rectangle rect)
     {
       Brush brush;
-      if (!this.m_BrushesCache.TryGetValue(color, out brush))
+      if (!m_BrushesCache.TryGetValue(color, out brush))
       {
         brush = (Brush) new SolidBrush(color);
-        this.m_BrushesCache.Add(color, brush);
+        m_BrushesCache.Add(color, brush);
       }
-      this.m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxFilledRect(brush, rect));
-      this.m_NeedRedraw = true;
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxFilledRect(brush, rect));
+      NeedRedraw = true;
     }
 
     public void ClearMinimap(Color color)
