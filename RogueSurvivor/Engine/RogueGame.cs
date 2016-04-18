@@ -404,9 +404,9 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
       switch (SetupConfig.Sound)
       {
-        case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
-          this.m_MusicManager = (ISoundManager) new MDXSoundManager();
-          break;
+//        case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
+//          this.m_MusicManager = (ISoundManager) new MDXSoundManager();
+//          break;
 //        case SetupConfig.eSound.SOUND_SFML:
 //          this.m_MusicManager = (ISoundManager) new SFMLSoundManager();
 //          break;

@@ -56,8 +56,8 @@ namespace djack.RogueSurvivor
       {
         if (!Directory.Exists(SetupConfig.DirPath))
           Directory.CreateDirectory(SetupConfig.DirPath);
-        SetupConfig.Video = SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX;
-        SetupConfig.Sound = SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
+        SetupConfig.Video = SetupConfig.eVideo.VIDEO_GDI_PLUS;
+        SetupConfig.Sound = SetupConfig.eSound.SOUND_NOSOUND;
         SetupConfig.Save();
       }
     }
@@ -74,15 +74,15 @@ namespace djack.RogueSurvivor
 
     public static SetupConfig.eVideo toVideo(string s)
     {
-      if (s == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX.ToString())
-        return SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX;
+//      if (s == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX.ToString())
+//        return SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX;
       return s == SetupConfig.eVideo.VIDEO_GDI_PLUS.ToString() ? SetupConfig.eVideo.VIDEO_GDI_PLUS : SetupConfig.eVideo.VIDEO_INVALID;
     }
 
     public static SetupConfig.eSound toSound(string s)
     {
-      if (s == SetupConfig.eSound.SOUND_MANAGED_DIRECTX.ToString())
-        return SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
+//      if (s == SetupConfig.eSound.SOUND_MANAGED_DIRECTX.ToString())
+//        return SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
 //      if (s == SetupConfig.eSound.SOUND_SFML.ToString())
 //        return SetupConfig.eSound.SOUND_SFML;
       return s == SetupConfig.eSound.SOUND_NOSOUND.ToString() ? SetupConfig.eSound.SOUND_NOSOUND : SetupConfig.eSound.SOUND_INVALID;
@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor
     public enum eVideo
     {
       VIDEO_INVALID,
-      VIDEO_MANAGED_DIRECTX,
+      VIDEO_MANAGED_DIRECTX_XXX, // highest version of DirectX supported in .NET is DirectX 9
       VIDEO_GDI_PLUS,
       _COUNT,
     }
@@ -99,7 +99,7 @@ namespace djack.RogueSurvivor
     public enum eSound
     {
       SOUND_INVALID,
-      SOUND_MANAGED_DIRECTX,
+      SOUND_MANAGED_DIRECTX_XXX, // highest version of DirectX supported in .NET is DirectX 9
       SOUND_SFML_XXX,    // breaking this as the DLLs aren't compatible with the MSIL architecture
       SOUND_NOSOUND,
       _COUNT,

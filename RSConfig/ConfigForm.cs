@@ -18,10 +18,10 @@ namespace Setup
     private Button b_SaveExit;
     private GroupBox gb_Video;
     private RadioButton rb_Video_GDI;
-    private RadioButton rb_Video_MDX;
+//  private RadioButton rb_Video_MDX;
     private Button b_Exit;
     private GroupBox gb_Sound;
-    private RadioButton rb_Sound_MDX;
+//  private RadioButton rb_Sound_MDX;
     private Panel panel1;
     private Label l_GameVersion;
 //  private RadioButton rb_Sound_SFML;
@@ -45,12 +45,12 @@ namespace Setup
       this.b_SaveExit = new Button();
       this.gb_Video = new GroupBox();
       this.rb_Video_GDI = new RadioButton();
-      this.rb_Video_MDX = new RadioButton();
+//    this.rb_Video_MDX = new RadioButton();
       this.b_Exit = new Button();
       this.gb_Sound = new GroupBox();
       this.rb_Sound_NoSound = new RadioButton();
 //    this.rb_Sound_SFML = new RadioButton();
-      this.rb_Sound_MDX = new RadioButton();
+//    this.rb_Sound_MDX = new RadioButton();
       this.panel1 = new Panel();
       this.l_GameVersion = new Label();
       this.gb_Video.SuspendLayout();
@@ -67,7 +67,7 @@ namespace Setup
       this.gb_Video.AutoSize = true;
       this.gb_Video.AutoSizeMode = AutoSizeMode.GrowAndShrink;
       this.gb_Video.Controls.Add((Control) this.rb_Video_GDI);
-      this.gb_Video.Controls.Add((Control) this.rb_Video_MDX);
+//    this.gb_Video.Controls.Add((Control) this.rb_Video_MDX);
       this.gb_Video.Location = new Point(6, 3);
       this.gb_Video.Name = "gb_Video";
       this.gb_Video.Size = new Size(121, 80);
@@ -83,6 +83,7 @@ namespace Setup
       this.rb_Video_GDI.Text = "GDI+";
       this.rb_Video_GDI.UseVisualStyleBackColor = true;
       this.rb_Video_GDI.CheckedChanged += new EventHandler(this.rb_Video_GDI_CheckedChanged);
+/*
       this.rb_Video_MDX.AutoSize = true;
       this.rb_Video_MDX.Checked = true;
       this.rb_Video_MDX.Location = new Point(7, 20);
@@ -93,6 +94,7 @@ namespace Setup
       this.rb_Video_MDX.Text = "Managed DirectX";
       this.rb_Video_MDX.UseVisualStyleBackColor = true;
       this.rb_Video_MDX.CheckedChanged += new EventHandler(this.rb_Video_MDX_CheckedChanged);
+*/
       this.b_Exit.Location = new Point(131, 111);
       this.b_Exit.Name = "b_Exit";
       this.b_Exit.Size = new Size(121, 23);
@@ -104,7 +106,7 @@ namespace Setup
       this.gb_Sound.AutoSizeMode = AutoSizeMode.GrowAndShrink;
       this.gb_Sound.Controls.Add((Control) this.rb_Sound_NoSound);
 //    this.gb_Sound.Controls.Add((Control) this.rb_Sound_SFML);
-      this.gb_Sound.Controls.Add((Control) this.rb_Sound_MDX);
+//    this.gb_Sound.Controls.Add((Control) this.rb_Sound_MDX);
       this.gb_Sound.Location = new Point(134, 3);
       this.gb_Sound.Name = "gb_Sound";
       this.gb_Sound.Size = new Size(121, 102);
@@ -130,7 +132,6 @@ namespace Setup
       this.rb_Sound_SFML.Text = "SFML 1.6";
       this.rb_Sound_SFML.UseVisualStyleBackColor = true;
       this.rb_Sound_SFML.CheckedChanged += new EventHandler(this.rb_Audio_SFML_CheckedChanged);
-*/
       this.rb_Sound_MDX.AutoSize = true;
       this.rb_Sound_MDX.Checked = true;
       this.rb_Sound_MDX.Location = new Point(7, 20);
@@ -141,6 +142,7 @@ namespace Setup
       this.rb_Sound_MDX.Text = "Managed DirectX";
       this.rb_Sound_MDX.UseVisualStyleBackColor = true;
       this.rb_Sound_MDX.CheckedChanged += new EventHandler(this.rb_Sound_MDX_CheckedChanged);
+*/
       this.panel1.AutoSize = true;
       this.panel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
       this.panel1.Controls.Add((Control) this.gb_Sound);
@@ -194,35 +196,39 @@ namespace Setup
       SetupConfig.Load();
       switch (SetupConfig.Video)
       {
+/*
         case SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX:
           this.rb_Video_MDX.Checked = true;
           break;
+*/
         case SetupConfig.eVideo.VIDEO_GDI_PLUS:
           this.rb_Video_GDI.Checked = true;
           break;
       }
       switch (SetupConfig.Sound)
       {
-        case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
-          this.rb_Sound_MDX.Checked = true;
-          break;
 /*               
-        case SetupConfig.eSound.SOUND_SFML:
-          this.rb_Sound_SFML.Checked = true;
-          break;
+      case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
+        this.rb_Sound_MDX.Checked = true;
+        break;
+      case SetupConfig.eSound.SOUND_SFML:
+        this.rb_Sound_SFML.Checked = true;
+        break;
 */
-        case SetupConfig.eSound.SOUND_NOSOUND:
+      case SetupConfig.eSound.SOUND_NOSOUND:
           this.rb_Sound_NoSound.Checked = true;
           break;
       }
     }
 
+/*
     private void rb_Video_MDX_CheckedChanged(object sender, EventArgs e)
     {
       if (!this.rb_Video_MDX.Checked || SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX)
         return;
       SetupConfig.Video = SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX;
     }
+*/
 
     private void rb_Video_GDI_CheckedChanged(object sender, EventArgs e)
     {
@@ -231,23 +237,23 @@ namespace Setup
       SetupConfig.Video = SetupConfig.eVideo.VIDEO_GDI_PLUS;
     }
 
-    private void rb_Sound_MDX_CheckedChanged(object sender, EventArgs e)
-    {
-      if (!this.rb_Sound_MDX.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_MANAGED_DIRECTX)
-        return;
-      SetupConfig.Sound = SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
-    }
+        /*
+            private void rb_Sound_MDX_CheckedChanged(object sender, EventArgs e)
+            {
+              if (!this.rb_Sound_MDX.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_MANAGED_DIRECTX)
+                return;
+              SetupConfig.Sound = SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
+            }
 
-/*
-    private void rb_Audio_SFML_CheckedChanged(object sender, EventArgs e)
-    {
-      if (!this.rb_Sound_SFML.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_SFML)
-        return;
-      SetupConfig.Sound = SetupConfig.eSound.SOUND_SFML;
-    }
-*/
+            private void rb_Audio_SFML_CheckedChanged(object sender, EventArgs e)
+            {
+              if (!this.rb_Sound_SFML.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_SFML)
+                return;
+              SetupConfig.Sound = SetupConfig.eSound.SOUND_SFML;
+            }
+        */
 
-    private void rb_Sound_NoSound_CheckedChanged(object sender, EventArgs e)
+        private void rb_Sound_NoSound_CheckedChanged(object sender, EventArgs e)
     {
       if (!this.rb_Sound_NoSound.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_NOSOUND)
         return;

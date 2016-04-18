@@ -366,16 +366,16 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "new ComponentResourceManager...");
       ComponentResourceManager componentResourceManager = new ComponentResourceManager(typeof (RogueForm));
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating GameCanvas...");
-      if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX)
-      {
-        Logger.WriteLine(Logger.Stage.INIT_MAIN, "DXGameCanvas implementation...");
-        this.m_GameCanvas = (IGameCanvas) new DXGameCanvas();
-      }
-      else
-      {
+//      if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX)
+//      {
+//        Logger.WriteLine(Logger.Stage.INIT_MAIN, "DXGameCanvas implementation...");
+//        this.m_GameCanvas = (IGameCanvas) new DXGameCanvas();
+//      }
+//      else
+//     {
         Logger.WriteLine(Logger.Stage.INIT_MAIN, "GDIPlusGameCanvas implementation...");
         this.m_GameCanvas = (IGameCanvas) new GDIPlusGameCanvas();
-      }
+//      }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "SuspendLayout...");
       this.SuspendLayout();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup GameCanvas...");

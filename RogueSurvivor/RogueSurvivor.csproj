@@ -277,9 +277,6 @@
     <Compile Include="Engine\MapObjects\PowerGenerator.cs" />
     <Compile Include="Engine\Tasks\TaskRemoveDecoration.cs" />
     <Compile Include="UI\IGameCanvas.cs" />
-    <Compile Include="UI\DXGameCanvas.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="UI\GDIPlusGameCanvas.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -291,7 +288,6 @@
     <EmbeddedResource Include="Bugreport.resx" />
     <EmbeddedResource Include="Properties\Resources.resx" />
     <EmbeddedResource Include="RogueForm.resx" />
-    <EmbeddedResource Include="UI\DXGameCanvas.resx" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
