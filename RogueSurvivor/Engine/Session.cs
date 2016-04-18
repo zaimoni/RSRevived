@@ -155,8 +155,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (district == null)
         throw new ArgumentNullException("district");
-      lock (this.m_Event_Raids)
-        this.m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
+      this.m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
     }
 
     public static void Save(Session session, string filepath, Session.SaveFormat format)
