@@ -11555,63 +11555,63 @@ label_89:;
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void RedrawPlayScreen()
     {
-      Monitor.Enter((object) this.m_UI);
-      this.m_UI.UI_Clear(Color.Black);
-      Color white = Color.White;
-      this.m_UI.UI_DrawLine(Color.DarkGray, 676, 0, 676, 676);
-      this.DrawMap(this.m_Session.CurrentMap, white);
-      this.m_UI.UI_DrawLine(Color.DarkGray, 676, 471, 1024, 471);
-      this.DrawMiniMap(this.m_Session.CurrentMap);
-      this.m_UI.UI_DrawLine(Color.DarkGray, 4, 675, 1024, 675);
-      this.DrawMessages();
-      this.m_UI.UI_DrawLine(Color.DarkGray, 676, 676, 676, 768);
-      this.m_UI.UI_DrawString(Color.White, this.m_Session.CurrentMap.Name, 680, 680, new Color?());
-      this.m_UI.UI_DrawString(Color.White, this.LocationText(this.m_Session.CurrentMap, this.m_Player), 680, 692, new Color?());
-      this.m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", (object) this.m_Session.WorldTime.Day), 680, 704, new Color?());
-      this.m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", (object) this.m_Session.WorldTime.Hour), 680, 716, new Color?());
-      this.m_UI.UI_DrawString(this.m_Session.WorldTime.IsNight ? this.NIGHT_COLOR : this.DAY_COLOR, this.DescribeDayPhase(this.m_Session.WorldTime.Phase), 808, 704, new Color?());
-      Color color;
-      string text;
-      switch (this.m_Session.CurrentMap.Lighting)
-      {
-        case Lighting._FIRST:
-          color = Color.Blue;
-          text = "Darkness";
-          break;
-        case Lighting.OUTSIDE:
-          color = this.WeatherColor(this.m_Session.World.Weather);
-          text = this.DescribeWeather(this.m_Session.World.Weather);
-          break;
-        case Lighting.LIT:
-          color = Color.Yellow;
-          text = "Lit";
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled lighting");
-      }
-      this.m_UI.UI_DrawString(color, text, 808, 716, new Color?());
-      this.m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", (object) this.m_Session.WorldTime.TurnCounter), 680, 728, new Color?());
-      this.m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object) this.m_Session.Scoring.TotalPoints, (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, this.m_Session.Scoring.Side, this.m_Session.Scoring.ReincarnationNumber)), (object) Session.DescShortGameMode(this.m_Session.GameMode)), 808, 728, new Color?());
-      this.m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object) (1 + this.m_Session.Scoring.ReincarnationNumber), (object) (1 + RogueGame.s_Options.MaxReincarnations)), 808, 740, new Color?());
-      if (this.m_Player.MurdersCounter > 0)
-        this.m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", (object) this.m_Player.MurdersCounter), 808, 752, new Color?());
-      if (this.m_Player != null)
-        this.DrawActorStatus(this.m_Player, 680, 4);
-      if (this.m_Player != null)
-      {
-        if (this.m_Player.Inventory != null && this.m_Player.Model.Abilities.HasInventory)
-          this.DrawInventory(this.m_Player.Inventory, "Inventory", true, 10, this.m_Player.Inventory.MaxCapacity, 680, 160);
-        this.DrawInventory(this.m_Player.Location.Map.GetItemsAt(this.m_Player.Location.Position), "Items on ground", true, 10, 10, 680, 224);
-        this.DrawCorpsesList(this.m_Player.Location.Map.GetCorpsesAt(this.m_Player.Location.Position), "Corpses on ground", 10, 680, 288);
-      }
-      if (this.m_Player != null && this.m_Player.Sheet.SkillTable != null && this.m_Player.Sheet.SkillTable.CountSkills > 0)
-        this.DrawActorSkillTable(this.m_Player, 680, 352);
-      Monitor.Enter((object) this.m_Overlays);
-      foreach (RogueGame.Overlay mOverlay in this.m_Overlays)
-        mOverlay.Draw(this.m_UI);
-      Monitor.Exit((object) this.m_Overlays);
-      this.m_UI.UI_Repaint();
-      Monitor.Exit((object) this.m_UI);
+            lock (m_UI) {
+                m_UI.UI_Clear(Color.Black);
+                Color white = Color.White;
+                m_UI.UI_DrawLine(Color.DarkGray, 676, 0, 676, 676);
+                DrawMap(m_Session.CurrentMap, white);
+                m_UI.UI_DrawLine(Color.DarkGray, 676, 471, 1024, 471);
+                DrawMiniMap(m_Session.CurrentMap);
+                m_UI.UI_DrawLine(Color.DarkGray, 4, 675, 1024, 675);
+                DrawMessages();
+                m_UI.UI_DrawLine(Color.DarkGray, 676, 676, 676, 768);
+                m_UI.UI_DrawString(Color.White, m_Session.CurrentMap.Name, 680, 680, new Color?());
+                m_UI.UI_DrawString(Color.White, LocationText(m_Session.CurrentMap, m_Player), 680, 692, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", (object)m_Session.WorldTime.Day), 680, 704, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", (object)m_Session.WorldTime.Hour), 680, 716, new Color?());
+                m_UI.UI_DrawString(m_Session.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(m_Session.WorldTime.Phase), 808, 704, new Color?());
+                Color color;
+                string text;
+                switch (m_Session.CurrentMap.Lighting)
+                {
+                    case Lighting._FIRST:
+                        color = Color.Blue;
+                        text = "Darkness";
+                        break;
+                    case Lighting.OUTSIDE:
+                        color = WeatherColor(m_Session.World.Weather);
+                        text = DescribeWeather(m_Session.World.Weather);
+                        break;
+                    case Lighting.LIT:
+                        color = Color.Yellow;
+                        text = "Lit";
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("unhandled lighting");
+                }
+                m_UI.UI_DrawString(color, text, 808, 716, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", (object)m_Session.WorldTime.TurnCounter), 680, 728, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object)m_Session.Scoring.TotalPoints, (object)(int)(100.0 * (double)Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), (object)Session.DescShortGameMode(m_Session.GameMode)), 808, 728, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object)(1 + m_Session.Scoring.ReincarnationNumber), (object)(1 + RogueGame.s_Options.MaxReincarnations)), 808, 740, new Color?());
+                if (m_Player.MurdersCounter > 0)
+                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", (object)m_Player.MurdersCounter), 808, 752, new Color?());
+                if (m_Player != null)
+                    DrawActorStatus(m_Player, 680, 4);
+                if (m_Player != null)
+                {
+                    if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
+                        DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, 680, 160);
+                    DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, 10, 10, 680, 224);
+                    DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, 680, 288);
+                }
+                if (m_Player != null && m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
+                    DrawActorSkillTable(m_Player, 680, 352);
+                lock (m_Overlays) {
+                    foreach (RogueGame.Overlay mOverlay in m_Overlays)
+                        mOverlay.Draw(m_UI);
+                }
+                m_UI.UI_Repaint();
+            };  // lock(m_UI)
     }
 
     private string LocationText(Map map, Actor actor)
