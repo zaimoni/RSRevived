@@ -6,6 +6,7 @@
 
 using System.Drawing;
 using System.Windows.Forms;
+using System.Security.Permissions;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -59,6 +60,7 @@ namespace djack.RogueSurvivor.Engine
 
     void UI_SetMinimapColor(int x, int y, Color color);
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     void UI_DrawMinimap(int gx, int gy);
 
     float UI_GetCanvasScaleX();

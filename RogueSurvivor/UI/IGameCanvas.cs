@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System.Drawing;
+using System.Security.Permissions;
 
 namespace djack.RogueSurvivor.UI
 {
@@ -48,6 +49,7 @@ namespace djack.RogueSurvivor.UI
 
     void SetMinimapColor(int x, int y, Color color);
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     void DrawMinimap(int gx, int gy);
 
     string SaveScreenShot(string filePath);

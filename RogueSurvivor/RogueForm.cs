@@ -308,6 +308,7 @@ namespace djack.RogueSurvivor
       this.m_GameCanvas.SetMinimapColor(x, y, color);
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void UI_DrawMinimap(int gx, int gy)
     {
       this.m_GameCanvas.DrawMinimap(gx, gy);

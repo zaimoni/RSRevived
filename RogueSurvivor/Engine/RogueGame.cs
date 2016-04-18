@@ -19,6 +19,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Security.Permissions;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -448,6 +449,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_MessageManager.Add(msg);
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void AddMessageIfAudibleForPlayer(Location location, djack.RogueSurvivor.Data.Message msg)
     {
       if (msg == null)
@@ -588,6 +590,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_MessageManager.Draw(this.m_UI, this.m_Session.LastTurnPlayerActed, 4, 676);
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AddMessagePressEnter()
     {
       this.AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
@@ -723,6 +726,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_UI.UI_DoQuit();
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void GameLoop()
     {
       this.HandleMainMenu();
@@ -759,6 +763,7 @@ namespace djack.RogueSurvivor.Engine
       this.WaitEnter();
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void HandleMainMenu()
     {
       bool flag1 = true;
@@ -1499,6 +1504,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_UI.UI_Repaint();
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void StartNewGame()
     {
       bool isUndead = this.m_CharGen.IsUndead;
@@ -2253,6 +2259,7 @@ namespace djack.RogueSurvivor.Engine
       this.SaveKeybindings();
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(District district, RogueGame.SimFlags sim)
     {
       bool isNight1 = this.m_Session.WorldTime.IsNight;
@@ -2329,6 +2336,7 @@ label_39:
       }
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(Map map, RogueGame.SimFlags sim)
     {
       if (map.IsSecret)
@@ -5858,6 +5866,7 @@ label_89:;
       return true;
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void StartPlayerWaitLong(Actor player)
     {
       this.m_IsPlayerLongWait = true;
@@ -8770,6 +8779,7 @@ label_89:;
       return true;
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DoFollowersEnterMap(Actor leader, Map fromMap, Point fromPos, Map toMap, Point toPos)
     {
       bool flag1 = toMap.District != fromMap.District;
@@ -9302,6 +9312,7 @@ label_89:;
       this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(screenPos, Color.Red, damage.ToString(), new Color?(Color.Black)));
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
       this.OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
@@ -9642,6 +9653,7 @@ label_89:;
       return objList[this.m_Rules.Roll(0, objList.Count)];
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
     {
       if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE)
@@ -10083,6 +10095,7 @@ label_89:;
       this.SpendActorActionPoints(actor, actionCost);
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoCloseDoor(Actor actor, DoorWindow door)
     {
       door.SetState(1);
@@ -10176,6 +10189,7 @@ label_89:;
       this.OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoBreak(Actor actor, MapObject mapObj)
     {
       Attack attack = this.m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
@@ -11538,6 +11552,7 @@ label_89:;
       return this.m_MapViewRect.Contains(mapPosition);
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void RedrawPlayScreen()
     {
       Monitor.Enter((object) this.m_UI);
@@ -12204,6 +12219,7 @@ label_89:;
       this.m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DrawMiniMap(Map map)
     {
       if (RogueGame.s_Options.IsMinimapOn)
@@ -12782,6 +12798,7 @@ label_89:;
       this.AddMessage(new djack.RogueSurvivor.Data.Message("PERMADEATH : SAVE GAME DELETED!", this.m_Session.WorldTime.TurnCounter, Color.Red));
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private bool LoadGame(string saveName)
     {
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN))
@@ -13834,6 +13851,7 @@ label_89:;
       this.m_Session.CurrentMap.LocalTime.TurnCounter = this.m_Session.WorldTime.TurnCounter;
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void BeforePlayerEnterDistrict(District district)
     {
       Map entryMap = district.EntryMap;
@@ -14065,6 +14083,7 @@ label_89:;
       this.m_MusicManager.StopAll();
     }
 
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     {
       if (!player.Model.Abilities.IsUndead && player.Faction != this.GameFactions.TheCHARCorporation && (!this.m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
