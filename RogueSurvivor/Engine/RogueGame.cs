@@ -13997,44 +13997,34 @@ label_89:;
 
     private void RestartSimThread()
     {
-      this.StopSimThread();
-      this.StartSimThread();
+      StopSimThread();
+      StartSimThread();
     }
 
     private void StartSimThread()
     {
-      if (!RogueGame.s_Options.IsSimON || !RogueGame.s_Options.SimThread)
-        return;
-      if (this.m_SimThread == null)
-      {
-        this.m_SimThread = new Thread(new ThreadStart(this.SimThreadProc));
-        this.m_SimThread.Name = "Simulation Thread";
+      if (!RogueGame.s_Options.IsSimON || !RogueGame.s_Options.SimThread) return;
+      if (m_SimThread == null) {
+        m_SimThread = new Thread(new ThreadStart(SimThreadProc));
+        m_SimThread.Name = "Simulation Thread";
       }
-      this.m_SimThread.Start();
+      m_SimThread.Start();
     }
 
     private void StopSimThread()
     {
-      if (this.m_SimThread == null)
-        return;
-      this.m_SimThread.Abort();
-      this.m_SimThread = (Thread) null;
+      if (m_SimThread == null) return;
+      m_SimThread.Abort();
+      m_SimThread = (Thread) null;
     }
 
     private void SimThreadProc()
     {
-      while (true)
-      {
+      while (true) {
         Thread.Sleep(10);
-        Monitor.Enter(this.m_SimMutex);
-        try
-        {
-          if (this.m_Player != null)
-            this.SimulateNearbyDistricts(this.m_Player.Location.Map.District);
-        }
-        finally
-        {
-          Monitor.Exit(this.m_SimMutex);
+        lock (m_SimMutex) {
+          if (m_Player != null)
+            SimulateNearbyDistricts(m_Player.Location.Map.District);
         }
       }
     }
