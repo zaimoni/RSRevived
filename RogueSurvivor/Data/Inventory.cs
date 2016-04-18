@@ -13,13 +13,13 @@ namespace djack.RogueSurvivor.Data
   internal class Inventory
   {
     private List<Item> m_Items;
-    private int m_MaxCapacity;
+    public int MaxCapacity { get; set; }
 
     public IEnumerable<Item> Items
     {
       get
       {
-        return (IEnumerable<Item>) this.m_Items;
+        return (IEnumerable<Item>) m_Items;
       }
     }
 
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Items.Count;
+        return m_Items.Count;
       }
     }
 
@@ -35,21 +35,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (index < 0 || index >= this.m_Items.Count)
-          return (Item) null;
-        return this.m_Items[index];
-      }
-    }
-
-    public int MaxCapacity
-    {
-      get
-      {
-        return this.m_MaxCapacity;
-      }
-      set
-      {
-        this.m_MaxCapacity = value;
+        if (index < 0 || index >= this.m_Items.Count) return null;
+        return m_Items[index];
       }
     }
 
@@ -57,7 +44,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Items.Count == 0;
+        return m_Items.Count == 0;
       }
     }
 
@@ -65,7 +52,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Items.Count >= this.m_MaxCapacity;
+        return m_Items.Count >= MaxCapacity;
       }
     }
 
@@ -73,9 +60,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Items.Count == 0)
-          return (Item) null;
-        return this.m_Items[this.m_Items.Count - 1];
+        if (m_Items.Count == 0) return null;
+        return m_Items[m_Items.Count - 1];
       }
     }
 
@@ -83,42 +69,37 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Items.Count == 0)
-          return (Item) null;
-        return this.m_Items[0];
+        if (m_Items.Count == 0) return null;
+        return m_Items[0];
       }
     }
 
     public Inventory(int maxCapacity)
     {
-      if (maxCapacity < 0)
-        throw new ArgumentOutOfRangeException("maxCapacity < 0");
-      this.m_MaxCapacity = maxCapacity;
-      this.m_Items = new List<Item>(1);
+      if (maxCapacity < 0) throw new ArgumentOutOfRangeException("maxCapacity < 0");
+      MaxCapacity = maxCapacity;
+      m_Items = new List<Item>(1);
     }
 
     public bool AddAll(Item it)
     {
-      if (it == null)
-        throw new ArgumentNullException("it");
+      if (it == null) throw new ArgumentNullException("it");
       int stackedQuantity;
-      List<Item> itemsStackableWith = this.GetItemsStackableWith(it, out stackedQuantity);
+      List<Item> itemsStackableWith = GetItemsStackableWith(it, out stackedQuantity);
       if (stackedQuantity == it.Quantity)
       {
         int quantity = it.Quantity;
         foreach (Item to in itemsStackableWith)
         {
           int addThis = Math.Min(to.Model.StackingLimit - to.Quantity, quantity);
-          this.AddToStack(it, addThis, to);
+          AddToStack(it, addThis, to);
           quantity -= addThis;
-          if (quantity <= 0)
-            break;
+          if (quantity <= 0) break;
         }
         return true;
       }
-      if (this.IsFull)
-        return false;
-      this.m_Items.Add(it);
+      if (IsFull) return false;
+      m_Items.Add(it);
       return true;
     }
 
