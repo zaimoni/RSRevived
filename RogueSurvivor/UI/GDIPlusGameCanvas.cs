@@ -404,13 +404,14 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxTransparentImage : GDIPlusGameCanvas.IGfx
+    private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
     {
       private readonly Image m_Img;
       private readonly int m_X;
       private readonly int m_Y;
       private readonly float m_Alpha;
       private readonly ImageAttributes m_ImgAttributes;
+      private bool disposed;
 
       public GfxTransparentImage(float alpha, Image img, int x, int y)
       {
@@ -418,6 +419,7 @@ namespace djack.RogueSurvivor.UI
         m_X = x;
         m_Y = y;
         m_Alpha = alpha;
+        disposed = false;
         float[][] newColorMatrix = new float[5][];
         float[] numArray3 = new float[5];
         numArray3[0] = 1f;
@@ -441,6 +443,21 @@ namespace djack.RogueSurvivor.UI
       public void Draw(Graphics g)
       {
         g.DrawImage(this.m_Img, new Rectangle(this.m_X, this.m_Y, this.m_Img.Width, this.m_Img.Height), 0, 0, this.m_Img.Width, this.m_Img.Height, GraphicsUnit.Pixel, this.m_ImgAttributes);
+      }
+
+      public void Dispose()
+      {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+        if (disposing && !disposed)
+          {
+          m_ImgAttributes.Dispose();
+          disposed = true;
+          }
       }
     }
 
