@@ -125,7 +125,8 @@ namespace djack.RogueSurvivor.UI
       double totalMilliseconds2 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
       if (!ShowFPS) return;
       double num = totalMilliseconds2 - totalMilliseconds1;
-      if (num == 0.0) num = double.Epsilon;
+      if (num == 0.0)
+        num = double.Epsilon;
       e.Graphics.DrawString(string.Format("Frame time={0:F} FPS={1:F}", (object) num, (object) (1000.0 / num)), Font, Brushes.Yellow, (float) (ClientRectangle.Right - 200), (float) (ClientRectangle.Bottom - 64));
     }
 
@@ -246,31 +247,11 @@ namespace djack.RogueSurvivor.UI
       {
         for (int index2 = 0; index2 < 2; ++index2)
         {
-          int num3 = (num2 + index2) * this.m_MinimapStride + 4 * (num1 + index1);
-          byte[] numArray1 = this.m_MinimapBytes;
-          int index3 = num3;
-          int num4 = 1;
-          int num5 = index3 + num4;
-          int num6 = (int) color.B;
-          numArray1[index3] = (byte) num6;
-          byte[] numArray2 = this.m_MinimapBytes;
-          int index4 = num5;
-          int num7 = 1;
-          int num8 = index4 + num7;
-          int num9 = (int) color.G;
-          numArray2[index4] = (byte) num9;
-          byte[] numArray3 = this.m_MinimapBytes;
-          int index5 = num8;
-          int num10 = 1;
-          int num11 = index5 + num10;
-          int num12 = (int) color.R;
-          numArray3[index5] = (byte) num12;
-          byte[] numArray4 = this.m_MinimapBytes;
-          int index6 = num11;
-          int num13 = 1;
-          int num14 = index6 + num13;
-          int num15 = (int) byte.MaxValue;
-          numArray4[index6] = (byte) num15;
+          int index3 = (num2 + index2) * m_MinimapStride + 4 * (num1 + index1);
+          m_MinimapBytes[index3] = (byte)color.B;
+          m_MinimapBytes[index3+1] = (byte)color.G;
+          m_MinimapBytes[index3+2] = (byte)color.R;
+          m_MinimapBytes[index3+3] = byte.MaxValue;
         }
       }
     }
@@ -330,7 +311,7 @@ namespace djack.RogueSurvivor.UI
                 m_MinimapBitmap = null;
                 }
             }
-            DisposeUnmanagedResources();
+      DisposeUnmanagedResources();
       base.Dispose(disposing);
     }
 
@@ -410,7 +391,7 @@ namespace djack.RogueSurvivor.UI
 
         }
 
-        private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
+    private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
     {
       private readonly Image m_Img;
       private readonly int m_X;
