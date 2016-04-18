@@ -846,8 +846,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     public enum IDs
     {
-      UNDEAD_SKELETON = 0,
       _FIRST = 0,
+      UNDEAD_SKELETON = 0,
       UNDEAD_RED_EYED_SKELETON = 1,
       UNDEAD_RED_SKELETON = 2,
       UNDEAD_ZOMBIE = 3,

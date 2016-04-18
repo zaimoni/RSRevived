@@ -1509,8 +1509,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     public enum IDs
     {
-      MEDICINE_BANDAGES = 0,
       _FIRST = 0,
+      MEDICINE_BANDAGES = 0,
       MEDICINE_MEDIKIT = 1,
       MEDICINE_PILLS_STA = 2,
       MEDICINE_PILLS_SLP = 3,

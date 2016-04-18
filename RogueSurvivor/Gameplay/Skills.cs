@@ -233,8 +233,8 @@ namespace djack.RogueSurvivor.Gameplay
     public enum IDs
     {
       AGILE = 0,
-      _FIRST = 0,
       _FIRST_LIVING = 0,
+      _FIRST = 0,
       AWAKE = 1,
       BOWS = 2,
       CARPENTRY = 3,
@@ -255,8 +255,8 @@ namespace djack.RogueSurvivor.Gameplay
       TOUGH = 18,
       UNSUSPICIOUS = 19,
       _LAST_LIVING = 19,
-      Z_AGILE = 20,
       _FIRST_UNDEAD = 20,
+      Z_AGILE = 20,
       Z_EATER = 21,
       Z_GRAB = 22,
       Z_INFECTOR = 23,
