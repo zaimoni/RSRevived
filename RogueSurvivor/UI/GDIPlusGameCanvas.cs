@@ -414,44 +414,28 @@ namespace djack.RogueSurvivor.UI
 
       public GfxTransparentImage(float alpha, Image img, int x, int y)
       {
-        this.m_Img = img;
-        this.m_X = x;
-        this.m_Y = y;
-        this.m_Alpha = alpha;
-        float[][] numArray1 = new float[5][];
-        float[][] numArray2 = numArray1;
-        int index1 = 0;
+        m_Img = img;
+        m_X = x;
+        m_Y = y;
+        m_Alpha = alpha;
+        float[][] newColorMatrix = new float[5][];
         float[] numArray3 = new float[5];
         numArray3[0] = 1f;
-        float[] numArray4 = numArray3;
-        numArray2[index1] = numArray4;
-        float[][] numArray5 = numArray1;
-        int index2 = 1;
+        newColorMatrix[0] = numArray3;
         float[] numArray6 = new float[5];
         numArray6[1] = 1f;
-        float[] numArray7 = numArray6;
-        numArray5[index2] = numArray7;
-        float[][] numArray8 = numArray1;
-        int index3 = 2;
+        newColorMatrix[1] = numArray6;
         float[] numArray9 = new float[5];
         numArray9[2] = 1f;
-        float[] numArray10 = numArray9;
-        numArray8[index3] = numArray10;
-        float[][] numArray11 = numArray1;
-        int index4 = 3;
+        newColorMatrix[2] = numArray9;
         float[] numArray12 = new float[5];
         numArray12[3] = alpha;
-        float[] numArray13 = numArray12;
-        numArray11[index4] = numArray13;
-        float[][] numArray14 = numArray1;
-        int index5 = 4;
+        newColorMatrix[3] = numArray12;
         float[] numArray15 = new float[5];
         numArray15[4] = 1f;
-        float[] numArray16 = numArray15;
-        numArray14[index5] = numArray16;
-        float[][] newColorMatrix = numArray1;
-        this.m_ImgAttributes = new ImageAttributes();
-        this.m_ImgAttributes.SetColorMatrix(new ColorMatrix(newColorMatrix), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+        newColorMatrix[4] = numArray15;
+        m_ImgAttributes = new ImageAttributes();
+        m_ImgAttributes.SetColorMatrix(new ColorMatrix(newColorMatrix), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
       }
 
       public void Draw(Graphics g)
