@@ -385,21 +385,21 @@ namespace djack.RogueSurvivor.UI
 
       public GfxImageTransform(Image img, float rotation, float scale, int x, int y)
       {
-        this.m_Img = img;
-        this.m_Matrix = new Matrix();
-        this.m_X = x;
-        this.m_Y = y;
-        this.m_Matrix.RotateAt(rotation, new PointF((float) (x + img.Width / 2), (float) (y + img.Height / 2)));
-        this.m_Matrix.Scale(scale, scale);
+        m_Img = img;
+        m_Matrix = new Matrix();
+        m_X = x;
+        m_Y = y;
+        m_Matrix.RotateAt(rotation, new PointF((float) (x + img.Width / 2), (float) (y + img.Height / 2)));
+        m_Matrix.Scale(scale, scale);
       }
 
       public void Draw(Graphics g)
       {
         Matrix transform = g.Transform;
         Matrix matrix = transform.Clone();
-        matrix.Multiply(this.m_Matrix);
+        matrix.Multiply(m_Matrix);
         g.Transform = matrix;
-        g.DrawImageUnscaled(this.m_Img, this.m_X, this.m_Y);
+        g.DrawImageUnscaled(m_Img, m_X, m_Y);
         g.Transform = transform;
       }
     }
