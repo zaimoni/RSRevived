@@ -844,32 +844,24 @@ namespace djack.RogueSurvivor.Data
 
     public bool AreIndirectEnemies(Actor other)
     {
-      if (other == null || other.IsDead)
-        return false;
-      if (this.HasLeader)
-      {
-        if (this.m_Leader.AreDirectEnemies(other) || other.HasLeader && this.m_Leader.AreDirectEnemies(other.Leader))
-          return true;
-        foreach (Actor follower in this.m_Leader.Followers)
-        {
+      if (other == null || other.IsDead) return false;
+      if (HasLeader) {
+        if (m_Leader.AreDirectEnemies(other)) return true;
+        if (other.HasLeader && m_Leader.AreDirectEnemies(other.Leader)) return true;
+        foreach (Actor follower in m_Leader.Followers) {
           if (follower != this && follower.AreDirectEnemies(other))
             return true;
         }
       }
-      if (this.CountFollowers > 0)
-      {
-        foreach (Actor mFollower in this.m_Followers)
-        {
-          if (mFollower.AreDirectEnemies(other))
-            return true;
+      if (CountFollowers > 0) {
+        foreach (Actor mFollower in m_Followers) {
+          if (mFollower.AreDirectEnemies(other)) return true;
         }
       }
-      if (other.HasLeader)
-      {
-        if (other.Leader.AreDirectEnemies(this) || this.HasLeader && other.Leader.AreDirectEnemies(this.m_Leader))
-          return true;
-        foreach (Actor follower in other.Leader.Followers)
-        {
+      if (other.HasLeader) {
+        if (other.Leader.AreDirectEnemies(this)) return true;
+        if (HasLeader && other.Leader.AreDirectEnemies(m_Leader)) return true;
+        foreach (Actor follower in other.Leader.Followers) {
           if (follower != other && follower.AreDirectEnemies(this))
             return true;
         }
