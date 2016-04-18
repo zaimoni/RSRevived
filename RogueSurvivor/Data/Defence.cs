@@ -15,17 +15,14 @@ namespace djack.RogueSurvivor.Data
     public static readonly Defence BLANK = new Defence(0, 0, 0);
 
     public int Value { get; private set; }
-
     public int Protection_Hit { get; private set; }
-
     public int Protection_Shot { get; private set; }
 
     public Defence(int value, int protection_hit, int protection_shot)
     {
-      this = new Defence();
-      this.Value = value;
-      this.Protection_Hit = protection_hit;
-      this.Protection_Shot = protection_shot;
+      Value = value;
+      Protection_Hit = protection_hit;
+      Protection_Shot = protection_shot;
     }
 
     public static Defence operator +(Defence lhs, Defence rhs)
