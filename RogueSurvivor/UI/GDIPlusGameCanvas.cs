@@ -324,8 +324,25 @@ namespace djack.RogueSurvivor.UI
 
     protected override void Dispose(bool disposing)
     {
-      if (disposing && this.components != null)
-        this.components.Dispose();
+       if (disposing)
+            {
+            if (null != components)
+                {
+                components.Dispose();
+                components = null;
+                }
+            if (null != m_RenderImage)
+                {
+                m_RenderImage.Dispose();
+                m_RenderImage = null;
+                }
+            if (null != m_MinimapBitmap)
+                {
+                m_MinimapBitmap.Dispose();
+                m_MinimapBitmap = null;
+                }
+            }
+            DisposeUnmanagedResources();
       base.Dispose(disposing);
     }
 
