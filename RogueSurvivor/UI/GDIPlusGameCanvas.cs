@@ -483,7 +483,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxString : GDIPlusGameCanvas.IGfx
+    private class GfxString : GDIPlusGameCanvas.IGfx, IDisposable
     {
       private readonly Color m_Color;
       private readonly Font m_Font;
@@ -491,20 +491,37 @@ namespace djack.RogueSurvivor.UI
       private readonly int m_X;
       private readonly int m_Y;
       private readonly Brush m_Brush;
+      private bool disposed;
 
       public GfxString(Color color, Font font, string text, int x, int y)
       {
-        this.m_Color = color;
-        this.m_Font = font;
-        this.m_Text = text;
-        this.m_X = x;
-        this.m_Y = y;
-        this.m_Brush = (Brush) new SolidBrush(color);
+        m_Color = color;
+        m_Font = font;
+        m_Text = text;
+        m_X = x;
+        m_Y = y;
+        m_Brush = (Brush) new SolidBrush(color);
+        disposed = false;
       }
 
       public void Draw(Graphics g)
       {
         g.DrawString(this.m_Text, this.m_Font, this.m_Brush, (float) this.m_X, (float) this.m_Y);
+      }
+
+      public void Dispose()
+      {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+        if (disposing && !disposed)
+          {
+          m_Brush.Dispose();
+          disposed = true;
+          }
       }
     }
 
