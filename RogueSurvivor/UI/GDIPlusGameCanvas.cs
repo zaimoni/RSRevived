@@ -376,12 +376,13 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxImageTransform : GDIPlusGameCanvas.IGfx
+    private class GfxImageTransform : GDIPlusGameCanvas.IGfx, IDisposable
     {
       private readonly Image m_Img;
       private readonly Matrix m_Matrix;
       private readonly int m_X;
       private readonly int m_Y;
+      private bool disposed;
 
       public GfxImageTransform(Image img, float rotation, float scale, int x, int y)
       {
@@ -389,6 +390,7 @@ namespace djack.RogueSurvivor.UI
         m_Matrix = new Matrix();
         m_X = x;
         m_Y = y;
+        disposed = false;
         m_Matrix.RotateAt(rotation, new PointF((float) (x + img.Width / 2), (float) (y + img.Height / 2)));
         m_Matrix.Scale(scale, scale);
       }
@@ -402,9 +404,25 @@ namespace djack.RogueSurvivor.UI
         g.DrawImageUnscaled(m_Img, m_X, m_Y);
         g.Transform = transform;
       }
-    }
 
-    private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
+      public void Dispose()
+      {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+        if (disposing && !disposed)
+          {
+          m_Matrix.Dispose();
+          disposed = true;
+          }
+      }
+
+        }
+
+        private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
     {
       private readonly Image m_Img;
       private readonly int m_X;
