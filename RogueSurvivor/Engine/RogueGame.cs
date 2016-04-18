@@ -13854,64 +13854,61 @@ label_89:;
       int turnCounter = entryMap.LocalTime.TurnCounter;
       if (RogueGame.s_Options.IsSimON)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.INTERLUDE);
-        if (this.m_Player != null)
+        m_MusicManager.StopAll();
+        m_MusicManager.Play(GameMusics.INTERLUDE);
+        if (m_Player != null)
         {
-          this.m_Player.Location.Map.ClearView();
+          m_Player.Location.Map.ClearView();
           entryMap.ClearView();
         }
-        this.StopSimThread();
-        Monitor.Enter(this.m_SimMutex);
-        double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
-        double num1 = 0.0;
-        bool flag = false;
-        while (entryMap.LocalTime.TurnCounter <= this.m_Session.WorldTime.TurnCounter)
-        {
-          double totalMilliseconds2 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
-          if (entryMap.LocalTime.TurnCounter == this.m_Session.WorldTime.TurnCounter || entryMap.LocalTime.TurnCounter == turnCounter || totalMilliseconds2 >= num1 + 1000.0)
-          {
-            num1 = totalMilliseconds2;
-            this.ClearMessages();
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Simulating district, please wait {0}/{1}...", (object) entryMap.LocalTime.TurnCounter, (object) this.m_Session.WorldTime.TurnCounter), this.m_Session.WorldTime.TurnCounter, Color.White));
-            this.AddMessage(new djack.RogueSurvivor.Data.Message("(this is an option you can tune)", this.m_Session.WorldTime.TurnCounter, Color.White));
-            int num2 = entryMap.LocalTime.TurnCounter - turnCounter;
-            if (num2 > 1)
-            {
-              int num3 = this.m_Session.WorldTime.TurnCounter - entryMap.LocalTime.TurnCounter;
-              double num4 = 1000.0 * (double) num2 / (1.0 + totalMilliseconds2 - totalMilliseconds1);
-              this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Turns per second    : {0:F2}.", (object) num4), this.m_Session.WorldTime.TurnCounter, Color.White));
-              int num5 = (int) ((double) num3 / num4);
-              int num6 = num5 / 60;
-              int num7 = num5 % 60;
-              this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Estimated time left : {0}.", num6 > 0 ? (object) string.Format("{0} min {1:D2} secs", (object) num6, (object) num7) : (object) string.Format("{0} secs", (object) num7)), this.m_Session.WorldTime.TurnCounter, Color.White));
-            }
-            if (flag)
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("Simulation aborted!", this.m_Session.WorldTime.TurnCounter, Color.Red));
-            else
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("<keep ESC pressed to abort the simulation>", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-            this.RedrawPlayScreen();
-            if (!this.m_MusicManager.IsPlaying(GameMusics.INTERLUDE))
-              this.m_MusicManager.Play(GameMusics.INTERLUDE);
-          }
-          if (!flag)
-          {
-            KeyEventArgs keyEventArgs = this.m_UI.UI_PeekKey();
-            if (keyEventArgs != null && keyEventArgs.KeyCode == Keys.Escape)
-            {
-              foreach (Map map in district.Maps)
-                map.LocalTime.TurnCounter = this.m_Session.WorldTime.TurnCounter;
-              flag = true;
-            }
-            if (!flag)
-              this.SimulateDistrict(district);
-          }
-          else
-            break;
-        }
-        Monitor.Exit(this.m_SimMutex);
-        this.RestartSimThread();
-        this.RemoveLastMessage();
+        StopSimThread();
+                lock (m_SimMutex)
+                {
+                    double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
+                    double num1 = 0.0;
+                    bool flag = false;
+                    while (entryMap.LocalTime.TurnCounter <= m_Session.WorldTime.TurnCounter)
+                    {
+                        double totalMilliseconds2 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
+                        if (entryMap.LocalTime.TurnCounter == m_Session.WorldTime.TurnCounter || entryMap.LocalTime.TurnCounter == turnCounter || totalMilliseconds2 >= num1 + 1000.0)
+                        {
+                            num1 = totalMilliseconds2;
+                            ClearMessages();
+                            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Simulating district, please wait {0}/{1}...", (object)entryMap.LocalTime.TurnCounter, (object)m_Session.WorldTime.TurnCounter), m_Session.WorldTime.TurnCounter, Color.White));
+                            AddMessage(new djack.RogueSurvivor.Data.Message("(this is an option you can tune)", m_Session.WorldTime.TurnCounter, Color.White));
+                            int num2 = entryMap.LocalTime.TurnCounter - turnCounter;
+                            if (num2 > 1)
+                            {
+                                int num3 = m_Session.WorldTime.TurnCounter - entryMap.LocalTime.TurnCounter;
+                                double num4 = 1000.0 * (double)num2 / (1.0 + totalMilliseconds2 - totalMilliseconds1);
+                                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Turns per second    : {0:F2}.", (object)num4), m_Session.WorldTime.TurnCounter, Color.White));
+                                int num5 = (int)((double)num3 / num4);
+                                int num6 = num5 / 60;
+                                int num7 = num5 % 60;
+                                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Estimated time left : {0}.", num6 > 0 ? (object)string.Format("{0} min {1:D2} secs", (object)num6, (object)num7) : (object)string.Format("{0} secs", (object)num7)), m_Session.WorldTime.TurnCounter, Color.White));
+                            }
+                            if (flag)
+                                AddMessage(new djack.RogueSurvivor.Data.Message("Simulation aborted!", m_Session.WorldTime.TurnCounter, Color.Red));
+                            else
+                                AddMessage(new djack.RogueSurvivor.Data.Message("<keep ESC pressed to abort the simulation>", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                            RedrawPlayScreen();
+                            if (!m_MusicManager.IsPlaying(GameMusics.INTERLUDE))
+                                m_MusicManager.Play(GameMusics.INTERLUDE);
+                        }
+                        if (flag) break;
+
+                        KeyEventArgs keyEventArgs = m_UI.UI_PeekKey();
+                        if (keyEventArgs != null && keyEventArgs.KeyCode == Keys.Escape)
+                        {
+                             foreach (Map map in district.Maps)
+                                 map.LocalTime.TurnCounter = m_Session.WorldTime.TurnCounter;
+                             flag = true;
+                        }
+                        if (!flag) SimulateDistrict(district);
+                    }
+                }
+        RestartSimThread();
+        RemoveLastMessage();
         foreach (Map map in district.Maps)
         {
           foreach (Actor actor in map.Actors)
@@ -13920,12 +13917,12 @@ label_89:;
               actor.ActionPoints = 0;
           }
         }
-        this.m_MusicManager.StopAll();
+        m_MusicManager.StopAll();
       }
       else
       {
         foreach (Map map in district.Maps)
-          map.LocalTime.TurnCounter = this.m_Session.WorldTime.TurnCounter;
+          map.LocalTime.TurnCounter = m_Session.WorldTime.TurnCounter;
       }
     }
 
