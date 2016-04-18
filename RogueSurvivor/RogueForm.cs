@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using System.Security.Permissions;
 
 namespace djack.RogueSurvivor
 {
@@ -38,6 +39,7 @@ namespace djack.RogueSurvivor
 
     protected override CreateParams CreateParams
     {
+      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
       get
       {
         CreateParams createParams = base.CreateParams;
