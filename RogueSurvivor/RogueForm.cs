@@ -338,10 +338,26 @@ namespace djack.RogueSurvivor
 
     protected override void Dispose(bool disposing)
     {
+      if (disposing)
+            {
+            if (null != components)
+                {
+                components.Dispose();
+                components = null;
+                }
+            if (null != m_NormalFont)
+                {
+                m_NormalFont.Dispose();
+                m_NormalFont = null;
+                }
+            if (null != m_BoldFont)
+                {
+                m_BoldFont.Dispose();
+                m_BoldFont = null;
+                }
+           }
       if (disposing && this.m_GameCanvas != null)
         this.m_GameCanvas.DisposeUnmanagedResources();
-      if (disposing && this.components != null)
-        this.components.Dispose();
       base.Dispose(disposing);
     }
 
