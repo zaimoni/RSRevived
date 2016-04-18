@@ -19,7 +19,6 @@ namespace djack.RogueSurvivor
   public class RogueForm : Form, IRogueUI
   {
     private const int CP_NOCLOSE_BUTTON = 512;
-    private RogueGame m_Game;
     private Font m_NormalFont;
     private Font m_BoldFont;
     private bool m_HasKey;
@@ -29,13 +28,7 @@ namespace djack.RogueSurvivor
     private IContainer components;
     private IGameCanvas m_GameCanvas;
 
-    internal RogueGame Game
-    {
-      get
-      {
-        return this.m_Game;
-      }
-    }
+    internal RogueGame Game { get; private set; }
 
     protected override CreateParams CreateParams
     {
@@ -74,7 +67,7 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create font 2...");
       this.m_BoldFont = new Font("Lucida Console", 8.25f, FontStyle.Bold);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create RogueGame...");
-      this.m_Game = new RogueGame((IRogueUI) this);
+      Game = new RogueGame((IRogueUI) this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "bind form...");
       this.m_GameCanvas.BindForm(this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
@@ -90,21 +83,20 @@ namespace djack.RogueSurvivor
     protected override void OnShown(EventArgs e)
     {
       base.OnShown(e);
-      this.LoadResources();
-      this.m_Game.Run();
+      LoadResources();
+      Game.Run();
     }
 
     protected override void OnSizeChanged(EventArgs e)
     {
       base.OnSizeChanged(e);
-      this.m_GameCanvas.FillGameForm();
-      this.Invalidate(true);
+      m_GameCanvas.FillGameForm();
+      Invalidate(true);
     }
 
     protected override void OnClosing(CancelEventArgs e)
     {
-      if (!this.m_Game.IsGameRunning)
-        return;
+      if (!Game.IsGameRunning) return;
       e.Cancel = true;
       int num = (int) MessageBox.Show("The game is still running. Please quit inside the game.");
     }
