@@ -3721,6 +3721,9 @@ label_39:
         else
           this.AddMessage(new djack.RogueSurvivor.Data.Message("Wait interrupted!", this.m_Session.WorldTime.TurnCounter, Color.Red));
       }
+
+      GC.Collect(); // force garbage collection when things should be slow anyway
+
       bool flag1 = true;
       do
       {
@@ -4315,7 +4318,7 @@ label_89:;
             }
             string text = "";
             for (int index3 = 0; index3 < 5; ++index3)
-              text += (string) (object) ch;
+              text += ch;
             this.m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * 14, new Color?());
             this.m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", (object) ch, (object) str, (object) ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * 14, new Color?());
             this.m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * 14, new Color?());
