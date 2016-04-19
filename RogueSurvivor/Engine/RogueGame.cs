@@ -2264,25 +2264,16 @@ namespace djack.RogueSurvivor.Engine
     {
       bool isNight1 = this.m_Session.WorldTime.IsNight;
       DayPhase phase1 = this.m_Session.WorldTime.Phase;
-      using (IEnumerator<Map> enumerator = district.Maps.GetEnumerator())
-      {
-label_7:
-        if (enumerator.MoveNext())
-        {
+      using (IEnumerator<Map> enumerator = district.Maps.GetEnumerator()) {
+        while(enumerator.MoveNext()) {
           Map current = enumerator.Current;
           int turnCounter = current.LocalTime.TurnCounter;
-          do
-          {
-            this.AdvancePlay(current, sim);
-            if (this.m_Player.IsDead)
-              this.HandleReincarnation();
-            if (!this.m_IsGameRunning || this.m_HasLoadedGame || this.m_Player.IsDead)
-              goto label_39;
+          do {
+             AdvancePlay(current, sim);
+             if (m_Player.IsDead) HandleReincarnation();
+             if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
           }
           while (current.LocalTime.TurnCounter == turnCounter);
-          goto label_7;
-label_39:
-          return;
         }
       }
       if (district == this.m_Session.CurrentMap.District)
