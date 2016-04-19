@@ -3965,24 +3965,19 @@ namespace djack.RogueSurvivor.Engine
         else if (!this.HandleMouseLook(point))
         {
           bool hasDoneAction1;
-          if (this.HandleMouseInventory(point, mouseButtons, out hasDoneAction1))
+          if (HandleMouseInventory(point, mouseButtons, out hasDoneAction1))
           {
-            if (hasDoneAction1)
-              flag1 = false;
-            else
-              goto label_89;
+            if (!hasDoneAction1) continue;
+            flag1 = false;
           }
           bool hasDoneAction2;
-          if (this.HandleMouseOverCorpses(point, mouseButtons, out hasDoneAction2))
+          if (HandleMouseOverCorpses(point, mouseButtons, out hasDoneAction2))
           {
-            if (hasDoneAction2)
-              flag1 = false;
-            else
-              goto label_89;
+            if (!hasDoneAction2) continue;
+            flag1 = false;
           }
-          this.ClearOverlays();
+          ClearOverlays();
         }
-label_89:;
       }
       while (flag1);
       this.UpdatePlayerFOV(player);
