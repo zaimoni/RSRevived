@@ -15,14 +15,14 @@ namespace djack.RogueSurvivor.Data
   internal class Map : ISerializable
   {
     public const int GROUND_INVENTORY_SLOTS = 10;
-    private int m_Seed;
+    public int Seed { get; private set; }
     private District m_District;
-    private string m_Name;
+    public string Name { get; set; }
     private Lighting m_Lighting;
-    private WorldTime m_LocalTime;
-    private int m_Width;
-    private int m_Height;
-    private Rectangle m_Rectangle;
+    public WorldTime LocalTime { get; private set; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+    public Rectangle Rect { get; private set; }
     private Tile[,] m_Tiles;
     private Dictionary<Point, Exit> m_Exits;
     private List<Zone> m_Zones;
@@ -56,26 +56,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public string Name
-    {
-      get
-      {
-        return this.m_Name;
-      }
-      set
-      {
-        this.m_Name = value;
-      }
-    }
-
-    public int Seed
-    {
-      get
-      {
-        return this.m_Seed;
-      }
-    }
-
     public bool IsSecret { get; set; }
 
     public Lighting Lighting
@@ -87,38 +67,6 @@ namespace djack.RogueSurvivor.Data
       set
       {
         this.m_Lighting = value;
-      }
-    }
-
-    public WorldTime LocalTime
-    {
-      get
-      {
-        return this.m_LocalTime;
-      }
-    }
-
-    public int Width
-    {
-      get
-      {
-        return this.m_Width;
-      }
-    }
-
-    public int Height
-    {
-      get
-      {
-        return this.m_Height;
-      }
-    }
-
-    public Rectangle Rect
-    {
-      get
-      {
-        return this.m_Rectangle;
       }
     }
 
@@ -242,83 +190,81 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentOutOfRangeException("width <=0");
       if (height <= 0)
         throw new ArgumentOutOfRangeException("height <=0");
-      this.m_Seed = seed;
-      this.m_Name = name;
-      this.m_Width = width;
-      this.m_Height = height;
-      this.m_Rectangle = new Rectangle(0, 0, width, height);
-      this.m_LocalTime = new WorldTime();
-      this.Lighting = Lighting.OUTSIDE;
-      this.IsSecret = false;
-      this.m_Tiles = new Tile[width, height];
+      Seed = seed;
+      Name = name;
+      Width = width;
+      Height = height;
+      Rect = new Rectangle(0, 0, width, height);
+      LocalTime = new WorldTime();
+      Lighting = Lighting.OUTSIDE;
+      IsSecret = false;
+      m_Tiles = new Tile[width, height];
       for (int index1 = 0; index1 < width; ++index1)
       {
         for (int index2 = 0; index2 < height; ++index2)
-          this.m_Tiles[index1, index2] = new Tile(TileModel.UNDEF);
+          m_Tiles[index1, index2] = new Tile(TileModel.UNDEF);
       }
-      this.m_Exits = new Dictionary<Point, Exit>();
-      this.m_Zones = new List<Zone>(5);
-      this.m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
-      this.m_ActorsList = new List<Actor>(5);
-      this.m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
-      this.m_MapObjectsList = new List<MapObject>(5);
-      this.m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
-      this.m_aux_GroundItemsList = new List<Inventory>(5);
-      this.m_CorpsesList = new List<Corpse>(5);
-      this.m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
-      this.m_Scents = new List<OdorScent>(128);
-      this.m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
-      this.m_Timers = new List<TimedTask>(5);
+      m_Exits = new Dictionary<Point, Exit>();
+      m_Zones = new List<Zone>(5);
+      m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
+      m_ActorsList = new List<Actor>(5);
+      m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
+      m_MapObjectsList = new List<MapObject>(5);
+      m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
+      m_aux_GroundItemsList = new List<Inventory>(5);
+      m_CorpsesList = new List<Corpse>(5);
+      m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
+      m_Scents = new List<OdorScent>(128);
+      m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
+      m_Timers = new List<TimedTask>(5);
     }
 
     protected Map(SerializationInfo info, StreamingContext context)
     {
-      this.m_Seed = (int) info.GetValue("m_Seed", typeof (int));
-      this.m_District = (District) info.GetValue("m_District", typeof (District));
-      this.m_Name = (string) info.GetValue("m_Name", typeof (string));
-      this.m_LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
-      this.m_Width = (int) info.GetValue("m_Width", typeof (int));
-      this.m_Height = (int) info.GetValue("m_Height", typeof (int));
-      this.m_Rectangle = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
-      this.m_Tiles = (Tile[,]) info.GetValue("m_Tiles", typeof (Tile[,]));
-      this.m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
-      this.m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
-      this.m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
-      this.m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
-      this.m_GroundItemsByPosition = (Dictionary<Point, Inventory>) info.GetValue("m_GroundItemsByPosition", typeof (Dictionary<Point, Inventory>));
-      this.m_CorpsesList = (List<Corpse>) info.GetValue("m_CorpsesList", typeof (List<Corpse>));
-      this.m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
-      this.m_Scents = (List<OdorScent>) info.GetValue("m_Scents", typeof (List<OdorScent>));
-      this.m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
+      Seed = (int) info.GetValue("m_Seed", typeof (int));
+      m_District = (District) info.GetValue("m_District", typeof (District));
+      Name = (string) info.GetValue("m_Name", typeof (string));
+      LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
+      Width = (int) info.GetValue("m_Width", typeof (int));
+      Height = (int) info.GetValue("m_Height", typeof (int));
+      Rect = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
+      m_Tiles = (Tile[,]) info.GetValue("m_Tiles", typeof (Tile[,]));
+      m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
+      m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
+      m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
+      m_MapObjectsList = (List<MapObject>) info.GetValue("m_MapObjectsList", typeof (List<MapObject>));
+      m_GroundItemsByPosition = (Dictionary<Point, Inventory>) info.GetValue("m_GroundItemsByPosition", typeof (Dictionary<Point, Inventory>));
+      m_CorpsesList = (List<Corpse>) info.GetValue("m_CorpsesList", typeof (List<Corpse>));
+      m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
+      m_Scents = (List<OdorScent>) info.GetValue("m_Scents", typeof (List<OdorScent>));
+      m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
     }
 
     public bool IsInBounds(int x, int y)
     {
-      if (x >= 0 && x < this.m_Width && y >= 0)
-        return y < this.m_Height;
+      if (x >= 0 && x < Width && y >= 0)
+        return y < Height;
       return false;
     }
 
     public bool IsInBounds(Point p)
     {
-      return this.IsInBounds(p.X, p.Y);
+      return IsInBounds(p.X, p.Y);
     }
 
     public void TrimToBounds(ref int x, ref int y)
     {
       if (x < 0)
         x = 0;
-      else if (x > this.m_Width - 1)
-        x = this.m_Width - 1;
+      else if (x > Width - 1)
+        x = Width - 1;
       if (y < 0)
-      {
         y = 0;
-      }
       else
       {
-        if (y <= this.m_Height - 1)
+        if (y <= Height - 1)
           return;
-        y = this.m_Height - 1;
+        y = Height - 1;
       }
     }
 
@@ -326,37 +272,35 @@ namespace djack.RogueSurvivor.Data
     {
       if (p.X < 0)
         p.X = 0;
-      else if (p.X > this.m_Width - 1)
-        p.X = this.m_Width - 1;
+      else if (p.X > Width - 1)
+        p.X = Width - 1;
       if (p.Y < 0)
-      {
         p.Y = 0;
-      }
       else
       {
-        if (p.Y <= this.m_Height - 1)
+        if (p.Y <= Height - 1)
           return;
-        p.Y = this.m_Height - 1;
+        p.Y = Height - 1;
       }
     }
 
     public bool IsMapBoundary(int x, int y)
     {
-      if (x != -1 && x != this.m_Width && y != -1)
-        return y == this.m_Height;
+      if (x != -1 && x != Width && y != -1)
+        return y == Height;
       return true;
     }
 
     public bool IsOnMapBorder(int x, int y)
     {
-      if (x != 0 && x != this.m_Width - 1 && y != 0)
-        return y == this.m_Height - 1;
+      if (x != 0 && x != Width - 1 && y != 0)
+        return y == Height - 1;
       return true;
     }
 
     public Tile GetTileAt(int x, int y)
     {
-      return this.m_Tiles[x, y];
+      return m_Tiles[x, y];
     }
 
     public Tile GetTileAt(Point p)
@@ -837,16 +781,15 @@ namespace djack.RogueSurvivor.Data
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {
       if (!this.IsInBounds(position))
-        throw new ArgumentOutOfRangeException(string.Format("position; ({0},{1}) map {2} odor {3}", (object) position.X, (object) position.Y, (object) this.m_Name, (object) odor.ToString()));
+        throw new ArgumentOutOfRangeException(string.Format("position; ({0},{1}) map {2} odor {3}", (object) position.X, (object) position.Y, (object) Name, (object) odor.ToString()));
       OdorScent scentByOdor = this.GetScentByOdor(odor, position);
       if (scentByOdor == null)
       {
-        this.AddNewScent(new OdorScent(odor, freshStrength, position));
+        AddNewScent(new OdorScent(odor, freshStrength, position));
       }
       else
       {
-        if (scentByOdor.Strength >= freshStrength)
-          return;
+        if (scentByOdor.Strength >= freshStrength) return;
         scentByOdor.Set(freshStrength);
       }
     }
@@ -865,10 +808,10 @@ namespace djack.RogueSurvivor.Data
 
     public void ClearView()
     {
-      for (int index1 = 0; index1 < this.m_Width; ++index1)
+      for (int index1 = 0; index1 < Width; ++index1)
       {
-        for (int index2 = 0; index2 < this.m_Height; ++index2)
-          this.m_Tiles[index1, index2].IsInView = false;
+        for (int index2 = 0; index2 < Height; ++index2)
+          m_Tiles[index1, index2].IsInView = false;
       }
     }
 
@@ -907,19 +850,19 @@ namespace djack.RogueSurvivor.Data
 
     public void SetAllAsVisited()
     {
-      for (int index1 = 0; index1 < this.m_Width; ++index1)
+      for (int index1 = 0; index1 < Width; ++index1)
       {
-        for (int index2 = 0; index2 < this.m_Height; ++index2)
-          this.m_Tiles[index1, index2].IsVisited = true;
+        for (int index2 = 0; index2 < Height; ++index2)
+          m_Tiles[index1, index2].IsVisited = true;
       }
     }
 
     public void SetAllAsUnvisited()
     {
-      for (int index1 = 0; index1 < this.m_Width; ++index1)
+      for (int index1 = 0; index1 < Width; ++index1)
       {
-        for (int index2 = 0; index2 < this.m_Height; ++index2)
-          this.m_Tiles[index1, index2].IsVisited = false;
+        for (int index2 = 0; index2 < Height; ++index2)
+          m_Tiles[index1, index2].IsVisited = false;
       }
     }
 
@@ -1024,14 +967,13 @@ namespace djack.RogueSurvivor.Data
     public Point? FindFirstInMap(Predicate<Point> predicateFn)
     {
       Point point = new Point();
-      for (int index1 = 0; index1 < this.m_Width; ++index1)
+      for (int index1 = 0; index1 < Width; ++index1)
       {
         point.X = index1;
-        for (int index2 = 0; index2 < this.m_Height; ++index2)
+        for (int index2 = 0; index2 < Height; ++index2)
         {
           point.Y = index2;
-          if (predicateFn(point))
-            return new Point?(point);
+          if (predicateFn(point)) return new Point?(point);
         }
       }
       return new Point?();
@@ -1081,45 +1023,45 @@ namespace djack.RogueSurvivor.Data
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
-      info.AddValue("m_Seed", this.m_Seed);
-      info.AddValue("m_District", (object) this.m_District);
-      info.AddValue("m_Name", (object) this.m_Name);
-      info.AddValue("m_LocalTime", (object) this.m_LocalTime);
-      info.AddValue("m_Width", this.m_Width);
-      info.AddValue("m_Height", this.m_Height);
-      info.AddValue("m_Rectangle", (object) this.m_Rectangle);
-      info.AddValue("m_Tiles", (object) this.m_Tiles);
-      info.AddValue("m_Exits", (object) this.m_Exits);
-      info.AddValue("m_Zones", (object) this.m_Zones);
-      info.AddValue("m_ActorsList", (object) this.m_ActorsList);
-      info.AddValue("m_MapObjectsList", (object) this.m_MapObjectsList);
-      info.AddValue("m_GroundItemsByPosition", (object) this.m_GroundItemsByPosition);
-      info.AddValue("m_CorpsesList", (object) this.m_CorpsesList);
-      info.AddValue("m_Lighting", (object) this.m_Lighting);
-      info.AddValue("m_Scents", (object) this.m_Scents);
-      info.AddValue("m_Timers", (object) this.m_Timers);
+      info.AddValue("m_Seed", Seed);
+      info.AddValue("m_District", (object) m_District);
+      info.AddValue("m_Name", (object) Name);
+      info.AddValue("m_LocalTime", (object) LocalTime);
+      info.AddValue("m_Width", Width);
+      info.AddValue("m_Height", Height);
+      info.AddValue("m_Rectangle", (object) Rect);
+      info.AddValue("m_Tiles", (object) m_Tiles);
+      info.AddValue("m_Exits", (object) m_Exits);
+      info.AddValue("m_Zones", (object) m_Zones);
+      info.AddValue("m_ActorsList", (object) m_ActorsList);
+      info.AddValue("m_MapObjectsList", (object) m_MapObjectsList);
+      info.AddValue("m_GroundItemsByPosition", (object) m_GroundItemsByPosition);
+      info.AddValue("m_CorpsesList", (object) m_CorpsesList);
+      info.AddValue("m_Lighting", (object) m_Lighting);
+      info.AddValue("m_Scents", (object) m_Scents);
+      info.AddValue("m_Timers", (object) m_Timers);
     }
 
     public void OptimizeBeforeSaving()
     {
-      for (int index1 = 0; index1 < this.m_Width; ++index1)
+      for (int index1 = 0; index1 < Width; ++index1)
       {
-        for (int index2 = 0; index2 < this.m_Height; ++index2)
-          this.m_Tiles[index1, index2].OptimizeBeforeSaving();
+        for (int index2 = 0; index2 < Height; ++index2)
+          m_Tiles[index1, index2].OptimizeBeforeSaving();
       }
-      foreach (Actor mActors in this.m_ActorsList)
+      foreach (Actor mActors in m_ActorsList)
         mActors.OptimizeBeforeSaving();
-      this.m_ActorsList.TrimExcess();
-      this.m_MapObjectsList.TrimExcess();
-      this.m_Scents.TrimExcess();
-      this.m_Zones.TrimExcess();
-      this.m_CorpsesList.TrimExcess();
-      this.m_Timers.TrimExcess();
+      m_ActorsList.TrimExcess();
+      m_MapObjectsList.TrimExcess();
+      m_Scents.TrimExcess();
+      m_Zones.TrimExcess();
+      m_CorpsesList.TrimExcess();
+      m_Timers.TrimExcess();
     }
 
     public override int GetHashCode()
     {
-      return this.m_Name.GetHashCode() ^ this.m_District.GetHashCode();
+      return this.Name.GetHashCode() ^ this.m_District.GetHashCode();
     }
   }
 }
