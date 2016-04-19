@@ -8372,23 +8372,23 @@ namespace djack.RogueSurvivor.Engine
 
     private int BatteriesToHours(int batteries)
     {
-      return batteries / 30;
+      return batteries / WorldTime.TURNS_PER_HOUR;
     }
 
     private int FoodToHoursUntilHungry(int food)
     {
-      int num = food - 720;
+      int num = food - Rules.FOOD_HUNGRY_LEVEL;
       if (num <= 0)
         return 0;
-      return num / 30;
+      return num / WorldTime.TURNS_PER_HOUR;
     }
 
     private int FoodToHoursUntilRotHungry(int food)
     {
-      int num = food - 1440;
+      int num = food - Rules.ROT_HUNGRY_LEVEL;
       if (num <= 0)
         return 0;
-      return num / 30;
+      return num / WorldTime.TURNS_PER_HOUR;
     }
 
     public bool IsAlmostHungry(Actor actor)
@@ -10716,7 +10716,7 @@ namespace djack.RogueSurvivor.Engine
       if (map.IsWalkable(position.X, position.Y) && !tileAt1.HasDecoration("Tiles\\Decoration\\bloodied_floor"))
       {
         tileAt1.AddDecoration("Tiles\\Decoration\\bloodied_floor");
-        map.AddTimer((TimedTask) new TaskRemoveDecoration(720, position.X, position.Y, "Tiles\\Decoration\\bloodied_floor"));
+        map.AddTimer((TimedTask) new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, "Tiles\\Decoration\\bloodied_floor"));
       }
       foreach (Direction direction in Direction.COMPASS)
       {
@@ -10729,7 +10729,7 @@ namespace djack.RogueSurvivor.Engine
             if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration("Tiles\\Decoration\\bloodied_wall"))
             {
               tileAt2.AddDecoration("Tiles\\Decoration\\bloodied_wall");
-              map.AddTimer((TimedTask) new TaskRemoveDecoration(720, p.X, p.Y, "Tiles\\Decoration\\bloodied_wall"));
+              map.AddTimer((TimedTask) new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p.X, p.Y, "Tiles\\Decoration\\bloodied_wall"));
             }
           }
         }
@@ -12375,7 +12375,7 @@ namespace djack.RogueSurvivor.Engine
       {
         int maxValue2 = this.m_Rules.ActorMaxFood(actor);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, 720, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Rules.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (this.m_Rules.IsActorHungry(actor))
         {
@@ -12391,7 +12391,7 @@ namespace djack.RogueSurvivor.Engine
       {
         int maxValue2 = this.m_Rules.ActorMaxRot(actor);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, 1440, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Rules.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (this.m_Rules.IsRottingActorHungry(actor))
         {

@@ -109,14 +109,14 @@ namespace djack.RogueSurvivor.Engine
     private const float FIRING_WHEN_STA_TIRED = 0.75f;
     private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
     public const int BODY_ARMOR_BREAK_CHANCE = 2;
-    public const int FOOD_BASE_POINTS = 1440;
-    public const int FOOD_HUNGRY_LEVEL = 720;
-    public const int ROT_BASE_POINTS = 2880;
-    public const int ROT_HUNGRY_LEVEL = 1440;
-    public const int SLEEP_BASE_POINTS = 1800;
-    public const int SLEEP_SLEEPY_LEVEL = 900;
-    public const int SANITY_BASE_POINTS = 2880;
-    public const int SANITY_UNSTABLE_LEVEL = 1440;
+    public const int FOOD_BASE_POINTS = 2*WorldTime.TURNS_PER_DAY;
+    public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
+    public const int ROT_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
+    public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
+    public const int SLEEP_BASE_POINTS = 60*WorldTime.TURNS_PER_HOUR;
+    public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
+    public const int SANITY_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
+    public const int SANITY_UNSTABLE_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SANITY_NIGHTMARE_CHANCE = 2;
     public const int SANITY_NIGHTMARE_SLP_LOSS = 60;
     public const int SANITY_NIGHTMARE_SAN_LOSS = 30;
@@ -1486,7 +1486,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsActorHungry(Actor a)
     {
       if (a.Model.Abilities.HasToEat)
-        return a.FoodPoints <= 720;
+        return a.FoodPoints <= FOOD_HUNGRY_LEVEL;
       return false;
     }
 
@@ -1500,7 +1500,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsRottingActorHungry(Actor a)
     {
       if (a.Model.Abilities.IsRotting)
-        return a.FoodPoints <= 1440;
+        return a.FoodPoints <= ROT_HUNGRY_LEVEL;
       return false;
     }
 
@@ -2556,13 +2556,13 @@ namespace djack.RogueSurvivor.Engine
 
     public static float CorpseDecayPerTurn(Corpse c)
     {
-      return 0.005555556f;
+      return 0.005555556f;  // 1/18 per turn
     }
 
     public int CorpseZombifyChance(Corpse c, WorldTime timeNow, bool checkDelay = true)
     {
       int num1 = timeNow.TurnCounter - c.Turn;
-      if (checkDelay && num1 < 180)
+      if (checkDelay && num1 < 6*WorldTime.TURNS_PER_HOUR)
         return 0;
       int num2 = this.ActorInfectionPercent(c.DeadGuy);
       if (checkDelay)
@@ -2571,7 +2571,7 @@ namespace djack.RogueSurvivor.Engine
         if (timeNow.TurnCounter % num3 != 0)
           return 0;
       }
-      float num4 = 0.0f + 1f * (float) num2 - (float) (int) (1.0 / 720.0 * (double) num1);
+      float num4 = 0.0f + 1f * (float) num2 - (float) (int) ((double) num1 / (double) WorldTime.TURNS_PER_DAY);
       return Math.Max(0, Math.Min(100, !timeNow.IsNight ? (int) (num4 * 0.01f) : (int) (num4 * 2f)));
     }
 

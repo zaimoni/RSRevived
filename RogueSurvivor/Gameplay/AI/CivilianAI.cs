@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ++this.m_SafeTurns;
       this.m_Exploration.Update(this.m_Actor.Location);
       Location location;
-      if (this.m_Actor.Location.Map.LocalTime.TurnCounter % 30 != 0)
+      if (this.m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
       {
         Location prevLocation = this.PrevLocation;
         location = this.PrevLocation;
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       this.ClearTabooTiles();
 label_10:
       location = this.m_Actor.Location;
-      if (location.Map.LocalTime.TurnCounter % 720 == 0)
+      if (location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
         this.ClearTabooTrades();
       if (flag1)
         this.m_LastEnemySaw = perceptList1[game.Rules.Roll(0, perceptList1.Count)];

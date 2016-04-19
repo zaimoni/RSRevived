@@ -946,8 +946,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemGroceries()
     {
-      int turnCounter = this.m_Game.Session.WorldTime.TurnCounter;
-      int max = 720 * this.m_Game.GameItems.GROCERIES.BestBeforeDays;
+      int turnCounter = m_Game.Session.WorldTime.TurnCounter;
+      int max = WorldTime.TURNS_PER_DAY * m_Game.GameItems.GROCERIES.BestBeforeDays;
       int min = max / 2;
       return (Item) new ItemFood((ItemModel) this.m_Game.GameItems.GROCERIES, turnCounter + this.m_Rules.Roll(min, max));
     }
@@ -1173,7 +1173,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemArmyRation()
     {
-      return (Item) new ItemFood((ItemModel) this.m_Game.GameItems.ARMY_RATION, this.m_Game.Session.WorldTime.TurnCounter + 720 * this.m_Game.GameItems.ARMY_RATION.BestBeforeDays);
+      return (Item) new ItemFood((ItemModel) m_Game.GameItems.ARMY_RATION, m_Game.Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * m_Game.GameItems.ARMY_RATION.BestBeforeDays);
     }
 
     public Item MakeItemFlashlight()
