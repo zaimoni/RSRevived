@@ -219,6 +219,7 @@ namespace djack.RogueSurvivor.Data
       m_Timers = new List<TimedTask>(5);
     }
 
+    // next constructor, and function after, implement ISerializable
     protected Map(SerializationInfo info, StreamingContext context)
     {
       Seed = (int) info.GetValue("m_Seed", typeof (int));
@@ -240,7 +241,29 @@ namespace djack.RogueSurvivor.Data
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
     }
 
-    public bool IsInBounds(int x, int y)
+    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("m_Seed", Seed);
+      info.AddValue("m_District", (object)m_District);
+      info.AddValue("m_Name", (object)Name);
+      info.AddValue("m_LocalTime", (object)LocalTime);
+      info.AddValue("m_Width", Width);
+      info.AddValue("m_Height", Height);
+      info.AddValue("m_Rectangle", (object)Rect);
+      info.AddValue("m_Tiles", (object)m_Tiles);
+      info.AddValue("m_Exits", (object)m_Exits);
+      info.AddValue("m_Zones", (object)m_Zones);
+      info.AddValue("m_ActorsList", (object)m_ActorsList);
+      info.AddValue("m_MapObjectsList", (object)m_MapObjectsList);
+      info.AddValue("m_GroundItemsByPosition", (object)m_GroundItemsByPosition);
+      info.AddValue("m_CorpsesList", (object)m_CorpsesList);
+      info.AddValue("m_Lighting", (object)m_Lighting);
+      info.AddValue("m_Scents", (object)m_Scents);
+      info.AddValue("m_Timers", (object)m_Timers);
+    }
+
+
+        public bool IsInBounds(int x, int y)
     {
       if (x >= 0 && x < Width && y >= 0)
         return y < Height;
@@ -1019,27 +1042,6 @@ namespace djack.RogueSurvivor.Data
             mCorpses
           });
       }
-    }
-
-    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-      info.AddValue("m_Seed", Seed);
-      info.AddValue("m_District", (object) m_District);
-      info.AddValue("m_Name", (object) Name);
-      info.AddValue("m_LocalTime", (object) LocalTime);
-      info.AddValue("m_Width", Width);
-      info.AddValue("m_Height", Height);
-      info.AddValue("m_Rectangle", (object) Rect);
-      info.AddValue("m_Tiles", (object) m_Tiles);
-      info.AddValue("m_Exits", (object) m_Exits);
-      info.AddValue("m_Zones", (object) m_Zones);
-      info.AddValue("m_ActorsList", (object) m_ActorsList);
-      info.AddValue("m_MapObjectsList", (object) m_MapObjectsList);
-      info.AddValue("m_GroundItemsByPosition", (object) m_GroundItemsByPosition);
-      info.AddValue("m_CorpsesList", (object) m_CorpsesList);
-      info.AddValue("m_Lighting", (object) m_Lighting);
-      info.AddValue("m_Scents", (object) m_Scents);
-      info.AddValue("m_Timers", (object) m_Timers);
     }
 
     public void OptimizeBeforeSaving()
