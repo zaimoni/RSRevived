@@ -159,15 +159,15 @@ namespace djack.RogueSurvivor.Data
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled hour");
-      // the only updates happening to TurnCounter are from operator++
-      // that is, the old value used for strike of midnight/midday is always
-      // one less than the current value
-      m_IsStrikeOfMidnight = (0 == num3 && m_Phase == DayPhase.MIDNIGHT);
-      m_IsStrikeOfMidday = (0 == num3 && m_Phase == DayPhase.MIDDAY);
       }
-    }
+       // the only updates happening to TurnCounter are from operator++
+       // that is, the old value used for strike of midnight/midday is always
+       // one less than the current value
+       m_IsStrikeOfMidnight = (0 == num3 && m_Phase == DayPhase.MIDNIGHT);
+       m_IsStrikeOfMidday = (0 == num3 && m_Phase == DayPhase.MIDDAY);
+     }
 
-    public override string ToString()
+        public override string ToString()
     {
       return string.Format("day {0} hour {1:D2}", (object) this.Day, (object) this.Hour);
     }
