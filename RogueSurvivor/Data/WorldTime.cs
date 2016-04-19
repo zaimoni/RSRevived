@@ -25,16 +25,12 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_TurnCounter;
+        return m_TurnCounter;
       }
       set
       {
-        DayPhase dayPhase1 = this.m_Phase;
-        this.m_TurnCounter = value;
-        this.RecomputeDate();
-        DayPhase dayPhase2 = this.m_Phase;
-        this.m_IsStrikeOfMidnight = dayPhase2 == DayPhase.MIDNIGHT && dayPhase1 != DayPhase.MIDNIGHT;
-        this.m_IsStrikeOfMidday = dayPhase2 == DayPhase.MIDDAY && dayPhase1 != DayPhase.MIDDAY;
+        m_TurnCounter = value;
+        RecomputeDate();
       }
     }
 
@@ -163,6 +159,11 @@ namespace djack.RogueSurvivor.Data
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled hour");
+      // the only updates happening to TurnCounter are from operator++
+      // that is, the old value used for strike of midnight/midday is always
+      // one less than the current value
+      m_IsStrikeOfMidnight = (0 == num3 && m_Phase == DayPhase.MIDNIGHT);
+      m_IsStrikeOfMidday = (0 == num3 && m_Phase == DayPhase.MIDDAY);
       }
     }
 
