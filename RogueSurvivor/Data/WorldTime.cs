@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
   internal class WorldTime
   {
     public const int TURNS_PER_HOUR = 30;
-    public const int TURNS_PER_DAY = 720;
+    public const int TURNS_PER_DAY = 24*TURNS_PER_HOUR;
     private int m_TurnCounter;
     private int m_Day;
     private int m_Hour;
@@ -102,11 +102,11 @@ namespace djack.RogueSurvivor.Data
 
     private void RecomputeDate()
     {
-      int num1 = this.m_TurnCounter;
-      this.m_Day = num1 / 720;
-      int num2 = num1 - this.m_Day * 720;
-      this.m_Hour = num2 / 30;
-      int num3 = num2 - this.m_Hour * 30;
+      int num1 = m_TurnCounter;
+      m_Day = num1 / TURNS_PER_DAY;
+      int num2 = num1 - m_Day * TURNS_PER_DAY;
+      m_Hour = num2 / TURNS_PER_HOUR;
+      int num3 = num2 - m_Hour * TURNS_PER_HOUR;
       switch (this.m_Hour)
       {
         case 0:
@@ -167,18 +167,18 @@ namespace djack.RogueSurvivor.Data
        m_IsStrikeOfMidday = (0 == num3 && m_Phase == DayPhase.MIDDAY);
      }
 
-        public override string ToString()
+    public override string ToString()
     {
       return string.Format("day {0} hour {1:D2}", (object) this.Day, (object) this.Hour);
     }
 
     public static string MakeTimeDurationMessage(int turns)
     {
-      if (turns < 30)
+      if (turns < TURNS_PER_HOUR)
         return "less than a hour";
-      if (turns < 720)
+      if (turns < TURNS_PER_DAY)
       {
-        int num = turns / 30;
+        int num = turns / TURNS_PER_HOUR;
         if (num == 1)
           return "about 1 hour";
         return string.Format("about {0} hours", (object) num);
