@@ -119,8 +119,8 @@ namespace djack.RogueSurvivor.Engine
       this.m_World = (World) null;
       this.m_WorldTime = new WorldTime();
       this.LastTurnPlayerActed = 0;
-      this.m_Event_Raids = new int[6, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
-      for (int index1 = 0; index1 < 6; ++index1)
+      m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
+      for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1)
       {
         for (int index2 = 0; index2 < RogueGame.Options.CitySize; ++index2)
         {

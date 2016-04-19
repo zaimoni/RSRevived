@@ -12,7 +12,6 @@ namespace djack.RogueSurvivor.Engine
   internal enum RaidType
   {
     BIKERS = 0,
-    _FIRST = 0,
     GANGSTA = 1,
     BLACKOPS = 2,
     SURVIVORS = 3,

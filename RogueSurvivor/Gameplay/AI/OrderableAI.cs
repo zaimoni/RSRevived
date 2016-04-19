@@ -326,7 +326,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       string str;
       switch (raid)
       {
-        case RaidType._FIRST:
+        case RaidType.BIKERS:
           str = "motorcycles coming";
           break;
         case RaidType.GANGSTA:

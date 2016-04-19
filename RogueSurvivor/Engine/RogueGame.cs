@@ -3303,12 +3303,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_BikersRaid(Map map)
     {
-      return map.LocalTime.Day >= 2 && map.LocalTime.Day < 14 && (!this.HasRaidHappenedSince(RaidType._FIRST, map.District, map.LocalTime, 1440) && this.m_Rules.RollChance(1));
+      return map.LocalTime.Day >= 2 && map.LocalTime.Day < 14 && (!this.HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, 1440) && this.m_Rules.RollChance(1));
     }
 
     private void FireEvent_BikersRaid(Map map)
     {
-      this.m_Session.SetLastRaidTime(RaidType._FIRST, map.District, map.LocalTime.TurnCounter);
+      this.m_Session.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
       GameGangs.IDs gangId = GameGangs.BIKERS[this.m_Rules.Roll(0, GameGangs.BIKERS.Length)];
       Actor actor = this.SpawnNewBikerLeader(map, gangId);
       if (actor != null)
@@ -3322,7 +3322,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor == null)
         return;
-      this.NotifyOrderablesAI(map, RaidType._FIRST, actor.Location.Position);
+      this.NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
       if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
