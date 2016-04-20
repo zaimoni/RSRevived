@@ -10440,7 +10440,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (this.m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy))
         {
-          this.SpendActorSanity(deadGuy.Leader, 240);
+          this.SpendActorSanity(deadGuy.Leader, Rules.SANITY_HIT_BOND_DEATH);
           if (this.IsVisibleToPlayer(deadGuy.Leader))
           {
             if (deadGuy.Leader.IsPlayer)
@@ -10457,7 +10457,7 @@ namespace djack.RogueSurvivor.Engine
         {
           if (this.m_Rules.HasActorBondWith(follower, deadGuy))
           {
-            this.SpendActorSanity(follower, 240);
+            this.SpendActorSanity(follower, Rules.SANITY_HIT_BOND_DEATH);
             if (this.IsVisibleToPlayer(follower))
             {
               if (follower.IsPlayer)
