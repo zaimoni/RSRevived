@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Engine
     private const int NATGUARD_END_DAY = 10;
     private const int NATGUARD_ZTRACKER_DAY = 6;
     private const int NATGUARD_SQUAD_SIZE = 5;
-    private const float NATGUARD_INTERVENTION_FACTOR = 5f;
+    private const double NATGUARD_INTERVENTION_FACTOR = 5.0;
     private const int NATGUARD_INTERVENTION_CHANCE = 1;
     private const int ARMY_SUPPLIES_DAY = 4;
     private const float ARMY_SUPPLIES_FACTOR = 288f;
@@ -3100,13 +3100,13 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_SewersInvasion(Map map)
     {
-      return Rules.HasZombiesInSewers(this.m_Session.GameMode) && this.m_Rules.RollChance(1) && (double) this.CountUndeads(map) < (double) RogueGame.s_Options.MaxUndeads * 0.5;
+      return Rules.HasZombiesInSewers(m_Session.GameMode) && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && CountUndeads(map) < RogueGame.s_Options.MaxUndeads/2;
     }
 
     private void FireEvent_SewersInvasion(Map map)
     {
       int num1 = this.CountUndeads(map);
-      int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double) RogueGame.s_Options.MaxUndeads * 0.5) - num1;
+      int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double)(RogueGame.s_Options.MaxUndeads/2)) - num1;
       for (int index = 0; index < num2; ++index)
         this.SpawnNewSewersUndead(map, map.LocalTime.Day);
     }
@@ -3140,11 +3140,10 @@ namespace djack.RogueSurvivor.Engine
           return a.Faction == this.GameFactions.ThePolice;
         return true;
       }));
-      int num2 = Math.Min(1 + (int) (0.200000002980232 * (double) this.RefugeesEventDistrictFactor(district) * (double) RogueGame.s_Options.MaxCivilians), RogueGame.s_Options.MaxCivilians - num1);
+      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)RogueGame.s_Options.MaxCivilians)/5f ), RogueGame.s_Options.MaxCivilians - num1);
       for (int index = 0; index < num2; ++index)
-        this.SpawnNewRefugee(!this.m_Rules.RollChance(80) ? (!district.HasSubway ? district.SewersMap : (this.m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
-      if (!this.m_Rules.RollChance(10))
-        return;
+        SpawnNewRefugee(!this.m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (this.m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
+      if (!m_Rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
       lock (this.m_Session)
       {
         UniqueActor[] local_6 = Array.FindAll<UniqueActor>(this.m_Session.UniqueActors.ToArray(), (Predicate<UniqueActor>) (a =>
@@ -3185,28 +3184,26 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
-      if (RogueGame.s_Options.NatGuardFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < 3 || map.LocalTime.Day >= 10) || !this.m_Rules.RollChance(1))
+      if (RogueGame.s_Options.NatGuardFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
         return false;
       int num = this.CountLivings(map) + this.CountFaction(map, this.GameFactions.TheArmy);
-      return (double) ((float) this.CountUndeads(map) / (float) num) * ((double) RogueGame.s_Options.NatGuardFactor / 100.0) >= 5.0;
+      return (double) ((float) this.CountUndeads(map) / (float) num) * ((double) RogueGame.s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
     }
 
     private void FireEvent_NationalGuard(Map map)
     {
       Actor actor = this.SpawnNewNatGuardLeader(map);
-      if (actor != null)
-      {
-        for (int index = 0; index < 4; ++index)
+      if (actor == null) return;
+
+      for (int index = 0; index < NATGUARD_SQUAD_SIZE-1; ++index)
         {
-          Actor other = this.SpawnNewNatGuardTrooper(map, actor.Location.Position);
-          if (other != null)
-            actor.AddFollower(other);
+        Actor other = SpawnNewNatGuardTrooper(map, actor.Location.Position);
+        if (other != null) actor.AddFollower(other);
         }
-      }
-      if (actor == null)
-        return;
-      this.NotifyOrderablesAI(map, RaidType.NATGUARD, actor.Location.Position);
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+
+      NotifyOrderablesAI(map, RaidType.NATGUARD, actor.Location.Position);
+      if (map != m_Player.Location.Map) return;
+      if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
         this.m_MusicManager.Play(GameMusics.ARMY);
@@ -3216,14 +3213,12 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         this.ClearMessages();
       }
-      if (map != this.m_Player.Location.Map)
-        return;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "A National Guard squad arrived.");
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "A National Guard squad arrived.");
     }
 
     private bool CheckForEvent_ArmySupplies(Map map)
     {
-      if (RogueGame.s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < 4 || !this.m_Rules.RollChance(2)))
+      if (RogueGame.s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
         return false;
       int num = 1 + this.CountActors(map, (Predicate<Actor>) (a =>
       {
@@ -3231,7 +3226,7 @@ namespace djack.RogueSurvivor.Engine
           return a.Faction == this.GameFactions.TheCivilians;
         return false;
       }));
-      return (double) ((float) (1 + this.CountFoodItemsNutrition(map)) / (float) num) < (double) RogueGame.s_Options.SuppliesDropFactor / 100.0 * 288.0;
+      return (double) ((float) (1 + this.CountFoodItemsNutrition(map)) / (float) num) < (double) RogueGame.s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
     }
 
     private void FireEvent_ArmySupplies(Map map)
@@ -3257,7 +3252,8 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       this.NotifyOrderablesAI(map, RaidType.ARMY_SUPLLIES, dropPoint);
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      if (map != m_Player.Location.Map) return;
+      if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
         this.m_MusicManager.Play(GameMusics.ARMY);
@@ -3267,9 +3263,7 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         this.ClearMessages();
       }
-      if (map != this.m_Player.Location.Map)
-        return;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "An army chopper dropped supplies.");
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
 
     private bool IsSuitableDropSuppliesPoint(Map map, int x, int y)
@@ -3303,7 +3297,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_BikersRaid(Map map)
     {
-      return map.LocalTime.Day >= 2 && map.LocalTime.Day < 14 && (!this.HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, 1440) && this.m_Rules.RollChance(1));
+      return map.LocalTime.Day >= BIKERS_RAID_DAY && map.LocalTime.Day < BIKERS_END_DAY && (!HasRaidHappenedSince(RaidType.BIKERS, map.District, map.LocalTime, BIKERS_RAID_DAYS_GAP * WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(BIKERS_RAID_CHANCE_PER_TURN));
     }
 
     private void FireEvent_BikersRaid(Map map)
@@ -3311,19 +3305,15 @@ namespace djack.RogueSurvivor.Engine
       this.m_Session.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
       GameGangs.IDs gangId = GameGangs.BIKERS[this.m_Rules.Roll(0, GameGangs.BIKERS.Length)];
       Actor actor = this.SpawnNewBikerLeader(map, gangId);
-      if (actor != null)
+      if (actor == null) return;
+      for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index)
       {
-        for (int index = 0; index < 5; ++index)
-        {
-          Actor other = this.SpawnNewBiker(map, gangId, actor.Location.Position);
-          if (other != null)
-            actor.AddFollower(other);
-        }
+        Actor other = SpawnNewBiker(map, gangId, actor.Location.Position);
+        if (other != null) actor.AddFollower(other);
       }
-      if (actor == null)
-        return;
       this.NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      if (map != m_Player.Location.Map) return;
+      if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
         this.m_MusicManager.Play(GameMusics.BIKER);
@@ -3333,14 +3323,12 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         this.ClearMessages();
       }
-      if (map != this.m_Player.Location.Map)
-        return;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Bikers raided the district.");
+      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Bikers raided the district.");
     }
 
     private bool CheckForEvent_GangstasRaid(Map map)
     {
-      return map.LocalTime.Day >= 7 && map.LocalTime.Day < 21 && (!this.HasRaidHappenedSince(RaidType.GANGSTA, map.District, map.LocalTime, 2160) && this.m_Rules.RollChance(1));
+      return map.LocalTime.Day >= GANGSTAS_RAID_DAY && map.LocalTime.Day < GANGSTAS_END_DAY && (!HasRaidHappenedSince(RaidType.GANGSTA, map.District, map.LocalTime, GANGSTAS_RAID_DAYS_GAP*WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(GANGSTAS_RAID_CHANCE_PER_TURN));
     }
 
     private void FireEvent_GangstasRaid(Map map)
@@ -3348,19 +3336,15 @@ namespace djack.RogueSurvivor.Engine
       this.m_Session.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
       GameGangs.IDs gangId = GameGangs.GANGSTAS[this.m_Rules.Roll(0, GameGangs.GANGSTAS.Length)];
       Actor actor = this.SpawnNewGangstaLeader(map, gangId);
-      if (actor != null)
+      if (actor == null) return;
+      for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index)
       {
-        for (int index = 0; index < 5; ++index)
-        {
-          Actor other = this.SpawnNewGangsta(map, gangId, actor.Location.Position);
-          if (other != null)
-            actor.AddFollower(other);
-        }
+        Actor other = this.SpawnNewGangsta(map, gangId, actor.Location.Position);
+        if (other != null) actor.AddFollower(other);
       }
-      if (actor == null)
-        return;
-      this.NotifyOrderablesAI(map, RaidType.GANGSTA, actor.Location.Position);
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      NotifyOrderablesAI(map, RaidType.GANGSTA, actor.Location.Position);
+      if (map != m_Player.Location.Map) return;
+      if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
         this.m_MusicManager.Play(GameMusics.GANGSTA);
@@ -3370,33 +3354,27 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         this.ClearMessages();
       }
-      if (map != this.m_Player.Location.Map)
-        return;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Gangstas raided the district.");
+      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Gangstas raided the district.");
     }
 
     private bool CheckForEvent_BlackOpsRaid(Map map)
     {
-      return map.LocalTime.Day >= 14 && !this.HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, 3600) && this.m_Rules.RollChance(1);
+      return map.LocalTime.Day >= BLACKOPS_RAID_DAY && !HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY) && this.m_Rules.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
     }
 
     private void FireEvent_BlackOpsRaid(Map map)
     {
       this.m_Session.SetLastRaidTime(RaidType.BLACKOPS, map.District, map.LocalTime.TurnCounter);
       Actor actor = this.SpawnNewBlackOpsLeader(map);
-      if (actor != null)
+      if (actor == null) return;
+      for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index)
       {
-        for (int index = 0; index < 2; ++index)
-        {
-          Actor other = this.SpawnNewBlackOpsTrooper(map, actor.Location.Position);
-          if (other != null)
-            actor.AddFollower(other);
-        }
+        Actor other = this.SpawnNewBlackOpsTrooper(map, actor.Location.Position);
+        if (other != null) actor.AddFollower(other);
       }
-      if (actor == null)
-        return;
-      this.NotifyOrderablesAI(map, RaidType.BLACKOPS, actor.Location.Position);
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      NotifyOrderablesAI(map, RaidType.BLACKOPS, actor.Location.Position);
+      if (map != m_Player.Location.Map) return;
+      if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
         this.m_MusicManager.Play(GameMusics.ARMY);
@@ -3406,29 +3384,24 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         this.ClearMessages();
       }
-      if (map != this.m_Player.Location.Map)
-        return;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "BlackOps raided the district.");
+      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "BlackOps raided the district.");
     }
 
     private bool CheckForEvent_BandOfSurvivors(Map map)
     {
-      return map.LocalTime.Day >= 21 && !this.HasRaidHappenedSince(RaidType.SURVIVORS, map.District, map.LocalTime, 3600) && this.m_Rules.RollChance(1);
+      return map.LocalTime.Day >= SURVIVORS_BAND_DAY && !HasRaidHappenedSince(RaidType.SURVIVORS, map.District, map.LocalTime, SURVIVORS_BAND_DAY_GAP*WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(SURVIVORS_BAND_CHANCE_PER_TURN);
     }
 
     private void FireEvent_BandOfSurvivors(Map map)
     {
       this.m_Session.SetLastRaidTime(RaidType.SURVIVORS, map.District, map.LocalTime.TurnCounter);
       Actor actor = this.SpawnNewSurvivor(map);
-      if (actor != null)
-      {
-        for (int index = 0; index < 4; ++index)
-          this.SpawnNewSurvivor(map, actor.Location.Position);
-      }
-      if (actor == null)
-        return;
-      this.NotifyOrderablesAI(map, RaidType.SURVIVORS, actor.Location.Position);
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      if (actor == null) return;
+      for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index)
+        SpawnNewSurvivor(map, actor.Location.Position);
+      NotifyOrderablesAI(map, RaidType.SURVIVORS, actor.Location.Position);
+      if (map != m_Player.Location.Map) return;
+      if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
         this.m_MusicManager.StopAll();
         this.m_MusicManager.Play(GameMusics.SURVIVORS);
@@ -3438,9 +3411,7 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         this.ClearMessages();
       }
-      if (map != this.m_Player.Location.Map)
-        return;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
+      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
     }
 
     private int DistanceToPlayer(Map map, int x, int y)
@@ -3589,7 +3560,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor armyNationalGuard = this.m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");
       this.m_TownGenerator.GiveStartingSkillToActor(armyNationalGuard, Skills.IDs.LEADERSHIP);
-      if (map.LocalTime.Day > 6)
+      if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
         armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemZTracker());
       if (!this.SpawnActorOnMapBorder(map, armyNationalGuard, 10, true))
         return (Actor) null;
