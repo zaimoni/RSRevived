@@ -10036,13 +10036,10 @@ namespace djack.RogueSurvivor.Engine
     public void DoRechargeItemBattery(Actor actor, Item it)
     {
       SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      if (it is ItemLight)
-        (it as ItemLight).Batteries += 30;
-      else if (it is ItemTracker)
-        (it as ItemTracker).Batteries += 30;
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_RECHARGE), it, " batteries."));
+      if (it is ItemLight) (it as ItemLight).Recharge();
+      else if (it is ItemTracker) (it as ItemTracker).Recharge();
+      if (!this.IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)

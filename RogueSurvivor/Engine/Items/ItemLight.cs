@@ -61,5 +61,10 @@ namespace djack.RogueSurvivor.Engine.Items
         throw new ArgumentException("model is not a LightModel");
       this.Batteries = (model as ItemLightModel).MaxBatteries;
     }
+
+    public void Recharge()
+    {
+      Batteries += Math.Min(WorldTime.TURNS_PER_HOUR, (Model as ItemLightModel).MaxBatteries);
+    }
   }
 }
