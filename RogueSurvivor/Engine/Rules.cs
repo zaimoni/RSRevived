@@ -2072,8 +2072,8 @@ namespace djack.RogueSurvivor.Engine
     public bool WillOtherActTwiceBefore(Actor actor, Actor other)
     {
       if (this.IsActorBeforeInMapList(actor.Location.Map, actor, other))
-        return other.ActionPoints > 100;
-      return other.ActionPoints + this.ActorSpeed(other) > 100;
+        return other.ActionPoints > BASE_ACTION_COST;
+      return other.ActionPoints + this.ActorSpeed(other) > BASE_ACTION_COST;
     }
 
     public bool IsEnemyOf(Actor actor, Actor target)
@@ -2509,7 +2509,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseEeatingInfectionTransmission(int infection)
     {
-      return (int) (0.100000001490116 * (double) infection);
+      return (int) (0.1 * (double) infection);
     }
 
     public int ActorInfectionHPs(Actor a)

@@ -284,17 +284,17 @@ namespace djack.RogueSurvivor.Engine
         else
           num1 += 0.1f;
       }
-      if (options.NatGuardFactor != 100)
+      if (options.NatGuardFactor != GameOptions.DEFAULT_NATGUARD_FACTOR)
       {
-        float num2 = (float) (options.NatGuardFactor - 100) / 100f;
+        float num2 = (float) (options.NatGuardFactor - GameOptions.DEFAULT_NATGUARD_FACTOR) / (float)GameOptions.DEFAULT_NATGUARD_FACTOR;
         if (side == DifficultySide.FOR_SURVIVOR)
           num1 -= 0.5f * num2;
         else
           num1 += 0.5f * num2;
       }
-      if (options.SuppliesDropFactor != 100)
+      if (options.SuppliesDropFactor != GameOptions.DEFAULT_SUPPLIESDROP_FACTOR)
       {
-        float num2 = (float) (options.SuppliesDropFactor - 100) / 100f;
+        float num2 = (float) (options.SuppliesDropFactor - GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) / (float)GameOptions.DEFAULT_SUPPLIESDROP_FACTOR;
         if (side == DifficultySide.FOR_SURVIVOR)
           num1 -= 0.5f * num2;
         else

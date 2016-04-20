@@ -19,8 +19,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
   {
     public static readonly BaseTownGenerator.Parameters DEFAULT_PARAMS = new BaseTownGenerator.Parameters()
     {
-      MapWidth = 100,
-      MapHeight = 100,
+      MapWidth = RogueGame.MAP_MAX_WIDTH,
+      MapHeight = RogueGame.MAP_MAX_HEIGHT,
       MinBlockSize = 11,
       WreckedCarChance = 10,
       ShopBuildingChance = 10,

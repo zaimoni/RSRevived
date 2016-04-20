@@ -336,8 +336,8 @@ namespace djack.RogueSurvivor.Engine
       {
         if (value < 30)
           value = 30;
-        if (value > 100 || value > 100)
-          value = Math.Min(100, 100);
+        if (value > RogueGame.MAP_MAX_HEIGHT || value > RogueGame.MAP_MAX_WIDTH)
+          value = Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH);
         this.m_DistrictSize = value;
       }
     }
