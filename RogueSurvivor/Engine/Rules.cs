@@ -153,8 +153,8 @@ namespace djack.RogueSurvivor.Engine
     public const int FIRE_RAIN_TEST_CHANCE = 1;
     public const int FIRE_RAIN_PUT_OUT_CHANCE = 10;
     public const int TRUST_NEUTRAL = 0;
-    public const int TRUST_TRUSTING_THRESHOLD = 360;
-    public const int TRUST_MIN = -360;
+    public const int TRUST_TRUSTING_THRESHOLD = 12*WorldTime.TURNS_PER_HOUR;
+    public const int TRUST_MIN = -12*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_MAX = 2*WorldTime.TURNS_PER_DAY;
     public const int TRUST_BOND_THRESHOLD = TRUST_MAX;
     public const int TRUST_BASE_INCREASE = 1;
@@ -162,7 +162,7 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_MISC_GIFT_INCREASE = 10;
     public const int TRUST_GIVE_ITEM_ORDER_PENALTY = -30;
     public const int TRUST_LEADER_KILL_ENEMY = 90;
-    public const int TRUST_REVIVE_BONUS = 360;
+    public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;
     public const int MURDERER_SPOTTING_BASE_CHANCE = 5;
     public const int MURDERER_SPOTTING_DISTANCE_PENALTY = 1;
     public const int MURDER_SPOTTING_MURDERCOUNTER_BONUS = 5;
