@@ -168,14 +168,14 @@ namespace djack.RogueSurvivor.Engine
     public const int MURDER_SPOTTING_MURDERCOUNTER_BONUS = 5;
     private const float INFECTION_BASE_FACTOR = 1f;
     private const int CORPSE_ZOMBIFY_BASE_CHANCE = 0;
-    private const int CORPSE_ZOMBIFY_DELAY = 180;
+    private const int CORPSE_ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
     private const float CORPSE_ZOMBIFY_INFECTIONP_FACTOR = 1f;
     private const float CORPSE_ZOMBIFY_NIGHT_FACTOR = 2f;
     private const float CORPSE_ZOMBIFY_DAY_FACTOR = 0.01f;
     private const float CORPSE_ZOMBIFY_TIME_FACTOR = 0.001388889f;
     private const float CORPSE_EATING_NUTRITION_FACTOR = 10f;
     private const float CORPSE_EATING_INFECTION_FACTOR = 0.1f;
-    private const float CORPSE_DECAY_PER_TURN = 0.005555556f;
+    private const float CORPSE_DECAY_PER_TURN = 0.005555556f;   // 1/180 per turn
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
     private readonly DiceRoller m_DiceRoller;
@@ -2554,13 +2554,13 @@ namespace djack.RogueSurvivor.Engine
 
     public static float CorpseDecayPerTurn(Corpse c)
     {
-      return 0.005555556f;  // 1/18 per turn
+      return CORPSE_DECAY_PER_TURN;
     }
 
     public int CorpseZombifyChance(Corpse c, WorldTime timeNow, bool checkDelay = true)
     {
       int num1 = timeNow.TurnCounter - c.Turn;
-      if (checkDelay && num1 < 6*WorldTime.TURNS_PER_HOUR)
+      if (checkDelay && num1 < CORPSE_ZOMBIFY_DELAY)
         return 0;
       int num2 = this.ActorInfectionPercent(c.DeadGuy);
       if (checkDelay)
@@ -2570,7 +2570,7 @@ namespace djack.RogueSurvivor.Engine
           return 0;
       }
       float num4 = 0.0f + 1f * (float) num2 - (float) (int) ((double) num1 / (double) WorldTime.TURNS_PER_DAY);
-      return Math.Max(0, Math.Min(100, !timeNow.IsNight ? (int) (num4 * 0.01f) : (int) (num4 * 2f)));
+      return Math.Max(0, Math.Min(100, !timeNow.IsNight ? (int) (num4 * CORPSE_ZOMBIFY_DAY_FACTOR) : (int) (num4 * CORPSE_ZOMBIFY_NIGHT_FACTOR)));
     }
 
     public int CorpseReviveChance(Actor actor, Corpse corpse)
