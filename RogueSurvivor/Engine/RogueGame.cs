@@ -12196,8 +12196,8 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (RogueGame.s_Options.IsMinimapOn)
-        this.m_UI.UI_DrawMinimap(750, 475);
-      this.m_UI.UI_DrawRect(Color.White, new Rectangle(750 + this.m_MapViewRect.Left * 2, 475 + this.m_MapViewRect.Top * 2, this.m_MapViewRect.Width * 2, this.m_MapViewRect.Height * 2));
+        m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
+      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * 2, MINIMAP_Y + m_MapViewRect.Top * 2, m_MapViewRect.Width * 2, m_MapViewRect.Height * 2));
       if (RogueGame.s_Options.ShowPlayerTagsOnMinimap)
       {
         for (int x = 0; x < map.Width; ++x)
@@ -12218,7 +12218,7 @@ namespace djack.RogueSurvivor.Engine
                 imageID = "mini_player_tag4";
               if (imageID != null)
               {
-                Point point = new Point(750 + x * 2, 475 + y * 2);
+                Point point = new Point(MINIMAP_X + x * 2, MINIMAP_Y + y * 2);
                 this.m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
               }
             }
@@ -12241,7 +12241,7 @@ namespace djack.RogueSurvivor.Engine
                 ItemTracker itemTracker2 = follower.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
                 if (itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader)
                 {
-                  Point point = new Point(750 + follower.Location.Position.X * 2, 475 + follower.Location.Position.Y * 2);
+                  Point point = new Point(MINIMAP_X + follower.Location.Position.X * 2, MINIMAP_Y + follower.Location.Position.Y * 2);
                   this.m_UI.UI_DrawImage("mini_follower_position", point.X - 1, point.Y - 1);
                   if (this.IsInViewRect(follower.Location.Position) && !this.IsVisibleToPlayer(follower))
                   {
@@ -12258,7 +12258,7 @@ namespace djack.RogueSurvivor.Engine
             {
               if (actor != this.m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == this.m_Player.Location.Map && this.m_Rules.GridDistance(actor.Location.Position, this.m_Player.Location.Position) <= 6)
               {
-                Point point = new Point(750 + actor.Location.Position.X * 2, 475 + actor.Location.Position.Y * 2);
+                Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
                 this.m_UI.UI_DrawImage("mini_undead_position", point.X - 1, point.Y - 1);
                 if (this.IsInViewRect(actor.Location.Position) && !this.IsVisibleToPlayer(actor))
                 {
@@ -12274,7 +12274,7 @@ namespace djack.RogueSurvivor.Engine
             {
               if (actor != this.m_Player && actor.Faction == this.GameFactions.TheBlackOps && actor.Location.Map == this.m_Player.Location.Map)
               {
-                Point point = new Point(750 + actor.Location.Position.X * 2, 475 + actor.Location.Position.Y * 2);
+                Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
                 this.m_UI.UI_DrawImage("mini_blackops_position", point.X - 1, point.Y - 1);
                 if (this.IsInViewRect(actor.Location.Position) && !this.IsVisibleToPlayer(actor))
                 {
@@ -12290,7 +12290,7 @@ namespace djack.RogueSurvivor.Engine
             {
               if (actor != this.m_Player && actor.Faction == this.GameFactions.ThePolice && actor.Location.Map == this.m_Player.Location.Map)
               {
-                Point point = new Point(750 + actor.Location.Position.X * 2, 475 + actor.Location.Position.Y * 2);
+                Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
                 this.m_UI.UI_DrawImage("mini_police_position", point.X - 1, point.Y - 1);
                 if (this.IsInViewRect(actor.Location.Position) && !this.IsVisibleToPlayer(actor))
                 {
@@ -12302,15 +12302,13 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      Point position = this.m_Player.Location.Position;
-      int num2 = position.X * 2;
-      int x1 = 750 + num2;
-      int num4 = position.Y * 2;
-      int y1 = 475 + num4;
-      this.m_UI.UI_DrawImage("mini_player_position", x1 - 1, y1 - 1);
-      }
+      Point position = m_Player.Location.Position;
+      int x1 = MINIMAP_X + position.X * 2;
+      int y1 = MINIMAP_Y + position.Y * 2;
+      m_UI.UI_DrawImage("mini_player_position", x1 - 1, y1 - 1);
+    }
 
-        public void DrawActorStatus(Actor actor, int gx, int gy)
+    public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
       gy += 14;
