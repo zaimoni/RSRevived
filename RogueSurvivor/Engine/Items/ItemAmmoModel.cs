@@ -32,7 +32,6 @@ namespace djack.RogueSurvivor.Engine.Items
       : base(aName, theNames, imageID)
     {
       this.m_AmmoType = ammoType;
-      this.IsStackable = true;
       this.StackingLimit = maxQuantity;
     }
   }

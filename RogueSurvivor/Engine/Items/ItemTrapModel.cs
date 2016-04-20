@@ -112,7 +112,6 @@ namespace djack.RogueSurvivor.Engine.Items
       this.DontAutoEquip = true;
       if (stackLimit > 1)
       {
-        this.IsStackable = true;
         this.StackingLimit = stackLimit;
       }
       this.m_TriggerChance = triggerChance;

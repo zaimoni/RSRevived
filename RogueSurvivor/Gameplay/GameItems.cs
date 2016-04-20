@@ -657,13 +657,6 @@ namespace djack.RogueSurvivor.Gameplay
       Models.Items = (ItemModelDB) this;
     }
 
-    private bool StartsWithVowel(string name)
-    {
-      if ((int) name[0] != 97 && (int) name[0] != 65 && ((int) name[0] != 101 && (int) name[0] != 69) && ((int) name[0] != 105 && (int) name[0] != 73 && (int) name[0] != 121))
-        return (int) name[0] == 89;
-      return true;
-    }
-
     private bool CheckPlural(string name, string plural)
     {
       return name == plural;
@@ -673,7 +666,6 @@ namespace djack.RogueSurvivor.Gameplay
     {
       ItemMedicineModel itemMedicineModel1 = new ItemMedicineModel(this.DATA_MEDICINE_BANDAGE.NAME, this.DATA_MEDICINE_BANDAGE.PLURAL, "Items\\item_bandages", this.DATA_MEDICINE_BANDAGE.HEALING, this.DATA_MEDICINE_BANDAGE.STAMINABOOST, this.DATA_MEDICINE_BANDAGE.SLEEPBOOST, this.DATA_MEDICINE_BANDAGE.INFECTIONCURE, this.DATA_MEDICINE_BANDAGE.SANITYCURE);
       itemMedicineModel1.IsPlural = true;
-      itemMedicineModel1.IsStackable = true;
       itemMedicineModel1.StackingLimit = this.DATA_MEDICINE_BANDAGE.STACKINGLIMIT;
       itemMedicineModel1.FlavorDescription = this.DATA_MEDICINE_BANDAGE.FLAVOR;
       this[GameItems.IDs.MEDICINE_BANDAGES] = (ItemModel) itemMedicineModel1;
@@ -682,68 +674,57 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.MEDICINE_MEDIKIT] = (ItemModel) itemMedicineModel3;
       ItemMedicineModel itemMedicineModel5 = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_STA.NAME, this.DATA_MEDICINE_PILLS_STA.PLURAL, "Items\\item_pills_green", this.DATA_MEDICINE_PILLS_STA.HEALING, this.DATA_MEDICINE_PILLS_STA.STAMINABOOST, this.DATA_MEDICINE_PILLS_STA.SLEEPBOOST, this.DATA_MEDICINE_PILLS_STA.INFECTIONCURE, this.DATA_MEDICINE_PILLS_STA.SANITYCURE);
       itemMedicineModel5.IsPlural = true;
-      itemMedicineModel5.IsStackable = true;
       itemMedicineModel5.StackingLimit = this.DATA_MEDICINE_PILLS_STA.STACKINGLIMIT;
       itemMedicineModel5.FlavorDescription = this.DATA_MEDICINE_PILLS_STA.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_STA] = (ItemModel) itemMedicineModel5;
       ItemMedicineModel itemMedicineModel7 = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_SLP.NAME, this.DATA_MEDICINE_PILLS_SLP.PLURAL, "Items\\item_pills_blue", this.DATA_MEDICINE_PILLS_SLP.HEALING, this.DATA_MEDICINE_PILLS_SLP.STAMINABOOST, this.DATA_MEDICINE_PILLS_SLP.SLEEPBOOST, this.DATA_MEDICINE_PILLS_SLP.INFECTIONCURE, this.DATA_MEDICINE_PILLS_SLP.SANITYCURE);
       itemMedicineModel7.IsPlural = true;
-      itemMedicineModel7.IsStackable = true;
       itemMedicineModel7.StackingLimit = this.DATA_MEDICINE_PILLS_SLP.STACKINGLIMIT;
       itemMedicineModel7.FlavorDescription = this.DATA_MEDICINE_PILLS_SLP.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_SLP] = (ItemModel) itemMedicineModel7;
       ItemMedicineModel itemMedicineModel9 = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_SAN.NAME, this.DATA_MEDICINE_PILLS_SAN.PLURAL, "Items\\item_pills_san", this.DATA_MEDICINE_PILLS_SAN.HEALING, this.DATA_MEDICINE_PILLS_SAN.STAMINABOOST, this.DATA_MEDICINE_PILLS_SAN.SLEEPBOOST, this.DATA_MEDICINE_PILLS_SAN.INFECTIONCURE, this.DATA_MEDICINE_PILLS_SAN.SANITYCURE);
       itemMedicineModel9.IsPlural = true;
-      itemMedicineModel9.IsStackable = true;
       itemMedicineModel9.StackingLimit = this.DATA_MEDICINE_PILLS_SAN.STACKINGLIMIT;
       itemMedicineModel9.FlavorDescription = this.DATA_MEDICINE_PILLS_SAN.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_SAN] = (ItemModel) itemMedicineModel9;
       ItemMedicineModel itemMedicineModel11 = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_ANTIVIRAL.NAME, this.DATA_MEDICINE_PILLS_ANTIVIRAL.PLURAL, "Items\\item_pills_antiviral", this.DATA_MEDICINE_PILLS_ANTIVIRAL.HEALING, this.DATA_MEDICINE_PILLS_ANTIVIRAL.STAMINABOOST, this.DATA_MEDICINE_PILLS_ANTIVIRAL.SLEEPBOOST, this.DATA_MEDICINE_PILLS_ANTIVIRAL.INFECTIONCURE, this.DATA_MEDICINE_PILLS_ANTIVIRAL.SANITYCURE);
       itemMedicineModel11.IsPlural = true;
-      itemMedicineModel11.IsStackable = true;
       itemMedicineModel11.StackingLimit = this.DATA_MEDICINE_PILLS_ANTIVIRAL.STACKINGLIMIT;
       itemMedicineModel11.FlavorDescription = this.DATA_MEDICINE_PILLS_ANTIVIRAL.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL] = (ItemModel) itemMedicineModel11;
 
       // Food
       ItemFoodModel itemFoodModel1 = new ItemFoodModel(this.DATA_FOOD_ARMY_RATION.NAME, this.DATA_FOOD_ARMY_RATION.PLURAL, "Items\\item_army_ration", this.DATA_FOOD_ARMY_RATION.NUTRITION, this.DATA_FOOD_ARMY_RATION.BESTBEFORE);
-      itemFoodModel1.IsAn = this.StartsWithVowel(this.DATA_FOOD_ARMY_RATION.NAME);
       itemFoodModel1.IsPlural = this.CheckPlural(this.DATA_FOOD_ARMY_RATION.NAME, this.DATA_FOOD_ARMY_RATION.PLURAL);
       itemFoodModel1.StackingLimit = this.DATA_FOOD_ARMY_RATION.STACKINGLIMIT;
       itemFoodModel1.FlavorDescription = this.DATA_FOOD_ARMY_RATION.FLAVOR;
       this[GameItems.IDs.FOOD_ARMY_RATION] = (ItemModel) itemFoodModel1;
       ItemFoodModel itemFoodModel3 = new ItemFoodModel(this.DATA_FOOD_GROCERIES.NAME, this.DATA_FOOD_GROCERIES.PLURAL, "Items\\item_groceries", this.DATA_FOOD_GROCERIES.NUTRITION, this.DATA_FOOD_GROCERIES.BESTBEFORE);
-      itemFoodModel3.IsAn = this.StartsWithVowel(this.DATA_FOOD_GROCERIES.NAME);
       itemFoodModel3.IsPlural = this.CheckPlural(this.DATA_FOOD_GROCERIES.NAME, this.DATA_FOOD_GROCERIES.PLURAL);
       itemFoodModel3.StackingLimit = this.DATA_FOOD_GROCERIES.STACKINGLIMIT;
       itemFoodModel3.FlavorDescription = this.DATA_FOOD_GROCERIES.FLAVOR;
       this[GameItems.IDs.FOOD_GROCERIES] = (ItemModel) itemFoodModel3;
       ItemFoodModel itemFoodModel5 = new ItemFoodModel(this.DATA_FOOD_CANNED_FOOD.NAME, this.DATA_FOOD_CANNED_FOOD.PLURAL, "Items\\item_canned_food", this.DATA_FOOD_CANNED_FOOD.NUTRITION, this.DATA_FOOD_CANNED_FOOD.BESTBEFORE);
-      itemFoodModel5.IsAn = this.StartsWithVowel(this.DATA_FOOD_CANNED_FOOD.NAME);
       itemFoodModel5.IsPlural = this.CheckPlural(this.DATA_FOOD_CANNED_FOOD.NAME, this.DATA_FOOD_CANNED_FOOD.PLURAL);
       itemFoodModel5.StackingLimit = this.DATA_FOOD_CANNED_FOOD.STACKINGLIMIT;
-      itemFoodModel5.IsStackable = true;
       itemFoodModel5.FlavorDescription = this.DATA_FOOD_CANNED_FOOD.FLAVOR;
       this[GameItems.IDs.FOOD_CANNED_FOOD] = (ItemModel) itemFoodModel5;
 
       // melee weapons
       ItemMeleeWeaponModel meleeWeaponModel1 = new ItemMeleeWeaponModel(this.DATA_MELEE_BASEBALLBAT.NAME, this.DATA_MELEE_BASEBALLBAT.PLURAL, "Items\\item_baseballbat", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), this.DATA_MELEE_BASEBALLBAT.ATK, this.DATA_MELEE_BASEBALLBAT.DMG, this.DATA_MELEE_BASEBALLBAT.STA));
       meleeWeaponModel1.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel1.IsStackable = this.DATA_MELEE_BASEBALLBAT.STACKINGLIMIT > 1;
       meleeWeaponModel1.StackingLimit = this.DATA_MELEE_BASEBALLBAT.STACKINGLIMIT;
       meleeWeaponModel1.FlavorDescription = this.DATA_MELEE_BASEBALLBAT.FLAVOR;
       meleeWeaponModel1.IsFragile = this.DATA_MELEE_BASEBALLBAT.ISFRAGILE;
       this[GameItems.IDs.MELEE_BASEBALLBAT] = (ItemModel) meleeWeaponModel1;
       ItemMeleeWeaponModel meleeWeaponModel3 = new ItemMeleeWeaponModel(this.DATA_MELEE_COMBAT_KNIFE.NAME, this.DATA_MELEE_COMBAT_KNIFE.PLURAL, "Items\\item_combat_knife", new Attack(AttackKind.PHYSICAL, new Verb("stab", "stabs"), this.DATA_MELEE_COMBAT_KNIFE.ATK, this.DATA_MELEE_COMBAT_KNIFE.DMG, this.DATA_MELEE_COMBAT_KNIFE.STA));
       meleeWeaponModel3.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel3.IsStackable = true;
       meleeWeaponModel3.StackingLimit = this.DATA_MELEE_COMBAT_KNIFE.STACKINGLIMIT;
       meleeWeaponModel3.FlavorDescription = this.DATA_MELEE_COMBAT_KNIFE.FLAVOR;
       meleeWeaponModel3.IsFragile = this.DATA_MELEE_COMBAT_KNIFE.ISFRAGILE;
       this[GameItems.IDs.MELEE_COMBAT_KNIFE] = (ItemModel) meleeWeaponModel3;
       ItemMeleeWeaponModel meleeWeaponModel5 = new ItemMeleeWeaponModel(this.DATA_MELEE_CROWBAR.NAME, this.DATA_MELEE_CROWBAR.PLURAL, "Items\\item_crowbar", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_CROWBAR.ATK, this.DATA_MELEE_CROWBAR.DMG, this.DATA_MELEE_CROWBAR.STA));
       meleeWeaponModel5.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel5.IsStackable = true;
       meleeWeaponModel5.StackingLimit = this.DATA_MELEE_CROWBAR.STACKINGLIMIT;
       meleeWeaponModel5.FlavorDescription = this.DATA_MELEE_CROWBAR.FLAVOR;
       meleeWeaponModel5.IsFragile = this.DATA_MELEE_CROWBAR.ISFRAGILE;
@@ -756,42 +737,36 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.UNIQUE_JASON_MYERS_AXE] = (ItemModel) meleeWeaponModel7;
       ItemMeleeWeaponModel meleeWeaponModel9 = new ItemMeleeWeaponModel(this.DATA_MELEE_GOLFCLUB.NAME, this.DATA_MELEE_GOLFCLUB.PLURAL, "Items\\item_golfclub", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_GOLFCLUB.ATK, this.DATA_MELEE_GOLFCLUB.DMG, this.DATA_MELEE_GOLFCLUB.STA));
       meleeWeaponModel9.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel9.IsStackable = this.DATA_MELEE_GOLFCLUB.STACKINGLIMIT > 1;
       meleeWeaponModel9.StackingLimit = this.DATA_MELEE_GOLFCLUB.STACKINGLIMIT;
       meleeWeaponModel9.FlavorDescription = this.DATA_MELEE_GOLFCLUB.FLAVOR;
       meleeWeaponModel9.IsFragile = this.DATA_MELEE_GOLFCLUB.ISFRAGILE;
       this[GameItems.IDs.MELEE_GOLFCLUB] = (ItemModel) meleeWeaponModel9;
       ItemMeleeWeaponModel meleeWeaponModel11 = new ItemMeleeWeaponModel(this.DATA_MELEE_IRON_GOLFCLUB.NAME, this.DATA_MELEE_IRON_GOLFCLUB.PLURAL, "Items\\item_iron_golfclub", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_IRON_GOLFCLUB.ATK, this.DATA_MELEE_IRON_GOLFCLUB.DMG, this.DATA_MELEE_IRON_GOLFCLUB.STA));
       meleeWeaponModel11.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel11.IsStackable = this.DATA_MELEE_IRON_GOLFCLUB.STACKINGLIMIT > 1;
       meleeWeaponModel11.StackingLimit = this.DATA_MELEE_IRON_GOLFCLUB.STACKINGLIMIT;
       meleeWeaponModel11.FlavorDescription = this.DATA_MELEE_IRON_GOLFCLUB.FLAVOR;
       meleeWeaponModel11.IsFragile = this.DATA_MELEE_IRON_GOLFCLUB.ISFRAGILE;
       this[GameItems.IDs.MELEE_IRON_GOLFCLUB] = (ItemModel) meleeWeaponModel11;
       ItemMeleeWeaponModel meleeWeaponModel13 = new ItemMeleeWeaponModel(this.DATA_MELEE_HUGE_HAMMER.NAME, this.DATA_MELEE_HUGE_HAMMER.PLURAL, "Items\\item_huge_hammer", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), this.DATA_MELEE_HUGE_HAMMER.ATK, this.DATA_MELEE_HUGE_HAMMER.DMG, this.DATA_MELEE_HUGE_HAMMER.STA));
       meleeWeaponModel13.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel13.IsStackable = this.DATA_MELEE_HUGE_HAMMER.STACKINGLIMIT > 1;
       meleeWeaponModel13.StackingLimit = this.DATA_MELEE_HUGE_HAMMER.STACKINGLIMIT;
       meleeWeaponModel13.FlavorDescription = this.DATA_MELEE_HUGE_HAMMER.FLAVOR;
       meleeWeaponModel13.IsFragile = this.DATA_MELEE_HUGE_HAMMER.ISFRAGILE;
       this[GameItems.IDs.MELEE_HUGE_HAMMER] = (ItemModel) meleeWeaponModel13;
       ItemMeleeWeaponModel meleeWeaponModel15 = new ItemMeleeWeaponModel(this.DATA_MELEE_SHOVEL.NAME, this.DATA_MELEE_SHOVEL.PLURAL, "Items\\item_shovel", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_SHOVEL.ATK, this.DATA_MELEE_SHOVEL.DMG, this.DATA_MELEE_SHOVEL.STA));
       meleeWeaponModel15.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel15.IsStackable = this.DATA_MELEE_SHOVEL.STACKINGLIMIT > 1;
       meleeWeaponModel15.StackingLimit = this.DATA_MELEE_SHOVEL.STACKINGLIMIT;
       meleeWeaponModel15.FlavorDescription = this.DATA_MELEE_SHOVEL.FLAVOR;
       meleeWeaponModel15.IsFragile = this.DATA_MELEE_SHOVEL.ISFRAGILE;
       this[GameItems.IDs.MELEE_SHOVEL] = (ItemModel) meleeWeaponModel15;
       ItemMeleeWeaponModel meleeWeaponModel17 = new ItemMeleeWeaponModel(this.DATA_MELEE_SHORT_SHOVEL.NAME, this.DATA_MELEE_SHORT_SHOVEL.PLURAL, "Items\\item_short_shovel", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_SHORT_SHOVEL.ATK, this.DATA_MELEE_SHORT_SHOVEL.DMG, this.DATA_MELEE_SHORT_SHOVEL.STA));
       meleeWeaponModel17.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel17.IsStackable = this.DATA_MELEE_SHORT_SHOVEL.STACKINGLIMIT > 1;
       meleeWeaponModel17.StackingLimit = this.DATA_MELEE_SHORT_SHOVEL.STACKINGLIMIT;
       meleeWeaponModel17.FlavorDescription = this.DATA_MELEE_SHORT_SHOVEL.FLAVOR;
       meleeWeaponModel17.IsFragile = this.DATA_MELEE_SHORT_SHOVEL.ISFRAGILE;
       this[GameItems.IDs.MELEE_SHORT_SHOVEL] = (ItemModel) meleeWeaponModel17;
       ItemMeleeWeaponModel meleeWeaponModel19 = new ItemMeleeWeaponModel(this.DATA_MELEE_TRUNCHEON.NAME, this.DATA_MELEE_TRUNCHEON.PLURAL, "Items\\item_truncheon", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_TRUNCHEON.ATK, this.DATA_MELEE_TRUNCHEON.DMG, this.DATA_MELEE_TRUNCHEON.STA));
       meleeWeaponModel19.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel19.IsStackable = true;
       meleeWeaponModel19.StackingLimit = this.DATA_MELEE_TRUNCHEON.STACKINGLIMIT;
       meleeWeaponModel19.FlavorDescription = this.DATA_MELEE_TRUNCHEON.FLAVOR;
       meleeWeaponModel19.IsFragile = this.DATA_MELEE_TRUNCHEON.ISFRAGILE;
@@ -799,7 +774,6 @@ namespace djack.RogueSurvivor.Gameplay
       GameItems.MeleeWeaponData meleeWeaponData1 = this.DATA_MELEE_IMPROVISED_CLUB;
       ItemMeleeWeaponModel meleeWeaponModel21 = new ItemMeleeWeaponModel(meleeWeaponData1.NAME, meleeWeaponData1.PLURAL, "Items\\item_improvised_club", new Attack(AttackKind.PHYSICAL, new Verb("strike"), meleeWeaponData1.ATK, meleeWeaponData1.DMG, meleeWeaponData1.STA));
       meleeWeaponModel21.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel21.IsStackable = meleeWeaponData1.STACKINGLIMIT > 1;
       meleeWeaponModel21.StackingLimit = meleeWeaponData1.STACKINGLIMIT;
       meleeWeaponModel21.FlavorDescription = meleeWeaponData1.FLAVOR;
       meleeWeaponModel21.IsFragile = meleeWeaponData1.ISFRAGILE;
@@ -807,7 +781,6 @@ namespace djack.RogueSurvivor.Gameplay
       GameItems.MeleeWeaponData meleeWeaponData2 = this.DATA_MELEE_IMPROVISED_SPEAR;
       ItemMeleeWeaponModel meleeWeaponModel23 = new ItemMeleeWeaponModel(meleeWeaponData2.NAME, meleeWeaponData2.PLURAL, "Items\\item_improvised_spear", new Attack(AttackKind.PHYSICAL, new Verb("pierce"), meleeWeaponData2.ATK, meleeWeaponData2.DMG, meleeWeaponData2.STA));
       meleeWeaponModel23.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel23.IsStackable = meleeWeaponData2.STACKINGLIMIT > 1;
       meleeWeaponModel23.StackingLimit = meleeWeaponData2.STACKINGLIMIT;
       meleeWeaponModel23.FlavorDescription = meleeWeaponData2.FLAVOR;
       meleeWeaponModel23.IsFragile = meleeWeaponData2.ISFRAGILE;
@@ -815,7 +788,6 @@ namespace djack.RogueSurvivor.Gameplay
       GameItems.MeleeWeaponData meleeWeaponData3 = this.DATA_MELEE_SMALL_HAMMER;
       ItemMeleeWeaponModel meleeWeaponModel25 = new ItemMeleeWeaponModel(meleeWeaponData3.NAME, meleeWeaponData3.PLURAL, "Items\\item_small_hammer", new Attack(AttackKind.PHYSICAL, new Verb("smash"), meleeWeaponData3.ATK, meleeWeaponData3.DMG, meleeWeaponData3.STA));
       meleeWeaponModel25.EquipmentPart = DollPart._FIRST;
-      meleeWeaponModel25.IsStackable = meleeWeaponData3.STACKINGLIMIT > 1;
       meleeWeaponModel25.StackingLimit = meleeWeaponData3.STACKINGLIMIT;
       meleeWeaponModel25.FlavorDescription = meleeWeaponData3.FLAVOR;
       meleeWeaponModel25.IsFragile = meleeWeaponData3.ISFRAGILE;
@@ -847,13 +819,11 @@ namespace djack.RogueSurvivor.Gameplay
       ItemRangedWeaponModel rangedWeaponModel1 = new ItemRangedWeaponModel(rangedWeaponData1.NAME, rangedWeaponData1.FLAVOR, "Items\\item_army_pistol", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData1.ATK, rangedWeaponData1.DMG, 0, rangedWeaponData1.RANGE), rangedWeaponData1.MAXAMMO, AmmoType.HEAVY_PISTOL);
       rangedWeaponModel1.EquipmentPart = DollPart._FIRST;
       rangedWeaponModel1.FlavorDescription = rangedWeaponData1.FLAVOR;
-      rangedWeaponModel1.IsAn = true;
       this[GameItems.IDs.RANGED_ARMY_PISTOL] = (ItemModel) rangedWeaponModel1;
       GameItems.RangedWeaponData rangedWeaponData2 = this.DATA_RANGED_ARMY_RIFLE;
       ItemRangedWeaponModel rangedWeaponModel3 = new ItemRangedWeaponModel(rangedWeaponData2.NAME, rangedWeaponData2.FLAVOR, "Items\\item_army_rifle", new Attack(AttackKind.FIREARM, new Verb("fire a salvo at", "fires a salvo at"), rangedWeaponData2.ATK, rangedWeaponData2.DMG, 0, rangedWeaponData2.RANGE), rangedWeaponData2.MAXAMMO, AmmoType.HEAVY_RIFLE);
       rangedWeaponModel3.EquipmentPart = DollPart._FIRST;
       rangedWeaponModel3.FlavorDescription = rangedWeaponData2.FLAVOR;
-      rangedWeaponModel3.IsAn = true;
       this[GameItems.IDs.RANGED_ARMY_RIFLE] = (ItemModel) rangedWeaponModel3;
       GameItems.RangedWeaponData rangedWeaponData3 = this.DATA_RANGED_HUNTING_CROSSBOW;
       ItemRangedWeaponModel rangedWeaponModel5 = new ItemRangedWeaponModel(rangedWeaponData3.NAME, rangedWeaponData3.FLAVOR, "Items\\item_hunting_crossbow", new Attack(AttackKind.BOW, new Verb("shoot"), rangedWeaponData3.ATK, rangedWeaponData3.DMG, 0, rangedWeaponData3.RANGE), rangedWeaponData3.MAXAMMO, AmmoType.BOLT);
@@ -934,7 +904,6 @@ namespace djack.RogueSurvivor.Gameplay
 
       ItemGrenadeModel itemGrenadeModel1 = new ItemGrenadeModel(explosiveData.NAME, explosiveData.PLURAL, "Items\\item_grenade", explosiveData.FUSE, new BlastAttack(explosiveData.RADIUS, damage, true, false), "Icons\\blast", explosiveData.MAXTHROW);
       itemGrenadeModel1.EquipmentPart = DollPart._FIRST;
-      itemGrenadeModel1.IsStackable = true;
       itemGrenadeModel1.StackingLimit = explosiveData.STACKLINGLIMIT;
       itemGrenadeModel1.FlavorDescription = explosiveData.FLAVOR;
       this[GameItems.IDs.EXPLOSIVE_GRENADE] = (ItemModel) itemGrenadeModel1;
@@ -945,7 +914,6 @@ namespace djack.RogueSurvivor.Gameplay
       // carpentry
       GameItems.BarricadingMaterialData barricadingMaterialData = this.DATA_BAR_WOODEN_PLANK;
       ItemBarricadeMaterialModel barricadeMaterialModel1 = new ItemBarricadeMaterialModel(barricadingMaterialData.NAME, barricadingMaterialData.PLURAL, "Items\\item_wooden_plank", barricadingMaterialData.VALUE);
-      barricadeMaterialModel1.IsStackable = barricadingMaterialData.STACKINGLIMIT > 1;
       barricadeMaterialModel1.StackingLimit = barricadingMaterialData.STACKINGLIMIT;
       barricadeMaterialModel1.FlavorDescription = barricadingMaterialData.FLAVOR;
       this[GameItems.IDs.BAR_WOODEN_PLANK] = (ItemModel) barricadeMaterialModel1;
@@ -955,43 +923,36 @@ namespace djack.RogueSurvivor.Gameplay
       ItemBodyArmorModel itemBodyArmorModel1 = new ItemBodyArmorModel(armorData1.NAME, armorData1.PLURAL, "Items\\item_army_bodyarmor", armorData1.PRO_HIT, armorData1.PRO_SHOT, armorData1.ENC, armorData1.WEIGHT);
       itemBodyArmorModel1.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel1.FlavorDescription = armorData1.FLAVOR;
-      itemBodyArmorModel1.IsAn = this.StartsWithVowel(armorData1.NAME);
       this[GameItems.IDs.ARMOR_ARMY_BODYARMOR] = (ItemModel) itemBodyArmorModel1;
       GameItems.ArmorData armorData2 = this.DATA_ARMOR_CHAR;
       ItemBodyArmorModel itemBodyArmorModel3 = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_CHAR_light_bodyarmor", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       itemBodyArmorModel3.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel3.FlavorDescription = armorData2.FLAVOR;
-      itemBodyArmorModel3.IsAn = this.StartsWithVowel(armorData2.NAME);
       this[GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR] = (ItemModel) itemBodyArmorModel3;
       armorData2 = this.DATA_ARMOR_HELLS_SOULS_JACKET;
       ItemBodyArmorModel itemBodyArmorModel5 = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_hells_souls_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       itemBodyArmorModel5.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel5.FlavorDescription = armorData2.FLAVOR;
-      itemBodyArmorModel5.IsAn = this.StartsWithVowel(armorData2.NAME);
       this[GameItems.IDs.ARMOR_HELLS_SOULS_JACKET] = (ItemModel) itemBodyArmorModel5;
       armorData2 = this.DATA_ARMOR_FREE_ANGELS_JACKET;
       ItemBodyArmorModel itemBodyArmorModel7 = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_free_angels_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       itemBodyArmorModel7.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel7.FlavorDescription = armorData2.FLAVOR;
-      itemBodyArmorModel7.IsAn = this.StartsWithVowel(armorData2.NAME);
       this[GameItems.IDs.ARMOR_FREE_ANGELS_JACKET] = (ItemModel) itemBodyArmorModel7;
       armorData2 = this.DATA_ARMOR_POLICE_JACKET;
       ItemBodyArmorModel itemBodyArmorModel9 = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_police_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       itemBodyArmorModel9.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel9.FlavorDescription = armorData2.FLAVOR;
-      itemBodyArmorModel9.IsAn = this.StartsWithVowel(armorData2.NAME);
       this[GameItems.IDs.ARMOR_POLICE_JACKET] = (ItemModel) itemBodyArmorModel9;
       armorData2 = this.DATA_ARMOR_POLICE_RIOT;
       ItemBodyArmorModel itemBodyArmorModel11 = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_police_riot_armor", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       itemBodyArmorModel11.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel11.FlavorDescription = armorData2.FLAVOR;
-      itemBodyArmorModel11.IsAn = this.StartsWithVowel(armorData2.NAME);
       this[GameItems.IDs.ARMOR_POLICE_RIOT] = (ItemModel) itemBodyArmorModel11;
       armorData2 = this.DATA_ARMOR_HUNTER_VEST;
       ItemBodyArmorModel itemBodyArmorModel13 = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_hunter_vest", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       itemBodyArmorModel13.EquipmentPart = DollPart.TORSO;
       itemBodyArmorModel13.FlavorDescription = armorData2.FLAVOR;
-      itemBodyArmorModel13.IsAn = this.StartsWithVowel(armorData2.NAME);
       this[GameItems.IDs.ARMOR_HUNTER_VEST] = (ItemModel) itemBodyArmorModel13;
 
       // trackers
@@ -1093,12 +1054,6 @@ namespace djack.RogueSurvivor.Gameplay
         EquipmentPart = DollPart.LEFT_HAND,
         FlavorDescription = "You got yourself a new job!"
       };
-      for (int index = 0; index < (int) GameItems.IDs._COUNT; ++index)
-      {
-        ItemModel itemModel = this[index];
-        itemModel.IsAn = this.StartsWithVowel(itemModel.SingleName);
-        itemModel.IsStackable = itemModel.StackingLimit > 1;
-      }
     }
 
     private void Notify(IRogueUI ui, string what, string stage)

@@ -9,18 +9,38 @@ namespace djack.RogueSurvivor.Data
   internal class ItemModel
   {
     public int ID { get; set; }
-    public string SingleName { get; private set; }
+    private string m_SingleName;
     public string PluralName { get; private set; }
     public bool IsPlural { get; set; }
-    public bool IsAn { get; set; }
+    public bool IsAn { get; private set; }
     public bool IsProper { get; set; }
     public string ImageID { get; private set; }
     public string FlavorDescription { get; set; }
-    public bool IsStackable { get; set; }
-    public int StackingLimit { get; set; }
+    public bool IsStackable { get; private set; }
+    private int m_StackingLimit;
     public DollPart EquipmentPart { get; set; }
     public bool DontAutoEquip { get; set; }
     public bool IsUnbreakable { get; set; }
+
+    public string SingleName
+    {
+      get { return m_SingleName; }
+      private set
+      {
+         m_SingleName = value;
+         IsAn = StartsWithVowel(value);
+      }
+    }
+
+        public int StackingLimit
+    {
+      get { return m_StackingLimit; }
+      set
+      {
+        m_StackingLimit = value;
+        IsStackable = (2 <= value);
+      }
+    }
 
     public bool IsEquipable
     {
@@ -36,5 +56,11 @@ namespace djack.RogueSurvivor.Data
       PluralName = theNames;
       ImageID = imageID;
     }
-  }
+
+    private bool StartsWithVowel(string name)
+    {
+      return 0 <= "AEIOUaeiou".IndexOf(name[0]);
+    }
+
+    }
 }
