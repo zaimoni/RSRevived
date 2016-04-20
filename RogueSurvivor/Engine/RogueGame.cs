@@ -4447,17 +4447,17 @@ namespace djack.RogueSurvivor.Engine
       if (this.m_Player == null)
         return (Item) null;
       Inventory inventory = this.m_Player.Inventory;
-      Point inventorySlot1 = this.MouseToInventorySlot(680, 160, screen.X, screen.Y);
+      Point inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity)
       {
         inv = inventory;
-        itemPos = this.InventorySlotToScreen(680, 160, inventorySlot1.X, inventorySlot1.Y);
+        itemPos = this.InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1.X, inventorySlot1.Y);
         return inventory[index1];
       }
       Inventory itemsAt = this.m_Player.Location.Map.GetItemsAt(this.m_Player.Location.Position);
-      Point inventorySlot2 = this.MouseToInventorySlot(680, 224, screen.X, screen.Y);
-      itemPos = this.InventorySlotToScreen(680, 224, inventorySlot2.X, inventorySlot2.Y);
+      Point inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
+      itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2.X, inventorySlot2.Y);
       if (itemsAt == null)
         return (Item) null;
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
@@ -4572,8 +4572,8 @@ namespace djack.RogueSurvivor.Engine
       List<Corpse> corpsesAt = this.m_Player.Location.Map.GetCorpsesAt(this.m_Player.Location.Position);
       if (corpsesAt == null)
         return (Corpse) null;
-      Point inventorySlot = this.MouseToInventorySlot(680, 288, screen.X, screen.Y);
-      corpsePos = this.InventorySlotToScreen(680, 288, inventorySlot.X, inventorySlot.Y);
+      Point inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen.X, screen.Y);
+      corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot.X, inventorySlot.Y);
       int index = inventorySlot.X + inventorySlot.Y * 10;
       if (index >= 0 && index < corpsesAt.Count)
         return corpsesAt[index];
@@ -10435,7 +10435,7 @@ namespace djack.RogueSurvivor.Engine
       this.DoStopDraggingCorpses(deadGuy);
       this.UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
-        this.RegenActorSanity(killer, this.m_Rules.ActorSanRegenValue(killer, 60));
+        this.RegenActorSanity(killer, this.m_Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
       if (deadGuy.HasLeader)
       {
         if (this.m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy))
@@ -11460,7 +11460,7 @@ namespace djack.RogueSurvivor.Engine
         this.m_TownGenerator.RecomputeActorStartingStats(actor);
       }
       if (!isStartingGame)
-        this.SeeingCauseInsanity(actor, actor.Location, 60, string.Format("{0} turning into a zombie", (object) deadVictim.Name));
+        this.SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", (object) deadVictim.Name));
       return actor;
     }
 
@@ -11559,9 +11559,9 @@ namespace djack.RogueSurvivor.Engine
                 if (m_Player != null)
                 {
                     if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
-                        DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, 680, 160);
-                    DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, 10, 10, 680, 224);
-                    DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, 680, 288);
+                        DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
+                    DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, 10, 10, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                    DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, INVENTORYPANEL_X, CORPSESPANEL_Y);
                 }
                 if (m_Player != null && m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
                     DrawActorSkillTable(m_Player, 680, 352);
