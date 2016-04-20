@@ -12379,7 +12379,7 @@ namespace djack.RogueSurvivor.Engine
       {
         int maxValue2 = this.m_Rules.ActorMaxSleep(actor);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
-        this.DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, 900, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
+        DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Rules.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (this.m_Rules.IsActorSleepy(actor))
         {

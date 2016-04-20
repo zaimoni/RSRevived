@@ -20,11 +20,11 @@ namespace djack.RogueSurvivor.Gameplay
     private ActorModel[] m_Models = new ActorModel[27];
     public int UNDEAD_FOOD = 4*WorldTime.TURNS_PER_DAY;
     public int HUMAN_HUN = 2*WorldTime.TURNS_PER_DAY;
-    public int HUMAN_SLP = 1800;
+    public int HUMAN_SLP = 30*WorldTime.TURNS_PER_HOUR;
     public int HUMAN_SAN = 4*WorldTime.TURNS_PER_DAY;
     public int HUMAN_INVENTORY = 7;
     public int DOG_HUN = 2*WorldTime.TURNS_PER_DAY;
-    public int DOG_SLP = 1800;
+    public int DOG_SLP = 30*WorldTime.TURNS_PER_HOUR;
     public int DOG_INVENTORY = 1;
     private const int NO_INVENTORY = 0;
     private const int NO_FOOD = 0;

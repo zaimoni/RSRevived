@@ -1544,7 +1544,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsActorSleepy(Actor a)
     {
       if (a.Model.Abilities.HasToSleep)
-        return a.SleepPoints <= 900;
+        return a.SleepPoints <= Rules.SLEEP_SLEEPY_LEVEL;
       return false;
     }
 
@@ -1557,12 +1557,10 @@ namespace djack.RogueSurvivor.Engine
 
     public int SleepToHoursUntilSleepy(int sleep, bool isNight)
     {
-      int num = sleep - 900;
-      if (isNight)
-        num /= 2;
-      if (num <= 0)
-        return 0;
-      return num / 30;
+      int num = sleep - Rules.SLEEP_SLEEPY_LEVEL;
+      if (isNight) num /= 2;
+      if (num <= 0) return 0;
+      return num / WorldTime.TURNS_PER_HOUR;
     }
 
     public bool IsAlmostSleepy(Actor actor)
