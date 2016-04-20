@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
-      this.m_Exploration = new ExplorationData(30, 3);
+      this.m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
     }
 
     protected override void CreateSensors()

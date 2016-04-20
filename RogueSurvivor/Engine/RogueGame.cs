@@ -10940,19 +10940,19 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("- {0} : yes.", (object) GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
       if (!RogueGame.s_Options.AllowUndeadsEvolution)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), RogueGame.s_Options.AllowUndeadsEvolution ? (object) "yes" : (object) "no"));
-      if (RogueGame.s_Options.CitySize != 5)
+      if (RogueGame.s_Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), (object) RogueGame.s_Options.CitySize));
-      if (RogueGame.s_Options.DayZeroUndeadsPercent != 30)
+      if (RogueGame.s_Options.DayZeroUndeadsPercent != GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT)
         textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT), (object) RogueGame.s_Options.DayZeroUndeadsPercent));
-      if (RogueGame.s_Options.DistrictSize != 50)
+      if (RogueGame.s_Options.DistrictSize != GameOptions.DEFAULT_DISTRICT_SIZE)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_DISTRICT_SIZE), (object) RogueGame.s_Options.DistrictSize));
-      if (RogueGame.s_Options.MaxCivilians != 25)
+      if (RogueGame.s_Options.MaxCivilians != GameOptions.DEFAULT_MAX_CIVILIANS)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_CIVILIANS), (object) RogueGame.s_Options.MaxCivilians));
-      if (RogueGame.s_Options.MaxUndeads != 100)
+      if (RogueGame.s_Options.MaxUndeads != GameOptions.DEFAULT_MAX_UNDEADS)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_UNDEADS), (object) RogueGame.s_Options.MaxUndeads));
       if (!RogueGame.s_Options.NPCCanStarveToDeath)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH), RogueGame.s_Options.NPCCanStarveToDeath ? (object) "yes" : (object) "no"));
-      if (RogueGame.s_Options.StarvedZombificationChance != 50)
+      if (RogueGame.s_Options.StarvedZombificationChance != GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE)
         textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), (object) RogueGame.s_Options.StarvedZombificationChance));
       if (!RogueGame.s_Options.RevealStartingDistrict)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), RogueGame.s_Options.RevealStartingDistrict ? (object) "yes" : (object) "no"));
@@ -10960,11 +10960,11 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_DISTRICTS), (object) GameOptions.Name(RogueGame.s_Options.SimulateDistricts)));
       if (RogueGame.s_Options.SimulateWhenSleeping)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), RogueGame.s_Options.SimulateWhenSleeping ? (object) "yes" : (object) "no"));
-      if (RogueGame.s_Options.ZombieInvasionDailyIncrease != 5)
+      if (RogueGame.s_Options.ZombieInvasionDailyIncrease != GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE)
         textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), (object) RogueGame.s_Options.ZombieInvasionDailyIncrease));
-      if (RogueGame.s_Options.ZombificationChance != 100)
+      if (RogueGame.s_Options.ZombificationChance != GameOptions.DEFAULT_ZOMBIFICATION_CHANCE)
         textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE), (object) RogueGame.s_Options.ZombificationChance));
-      if (RogueGame.s_Options.MaxReincarnations != 1)
+      if (RogueGame.s_Options.MaxReincarnations != GameOptions.DEFAULT_MAX_REINCARNATIONS)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), (object) RogueGame.s_Options.MaxReincarnations));
       textFile.Append(" ");
       textFile.Append("> R.I.P");

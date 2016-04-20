@@ -1631,9 +1631,8 @@ namespace djack.RogueSurvivor.Engine
     public int SanityToHoursUntilUnstable(Actor a)
     {
       int num = a.Sanity - this.ActorDisturbedLevel(a);
-      if (num <= 0)
-        return 0;
-      return num / 30;
+      if (num <= 0) return 0;
+      return num / WorldTime.TURNS_PER_HOUR;
     }
 
     public bool CanActorTakeLead(Actor actor, Actor target)

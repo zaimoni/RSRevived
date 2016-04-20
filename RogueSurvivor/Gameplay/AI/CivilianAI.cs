@@ -88,13 +88,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
-      this.m_SafeTurns = 0;
-      this.m_Exploration = new ExplorationData(30, 3);
-      this.m_LastEnemySaw = (Percept) null;
-      this.m_LastItemsSaw = (Percept) null;
-      this.m_LastSoldierSaw = (Percept) null;
-      this.m_LastRaidHeard = (Percept) null;
-      this.m_Emotes = (string[]) null;
+      m_SafeTurns = 0;
+      m_Exploration = new ExplorationData(EXPLORATION_MAX_LOCATIONS, EXPLORATION_MAX_ZONES);
+      m_LastEnemySaw = null;
+      m_LastItemsSaw = null;
+      m_LastSoldierSaw = null;
+      m_LastRaidHeard = null;
+      m_Emotes = null;
     }
 
     protected override void CreateSensors()
@@ -617,7 +617,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (this.m_Actor.Model.Abilities.IsLawEnforcer && percepts1 != null && game.Rules.RollChance(30))
+      if (m_Actor.Model.Abilities.IsLawEnforcer && percepts1 != null && game.Rules.RollChance(LAW_ENFORCE_CHANCE))
       {
         Actor target;
         ActorAction actorAction2 = this.BehaviorEnforceLaw(game, percepts1, out target);

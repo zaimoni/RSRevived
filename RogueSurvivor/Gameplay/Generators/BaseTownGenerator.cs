@@ -789,31 +789,28 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         return shopImage;
       }));
       Rectangle rectangle;
-      if (this.m_DiceRoller.RollChance(30))
+      if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE))
       {
         int x2;
         int y2;
-        switch (this.m_DiceRoller.Roll(0, 4))
+        rectangle = b.BuildingRect;
+        switch (m_DiceRoller.Roll(0, 4))
         {
           case 0:
-            x2 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-            y2 = b.BuildingRect.Top;
+            x2 = rectangle.Left + rectangle.Width / 2;
+            y2 = rectangle.Top;
             break;
           case 1:
-            x2 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-            rectangle = b.BuildingRect;
+            x2 = rectangle.Left + rectangle.Width / 2;
             y2 = rectangle.Bottom - 1;
             break;
           case 2:
-            x2 = b.BuildingRect.Left;
-            int top2 = b.BuildingRect.Top;
-            rectangle = b.BuildingRect;
-            int num = rectangle.Height / 2;
-            y2 = top2 + num;
+            x2 = rectangle.Left;
+            y2 = rectangle.Top + rectangle.Height / 2;
             break;
           case 3:
-            x2 = b.BuildingRect.Right - 1;
-            y2 = b.BuildingRect.Top + b.BuildingRect.Height / 2;
+            x2 = rectangle.Right - 1;
+            y2 = rectangle.Top + rectangle.Height / 2;
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled side");
@@ -835,13 +832,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }), (Func<Point, Item>) (pt => this.MakeRandomShopItem(shopType)));
       map.AddZone(this.MakeUniqueZone(basename, b.BuildingRect));
       this.MakeWalkwayZones(map, b);
-      if (this.m_DiceRoller.RollChance(30))
+      if (this.m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE))
       {
         int seed = map.Seed << 1 ^ basename.GetHashCode();
         string name = "basement-" + basename;
         rectangle = b.BuildingRect;
         int width = rectangle.Width;
-        rectangle = b.BuildingRect;
         int height = rectangle.Height;
         Map shopBasement = new Map(seed, name, width, height)
         {
@@ -855,17 +851,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         {
           if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.GetExitAt(pt) != null)
             return;
-          if (this.m_DiceRoller.RollChance(5))
+          if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE))
           {
             shopBasement.PlaceMapObjectAt(this.MakeObjShelf("MapObjects\\shop_shelf"), pt);
-            if (this.m_DiceRoller.RollChance(33))
+            if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF))
             {
-              Item it = this.MakeRandomShopItem(shopType);
+              Item it = MakeRandomShopItem(shopType);
               if (it != null)
                 shopBasement.DropItemAt(it, pt);
             }
           }
-          if (!Rules.HasZombiesInBasements(this.m_Game.Session.GameMode) || !this.m_DiceRoller.RollChance(5))
+          if (!Rules.HasZombiesInBasements(this.m_Game.Session.GameMode) || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE))
             return;
           shopBasement.PlaceActorAt(this.CreateNewBasementRatZombie(0), pt);
         }));
@@ -1316,7 +1312,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
         while (!flag);
       }
-      if (this.m_DiceRoller.RollChance(30))
+      if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE))
         this.m_Params.District.AddUniqueMap(this.GenerateHouseBasementMap(map, b));
       map.AddZone(this.MakeUniqueZone("Housing", b.BuildingRect));
       this.MakeWalkwayZones(map, b);

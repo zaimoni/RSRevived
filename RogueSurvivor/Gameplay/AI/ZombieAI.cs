@@ -31,9 +31,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
-      if (!this.m_Actor.Model.Abilities.ZombieAI_Explore)
-        return;
-      this.m_Exploration = new ExplorationData(30, 3);
+      if (!this.m_Actor.Model.Abilities.ZombieAI_Explore) return;
+      m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
     }
 
     protected override void CreateSensors()
