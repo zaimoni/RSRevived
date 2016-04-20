@@ -2975,10 +2975,10 @@ namespace djack.RogueSurvivor.Engine
     private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
     {
       a.TrustInLeader += mod;
-      if (a.TrustInLeader > 1440)
-        a.TrustInLeader = 1440;
-      else if (a.TrustInLeader < -360)
-        a.TrustInLeader = -360;
+      if (a.TrustInLeader > Rules.TRUST_MAX)
+        a.TrustInLeader = Rules.TRUST_MAX;
+      else if (a.TrustInLeader < Rules.TRUST_MIN)
+        a.TrustInLeader = Rules.TRUST_MIN;
       if (!addMessage || !a.Leader.IsPlayer)
         return;
       this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("({0} trust with {1})", (object) mod, (object) a.TheName), this.m_Session.WorldTime.TurnCounter, Color.White));
@@ -7500,12 +7500,12 @@ namespace djack.RogueSurvivor.Engine
       {
         if (actor.Leader.IsPlayer)
         {
-          if (actor.TrustInLeader >= 1440)
+          if (actor.TrustInLeader >= Rules.TRUST_BOND_THRESHOLD)
             stringList.Add(string.Format("Trust : BOND."));
-          else if (actor.TrustInLeader >= 1440)
+          else if (actor.TrustInLeader >= Rules.TRUST_MAX)
             stringList.Add("Trust : MAX.");
           else
-            stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", (object) actor.TrustInLeader, (object) 360, (object) 1440));
+            stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", (object) actor.TrustInLeader, (object) Rules.TRUST_TRUSTING_THRESHOLD, (object) Rules.TRUST_MAX));
           OrderableAI orderableAi = aiController as OrderableAI;
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");

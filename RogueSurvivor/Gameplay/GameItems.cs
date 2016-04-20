@@ -1643,7 +1643,7 @@ namespace djack.RogueSurvivor.Gameplay
         {
           NAME = line[1].ParseText(),
           PLURAL = line[2].ParseText(),
-          NUTRITION = (int) (1440.0 * (double) line[3].ParseFloat()),
+          NUTRITION = (int) ((double) Rules.FOOD_BASE_POINTS * (double) line[3].ParseFloat()),
           BESTBEFORE = line[4].ParseInt(),
           STACKINGLIMIT = line[5].ParseInt(),
           FLAVOR = line[6].ParseText()

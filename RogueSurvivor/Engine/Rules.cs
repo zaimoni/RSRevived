@@ -155,8 +155,8 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_NEUTRAL = 0;
     public const int TRUST_TRUSTING_THRESHOLD = 360;
     public const int TRUST_MIN = -360;
-    public const int TRUST_MAX = 1440;
-    public const int TRUST_BOND_THRESHOLD = 1440;
+    public const int TRUST_MAX = 2*WorldTime.TURNS_PER_DAY;
+    public const int TRUST_BOND_THRESHOLD = TRUST_MAX;
     public const int TRUST_BASE_INCREASE = 1;
     public const int TRUST_GOOD_GIFT_INCREASE = 90;
     public const int TRUST_MISC_GIFT_INCREASE = 10;
@@ -1758,9 +1758,9 @@ namespace djack.RogueSurvivor.Engine
     public bool HasActorBondWith(Actor actor, Actor target)
     {
       if (actor.Leader == target)
-        return actor.TrustInLeader >= 1440;
+        return actor.TrustInLeader >= TRUST_BOND_THRESHOLD;
       if (target.Leader == actor)
-        return target.TrustInLeader >= 1440;
+        return target.TrustInLeader >= TRUST_BOND_THRESHOLD;
       return false;
     }
 
@@ -2172,7 +2172,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorDisturbedLevel(Actor actor)
     {
-      return (int) (1440.0 * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(17)));
+      return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(17)));
     }
 
     public int ActorMaxInv(Actor actor)

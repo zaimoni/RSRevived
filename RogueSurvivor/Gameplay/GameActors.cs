@@ -18,12 +18,12 @@ namespace djack.RogueSurvivor.Gameplay
   {
     private static readonly Verb VERB_PUNCH = new Verb("punch", "punches");
     private ActorModel[] m_Models = new ActorModel[27];
-    public int UNDEAD_FOOD = 2880;
-    public int HUMAN_HUN = 1440;
+    public int UNDEAD_FOOD = 4*WorldTime.TURNS_PER_DAY;
+    public int HUMAN_HUN = 2*WorldTime.TURNS_PER_DAY;
     public int HUMAN_SLP = 1800;
-    public int HUMAN_SAN = 2880;
+    public int HUMAN_SAN = 4*WorldTime.TURNS_PER_DAY;
     public int HUMAN_INVENTORY = 7;
-    public int DOG_HUN = 1440;
+    public int DOG_HUN = 2*WorldTime.TURNS_PER_DAY;
     public int DOG_SLP = 1800;
     public int DOG_INVENTORY = 1;
     private const int NO_INVENTORY = 0;
