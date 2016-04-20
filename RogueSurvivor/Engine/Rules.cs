@@ -122,9 +122,9 @@ namespace djack.RogueSurvivor.Engine
     public const int SANITY_NIGHTMARE_SAN_LOSS = WorldTime.TURNS_PER_HOUR;
     public const int SANITY_INSANE_ACTION_CHANCE = 5;
     public const int SANITY_HIT_BUTCHERING_CORPSE = WorldTime.TURNS_PER_HOUR;
-    public const int SANITY_HIT_UNDEAD_EATING_CORPSE = 60;
-    public const int SANITY_HIT_LIVING_EATING_CORPSE = 120;
-    public const int SANITY_HIT_EATEN_ALIVE = 120;
+    public const int SANITY_HIT_UNDEAD_EATING_CORPSE = 2*WorldTime.TURNS_PER_HOUR;
+    public const int SANITY_HIT_LIVING_EATING_CORPSE = 4*WorldTime.TURNS_PER_HOUR;
+    public const int SANITY_HIT_EATEN_ALIVE = 4*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_HIT_ZOMBIFY = 60;
     public const int SANITY_HIT_BOND_DEATH = 8*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_RECOVER_KILL_UNDEAD = 60;

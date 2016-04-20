@@ -1413,7 +1413,7 @@ namespace djack.RogueSurvivor.Engine
         this.m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
         this.m_UI.UI_Repaint();
-        this.m_Manual.FormatLines(120);
+        m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
         this.m_UI.UI_Clear(Color.Black);
         this.m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy2, new Color?());
         this.m_UI.UI_Repaint();
@@ -4727,7 +4727,7 @@ namespace djack.RogueSurvivor.Engine
         a.FoodPoints = Math.Min(a.FoodPoints + this.m_Rules.ActorBiteNutritionValue(a, num), this.m_Rules.ActorMaxFood(a));
         this.InfectActor(a, this.m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
       }
-      this.SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? 60 : 120, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
+      this.SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
     }
 
     public void DoReviveCorpse(Actor actor, Corpse corpse)
@@ -9021,7 +9021,7 @@ namespace djack.RogueSurvivor.Engine
             }
             this.KillActor(attacker, defender, "hit");
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
-              this.SeeingCauseInsanity(attacker, attacker.Location, 120, string.Format("{0} eaten alive", (object) defender.Name));
+              SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", (object) defender.Name));
             if (Rules.HasImmediateZombification(this.m_Session.GameMode) || defender == this.m_Player)
             {
               if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && this.m_Rules.RollChance(RogueGame.s_Options.ZombificationChance))
@@ -10994,7 +10994,7 @@ namespace djack.RogueSurvivor.Engine
       this.DrawFootnote(Color.White, "press ENTER");
       this.m_UI.UI_Repaint();
       this.WaitEnter();
-      textFile.FormatLines(120);
+      textFile.FormatLines(TEXTFILE_CHARS_PER_LINE);
       int index = 0;
       do
       {
@@ -12591,7 +12591,7 @@ namespace djack.RogueSurvivor.Engine
         {
           num = 0;
           gy1 = gy;
-          gx1 += 120;
+          gx1 += TEXTFILE_CHARS_PER_LINE;
         }
         else
           gy1 += 12;
