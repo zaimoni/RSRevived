@@ -405,7 +405,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_KillPoints += Models.Actors[id].ScoreValue;
       if (this.m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[id].Abilities.IsUndead)
         return;
-      this.m_KillPoints += 360;
+      m_KillPoints += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD;
     }
 
     public void AddSighting(int actorModelID, int turn)

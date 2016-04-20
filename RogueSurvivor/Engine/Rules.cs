@@ -1752,7 +1752,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (!actor.HasLeader)
         return false;
-      return actor.TrustInLeader >= 360;
+      return actor.TrustInLeader >= TRUST_TRUSTING_THRESHOLD;
     }
 
     public bool HasActorBondWith(Actor actor, Actor target)

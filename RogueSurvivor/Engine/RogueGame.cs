@@ -4763,7 +4763,7 @@ namespace djack.RogueSurvivor.Engine
             this.DoSay(corpse.DeadGuy, actor, "Thank you, you saved my life!", RogueGame.Sayflags.NONE);
           if (this.m_Rules.IsEnemyOf(actor, corpse.DeadGuy))
             return;
-          corpse.DeadGuy.AddTrustIn(actor, 360);
+          corpse.DeadGuy.AddTrustIn(actor, Rules.TRUST_REVIVE_BONUS);
         }
         else
         {
