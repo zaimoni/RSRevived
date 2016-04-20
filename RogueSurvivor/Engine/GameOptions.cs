@@ -638,10 +638,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void ResetToDefaultValues()
     {
-      this.m_DistrictSize = 50;
-      this.m_MaxCivilians = 25;
-      this.m_MaxUndeads = 100;
-      this.m_MaxDogs = 0;
+      this.m_DistrictSize = DEFAULT_DISTRICT_SIZE;
+      this.m_MaxCivilians = DEFAULT_MAX_CIVILIANS;
+      this.m_MaxUndeads = DEFAULT_MAX_UNDEADS;
+      this.m_MaxDogs = DEFAULT_MAX_DOGS;
       this.m_PlayMusic = true;
       this.m_MusicVolume = 100;
       this.m_AnimDelay = true;
@@ -652,26 +652,26 @@ namespace djack.RogueSurvivor.Engine
       this.SimulateDistricts = GameOptions.SimRatio.FULL;
       this.m_SimulateWhenSleeping = false;
       this.m_SimThread = true;
-      this.m_SpawnSkeletonChance = 60;
-      this.m_SpawnZombieChance = 30;
-      this.m_SpawnZombieMasterChance = 10;
-      this.m_CitySize = 5;
+      this.m_SpawnSkeletonChance = DEFAULT_SPAWN_SKELETON_CHANCE;
+      this.m_SpawnZombieChance = DEFAULT_SPAWN_ZOMBIE_CHANCE;
+      this.m_SpawnZombieMasterChance = DEFAULT_SPAWN_ZOMBIE_MASTER_CHANCE;
+      this.m_CitySize = DEFAULT_CITY_SIZE;
       this.m_NPCCanStarveToDeath = true;
-      this.m_ZombificationChance = 100;
+      this.m_ZombificationChance = DEFAULT_ZOMBIFICATION_CHANCE;
       this.m_RevealStartingDistrict = true;
       this.m_AllowUndeadsEvolution = true;
-      this.m_DayZeroUndeadsPercent = 30;
-      this.m_ZombieInvasionDailyIncrease = 5;
-      this.m_StarvedZombificationChance = 50;
-      this.m_MaxReincarnations = 1;
+      this.m_DayZeroUndeadsPercent = DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
+      this.m_ZombieInvasionDailyIncrease = DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE;
+      this.m_StarvedZombificationChance = DEFAULT_STARVED_ZOMBIFICATION_CHANCE;
+      this.m_MaxReincarnations = DEFAULT_MAX_REINCARNATIONS;
       this.m_CanReincarnateAsRat = false;
       this.m_CanReincarnateToSewers = false;
       this.m_IsLivingReincRestricted = false;
       this.m_Permadeath = false;
       this.m_DeathScreenshot = true;
       this.m_AggressiveHungryCivilians = true;
-      this.m_NatGuardFactor = 100;
-      this.m_SuppliesDropFactor = 100;
+      this.m_NatGuardFactor = DEFAULT_NATGUARD_FACTOR;
+      this.m_SuppliesDropFactor = DEFAULT_SUPPLIESDROP_FACTOR;
       this.m_ShowTargets = true;
       this.m_ShowPlayerTargets = true;
       this.m_ZupDays = GameOptions.ZupDays.THREE;
@@ -907,13 +907,13 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
           return !this.ShowPlayerTargets ? "OFF   (default ON)" : "ON    (default ON)";
         case GameOptions.IDs.GAME_DISTRICT_SIZE:
-          return string.Format("{0:D2}*   (default {1:D2})", (object) this.DistrictSize, (object) 50);
+          return string.Format("{0:D2}*   (default {1:D2})", (object) this.DistrictSize, (object) DEFAULT_DISTRICT_SIZE);
         case GameOptions.IDs.GAME_MAX_CIVILIANS:
-          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxCivilians, (object) 25);
+          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxCivilians, (object) DEFAULT_MAX_CIVILIANS);
         case GameOptions.IDs.GAME_MAX_DOGS:
-          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxDogs, (object) 0);
+          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxDogs, (object) DEFAULT_MAX_DOGS);
         case GameOptions.IDs.GAME_MAX_UNDEADS:
-          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxUndeads, (object) 100);
+          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxUndeads, (object) DEFAULT_MAX_UNDEADS);
         case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
           return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(this.SimulateDistricts), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
         case GameOptions.IDs.GAME_SIMULATE_SLEEP:
@@ -921,7 +921,7 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.GAME_SIM_THREAD:
           return !this.SimThread ? "NO*   (default YES)" : "YES*  (default YES)";
         case GameOptions.IDs.GAME_CITY_SIZE:
-          return string.Format("{0:D2}*   (default {1:D2})", (object) this.CitySize, (object) 5);
+          return string.Format("{0:D2}*   (default {1:D2})", (object) this.CitySize, (object) DEFAULT_CITY_SIZE);
         case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
           return !this.NPCCanStarveToDeath ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
@@ -933,13 +933,13 @@ namespace djack.RogueSurvivor.Engine
             return "---";
           return !this.AllowUndeadsEvolution ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.DayZeroUndeadsPercent, (object) 30);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.DayZeroUndeadsPercent, (object) DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
         case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.ZombieInvasionDailyIncrease, (object) 5);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.ZombieInvasionDailyIncrease, (object) DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE);
         case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.StarvedZombificationChance, (object) 50);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.StarvedZombificationChance, (object) DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
         case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
-          return string.Format("{0:D3}   (default {1:D3})", (object) this.MaxReincarnations, (object) 1);
+          return string.Format("{0:D3}   (default {1:D3})", (object) this.MaxReincarnations, (object) DEFAULT_MAX_REINCARNATIONS);
         case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
           return !this.CanReincarnateAsRat ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
@@ -953,9 +953,9 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
           return !this.IsAggressiveHungryCiviliansOn ? "OFF   (default ON)" : "ON    (default ON)";
         case GameOptions.IDs.GAME_NATGUARD_FACTOR:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.NatGuardFactor, (object) 100);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.NatGuardFactor, (object) DEFAULT_NATGUARD_FACTOR);
         case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.SuppliesDropFactor, (object) 100);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.SuppliesDropFactor, (object) DEFAULT_SUPPLIESDROP_FACTOR);
         case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
           return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(this.ZombifiedsUpgradeDays), (object) GameOptions.Name(GameOptions.ZupDays.THREE));
         case GameOptions.IDs.GAME_RATS_UPGRADE:

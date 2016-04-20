@@ -118,10 +118,10 @@ namespace djack.RogueSurvivor.Engine
     public const int SANITY_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
     public const int SANITY_UNSTABLE_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SANITY_NIGHTMARE_CHANCE = 2;
-    public const int SANITY_NIGHTMARE_SLP_LOSS = 60;
-    public const int SANITY_NIGHTMARE_SAN_LOSS = 30;
+    public const int SANITY_NIGHTMARE_SLP_LOSS = 2*WorldTime.TURNS_PER_HOUR;
+    public const int SANITY_NIGHTMARE_SAN_LOSS = WorldTime.TURNS_PER_HOUR;
     public const int SANITY_INSANE_ACTION_CHANCE = 5;
-    public const int SANITY_HIT_BUTCHERING_CORPSE = 30;
+    public const int SANITY_HIT_BUTCHERING_CORPSE = WorldTime.TURNS_PER_HOUR;
     public const int SANITY_HIT_UNDEAD_EATING_CORPSE = 60;
     public const int SANITY_HIT_LIVING_EATING_CORPSE = 120;
     public const int SANITY_HIT_EATEN_ALIVE = 120;
@@ -158,9 +158,9 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_MAX = 2*WorldTime.TURNS_PER_DAY;
     public const int TRUST_BOND_THRESHOLD = TRUST_MAX;
     public const int TRUST_BASE_INCREASE = 1;
-    public const int TRUST_GOOD_GIFT_INCREASE = 90;
-    public const int TRUST_MISC_GIFT_INCREASE = 10;
-    public const int TRUST_GIVE_ITEM_ORDER_PENALTY = -30;
+    public const int TRUST_GOOD_GIFT_INCREASE = 3*WorldTime.TURNS_PER_HOUR;
+    public const int TRUST_MISC_GIFT_INCREASE = WorldTime.TURNS_PER_HOUR/3;
+    public const int TRUST_GIVE_ITEM_ORDER_PENALTY = -WorldTime.TURNS_PER_HOUR;
     public const int TRUST_LEADER_KILL_ENEMY = 90;
     public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;
     public const int MURDERER_SPOTTING_BASE_CHANCE = 5;
@@ -1595,7 +1595,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "hungry";
         return false;
       }
-      if (actor.SleepPoints >= this.ActorMaxSleep(actor) - 30)
+      if (actor.SleepPoints >= this.ActorMaxSleep(actor) - WorldTime.TURNS_PER_HOUR)
       {
         reason = "not sleepy at all";
         return false;

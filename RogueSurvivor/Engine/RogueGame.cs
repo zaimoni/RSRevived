@@ -2678,7 +2678,7 @@ namespace djack.RogueSurvivor.Engine
               actor.FoodPoints = 0;
             if (this.m_Rules.IsRottingActorStarving(actor))
             {
-              if (this.m_Rules.Roll(0, 1000) < 5)
+              if (m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
               {
                 if (this.IsVisibleToPlayer(actor))
                   this.AddMessage(this.MakeMessage(actor, "is rotting away."));
@@ -2690,21 +2690,21 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             }
-            else if (this.m_Rules.IsRottingActorHungry(actor) && this.m_Rules.Roll(0, 1000) < 5)
+            else if (m_Rules.IsRottingActorHungry(actor) && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               this.DoLooseRandomSkill(actor);
           }
           if (actor.Model.Abilities.HasToSleep)
           {
             if (actor.IsSleeping)
             {
-              if (this.m_Rules.IsActorDisturbed(actor) && this.m_Rules.RollChance(2))
+              if (m_Rules.IsActorDisturbed(actor) && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE))
               {
-                this.DoWakeUp(actor);
-                this.DoShout(actor, "NO! LEAVE ME ALONE!");
-                actor.SleepPoints -= 60;
+                DoWakeUp(actor);
+                DoShout(actor, "NO! LEAVE ME ALONE!");
+                actor.SleepPoints -= Rules.SANITY_NIGHTMARE_SLP_LOSS;
                 if (actor.SleepPoints < 0)
                   actor.SleepPoints = 0;
-                this.SpendActorSanity(actor, 30);
+                SpendActorSanity(actor, Rules.SANITY_NIGHTMARE_SAN_LOSS);
                 if (this.IsVisibleToPlayer(actor))
                   this.AddMessage(this.MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object) this.Conjugate(actor, this.VERB_WAKE_UP))));
                 if (actor.IsPlayer)
@@ -2729,7 +2729,7 @@ namespace djack.RogueSurvivor.Engine
               int num = this.m_Rules.ActorSleepRegen(actor, isOnCouch);
               actor.SleepPoints += num;
               actor.SleepPoints = Math.Min(actor.SleepPoints, this.m_Rules.ActorMaxSleep(actor));
-              if (actor.HitPoints < this.m_Rules.ActorMaxHPs(actor) && this.m_Rules.RollChance((isOnCouch ? 5 : 0) + this.m_Rules.ActorHealChanceBonus(actor)))
+              if (actor.HitPoints < this.m_Rules.ActorMaxHPs(actor) && this.m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + this.m_Rules.ActorHealChanceBonus(actor)))
                 this.RegenActorHitPoints(actor, 2);
               if (this.m_Rules.IsActorHungry(actor) || actor.SleepPoints >= this.m_Rules.ActorMaxSleep(actor))
                 this.DoWakeUp(actor);
@@ -2742,13 +2742,13 @@ namespace djack.RogueSurvivor.Engine
                 if (RogueGame.s_Options.SimThread)
                   Thread.Sleep(10);
               }
-              else if (this.m_Rules.RollChance(10) && this.IsVisibleToPlayer(actor))
+              else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && this.IsVisibleToPlayer(actor))
               {
                 this.AddMessage(this.MakeMessage(actor, string.Format("{0}.", (object) this.Conjugate(actor, this.VERB_SNORE))));
                 this.RedrawPlayScreen();
               }
             }
-            if (this.m_Rules.IsActorExhausted(actor) && this.m_Rules.RollChance(5))
+            if (m_Rules.IsActorExhausted(actor) && this.m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE))
             {
               this.DoStartSleeping(actor);
               if (this.IsVisibleToPlayer(actor))
@@ -2769,10 +2769,10 @@ namespace djack.RogueSurvivor.Engine
           if (actor.HasLeader)
           {
             this.ModifyActorTrustInLeader(actor, this.m_Rules.ActorTrustIncrease(actor.Leader), false);
-            if (this.m_Rules.HasActorBondWith(actor, actor.Leader) && this.m_Rules.RollChance(5))
+            if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE))
             {
-              this.RegenActorSanity(actor, this.m_Rules.ActorSanRegenValue(actor, 30));
-              this.RegenActorSanity(actor.Leader, this.m_Rules.ActorSanRegenValue(actor.Leader, 30));
+              RegenActorSanity(actor, m_Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
+              RegenActorSanity(actor.Leader, m_Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
               if (this.IsVisibleToPlayer(actor))
                 this.AddMessage(this.MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", (object) this.Conjugate(actor, this.VERB_FEEL), (object) actor.Leader.Name, (object) this.HimOrHer(actor))));
               if (this.IsVisibleToPlayer(actor.Leader))
@@ -4686,8 +4686,8 @@ namespace djack.RogueSurvivor.Engine
     public void DoButcherCorpse(Actor a, Corpse c)
     {
       bool player = this.IsVisibleToPlayer(a);
-      this.SpendActorActionPoints(a, 100);
-      this.SeeingCauseInsanity(a, a.Location, 30, string.Format("{0} butchering {1}", (object) a.Name, (object) c.DeadGuy.Name));
+      SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
+      SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", (object) a.Name, (object) c.DeadGuy.Name));
       int num = this.m_Rules.ActorDamageVsCorpses(a);
       if (player)
         this.AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", (object) this.Conjugate(a, this.VERB_BUTCHER), (object) c.DeadGuy.Name, (object) num)));
@@ -4703,7 +4703,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoEatCorpse(Actor a, Corpse c)
     {
       bool player = this.IsVisibleToPlayer(a);
-      this.SpendActorActionPoints(a, 100);
+      SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
       int num = this.m_Rules.ActorDamageVsCorpses(a);
       if (player)
       {
@@ -5831,7 +5831,7 @@ namespace djack.RogueSurvivor.Engine
     {
       this.m_IsPlayerLongWait = true;
       this.m_IsPlayerLongWaitForcedStop = false;
-      this.m_PlayerLongWaitEnd = new WorldTime(this.m_Session.WorldTime.TurnCounter + 30);
+      this.m_PlayerLongWaitEnd = new WorldTime(this.m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
       this.AddMessage(this.MakeMessage(player, string.Format("{0} waiting.", (object) this.Conjugate(player, this.VERB_START))));
       this.RedrawPlayScreen();
     }
@@ -6456,7 +6456,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.DROP_ALL_ITEMS, follower.Location));
       this.DoSay(follower, player, "Well ok...", RogueGame.Sayflags.IS_FREE_ACTION);
-      this.ModifyActorTrustInLeader(follower, follower.Inventory.CountItems * -30, true);
+      ModifyActorTrustInLeader(follower, follower.Inventory.CountItems * Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       return true;
     }
 
@@ -6640,10 +6640,10 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.KEYS_OPTIONS:
           return true;
         case AdvisorHint.NIGHT:
-          return map.LocalTime.TurnCounter >= 30;
+          return map.LocalTime.TurnCounter >= WorldTime.TURNS_PER_HOUR;
         case AdvisorHint.RAIN:
-          if (this.m_Rules.IsWeatherRain(this.m_Session.World.Weather))
-            return map.LocalTime.TurnCounter >= 60;
+          if (m_Rules.IsWeatherRain(m_Session.World.Weather))
+            return map.LocalTime.TurnCounter >= 2*WorldTime.TURNS_PER_HOUR;
           return false;
         case AdvisorHint.ACTOR_MELEE:
           return this.IsAdjacentToEnemy(map, position, this.m_Player);
@@ -9695,7 +9695,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)
     {
-      this.SpendActorActionPoints(actor, 100);
+      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
       if (target.Leader == actor)
       {
         BaseAI baseAi = target.Controller as BaseAI;
@@ -9704,15 +9704,17 @@ namespace djack.RogueSurvivor.Engine
           this.DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
         else
           this.DoSay(target, actor, "Thanks I guess...", RogueGame.Sayflags.IS_FREE_ACTION);
-        this.ModifyActorTrustInLeader(target, flag ? 90 : 10, true);
+        ModifyActorTrustInLeader(target, flag ? Rules.TRUST_GOOD_GIFT_INCREASE : Rules.TRUST_MISC_GIFT_INCREASE, true);
       }
       else if (actor.Leader == target)
       {
-        this.DoSay(target, actor, "Well, here it is...", RogueGame.Sayflags.IS_FREE_ACTION);
-        this.ModifyActorTrustInLeader(actor, -30, true);
+        DoSay(target, actor, "Well, here it is...", RogueGame.Sayflags.IS_FREE_ACTION);
+        ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
-      this.DropItem(actor, gift);
-      this.DoTakeItem(target, actor.Location.Position, gift);
+      // XXX If the ground inventory is not full and item merging happens, gift still exists to C#
+      // so the result is the follower gets the gift while the pile on the ground increases.
+      DropItem(actor, gift);
+      DoTakeItem(target, actor.Location.Position, gift);
       if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(target))
         return;
       this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1} to", (object) this.Conjugate(actor, this.VERB_GIVE), (object) gift.TheName), target));
@@ -9923,7 +9925,7 @@ namespace djack.RogueSurvivor.Engine
         bool player = this.IsVisibleToPlayer(actor);
         if (player)
           this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_EAT), (Item) food));
-        if (!this.m_Rules.IsFoodSpoiled(food, actor.Location.Map.LocalTime.TurnCounter) || !this.m_Rules.RollChance(25))
+        if (!m_Rules.IsFoodSpoiled(food, actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
           return;
         this.DoVomit(actor);
         if (!player)
@@ -9934,9 +9936,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoVomit(Actor actor)
     {
-      actor.StaminaPoints -= 100;
-      actor.SleepPoints = Math.Max(0, actor.SleepPoints - 30);
-      actor.FoodPoints = Math.Max(0, actor.FoodPoints - 30);
+      actor.StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
+      actor.SleepPoints = Math.Max(0, actor.SleepPoints - WorldTime.TURNS_PER_HOUR);
+      actor.FoodPoints = Math.Max(0, actor.FoodPoints - WorldTime.TURNS_PER_HOUR);
       Location location = actor.Location;
       location.Map.GetTileAt(location.Position.X, location.Position.Y).AddDecoration("Tiles\\Decoration\\vomit");
     }
@@ -9956,7 +9958,7 @@ namespace djack.RogueSurvivor.Engine
           return;
         }
       }
-      this.SpendActorActionPoints(actor, 100);
+      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
       actor.HitPoints = Math.Min(actor.HitPoints + this.m_Rules.ActorMedicineEffect(actor, med.Healing), this.m_Rules.ActorMaxHPs(actor));
       actor.StaminaPoints = Math.Min(actor.StaminaPoints + this.m_Rules.ActorMedicineEffect(actor, med.StaminaBoost), this.m_Rules.ActorMaxSTA(actor));
       actor.SleepPoints = Math.Min(actor.SleepPoints + this.m_Rules.ActorMedicineEffect(actor, med.SleepBoost), this.m_Rules.ActorMaxSleep(actor));
@@ -10033,7 +10035,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoRechargeItemBattery(Actor actor, Item it)
     {
-      this.SpendActorActionPoints(actor, 100);
+      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
       if (it is ItemLight)
         (it as ItemLight).Batteries += 30;
       else if (it is ItemTracker)

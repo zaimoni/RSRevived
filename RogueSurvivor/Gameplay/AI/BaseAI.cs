@@ -678,7 +678,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null)
         return (ActorAction) null;
       Item it1 = obj;
-      if (game.Rules.RollChance(30))
+      if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(this.m_Actor, string.Format("{0}! Great!", (object) it1.AName));
       if (position == this.m_Actor.Location.Position)
         return (ActorAction) new ActionTakeItem(this.m_Actor, game, position, it1);
@@ -1193,7 +1193,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (flag2)
       {
-        if (this.m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(30))
+        if (this.m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(this.m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
         if (this.m_Actor.Model.Abilities.CanUseMapObjects)
         {
@@ -1265,7 +1265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction = this.BehaviorChargeEnemy(game, target);
         if (actorAction != null)
         {
-          if (this.m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(30))
+          if (this.m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
             game.DoEmote(this.m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
           this.m_Actor.Activity = Activity.FIGHTING;
           this.m_Actor.TargetActor = target.Percepted as Actor;
