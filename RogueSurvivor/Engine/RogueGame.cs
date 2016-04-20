@@ -8638,7 +8638,7 @@ namespace djack.RogueSurvivor.Engine
           this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(victim.Location.Position), "Icons\\melee_damage"));
           this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(this.MapToScreen(victim.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
           this.RedrawPlayScreen();
-          this.AnimDelay(victim.IsPlayer ? 500 : 250);
+          AnimDelay(victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           this.ClearOverlays();
           this.RedrawPlayScreen();
         }
@@ -9053,7 +9053,7 @@ namespace djack.RogueSurvivor.Engine
             this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
             this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(this.MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
             this.RedrawPlayScreen();
-            this.AnimDelay(flag ? 500 : 250);
+            AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         else if (player2 || player1)
@@ -9061,7 +9061,7 @@ namespace djack.RogueSurvivor.Engine
           this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, attack.Verb), defender, " for no effect."));
           this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
           this.RedrawPlayScreen();
-          this.AnimDelay(flag ? 500 : 250);
+          AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (player2 || player1)
@@ -9069,7 +9069,7 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, this.VERB_MISS), defender));
         this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
         this.RedrawPlayScreen();
-        this.AnimDelay(flag ? 500 : 250);
+        AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
       ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
       if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && this.m_Rules.RollChance(itemMeleeWeapon.IsFragile ? 3 : 1))
@@ -9083,7 +9083,7 @@ namespace djack.RogueSurvivor.Engine
         {
           this.AddMessage(this.MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", (object) itemMeleeWeapon.TheName)));
           this.RedrawPlayScreen();
-          this.AnimDelay(flag ? 500 : 250);
+          AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       this.ClearOverlays();
@@ -9177,7 +9177,7 @@ namespace djack.RogueSurvivor.Engine
               this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\ranged_damage"));
               this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(this.MapToScreen(defender.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
               this.RedrawPlayScreen();
-              this.AnimDelay(flag ? 500 : 250);
+              AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
             }
           }
           else if (player1)
@@ -9185,7 +9185,7 @@ namespace djack.RogueSurvivor.Engine
             this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, attack.Verb), defender, " for no effect."));
             this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
             this.RedrawPlayScreen();
-            this.AnimDelay(flag ? 500 : 250);
+            AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         else if (player1)
@@ -9193,7 +9193,7 @@ namespace djack.RogueSurvivor.Engine
           this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, this.VERB_MISS), defender));
           this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
           this.RedrawPlayScreen();
-          this.AnimDelay(flag ? 500 : 250);
+          AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
         this.ClearOverlays();
       }
@@ -9217,7 +9217,7 @@ namespace djack.RogueSurvivor.Engine
             }
             if (player2)
               this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(point), new Size(32, 32))));
-            this.AnimDelay(attacker.IsPlayer ? 500 : 250);
+            AnimDelay(attacker.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
           this.DoDestroyObject(mapObjectAt);
           return true;
@@ -9292,7 +9292,7 @@ namespace djack.RogueSurvivor.Engine
         if (this.ApplyExplosionWave(location, waveDistance, blastAttack))
         {
           this.RedrawPlayScreen();
-          this.AnimDelay(500);
+          this.AnimDelay(DELAY_NORMAL);
         }
       }
       this.ClearOverlays();
@@ -10207,7 +10207,7 @@ namespace djack.RogueSurvivor.Engine
             if (player2)
               this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(mapObj.Location.Position), "Icons\\melee_damage"));
             this.RedrawPlayScreen();
-            this.AnimDelay(isPlayer ? 500 : 250);
+            AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         else if (flag)
@@ -10413,7 +10413,7 @@ namespace djack.RogueSurvivor.Engine
         {
           this.AddMessage(this.MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
           this.RedrawPlayScreen();
-          this.AnimDelay(actor.IsPlayer ? 500 : 250);
+          this.AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       if (!actor.IsSleeping)
