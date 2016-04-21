@@ -178,6 +178,71 @@ diagonalExit:
         }
     }
 
+    // this version reports on the chess knight move issue
+    public static Direction To(int xFrom, int yFrom, int xTo, int yTo, Direction alt)
+    {
+        int xDelta = xTo - xFrom;
+        int yDelta = yTo - yFrom;
+        int xDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
+        int yDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
+        int dirCode = 3 * xDeltaSgn + yDeltaSgn;
+        alt = null;
+        switch (dirCode)
+        {
+        case -3: return Direction.W;
+        case -1: return Direction.N;
+        case 0: return Direction.NEUTRAL;
+        case 1: return Direction.S;
+        case 3: return Direction.E;
+        }
+        int xAbsDelta = (1 == xDeltaSgn ? xDelta : -xDelta);
+        int yAbsDelta = (1 == yDeltaSgn ? yDelta : -yDelta);
+        if (xAbsDelta == yAbsDelta) goto diagonalExit;
+        bool xABSLTy = xAbsDelta < yAbsDelta;
+        int scale2 = 2 * (xABSLTy ? xAbsDelta : yAbsDelta);
+        int scale1 = (xABSLTy ? yAbsDelta : xAbsDelta);
+        // the pathfinder would need to do more work here.
+        if (scale2 < scale1) goto diagonalExit;
+        if (scale2 == scale1)
+            // Chess knight move: +/- 1, +/-2 or vice versa.
+            switch (dirCode)
+            {
+            default: throw new ArgumentOutOfRangeException("dirCode (knight); legal range -4..4", dirCode.ToString());
+            case -4: alt = Direction.NW; break;
+            case -2: alt = Direction.SW; break;
+            case 2: alt = Direction.NE; break;
+            case 4: alt = Direction.SE; break;
+            };
+        if (xABSLTy)
+           // y dominant: N/S
+           switch (dirCode)
+           {
+           default: throw new ArgumentOutOfRangeException("dirCode (N/S); legal range -4..4", dirCode.ToString());
+           case -4: return Direction.N;
+           case -2: return Direction.S;
+           case 2: return Direction.N;
+           case 4: return Direction.S;
+           };
+        // x dominant: E/W
+        switch (dirCode)
+        {
+        default: throw new ArgumentOutOfRangeException("dirCode (E/W); legal range -4..4", dirCode.ToString());
+        case -4: return Direction.W;
+        case -2: return Direction.W;
+        case 2: return Direction.E;
+        case 4: return Direction.E;
+        };
+diagonalExit:
+        switch (dirCode)
+        {
+        default: throw new ArgumentOutOfRangeException("dirCode (diagonal); legal range -4..4", dirCode.ToString());
+        case -4: return Direction.NW;
+        case -2: return Direction.SW;
+        case 2: return Direction.NE;
+        case 4: return Direction.SE;
+        }
+    }
+
     public static Direction ApproximateFromVector(Point v)
     {
       PointF pointF = (PointF) v;
