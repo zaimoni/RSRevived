@@ -187,7 +187,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         this.TileRectangle(sewers, this.m_Game.GameTiles.FLOOR_SEWER_WATER, block.Rectangle);
       foreach (BaseTownGenerator.Block block in list)
       {
-        if (this.m_DiceRoller.RollChance(50))
+        if (m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE))
         {
           bool flag = false;
           int x1;
@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       foreach (BaseTownGenerator.Block block in list)
       {
-        if (this.m_DiceRoller.RollChance(20) && this.CheckForEachTile(sewers, block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileAt(pt).Model.IsWalkable)))
+        if (m_DiceRoller.RollChance(SEWERS_ROOM_CHANCE) && CheckForEachTile(sewers, block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileAt(pt).Model.IsWalkable)))
         {
           this.TileFill(sewers, this.m_Game.GameTiles.FLOOR_CONCRETE, block.InsideRect);
           Map map1 = sewers;
@@ -345,7 +345,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       this.MapObjectFill(sewers, new Rectangle(0, 0, sewers.Width, sewers.Height), (Func<Point, MapObject>) (pt =>
       {
-        if (!this.m_DiceRoller.RollChance(10))
+        if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE))
           return (MapObject) null;
         if (!sewers.IsWalkable(pt.X, pt.Y))
           return (MapObject) null;
@@ -355,7 +355,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         for (int y = 0; y < sewers.Height; ++y)
         {
-          if (this.m_DiceRoller.RollChance(1) && sewers.IsWalkable(x, y))
+          if (m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE) && sewers.IsWalkable(x, y))
           {
             Item it;
             switch (this.m_DiceRoller.Roll(0, 3))
@@ -380,7 +380,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         for (int y = 0; y < sewers.Height; ++y)
         {
-          if (this.m_DiceRoller.RollChance(10))
+          if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE))
           {
             Tile tileAt = sewers.GetTileAt(x, y);
             if (!tileAt.Model.IsWalkable && this.CountAdjWalkables(sewers, x, y) >= 2)
@@ -480,7 +480,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         for (int y2 = 0; y2 < subway.Height; ++y2)
         {
-          if (this.m_DiceRoller.RollChance(20))
+          if (m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE))
           {
             Tile tileAt = subway.GetTileAt(x2, y2);
             if (!tileAt.Model.IsWalkable && this.CountAdjWalkables(subway, x2, y2) >= 2)
@@ -1222,15 +1222,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       this.MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
-        if (this.m_DiceRoller.RollChance(25))
-          return this.MakeObjTree("MapObjects\\tree");
-        return (MapObject) null;
+        if (m_DiceRoller.RollChance(PARK_TREE_CHANCE))
+          return MakeObjTree("MapObjects\\tree");
+        return null;
       }));
       this.MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
-        if (this.m_DiceRoller.RollChance(5))
-          return this.MakeObjBench("MapObjects\\bench");
-        return (MapObject) null;
+        if (m_DiceRoller.RollChance(PARK_BENCH_CHANCE))
+          return MakeObjBench("MapObjects\\bench");
+        return null;
       }));
       int x;
       int y;
@@ -1258,7 +1258,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       this.ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
       {
         if (map.GetMapObjectAt(pt) == null)
-          return this.m_DiceRoller.RollChance(5);
+          return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
         return false;
       }), (Func<Point, Item>) (pt => this.MakeRandomParkItem()));
       map.AddZone(this.MakeUniqueZone("Park", b.BuildingRect));
@@ -1737,7 +1737,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               return false;
             }), this.m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
-              for (int index = 0; index < 2; ++index)
+              for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index)
               {
                 Item it = this.MakeRandomKitchenItem();
                 if (it != null)
@@ -1771,7 +1771,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             return false;
           }), this.m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
-            for (int index = 0; index < 2; ++index)
+            for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index)
             {
               Item it = this.MakeRandomKitchenItem();
               if (it != null)
@@ -1792,7 +1792,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             return false;
           }), this.m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
-            for (int index = 0; index < 3; ++index)
+            for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index)
             {
               Item it = this.MakeRandomKitchenItem();
               if (it != null)
@@ -2191,7 +2191,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual void PopulateCHAROfficeBuilding(Map map, BaseTownGenerator.Block b)
     {
-      for (int index = 0; index < 3; ++index)
+      for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index)
       {
         Actor newCharGuard = this.CreateNewCHARGuard(0);
         this.ActorPlace(this.m_DiceRoller, 100, map, newCharGuard, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
