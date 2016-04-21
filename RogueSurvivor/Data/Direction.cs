@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
+// XXX C# Point is not a point in a vector space at all.
+// C# Size  is closer (closed under + but doesn't honor left/right multiplication by a scalar)
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -105,6 +108,11 @@ namespace djack.RogueSurvivor.Data
       return new Point(lhs.X + rhs.Vector.X, lhs.Y + rhs.Vector.Y);
     }
 
+    public static Point operator *(int lhs, Direction rhs)
+    {
+        return new Point(lhs * rhs.Vector.X, lhs * rhs.Vector.Y);
+    }
+
     public static Direction FromVector(Point v)
     {
       foreach (Direction direction in Direction.COMPASS)
@@ -179,7 +187,7 @@ diagonalExit:
     }
 
     // this version reports on the chess knight move issue
-    public static Direction To(int xFrom, int yFrom, int xTo, int yTo, Direction alt)
+    public static Direction To(int xFrom, int yFrom, int xTo, int yTo, out Direction alt)
     {
         int xDelta = xTo - xFrom;
         int yDelta = yTo - yFrom;

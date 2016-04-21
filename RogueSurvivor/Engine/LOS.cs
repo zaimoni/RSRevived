@@ -66,6 +66,115 @@ namespace djack.RogueSurvivor.Engine
       return LOS.AsymetricBresenhamTrace(int.MaxValue, map, xFrom, yFrom, xTo, yTo, line, fn);
     }
 
+    public static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
+    {
+#if DEBUG
+        if (0 >= maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
+#endif
+        int xDelta = xTo - xFrom;
+        int yDelta = yTo - yFrom;
+        int xAbsDelta = (0 <= xDelta ? xDelta : -xDelta);
+        int yAbsDelta = (0 <= yDelta ? yDelta : -yDelta);
+        int needRange = (xAbsDelta < yAbsDelta ? yAbsDelta : xAbsDelta);
+        int actualRange = (needRange < maxSteps ? needRange : maxSteps);
+
+        int i = 0;
+        bool ok_1 = true;
+        Direction knightmove;
+        List<Point> line_1 = (null == line ? null : new List<Point>(actualRange + 1));
+        Point point_1 = new Point(xFrom, yFrom);
+        line_1?.Add(new Point(point_1.X, point_1.Y));
+        Direction tmp = Direction.To(xFrom, yFrom, xTo, yTo, out knightmove);
+        if (null != knightmove)
+            {  // two possible paths: slope is +/- 1/2 or +/- 2
+#if DEBUG
+            if (0 != maxSteps % 2) throw new ArgumentOutOfRangeException("knight move: 0 == maxSteps%2", maxSteps.ToString());
+#endif
+            List<Point> line_2 = (null == line ? null : new List<Point>(actualRange + 1));
+            Point point_2 = new Point(xFrom, yFrom);
+            line_2?.Add(new Point(point_2.X, point_2.Y));
+            // the first line is biased towards the primary direction.
+            // the second line is biased towards the diagonal direction
+            bool ok_2 = true;
+            int line_1CMPline_2 = 0;
+            do  {
+                point_1 += tmp;
+                point_2 += knightmove;
+                line_1?.Add(new Point(point_1.X, point_1.Y));
+                line_2?.Add(new Point(point_2.X, point_2.Y));
+                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
+                if (!fn(point_2.X, point_2.Y)) ok_2 = false;
+                if (!ok_1 && ok_2) line_1CMPline_2 = -1;
+                if (ok_1 && !ok_2) line_1CMPline_2 = 1;
+                ++i;
+                point_1 += knightmove;
+                point_2 += tmp;
+                line_1?.Add(new Point(point_1.X, point_1.Y));
+                line_2?.Add(new Point(point_2.X, point_2.Y));
+                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
+                if (!fn(point_2.X, point_2.Y)) ok_2 = false;
+                if (!ok_1 && ok_2) line_1CMPline_2 = -1;
+                if (ok_1 && !ok_2) line_1CMPline_2 = 1;
+            }
+            while (++i < actualRange);
+            if (ok_1)
+                {
+                line = line_1;
+                return needRange <= maxSteps;
+                };
+            if (ok_2)
+                {
+                line = line_2;
+                return needRange <= maxSteps;
+                };
+            line = (0 <= line_1CMPline_2 ? line_1 : line_2);
+            return false;
+            }
+
+        // only one path
+        Point guess = needRange * tmp;
+        Direction offset = Direction.To(guess.X, guess.Y, xTo, yTo);
+        if (offset == Direction.NEUTRAL)
+            {  // cardinal direction
+            do  {
+                point_1 += tmp;
+                line_1?.Add(new Point(point_1.X, point_1.Y));
+                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
+            }
+            while (++i < actualRange);
+            line = line_1;
+            return ok_1 && needRange <= maxSteps;
+            }
+
+        int err_x = xTo - guess.X;
+        int err_y = yTo - guess.Y;
+        int absErr_x = (0 <= err_x ? err_x : -err_x);
+        int absErr_y = (0 <= err_y ? err_y : -err_y);
+        int offBy = (absErr_x < absErr_y ? absErr_y : absErr_x);
+
+        // we need offBy offset steps to make things work
+        int numerator = 0;  // denominator is needRange;
+            do
+            {
+                if (numerator < needRange)
+                {
+                    point_1 += tmp;
+                }
+                else
+                {
+                    point_1 += offset;
+                    numerator -= needRange;
+                }
+                point_1 += (numerator < needRange ? tmp : offset);
+                line_1?.Add(new Point(point_1.X, point_1.Y));
+                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
+                numerator += 2 * offBy;
+            }
+            while (++i < actualRange);
+        line = line_1;
+        return ok_1 && needRange <= maxSteps;
+    }
+
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange)
     {
       Map map = fromLocation.Map;
