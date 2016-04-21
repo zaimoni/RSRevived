@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+//#define ANGBAND
+
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
@@ -79,53 +81,64 @@ namespace djack.RogueSurvivor.Engine
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
 
         int i = 0;
-        bool ok_1 = true;
         Direction knightmove;
         List<Point> line_1 = (null == line ? null : new List<Point>(actualRange + 1));
         Point point_1 = new Point(xFrom, yFrom);
-        line_1?.Add(new Point(point_1.X, point_1.Y));
+        line?.Add(new Point(point_1.X, point_1.Y));
         Direction tmp = Direction.To(xFrom, yFrom, xTo, yTo, out knightmove);
         if (null != knightmove)
             {  // two possible paths: slope is +/- 1/2 or +/- 2
 #if DEBUG
-            if (0 != maxSteps % 2) throw new ArgumentOutOfRangeException("knight move: 0 == maxSteps%2", maxSteps.ToString());
+            if (0 != needRange % 2) throw new ArgumentOutOfRangeException("knight move: 0 == needRange%2", maxSteps.ToString());
 #endif
+            line_1?.Add(new Point(point_1.X, point_1.Y));
             List<Point> line_2 = (null == line ? null : new List<Point>(actualRange + 1));
             Point point_2 = new Point(xFrom, yFrom);
             line_2?.Add(new Point(point_2.X, point_2.Y));
             // the first line is biased towards the primary direction.
             // the second line is biased towards the diagonal direction
+            bool ok_1 = true;
             bool ok_2 = true;
             int line_1CMPline_2 = 0;
             do  {
                 point_1 += tmp;
                 point_2 += knightmove;
-                line_1?.Add(new Point(point_1.X, point_1.Y));
-                line_2?.Add(new Point(point_2.X, point_2.Y));
-                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
-                if (!fn(point_2.X, point_2.Y)) ok_2 = false;
+                if (ok_1 && !fn(point_1.X, point_1.Y)) ok_1 = false;
+                if (ok_2 && !fn(point_2.X, point_2.Y)) ok_2 = false;
                 if (!ok_1 && ok_2) line_1CMPline_2 = -1;
                 if (ok_1 && !ok_2) line_1CMPline_2 = 1;
-                ++i;
+                if (!ok_1 && !ok_2)
+                    {
+                    line = (0 <= line_1CMPline_2 ? line_1 : line_2);
+                    return false;
+                    }
+                if (ok_1) line_1?.Add(new Point(point_1.X, point_1.Y));
+                if (ok_2) line_2?.Add(new Point(point_2.X, point_2.Y));
+                if (++i >= actualRange) break;
                 point_1 += knightmove;
                 point_2 += tmp;
-                line_1?.Add(new Point(point_1.X, point_1.Y));
-                line_2?.Add(new Point(point_2.X, point_2.Y));
-                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
-                if (!fn(point_2.X, point_2.Y)) ok_2 = false;
+                if (ok_1 && !fn(point_1.X, point_1.Y)) ok_1 = false;
+                if (ok_2 && !fn(point_2.X, point_2.Y)) ok_2 = false;
                 if (!ok_1 && ok_2) line_1CMPline_2 = -1;
                 if (ok_1 && !ok_2) line_1CMPline_2 = 1;
-            }
+                if (!ok_1 && !ok_2)
+                    {
+                    line = (0 <= line_1CMPline_2 ? line_1 : line_2);
+                    return false;
+                    }
+                if (ok_1) line_1?.Add(new Point(point_1.X, point_1.Y));
+                if (ok_2) line_2?.Add(new Point(point_2.X, point_2.Y));
+                }
             while (++i < actualRange);
             if (ok_1)
                 {
                 line = line_1;
-                return needRange <= maxSteps;
+                return point_1.X == xTo && point_1.Y == yTo;
                 };
             if (ok_2)
                 {
                 line = line_2;
-                return needRange <= maxSteps;
+                return point_2.X == xTo && point_2.Y == yTo;
                 };
             line = (0 <= line_1CMPline_2 ? line_1 : line_2);
             return false;
@@ -133,17 +146,19 @@ namespace djack.RogueSurvivor.Engine
 
         // only one path
         Point guess = needRange * tmp;
+        guess.X += xFrom;
+        guess.Y += yFrom;
         Direction offset = Direction.To(guess.X, guess.Y, xTo, yTo);
         if (offset == Direction.NEUTRAL)
             {  // cardinal direction
-            do  {
-                point_1 += tmp;
-                line_1?.Add(new Point(point_1.X, point_1.Y));
-                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
-            }
+            do
+                {
+                point_1 = point_1+tmp;
+                if (!fn(point_1.X, point_1.Y)) return false;
+                line?.Add(new Point(point_1.X, point_1.Y));
+                }
             while (++i < actualRange);
-            line = line_1;
-            return ok_1 && needRange <= maxSteps;
+            return point_1.X == xTo && point_1.Y == yTo;
             }
 
         int err_x = xTo - guess.X;
@@ -151,35 +166,50 @@ namespace djack.RogueSurvivor.Engine
         int absErr_x = (0 <= err_x ? err_x : -err_x);
         int absErr_y = (0 <= err_y ? err_y : -err_y);
         int offBy = (absErr_x < absErr_y ? absErr_y : absErr_x);
-
-        // we need offBy offset steps to make things work
         int numerator = 0;  // denominator is needRange;
-            do
+        // react to nearly diagonal
+        if (absErr_x<absErr_y)
             {
-                if (numerator < needRange)
+            if (2 * absErr_x > absErr_y)
                 {
-                    point_1 += tmp;
+                absErr_x = absErr_y - absErr_x;
+                offBy = absErr_x;
+                numerator = -offBy-1;
                 }
-                else
+            }
+        else{
+            if (2 * absErr_y > absErr_x)
                 {
+                absErr_y = absErr_x - absErr_y;
+                offBy = absErr_y;
+                numerator = -offBy-1;
+                }
+            }
+
+        do {
+                numerator += offBy+1;
+                point_1 += tmp;
+                if (numerator>needRange && (point_1.X!=xTo || point_1.Y!=yTo))
+                    {
                     point_1 += offset;
                     numerator -= needRange;
-                }
-                point_1 += (numerator < needRange ? tmp : offset);
-                line_1?.Add(new Point(point_1.X, point_1.Y));
-                if (!fn(point_1.X, point_1.Y)) ok_1 = false;
-                numerator += 2 * offBy;
+                    }
+                if (!fn(point_1.X, point_1.Y)) return false;
+                line?.Add(new Point(point_1.X, point_1.Y));
             }
-            while (++i < actualRange);
-        line = line_1;
-        return ok_1 && needRange <= maxSteps;
+        while (++i < actualRange);
+        return point_1.X == xTo && point_1.Y == yTo;
     }
 
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange)
     {
       Map map = fromLocation.Map;
       Point goal = toPosition;
-      return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>) null, (Func<int, int, bool>) ((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
+#if ANGBAND
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
+#else
+      return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>)null, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
+#endif
     }
 
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition)
@@ -193,14 +223,24 @@ namespace djack.RogueSurvivor.Engine
       Point start = fromLocation.Position;
       Point goal = toPosition;
       bool fireLineClear = true;
-      LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>) ((x, y) =>
-      {
-        if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
-          return true;
-        fireLineClear = false;
-        return true;
-      }));
-      return fireLineClear;
+#if ANGBAND
+            LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            {
+                if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
+                    return true;
+                fireLineClear = false;
+                return true;
+            }), line);
+#else
+            LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>)((x, y) =>
+            {
+                if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
+                    return true;
+                fireLineClear = false;
+                return true;
+            }));
+#endif
+            return fireLineClear;
     }
 
     public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
@@ -209,13 +249,23 @@ namespace djack.RogueSurvivor.Engine
       Point start = fromLocation.Position;
       Point goal = toPosition;
       bool throwLineClear = true;
-      LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>) ((x, y) =>
-      {
-        if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingThrow(x, y))
-          return true;
-        throwLineClear = false;
-        return true;
-      }));
+#if ANGBAND
+            LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            {
+                if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingThrow(x, y))
+                    return true;
+                throwLineClear = false;
+                return true;
+            }), line);
+#else
+                  LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>) ((x, y) =>
+                  {
+                    if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingThrow(x, y))
+                      return true;
+                    throwLineClear = false;
+                    return true;
+                  }));
+#endif
       if (map.IsBlockingThrow(toPosition.X, toPosition.Y))
         throwLineClear = false;
       return throwLineClear;
@@ -226,14 +276,24 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;
       Point goal = toPosition;
-      return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>) null, (Func<int, int, bool>) ((x, y) =>
-      {
-        bool flag = x == goal.X && y == goal.Y || map.IsTransparent(x, y);
-        if (flag)
-          visibleSetRef.Add(new Point(x, y));
-        return flag;
-      }));
-    }
+#if ANGBAND
+            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            {
+                bool flag = x == goal.X && y == goal.Y || map.IsTransparent(x, y);
+                if (flag)
+                    visibleSetRef.Add(new Point(x, y));
+                return flag;
+            }));
+#else
+                  return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>) null, (Func<int, int, bool>) ((x, y) =>
+                  {
+                    bool flag = x == goal.X && y == goal.Y || map.IsTransparent(x, y);
+                    if (flag)
+                      visibleSetRef.Add(new Point(x, y));
+                    return flag;
+                  }));
+#endif
+        }
 
     public static HashSet<Point> ComputeFOVFor(Rules rules, Actor actor, WorldTime time, Weather weather)
     {
@@ -275,6 +335,8 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+#if ANGBAND
+#else
       List<Point> pointList2 = new List<Point>(pointList1.Count);
       foreach (Point point2 in pointList1)
       {
@@ -294,6 +356,7 @@ namespace djack.RogueSurvivor.Engine
       }
       foreach (Point point2 in pointList2)
         visibleSet.Add(point2);
+#endif
       return visibleSet;
     }
   }

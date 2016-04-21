@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Data
         int xDelta = xTo - xFrom;
         int yDelta = yTo - yFrom;
         int xDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
-        int yDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
+        int yDeltaSgn = (0 == yDelta ? 0 : (0 < yDelta ? 1 : -1));
         int dirCode = 3 * xDeltaSgn + yDeltaSgn;
         switch (dirCode)
         {
@@ -192,7 +192,7 @@ diagonalExit:
         int xDelta = xTo - xFrom;
         int yDelta = yTo - yFrom;
         int xDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
-        int yDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
+        int yDeltaSgn = (0 == yDelta ? 0 : (0 < yDelta ? 1 : -1));
         int dirCode = 3 * xDeltaSgn + yDeltaSgn;
         alt = null;
         switch (dirCode)
