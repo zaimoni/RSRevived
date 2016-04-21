@@ -108,6 +108,11 @@ namespace djack.RogueSurvivor.Data
       return new Point(lhs.X + rhs.Vector.X, lhs.Y + rhs.Vector.Y);
     }
 
+    public static Point operator -(Point lhs, Direction rhs)
+    {
+      return new Point(lhs.X - rhs.Vector.X, lhs.Y - rhs.Vector.Y);
+    }
+
     public static Point operator *(int lhs, Direction rhs)
     {
         return new Point(lhs * rhs.Vector.X, lhs * rhs.Vector.Y);
