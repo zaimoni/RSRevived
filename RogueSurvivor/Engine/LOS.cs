@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-//#define ANGBAND
+#define ANGBAND
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -79,126 +79,52 @@ namespace djack.RogueSurvivor.Engine
         int yAbsDelta = (0 <= yDelta ? yDelta : -yDelta);
         int needRange = (xAbsDelta < yAbsDelta ? yAbsDelta : xAbsDelta);
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
+        int minAbsDelta = (xAbsDelta < yAbsDelta) ? xAbsDelta : yAbsDelta;
+        int maxAbsDelta = (xAbsDelta < yAbsDelta) ? yAbsDelta : xAbsDelta;
 
-        int i = 0;
         Direction knightmove;
-        List<Point> line_1 = (null == line ? null : new List<Point>(actualRange + 1));
-        Point point_1 = new Point(xFrom, yFrom);
-        line?.Add(new Point(point_1.X, point_1.Y));
-        Direction tmp = Direction.To(xFrom, yFrom, xTo, yTo, out knightmove);
-        if (null != knightmove)
-            {  // two possible paths: slope is +/- 1/2 or +/- 2
-#if DEBUG
-            if (0 != needRange % 2) throw new ArgumentOutOfRangeException("knight move: 0 == needRange%2", maxSteps.ToString());
-#endif
-            line_1?.Add(new Point(point_1.X, point_1.Y));
-            List<Point> line_2 = (null == line ? null : new List<Point>(actualRange + 1));
-            Point point_2 = new Point(xFrom, yFrom);
-            line_2?.Add(new Point(point_2.X, point_2.Y));
-            // the first line is biased towards the primary direction.
-            // the second line is biased towards the diagonal direction
-            bool ok_1 = true;
-            bool ok_2 = true;
-            int line_1CMPline_2 = 0;
-            do  {
-                point_1 += tmp;
-                point_2 += knightmove;
-                if (ok_1 && !fn(point_1.X, point_1.Y)) ok_1 = false;
-                if (ok_2 && !fn(point_2.X, point_2.Y)) ok_2 = false;
-                if (!ok_1 && ok_2) line_1CMPline_2 = -1;
-                if (ok_1 && !ok_2) line_1CMPline_2 = 1;
-                if (!ok_1 && !ok_2)
-                    {
-                    line = (0 <= line_1CMPline_2 ? line_1 : line_2);
-                    return false;
-                    }
-                if (ok_1) line_1?.Add(new Point(point_1.X, point_1.Y));
-                if (ok_2) line_2?.Add(new Point(point_2.X, point_2.Y));
-                if (++i >= actualRange) break;
-                point_1 += knightmove;
-                point_2 += tmp;
-                if (ok_1 && !fn(point_1.X, point_1.Y)) ok_1 = false;
-                if (ok_2 && !fn(point_2.X, point_2.Y)) ok_2 = false;
-                if (!ok_1 && ok_2) line_1CMPline_2 = -1;
-                if (ok_1 && !ok_2) line_1CMPline_2 = 1;
-                if (!ok_1 && !ok_2)
-                    {
-                    line = (0 <= line_1CMPline_2 ? line_1 : line_2);
-                    return false;
-                    }
-                if (ok_1) line_1?.Add(new Point(point_1.X, point_1.Y));
-                if (ok_2) line_2?.Add(new Point(point_2.X, point_2.Y));
-                }
-            while (++i < actualRange);
-            if (ok_1)
-                {
-                line = line_1;
-                return point_1.X == xTo && point_1.Y == yTo;
-                };
-            if (ok_2)
-                {
-                line = line_2;
-                return point_2.X == xTo && point_2.Y == yTo;
-                };
-            line = (0 <= line_1CMPline_2 ? line_1 : line_2);
-            return false;
-            }
-
-        // only one path
-        Point guess = needRange * tmp;
-        guess.X += xFrom;
-        guess.Y += yFrom;
-        Direction offset = Direction.To(guess.X, guess.Y, xTo, yTo);
+        Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out knightmove);
+        Point start = new Point(xFrom, yFrom);
+        line?.Add(new Point(start.X, start.Y));
+        Point end = needRange * tmp;    // estimate here
+        end.X += xFrom;
+        end.Y += yFrom;
+        Direction offset = Direction.To(end.X, end.Y, xTo, yTo);
+        int i = 0;
         if (offset == Direction.NEUTRAL)
             {  // cardinal direction
-            do
-                {
-                point_1 = point_1+tmp;
-                if (!fn(point_1.X, point_1.Y)) return false;
-                line?.Add(new Point(point_1.X, point_1.Y));
+            do  {
+                start += tmp;
+                if (!fn(start.X, start.Y)) return false;
+                line?.Add(new Point(start.X, start.Y));
                 }
             while (++i < actualRange);
-            return point_1.X == xTo && point_1.Y == yTo;
+            return start.X == xTo && start.Y == yTo;
             }
+        Direction alt_step = Direction.FromVector(new Point(tmp.Vector.X + offset.Vector.X, tmp.Vector.Y + offset.Vector.Y));
+        Point err = new Point(xTo - end.X, yTo - end.Y);
+        int alt_count = (0 == err.X ? err.Y : err.X);
+        if (0 > alt_count) alt_count = -alt_count;
 
-        int err_x = xTo - guess.X;
-        int err_y = yTo - guess.Y;
-        int absErr_x = (0 <= err_x ? err_x : -err_x);
-        int absErr_y = (0 <= err_y ? err_y : -err_y);
-        int offBy = (absErr_x < absErr_y ? absErr_y : absErr_x);
-        int numerator = 0;  // denominator is needRange;
-        // react to nearly diagonal
-        if (absErr_x<absErr_y)
-            {
-            if (2 * absErr_x > absErr_y)
-                {
-                absErr_x = absErr_y - absErr_x;
-                offBy = absErr_x;
-                numerator = -offBy-1;
-                }
-            }
-        else{
-            if (2 * absErr_y > absErr_x)
-                {
-                absErr_y = absErr_x - absErr_y;
-                offBy = absErr_y;
-                numerator = -offBy-1;
-                }
-            }
+        // center to center spread is: 2 4 6 8,...
+        // but we cross over at 1,1 3, 1 3 5, ...
 
-        do {
-                numerator += offBy+1;
-                point_1 += tmp;
-                if (numerator>needRange && (point_1.X!=xTo || point_1.Y!=yTo))
-                    {
-                    point_1 += offset;
-                    numerator -= needRange;
-                    }
-                if (!fn(point_1.X, point_1.Y)) return false;
-                line?.Add(new Point(point_1.X, point_1.Y));
+        int numerator = needRange;  // denominator is need range
+        do  {
+            numerator += 2*alt_count;
+            if (numerator>2*needRange)
+                {
+                start += alt_step;
+                numerator -= 2*needRange;
+                }
+            else{   // chess knight's move paradox is ==
+                start += tmp;
+                }
+            if (!fn(start.X, start.Y)) return false;
+            line?.Add(new Point(start.X, start.Y));
             }
         while (++i < actualRange);
-        return point_1.X == xTo && point_1.Y == yTo;
+        return start.X == xTo && start.Y == yTo;
     }
 
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange)
