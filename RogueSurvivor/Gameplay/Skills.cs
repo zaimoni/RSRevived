@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class Skills
   {
-    private static string[] s_Names = new string[29];
-    public static Skills.IDs[] UNDEAD_SKILLS = new Skills.IDs[9]
+    private static string[] s_Names = new string[(int) Skills.IDs._COUNT];
+    public static Skills.IDs[] UNDEAD_SKILLS = new Skills.IDs[(int)Skills.IDs._COUNT - (int)Skills.IDs._LAST_LIVING-1]  // \todo adjust this naming when breaking savefile format?
     {
       Skills.IDs._FIRST_UNDEAD,
       Skills.IDs.Z_EATER,
@@ -50,12 +50,12 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Skills.IDs RollLiving(DiceRoller roller)
     {
-      return (Skills.IDs) roller.Roll(0, 20);
+      return (Skills.IDs) roller.Roll(0, (int)Skills.IDs._LAST_LIVING+1);
     }
 
     public static Skills.IDs RollUndead(DiceRoller roller)
     {
-      return (Skills.IDs) roller.Roll(20, 29);
+      return (Skills.IDs) roller.Roll((int)Skills.IDs._FIRST_UNDEAD, (int)Skills.IDs._COUNT);
     }
 
     private static void Notify(IRogueUI ui, string what, string stage)
@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Gameplay
     public static bool LoadSkillsFromCSV(IRogueUI ui, string path)
     {
       Skills.SkillData[] data;
-      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", 6, new Func<CSVLine, Skills.SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[29]
+      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", 6, new Func<CSVLine, Skills.SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
       {
         Skills.IDs._FIRST,
         Skills.IDs.AWAKE,
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Gameplay
         Skills.IDs.Z_TOUGH,
         Skills.IDs.Z_TRACKER
       }, out data);
-      for (int index = 0; index < 29; ++index)
+      for (int index = 0; index < (int)Skills.IDs._COUNT; ++index)
         Skills.s_Names[index] = data[index].NAME;
       Skills.SkillData skillData1 = data[0];
       Rules.SKILL_AGILE_ATK_BONUS = (int) skillData1.VALUE1;
