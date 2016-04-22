@@ -15,7 +15,9 @@ namespace djack.RogueSurvivor.Engine
 {
   internal static class LOS
   {
-    public static bool AsymetricBresenhamTrace(int maxSteps, Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
+#if ANGBAND
+#else
+    private static bool AsymetricBresenhamTrace(int maxSteps, Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
     {
       int num1 = Math.Abs(xTo - xFrom) << 1;
       int num2 = Math.Abs(yTo - yFrom) << 1;
@@ -63,12 +65,14 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public static bool AsymetricBresenhamTrace(Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
+    private static bool AsymetricBresenhamTrace(Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
     {
       return LOS.AsymetricBresenhamTrace(int.MaxValue, map, xFrom, yFrom, xTo, yTo, line, fn);
     }
+#endif
 
-    public static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
+#if ANGBAND
+    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (0 >= maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
@@ -109,23 +113,54 @@ namespace djack.RogueSurvivor.Engine
         // center to center spread is: 2 4 6 8,...
         // but we cross over at 1,1 3, 1 3 5, ...
 
-        int numerator = needRange;  // denominator is need range
+        int knightmove_parity = 0;
+        int numerator = 0;  // denominator is need range
         do  {
             numerator += 2*alt_count;
-            if (numerator>2*needRange)
+            if (numerator>needRange)
                 {
                 start += alt_step;
                 numerator -= 2*needRange;
+                if (!fn(start.X, start.Y)) return false;
+                line?.Add(new Point(start.X, start.Y));
+                continue;
                 }
-            else{   // chess knight's move paradox is ==
+            else if (numerator < needRange)
+                {
                 start += tmp;
+                if (!fn(start.X, start.Y)) return false;
+                line?.Add(new Point(start.X, start.Y));
+                continue;
+                };
+            if (0==knightmove_parity)
+                {   // chess knight's move paradox: for distance 2, we have +/1 +/2
+                start += tmp;
+                if (!fn(start.X, start.Y)) knightmove_parity = -1;
+                start -= tmp;
                 }
+            if (0==knightmove_parity)
+                {   // chess knight's move paradox: for distance 2, we have +/1 +/2
+                start += alt_step;
+                if (!fn(start.X, start.Y)) knightmove_parity = 1;
+                start -= alt_step;
+                }
+            if (-1==knightmove_parity)
+                {
+                start += alt_step;
+                numerator -= 2 * needRange;
+                if (!fn(start.X, start.Y)) return false;
+                line?.Add(new Point(start.X, start.Y));
+                continue;
+                }
+            knightmove_parity = 1;
+            start += tmp;
             if (!fn(start.X, start.Y)) return false;
             line?.Add(new Point(start.X, start.Y));
             }
         while (++i < actualRange);
         return start.X == xTo && start.Y == yTo;
     }
+#endif
 
     public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange)
     {
@@ -261,8 +296,8 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-#if ANGBAND
-#else
+
+      // Postprocess map objects and tiles whose edges would reasonably be seen
       List<Point> pointList2 = new List<Point>(pointList1.Count);
       foreach (Point point2 in pointList1)
       {
@@ -282,8 +317,7 @@ namespace djack.RogueSurvivor.Engine
       }
       foreach (Point point2 in pointList2)
         visibleSet.Add(point2);
-#endif
-      return visibleSet;
+    return visibleSet;
     }
   }
 }
