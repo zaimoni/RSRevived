@@ -52,7 +52,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      HashSet<Point> fov = (this.m_MemLOSSensor.Sensor as LOSSensor).FOV;
       List<Percept> percepts1 = this.FilterSameMap(game, percepts);
       if (this.m_Actor.Model.Abilities.ZombieAI_Explore)
         this.m_Exploration.Update(this.m_Actor.Location);

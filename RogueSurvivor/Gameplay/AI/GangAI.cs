@@ -71,11 +71,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = this.FilterCurrent(game, percepts2);
-      HashSet<Point> fov = this.m_LOSSensor.FOV;
       bool flag1 = perceptList != null;
       bool flag2 = percepts2 != null;
       bool flag3 = this.m_Actor.HasLeader && !this.DontFollowLeader;
-      bool hasVisibleLeader = flag3 && fov.Contains(this.m_Actor.Leader.Location.Position);
+      bool hasVisibleLeader = flag3 && this.m_LOSSensor.FOV.Contains(this.m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag3 && this.IsAdjacentToEnemy(game, this.m_Actor.Leader);
       bool flag4 = !game.Rules.IsActorTired(this.m_Actor);
       this.m_Exploration.Update(this.m_Actor.Location);
@@ -267,7 +266,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (flag3)
       {
         Point position = this.m_Actor.Leader.Location.Position;
-        bool isVisible = fov.Contains(this.m_Actor.Leader.Location.Position);
+        bool isVisible = this.m_LOSSensor.FOV.Contains(position);
         int maxDist = this.m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction3 = this.BehaviorFollowActor(game, this.m_Actor.Leader, position, isVisible, maxDist);
         if (actorAction3 != null)

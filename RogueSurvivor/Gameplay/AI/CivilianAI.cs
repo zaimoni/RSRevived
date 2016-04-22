@@ -482,12 +482,8 @@ label_10:
       }
       if (flag2)
       {
-        location = this.m_Actor.Leader.Location;
-        Point position1 = location.Position;
-        HashSet<Point> fov = this.m_LOSSensor.FOV;
-        location = this.m_Actor.Leader.Location;
-        Point position2 = location.Position;
-        bool isVisible = fov.Contains(position2);
+        Point position1 = this.m_Actor.Leader.Location.Position;
+        bool isVisible = this.m_LOSSensor.FOV.Contains(position1);
         int maxDist = this.m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction2 = this.BehaviorFollowActor(game, this.m_Actor.Leader, position1, isVisible, maxDist);
         if (actorAction2 != null)
@@ -642,10 +638,7 @@ label_10:
             }
             else
             {
-              HashSet<Point> fov = this.m_LOSSensor.FOV;
-              location = target.Location;
-              Point position1 = location.Position;
-              if (fov.Contains(position1))
+              if (this.m_LOSSensor.FOV.Contains(target.Location.Position))
                 game.DoEmote(this.m_Actor, string.Format("Come on {0}! Hurry up!", (object) target.Name));
               else
                 game.DoEmote(this.m_Actor, string.Format("Where the hell is {0}?", (object) target.Name));
