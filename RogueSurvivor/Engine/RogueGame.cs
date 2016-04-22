@@ -4900,8 +4900,7 @@ namespace djack.RogueSurvivor.Engine
       Inventory inv;
       Point itemPos;
       Item inventoryItem = this.MouseToInventoryItem(screen, out inv, out itemPos);
-      if (inv == null || inv != player.Inventory || inventoryItem == null)
-        return false;
+      if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag1 = true;
       bool flag2 = false;
       this.ClearOverlays();
@@ -4946,8 +4945,7 @@ namespace djack.RogueSurvivor.Engine
       Inventory inv;
       Point itemPos;
       Item inventoryItem = this.MouseToInventoryItem(screen, out inv, out itemPos);
-      if (inv == null || inv != player.Inventory || inventoryItem == null)
-        return false;
+      if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag1 = true;
       bool flag2 = false;
       this.ClearOverlays();
@@ -9434,8 +9432,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void ExplosionChainReaction(Inventory inv, Location location)
     {
-      if (inv == null || inv.IsEmpty)
-        return;
+      if (inv == null || inv.IsEmpty) return;
       List<ItemExplosive> itemExplosiveList = (List<ItemExplosive>) null;
       List<ItemPrimedExplosive> itemPrimedExplosiveList = (List<ItemPrimedExplosive>) null;
       foreach (Item obj in inv.Items)

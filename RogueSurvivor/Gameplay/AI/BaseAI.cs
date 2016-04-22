@@ -1969,26 +1969,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool HasAnyInterestingItem(RogueGame game, Inventory inv)
     {
-      if (inv == null)
-        return false;
-      foreach (Item it in inv.Items)
-      {
-        if (this.IsInterestingItem(game, it))
-          return true;
+      if (inv == null) return false;
+      foreach (Item it in inv.Items) {
+        if (IsInterestingItem(game, it)) return true;
       }
       return false;
     }
 
     protected Item FirstInterestingItem(RogueGame game, Inventory inv)
     {
-      if (inv == null)
-        return (Item) null;
-      foreach (Item it in inv.Items)
-      {
-        if (this.IsInterestingItem(game, it))
-          return it;
+      if (inv == null) return null;
+      foreach (Item it in inv.Items) {
+        if (IsInterestingItem(game, it)) return it;
       }
-      return (Item) null;
+      return null;
     }
 
     protected bool HasEnoughFoodFor(RogueGame game, int nutritionNeed)
