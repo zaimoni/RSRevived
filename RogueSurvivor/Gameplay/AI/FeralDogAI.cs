@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (this.m_Actor.HasLeader)
       {
         Point position = this.m_Actor.Leader.Location.Position;
-        int maxDist = this.m_Actor.Leader.IsPlayer ? 1 : 1;
+        int maxDist = this.m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction = this.BehaviorFollowActor(game, this.m_Actor.Leader, position, flag, maxDist);
         if (actorAction != null)
         {

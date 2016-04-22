@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS), 20);
+      this.m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS), LOS_MEMORY);
       this.m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
       this.m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }

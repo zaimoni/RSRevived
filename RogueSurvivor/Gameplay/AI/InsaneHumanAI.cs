@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction1;
       }
-      if (game.Rules.RollChance(80))
+      if (game.Rules.RollChance(ATTACK_CHANCE))
       {
         List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
         if (percepts2 != null)
@@ -162,13 +162,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (game.Rules.RollChance(80))
+      if (game.Rules.RollChance(SHOUT_CHANCE))
       {
         string text = this.INSANITIES[game.Rules.Roll(0, this.INSANITIES.Length)];
         this.m_Actor.Activity = Activity.IDLE;
         game.DoEmote(this.m_Actor, text);
       }
-      if (game.Rules.RollChance(50))
+      if (game.Rules.RollChance(USE_EXIT_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
         if (actorAction2 != null)

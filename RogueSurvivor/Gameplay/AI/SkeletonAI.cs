@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction;
         }
       }
-      if (game.Rules.RollChance(80))
+      if (game.Rules.RollChance(IDLE_CHANCE))
       {
         this.m_Actor.Activity = Activity.IDLE;
         return (ActorAction) new ActionWait(this.m_Actor, game);

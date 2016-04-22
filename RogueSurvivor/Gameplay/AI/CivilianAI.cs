@@ -283,7 +283,7 @@ label_10:
           }
         }
       }
-      if (this.m_SafeTurns >= 10 && this.Directives.CanSleep && (this.WouldLikeToSleep(game, this.m_Actor) && this.IsInside(this.m_Actor)) && game.Rules.CanActorSleep(this.m_Actor))
+      if (this.m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && this.Directives.CanSleep && (this.WouldLikeToSleep(game, this.m_Actor) && this.IsInside(this.m_Actor)) && game.Rules.CanActorSleep(this.m_Actor))
       {
         ActorAction actorAction2 = this.BehaviorSecurePerimeter(game, this.m_LOSSensor.FOV);
         if (actorAction2 != null)
@@ -439,7 +439,7 @@ label_10:
           ActorAction actorAction2 = this.BehaviorChargeEnemy(game, target);
           if (actorAction2 != null)
           {
-            if (game.Rules.RollChance(50))
+            if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(this.m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
             this.m_Actor.Activity = Activity.FIGHTING;
             this.m_Actor.TargetActor = target.Percepted as Actor;
@@ -447,7 +447,7 @@ label_10:
           }
         }
       }
-      if (game.Rules.RollChance(75))
+      if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorUseStenchKiller(game);
         if (actorAction2 != null)
@@ -488,7 +488,7 @@ label_10:
         location = this.m_Actor.Leader.Location;
         Point position2 = location.Position;
         bool isVisible = fov.Contains(position2);
-        int maxDist = this.m_Actor.Leader.IsPlayer ? 1 : 1;
+        int maxDist = this.m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction2 = this.BehaviorFollowActor(game, this.m_Actor.Leader, position1, isVisible, maxDist);
         if (actorAction2 != null)
         {
@@ -520,7 +520,7 @@ label_10:
           this.m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
-        if (game.Rules.RollChance(25))
+        if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE))
         {
           ActorAction actorAction5 = this.BehaviorPushNonWalkableObject(game);
           if (actorAction5 != null)
@@ -537,7 +537,7 @@ label_10:
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction9;
       }
-      if (game.Rules.RollChance(20))
+      if (game.Rules.RollChance(USE_EXIT_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorUseExit(game, BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (actorAction2 != null)
@@ -546,7 +546,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(50))
+      if (game.Rules.RollChance(BUILD_TRAP_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorBuildTrap(game);
         if (actorAction2 != null)
@@ -555,7 +555,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(50))
+      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorBuildLargeFortification(game, 1);
         if (actorAction2 != null)
@@ -564,7 +564,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(20))
+      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorBuildSmallFortification(game);
         if (actorAction2 != null)
@@ -573,7 +573,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (this.m_LastRaidHeard != null && game.Rules.RollChance(20))
+      if (this.m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorTellFriendAboutPercept(game, this.m_LastRaidHeard);
         if (actorAction2 != null)
@@ -591,7 +591,7 @@ label_10:
       }));
       if (percept1 != null)
         this.m_LastSoldierSaw = percept1;
-      if (game.Rules.RollChance(20) && this.m_LastSoldierSaw != null)
+      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE) && this.m_LastSoldierSaw != null)
       {
         ActorAction actorAction2 = this.BehaviorTellFriendAboutPercept(game, this.m_LastSoldierSaw);
         if (actorAction2 != null)
@@ -600,7 +600,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(10) && this.m_LastEnemySaw != null)
+      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE) && this.m_LastEnemySaw != null)
       {
         ActorAction actorAction2 = this.BehaviorTellFriendAboutPercept(game, this.m_LastEnemySaw);
         if (actorAction2 != null)
@@ -609,7 +609,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(10) && this.m_LastItemsSaw != null)
+      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE) && this.m_LastItemsSaw != null)
       {
         ActorAction actorAction2 = this.BehaviorTellFriendAboutPercept(game, this.m_LastItemsSaw);
         if (actorAction2 != null)
@@ -634,7 +634,7 @@ label_10:
         ActorAction actorAction2 = this.BehaviorDontLeaveFollowersBehind(game, 2, out target);
         if (actorAction2 != null)
         {
-          if (game.Rules.RollChance(50))
+          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
           {
             if (target.IsSleeping)
             {

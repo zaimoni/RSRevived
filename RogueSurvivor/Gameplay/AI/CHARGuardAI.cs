@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void CreateSensors()
     {
       this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-      this.m_MemorizedSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, 10);
+      this.m_MemorizedSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, LOS_MEMORY);
     }
 
     public override void TakeControl(Actor actor)

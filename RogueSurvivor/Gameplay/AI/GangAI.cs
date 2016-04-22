@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void CreateSensors()
     {
       this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-      this.m_MemorizedSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, 10);
+      this.m_MemorizedSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, LOS_MEMORY);
     }
 
     protected override List<Percept> UpdateSensors(RogueGame game)
@@ -91,7 +91,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction2;
       }
-      if (flag1 && (flag3 || game.Rules.RollChance(50)))
+      if (flag1 && (flag3 || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)))
       {
         List<Percept> percepts3 = this.FilterFireTargets(game, perceptList);
         if (percepts3 != null)
@@ -268,7 +268,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Point position = this.m_Actor.Leader.Location.Position;
         bool isVisible = fov.Contains(this.m_Actor.Leader.Location.Position);
-        int maxDist = this.m_Actor.Leader.IsPlayer ? 1 : 1;
+        int maxDist = this.m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction3 = this.BehaviorFollowActor(game, this.m_Actor.Leader, position, isVisible, maxDist);
         if (actorAction3 != null)
         {

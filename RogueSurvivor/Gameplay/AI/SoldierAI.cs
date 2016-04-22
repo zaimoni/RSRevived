@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override void CreateSensors()
     {
       this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-      this.m_MemLOSSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, 10);
+      this.m_MemLOSSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, LOS_MEMORY);
     }
 
     protected override List<Percept> UpdateSensors(RogueGame game)
@@ -189,16 +189,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(50))
+      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE))
       {
-        ActorAction actorAction2 = this.BehaviorBuildLargeFortification(game, 1);
+        ActorAction actorAction2 = this.BehaviorBuildLargeFortification(game, START_FORT_LINE_CHANCE);
         if (actorAction2 != null)
         {
           this.m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
       }
-      if (game.Rules.RollChance(20))
+      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE))
       {
         ActorAction actorAction2 = this.BehaviorBuildSmallFortification(game);
         if (actorAction2 != null)
@@ -210,7 +210,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (flag1)
       {
         Point position = this.m_Actor.Leader.Location.Position;
-        ActorAction actorAction2 = this.BehaviorHangAroundActor(game, this.m_Actor.Leader, position, 1, 2);
+        ActorAction actorAction2 = this.BehaviorHangAroundActor(game, this.m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);
         if (actorAction2 != null)
         {
           this.m_Actor.Activity = Activity.FOLLOWING;
@@ -224,7 +224,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction2 = this.BehaviorDontLeaveFollowersBehind(game, 4, out target);
         if (actorAction2 != null)
         {
-          if (game.Rules.RollChance(50))
+          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
           {
             if (target.IsSleeping)
               game.DoEmote(this.m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));

@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = 30;
     private const int EXPLORATION_ZONES = 3;
     private const int USE_EXIT_CHANCE = 50;
-    private const int FOLLOW_SCENT_THROUGH_EXIT_CHANCE = 90;
+    private const int FOLLOW_SCENT_THROUGH_EXIT_CHANCE = 90;    // dead constant?
     private const int PUSH_OBJECT_CHANCE = 20;
     private MemorizedSensor m_MemLOSSensor;
     private SmellSensor m_LivingSmellSensor;
@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_MemLOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES), 20);
+      this.m_MemLOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES), LOS_MEMORY);
       this.m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
       this.m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }
@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction;
         }
       }
-      if (this.m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(50))
+      if (this.m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE))
       {
         ActorAction actorAction = this.BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (actorAction != null)
@@ -163,7 +163,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         this.m_Actor.Activity = Activity.TRACKING;
         return actorAction3;
       }
-      if (game.Rules.HasActorPushAbility(this.m_Actor) && game.Rules.RollChance(20))
+      if (game.Rules.HasActorPushAbility(this.m_Actor) && game.Rules.RollChance(PUSH_OBJECT_CHANCE))
       {
         ActorAction actorAction1 = this.BehaviorPushNonWalkableObject(game);
         if (actorAction1 != null)
