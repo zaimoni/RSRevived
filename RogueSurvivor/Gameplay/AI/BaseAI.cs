@@ -1866,26 +1866,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Item GetEquippedLight()
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.IsEquipped && obj is ItemLight)
-          return obj;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj.IsEquipped && obj is ItemLight) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected Item GetFirstLight(Predicate<Item> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj is ItemLight && (fn == null || fn(obj)))
-          return obj;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in this.m_Actor.Inventory.Items) {
+        if (obj is ItemLight && (fn == null || fn(obj))) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected ItemSprayScent GetEquippedStenchKiller()

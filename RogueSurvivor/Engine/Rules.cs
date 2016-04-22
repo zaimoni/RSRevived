@@ -584,11 +584,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsItemBatteryPowered(Item it)
     {
-      if (it == null)
-        return false;
-      if (!(it is ItemLight))
-        return it is ItemTracker;
-      return true;
+      if (it == null) return false;
+      return (it is ItemLight) || (it is ItemTracker);
     }
 
     public bool IsItemBatteryFull(Item it)
