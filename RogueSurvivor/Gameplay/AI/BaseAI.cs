@@ -122,18 +122,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected abstract ActorAction SelectAction(RogueGame game, List<Percept> percepts);
 
+/*
+    NOTE: List<Percept>, as a list data structure, takes O(n) time/RAM to reset its capacity down 
+    to its real size.  Since C# is a garbage collected language, this would actually worsen
+    the RAM loading until the next explicit GC.Collect() call (typically within a fraction of a second).
+    The only realistic mitigation is to pro-rate the capacity request.
+ */
+    // April 22, 2016: testing indicates this does not need micro-optimization
     protected List<Percept> FilterSameMap(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      Map map = this.m_Actor.Location.Map;
-      foreach (Percept percept in percepts)
-      {
-        if (percept.Location.Map == map)
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      Map map = m_Actor.Location.Map;
+      foreach (Percept percept in percepts) {
+        if (percept.Location.Map == map) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -142,16 +145,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterEnemies(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      foreach (Percept percept in percepts)
-      {
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
         Actor target = percept.Percepted as Actor;
-        if (target != null && target != this.m_Actor && game.Rules.IsEnemyOf(this.m_Actor, target))
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+        if (null != target && target != m_Actor && game.Rules.IsEnemyOf(m_Actor, target)) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -160,16 +159,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterNonEnemies(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      foreach (Percept percept in percepts)
-      {
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
         Actor target = percept.Percepted as Actor;
-        if (target != null && target != this.m_Actor && !game.Rules.IsEnemyOf(this.m_Actor, target))
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+        if (null != target && target != m_Actor && !game.Rules.IsEnemyOf(m_Actor, target)) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -178,16 +173,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterCurrent(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      int turnCounter = this.m_Actor.Location.Map.LocalTime.TurnCounter;
-      foreach (Percept percept in percepts)
-      {
-        if (percept.Turn == turnCounter)
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
+      foreach (Percept percept in percepts) {
+        if (percept.Turn == turnCounter) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -196,16 +187,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Percept FilterNearest(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (Percept) null;
+      if (null == percepts || 0 == percepts.Count) return null;
       Percept percept1 = percepts[0];
       float num1 = game.Rules.StdDistance(this.m_Actor.Location.Position, percepts[0].Location.Position);
-      for (int index = 1; index < percepts.Count; ++index)
-      {
+      for (int index = 1; index < percepts.Count; ++index) {
         Percept percept2 = percepts[index];
         float num2 = game.Rules.StdDistance(this.m_Actor.Location.Position, percept2.Location.Position);
-        if ((double) num2 < (double) num1)
-        {
+        if ((double) num2 < (double) num1) {
           percept1 = percept2;
           num1 = num2;
         }
@@ -235,16 +223,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterActorsModel(RogueGame game, List<Percept> percepts, ActorModel model)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      foreach (Percept percept in percepts)
-      {
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
         Actor actor = percept.Percepted as Actor;
-        if (actor != null && actor.Model == model)
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+        if (null != actor && actor.Model == model) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -253,16 +237,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterActors(RogueGame game, List<Percept> percepts, Predicate<Actor> predicateFn)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      foreach (Percept percept in percepts)
-      {
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
         Actor actor = percept.Percepted as Actor;
-        if (actor != null && predicateFn(actor))
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+        if (null != actor && predicateFn(actor)) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -292,15 +272,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> Filter(RogueGame game, List<Percept> percepts, Predicate<Percept> predicateFn)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
-      List<Percept> perceptList = (List<Percept>) null;
-      foreach (Percept percept in percepts)
-      {
-        if (predicateFn(percept))
-        {
-          if (perceptList == null)
-            perceptList = new List<Percept>(percepts.Count);
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
+        if (predicateFn(percept)) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
           perceptList.Add(percept);
         }
       }
@@ -309,14 +285,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Percept FilterFirst(RogueGame game, List<Percept> percepts, Predicate<Percept> predicateFn)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (Percept) null;
-      foreach (Percept percept in percepts)
-      {
-        if (predicateFn(percept))
-          return percept;
+      if (null == percepts || 0 == percepts.Count) return null;
+      foreach (Percept percept in percepts) {
+        if (predicateFn(percept)) return percept;
       }
-      return (Percept) null;
+      return null;
     }
 
     protected List<Percept> FilterOut(RogueGame game, List<Percept> percepts, Predicate<Percept> rejectPredicateFn)
@@ -326,8 +299,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> SortByDistance(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
+      if (null == percepts || 0 == percepts.Count) return null;
       Point from = this.m_Actor.Location.Position;
       List<Percept> perceptList = new List<Percept>((IEnumerable<Percept>) percepts);
       perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
@@ -343,8 +315,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> SortByDate(RogueGame game, List<Percept> percepts)
     {
-      if (percepts == null || percepts.Count == 0)
-        return (List<Percept>) null;
+      if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = new List<Percept>((IEnumerable<Percept>) percepts);
       perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
       {

@@ -53,24 +53,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      HashSet<Point> fov = this.m_LOSSensor.FOV;
-      List<Percept> percepts1 = this.FilterSameMap(game, percepts);
-      if (this.Order != null)
+      List<Percept> percepts1 = FilterSameMap(game, percepts);
+      
+      // OrderableAI specific: respond to orders
+      if (null != Order)
       {
-        ActorAction actorAction = this.ExecuteOrder(game, this.Order, percepts1);
-        if (actorAction == null)
-        {
-          this.SetOrder((ActorOrder) null);
-        }
-        else
-        {
-          this.m_Actor.Activity = Activity.FOLLOWING_ORDER;
+        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
+        if (null != actorAction)
+          {
+          m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
-        }
+          }
+
+        SetOrder(null);
       }
-      this.m_Actor.IsRunning = false;
+      m_Actor.IsRunning = false;
+
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = this.FilterCurrent(game, percepts2);
+      HashSet<Point> fov = this.m_LOSSensor.FOV;
       bool flag1 = perceptList != null;
       bool flag2 = percepts2 != null;
       bool flag3 = this.m_Actor.HasLeader && !this.DontFollowLeader;
