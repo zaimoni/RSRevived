@@ -26,8 +26,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     };
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
-    private const int LOS_MEMORY = 10;
-    private const int EXPLORATION_LOCATIONS = 30;
+    private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
+    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
     private LOSSensor m_LOSSensor;
@@ -69,6 +69,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.IsRunning = false;
 
+      m_Exploration.Update(m_Actor.Location);
+
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = this.FilterCurrent(game, percepts2);
       bool flag1 = perceptList != null;
@@ -77,7 +79,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool hasVisibleLeader = flag3 && this.m_LOSSensor.FOV.Contains(this.m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag3 && this.IsAdjacentToEnemy(game, this.m_Actor.Leader);
       bool flag4 = !game.Rules.IsActorTired(this.m_Actor);
-      this.m_Exploration.Update(this.m_Actor.Location);
       ActorAction actorAction1 = this.BehaviorEquipWeapon(game);
       if (actorAction1 != null)
       {

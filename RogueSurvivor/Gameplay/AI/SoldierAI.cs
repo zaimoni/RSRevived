@@ -24,10 +24,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "Fuck I'm cornered",
       "Die"
     };
-    private const int LOS_MEMORY = 10;
+    private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     private const int FOLLOW_LEADER_MIN_DIST = 1;
     private const int FOLLOW_LEADER_MAX_DIST = 2;
-    private const int EXPLORATION_LOCATIONS = 30;
+    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
     private const int BUILD_SMALL_FORT_CHANCE = 20;
     private const int BUILD_LARGE_FORT_CHANCE = 50;
@@ -72,12 +72,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.IsRunning = false;
 
+      m_Exploration.Update(m_Actor.Location);
+
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = this.FilterCurrent(game, percepts2);
       bool flag1 = this.m_Actor.HasLeader && !this.DontFollowLeader;
       bool flag2 = perceptList != null;
       bool flag3 = percepts2 != null;
-      this.m_Exploration.Update(this.m_Actor.Location);
       ActorAction actorAction1 = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
       if (actorAction1 != null)
       {

@@ -17,8 +17,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class ZombieAI : BaseAI
   {
-    private const int LOS_MEMORY = 20;
-    private const int EXPLORATION_LOCATIONS = 30;
+    private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR/3);
+    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
     private const int USE_EXIT_CHANCE = 50;
     private const int FOLLOW_SCENT_THROUGH_EXIT_CHANCE = 90;    // dead constant?
@@ -53,8 +53,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       List<Percept> percepts1 = this.FilterSameMap(game, percepts);
-      if (this.m_Actor.Model.Abilities.ZombieAI_Explore)
-        this.m_Exploration.Update(this.m_Actor.Location);
+
+      if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
+
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       if (percepts2 != null)
       {

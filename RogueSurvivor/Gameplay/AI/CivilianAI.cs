@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     };
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
-    private const int EXPLORATION_MAX_LOCATIONS = 30;
+    private const int EXPLORATION_MAX_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_MAX_ZONES = 3;
     private const int USE_EXIT_CHANCE = 20;
     private const int BUILD_TRAP_CHANCE = 50;
@@ -127,6 +127,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.IsRunning = false;
 
+      m_Exploration.Update(m_Actor.Location);
+
       List<Percept> perceptList1 = this.FilterEnemies(game, percepts1);
       bool flag1 = perceptList1 != null && perceptList1.Count > 0;
       bool flag2 = this.m_Actor.HasLeader && !this.DontFollowLeader;
@@ -137,7 +139,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         this.m_SafeTurns = 0;
       else
         ++this.m_SafeTurns;
-      this.m_Exploration.Update(this.m_Actor.Location);
       Location location;
       if (this.m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
       {

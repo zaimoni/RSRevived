@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "Damn it I'm trapped!",
       "Hey"
     };
-    private const int LOS_MEMORY = 10;
+    private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     private LOSSensor m_LOSSensor;
     private MemorizedSensor m_MemorizedSensor;
 

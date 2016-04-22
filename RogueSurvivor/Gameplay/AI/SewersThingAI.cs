@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class SewersThingAI : BaseAI
   {
-    private const int LOS_MEMORY = 20;
+    private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR);
     private MemorizedSensor m_LOSSensor;
     private SmellSensor m_LivingSmellSensor;
     private SmellSensor m_MasterSmellSensor;
