@@ -1734,20 +1734,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Item GetEquippedWeapon()
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.IsEquipped && obj is ItemWeapon)
-          return obj;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj.IsEquipped && obj is ItemWeapon) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected Item GetBestRangedWeaponWithAmmo(Predicate<Item> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       Item obj1 = (Item) null;
       int num1 = 0;
       foreach (Item obj2 in this.m_Actor.Inventory.Items)
@@ -1793,75 +1789,58 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Item GetFirstMeleeWeapon(Predicate<Item> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj is ItemMeleeWeapon && (fn == null || fn(obj)))
-          return obj;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in this.m_Actor.Inventory.Items) {
+        if (obj is ItemMeleeWeapon && (fn == null || fn(obj))) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected Item GetFirstBodyArmor(Predicate<Item> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj is ItemBodyArmor && (fn == null || fn(obj)))
-          return obj;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj is ItemBodyArmor && (fn == null || fn(obj))) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected ItemGrenade GetFirstGrenade(Predicate<Item> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (ItemGrenade) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj is ItemGrenade && (fn == null || fn(obj)))
-          return obj as ItemGrenade;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj is ItemGrenade && (fn == null || fn(obj))) return obj as ItemGrenade;
       }
-      return (ItemGrenade) null;
+      return null;
     }
 
     protected Item GetEquippedBodyArmor()
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.IsEquipped && obj is ItemBodyArmor)
-          return obj;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj.IsEquipped && obj is ItemBodyArmor) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected Item GetEquippedCellPhone()
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj.IsEquipped && obj is ItemTracker && (obj as ItemTracker).CanTrackFollowersOrLeader)
           return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected Item GetFirstTracker(Predicate<ItemTracker> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
         ItemTracker itemTracker = obj as ItemTracker;
-        if (itemTracker != null && (fn == null || fn(itemTracker)))
-          return obj;
+        if (itemTracker != null && (fn == null || fn(itemTracker))) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     protected Item GetEquippedLight()
@@ -1884,10 +1863,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ItemSprayScent GetEquippedStenchKiller()
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (ItemSprayScent) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj.IsEquipped && obj is ItemSprayScent && ((obj as ItemSprayScent).Model as ItemSprayScentModel).Odor == Odor.PERFUME_LIVING_SUPRESSOR)
           return obj as ItemSprayScent;
       }
@@ -1896,14 +1873,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ItemSprayScent GetFirstStenchKiller(Predicate<ItemSprayScent> fn)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (ItemSprayScent) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj is ItemSprayScent && (fn == null || fn(obj as ItemSprayScent)))
           return obj as ItemSprayScent;
       }
-      return (ItemSprayScent) null;
+      return null;
     }
 
     protected bool IsRangedWeaponOutOfAmmo(Item it)
@@ -1924,8 +1899,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Item GetBestEdibleItem(RogueGame game)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return (Item) null;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = this.m_Actor.Location.Map.LocalTime.TurnCounter;
       int num1 = game.Rules.ActorMaxFood(this.m_Actor) - this.m_Actor.FoodPoints;
       Item obj1 = (Item) null;
@@ -2019,17 +1993,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool HasEnoughFoodFor(RogueGame game, int nutritionNeed)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return false;
-      int turnCounter = this.m_Actor.Location.Map.LocalTime.TurnCounter;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
+      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int num = 0;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj is ItemFood)
-        {
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj is ItemFood) {
           num += game.Rules.FoodItemNutrition(obj as ItemFood, turnCounter);
-          if (num >= nutritionNeed)
-            return true;
+          if (num >= nutritionNeed) return true;
         }
       }
       return false;
@@ -2037,67 +2007,53 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return false;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
       if (it.Model.IsStackable)
-        return this.CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
-      return this.CountItemsOfSameType(it.GetType()) >= n;
+        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
+      return CountItemsOfSameType(it.GetType()) >= n;
     }
 
     protected bool HasItemOfModel(ItemModel model)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return false;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.Model == model)
-          return true;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj.Model == model) return true;
       }
       return false;
     }
 
     protected int CountItemsQuantityOfModel(ItemModel model)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return 0;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return 0;
       int num = 0;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.Model == model)
-          num += obj.Quantity;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj.Model == model) num += obj.Quantity;
       }
       return num;
     }
 
     protected bool HasItemOfType(Type tt)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return false;
-      return this.m_Actor.Inventory.HasItemOfType(tt);
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
+      return m_Actor.Inventory.HasItemOfType(tt);
     }
 
     protected int CountItemQuantityOfType(Type tt)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return 0;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return 0;
       int num = 0;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.GetType() == tt)
-          num += obj.Quantity;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (obj.GetType() == tt) num += obj.Quantity;
       }
       return num;
     }
 
     protected int CountItemsOfSameType(Type tt)
     {
-      if (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty)
-        return 0;
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return 0;
       int num = 0;
-      foreach (object obj in this.m_Actor.Inventory.Items)
-      {
-        if (obj.GetType() == tt)
-          ++num;
+      foreach (object obj in m_Actor.Inventory.Items) {
+        if (obj.GetType() == tt) ++num;
       }
       return num;
     }
