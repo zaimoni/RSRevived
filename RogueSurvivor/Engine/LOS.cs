@@ -183,16 +183,15 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       Point goal = toPosition;
-      bool fireLineClear = true;
 #if ANGBAND
-            LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
             {
                 if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
                     return true;
-                fireLineClear = false;
-                return true;
+                return false;
             }), line);
 #else
+      bool fireLineClear = true;
             LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>)((x, y) =>
             {
                 if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingFire(x, y))
@@ -200,25 +199,24 @@ namespace djack.RogueSurvivor.Engine
                 fireLineClear = false;
                 return true;
             }));
+      return fireLineClear;
 #endif
-            return fireLineClear;
-    }
+        }
 
-    public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
+        public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       Point goal = toPosition;
-      bool throwLineClear = true;
 #if ANGBAND
-            LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
             {
-                if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingThrow(x, y))
+                if (x == start.X && y == start.Y || !map.IsBlockingThrow(x, y))
                     return true;
-                throwLineClear = false;
-                return true;
+                return false;
             }), line);
 #else
+      bool throwLineClear = true;
                   LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>) ((x, y) =>
                   {
                     if (x == start.X && y == start.Y || x == goal.X && y == goal.Y || !map.IsBlockingThrow(x, y))
@@ -226,13 +224,13 @@ namespace djack.RogueSurvivor.Engine
                     throwLineClear = false;
                     return true;
                   }));
-#endif
       if (map.IsBlockingThrow(toPosition.X, toPosition.Y))
         throwLineClear = false;
       return throwLineClear;
-    }
+#endif
+        }
 
-    private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
+        private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
     {
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;
