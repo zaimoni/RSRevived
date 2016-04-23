@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       if (percepts2 != null)
       {
-        List<Percept> perceptList1 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn == this.m_Actor.Location.Map.LocalTime.TurnCounter));
+        List<Percept> perceptList1 = FilterCurrent(game, percepts2);
         if (perceptList1 != null)
         {
           Percept percept1;

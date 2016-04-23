@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction5;
         }
       }
-      List<Percept> percepts4 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != this.m_Actor.Location.Map.LocalTime.TurnCounter));
+      List<Percept> percepts4 = FilterCurrent(game, percepts2);
       if (percepts4 != null)
       {
         Percept target = this.FilterNearest(game, percepts4);
