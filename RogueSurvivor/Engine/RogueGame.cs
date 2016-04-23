@@ -240,7 +240,7 @@ namespace djack.RogueSurvivor.Engine
     private const int REFUGEES_WAVE_ITEMS = 3;
     private const int REFUGEE_SURFACE_SPAWN_CHANCE = 80;
     private const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
-    public const int NATGUARD_DAY = 3;
+    private const int NATGUARD_DAY = 3;
     private const int NATGUARD_END_DAY = 10;
     private const int NATGUARD_ZTRACKER_DAY = 6;
     private const int NATGUARD_SQUAD_SIZE = 5;
@@ -3141,7 +3141,7 @@ namespace djack.RogueSurvivor.Engine
           return a.Faction == this.GameFactions.ThePolice;
         return true;
       }));
-      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)RogueGame.s_Options.MaxCivilians)/5f ), RogueGame.s_Options.MaxCivilians - num1);
+      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)RogueGame.s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), RogueGame.s_Options.MaxCivilians - num1);
       for (int index = 0; index < num2; ++index)
         SpawnNewRefugee(!this.m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (this.m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
       if (!m_Rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
@@ -3537,7 +3537,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SpawnNewRefugee(Map map)
     {
-      Actor newRefugee = this.m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, 3);
+      Actor newRefugee = this.m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
       this.SpawnActorOnMapBorder(map, newRefugee, 10, true);
     }
 
