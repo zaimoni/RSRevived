@@ -566,7 +566,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!wantCellPhone) return null;
       Item firstTracker = this.GetFirstTracker((Predicate<ItemTracker>) (it =>
       {
-        if (it.CanTrackFollowersOrLeader)
+        if (it.CanTrackFollowersOrLeader && 0 < it.Batteries)
           return !this.IsItemTaboo((Item) it);
         return false;
       }));
@@ -590,7 +590,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (this.GetEquippedLight() != null)
         return (ActorAction) null;
-      Item firstLight = this.GetFirstLight((Predicate<Item>) (it => !this.IsItemTaboo(it)));
+      Item firstLight = this.GetFirstLight((Predicate<ItemLight>)(it =>
+      {
+          if (0 < it.Batteries) return !this.IsItemTaboo((Item)it);
+          return false;
+      }));
       if (firstLight != null && game.Rules.CanActorEquipItem(this.m_Actor, firstLight))
         return (ActorAction) new ActionEquipItem(this.m_Actor, game, firstLight);
       return (ActorAction) null;
@@ -600,7 +604,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if ((Item) this.GetEquippedStenchKiller() != null)
         return (ActorAction) null;
-      ItemSprayScent firstStenchKiller = this.GetFirstStenchKiller((Predicate<ItemSprayScent>) (it => !this.IsItemTaboo((Item) it)));
+      ItemSprayScent firstStenchKiller = this.GetFirstStenchKiller((Predicate<ItemSprayScent>)(it =>
+      {
+          if (0 < it.SprayQuantity) return !this.IsItemTaboo((Item)it);
+          return false;
+      }));
       if (firstStenchKiller != null && game.Rules.CanActorEquipItem(this.m_Actor, (Item) firstStenchKiller))
         return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) firstStenchKiller);
       return (ActorAction) null;
@@ -1807,11 +1815,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected Item GetFirstLight(Predicate<Item> fn)
+    protected Item GetFirstLight(Predicate<ItemLight> fn)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in this.m_Actor.Inventory.Items) {
-        if (obj is ItemLight && (fn == null || fn(obj))) return obj;
+        ItemLight itemLight = obj as ItemLight;
+        if (null != itemLight && (fn == null || fn(itemLight))) return obj;
       }
       return null;
     }
