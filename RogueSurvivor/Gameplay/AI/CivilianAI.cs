@@ -168,12 +168,8 @@ label_10:
         ItemGrenade itemGrenade = this.m_Actor.GetEquippedWeapon() as ItemGrenade;
         if (itemGrenade != null)
         {
-          ActionUnequipItem actionUnequipItem = new ActionUnequipItem(this.m_Actor, game, (Item) itemGrenade);
-          if (actionUnequipItem.IsLegal())
-          {
-            m_Actor.Activity = Activity.IDLE;
-            return (ActorAction) actionUnequipItem;
-          }
+          m_Actor.Activity = Activity.IDLE;
+          return (ActorAction) new ActionUnequipItem(this.m_Actor, game, (Item)itemGrenade);
         }
       }
       else if (null != perceptList1)

@@ -517,8 +517,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!this.Directives.CanFireWeapons)
           return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedWeapon);
         ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
-        if (rw.Ammo > 0)
-          return (ActorAction) null;
+        if (rw.Ammo > 0) return null;
         ItemAmmo compatibleAmmoItem = this.GetCompatibleAmmoItem(game, rw);
         if (compatibleAmmoItem != null)
           return (ActorAction) new ActionUseItem(this.m_Actor, game, (Item) compatibleAmmoItem);
@@ -529,69 +528,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (rangedWeaponWithAmmo != null && game.Rules.CanActorEquipItem(this.m_Actor, rangedWeaponWithAmmo))
           return (ActorAction) new ActionEquipItem(this.m_Actor, game, rangedWeaponWithAmmo);
       }
-      ItemMeleeWeapon bestMeleeWeapon = this.GetBestMeleeWeapon(game, (Predicate<Item>) (it => !this.IsItemTaboo(it)));
-      if (bestMeleeWeapon == null)
-        return (ActorAction) null;
-      if (equippedWeapon == bestMeleeWeapon)
-        return (ActorAction) null;
-      if (equippedWeapon == null)
-      {
-        if (game.Rules.CanActorEquipItem(this.m_Actor, (Item) bestMeleeWeapon))
-          return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) bestMeleeWeapon);
-        return (ActorAction) null;
-      }
-      if (equippedWeapon == null)
-        return (ActorAction) null;
-      if (game.Rules.CanActorUnequipItem(this.m_Actor, equippedWeapon))
-        return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedWeapon);
-      return (ActorAction) null;
+
+      // ranged weapon non-option for some reason
+      ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon(game, (Predicate<Item>) (it => !this.IsItemTaboo(it)));
+      if (bestMeleeWeapon == null) return null;
+      if (equippedWeapon == bestMeleeWeapon) return null;
+      return (ActorAction) new ActionEquipItem(m_Actor, game, (Item) bestMeleeWeapon);
     }
 
     protected ActorAction BehaviorEquipBodyArmor(RogueGame game)
     {
-      ItemBodyArmor bestBodyArmor = this.GetBestBodyArmor(game, (Predicate<Item>) (it => !this.IsItemTaboo(it)));
-      if (bestBodyArmor == null)
-        return (ActorAction) null;
-      Item equippedBodyArmor = this.GetEquippedBodyArmor();
-      if (equippedBodyArmor == bestBodyArmor)
-        return (ActorAction) null;
-      if (equippedBodyArmor != null)
-      {
-        if (game.Rules.CanActorUnequipItem(this.m_Actor, equippedBodyArmor))
-          return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedBodyArmor);
-        return (ActorAction) null;
-      }
-      if (equippedBodyArmor != null)
-        return (ActorAction) null;
-      if (game.Rules.CanActorEquipItem(this.m_Actor, (Item) bestBodyArmor))
-        return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) bestBodyArmor);
-      return (ActorAction) null;
+      ItemBodyArmor bestBodyArmor = GetBestBodyArmor(game, (Predicate<Item>) (it => !this.IsItemTaboo(it)));
+      if (bestBodyArmor == null) return null;
+      Item equippedBodyArmor = GetEquippedBodyArmor();
+      if (equippedBodyArmor == bestBodyArmor) return null;
+      return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) bestBodyArmor);
     }
 
     protected ActorAction BehaviorEquipCellPhone(RogueGame game)
     {
-      bool flag1 = false;
-      if (this.m_Actor.CountFollowers > 0)
-        flag1 = true;
+      bool wantCellPhone = false;
+      if (m_Actor.CountFollowers > 0)
+        wantCellPhone = true;
       else if (this.m_Actor.HasLeader)
       {
-        bool flag2 = false;
         ItemTracker itemTracker = this.m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-        if (itemTracker == null)
-          flag2 = false;
-        else if (itemTracker.CanTrackFollowersOrLeader)
-          flag2 = true;
-        flag1 = flag2;
+        wantCellPhone = (null != itemTracker && itemTracker.CanTrackFollowersOrLeader);
       }
-      Item equippedCellPhone = this.GetEquippedCellPhone();
+
+      Item equippedCellPhone = GetEquippedCellPhone();
       if (equippedCellPhone != null)
       {
-        if (!flag1)
-          return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedCellPhone);
-        return (ActorAction) null;
+        if (wantCellPhone) return null;
+        return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedCellPhone);
       }
-      if (!flag1)
-        return (ActorAction) null;
+      if (!wantCellPhone) return null;
       Item firstTracker = this.GetFirstTracker((Predicate<ItemTracker>) (it =>
       {
         if (it.CanTrackFollowersOrLeader)
@@ -600,20 +571,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
       if (firstTracker != null && game.Rules.CanActorEquipItem(this.m_Actor, firstTracker))
         return (ActorAction) new ActionEquipItem(this.m_Actor, game, firstTracker);
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorUnequipCellPhoneIfLeaderHasNot(RogueGame game)
     {
       ItemTracker itemTracker1 = this.m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      if (itemTracker1 == null)
-        return (ActorAction) null;
-      if (!itemTracker1.CanTrackFollowersOrLeader)
-        return (ActorAction) null;
-      ItemTracker itemTracker2 = this.m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      if ((itemTracker2 == null || !itemTracker2.CanTrackFollowersOrLeader) && game.Rules.CanActorUnequipItem(this.m_Actor, (Item) itemTracker1))
+      if (itemTracker1 == null) return null;
+      if (!itemTracker1.CanTrackFollowersOrLeader) return null;
+      ItemTracker itemTracker2 = m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
+      if ((itemTracker2 == null || !itemTracker2.CanTrackFollowersOrLeader))
         return (ActorAction) new ActionUnequipItem(this.m_Actor, game, (Item) itemTracker1);
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorEquipLight(RogueGame game)
@@ -638,12 +607,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorUnequipLeftItem(RogueGame game)
     {
-      Item equippedItem = this.m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (equippedItem == null)
-        return (ActorAction) null;
-      if (game.Rules.CanActorUnequipItem(this.m_Actor, equippedItem))
-        return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedItem);
-      return (ActorAction) null;
+      Item equippedItem = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
+      if (equippedItem == null) return null;
+      return (ActorAction) new ActionUnequipItem(m_Actor, game, equippedItem);
     }
 
     protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
@@ -681,17 +647,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
     {
-      if (it == null)
-        return (ActorAction) null;
-      if (game.Rules.CanActorUnequipItem(this.m_Actor, it))
+      if (it == null) return null;
+      if (game.Rules.CanActorUnequipItem(m_Actor, it))
       {
-        this.MarkItemAsTaboo(it);
-        return (ActorAction) new ActionUnequipItem(this.m_Actor, game, it);
+        MarkItemAsTaboo(it);
+        return (ActorAction) new ActionUnequipItem(m_Actor, game, it);
       }
-      if (!game.Rules.CanActorDropItem(this.m_Actor, it))
-        return (ActorAction) null;
-      this.UnmarkItemAsTaboo(it);
-      return (ActorAction) new ActionDropItem(this.m_Actor, game, it);
+      if (!game.Rules.CanActorDropItem(this.m_Actor, it)) return null;
+      UnmarkItemAsTaboo(it);
+      return (ActorAction) new ActionDropItem(m_Actor, game, it);
     }
 
     protected ActorAction BehaviorDropUselessItem(RogueGame game)
@@ -1523,18 +1487,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (!nullable.HasValue)
-        return (ActorAction) null;
+      if (!nullable.HasValue) return null;
       if (!firstGrenade.IsEquipped)
-      {
-        Item equippedWeapon = this.m_Actor.GetEquippedWeapon();
-        if (equippedWeapon != null)
-          return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedWeapon);
         return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) firstGrenade);
-      }
       ActorAction actorAction = (ActorAction) new ActionThrowGrenade(this.m_Actor, game, nullable.Value);
-      if (!actorAction.IsLegal())
-        return (ActorAction) null;
+      if (!actorAction.IsLegal()) return null;
       return actorAction;
     }
 

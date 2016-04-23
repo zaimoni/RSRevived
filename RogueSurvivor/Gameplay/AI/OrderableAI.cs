@@ -232,9 +232,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteDropAllItems(RogueGame game)
     {
-      if (this.m_Actor.Inventory.IsEmpty)
-        return (ActorAction) null;
-      Item it = this.m_Actor.Inventory[0];
+      if (m_Actor.Inventory.IsEmpty) return null;
+      Item it = m_Actor.Inventory[0];
       if (it.IsEquipped)
         return (ActorAction) new ActionUnequipItem(this.m_Actor, game, it);
       return (ActorAction) new ActionDropItem(this.m_Actor, game, it);
