@@ -1877,6 +1877,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
+    // close to the inverse of IsInterestingItem
+    public bool IsTradeableItem(RogueGame game, Item it)
+    {
+        if (it is ItemFood)
+            {
+            if (game.Rules.IsActorHungry(m_Actor)) return false; 
+            if (!HasEnoughFoodFor(game, m_Actor.Sheet.BaseFoodPoints / 2))
+                return !game.Rules.IsFoodSpoiled(it as ItemFood, m_Actor.Location.Map.LocalTime.TurnCounter);
+            return false;
+            }
+        if (it is ItemRangedWeapon)
+            {
+            if (this.m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
+            ItemRangedWeapon rw = it as ItemRangedWeapon;
+            if (0 < rw.Ammo) return false;
+            if (null != GetCompatibleAmmoItem(game, rw)) return false;
+            return true;    // more work needed
+            }
+        if (it is ItemAmmo)
+            {
+            ItemAmmo am = it as ItemAmmo;
+            if (this.GetCompatibleRangedWeapon(game, am) == null) return true;
+            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            }
+        if (it is ItemMeleeWeapon)
+            {
+            if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return true;   // martial artists+melee weapons needs work
+            return CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
+            }
+        // player should be able to trade for blue pills
+/*
+        if (it is ItemMedicine)
+            {
+            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            }
+*/
+        return true;    // default to ok to trade away
+    }
+
     public bool IsInterestingItem(RogueGame game, Item it)
     {
       if (this.m_Actor.Inventory.CountItems == game.Rules.ActorMaxInv(this.m_Actor) - 1)

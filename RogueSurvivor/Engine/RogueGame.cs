@@ -9487,6 +9487,11 @@ namespace djack.RogueSurvivor.Engine
       return (target.Controller as BaseAI).IsInterestingItem(this, offeredItem);
     }
 
+    private bool IsTradeableItem(Actor speaker, Item offeredItem)
+    {
+       return (speaker.Controller as BaseAI).IsTradeableItem(this, offeredItem);
+    }
+
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
       bool flag1 = this.IsVisibleToPlayer(speaker) || this.IsVisibleToPlayer(target);
@@ -9593,20 +9598,23 @@ namespace djack.RogueSurvivor.Engine
     private Item PickItemToTrade(Actor speaker, Actor buyer)
     {
       Inventory inventory = speaker.Inventory;
+      // player used to get a break
+/*
       if (buyer.IsPlayer)
         return inventory[this.m_Rules.Roll(0, inventory.CountItems)];
-      List<Item> objList = (List<Item>) null;
+*/
+      List<Item> objList = null;
       foreach (Item offeredItem in inventory.Items)
       {
-        if (this.IsInterestingTradeItem(speaker, offeredItem, buyer))
+        if (   IsInterestingTradeItem(speaker, offeredItem, buyer)
+            && IsTradeableItem(speaker,offeredItem))
         {
           if (objList == null)
             objList = new List<Item>(inventory.CountItems);
           objList.Add(offeredItem);
         }
       }
-      if (objList == null)
-        return (Item) null;
+      if (objList == null) return null;
       return objList[this.m_Rules.Roll(0, objList.Count)];
     }
 
