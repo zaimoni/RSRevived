@@ -130,40 +130,40 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       List<Percept> perceptList1 = this.FilterEnemies(game, percepts1);
-      bool flag1 = perceptList1 != null && perceptList1.Count > 0;
+      bool flag1 = perceptList1 != null;
       bool flag2 = this.m_Actor.HasLeader && !this.DontFollowLeader;
       bool hasVisibleLeader = flag2 && this.m_LOSSensor.FOV.Contains(this.m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag2 && this.IsAdjacentToEnemy(game, this.m_Actor.Leader);
       bool flag3 = flag2 && hasVisibleLeader && isLeaderFighting && !game.Rules.IsActorTired(this.m_Actor);
+
+      // civilians track how long since they've seen trouble
       if (flag1)
-        this.m_SafeTurns = 0;
+        m_SafeTurns = 0;
       else
-        ++this.m_SafeTurns;
+        ++m_SafeTurns;
+
       Location location;
-      if (this.m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
+      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
       {
-        Location prevLocation = this.PrevLocation;
-        location = this.PrevLocation;
-        Map map1 = location.Map;
-        location = this.m_Actor.Location;
-        Map map2 = location.Map;
-        if (map1 == map2)
+        if (PrevLocation.Map == m_Actor.Location.Map)
           goto label_10;
       }
-      this.ClearTabooTiles();
+      ClearTabooTiles();
 label_10:
-      location = this.m_Actor.Location;
-      if (location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
+      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
         this.ClearTabooTrades();
-      if (flag1)
-        this.m_LastEnemySaw = perceptList1[game.Rules.Roll(0, perceptList1.Count)];
-      ActorAction actorAction1 = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
-      if (actorAction1 != null)
+
+      if (null != perceptList1)
+        m_LastEnemySaw = perceptList1[game.Rules.Roll(0, perceptList1.Count)];
+
+      ActorAction tmpAction = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
+      if (null != tmpAction)
       {
-        this.m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-        return actorAction1;
+        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+        return tmpAction;
       }
-      if (!this.Directives.CanThrowGrenades)
+
+      if (!Directives.CanThrowGrenades)
       {
         ItemGrenade itemGrenade = this.m_Actor.GetEquippedWeapon() as ItemGrenade;
         if (itemGrenade != null)
@@ -171,29 +171,31 @@ label_10:
           ActionUnequipItem actionUnequipItem = new ActionUnequipItem(this.m_Actor, game, (Item) itemGrenade);
           if (actionUnequipItem.IsLegal())
           {
-            this.m_Actor.Activity = Activity.IDLE;
+            m_Actor.Activity = Activity.IDLE;
             return (ActorAction) actionUnequipItem;
           }
         }
       }
-      if (flag1)
+      else if (null != perceptList1)
       {
-        ActorAction actorAction2 = this.BehaviorThrowGrenade(game, this.m_LOSSensor.FOV, perceptList1);
-        if (actorAction2 != null)
-          return actorAction2;
+        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, perceptList1);
+        if (null != tmpAction) return tmpAction;
       }
-      ActorAction actorAction3 = this.BehaviorEquipWeapon(game);
-      if (actorAction3 != null)
+
+      tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction)
       {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction3;
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
-      ActorAction actorAction4 = this.BehaviorEquipBodyArmor(game);
-      if (actorAction4 != null)
+      tmpAction = BehaviorEquipBodyArmor(game);
+      if (null != tmpAction)
       {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction4;
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
+
+      // all free actions must be above the enemies check
       if (flag1 && this.Directives.CanFireWeapons && this.m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
       {
         List<Percept> percepts2 = this.FilterFireTargets(game, perceptList1);

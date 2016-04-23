@@ -71,6 +71,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
+      // Bikers and gangsters don't throw grenades
+      ActorAction tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+      tmpAction = BehaviorEquipBodyArmor(game);
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = this.FilterCurrent(game, percepts2);
       bool flag1 = perceptList != null;
@@ -79,18 +93,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool hasVisibleLeader = flag3 && this.m_LOSSensor.FOV.Contains(this.m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag3 && this.IsAdjacentToEnemy(game, this.m_Actor.Leader);
       bool flag4 = !game.Rules.IsActorTired(this.m_Actor);
-      ActorAction actorAction1 = this.BehaviorEquipWeapon(game);
-      if (actorAction1 != null)
-      {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction1;
-      }
-      ActorAction actorAction2 = this.BehaviorEquipBodyArmor(game);
-      if (actorAction2 != null)
-      {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction2;
-      }
+
+      // all free actions must be above the enemies check
       if (flag1 && (flag3 || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)))
       {
         List<Percept> percepts3 = this.FilterFireTargets(game, perceptList);

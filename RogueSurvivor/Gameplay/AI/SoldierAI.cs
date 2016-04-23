@@ -75,37 +75,40 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // fleeing from explosives is done before the enemies check
-      ActorAction actorAction1 = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
-      if (actorAction1 != null)
+      ActorAction tmpAction = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
+      if (null != tmpAction)
       {
-        this.m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-        return actorAction1;
+        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+        return tmpAction;
       }
 
-      List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
-      List<Percept> perceptList = this.FilterCurrent(game, percepts2);
-      bool flag1 = this.m_Actor.HasLeader && !this.DontFollowLeader;
-      bool flag2 = perceptList != null;
+      List<Percept> percepts2 = FilterEnemies(game, percepts1);
+      List<Percept> perceptList = FilterCurrent(game, percepts2);
+      bool flag1 = m_Actor.HasLeader && !DontFollowLeader;
       bool flag3 = percepts2 != null;
-      if (flag2)
+
+      // throwing a grenade overrides normal weapon equipping choices
+      if (null != perceptList)
       {
-        ActorAction actorAction2 = this.BehaviorThrowGrenade(game, this.m_LOSSensor.FOV, perceptList);
-        if (actorAction2 != null)
-          return actorAction2;
+        tmpAction = BehaviorThrowGrenade(game, this.m_LOSSensor.FOV, perceptList);
+        if (null != tmpAction) return tmpAction;
       }
-      ActorAction actorAction3 = this.BehaviorEquipWeapon(game);
-      if (actorAction3 != null)
+
+      tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction)
       {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction3;
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
-      ActorAction actorAction4 = this.BehaviorEquipBodyArmor(game);
-      if (actorAction4 != null)
+      tmpAction = BehaviorEquipBodyArmor(game);
+      if (null != tmpAction)
       {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction4;
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
-      if (flag2)
+
+      // all free actions have to be before targeting enemies
+      if (null != perceptList)
       {
         if (game.Rules.RollChance(50))
         {

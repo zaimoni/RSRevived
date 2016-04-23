@@ -62,22 +62,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       m_Actor.IsRunning = false;
 
+      // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
+
+      ActorAction tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+      tmpAction = BehaviorEquipBodyArmor(game);
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+
+      // All free actions go above the check for enemies.
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList1 = this.FilterCurrent(game, percepts2);
       bool flag1 = this.m_Actor.HasLeader && !this.DontFollowLeader;
       bool flag2 = percepts2 != null;
-      ActorAction actorAction1 = this.BehaviorEquipWeapon(game);
-      if (actorAction1 != null)
-      {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction1;
-      }
-      ActorAction actorAction2 = this.BehaviorEquipBodyArmor(game);
-      if (actorAction2 != null)
-      {
-        this.m_Actor.Activity = Activity.IDLE;
-        return actorAction2;
-      }
       if (perceptList1 != null)
       {
         List<Percept> percepts3 = this.FilterFireTargets(game, perceptList1);
