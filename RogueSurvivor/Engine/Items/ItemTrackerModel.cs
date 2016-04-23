@@ -40,6 +40,7 @@ namespace djack.RogueSurvivor.Engine.Items
     [System.Flags]
     public enum TrackingFlags
     {
+      NONE = 0,
       FOLLOWER_AND_LEADER = 1,
       UNDEADS = 2,
       BLACKOPS_FACTION = 4,

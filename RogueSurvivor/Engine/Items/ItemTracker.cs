@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER) != (ItemTrackerModel.TrackingFlags) 0;
+        return (this.Tracking & ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.UNDEADS) != (ItemTrackerModel.TrackingFlags) 0;
+        return (this.Tracking & ItemTrackerModel.TrackingFlags.UNDEADS) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION) != (ItemTrackerModel.TrackingFlags) 0;
+        return (this.Tracking & ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.POLICE_FACTION) != (ItemTrackerModel.TrackingFlags) 0;
+        return (this.Tracking & ItemTrackerModel.TrackingFlags.POLICE_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
