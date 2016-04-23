@@ -9721,10 +9721,14 @@ namespace djack.RogueSurvivor.Engine
         DoSay(target, actor, "Well, here it is...", RogueGame.Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
-      // XXX If the ground inventory is not full and item merging happens, gift still exists to C#
-      // so the result is the follower gets the gift while the pile on the ground increases.
-      DropItem(actor, gift);
-      DoTakeItem(target, actor.Location.Position, gift);
+
+      actor.Inventory.RemoveAllQuantity(gift);
+      if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
+      target.Inventory.AddAll(gift);    // does do item merge, but not other DoTakeItem processing
+      SpendActorActionPoints(target, Rules.BASE_ACTION_COST);
+      if (!gift.Model.DontAutoEquip && m_Rules.CanActorEquipItem(target, gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
+        DoEquipItem(target, gift);
+
       if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(target))
         return;
       this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1} to", (object) this.Conjugate(actor, this.VERB_GIVE), (object) gift.TheName), target));
