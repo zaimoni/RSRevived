@@ -294,11 +294,7 @@ label_10:
         if (actorAction5 != null)
         {
           if (actorAction5 is ActionSleep)
-            {
-            Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);  // all battery powered items are left hand, currently
-            if (IsItemBatteryPowered(it)) DoUnequipItem(m_Actor, it);
             m_Actor.Activity = Activity.SLEEPING;
-            }
           return actorAction5;
         }
       }
@@ -308,6 +304,9 @@ label_10:
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction7;
       }
+
+      // start item juggling
+      // this should be above the enemies check, but the current implementation is dependent on DropUselessItem to protect it from drained items
       bool flag4 = this.m_Actor.HasLeader || this.m_Actor.CountFollowers > 0;
       bool flag5 = this.NeedsLight(game);
       RogueGame game1 = game;
@@ -352,6 +351,8 @@ label_10:
           return actorAction2;
         }
       }
+      // end item juggling check
+
       if (!flag1 && this.Directives.CanTakeItems)
       {
         location = this.m_Actor.Location;

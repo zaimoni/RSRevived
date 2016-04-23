@@ -736,6 +736,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (actorAction != null)
           return actorAction;
       }
+
+      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);  // all battery powered items are left hand, currently
+      if (game.Rules.IsItemBatteryPowered(it)) game.DoUnequipItem(m_Actor, it);
       return (ActorAction) new ActionSleep(this.m_Actor, game);
     }
 

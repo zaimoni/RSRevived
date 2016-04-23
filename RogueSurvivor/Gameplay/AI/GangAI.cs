@@ -191,6 +191,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction6;
       }
+
+      // start item juggling
+      // this should be above the enemies check, but the current implementation is dependent on DropUselessItem to protect it from drained items
       bool flag5 = flag3 || this.m_Actor.CountFollowers > 0;
       bool flag6 = this.NeedsLight(game);
       if (!flag5 && !flag6)
@@ -220,6 +223,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
+      // end item juggling check
+
       if (!flag1)
       {
         Map map = this.m_Actor.Location.Map;
