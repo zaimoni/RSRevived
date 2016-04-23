@@ -648,7 +648,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
     {
       if (it == null) return null;
-      if (game.Rules.CanActorUnequipItem(m_Actor, it))
+      if (Rules.CanActorUnequipItem(m_Actor, it))
       {
         MarkItemAsTaboo(it);
         return (ActorAction) new ActionUnequipItem(m_Actor, game, it);

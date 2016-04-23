@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorUnequipItem(this.m_Actor, this.m_Item, out this.m_FailReason);
+      return Rules.CanActorUnequipItem(this.m_Actor, this.m_Item, out this.m_FailReason);
     }
 
     public override void Perform()

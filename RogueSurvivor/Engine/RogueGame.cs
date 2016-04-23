@@ -4475,7 +4475,7 @@ namespace djack.RogueSurvivor.Engine
         if (it.IsEquipped)
         {
           string reason;
-          if (this.m_Rules.CanActorUnequipItem(this.m_Player, it, out reason))
+          if (Rules.CanActorUnequipItem(this.m_Player, it, out reason))
           {
             this.DoUnequipItem(this.m_Player, it);
             return false;
@@ -4812,7 +4812,7 @@ namespace djack.RogueSurvivor.Engine
       if (it.IsEquipped)
       {
         string reason;
-        if (this.m_Rules.CanActorUnequipItem(player, it, out reason))
+        if (Rules.CanActorUnequipItem(player, it, out reason))
         {
           this.DoUnequipItem(player, it);
           return false;
@@ -6680,8 +6680,7 @@ namespace djack.RogueSurvivor.Engine
             return false;
           foreach (Item it in inventory1.Items)
           {
-            if (this.m_Rules.CanActorUnequipItem(this.m_Player, it))
-              return true;
+            if (Rules.CanActorUnequipItem(m_Player, it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_EQUIP:
@@ -9721,12 +9720,14 @@ namespace djack.RogueSurvivor.Engine
     public void DoEquipItem(Actor actor, Item it)
     {
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
-      if (equippedItem != null)
-        this.DoUnequipItem(actor, equippedItem);
+      if (equippedItem != null) DoUnequipItem(actor, equippedItem);
       it.EquippedPart = it.Model.EquipmentPart;
-      this.OnEquipItem(actor, it);
-      if (!this.IsVisibleToPlayer(actor))
-        return;
+      OnEquipItem(actor, it);
+#if DEBUG
+      // postcondition: item is unequippable
+      if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
+#endif
+      if (!this.IsVisibleToPlayer(actor)) return;
       this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_EQUIP), it));
     }
 

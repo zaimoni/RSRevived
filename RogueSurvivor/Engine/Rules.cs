@@ -391,13 +391,13 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorUnequipItem(Actor actor, Item it)
+    public static bool CanActorUnequipItem(Actor actor, Item it)
     {
       string reason;
-      return this.CanActorUnequipItem(actor, it, out reason);
+      return CanActorUnequipItem(actor, it, out reason);
     }
 
-    public bool CanActorUnequipItem(Actor actor, Item it, out string reason)
+    public static bool CanActorUnequipItem(Actor actor, Item it, out string reason)
     {
       if (actor == null)
         throw new ArgumentNullException("actor");
