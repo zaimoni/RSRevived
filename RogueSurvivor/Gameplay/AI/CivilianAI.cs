@@ -294,7 +294,11 @@ label_10:
         if (actorAction5 != null)
         {
           if (actorAction5 is ActionSleep)
-            this.m_Actor.Activity = Activity.SLEEPING;
+            {
+            Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);  // all battery powered items are left hand, currently
+            if (IsItemBatteryPowered(it)) DoUnequipItem(m_Actor, it);
+            m_Actor.Activity = Activity.SLEEPING;
+            }
           return actorAction5;
         }
       }
