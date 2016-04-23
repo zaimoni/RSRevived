@@ -9495,125 +9495,130 @@ namespace djack.RogueSurvivor.Engine
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
       bool flag1 = this.IsVisibleToPlayer(speaker) || this.IsVisibleToPlayer(target);
-      bool flag2 = true;
-      bool flag3 = itSpeaker != null && this.IsInterestingTradeItem(speaker, itSpeaker, target);
+      bool wantedItem = true;
+      bool flag3 = itSpeaker != null && IsInterestingTradeItem(speaker, itSpeaker, target);
       if (target.Leader == speaker)
-        flag2 = true;
+        wantedItem = true;
       else if (doesTargetCheckForInterestInOffer)
-        flag2 = flag3;
-      Item trade = this.PickItemToTrade(target, speaker);
-      if (itSpeaker == null || !flag2)
-      {
-        if (!flag1)
-          return;
+        wantedItem = flag3;
+
+      if (null == itSpeaker || !wantedItem)
+      { // offered item is not of perceived use
+        if (!flag1) return;
         if (itSpeaker == null)
-          this.AddMessage(this.MakeMessage(target, string.Format("is not interested in {0} items.", (object) speaker.Name)));
+          AddMessage(this.MakeMessage(target, string.Format("is not interested in {0} items.", (object) speaker.Name)));
         else
-          this.AddMessage(this.MakeMessage(target, string.Format("is not interested in {0}.", (object) itSpeaker.TheName)));
-      }
-      else if (trade == null)
+          AddMessage(this.MakeMessage(target, string.Format("is not interested in {0}.", (object) itSpeaker.TheName)));
+        return;
+      };
+
+      Item trade = PickItemToTrade(target, speaker);
+      if (null == trade)
       {
-        if (!flag1)
-          return;
-        this.AddMessage(this.MakeMessage(speaker, string.Format("is not interested in {0} items.", (object) target.Name)));
+        if (!flag1) return;
+        AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", (object) target.Name)));
+        return;
+      };
+
+      if (target.Leader != speaker)
+      {
+        if (itSpeaker.Model.ID == trade.Model.ID)
+        {
+            if (!flag1) return;
+            AddMessage(this.MakeMessage(target, "has no interesting deal to offer."));
+            return;
+        }
+      }
+
+      bool isPlayer = speaker.IsPlayer;
+      if (flag1)
+        AddMessage(this.MakeMessage(target, string.Format("{0} {1} for {2}.", (object) this.Conjugate(target, this.VERB_OFFER), (object) trade.AName, (object) itSpeaker.AName)));
+
+      bool acceptDeal = true;
+      if (speaker.IsPlayer)
+      {
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+        RedrawPlayScreen();
+        acceptDeal = WaitYesOrNo();
+        ClearOverlays();
+        RedrawPlayScreen();
       }
       else
+        acceptDeal = !target.HasLeader || (target.Controller as AIController).Directives.CanTrade;
+
+      if (!acceptDeal)
       {
-        if (target.Leader != speaker)
-        {
-          if (itSpeaker.Model.ID == trade.Model.ID)
-          {
-            if (!flag1)
-              return;
-            this.AddMessage(this.MakeMessage(target, "has no interesting deal to offer."));
-            return;
-          }
-          bool flag4 = false;
-          if (itSpeaker is ItemRangedWeapon && trade is ItemAmmo)
-          {
-            if ((itSpeaker as ItemRangedWeapon).AmmoType == (trade as ItemAmmo).AmmoType)
-              flag4 = true;
-          }
-          else if (itSpeaker is ItemAmmo && trade is ItemRangedWeapon && (itSpeaker as ItemAmmo).AmmoType == (trade as ItemRangedWeapon).AmmoType)
-            flag4 = true;
-          if (flag4)
-          {
-            if (!flag1)
-              return;
-            this.AddMessage(this.MakeMessage(target, "has no interesting deal to offer."));
-            return;
-          }
-        }
-        bool isPlayer = speaker.IsPlayer;
-        if (flag1)
-          this.AddMessage(this.MakeMessage(target, string.Format("{0} {1} for {2}.", (object) this.Conjugate(target, this.VERB_OFFER), (object) trade.AName, (object) itSpeaker.AName)));
-        bool flag5 = true;
-        if (!speaker.IsPlayer)
-          flag5 = !target.HasLeader || (target.Controller as AIController).Directives.CanTrade;
-        if (speaker.IsPlayer)
-        {
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.TRADE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, Point.Empty));
-          this.RedrawPlayScreen();
-          flag5 = this.WaitYesOrNo();
-          this.ClearOverlays();
-          this.RedrawPlayScreen();
-        }
-        if (flag5)
-        {
-          if (flag1)
-          {
-            this.AddMessage(this.MakeMessage(speaker, string.Format("{0}.", (object) this.Conjugate(speaker, this.VERB_ACCEPT_THE_DEAL))));
-            if (isPlayer)
-              this.RedrawPlayScreen();
-          }
-          if (target.Leader == speaker && flag3)
-            this.DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
-          if (itSpeaker.IsEquipped)
-            this.DoUnequipItem(speaker, itSpeaker);
-          if (trade.IsEquipped)
-            this.DoUnequipItem(target, trade);
-          speaker.Inventory.RemoveAllQuantity(itSpeaker);
-          target.Inventory.RemoveAllQuantity(trade);
-          speaker.Inventory.AddAll(trade);
-          target.Inventory.AddAll(itSpeaker);
-        }
-        else
-        {
-          if (!flag1)
-            return;
-          this.AddMessage(this.MakeMessage(speaker, string.Format("{0}.", (object) this.Conjugate(speaker, this.VERB_REFUSE_THE_DEAL))));
-          if (!isPlayer)
-            return;
-          this.RedrawPlayScreen();
-        }
+        if (!flag1) return;
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", (object)this.Conjugate(speaker, this.VERB_REFUSE_THE_DEAL))));
+        if (!isPlayer) return;
+        RedrawPlayScreen();
+        return;
       }
+
+      if (flag1)
+      {
+        AddMessage(this.MakeMessage(speaker, string.Format("{0}.", (object) this.Conjugate(speaker, this.VERB_ACCEPT_THE_DEAL))));
+        if (isPlayer) RedrawPlayScreen();
+      }
+      if (target.Leader == speaker && flag3)
+        DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
+      if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
+      if (trade.IsEquipped) DoUnequipItem(target, trade);
+      speaker.Inventory.RemoveAllQuantity(itSpeaker);
+      target.Inventory.RemoveAllQuantity(trade);
+      speaker.Inventory.AddAll(trade);
+      target.Inventory.AddAll(itSpeaker);
     }
 
     public void DoTrade(Actor speaker, Actor target)
-    {
+    {   // precondition: !speaker.IsPlayer (need different implementation)
+#if DEBUG
+     if (speaker.IsPlayer) throw new ArgumentOutOfRangeException("Trading with a player is unimplemented");
+#endif
+#if DEBUG
       Item trade = this.PickItemToTrade(speaker, target);
       this.DoTrade(speaker, trade, target, false);
+#else
+      List<Item> speakerItems = GetTradeableItems(speaker,target);
+      List<Item> targetItems = GetTradeableItems(speaker,target);
+#endif
+    }
+
+    private int CountTradeableItems(Actor speaker, Actor buyer)
+    {
+      int ret = 0;
+      
+      foreach (Item offeredItem in speaker.Inventory.Items)
+      {
+         if (    IsInterestingTradeItem(speaker, offeredItem, buyer)
+              && IsTradeableItem(speaker, offeredItem))
+         {
+            ++ret;
+         }
+      }
+      return ret;
+    }
+
+    private List<Item> GetTradeableItems(Actor speaker, Actor buyer)
+    {
+//    if (buyer.IsPlayer) return speaker.Inventory.Items
+
+      List<Item> objList = null;
+      foreach (Item offeredItem in speaker.Inventory.Items)
+      {
+        if (   IsInterestingTradeItem(speaker, offeredItem, buyer)
+            && IsTradeableItem(speaker, offeredItem))
+        {
+          if (objList == null) objList = new List<Item>(speaker.Inventory.CountItems);
+          objList.Add(offeredItem);
+        }
+      }
+      return objList;
     }
 
     private Item PickItemToTrade(Actor speaker, Actor buyer)
     {
-      Inventory inventory = speaker.Inventory;
-      // player used to get a break
-/*
-      if (buyer.IsPlayer)
-        return inventory[this.m_Rules.Roll(0, inventory.CountItems)];
-*/
-      List<Item> objList = null;
-      foreach (Item offeredItem in inventory.Items)
-      {
-        if (   IsInterestingTradeItem(speaker, offeredItem, buyer)
-            && IsTradeableItem(speaker,offeredItem))
-        {
-          if (objList == null)
-            objList = new List<Item>(inventory.CountItems);
-          objList.Add(offeredItem);
-        }
-      }
+      List<Item> objList = GetTradeableItems(speaker,buyer);
       if (objList == null) return null;
       return objList[this.m_Rules.Roll(0, objList.Count)];
     }
