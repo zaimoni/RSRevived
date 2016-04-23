@@ -1989,6 +1989,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+    // L1 metric i.e. distance in moves
     public int GridDistance(Point pA, int bX, int bY)
     {
       return Math.Max(Math.Abs(pA.X - bX), Math.Abs(pA.Y - bY));
@@ -1999,6 +2000,7 @@ namespace djack.RogueSurvivor.Engine
       return Math.Max(Math.Abs(pA.X - pB.X), Math.Abs(pA.Y - pB.Y));
     }
 
+    // Euclidean plane distance
     public float StdDistance(Point from, Point to)
     {
       int num1 = to.X - from.X;

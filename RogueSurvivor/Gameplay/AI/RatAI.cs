@@ -42,23 +42,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> perceptList1 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn == this.m_Actor.Location.Map.LocalTime.TurnCounter));
         if (perceptList1 != null)
         {
-          Percept percept1 = (Percept) null;
-          ActorAction actorAction1 = (ActorAction) null;
-          float num1 = (float) int.MaxValue;
-          foreach (Percept percept2 in perceptList1)
-          {
-            float num2 = (float) game.Rules.GridDistance(this.m_Actor.Location.Position, percept2.Location.Position);
-            if ((double) num2 < (double) num1)
-            {
-              ActorAction actorAction2 = this.BehaviorStupidBumpToward(game, percept2.Location.Position);
-              if (actorAction2 != null)
-              {
-                num1 = num2;
-                percept1 = percept2;
-                actorAction1 = actorAction2;
-              }
-            }
-          }
+          Percept percept1;
+          ActorAction actorAction1 = TargetGridMelee(game, perceptList1, out percept1);
           if (actorAction1 != null)
           {
             this.m_Actor.Activity = Activity.CHASING;
@@ -69,23 +54,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> perceptList2 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != this.m_Actor.Location.Map.LocalTime.TurnCounter));
         if (perceptList2 != null)
         {
-          Percept percept1 = (Percept) null;
-          ActorAction actorAction1 = (ActorAction) null;
-          float num1 = (float) int.MaxValue;
-          foreach (Percept percept2 in perceptList2)
-          {
-            float num2 = (float) game.Rules.GridDistance(this.m_Actor.Location.Position, percept2.Location.Position);
-            if ((double) num2 < (double) num1)
-            {
-              ActorAction actorAction2 = this.BehaviorStupidBumpToward(game, percept2.Location.Position);
-              if (actorAction2 != null)
-              {
-                num1 = num2;
-                percept1 = percept2;
-                actorAction1 = actorAction2;
-              }
-            }
-          }
+          Percept percept1;
+          ActorAction actorAction1 = TargetGridMelee(game, perceptList2, out percept1);
           if (actorAction1 != null)
           {
             this.m_Actor.Activity = Activity.CHASING;

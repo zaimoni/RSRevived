@@ -428,7 +428,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
-    protected ActorAction BehaviorWalkAwayFrom(RogueGame game, Percept goal)
+    // A number of the melee enemy targeting sequences not only work on grid distance,
+    // they need to return a coordinated action/target pair.
+    protected ActorAction TargetGridMelee(RogueGame game, List<Percept> perceptList, out Percept target)
+    {
+      target = null;
+      ActorAction ret = null;
+      int num1 = int.MaxValue;
+      foreach (Percept percept in perceptList)
+      {
+        int num2 = game.Rules.GridDistance(m_Actor.Location.Position, percept.Location.Position);
+        if (num2 < num1)
+        {
+          ActorAction tmp = BehaviorStupidBumpToward(game, percept.Location.Position);
+          if (null != tmp)
+          {
+            num1 = num2;
+            target = percept;
+            ret = tmp;
+          }
+        }
+      }
+      return ret;
+    }
+
+        protected ActorAction BehaviorWalkAwayFrom(RogueGame game, Percept goal)
     {
       return this.BehaviorWalkAwayFrom(game, new List<Percept>(1) { goal });
     }
