@@ -74,17 +74,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
-      List<Percept> perceptList = this.FilterCurrent(game, percepts2);
-      bool flag1 = this.m_Actor.HasLeader && !this.DontFollowLeader;
-      bool flag2 = perceptList != null;
-      bool flag3 = percepts2 != null;
+      // fleeing from explosives is done before the enemies check
       ActorAction actorAction1 = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
       if (actorAction1 != null)
       {
         this.m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
         return actorAction1;
       }
+
+      List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
+      List<Percept> perceptList = this.FilterCurrent(game, percepts2);
+      bool flag1 = this.m_Actor.HasLeader && !this.DontFollowLeader;
+      bool flag2 = perceptList != null;
+      bool flag3 = percepts2 != null;
       if (flag2)
       {
         ActorAction actorAction2 = this.BehaviorThrowGrenade(game, this.m_LOSSensor.FOV, perceptList);
