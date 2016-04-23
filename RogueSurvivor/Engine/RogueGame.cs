@@ -9575,31 +9575,11 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
      if (speaker.IsPlayer) throw new ArgumentOutOfRangeException("Trading with a player is unimplemented");
 #endif
-#if DEBUG
       Item trade = this.PickItemToTrade(speaker, target);
       this.DoTrade(speaker, trade, target, false);
-#else
-      List<Item> speakerItems = GetTradeableItems(speaker,target);
-      List<Item> targetItems = GetTradeableItems(speaker,target);
-#endif
     }
 
-    private int CountTradeableItems(Actor speaker, Actor buyer)
-    {
-      int ret = 0;
-      
-      foreach (Item offeredItem in speaker.Inventory.Items)
-      {
-         if (    IsInterestingTradeItem(speaker, offeredItem, buyer)
-              && IsTradeableItem(speaker, offeredItem))
-         {
-            ++ret;
-         }
-      }
-      return ret;
-    }
-
-    private List<Item> GetTradeableItems(Actor speaker, Actor buyer)
+    private List<Item> GetInterestingTradeableItems(Actor speaker, Actor buyer)
     {
 //    if (buyer.IsPlayer) return speaker.Inventory.Items
 
@@ -9618,7 +9598,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Item PickItemToTrade(Actor speaker, Actor buyer)
     {
-      List<Item> objList = GetTradeableItems(speaker,buyer);
+      List<Item> objList = GetInterestingTradeableItems(speaker,buyer);
       if (objList == null) return null;
       return objList[this.m_Rules.Roll(0, objList.Count)];
     }

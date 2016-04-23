@@ -382,14 +382,19 @@ label_10:
           this.MarkTileAsTaboo(location.Position);
           game.DoEmote(this.m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
-        if (this.Directives.CanTrade)
+        if (Directives.CanTrade && HasAnyTradeableItem(game, m_Actor.Inventory))
         {
+          List<Item> TradeableItems = GetTradeableItems(game, m_Actor.Inventory);
           List<Percept> percepts2 = this.FilterOut(game, this.FilterNonEnemies(game, percepts1), (Predicate<Percept>) (p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
               return true;
             Actor actor = p.Percepted as Actor;
-            return actor.IsPlayer || !game.Rules.CanActorInitiateTradeWith(this.m_Actor, actor) || (this.IsActorTabooTrade(actor) || !this.HasAnyInterestingItem(game, actor.Inventory)) || !(actor.Controller as BaseAI).HasAnyInterestingItem(game, this.m_Actor.Inventory);
+            if (actor.IsPlayer) return true;
+            if (!game.Rules.CanActorInitiateTradeWith(this.m_Actor, actor)) return true;
+            if (IsActorTabooTrade(actor)) return true;
+            if (!HasAnyInterestingItem(game, actor.Inventory)) return true;
+            return !(actor.Controller as BaseAI).HasAnyInterestingItem(game, TradeableItems);
           }));
           if (percepts2 != null)
           {

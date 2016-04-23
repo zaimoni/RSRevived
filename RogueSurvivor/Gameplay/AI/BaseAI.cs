@@ -1878,6 +1878,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
+    public List<Item> GetTradeableItems(RogueGame game, Inventory inv)
+    {
+      if (inv == null) return null;
+      List<Item> ret = null;
+      foreach (Item it in inv.Items) {
+         if (IsTradeableItem(game, it)) {
+           if (null == ret) ret = new List<Item>(inv.CountItems);
+           ret.Add(it);
+         }
+      }
+      return ret;
+    }
+
+    public bool HasAnyTradeableItem(RogueGame game, Inventory inv)
+    {
+      if (inv == null) return false;
+      foreach (Item it in inv.Items)
+      {
+        if (IsTradeableItem(game, it))
+          return true;
+      }
+      return false;
+    }
+
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(RogueGame game, Item it)
     {
@@ -1962,6 +1986,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return false;
       foreach (Item it in inv.Items) {
+        if (IsInterestingItem(game, it)) return true;
+      }
+      return false;
+    }
+
+    public bool HasAnyInterestingItem(RogueGame game, List<Item> Items)
+    {
+      if (Items == null) return false;
+      foreach (Item it in Items) {
         if (IsInterestingItem(game, it)) return true;
       }
       return false;
