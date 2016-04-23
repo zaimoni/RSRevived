@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = FilterSameMap(game, percepts);
+      List<Percept> percepts1 = FilterSameMap(percepts);
       
       // OrderableAI specific: respond to orders
       if (null != Order)
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
-      List<Percept> perceptList = this.FilterCurrent(game, percepts2);
+      List<Percept> perceptList = FilterCurrent(percepts2);
       bool flag1 = perceptList != null;
       bool flag2 = percepts2 != null;
       bool flag3 = this.m_Actor.HasLeader && !this.DontFollowLeader;
@@ -243,7 +243,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!flag1)
       {
         Map map = this.m_Actor.Location.Map;
-        List<Percept> percepts3 = this.FilterActors(game, this.FilterCurrent(game, percepts1), (Predicate<Actor>) (a =>
+        List<Percept> percepts3 = FilterActors(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
         {
           if (a.Inventory == null || a.Inventory.CountItems == 0 || this.IsFriendOf(game, a))
             return false;

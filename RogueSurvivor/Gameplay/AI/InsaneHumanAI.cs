@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(game, percepts);
+      List<Percept> percepts1 = this.FilterSameMap(percepts);
       ActorAction actorAction1 = this.BehaviorEquipWeapon(game);
       if (actorAction1 != null)
       {
@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
         if (percepts2 != null)
         {
-          List<Percept> perceptList1 = FilterCurrent(game, percepts2);
+          List<Percept> perceptList1 = FilterCurrent(percepts2);
           if (perceptList1 != null)
           {
             Percept percept1;

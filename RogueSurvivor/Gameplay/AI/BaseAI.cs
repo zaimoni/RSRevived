@@ -129,7 +129,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     The only realistic mitigation is to pro-rate the capacity request.
  */
     // April 22, 2016: testing indicates this does not need micro-optimization
-    protected List<Percept> FilterSameMap(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterSameMap(List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = null;
@@ -171,7 +171,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
-    protected List<Percept> FilterCurrent(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterCurrent(List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = null;
@@ -188,7 +188,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept FilterNearest(RogueGame game, List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      double num1 = Double.MaxValue;
+      double num1 = double.MaxValue;
       Percept percept1 = null;
       foreach(Percept percept2 in percepts) {
          float num2 = game.Rules.StdDistance(m_Actor.Location.Position, percept2.Location.Position);
@@ -200,7 +200,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percept1;
     }
 
-    protected Percept FilterStrongestScent(RogueGame game, List<Percept> scents)
+    protected Percept FilterStrongestScent(List<Percept> scents)
     {
       if (scents == null || scents.Count == 0)
         return (Percept) null;
@@ -220,7 +220,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percept;
     }
 
-    protected List<Percept> FilterActorsModel(RogueGame game, List<Percept> percepts, ActorModel model)
+    // dead function?
+    protected List<Percept> FilterActorsModel(List<Percept> percepts, ActorModel model)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = null;
@@ -234,7 +235,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
-    protected List<Percept> FilterActors(RogueGame game, List<Percept> percepts, Predicate<Actor> predicateFn)
+    protected List<Percept> FilterActors(List<Percept> percepts, Predicate<Actor> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = null;
@@ -1033,7 +1034,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (scents == null || scents.Count == 0)
         return (ActorAction) null;
-      Percept percept = this.FilterStrongestScent(game, scents);
+      Percept percept = FilterStrongestScent(scents);
       Map map = this.m_Actor.Location.Map;
       if (!(this.m_Actor.Location.Position == percept.Location.Position))
         return this.BehaviorIntelligentBumpToward(game, percept.Location.Position) ?? (ActorAction) null;
@@ -1575,7 +1576,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ActorAction) null;
       if (percepts == null)
         return (ActorAction) null;
-      List<Percept> percepts1 = this.FilterActors(game, percepts, (Predicate<Actor>) (a =>
+      List<Percept> percepts1 = FilterActors(percepts, (Predicate<Actor>) (a =>
       {
         if (a.MurdersCounter > 0)
           return !game.Rules.IsEnemyOf(this.m_Actor, a);

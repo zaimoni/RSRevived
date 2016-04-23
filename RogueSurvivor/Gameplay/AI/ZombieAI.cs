@@ -52,14 +52,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(game, percepts);
+      List<Percept> percepts1 = this.FilterSameMap(percepts);
 
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
 
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       if (percepts2 != null)
       {
-        List<Percept> perceptList1 = FilterCurrent(game, percepts2);
+        List<Percept> perceptList1 = FilterCurrent(percepts2);
         if (perceptList1 != null)
         {
           Percept percept1;
@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!this.m_Actor.Model.Abilities.IsUndeadMaster)
       {
-        Percept percept = this.FilterNearest(game, this.FilterActors(game, percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
+        Percept percept = FilterNearest(game, FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
         if (percept != null)
         {
           ActorAction actorAction = this.BehaviorStupidBumpToward(game, this.RandomPositionNear(game.Rules, this.m_Actor.Location.Map, percept.Location.Position, 3));

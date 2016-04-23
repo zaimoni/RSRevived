@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(game, percepts);
+      List<Percept> percepts1 = this.FilterSameMap(percepts);
 
       // dogs target their leader's enemy before the usual check for enemies
       if (this.m_Actor.HasLeader)

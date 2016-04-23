@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(game, percepts);
+      List<Percept> percepts1 = this.FilterSameMap(percepts);
       Percept percept = this.FilterNearest(game, this.FilterEnemies(game, percepts1));
       if (percept != null)
       {

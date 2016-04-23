@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = FilterSameMap(game, percepts);
+      List<Percept> percepts1 = FilterSameMap(percepts);
       
       // OrderableAI specific: respond to orders
       if (null != Order)
@@ -422,7 +422,7 @@ label_10:
       }
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!this.m_Actor.HasLeader && !this.m_Actor.Model.Abilities.IsLawEnforcer) && (game.Rules.IsActorHungry(this.m_Actor) && this.HasNoFoodItems(this.m_Actor)))
       {
-        Percept target = this.FilterNearest(game, this.FilterActors(game, percepts1, (Predicate<Actor>) (a =>
+        Percept target = this.FilterNearest(game, FilterActors(percepts1, (Predicate<Actor>) (a =>
         {
           if (a == this.m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == this.m_Actor || this.m_Actor.Leader == a))
             return false;
