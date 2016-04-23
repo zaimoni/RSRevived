@@ -2133,8 +2133,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsValidFleeingAction(ActorAction a)
     {
-      if (a == null)
-        return false;
+      if (null == a) return false;
       if (!(a is ActionMoveStep) && !(a is ActionOpenDoor))
         return a is ActionSwitchPlace;
       return true;
@@ -2142,8 +2141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool isValidWanderAction(RogueGame game, ActorAction a)
     {
-      if (a == null)
-        return false;
+      if (null == a) return false;
       if (!(a is ActionMoveStep) && !(a is ActionSwitchPlace) && (!(a is ActionPush) && !(a is ActionOpenDoor)) && (!(a is ActionChat) || !this.Directives.CanTrade && (a as ActionChat).Target != this.m_Actor.Leader) && (!(a is ActionBashDoor) && (!(a is ActionGetFromContainer) || !this.IsInterestingItem(game, (a as ActionGetFromContainer).Item))))
         return a is ActionBarricadeDoor;
       return true;
