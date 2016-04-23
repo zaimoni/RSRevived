@@ -188,15 +188,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept FilterNearest(RogueGame game, List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      Percept percept1 = percepts[0];
-      float num1 = game.Rules.StdDistance(this.m_Actor.Location.Position, percepts[0].Location.Position);
-      for (int index = 1; index < percepts.Count; ++index) {
-        Percept percept2 = percepts[index];
-        float num2 = game.Rules.StdDistance(this.m_Actor.Location.Position, percept2.Location.Position);
-        if ((double) num2 < (double) num1) {
-          percept1 = percept2;
-          num1 = num2;
-        }
+      double num1 = Double.MaxValue;
+      Percept percept1 = null;
+      foreach(Percept percept2 in percepts) {
+         float num2 = game.Rules.StdDistance(m_Actor.Location.Position, percept2.Location.Position);
+         if (num2 < num1) {
+           percept1 = percept2;
+           num1 = num2;
+         }
       }
       return percept1;
     }
@@ -2080,79 +2079,56 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected BaseAI.ChoiceEval<_T_> Choose<_T_>(RogueGame game, List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (listOfChoices.Count == 0)
-        return (BaseAI.ChoiceEval<_T_>) null;
+      if (listOfChoices.Count == 0) return null;
       bool flag = false;
       float num = 0.0f;
       List<BaseAI.ChoiceEval<_T_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_T_>>(listOfChoices.Count);
-      for (int index = 0; index < listOfChoices.Count; ++index)
-      {
-        if (isChoiceValidFn(listOfChoices[index]))
-        {
-          float f = evalChoiceFn(listOfChoices[index]);
-          if (!float.IsNaN(f))
-          {
-            choiceEvalList1.Add(new BaseAI.ChoiceEval<_T_>(listOfChoices[index], f));
-            if (!flag || isBetterEvalThanFn(f, num))
-            {
-              flag = true;
-              num = f;
-            }
+      foreach(_T_ tmp in listOfChoices) {
+        if (isChoiceValidFn(tmp)) {
+          float f = evalChoiceFn(tmp);
+          if (float.IsNaN(f)) continue;
+          choiceEvalList1.Add(new BaseAI.ChoiceEval<_T_>(tmp, f));
+          if (!flag || isBetterEvalThanFn(f, num)) {
+            flag = true;
+            num = f;
           }
         }
       }
-      if (choiceEvalList1.Count == 0)
-        return (BaseAI.ChoiceEval<_T_>) null;
-      if (choiceEvalList1.Count == 1)
-        return choiceEvalList1[0];
+      if (choiceEvalList1.Count == 0) return null;
+      if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
       List<BaseAI.ChoiceEval<_T_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_T_>>(choiceEvalList1.Count);
-      for (int index = 0; index < choiceEvalList1.Count; ++index)
-      {
-        if ((double) choiceEvalList1[index].Value == (double) num)
-          choiceEvalList2.Add(choiceEvalList1[index]);
+      foreach(BaseAI.ChoiceEval<_T_> tmp in choiceEvalList1) {
+        if (tmp.Value == num) choiceEvalList2.Add(tmp);
       }
-      int index1 = game.Rules.Roll(0, choiceEvalList2.Count);
-      return choiceEvalList2[index1];
+      return choiceEvalList2[game.Rules.Roll(0, choiceEvalList2.Count)];
     }
 
     protected BaseAI.ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(RogueGame game, List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (listOfChoices.Count == 0)
-        return (BaseAI.ChoiceEval<_DATA_>) null;
+      if (listOfChoices.Count == 0) return null;
       bool flag = false;
       float num = 0.0f;
       List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_DATA_>>(listOfChoices.Count);
-      for (int index = 0; index < listOfChoices.Count; ++index)
+      foreach(_T_ tmp in listOfChoices)
       {
-        _DATA_ choice = isChoiceValidFn(listOfChoices[index]);
-        if ((object) choice != null)
-        {
-          float f = evalChoiceFn(listOfChoices[index]);
-          if (!float.IsNaN(f))
-          {
-            choiceEvalList1.Add(new BaseAI.ChoiceEval<_DATA_>(choice, f));
-            if (!flag || isBetterEvalThanFn(f, num))
-            {
-              flag = true;
-              num = f;
-            }
-          }
+        _DATA_ choice = isChoiceValidFn(tmp);
+        if (null == choice) continue;
+        float f = evalChoiceFn(tmp);
+        if (float.IsNaN(f)) continue;
+        choiceEvalList1.Add(new BaseAI.ChoiceEval<_DATA_>(choice, f));
+        if (!flag || isBetterEvalThanFn(f, num)) {
+          flag = true;
+          num = f;
         }
       }
-      if (choiceEvalList1.Count == 0)
-        return (BaseAI.ChoiceEval<_DATA_>) null;
-      if (choiceEvalList1.Count == 1)
-        return choiceEvalList1[0];
+      if (choiceEvalList1.Count == 0) return null;
+      if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
       List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_DATA_>>(choiceEvalList1.Count);
-      for (int index = 0; index < choiceEvalList1.Count; ++index)
-      {
-        if ((double) choiceEvalList1[index].Value == (double) num)
-          choiceEvalList2.Add(choiceEvalList1[index]);
+      foreach(BaseAI.ChoiceEval<_DATA_> tmp in choiceEvalList1) {
+        if (tmp.Value == num) choiceEvalList2.Add(tmp);
       }
-      if (choiceEvalList2.Count == 0)
-        return (BaseAI.ChoiceEval<_DATA_>) null;
-      int index1 = game.Rules.Roll(0, choiceEvalList2.Count);
-      return choiceEvalList2[index1];
+      if (choiceEvalList2.Count == 0) return null;
+      return choiceEvalList2[game.Rules.Roll(0, choiceEvalList2.Count)];
     }
 
     protected bool IsValidFleeingAction(ActorAction a)
