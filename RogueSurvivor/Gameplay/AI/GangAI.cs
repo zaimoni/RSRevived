@@ -85,11 +85,43 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
+      // start item juggling
+      bool flag3 = m_Actor.HasLeader && !DontFollowLeader;
+      bool flag5 = flag3 || m_Actor.CountFollowers > 0;
+      if (flag5)
+      {
+        tmpAction = BehaviorEquipCellPhone(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      else if (NeedsLight(game))
+      {
+        tmpAction = BehaviorEquipLight(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      else
+      {
+        tmpAction = BehaviorUnequipLeftItem(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      // end item juggling check
+
+
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = FilterCurrent(percepts2);
       bool flag1 = perceptList != null;
       bool flag2 = percepts2 != null;
-      bool flag3 = this.m_Actor.HasLeader && !this.DontFollowLeader;
       bool hasVisibleLeader = flag3 && this.m_LOSSensor.FOV.Contains(this.m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag3 && this.IsAdjacentToEnemy(game, this.m_Actor.Leader);
       bool flag4 = !game.Rules.IsActorTired(this.m_Actor);
@@ -191,39 +223,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction6;
       }
-
-      // start item juggling
-      // this should be above the enemies check, but the current implementation is dependent on DropUselessItem to protect it from drained items
-      bool flag5 = flag3 || this.m_Actor.CountFollowers > 0;
-      bool flag6 = this.NeedsLight(game);
-      if (!flag5 && !flag6)
-      {
-        ActorAction actorAction3 = this.BehaviorUnequipLeftItem(game);
-        if (actorAction3 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
-        }
-      }
-      if (flag5)
-      {
-        ActorAction actorAction3 = this.BehaviorEquipCellPhone(game);
-        if (actorAction3 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
-        }
-      }
-      else if (flag6)
-      {
-        ActorAction actorAction3 = this.BehaviorEquipLight(game);
-        if (actorAction3 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
-        }
-      }
-      // end item juggling check
 
       if (!flag1)
       {

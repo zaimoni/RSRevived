@@ -191,6 +191,46 @@ label_10:
         return tmpAction;
       }
 
+      // start item juggling
+      bool flag4 = m_Actor.HasLeader || m_Actor.CountFollowers > 0;
+      if (flag4)
+      {
+        tmpAction = BehaviorEquipCellPhone(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      else if (NeedsLight(game))
+      {
+        tmpAction = BehaviorEquipLight(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      else if (IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position))
+      {
+        tmpAction = BehaviorEquipStenchKiller(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      else
+      {
+        tmpAction = BehaviorUnequipLeftItem(game);
+        if (null != tmpAction)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      // end item juggling check
+
       // all free actions must be above the enemies check
       if (flag1 && this.Directives.CanFireWeapons && this.m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
       {
@@ -304,54 +344,6 @@ label_10:
         this.m_Actor.Activity = Activity.IDLE;
         return actorAction7;
       }
-
-      // start item juggling
-      // this should be above the enemies check, but the current implementation is dependent on DropUselessItem to protect it from drained items
-      bool flag4 = this.m_Actor.HasLeader || this.m_Actor.CountFollowers > 0;
-      bool flag5 = this.NeedsLight(game);
-      RogueGame game1 = game;
-      location = this.m_Actor.Location;
-      Map map3 = location.Map;
-      location = this.m_Actor.Location;
-      Point position3 = location.Position;
-      bool flag6 = this.IsGoodStenchKillerSpot(game1, map3, position3);
-      if (!flag4 && !flag5 && !flag6)
-      {
-        ActorAction actorAction2 = this.BehaviorUnequipLeftItem(game);
-        if (actorAction2 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
-        }
-      }
-      if (flag4)
-      {
-        ActorAction actorAction2 = this.BehaviorEquipCellPhone(game);
-        if (actorAction2 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
-        }
-      }
-      else if (flag5)
-      {
-        ActorAction actorAction2 = this.BehaviorEquipLight(game);
-        if (actorAction2 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
-        }
-      }
-      else if (flag6)
-      {
-        ActorAction actorAction2 = this.BehaviorEquipStenchKiller(game);
-        if (actorAction2 != null)
-        {
-          this.m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
-        }
-      }
-      // end item juggling check
 
       if (!flag1 && this.Directives.CanTakeItems)
       {
