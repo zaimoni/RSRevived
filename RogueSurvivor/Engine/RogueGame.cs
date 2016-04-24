@@ -5325,7 +5325,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Point position in this.m_PlayerFOV)
         {
           Actor actorAt = map.GetActorAt(position);
-          if (actorAt != null && !actorAt.IsPlayer)
+          if (actorAt != null && actorAt!=player)
             actorList.Add(actorAt);
         }
         if (actorList.Count == 0)
@@ -14186,6 +14186,16 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleReincarnation()
     {
+       // support savefile hacking: patch up if at least one other live player on the map
+       foreach(Actor tmp in m_Session.CurrentMap.Actors)
+       {
+         if (tmp.IsPlayer && !tmp.IsDead)
+           {
+           m_Player = tmp;
+           return;
+           }
+       }
+
       this.m_MusicManager.Play(GameMusics.LIMBO);
       if (RogueGame.s_Options.MaxReincarnations <= 0 || !this.AskForReincarnation())
       {
