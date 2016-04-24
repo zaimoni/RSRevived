@@ -9573,7 +9573,8 @@ namespace djack.RogueSurvivor.Engine
     public void DoTrade(Actor speaker, Actor target)
     {   // precondition: !speaker.IsPlayer (need different implementation)
 #if DEBUG
-     if (speaker.IsPlayer) throw new ArgumentOutOfRangeException("Trading with a player is unimplemented");
+      string reason;
+      if (!m_Rules.CanActorInitiateTradeWith(speaker,target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
       Item trade = this.PickItemToTrade(speaker, target);
       this.DoTrade(speaker, trade, target, false);
