@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor
 
     private void Bugreport_Load(object sender, EventArgs e)
     {
-      this.m_HeaderTextBox.Text = "Rogue Survivor encoutered a fatal error." + this.NL + "Please report all the text in the textbox below to the author (copypaste it, remember to scroll all the way down from start to end)." + this.NL + "Press OK to exit.";
+      this.m_HeaderTextBox.Text = SetupConfig.GAME_NAME+" encoutered a fatal error." + this.NL + "Please report all the text in the textbox below to the author (copypaste it, remember to scroll all the way down from start to end)." + this.NL + "Press OK to exit.";
       this.m_LogTextBox.Clear();
       this.m_LogTextBox.AppendText("Start of report." + this.NL);
       this.m_LogTextBox.AppendText("-----------------------------------------------" + this.NL);
@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor
       this.Controls.Add((Control) this.m_OkButton);
       this.Name = "Bugreport";
       this.StartPosition = FormStartPosition.CenterScreen;
-      this.Text = "Rogue Survivor Error Report";
+      this.Text = SetupConfig.GAME_NAME+" Error Report";
       this.TopMost = true;
       this.Load += new EventHandler(this.Bugreport_Load);
       this.ResumeLayout(false);

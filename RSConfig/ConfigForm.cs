@@ -30,7 +30,7 @@ namespace Setup
     public ConfigForm()
     {
       this.InitializeComponent();
-      this.l_GameVersion.Text = "Game version : alpha 9";
+      this.l_GameVersion.Text = "Game version : "+SetupConfig.GAME_VERSION;
     }
 
     protected override void Dispose(bool disposing)
@@ -168,7 +168,7 @@ namespace Setup
       this.Controls.Add((Control) this.panel1);
       this.Name = "ConfigForm";
       this.StartPosition = FormStartPosition.CenterScreen;
-      this.Text = "Rogue Survivor Config";
+      this.Text = SetupConfig.GAME_NAME+" Config";
       this.Load += new EventHandler(this.SetupForm_Load);
       this.gb_Video.ResumeLayout(false);
       this.gb_Video.PerformLayout();

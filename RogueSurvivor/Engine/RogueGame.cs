@@ -919,7 +919,7 @@ namespace djack.RogueSurvivor.Engine
       };
       string[] values = new string[3]
       {
-        "Rogue Survivor standard game.",
+        SetupConfig.GAME_NAME+" standard game.",
         "Don't get a cold. Keep an eye on your deceased diseased friends.",
         "The classic zombies next door."
       };
@@ -1438,7 +1438,7 @@ namespace djack.RogueSurvivor.Engine
       int gy4 = gy3 + 14;
       if (saveToTextfile)
       {
-        textFile.Append(string.Format("ROGUE SURVIVOR {0}", (object) "alpha 9"));
+        textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
         textFile.Append("Hi Scores");
         textFile.Append("Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time");
       }
@@ -1528,7 +1528,7 @@ namespace djack.RogueSurvivor.Engine
       this.ClearMessages();
       this.ClearMessagesHistory();
       this.AddMessage(new djack.RogueSurvivor.Data.Message("*****************************", 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("* Welcome to Rogue Survivor *", 0, Color.LightGreen));
+      this.AddMessage(new djack.RogueSurvivor.Data.Message("* Welcome to "+SetupConfig.GAME_NAME+" *", 0, Color.LightGreen));
       this.AddMessage(new djack.RogueSurvivor.Data.Message("* We hope you like Zombies  *", 0, Color.LightGreen));
       this.AddMessage(new djack.RogueSurvivor.Data.Message("*****************************", 0, Color.LightGreen));
       this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} for help", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
@@ -10779,7 +10779,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_Session.Scoring.Side = this.m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       this.m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, this.m_Session.Scoring.Side, this.m_Session.Scoring.ReincarnationNumber);
       TextFile textFile = new TextFile();
-      textFile.Append(string.Format("ROGUE SURVIVOR {0}", (object) "alpha 9"));
+      textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
       textFile.Append(string.Format("{0} was {1} and {2}.", (object) name, (object) this.AorAn(this.m_Player.Model.Name), (object) this.AorAn(this.m_Player.Faction.MemberName)));
       textFile.Append(string.Format("{0} survived to see {1}.", (object) str1, (object) worldTime.ToString()));
@@ -12747,7 +12747,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_Rules = new Rules(new DiceRoller(this.m_Session.Seed));
       this.RefreshPlayer();
       this.AddMessage(new djack.RogueSurvivor.Data.Message("LOADING DONE.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("Welcome back to Rogue Survivor!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
+      this.AddMessage(new djack.RogueSurvivor.Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
       this.RedrawPlayScreen();
       this.m_UI.UI_Repaint();
       this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "<Loaded game>");
@@ -12837,7 +12837,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DrawHeader()
     {
-      this.m_UI.UI_DrawStringBold(Color.Red, "ROGUE SURVIVOR - alpha 9", 0, 0, new Color?(Color.DarkRed));
+      this.m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
     }
 
     private void DrawFootnote(Color color, string text)

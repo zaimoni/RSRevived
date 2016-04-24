@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form...");
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::InitializeComponent...");
       this.InitializeComponent();
-      this.Text = "Rogue Survivor - alpha 9";
+      Text = SetupConfig.GAME_NAME+" - " + SetupConfig.GAME_VERSION;
       if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_GDI_PLUS)
         this.Text += " (GDI+)";
       switch (SetupConfig.Sound)
@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor
       this.Icon = (Icon) componentResourceManager.GetObject("$this.Icon");
       this.Name = "RogueForm";
       this.StartPosition = FormStartPosition.CenterScreen;
-      this.Text = "Rogue Survivor";
+      Text = SetupConfig.GAME_NAME;
       this.WindowState = FormWindowState.Maximized;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "ResumeLayout");
       this.ResumeLayout(false);
