@@ -1680,7 +1680,8 @@ namespace djack.RogueSurvivor.Engine
         reason = "too many followers";
         return false;
       }
-      if (target.IsPlayer)
+      // to support savefile hacking.  AI in charge of player is a problem.
+      if (target.IsPlayer && !actor.IsPlayer)
       {
         reason = "is player";
         return false;

@@ -1042,6 +1042,14 @@ namespace djack.RogueSurvivor.Data
             mCorpses
           });
       }
+      // Support savefile hacking.
+      // Check the actors.  If any have null controllers, intent was to hand control from the player to the AI.
+      // Give them AI controllers here.
+      foreach(Actor tmp in m_ActorsList)
+      {
+        if (null != tmp.Controller) continue;
+        tmp.Controller = tmp.Model.InstanciateController();
+      }
     }
 
     public void OptimizeBeforeSaving()

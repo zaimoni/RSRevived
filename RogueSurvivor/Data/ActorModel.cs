@@ -58,7 +58,8 @@ namespace djack.RogueSurvivor.Data
       };
     }
 
-    private ActorController InstanciateController()
+    // should be private, but savefile auto-repair contraindicates
+    public ActorController InstanciateController()
     {
       return DefaultController.GetConstructor(Type.EmptyTypes).Invoke((object[]) null) as ActorController;
     }
