@@ -250,12 +250,12 @@ namespace djack.RogueSurvivor.Engine
     private const float ARMY_SUPPLIES_FACTOR = 288f;
     private const int ARMY_SUPPLIES_CHANCE = 2;
     private const int ARMY_SUPPLIES_SCATTER = 1;
-    public const int BIKERS_RAID_DAY = 2;
+    private const int BIKERS_RAID_DAY = 2;
     private const int BIKERS_END_DAY = 14;
     private const int BIKERS_RAID_SIZE = 6;
     private const int BIKERS_RAID_CHANCE_PER_TURN = 1;
     private const int BIKERS_RAID_DAYS_GAP = 2;
-    public const int GANGSTAS_RAID_DAY = 7;
+    private const int GANGSTAS_RAID_DAY = 7;
     private const int GANGSTAS_END_DAY = 21;
     private const int GANGSTAS_RAID_SIZE = 6;
     private const int GANGSTAS_RAID_CHANCE_PER_TURN = 1;
@@ -3162,7 +3162,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
     {
-      if (!this.SpawnActorOnMapBorder(map, unique.TheActor, 10, true))
+      if (!this.SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER, true))
         return;
       unique.IsSpawned = true;
       if (map != this.m_Player.Location.Map || this.m_Player.IsSleeping || this.m_Player.Model.Abilities.IsUndead)
@@ -3272,7 +3272,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(x, y))
         return false;
       Tile tileAt = map.GetTileAt(x, y);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && map.GetMapObjectAt(x, y) == null) && this.DistanceToPlayer(map, x, y) >= 10;
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && map.GetMapObjectAt(x, y) == null) && this.DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
@@ -3520,31 +3520,31 @@ namespace djack.RogueSurvivor.Engine
         if (flag)
           newUndead.Model = this.GameActors[fromModelID];
       }
-      this.SpawnActorOnMapBorder(map, newUndead, 10, true);
+      this.SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);
     }
 
     private void SpawnNewSewersUndead(Map map, int day)
     {
       Actor newSewersUndead = this.m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
-      this.SpawnActorOnMapBorder(map, newSewersUndead, 10, false);
+      this.SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false);
     }
 
     private void SpawnNewSubwayUndead(Map map, int day)
     {
       Actor newSubwayUndead = this.m_TownGenerator.CreateNewSubwayUndead(map.LocalTime.TurnCounter);
-      this.SpawnActorOnMapBorder(map, newSubwayUndead, 10, false);
+      this.SpawnActorOnMapBorder(map, newSubwayUndead, SPAWN_DISTANCE_TO_PLAYER, false);
     }
 
     private void SpawnNewRefugee(Map map)
     {
       Actor newRefugee = this.m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
-      this.SpawnActorOnMapBorder(map, newRefugee, 10, true);
+      this.SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true);
     }
 
     private Actor SpawnNewSurvivor(Map map)
     {
       Actor newSurvivor = this.m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
-      if (this.SpawnActorOnMapBorder(map, newSurvivor, 10, true))
+      if (this.SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, true))
         return newSurvivor;
       return (Actor) null;
     }
@@ -3552,7 +3552,7 @@ namespace djack.RogueSurvivor.Engine
     private Actor SpawnNewSurvivor(Map map, Point bandPos)
     {
       Actor newSurvivor = this.m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
-      if (this.SpawnActorNear(map, newSurvivor, 10, bandPos, 3))
+      if (this.SpawnActorNear(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, bandPos, 3))
         return newSurvivor;
       return (Actor) null;
     }
@@ -3563,7 +3563,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_TownGenerator.GiveStartingSkillToActor(armyNationalGuard, Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
         armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemZTracker());
-      if (!this.SpawnActorOnMapBorder(map, armyNationalGuard, 10, true))
+      if (!this.SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return armyNationalGuard;
     }
@@ -3575,7 +3575,7 @@ namespace djack.RogueSurvivor.Engine
         armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemCombatKnife());
       else
         armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemGrenade());
-      if (!this.SpawnActorNear(map, armyNationalGuard, 10, leaderPos, 3))
+      if (!this.SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return armyNationalGuard;
     }
@@ -3590,7 +3590,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
       this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
       this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      if (!this.SpawnActorOnMapBorder(map, newBikerMan, 10, true))
+      if (!this.SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return newBikerMan;
     }
@@ -3600,7 +3600,7 @@ namespace djack.RogueSurvivor.Engine
       Actor newBikerMan = this.m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
       this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
       this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      if (!this.SpawnActorNear(map, newBikerMan, 10, leaderPos, 3))
+      if (!this.SpawnActorNear(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return newBikerMan;
     }
@@ -3613,7 +3613,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
       this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
       this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.FIREARMS);
-      if (!this.SpawnActorOnMapBorder(map, newGangstaMan, 10, true))
+      if (!this.SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return newGangstaMan;
     }
@@ -3622,7 +3622,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor newGangstaMan = this.m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
       this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-      if (!this.SpawnActorNear(map, newGangstaMan, 10, leaderPos, 3))
+      if (!this.SpawnActorNear(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return newGangstaMan;
     }
@@ -3640,7 +3640,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
       this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
       this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      if (!this.SpawnActorOnMapBorder(map, newBlackOps, 10, true))
+      if (!this.SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return newBlackOps;
     }
@@ -3651,7 +3651,7 @@ namespace djack.RogueSurvivor.Engine
       this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
       this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
       this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      if (!this.SpawnActorNear(map, newBlackOps, 10, leaderPos, 3))
+      if (!this.SpawnActorNear(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return newBlackOps;
     }
