@@ -24,6 +24,7 @@ namespace djack.RogueSurvivor.Data
 
     public ActorModel(string imageID, string name, string pluralName, int scoreValue, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
     {
+#if DEBUG
       if (name == null)
         throw new ArgumentNullException("name");
       if (body == null)
@@ -32,8 +33,11 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentNullException("abilities");
       if (startingSheet == null)
         throw new ArgumentNullException("startingSheet");
-      if (defaultController != null && !defaultController.IsSubclassOf(typeof (ActorController)))
+      if (defaultController == null)
+        throw new ArgumentNullException("defaultController");
+      if (!defaultController.IsSubclassOf(typeof (ActorController)))
         throw new ArgumentException("defaultController is not a subclass of ActorController");
+#endif
       ImageID = imageID;
       DollBody = body;
       Name = name;
@@ -56,7 +60,6 @@ namespace djack.RogueSurvivor.Data
 
     private ActorController InstanciateController()
     {
-      if (null == DefaultController) return (ActorController) null;
       return DefaultController.GetConstructor(Type.EmptyTypes).Invoke((object[]) null) as ActorController;
     }
 

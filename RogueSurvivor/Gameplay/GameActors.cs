@@ -542,7 +542,7 @@ namespace djack.RogueSurvivor.Gameplay
         CanPush = true,
         IsIntelligent = true,
         AI_CanUseAIExits = true
-      }, new ActorSheet(this.DATA_MALE_CIVILIAN.HP, this.DATA_MALE_CIVILIAN.STA, this.HUMAN_HUN, this.HUMAN_SLP, this.HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, this.DATA_MALE_CIVILIAN.ATK, this.DATA_MALE_CIVILIAN.DMG), new Defence(this.DATA_MALE_CIVILIAN.DEF, this.DATA_MALE_CIVILIAN.PRO_HIT, this.DATA_MALE_CIVILIAN.PRO_SHOT), this.DATA_MALE_CIVILIAN.FOV, this.DATA_MALE_CIVILIAN.AUDIO, 0, this.HUMAN_INVENTORY), (Type) null)
+      }, new ActorSheet(this.DATA_MALE_CIVILIAN.HP, this.DATA_MALE_CIVILIAN.STA, this.HUMAN_HUN, this.HUMAN_SLP, this.HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, this.DATA_MALE_CIVILIAN.ATK, this.DATA_MALE_CIVILIAN.DMG), new Defence(this.DATA_MALE_CIVILIAN.DEF, this.DATA_MALE_CIVILIAN.PRO_HIT, this.DATA_MALE_CIVILIAN.PRO_SHOT), this.DATA_MALE_CIVILIAN.FOV, this.DATA_MALE_CIVILIAN.AUDIO, 0, this.HUMAN_INVENTORY), typeof (CivilianAI))
       {
         FlavorDescription = this.DATA_MALE_CIVILIAN.FLAVOR
       };
@@ -564,7 +564,7 @@ namespace djack.RogueSurvivor.Gameplay
         CanPush = true,
         IsIntelligent = true,
         AI_CanUseAIExits = true
-      }, new ActorSheet(this.DATA_FEMALE_CIVILIAN.HP, this.DATA_FEMALE_CIVILIAN.STA, this.HUMAN_HUN, this.HUMAN_SLP, this.HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, this.DATA_FEMALE_CIVILIAN.ATK, this.DATA_FEMALE_CIVILIAN.DMG), new Defence(this.DATA_FEMALE_CIVILIAN.DEF, this.DATA_FEMALE_CIVILIAN.PRO_HIT, this.DATA_FEMALE_CIVILIAN.PRO_SHOT), this.DATA_FEMALE_CIVILIAN.FOV, this.DATA_FEMALE_CIVILIAN.AUDIO, 0, this.HUMAN_INVENTORY), (Type) null)
+      }, new ActorSheet(this.DATA_FEMALE_CIVILIAN.HP, this.DATA_FEMALE_CIVILIAN.STA, this.HUMAN_HUN, this.HUMAN_SLP, this.HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, this.DATA_FEMALE_CIVILIAN.ATK, this.DATA_FEMALE_CIVILIAN.DMG), new Defence(this.DATA_FEMALE_CIVILIAN.DEF, this.DATA_FEMALE_CIVILIAN.PRO_HIT, this.DATA_FEMALE_CIVILIAN.PRO_SHOT), this.DATA_FEMALE_CIVILIAN.FOV, this.DATA_FEMALE_CIVILIAN.AUDIO, 0, this.HUMAN_INVENTORY), typeof (CivilianAI))
       {
         FlavorDescription = this.DATA_FEMALE_CIVILIAN.FLAVOR
       };
@@ -668,7 +668,7 @@ namespace djack.RogueSurvivor.Gameplay
         AI_CanUseAIExits = true,
         IsLawEnforcer = true,
         IsIntelligent = true
-      }, new ActorSheet(this.DATA_POLICEMAN.HP, this.DATA_POLICEMAN.STA, this.HUMAN_HUN, this.HUMAN_SLP, this.HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, this.DATA_POLICEMAN.ATK, this.DATA_POLICEMAN.DMG), new Defence(this.DATA_POLICEMAN.DEF, this.DATA_POLICEMAN.PRO_HIT, this.DATA_POLICEMAN.PRO_SHOT), this.DATA_POLICEMAN.FOV, this.DATA_POLICEMAN.AUDIO, 0, this.HUMAN_INVENTORY), (Type) null)
+      }, new ActorSheet(this.DATA_POLICEMAN.HP, this.DATA_POLICEMAN.STA, this.HUMAN_HUN, this.HUMAN_SLP, this.HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, this.DATA_POLICEMAN.ATK, this.DATA_POLICEMAN.DMG), new Defence(this.DATA_POLICEMAN.DEF, this.DATA_POLICEMAN.PRO_HIT, this.DATA_POLICEMAN.PRO_SHOT), this.DATA_POLICEMAN.FOV, this.DATA_POLICEMAN.AUDIO, 0, this.HUMAN_INVENTORY), typeof (CivilianAI))
       {
         FlavorDescription = this.DATA_POLICEMAN.FLAVOR
       };

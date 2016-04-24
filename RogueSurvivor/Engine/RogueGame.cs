@@ -13254,7 +13254,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Big Bear", false, 0);
       named.IsUnique = true;
-      named.Controller = (ActorController) new CivilianAI();
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\big_bear");
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
@@ -13297,7 +13296,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor named = this.GameActors.FemaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Famu Fataru", false, 0);
       named.IsUnique = true;
-      named.Controller = (ActorController) new CivilianAI();
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\famu_fataru");
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
@@ -13340,7 +13338,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Santaman", false, 0);
       named.IsUnique = true;
-      named.Controller = (ActorController) new CivilianAI();
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\santaman");
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
@@ -13383,7 +13380,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Roguedjack", false, 0);
       named.IsUnique = true;
-      named.Controller = (ActorController) new CivilianAI();
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\roguedjack");
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
@@ -13426,7 +13422,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Duckman", false, 0);
       named.IsUnique = true;
-      named.Controller = (ActorController) new CivilianAI();
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\duckman");
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
@@ -13469,7 +13464,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Hans von Hanz", false, 0);
       named.IsUnique = true;
-      named.Controller = (ActorController) new CivilianAI();
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\hans_von_hanz");
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
       this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);

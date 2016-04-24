@@ -3051,7 +3051,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       this.SkinNakedHuman(this.m_DiceRoller, numberedName);
       this.GiveNameToActor(this.m_DiceRoller, numberedName);
       numberedName.Name = "Patient " + numberedName.Name;
-      numberedName.Controller = (ActorController) new CivilianAI();
       this.GiveRandomSkillsToActor(this.m_DiceRoller, numberedName, 1);
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_patient_uniform");
       return numberedName;
@@ -3063,7 +3062,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       this.SkinNakedHuman(this.m_DiceRoller, numberedName);
       this.GiveNameToActor(this.m_DiceRoller, numberedName);
       numberedName.Name = "Nurse " + numberedName.Name;
-      numberedName.Controller = (ActorController) new CivilianAI();
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_nurse_uniform");
       this.GiveRandomSkillsToActor(this.m_DiceRoller, numberedName, 1);
       this.GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
@@ -3077,7 +3075,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       this.SkinNakedHuman(this.m_DiceRoller, numberedName);
       this.GiveNameToActor(this.m_DiceRoller, numberedName);
       numberedName.Name = "Doctor " + numberedName.Name;
-      numberedName.Controller = (ActorController) new CivilianAI();
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_doctor_uniform");
       this.GiveRandomSkillsToActor(this.m_DiceRoller, numberedName, 1);
       this.GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
@@ -3284,7 +3281,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.Inventory.AddAll(this.MakeItemArmyBodyArmor());
       int count = 3 + new WorldTime(spawnTime).Day;
       this.GiveRandomSkillsToActor(this.m_DiceRoller, numberedName, count);
-      numberedName.Controller = (ActorController) new CivilianAI();
       int max1 = (int) (0.25 * (double) numberedName.FoodPoints);
       numberedName.FoodPoints = numberedName.FoodPoints - this.m_Rules.Roll(0, max1);
       int max2 = (int) (0.25 * (double) numberedName.SleepPoints);
@@ -3305,7 +3301,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int index = 0; index < itemsToCarry; ++index)
         this.GiveRandomItemToActor(this.m_DiceRoller, numberedName, spawnTime);
       this.GiveRandomSkillsToActor(this.m_DiceRoller, numberedName, skills);
-      numberedName.Controller = (ActorController) new CivilianAI();
       int max1 = (int) (0.25 * (double) numberedName.FoodPoints);
       numberedName.FoodPoints = numberedName.FoodPoints - this.m_Rules.Roll(0, max1);
       int max2 = (int) (0.25 * (double) numberedName.SleepPoints);
@@ -3322,7 +3317,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       this.GiveRandomSkillsToActor(this.m_DiceRoller, numberedName, 1);
       this.GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
       this.GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
-      numberedName.Controller = (ActorController) new CivilianAI();
       if (this.m_DiceRoller.RollChance(50))
       {
         numberedName.Inventory.AddAll(this.MakeItemPistol());
