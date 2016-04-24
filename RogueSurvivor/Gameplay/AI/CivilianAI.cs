@@ -304,6 +304,11 @@ label_10:
           return actorAction2;
         }
       }
+
+      // handle food after enemies check
+      tmpAction = BehaviorEatProactively(game);
+      if (null != tmpAction) return tmpAction;
+
       if (game.Rules.IsActorHungry(this.m_Actor))
       {
         ActorAction actorAction2 = this.BehaviorEat(game);

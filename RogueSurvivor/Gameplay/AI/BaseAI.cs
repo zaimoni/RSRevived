@@ -697,12 +697,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorEat(RogueGame game)
     {
-      Item bestEdibleItem = this.GetBestEdibleItem(game);
-      if (bestEdibleItem == null)
-        return (ActorAction) null;
-      if (!game.Rules.CanActorUseItem(this.m_Actor, bestEdibleItem))
-        return (ActorAction) null;
-      return (ActorAction) new ActionUseItem(this.m_Actor, game, bestEdibleItem);
+      Item bestEdibleItem = GetBestEdibleItem(game);
+      if (null == bestEdibleItem) return null;
+      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
+      return new ActionUseItem(m_Actor, game, bestEdibleItem);
+    }
+
+    protected ActorAction BehaviorEatProactively(RogueGame game)
+    {
+      Item bestEdibleItem = GetBestPerishableItem(game);
+      if (null == bestEdibleItem) return null;
+      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
+      return new ActionUseItem(m_Actor, game, bestEdibleItem);
     }
 
     protected ActorAction BehaviorSleep(RogueGame game, HashSet<Point> FOV)
@@ -1861,34 +1867,61 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return itemLight.Batteries <= 0;
     }
 
-    protected Item GetBestEdibleItem(RogueGame game)
+    // This is only called when the actor is hungry.
+    protected ItemFood GetBestEdibleItem(RogueGame game)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      int turnCounter = this.m_Actor.Location.Map.LocalTime.TurnCounter;
-      int num1 = game.Rules.ActorMaxFood(this.m_Actor) - this.m_Actor.FoodPoints;
-      Item obj1 = (Item) null;
-      int num2 = int.MinValue;
-      foreach (Item obj2 in this.m_Actor.Inventory.Items)
+      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
+      int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
+      ItemFood obj1 = null;
+      int rating = int.MinValue;
+      foreach (Item obj2 in m_Actor.Inventory.Items)
       {
         ItemFood food = obj2 as ItemFood;
-        if (food != null)
-        {
-          int num3 = 0;
-          int num4 = game.Rules.FoodItemNutrition(food, turnCounter);
-          int num5 = num4 - num1;
-          if (num5 > 0)
+        if (null == food) continue;
+        int num3 = 0;
+        int num4 = game.Rules.FoodItemNutrition(food, turnCounter);
+        int num5 = num4 - need;
+        if (num5 > 0)
             num3 -= num5;
-          if (!food.IsPerishable)
+        if (!food.IsPerishable)
             num3 -= num4;
-          if (obj1 == null || num3 > num2)
-          {
-            obj1 = (Item) food;
-            num2 = num3;
-          }
+        if (num3 > rating)
+        {
+          obj1 = food;
+          rating = num3;
         }
       }
       return obj1;
     }
+
+    // This is more pro-active.  We might want to flag whether
+    // an AI uses the behavior based on this
+    protected ItemFood GetBestPerishableItem(RogueGame game)
+    {
+      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
+      int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
+      ItemFood obj1 = null;
+      int rating = int.MinValue;
+      foreach (Item obj2 in m_Actor.Inventory.Items)
+      {
+        ItemFood food = obj2 as ItemFood;
+        if (null == food) continue;
+        if (!food.IsPerishable) continue;
+        if (game.Rules.IsFoodSpoiled(food,turnCounter)) continue;
+        int num4 = game.Rules.ActorItemNutritionValue(m_Actor,game.Rules.FoodItemNutrition(food, turnCounter));
+        if (num4 > need) continue; // more work needed
+        int num3 = need-num4;
+        if (num3 > rating)
+        {
+          obj1 = food;
+          rating = num3;
+        }
+      }
+      return obj1;
+    }
+
 
     public List<Item> GetTradeableItems(RogueGame game, Inventory inv)
     {

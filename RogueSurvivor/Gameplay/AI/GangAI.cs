@@ -183,6 +183,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
+
+      // handle food after enemies checks
+      tmpAction = BehaviorEatProactively(game);
+      if (null != tmpAction) return tmpAction;
+
       if (game.Rules.IsActorHungry(this.m_Actor))
       {
         ActorAction actorAction3 = this.BehaviorEat(game);
