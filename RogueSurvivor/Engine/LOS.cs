@@ -75,8 +75,12 @@ namespace djack.RogueSurvivor.Engine
     private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
     {
 #if DEBUG
-        if (0 >= maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
+        if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
 #endif
+        Point start = new Point(xFrom, yFrom);
+        line?.Add(new Point(start.X, start.Y));
+        if (0 == maxSteps) return true;
+
         int xDelta = xTo - xFrom;
         int yDelta = yTo - yFrom;
         int xAbsDelta = (0 <= xDelta ? xDelta : -xDelta);
@@ -88,8 +92,6 @@ namespace djack.RogueSurvivor.Engine
 
         Direction knightmove;
         Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out knightmove);
-        Point start = new Point(xFrom, yFrom);
-        line?.Add(new Point(start.X, start.Y));
         Point end = needRange * tmp;    // estimate here
         end.X += xFrom;
         end.Y += yFrom;
