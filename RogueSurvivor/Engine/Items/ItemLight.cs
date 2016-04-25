@@ -54,6 +54,10 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
+    public override bool IsUseless {
+      get { return 0 >= m_Batteries; }
+    }
+
     public ItemLight(ItemModel model)
       : base(model)
     {

@@ -93,6 +93,10 @@ namespace djack.RogueSurvivor.Data
     public bool IsUnique { get; set; }
     public bool IsForbiddenToAI { get; set; }
 
+    public virtual bool IsUseless {
+      get { return false; }
+    }
+
     public Item(ItemModel model)
     {
       m_ModelID = model.ID;

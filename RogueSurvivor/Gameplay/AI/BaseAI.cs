@@ -669,23 +669,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorDropUselessItem(RogueGame game)
     {
-      if (this.m_Actor.Inventory.IsEmpty)
-        return (ActorAction) null;
-      foreach (Item it in this.m_Actor.Inventory.Items)
-      {
-        bool flag = false;
-        if (it is ItemLight)
-          flag = (it as ItemLight).Batteries <= 0;
-        else if (it is ItemTracker)
-          flag = (it as ItemTracker).Batteries <= 0;
-        else if (it is ItemSprayPaint)
-          flag = (it as ItemSprayPaint).PaintQuantity <= 0;
-        else if (it is ItemSprayScent)
-          flag = (it as ItemSprayScent).SprayQuantity <= 0;
-        if (flag)
-          return this.BehaviorDropItem(game, it);
+      if (m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item it in m_Actor.Inventory.Items) {
+        if (it.IsUseless) return BehaviorDropItem(game, it);
       }
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorRestIfTired(RogueGame game)
@@ -1859,14 +1847,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return itemRangedWeapon.Ammo <= 0;
     }
 
-    protected bool IsLightOutOfBatteries(Item it)
-    {
-      ItemLight itemLight = it as ItemLight;
-      if (itemLight == null)
-        return false;
-      return itemLight.Batteries <= 0;
-    }
-
     // This is only called when the actor is hungry.
     protected ItemFood GetBestEdibleItem(RogueGame game)
     {
@@ -2022,7 +2002,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (it is ItemMedicine)
         return !this.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-      if (this.IsLightOutOfBatteries(it) || it is ItemPrimedExplosive || this.m_Actor.IsBoredOf(it))
+      if (it.IsUseless || it is ItemPrimedExplosive || this.m_Actor.IsBoredOf(it))
         return false;
       return !this.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
     }

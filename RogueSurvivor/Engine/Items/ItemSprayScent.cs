@@ -14,6 +14,10 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public int SprayQuantity { get; set; }
 
+    public override bool IsUseless {
+      get { return 0 >= SprayQuantity; }
+    }
+
     public ItemSprayScent(ItemModel model)
       : base(model)
     {
