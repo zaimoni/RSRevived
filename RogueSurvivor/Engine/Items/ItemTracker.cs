@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public void Recharge()
     {
-      Batteries += Math.Min(WorldTime.TURNS_PER_HOUR, (Model as ItemTrackerModel).MaxBatteries);
+      Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, (Model as ItemTrackerModel).MaxBatteries/8);
     }
   }
 }
