@@ -869,39 +869,76 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // boring items
     public void AddBoringItem(Item it)
     {
-      if (this.m_BoringItems == null)
-        this.m_BoringItems = new List<Item>(1);
-      if (this.m_BoringItems.Contains(it))
-        return;
-      this.m_BoringItems.Add(it);
+      if (null == m_BoringItems) m_BoringItems = new List<Item>(1);
+      else if (m_BoringItems.Contains(it)) return;
+      m_BoringItems.Add(it);
     }
 
     public bool IsBoredOf(Item it)
     {
-      if (this.m_BoringItems == null)
-        return false;
-      return this.m_BoringItems.Contains(it);
+      if (null == m_BoringItems) return false;
+      return m_BoringItems.Contains(it);
     }
 
+    // inventory stats
+    public bool HasItemOfModel(ItemModel model)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.Model == model) return true;
+      }
+      return false;
+    }
+
+    public int CountItemsQuantityOfModel(ItemModel model)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      int num = 0;
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.Model == model) num += obj.Quantity;
+      }
+      return num;
+    }
+
+    public int CountItemQuantityOfType(Type tt)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      int num = 0;
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.GetType() == tt) num += obj.Quantity;
+      }
+      return num;
+    }
+
+    public int CountItemsOfSameType(Type tt)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      int num = 0;
+      foreach (object obj in m_Inventory.Items) {
+        if (obj.GetType() == tt) ++num;
+      }
+      return num;
+    }    
+
+    // equipped items
     public Item GetEquippedItem(DollPart part)
     {
-      if (this.m_Inventory == null || part == DollPart.NONE)
-        return (Item) null;
-      foreach (Item obj in this.m_Inventory.Items)
-      {
-        if (obj.EquippedPart == part)
-          return obj;
+      if (null == m_Inventory || DollPart.NONE == part) return null;
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.EquippedPart == part) return obj;
       }
-      return (Item) null;
+      return null;
     }
 
     public Item GetEquippedWeapon()
     {
-      return this.GetEquippedItem(DollPart._FIRST);
+      return GetEquippedItem(DollPart._FIRST);
     }
 
+    // flag handling
     private bool GetFlag(Actor.Flags f)
     {
       return (this.m_Flags & f) != Actor.Flags.NONE;

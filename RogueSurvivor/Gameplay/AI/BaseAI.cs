@@ -1658,7 +1658,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ActorAction) null;
       if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(14) == 0)
         return (ActorAction) null;
-      if (!this.HasItemOfModel((ItemModel) game.GameItems.MEDIKIT))
+      if (!m_Actor.HasItemOfModel((ItemModel) game.GameItems.MEDIKIT))
         return (ActorAction) null;
       List<Percept> percepts = this.Filter(game, corpsesPercepts, (Predicate<Percept>) (p =>
       {
@@ -1974,7 +1974,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (it is ItemMeleeWeapon)
             {
             if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return true;   // martial artists+melee weapons needs work
-            return CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
+            return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
             }
         // player should be able to trade for blue pills
 /*
@@ -2005,7 +2005,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (this.m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons)
           return false;
         ItemRangedWeapon rw = it as ItemRangedWeapon;
-        return (rw.Ammo > 0 || this.GetCompatibleAmmoItem(game, rw) != null) && this.CountItemsOfSameType(typeof (ItemRangedWeapon)) < 1 && (this.m_Actor.Inventory.Contains(it) || !this.HasItemOfModel(it.Model));
+        return (rw.Ammo > 0 || this.GetCompatibleAmmoItem(game, rw) != null) && m_Actor.CountItemsOfSameType(typeof (ItemRangedWeapon)) < 1 && (this.m_Actor.Inventory.Contains(it) || !m_Actor.HasItemOfModel(it.Model));
       }
       if (it is ItemAmmo)
       {
@@ -2018,7 +2018,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0)
           return false;
-        return this.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
+        return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
       }
       if (it is ItemMedicine)
         return !this.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
@@ -2072,53 +2072,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
       if (it.Model.IsStackable)
-        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
-      return CountItemsOfSameType(it.GetType()) >= n;
-    }
-
-    protected bool HasItemOfModel(ItemModel model)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.Model == model) return true;
-      }
-      return false;
-    }
-
-    protected int CountItemsQuantityOfModel(ItemModel model)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return 0;
-      int num = 0;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.Model == model) num += obj.Quantity;
-      }
-      return num;
+        return m_Actor.CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
+      return m_Actor.CountItemsOfSameType(it.GetType()) >= n;
     }
 
     protected bool HasItemOfType(Type tt)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
       return m_Actor.Inventory.HasItemOfType(tt);
-    }
-
-    protected int CountItemQuantityOfType(Type tt)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return 0;
-      int num = 0;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.GetType() == tt) num += obj.Quantity;
-      }
-      return num;
-    }
-
-    protected int CountItemsOfSameType(Type tt)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return 0;
-      int num = 0;
-      foreach (object obj in m_Actor.Inventory.Items) {
-        if (obj.GetType() == tt) ++num;
-      }
-      return num;
     }
 
     protected void RunIfPossible(Rules rules)
