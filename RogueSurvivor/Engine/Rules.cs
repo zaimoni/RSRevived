@@ -93,14 +93,14 @@ namespace djack.RogueSurvivor.Engine
     public const int UNDEAD_MASTER_SCENT_DROP = 270;
     public const int BARRICADING_MAX = 80;
     private const int MINIMAL_FOV = 2;
-    public const int FOV_PENALTY_SUNSET = 1;
-    public const int FOV_PENALTY_EVENING = 2;
-    public const int FOV_PENALTY_MIDNIGHT = 3;
-    public const int FOV_PENALTY_DEEP_NIGHT = 4;
-    public const int FOV_PENALTY_SUNRISE = 2;
-    public const int NIGHT_STA_PENALTY = 2;
-    public const int FOV_PENALTY_RAIN = 1;
-    public const int FOV_PENALTY_HEAVY_RAIN = 2;
+    private const int FOV_PENALTY_SUNSET = 1;
+    private const int FOV_PENALTY_EVENING = 2;
+    private const int FOV_PENALTY_MIDNIGHT = 3;
+    private const int FOV_PENALTY_DEEP_NIGHT = 4;
+    private const int FOV_PENALTY_SUNRISE = 2;
+    private const int NIGHT_STA_PENALTY = 2;
+    private const int FOV_PENALTY_RAIN = 1;
+    private const int FOV_PENALTY_HEAVY_RAIN = 2;
     public const int MELEE_WEAPON_BREAK_CHANCE = 1;
     public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;
     public const int FIREARM_JAM_CHANCE_NO_RAIN = 1;
@@ -137,7 +137,7 @@ namespace djack.RogueSurvivor.Engine
     public const int ROT_HUNGRY_SKILL_CHANCE = 5;
     public const int SLEEP_EXHAUSTION_COLLAPSE_CHANCE = 5;
     private const int SLEEP_COUCH_SLEEPING_REGEN = 6;
-    public const int SLEEP_NOCOUCH_SLEEPING_REGEN = 4;
+    private const int SLEEP_NOCOUCH_SLEEPING_REGEN = 4;
     public const int SLEEP_ON_COUCH_HEAL_CHANCE = 5;
     public const int SLEEP_HEAL_HITPOINTS = 2;
     public const int LOUD_NOISE_RADIUS = 5;
@@ -2157,7 +2157,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorSleepRegen(Actor actor, bool isOnCouch)
     {
-      int num1 = isOnCouch ? 6 : 4;
+      int num1 = isOnCouch ? SLEEP_COUCH_SLEEPING_REGEN : SLEEP_NOCOUCH_SLEEPING_REGEN;
       int num2 = (int) ((double) num1 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(1));
       return num1 + num2;
     }
@@ -2226,7 +2226,7 @@ namespace djack.RogueSurvivor.Engine
       if (distance != efficientRange)
       {
         int num3 = efficientRange - distance;
-        num1 += num3 * 2;
+        num1 += num3 * FIRE_DISTANCE_VS_RANGE_MODIFIER;
       }
       float num4 = (float) (baseAttack.HitValue + num1);
       float num5 = (float) (baseAttack.DamageValue + num2);
@@ -2235,9 +2235,9 @@ namespace djack.RogueSurvivor.Engine
       else if (this.IsActorSleepy(actor))
         num4 *= 0.75f;
       if (this.IsActorTired(actor))
-        num4 *= 0.75f;
+        num4 *= FIRING_WHEN_STA_TIRED;
       else if (actor.StaminaPoints < this.ActorMaxSTA(actor))
-        num4 *= 0.9f;
+        num4 *= FIRING_WHEN_STA_NOT_FULL;
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, (int) num5, baseAttack.StaminaPenalty, baseAttack.Range);
     }
 
@@ -2402,47 +2402,36 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorSpotMurdererChance(Actor spotter, Actor murderer)
     {
-      return 5 + 5 * murderer.MurdersCounter - this.GridDistance(spotter.Location.Position, murderer.Location.Position);
+      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * this.GridDistance(spotter.Location.Position, murderer.Location.Position);
     }
 
     private int NightFovPenalty(Actor actor, WorldTime time)
     {
-      if (actor.Model.Abilities.IsUndead)
-        return 0;
+      if (actor.Model.Abilities.IsUndead) return 0;
       switch (time.Phase)
       {
-        case DayPhase.SUNSET:
-          return 1;
-        case DayPhase.EVENING:
-          return 2;
-        case DayPhase.MIDNIGHT:
-          return 3;
-        case DayPhase.DEEP_NIGHT:
-          return 4;
-        case DayPhase.SUNRISE:
-          return 2;
-        default:
-          return 0;
+        case DayPhase.SUNSET: return FOV_PENALTY_SUNSET;
+        case DayPhase.EVENING: return FOV_PENALTY_EVENING;
+        case DayPhase.MIDNIGHT: return FOV_PENALTY_MIDNIGHT;
+        case DayPhase.DEEP_NIGHT: return FOV_PENALTY_DEEP_NIGHT;
+        case DayPhase.SUNRISE: return FOV_PENALTY_SUNRISE;
+        default: return 0;
       }
     }
 
     public int NightStaminaPenalty(Actor actor)
     {
-      return actor.Model.Abilities.IsUndead ? 0 : 2;
+      return actor.Model.Abilities.IsUndead ? 0 : NIGHT_STA_PENALTY;
     }
 
     private int WeatherFovPenalty(Actor actor, Weather weather)
     {
-      if (actor.Model.Abilities.IsUndead)
-        return 0;
+      if (actor.Model.Abilities.IsUndead) return 0;
       switch (weather)
       {
-        case Weather.RAIN:
-          return 1;
-        case Weather.HEAVY_RAIN:
-          return 2;
-        default:
-          return 0;
+        case Weather.RAIN: return FOV_PENALTY_RAIN;
+        case Weather.HEAVY_RAIN: return FOV_PENALTY_HEAVY_RAIN;
+        default: return 0;
       }
     }
 

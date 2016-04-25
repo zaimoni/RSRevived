@@ -2665,7 +2665,7 @@ namespace djack.RogueSurvivor.Engine
             --actor.FoodPoints;
             if (actor.FoodPoints < 0)
               actor.FoodPoints = 0;
-            if (this.m_Rules.IsActorStarving(actor) && this.m_Rules.RollChance(5) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
+            if (this.m_Rules.IsActorStarving(actor) && this.m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
             {
               if (actorList1 == null)
                 actorList1 = new List<Actor>();
@@ -2731,7 +2731,7 @@ namespace djack.RogueSurvivor.Engine
               actor.SleepPoints += num;
               actor.SleepPoints = Math.Min(actor.SleepPoints, this.m_Rules.ActorMaxSleep(actor));
               if (actor.HitPoints < this.m_Rules.ActorMaxHPs(actor) && this.m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + this.m_Rules.ActorHealChanceBonus(actor)))
-                this.RegenActorHitPoints(actor, 2);
+                this.RegenActorHitPoints(actor, Rules.SLEEP_HEAL_HITPOINTS);
               if (this.m_Rules.IsActorHungry(actor) || actor.SleepPoints >= this.m_Rules.ActorMaxSleep(actor))
                 this.DoWakeUp(actor);
               else if (actor.IsPlayer)
@@ -2914,11 +2914,11 @@ namespace djack.RogueSurvivor.Engine
           }
           while (flag3);
         }
-        if (this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) && this.m_Rules.RollChance(1))
+        if (this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) && this.m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE))
         {
           foreach (MapObject mapObject in map.MapObjects)
           {
-            if (mapObject.IsOnFire && this.m_Rules.RollChance(10))
+            if (mapObject.IsOnFire && this.m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE))
             {
               this.UnapplyOnFire(mapObject);
               if (this.IsVisibleToPlayer(mapObject))
@@ -3235,10 +3235,10 @@ namespace djack.RogueSurvivor.Engine
       Point dropPoint;
       if (!this.FindDropSuppliesPoint(map, out dropPoint))
         return;
-      int x1 = dropPoint.X - 1;
-      int x2 = dropPoint.X + 1;
-      int y1 = dropPoint.Y - 1;
-      int y2 = dropPoint.Y + 1;
+      int x1 = dropPoint.X - ARMY_SUPPLIES_SCATTER;
+      int x2 = dropPoint.X + ARMY_SUPPLIES_SCATTER;
+      int y1 = dropPoint.Y - ARMY_SUPPLIES_SCATTER;
+      int y2 = dropPoint.Y + ARMY_SUPPLIES_SCATTER;
       map.TrimToBounds(ref x1, ref y1);
       map.TrimToBounds(ref x2, ref y2);
       for (int x3 = x1; x3 <= x2; ++x3)
@@ -3959,7 +3959,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool TryPlayerInsanity()
     {
-      if (!this.m_Rules.IsActorInsane(this.m_Player) || !this.m_Rules.RollChance(5))
+      if (!this.m_Rules.IsActorInsane(this.m_Player) || !this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
         return false;
       ActorAction insaneAction = this.GenerateInsaneAction(this.m_Player);
       if (insaneAction == null || !insaneAction.IsLegal())
@@ -8986,7 +8986,7 @@ namespace djack.RogueSurvivor.Engine
       bool player1 = this.IsVisibleToPlayer(defender);
       bool player2 = this.IsVisibleToPlayer(attacker);
       bool flag = attacker.IsPlayer || defender.IsPlayer;
-      if (!player1 && !player2 && (!flag && this.m_Rules.RollChance(25)))
+      if (!player1 && !player2 && (!flag && this.m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
         this.AddMessageIfAudibleForPlayer(attacker.Location, this.MakePlayerCentricMessage("You hear fighting", attacker.Location.Position));
       if (player2)
       {
@@ -9069,7 +9069,7 @@ namespace djack.RogueSurvivor.Engine
         AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
       ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
-      if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && this.m_Rules.RollChance(itemMeleeWeapon.IsFragile ? 3 : 1))
+      if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && this.m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
         this.OnUnequipItem(attacker, (Item) itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
@@ -9124,7 +9124,7 @@ namespace djack.RogueSurvivor.Engine
       Attack attack = this.m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
       Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
       this.SpendActorStaminaPoints(attacker, attack.StaminaPenalty);
-      if (attack.Kind == AttackKind.FIREARM && (this.m_Rules.RollChance(this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) ? 3 : 1) && this.IsVisibleToPlayer(attacker)))
+      if (attack.Kind == AttackKind.FIREARM && (this.m_Rules.RollChance(this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && this.IsVisibleToPlayer(attacker)))
       {
         this.AddMessage(this.MakeMessage(attacker, " : weapon jam!"));
       }
@@ -9143,7 +9143,7 @@ namespace djack.RogueSurvivor.Engine
         bool player1 = this.IsVisibleToPlayer(defender.Location);
         bool player2 = this.IsVisibleToPlayer(attacker.Location);
         bool flag = attacker.IsPlayer || defender.IsPlayer;
-        if (!player1 && !player2 && (!flag && this.m_Rules.RollChance(25)))
+        if (!player1 && !player2 && (!flag && this.m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
           this.AddMessageIfAudibleForPlayer(attacker.Location, this.MakePlayerCentricMessage("You hear firing", attacker.Location.Position));
         if (player2)
         {
@@ -10487,7 +10487,7 @@ namespace djack.RogueSurvivor.Engine
         for (int index = 0; index < objArray.Length; ++index)
         {
           Item it = objArray[index];
-          int chance = it is ItemAmmo || it is ItemFood ? 100 : 50;
+          int chance = it is ItemAmmo || it is ItemFood ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
           if (it.Model.IsUnbreakable || it.IsUnique || this.m_Rules.RollChance(chance))
             this.DropItem(deadGuy, it);
         }
