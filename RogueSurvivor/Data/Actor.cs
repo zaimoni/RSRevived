@@ -923,6 +923,14 @@ namespace djack.RogueSurvivor.Data
       return num;
     }    
 
+    public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (it.Model.IsStackable)
+        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
+      return CountItemsOfSameType(it.GetType()) >= n;
+    }
+
     // equipped items
     public Item GetEquippedItem(DollPart part)
     {

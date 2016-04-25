@@ -1949,7 +1949,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             {
             ItemAmmo am = it as ItemAmmo;
             if (this.GetCompatibleRangedWeapon(game, am) == null) return true;
-            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
             }
         if (it is ItemMeleeWeapon)
             {
@@ -1992,7 +1992,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemAmmo am = it as ItemAmmo;
         if (this.GetCompatibleRangedWeapon(game, am) == null)
           return false;
-        return !this.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemMeleeWeapon)
       {
@@ -2001,10 +2001,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
       }
       if (it is ItemMedicine)
-        return !this.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       if (it.IsUseless || it is ItemPrimedExplosive || this.m_Actor.IsBoredOf(it))
         return false;
-      return !this.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
+      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
     }
 
     public bool HasAnyInterestingItem(RogueGame game, Inventory inv)
@@ -2046,14 +2046,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       return false;
-    }
-
-    protected bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
-      if (it.Model.IsStackable)
-        return m_Actor.CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
-      return m_Actor.CountItemsOfSameType(it.GetType()) >= n;
     }
 
     protected bool HasItemOfType(Type tt)
