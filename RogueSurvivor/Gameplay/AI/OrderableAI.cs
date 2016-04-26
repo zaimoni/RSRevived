@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
-      if (game.Rules.IsActorHungry(this.m_Actor))
+      if (m_Actor.IsHungry)
       {
         ActorAction actorAction3 = this.BehaviorEat(game);
         if (actorAction3 != null)
@@ -197,7 +197,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
-      if (game.Rules.IsActorHungry(this.m_Actor))
+      if (m_Actor.IsHungry)
       {
         ActorAction actorAction3 = this.BehaviorEat(game);
         if (actorAction3 != null)

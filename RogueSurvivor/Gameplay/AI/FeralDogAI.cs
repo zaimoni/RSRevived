@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (game.Rules.IsActorHungry(this.m_Actor))
+      if (m_Actor.IsHungry)
       {
         List<Percept> corpsesPercepts = this.FilterCorpses(game, percepts1);
         if (corpsesPercepts != null)

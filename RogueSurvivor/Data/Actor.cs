@@ -12,6 +12,9 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Actor
   {
+    public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
+    public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
+
     private Actor.Flags m_Flags;
     private int m_ModelID;
     private int m_FactionID;
@@ -868,6 +871,36 @@ namespace djack.RogueSurvivor.Data
       }
       return false;
     }
+
+    // hunger
+    public bool IsHungry {
+      get {
+        if (Model.Abilities.HasToEat) return FOOD_HUNGRY_LEVEL >= m_FoodPoints;
+        return false;
+      }
+    }
+
+    public bool IsStarving {
+      get {
+        if (Model.Abilities.HasToEat) return 0 >= m_FoodPoints;
+        return false;
+      }
+    }
+
+    public bool IsRotHungry {
+      get {
+        if (Model.Abilities.IsRotting) return ROT_HUNGRY_LEVEL >= m_FoodPoints;
+        return false;
+      }
+    }
+
+    public bool IsRotStarving {
+      get {
+        if (Model.Abilities.IsRotting) return 0 >= m_FoodPoints;
+        return false;
+      }
+    }
+
 
     // boring items
     public void AddBoringItem(Item it)

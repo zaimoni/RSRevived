@@ -407,21 +407,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorIntelligentBumpToward(RogueGame game, Point goal)
     {
       float currentDistance = game.Rules.StdDistance(this.m_Actor.Location.Position, goal);
-      bool imStarvingOrCourageous = game.Rules.IsActorStarving(this.m_Actor) || this.Directives.Courage == ActorCourage.COURAGEOUS;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
       return this.BehaviorBumpToward(game, goal, (Func<Point, Point, float>) ((ptA, ptB) =>
       {
-        if (ptA == ptB)
-          return 0.0f;
+        if (ptA == ptB) return 0.0f;
         float num = game.Rules.StdDistance(ptA, ptB);
-        if ((double) num >= (double) currentDistance)
-          return float.NaN;
+        if ((double) num >= (double) currentDistance) return float.NaN;
         if (!imStarvingOrCourageous)
         {
           int trapsMaxDamage = this.ComputeTrapsMaxDamage(this.m_Actor.Location.Map, ptA);
           if (trapsMaxDamage > 0)
           {
-            if (trapsMaxDamage >= this.m_Actor.HitPoints)
-              return float.NaN;
+            if (trapsMaxDamage >= this.m_Actor.HitPoints) return float.NaN;
             num += 0.42f;
           }
         }
@@ -1303,7 +1300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration)
     {
       Direction prevDirection = Direction.FromVector(this.m_Actor.Location.Position.X - this.m_prevLocation.Position.X, this.m_Actor.Location.Position.Y - this.m_prevLocation.Position.Y);
-      bool imStarvingOrCourageous = game.Rules.IsActorStarving(this.m_Actor) || this.Directives.Courage == ActorCourage.COURAGEOUS;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
       BaseAI.ChoiceEval<Direction> choiceEval = this.Choose<Direction>(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = this.m_Actor.Location + dir;
@@ -1932,7 +1929,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
         if (it is ItemFood)
             {
-            if (game.Rules.IsActorHungry(m_Actor)) return false; 
+            if (m_Actor.IsHungry) return false; 
             if (!HasEnoughFoodFor(game, m_Actor.Sheet.BaseFoodPoints / 2))
                 return !game.Rules.IsFoodSpoiled(it as ItemFood, m_Actor.Location.Map.LocalTime.TurnCounter);
             return false;
@@ -1974,8 +1971,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       if (it is ItemFood)
       {
-        if (game.Rules.IsActorHungry(this.m_Actor))
-          return true;
+        if (m_Actor.IsHungry) return true;
         if (!this.HasEnoughFoodFor(game, this.m_Actor.Sheet.BaseFoodPoints / 2))
           return !game.Rules.IsFoodSpoiled(it as ItemFood, this.m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;

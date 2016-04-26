@@ -309,7 +309,7 @@ label_10:
       tmpAction = BehaviorEatProactively(game);
       if (null != tmpAction) return tmpAction;
 
-      if (game.Rules.IsActorHungry(this.m_Actor))
+      if (m_Actor.IsHungry)
       {
         ActorAction actorAction2 = this.BehaviorEat(game);
         if (actorAction2 != null)
@@ -317,7 +317,7 @@ label_10:
           this.m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
-        if (game.Rules.IsActorStarving(this.m_Actor) || game.Rules.IsActorInsane(this.m_Actor))
+        if (m_Actor.IsStarving || game.Rules.IsActorInsane(m_Actor))
         {
           ActorAction actorAction5 = this.BehaviorGoEatCorpse(game, this.FilterCorpses(game, percepts1));
           if (actorAction5 != null)
@@ -427,7 +427,7 @@ label_10:
           }
         }
       }
-      if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!this.m_Actor.HasLeader && !this.m_Actor.Model.Abilities.IsLawEnforcer) && (game.Rules.IsActorHungry(this.m_Actor) && this.HasNoFoodItems(this.m_Actor)))
+      if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!this.m_Actor.HasLeader && !this.m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && this.HasNoFoodItems(this.m_Actor)))
       {
         Percept target = this.FilterNearest(game, FilterActors(percepts1, (Predicate<Actor>) (a =>
         {
@@ -513,7 +513,7 @@ label_10:
           }
         }
       }
-      if (game.Rules.IsActorHungry(this.m_Actor))
+      if (m_Actor.IsHungry)
       {
         ActorAction actorAction2 = this.BehaviorAttackBarricade(game);
         if (actorAction2 != null)

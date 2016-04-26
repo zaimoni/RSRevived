@@ -188,7 +188,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorEatProactively(game);
       if (null != tmpAction) return tmpAction;
 
-      if (game.Rules.IsActorHungry(this.m_Actor))
+      if (m_Actor.IsHungry)
       {
         ActorAction actorAction3 = this.BehaviorEat(game);
         if (actorAction3 != null)
@@ -196,7 +196,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           this.m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
-        if (game.Rules.IsActorStarving(this.m_Actor) || game.Rules.IsActorInsane(this.m_Actor))
+        if (m_Actor.IsStarving || game.Rules.IsActorInsane(this.m_Actor))
         {
           ActorAction actorAction4 = this.BehaviorGoEatCorpse(game, this.FilterCorpses(game, percepts1));
           if (actorAction4 != null)

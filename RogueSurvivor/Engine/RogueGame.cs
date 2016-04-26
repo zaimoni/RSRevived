@@ -2662,10 +2662,8 @@ namespace djack.RogueSurvivor.Engine
         {
           if (actor.Model.Abilities.HasToEat)
           {
-            --actor.FoodPoints;
-            if (actor.FoodPoints < 0)
-              actor.FoodPoints = 0;
-            if (this.m_Rules.IsActorStarving(actor) && this.m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
+            if (--actor.FoodPoints < 0) actor.FoodPoints = 0;
+            if (actor.IsStarving && this.m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
             {
               if (actorList1 == null)
                 actorList1 = new List<Actor>();
@@ -2674,25 +2672,18 @@ namespace djack.RogueSurvivor.Engine
           }
           else if (actor.Model.Abilities.IsRotting)
           {
-            --actor.FoodPoints;
-            if (actor.FoodPoints < 0)
-              actor.FoodPoints = 0;
-            if (this.m_Rules.IsRottingActorStarving(actor))
+            if (--actor.FoodPoints < 0) actor.FoodPoints = 0;
+            if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
             {
-              if (m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
-              {
-                if (this.IsVisibleToPlayer(actor))
-                  this.AddMessage(this.MakeMessage(actor, "is rotting away."));
-                if (--actor.HitPoints <= 0)
-                {
-                  if (actorList1 == null)
-                    actorList1 = new List<Actor>();
+              if (this.IsVisibleToPlayer(actor))
+                AddMessage(MakeMessage(actor, "is rotting away."));
+              if (--actor.HitPoints <= 0) {
+                  if (actorList1 == null) actorList1 = new List<Actor>();
                   actorList1.Add(actor);
-                }
               }
             }
-            else if (m_Rules.IsRottingActorHungry(actor) && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
-              this.DoLooseRandomSkill(actor);
+            else if (actor.IsRotHungry && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
+              DoLooseRandomSkill(actor);
           }
           if (actor.Model.Abilities.HasToSleep)
           {
@@ -2732,7 +2723,7 @@ namespace djack.RogueSurvivor.Engine
               actor.SleepPoints = Math.Min(actor.SleepPoints, this.m_Rules.ActorMaxSleep(actor));
               if (actor.HitPoints < this.m_Rules.ActorMaxHPs(actor) && this.m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + this.m_Rules.ActorHealChanceBonus(actor)))
                 this.RegenActorHitPoints(actor, Rules.SLEEP_HEAL_HITPOINTS);
-              if (this.m_Rules.IsActorHungry(actor) || actor.SleepPoints >= this.m_Rules.ActorMaxSleep(actor))
+              if (actor.IsHungry || actor.SleepPoints >= this.m_Rules.ActorMaxSleep(actor))
                 this.DoWakeUp(actor);
               else if (actor.IsPlayer)
               {
@@ -5837,7 +5828,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckPlayerWaitLong(Actor player)
     {
-      if (this.m_IsPlayerLongWaitForcedStop || this.m_Session.WorldTime.TurnCounter >= this.m_PlayerLongWaitEnd.TurnCounter || (this.m_Rules.IsActorHungry(player) || this.m_Rules.IsActorStarving(player)) || (this.m_Rules.IsActorSleepy(player) || this.m_Rules.IsActorExhausted(player)))
+      if (this.m_IsPlayerLongWaitForcedStop || this.m_Session.WorldTime.TurnCounter >= this.m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (this.m_Rules.IsActorSleepy(player) || this.m_Rules.IsActorExhausted(player)))
         return false;
       foreach (Point position in this.m_PlayerFOV)
       {
@@ -6801,7 +6792,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.STATE_SLEEPY:
           return this.m_Rules.IsActorSleepy(this.m_Player);
         case AdvisorHint.STATE_HUNGRY:
-          return this.m_Rules.IsActorHungry(this.m_Player);
+          return m_Player.IsHungry;
         case AdvisorHint.NPC_TRADE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
@@ -7552,16 +7543,16 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor.Model.Abilities.HasToEat)
       {
-        if (this.m_Rules.IsActorStarving(actor))
+        if (actor.IsStarving)
           stringList.Add("Starving!");
-        else if (this.m_Rules.IsActorHungry(actor))
+        else if (actor.IsHungry)
           stringList.Add("Hungry.");
       }
       else if (actor.Model.Abilities.IsRotting)
       {
-        if (this.m_Rules.IsRottingActorStarving(actor))
+        if (actor.IsRotStarving)
           stringList.Add("Starving!");
-        else if (this.m_Rules.IsRottingActorHungry(actor))
+        else if (actor.IsRotHungry)
           stringList.Add("Hungry.");
       }
       if (actor.Model.Abilities.HasSanity)
@@ -8346,7 +8337,7 @@ namespace djack.RogueSurvivor.Engine
 
     private int FoodToHoursUntilHungry(int food)
     {
-      int num = food - Rules.FOOD_HUNGRY_LEVEL;
+      int num = food - Actor.FOOD_HUNGRY_LEVEL;
       if (num <= 0)
         return 0;
       return num / WorldTime.TURNS_PER_HOUR;
@@ -8354,7 +8345,7 @@ namespace djack.RogueSurvivor.Engine
 
     private int FoodToHoursUntilRotHungry(int food)
     {
-      int num = food - Rules.ROT_HUNGRY_LEVEL;
+      int num = food - Actor.ROT_HUNGRY_LEVEL;
       if (num <= 0)
         return 0;
       return num / WorldTime.TURNS_PER_HOUR;
@@ -11869,18 +11860,18 @@ namespace djack.RogueSurvivor.Engine
           }
           if (actor.Model.Abilities.HasToEat)
           {
-            if (this.m_Rules.IsActorStarving(actor))
+            if (actor.IsStarving)
               this.m_UI.UI_DrawImage("Icons\\food_starving", gx2, gy2, tint);
-            else if (this.m_Rules.IsActorHungry(actor))
+            else if (actor.IsHungry)
               this.m_UI.UI_DrawImage("Icons\\food_hungry", gx2, gy2, tint);
             else if (this.IsAlmostHungry(actor))
               this.m_UI.UI_DrawImage("Icons\\food_almost_hungry", gx2, gy2, tint);
           }
           else if (actor.Model.Abilities.IsRotting)
           {
-            if (this.m_Rules.IsRottingActorStarving(actor))
+            if (actor.IsRotStarving)
               this.m_UI.UI_DrawImage("Icons\\rot_starving", gx2, gy2, tint);
-            else if (this.m_Rules.IsRottingActorHungry(actor))
+            else if (actor.IsRotHungry)
               this.m_UI.UI_DrawImage("Icons\\rot_hungry", gx2, gy2, tint);
             else if (this.IsAlmostRotHungry(actor))
               this.m_UI.UI_DrawImage("Icons\\rot_almost_hungry", gx2, gy2, tint);
@@ -12333,11 +12324,11 @@ namespace djack.RogueSurvivor.Engine
       {
         int maxValue2 = this.m_Rules.ActorMaxFood(actor);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Rules.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (this.m_Rules.IsActorHungry(actor))
+        if (actor.IsHungry)
         {
-          if (this.m_Rules.IsActorStarving(actor))
+          if (actor.IsStarving)
             this.m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
           else
             this.m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
@@ -12349,11 +12340,11 @@ namespace djack.RogueSurvivor.Engine
       {
         int maxValue2 = this.m_Rules.ActorMaxRot(actor);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Rules.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (this.m_Rules.IsRottingActorHungry(actor))
+        if (actor.IsRotHungry)
         {
-          if (this.m_Rules.IsRottingActorStarving(actor))
+          if (actor.IsRotStarving)
             this.m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
           else
             this.m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());

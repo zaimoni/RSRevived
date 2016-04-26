@@ -109,10 +109,8 @@ namespace djack.RogueSurvivor.Engine
     private const float FIRING_WHEN_STA_TIRED = 0.75f;
     private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
     public const int BODY_ARMOR_BREAK_CHANCE = 2;
-    public const int FOOD_BASE_POINTS = 2*WorldTime.TURNS_PER_DAY;
-    public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
-    public const int ROT_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
-    public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
+    public const int FOOD_BASE_POINTS = 2*Actor.FOOD_HUNGRY_LEVEL;
+    public const int ROT_BASE_POINTS = 2*Actor.ROT_HUNGRY_LEVEL;
     public const int SLEEP_BASE_POINTS = 60*WorldTime.TURNS_PER_HOUR;
     public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
     public const int SANITY_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
@@ -1480,34 +1478,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsActorHungry(Actor a)
-    {
-      if (a.Model.Abilities.HasToEat)
-        return a.FoodPoints <= FOOD_HUNGRY_LEVEL;
-      return false;
-    }
-
-    public bool IsActorStarving(Actor a)
-    {
-      if (a.Model.Abilities.HasToEat)
-        return a.FoodPoints <= 0;
-      return false;
-    }
-
-    public bool IsRottingActorHungry(Actor a)
-    {
-      if (a.Model.Abilities.IsRotting)
-        return a.FoodPoints <= ROT_HUNGRY_LEVEL;
-      return false;
-    }
-
-    public bool IsRottingActorStarving(Actor a)
-    {
-      if (a.Model.Abilities.IsRotting)
-        return a.FoodPoints <= 0;
-      return false;
-    }
-
     public bool IsFoodStillFresh(ItemFood food, int turnCounter)
     {
       if (!food.IsPerishable)
@@ -1587,7 +1557,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "no ability to sleep";
         return false;
       }
-      if (this.IsActorHungry(actor) || this.IsActorStarving(actor))
+      if (actor.IsHungry || actor.IsStarving)
       {
         reason = "hungry";
         return false;
@@ -1843,7 +1813,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (corpse == null)
         throw new ArgumentNullException("corpse");
-      if (!actor.Model.Abilities.IsUndead && !this.IsActorStarving(actor) && !this.IsActorInsane(actor))
+      if (!actor.Model.Abilities.IsUndead && !actor.IsStarving && !IsActorInsane(actor))
       {
         reason = "not starving or insane";
         return false;
