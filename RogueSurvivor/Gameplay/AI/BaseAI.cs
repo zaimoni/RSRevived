@@ -516,7 +516,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedWeapon);
         ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
         if (rw.Ammo > 0) return null;
-        ItemAmmo compatibleAmmoItem = this.GetCompatibleAmmoItem(game, rw);
+        ItemAmmo compatibleAmmoItem = GetCompatibleAmmoItem(rw);
         if (compatibleAmmoItem != null)
           return (ActorAction) new ActionUseItem(this.m_Actor, game, (Item) compatibleAmmoItem);
       }
@@ -1933,7 +1933,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (this.m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
             ItemRangedWeapon rw = it as ItemRangedWeapon;
             if (0 < rw.Ammo) return false;
-            if (null != GetCompatibleAmmoItem(game, rw)) return false;
+            if (null != GetCompatibleAmmoItem(rw)) return false;
             return true;    // more work needed
             }
         if (it is ItemAmmo)
@@ -1972,22 +1972,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (it is ItemRangedWeapon)
       {
-        if (this.m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons)
-          return false;
+        if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
+        if (1 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) return false;  // XXX rules out AI gun bunnies
+        if (!m_Actor.Inventory.Contains(it) && m_Actor.HasItemOfModel(it.Model)) return false;
         ItemRangedWeapon rw = it as ItemRangedWeapon;
-        return (rw.Ammo > 0 || this.GetCompatibleAmmoItem(game, rw) != null) && m_Actor.CountItemsOfSameType(typeof (ItemRangedWeapon)) < 1 && (this.m_Actor.Inventory.Contains(it) || !m_Actor.HasItemOfModel(it.Model));
+        return rw.Ammo > 0 || GetCompatibleAmmoItem(rw) != null;
       }
       if (it is ItemAmmo)
       {
         ItemAmmo am = it as ItemAmmo;
-        if (this.GetCompatibleRangedWeapon(game, am) == null)
-          return false;
+        if (this.GetCompatibleRangedWeapon(game, am) == null) return false;
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemMeleeWeapon)
       {
-        if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0)
-          return false;
+        if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return false;
         return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
       }
       if (it is ItemMedicine)
@@ -2232,17 +2231,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor.GetEquippedWeapon() is ItemRangedWeapon;
     }
 
-    protected ItemAmmo GetCompatibleAmmoItem(RogueGame game, ItemRangedWeapon rw)
+    protected ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)
     {
-      if (this.m_Actor.Inventory == null)
-        return (ItemAmmo) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
+      if (m_Actor.Inventory == null) return null;
+      foreach (Item obj in this.m_Actor.Inventory.Items) {
         ItemAmmo itemAmmo = obj as ItemAmmo;
-        if (itemAmmo != null && itemAmmo.AmmoType == rw.AmmoType && game.Rules.CanActorUseItem(this.m_Actor, (Item) itemAmmo))
-          return itemAmmo;
+        if (itemAmmo != null && itemAmmo.AmmoType == rw.AmmoType) return itemAmmo;
       }
-      return (ItemAmmo) null;
+      return null;
     }
 
     protected ItemRangedWeapon GetCompatibleRangedWeapon(RogueGame game, ItemAmmo am)
