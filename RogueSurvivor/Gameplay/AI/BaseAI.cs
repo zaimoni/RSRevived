@@ -1894,12 +1894,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 
-    public List<Item> GetTradeableItems(RogueGame game, Inventory inv)
+    public List<Item> GetTradeableItems(Inventory inv)
     {
       if (inv == null) return null;
       List<Item> ret = null;
       foreach (Item it in inv.Items) {
-         if (IsTradeableItem(game, it)) {
+         if (IsTradeableItem(it)) {
            if (null == ret) ret = new List<Item>(inv.CountItems);
            ret.Add(it);
          }
@@ -1907,19 +1907,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    public bool HasAnyTradeableItem(RogueGame game, Inventory inv)
+    public bool HasAnyTradeableItem(Inventory inv)
     {
       if (inv == null) return false;
-      foreach (Item it in inv.Items)
-      {
-        if (IsTradeableItem(game, it))
-          return true;
+      foreach (Item it in inv.Items) {
+        if (IsTradeableItem(it)) return true;
       }
       return false;
     }
 
     // close to the inverse of IsInterestingItem
-    public bool IsTradeableItem(RogueGame game, Item it)
+    public bool IsTradeableItem(Item it)
     {
         if (it is ItemFood)
             {
@@ -1939,7 +1937,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (it is ItemAmmo)
             {
             ItemAmmo am = it as ItemAmmo;
-            if (this.GetCompatibleRangedWeapon(game, am) == null) return true;
+            if (GetCompatibleRangedWeapon(am) == null) return true;
             return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
             }
         if (it is ItemMeleeWeapon)
@@ -1981,7 +1979,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemAmmo)
       {
         ItemAmmo am = it as ItemAmmo;
-        if (this.GetCompatibleRangedWeapon(game, am) == null) return false;
+        if (GetCompatibleRangedWeapon(am) == null) return false;
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemMeleeWeapon)
@@ -2241,17 +2239,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemRangedWeapon GetCompatibleRangedWeapon(RogueGame game, ItemAmmo am)
+    protected ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
     {
-      if (this.m_Actor.Inventory == null)
-        return (ItemRangedWeapon) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
+      if (m_Actor.Inventory == null) return null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
         ItemRangedWeapon itemRangedWeapon = obj as ItemRangedWeapon;
         if (itemRangedWeapon != null && itemRangedWeapon.AmmoType == am.AmmoType)
           return itemRangedWeapon;
       }
-      return (ItemRangedWeapon) null;
+      return null;
     }
 
     protected ItemMeleeWeapon GetBestMeleeWeapon(RogueGame game, Predicate<Item> fn)

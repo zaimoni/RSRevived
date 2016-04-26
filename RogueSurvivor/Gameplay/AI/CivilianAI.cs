@@ -384,9 +384,9 @@ label_10:
           this.MarkTileAsTaboo(location.Position);
           game.DoEmote(this.m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
-        if (Directives.CanTrade && HasAnyTradeableItem(game, m_Actor.Inventory))
+        if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory))
         {
-          List<Item> TradeableItems = GetTradeableItems(game, m_Actor.Inventory);
+          List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
           List<Percept> percepts2 = this.FilterOut(game, this.FilterNonEnemies(game, percepts1), (Predicate<Percept>) (p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)

@@ -9488,7 +9488,7 @@ namespace djack.RogueSurvivor.Engine
     private bool IsTradeableItem(Actor speaker, Item offeredItem)
     {
        BaseAI tmp = speaker.Controller as BaseAI;
-       return (null == tmp ? true : (speaker.Controller as BaseAI).IsTradeableItem(this, offeredItem));
+       return (null == tmp ? true : (speaker.Controller as BaseAI).IsTradeableItem(offeredItem));
     }
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
