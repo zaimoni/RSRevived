@@ -1924,7 +1924,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (it is ItemFood)
             {
             if (m_Actor.IsHungry) return false; 
-            if (!HasEnoughFoodFor(game, m_Actor.Sheet.BaseFoodPoints / 2))
+            if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
               return (it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return true;
             }
@@ -1966,7 +1966,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemFood)
       {
         if (m_Actor.IsHungry) return true;
-        if (!this.HasEnoughFoodFor(game, this.m_Actor.Sheet.BaseFoodPoints / 2))
+        if (!this.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
@@ -2024,7 +2024,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected bool HasEnoughFoodFor(RogueGame game, int nutritionNeed)
+    protected bool HasEnoughFoodFor(int nutritionNeed)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
