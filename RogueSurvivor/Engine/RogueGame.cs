@@ -3665,6 +3665,7 @@ namespace djack.RogueSurvivor.Engine
     {
       this.UpdatePlayerFOV(player);
       this.m_Player = player;
+      this.m_Session.CurrentMap = player.Location.Map;  // multi-PC support
       this.ComputeViewRect(player.Location.Position);
       this.m_Session.Scoring.TurnsSurvived = this.m_Session.WorldTime.TurnCounter;
       if (this.m_IsPlayerLongWait)
