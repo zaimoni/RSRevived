@@ -1926,7 +1926,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsHungry) return false; 
             if (!HasEnoughFoodFor(game, m_Actor.Sheet.BaseFoodPoints / 2))
               return (it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-            return false;
+            return true;
             }
         if (it is ItemRangedWeapon)
             {
