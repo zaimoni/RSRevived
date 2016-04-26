@@ -2112,7 +2112,10 @@ namespace djack.RogueSurvivor.Engine
       return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(17)));
     }
 
-    public int ActorMaxInv(Actor actor)
+    // This is the authoritative source for a living actor's maximum inventory.
+    // As C# has no analog to a C++ const method or const local variables, 
+    // use this to prevent accidental overwriting of MaxCapacity by bugs.
+    public static int ActorMaxInv(Actor actor)
     {
       int num = Rules.SKILL_HAULER_INV_BONUS * actor.Sheet.SkillTable.GetSkillLevel(7);
       return actor.Sheet.BaseInventoryCapacity + num;

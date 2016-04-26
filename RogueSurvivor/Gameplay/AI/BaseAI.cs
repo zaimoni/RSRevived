@@ -333,7 +333,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = this.m_Actor.Location + dir;
         if (goodWanderLocFn != null && !goodWanderLocFn(location))
           return false;
-        return this.isValidWanderAction(game, game.Rules.IsBumpableFor(this.m_Actor, game, location));
+        return this.isValidWanderAction(game.Rules.IsBumpableFor(this.m_Actor, game, location));
       }), (Func<Direction, float>) (dir =>
       {
         int num = game.Rules.Roll(0, 666);
@@ -620,29 +620,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
     {
-      if (stack == null || stack.IsEmpty)
-        return (ActorAction) null;
+      if (stack == null || stack.IsEmpty) return null;
       MapObject mapObjectAt = this.m_Actor.Location.Map.GetMapObjectAt(position);
       if (mapObjectAt != null)
       {
         Fortification fortification = mapObjectAt as Fortification;
-        if (fortification != null && !fortification.IsWalkable)
-          return (ActorAction) null;
+        if (fortification != null && !fortification.IsWalkable) return null;
         DoorWindow doorWindow = mapObjectAt as DoorWindow;
-        if (doorWindow != null && doorWindow.IsBarricaded)
-          return (ActorAction) null;
+        if (doorWindow != null && doorWindow.IsBarricaded) return null;
       }
-      Item obj = (Item) null;
-      foreach (Item it in stack.Items)
-      {
-        if (game.Rules.CanActorGetItem(this.m_Actor, it) && this.IsInterestingItem(game, it))
-        {
+      Item obj = null;
+      foreach (Item it in stack.Items) {
+        if (game.Rules.CanActorGetItem(m_Actor, it) && IsInterestingItem(it)) {
           obj = it;
           break;
         }
       }
-      if (obj == null)
-        return (ActorAction) null;
+      if (obj == null) return null;
       Item it1 = obj;
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(this.m_Actor, string.Format("{0}! Great!", (object) it1.AName));
@@ -1502,7 +1496,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (stacks == null || stacks.Count == 0)
         return (ActorAction) null;
-      if (this.m_Actor.Inventory.CountItems < game.Rules.ActorMaxInv(this.m_Actor))
+      if (this.m_Actor.Inventory.CountItems < Rules.ActorMaxInv(this.m_Actor))
         return (ActorAction) null;
       if (this.HasItemOfType(typeof (ItemFood)))
         return (ActorAction) null;
@@ -1519,7 +1513,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!flag)
         return (ActorAction) null;
       Inventory inventory1 = this.m_Actor.Inventory;
-      Item firstMatching1 = inventory1.GetFirstMatching((Predicate<Item>) (it => !this.IsInterestingItem(game, it)));
+      Item firstMatching1 = inventory1.GetFirstMatching((Predicate<Item>) (it => !IsInterestingItem(it)));
       if (firstMatching1 != null)
         return this.BehaviorDropItem(game, firstMatching1);
       Item firstMatching2 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemBarricadeMaterial));
@@ -1955,9 +1949,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return true;    // default to ok to trade away
     }
 
-    public bool IsInterestingItem(RogueGame game, Item it)
+    public bool IsInterestingItem(Item it)
     {
-      if (this.m_Actor.Inventory.CountItems == game.Rules.ActorMaxInv(this.m_Actor) - 1)
+      if (this.m_Actor.Inventory.CountItems == Rules.ActorMaxInv(this.m_Actor) - 1)
         return it is ItemFood;
       if (it.IsForbiddenToAI || it is ItemSprayPaint || it is ItemTrap && (it as ItemTrap).IsActivated)
         return false;
@@ -1994,29 +1988,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
     }
 
-    public bool HasAnyInterestingItem(RogueGame game, Inventory inv)
+    public bool HasAnyInterestingItem(Inventory inv)
     {
       if (inv == null) return false;
       foreach (Item it in inv.Items) {
-        if (IsInterestingItem(game, it)) return true;
+        if (IsInterestingItem(it)) return true;
       }
       return false;
     }
 
-    public bool HasAnyInterestingItem(RogueGame game, List<Item> Items)
+    public bool HasAnyInterestingItem(List<Item> Items)
     {
       if (Items == null) return false;
       foreach (Item it in Items) {
-        if (IsInterestingItem(game, it)) return true;
+        if (IsInterestingItem(it)) return true;
       }
       return false;
     }
 
-    protected Item FirstInterestingItem(RogueGame game, Inventory inv)
+    protected Item FirstInterestingItem(Inventory inv)
     {
       if (inv == null) return null;
       foreach (Item it in inv.Items) {
-        if (IsInterestingItem(game, it)) return it;
+        if (IsInterestingItem(it)) return it;
       }
       return null;
     }
@@ -2158,12 +2152,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
-    protected bool isValidWanderAction(RogueGame game, ActorAction a)
+    protected bool isValidWanderAction(ActorAction a)
     {
       if (null == a) return false;
-      if (!(a is ActionMoveStep) && !(a is ActionSwitchPlace) && (!(a is ActionPush) && !(a is ActionOpenDoor)) && (!(a is ActionChat) || !this.Directives.CanTrade && (a as ActionChat).Target != this.m_Actor.Leader) && (!(a is ActionBashDoor) && (!(a is ActionGetFromContainer) || !this.IsInterestingItem(game, (a as ActionGetFromContainer).Item))))
-        return a is ActionBarricadeDoor;
-      return true;
+      if (a is ActionMoveStep) return true;
+      if (a is ActionSwitchPlace) return true;
+      if (a is ActionPush) return true;
+      if (a is ActionOpenDoor) return true;
+      if (a is ActionBashDoor) return true;
+      if (a is ActionChat) {
+        return Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader;
+      }
+      if (a is ActionGetFromContainer) return IsInterestingItem((a as ActionGetFromContainer).Item);
+      return a is ActionBarricadeDoor;
     }
 
     protected bool IsValidMoveTowardGoalAction(ActorAction a)

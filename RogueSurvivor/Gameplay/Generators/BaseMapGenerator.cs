@@ -615,9 +615,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.FoodPoints = this.m_Rules.ActorMaxFood(actor);
       actor.SleepPoints = this.m_Rules.ActorMaxSleep(actor);
       actor.Sanity = this.m_Rules.ActorMaxSanity(actor);
-      if (actor.Inventory == null)
-        return;
-      actor.Inventory.MaxCapacity = this.m_Rules.ActorMaxInv(actor);
+      if (actor.Inventory == null) return;
+      actor.Inventory.MaxCapacity = Rules.ActorMaxInv(actor);
     }
 
     protected DoorWindow MakeObjWoodenDoor()

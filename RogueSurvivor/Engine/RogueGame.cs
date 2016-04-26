@@ -7600,7 +7600,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor.Inventory != null && !actor.Inventory.IsEmpty)
       {
-        stringList.Add(string.Format("Items {0}/{1} : ", (object) actor.Inventory.CountItems, (object) this.m_Rules.ActorMaxInv(actor)));
+        stringList.Add(string.Format("Items {0}/{1} : ", (object) actor.Inventory.CountItems, (object) Rules.ActorMaxInv(actor)));
         stringList.AddRange((IEnumerable<string>) this.DescribeInventory(actor.Inventory));
       }
       return stringList.ToArray();
@@ -9482,7 +9482,7 @@ namespace djack.RogueSurvivor.Engine
       if (this.m_Rules.RollChance(this.m_Rules.ActorCharismaticTradeChance(speaker)))
         return true;
       BaseAI tmp = target.Controller as BaseAI;
-      return (null == tmp ? true : (target.Controller as BaseAI).IsInterestingItem(this, offeredItem));
+      return (null == tmp ? true : (target.Controller as BaseAI).IsInterestingItem(offeredItem));
     }
 
     private bool IsTradeableItem(Actor speaker, Item offeredItem)
@@ -9689,7 +9689,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.Leader == actor)
       {
         BaseAI baseAi = target.Controller as BaseAI;
-        bool flag = baseAi != null && baseAi.IsInterestingItem(this, gift);
+        bool flag = baseAi != null && baseAi.IsInterestingItem(gift);
         if (flag)
           this.DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
         else
@@ -11360,7 +11360,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (id != Skills.IDs.HAULER || actor.Inventory == null)
         return;
-      actor.Inventory.MaxCapacity = this.m_Rules.ActorMaxInv(actor);
+      actor.Inventory.MaxCapacity = Rules.ActorMaxInv(actor);
     }
 
     private void CheckWeatherChange()

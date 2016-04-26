@@ -357,7 +357,7 @@ label_10:
         List<Percept> perceptList2 = this.FilterOut(game, this.FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn == map.LocalTime.TurnCounter && !this.IsOccupiedByOther(map, p.Location.Position) && !this.IsTileTaboo(p.Location.Position))
-            return !this.HasAnyInterestingItem(game, p.Percepted as Inventory);
+            return !this.HasAnyInterestingItem(p.Percepted as Inventory);
           return true;
         }));
         if (perceptList2 != null)
@@ -395,8 +395,8 @@ label_10:
             if (actor.IsPlayer) return true;
             if (!game.Rules.CanActorInitiateTradeWith(this.m_Actor, actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
-            if (!HasAnyInterestingItem(game, actor.Inventory)) return true;
-            return !(actor.Controller as BaseAI).HasAnyInterestingItem(game, TradeableItems);
+            if (!HasAnyInterestingItem(actor.Inventory)) return true;
+            return !(actor.Controller as BaseAI).HasAnyInterestingItem(TradeableItems);
           }));
           if (percepts2 != null)
           {

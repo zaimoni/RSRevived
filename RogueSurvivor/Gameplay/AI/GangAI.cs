@@ -257,14 +257,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (a.Inventory == null || a.Inventory.CountItems == 0 || this.IsFriendOf(game, a))
             return false;
           if (!game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(this.m_Actor, a)))
-            return this.HasAnyInterestingItem(game, a.Inventory);
+            return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object) this.m_Actor.Name));
           return false;
         }));
         if (percepts3 != null)
         {
           Actor target = this.FilterNearest(game, percepts3).Percepted as Actor;
-          Item obj = this.FirstInterestingItem(game, target.Inventory);
+          Item obj = FirstInterestingItem(target.Inventory);
           game.DoMakeAggression(this.m_Actor, target);
           this.m_Actor.Activity = Activity.CHASING;
           this.m_Actor.TargetActor = target;
