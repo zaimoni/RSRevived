@@ -13,10 +13,35 @@ namespace djack.RogueSurvivor.Engine.Items
   internal class ItemFood : Item
   {
     public int Nutrition { get; private set; }
-
     public bool IsPerishable { get; private set; }
-
     public WorldTime BestBefore { get; private set; }
+
+    // if those groceries expire on day 100, they will not spoil until day 200(?!)
+    public bool IsStillFreshAt(int turnCounter)
+    {
+      if (!IsPerishable) return true;
+      return turnCounter < BestBefore.TurnCounter;
+    }
+
+    public bool IsExpiredAt(int turnCounter)
+    {
+      if (IsPerishable && turnCounter >= BestBefore.TurnCounter)
+        return turnCounter < 2 * BestBefore.TurnCounter;
+      return false;
+    }
+
+    public bool IsSpoiledAt(int turnCounter)
+    {
+      if (!IsPerishable) return false;
+      return turnCounter >= 2 * BestBefore.TurnCounter;
+    }
+
+    public int NutritionAt(int turnCounter)
+    {
+      if (IsStillFreshAt(turnCounter)) return Nutrition;
+      if (!IsExpiredAt(turnCounter)) return Nutrition / 3;
+      return (2*Nutrition)/3;
+    }
 
     public ItemFood(ItemModel model)
       : base(model)

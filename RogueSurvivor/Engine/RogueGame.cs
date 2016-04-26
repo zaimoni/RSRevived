@@ -3039,30 +3039,27 @@ namespace djack.RogueSurvivor.Engine
 
     private int CountFoodItemsNutrition(Map map)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
+#if DEBUG
+      if (map == null) throw new ArgumentNullException("map");
+#endif
       int num1 = 0;
-      foreach (Inventory groundInventory in map.GroundInventories)
-      {
-        if (!groundInventory.IsEmpty)
-        {
-          foreach (Item obj in groundInventory.Items)
-          {
-            if (obj is ItemFood)
-              num1 += this.m_Rules.FoodItemNutrition(obj as ItemFood, map.LocalTime.TurnCounter);
+      foreach (Inventory groundInventory in map.GroundInventories) {
+        if (!groundInventory.IsEmpty) {
+          foreach (Item obj in groundInventory.Items) {
+            ItemFood tmpFood = obj as ItemFood;
+            if (null == tmpFood) continue;
+            num1 += tmpFood.NutritionAt(map.LocalTime.TurnCounter);
           }
         }
       }
       int num2 = 0;
-      foreach (Actor actor in map.Actors)
-      {
+      foreach (Actor actor in map.Actors) {
         Inventory inventory = actor.Inventory;
-        if (inventory != null && !inventory.IsEmpty)
-        {
-          foreach (Item obj in inventory.Items)
-          {
-            if (obj is ItemFood)
-              num2 += this.m_Rules.FoodItemNutrition(obj as ItemFood, map.LocalTime.TurnCounter);
+        if (inventory != null && !inventory.IsEmpty) {
+          foreach (Item obj in inventory.Items) {
+            ItemFood tmpFood = obj as ItemFood;
+            if (null == tmpFood) continue;
+            num2 += tmpFood.NutritionAt(map.LocalTime.TurnCounter);
           }
         }
       }
@@ -7811,9 +7808,9 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemFood)
       {
         ItemFood food = it as ItemFood;
-        if (this.m_Rules.IsFoodSpoiled(food, this.m_Session.WorldTime.TurnCounter))
+        if (food.IsExpiredAt(m_Session.WorldTime.TurnCounter))
           str += " (spoiled)";
-        else if (this.m_Rules.IsFoodExpired(food, this.m_Session.WorldTime.TurnCounter))
+        else if (food.IsExpiredAt(m_Session.WorldTime.TurnCounter))
           str += " (expired)";
       }
       else if (it is ItemRangedWeapon)
@@ -8012,17 +8009,17 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add("> food");
       if (f.IsPerishable)
       {
-        if (this.m_Rules.IsFoodStillFresh(f, this.m_Session.WorldTime.TurnCounter))
+        if (f.IsStillFreshAt(m_Session.WorldTime.TurnCounter))
           stringList.Add("Fresh.");
-        else if (this.m_Rules.IsFoodExpired(f, this.m_Session.WorldTime.TurnCounter))
+        else if (f.IsExpiredAt(m_Session.WorldTime.TurnCounter))
           stringList.Add("*Expired*");
-        else if (this.m_Rules.IsFoodSpoiled(f, this.m_Session.WorldTime.TurnCounter))
+        else if (f.IsSpoiledAt(m_Session.WorldTime.TurnCounter))
           stringList.Add("**SPOILED**");
         stringList.Add(string.Format("Best-Before : {0}", (object) f.BestBefore.ToString()));
       }
       else
         stringList.Add("Always fresh.");
-      int baseValue = this.m_Rules.FoodItemNutrition(f, this.m_Session.WorldTime.TurnCounter);
+      int baseValue = f.NutritionAt(m_Session.WorldTime.TurnCounter);
       int num = this.m_Player == null ? baseValue : this.m_Rules.ActorItemNutritionValue(this.m_Player, baseValue);
       if (num == itemFoodModel.Nutrition)
         stringList.Add(string.Format("Nutrition   : +{0}", (object) baseValue));
@@ -9887,18 +9884,16 @@ namespace djack.RogueSurvivor.Engine
     {
       ItemFood food = it as ItemFood;
       SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      int baseValue = this.m_Rules.FoodItemNutrition(food, actor.Location.Map.LocalTime.TurnCounter);
+      int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
       actor.FoodPoints = Math.Min(actor.FoodPoints + this.m_Rules.ActorItemNutritionValue(actor, baseValue), this.m_Rules.ActorMaxFood(actor));
-      actor.Location.Map.GetItemsAt(actor.Location.Position).Consume((Item) food);
-      bool player = this.IsVisibleToPlayer(actor);
-      if (player)
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_EAT), (Item) food));
-      if (!this.m_Rules.IsFoodSpoiled(food, actor.Location.Map.LocalTime.TurnCounter) || !this.m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
+      actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
+      bool player = IsVisibleToPlayer(actor);
+      if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
+      if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
         return;
-      this.DoVomit(actor);
-      if (!player)
-        return;
-      this.AddMessage(this.MakeMessage(actor, string.Format("{0} from eating spoiled food!", (object) this.Conjugate(actor, this.VERB_VOMIT))));
+      DoVomit(actor);
+      if (!player) return;
+      AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", (object) Conjugate(actor, VERB_VOMIT))));
     }
 
     private void DoUseFoodItem(Actor actor, ItemFood food)
@@ -9910,7 +9905,7 @@ namespace djack.RogueSurvivor.Engine
       else
       {
         SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-        int baseValue = this.m_Rules.FoodItemNutrition(food, actor.Location.Map.LocalTime.TurnCounter);
+        int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
         actor.FoodPoints = Math.Min(actor.FoodPoints + this.m_Rules.ActorItemNutritionValue(actor, baseValue), this.m_Rules.ActorMaxFood(actor));
         actor.Inventory.Consume((Item) food);
         if (food.Model == this.GameItems.CANNED_FOOD)
@@ -9921,15 +9916,14 @@ namespace djack.RogueSurvivor.Engine
           };
           actor.Location.Map.DropItemAt((Item) itemTrap, actor.Location.Position);
         }
-        bool player = this.IsVisibleToPlayer(actor);
+        bool player = IsVisibleToPlayer(actor);
         if (player)
-          this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_EAT), (Item) food));
-        if (!m_Rules.IsFoodSpoiled(food, actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
+          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
+        if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
           return;
-        this.DoVomit(actor);
-        if (!player)
-          return;
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0} from eating spoiled food!", (object) this.Conjugate(actor, this.VERB_VOMIT))));
+        DoVomit(actor);
+        if (!player) return;
+        AddMessage(MakeMessage(actor, string.Format("{0} from eating spoiled food!", (object) Conjugate(actor, VERB_VOMIT))));
       }
     }
 
@@ -12488,9 +12482,9 @@ namespace djack.RogueSurvivor.Engine
         else if (it is ItemFood)
         {
           ItemFood food = it as ItemFood;
-          if (this.m_Rules.IsFoodExpired(food, this.m_Session.WorldTime.TurnCounter))
+          if (food.IsExpiredAt(m_Session.WorldTime.TurnCounter))
             this.m_UI.UI_DrawImage("Icons\\expired_food", gx2, gy2);
-          else if (this.m_Rules.IsFoodSpoiled(food, this.m_Session.WorldTime.TurnCounter))
+          else if (food.IsSpoiledAt(m_Session.WorldTime.TurnCounter))
             this.m_UI.UI_DrawImage("Icons\\spoiled_food", gx2, gy2);
         }
         else if (it is ItemTrap)

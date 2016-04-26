@@ -1478,36 +1478,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsFoodStillFresh(ItemFood food, int turnCounter)
-    {
-      if (!food.IsPerishable)
-        return true;
-      return turnCounter < food.BestBefore.TurnCounter;
-    }
-
-    public bool IsFoodExpired(ItemFood food, int turnCounter)
-    {
-      if (food.IsPerishable && turnCounter >= food.BestBefore.TurnCounter)
-        return turnCounter < 2 * food.BestBefore.TurnCounter;
-      return false;
-    }
-
-    public bool IsFoodSpoiled(ItemFood food, int turnCounter)
-    {
-      if (food.IsPerishable)
-        return turnCounter >= 2 * food.BestBefore.TurnCounter;
-      return false;
-    }
-
-    public int FoodItemNutrition(ItemFood food, int turnCounter)
-    {
-      if (this.IsFoodStillFresh(food, turnCounter))
-        return food.Nutrition;
-      if (!this.IsFoodExpired(food, turnCounter))
-        return food.Nutrition / 3;
-      return 2 * food.Nutrition / 3;
-    }
-
     public bool IsActorSleepy(Actor a)
     {
       if (a.Model.Abilities.HasToSleep)

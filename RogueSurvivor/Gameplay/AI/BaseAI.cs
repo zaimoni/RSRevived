@@ -1852,19 +1852,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
       ItemFood obj1 = null;
       int rating = int.MinValue;
-      foreach (Item obj2 in m_Actor.Inventory.Items)
-      {
+      foreach (Item obj2 in m_Actor.Inventory.Items) {
         ItemFood food = obj2 as ItemFood;
         if (null == food) continue;
         int num3 = 0;
-        int num4 = game.Rules.FoodItemNutrition(food, turnCounter);
+        int num4 = food.NutritionAt(turnCounter);
         int num5 = num4 - need;
-        if (num5 > 0)
-            num3 -= num5;
-        if (!food.IsPerishable)
-            num3 -= num4;
-        if (num3 > rating)
-        {
+        if (num5 > 0) num3 -= num5;
+        if (!food.IsPerishable) num3 -= num4;
+        if (num3 > rating) {
           obj1 = food;
           rating = num3;
         }
@@ -1881,17 +1877,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
       ItemFood obj1 = null;
       int rating = int.MinValue;
-      foreach (Item obj2 in m_Actor.Inventory.Items)
-      {
+      foreach (Item obj2 in m_Actor.Inventory.Items) {
         ItemFood food = obj2 as ItemFood;
         if (null == food) continue;
         if (!food.IsPerishable) continue;
-        if (game.Rules.IsFoodSpoiled(food,turnCounter)) continue;
-        int num4 = game.Rules.ActorItemNutritionValue(m_Actor,game.Rules.FoodItemNutrition(food, turnCounter));
+        if (food.IsSpoiledAt(turnCounter)) continue;
+        int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
         if (num4 > need) continue; // more work needed
         int num3 = need-num4;
-        if (num3 > rating)
-        {
+        if (num3 > rating) {
           obj1 = food;
           rating = num3;
         }
@@ -1931,7 +1925,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             {
             if (m_Actor.IsHungry) return false; 
             if (!HasEnoughFoodFor(game, m_Actor.Sheet.BaseFoodPoints / 2))
-                return !game.Rules.IsFoodSpoiled(it as ItemFood, m_Actor.Location.Map.LocalTime.TurnCounter);
+              return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return false;
             }
         if (it is ItemRangedWeapon)
@@ -1973,7 +1967,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         if (m_Actor.IsHungry) return true;
         if (!this.HasEnoughFoodFor(game, this.m_Actor.Sheet.BaseFoodPoints / 2))
-          return !game.Rules.IsFoodSpoiled(it as ItemFood, this.m_Actor.Location.Map.LocalTime.TurnCounter);
+          return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
       if (it is ItemRangedWeapon)
@@ -2036,10 +2030,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int num = 0;
       foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemFood) {
-          num += game.Rules.FoodItemNutrition(obj as ItemFood, turnCounter);
-          if (num >= nutritionNeed) return true;
-        }
+        ItemFood tmpFood = obj as ItemFood;
+        if (null == tmpFood) continue;
+        num += tmpFood.NutritionAt(turnCounter);
+        if (num >= nutritionNeed) return true;
       }
       return false;
     }
