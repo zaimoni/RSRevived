@@ -9481,14 +9481,12 @@ namespace djack.RogueSurvivor.Engine
     {
       if (this.m_Rules.RollChance(this.m_Rules.ActorCharismaticTradeChance(speaker)))
         return true;
-      BaseAI tmp = target.Controller as BaseAI;
-      return (null == tmp ? true : (target.Controller as BaseAI).IsInterestingItem(offeredItem));
+      return target.Controller.IsInterestingItem(offeredItem);
     }
 
     private bool IsTradeableItem(Actor speaker, Item offeredItem)
     {
-       BaseAI tmp = speaker.Controller as BaseAI;
-       return (null == tmp ? true : (speaker.Controller as BaseAI).IsTradeableItem(offeredItem));
+       return speaker.Controller.IsTradeableItem(offeredItem);
     }
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)

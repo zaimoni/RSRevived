@@ -1910,84 +1910,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    // close to the inverse of IsInterestingItem
-    public bool IsTradeableItem(Item it)
-    {
-        if (it is ItemFood)
-            {
-            if (m_Actor.IsHungry) return false; 
-            if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
-              return (it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-            return true;
-            }
-        if (it is ItemRangedWeapon)
-            {
-            if (this.m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
-            ItemRangedWeapon rw = it as ItemRangedWeapon;
-            if (0 < rw.Ammo) return false;
-            if (null != GetCompatibleAmmoItem(rw)) return false;
-            return true;    // more work needed
-            }
-        if (it is ItemAmmo)
-            {
-            ItemAmmo am = it as ItemAmmo;
-            if (GetCompatibleRangedWeapon(am) == null) return true;
-            return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-            }
-        if (it is ItemMeleeWeapon)
-            {
-            if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return true;   // martial artists+melee weapons needs work
-            return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
-            }
-        // player should be able to trade for blue pills
-/*
-        if (it is ItemMedicine)
-            {
-            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-            }
-*/
-        return true;    // default to ok to trade away
-    }
-
-    public bool IsInterestingItem(Item it)
-    {
-      if (this.m_Actor.Inventory.CountItems == Rules.ActorMaxInv(this.m_Actor) - 1)
-        return it is ItemFood;
-      if (it.IsForbiddenToAI || it is ItemSprayPaint || it is ItemTrap && (it as ItemTrap).IsActivated)
-        return false;
-      if (it is ItemFood)
-      {
-        if (m_Actor.IsHungry) return true;
-        if (!this.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
-          return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-        return false;
-      }
-      if (it is ItemRangedWeapon)
-      {
-        if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
-        if (1 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) return false;  // XXX rules out AI gun bunnies
-        if (!m_Actor.Inventory.Contains(it) && m_Actor.HasItemOfModel(it.Model)) return false;
-        ItemRangedWeapon rw = it as ItemRangedWeapon;
-        return rw.Ammo > 0 || GetCompatibleAmmoItem(rw) != null;
-      }
-      if (it is ItemAmmo)
-      {
-        ItemAmmo am = it as ItemAmmo;
-        if (GetCompatibleRangedWeapon(am) == null) return false;
-        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-      }
-      if (it is ItemMeleeWeapon)
-      {
-        if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return false;
-        return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
-      }
-      if (it is ItemMedicine)
-        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-      if (it.IsUseless || it is ItemPrimedExplosive || this.m_Actor.IsBoredOf(it))
-        return false;
-      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
-    }
-
     public bool HasAnyInterestingItem(Inventory inv)
     {
       if (inv == null) return false;
@@ -2013,20 +1935,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (IsInterestingItem(it)) return it;
       }
       return null;
-    }
-
-    protected bool HasEnoughFoodFor(int nutritionNeed)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
-      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      int num = 0;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemFood tmpFood = obj as ItemFood;
-        if (null == tmpFood) continue;
-        num += tmpFood.NutritionAt(turnCounter);
-        if (num >= nutritionNeed) return true;
-      }
-      return false;
     }
 
     protected bool HasItemOfType(Type tt)
@@ -2228,27 +2136,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool HasEquipedRangedWeapon(Actor actor)
     {
       return actor.GetEquippedWeapon() is ItemRangedWeapon;
-    }
-
-    protected ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)
-    {
-      if (m_Actor.Inventory == null) return null;
-      foreach (Item obj in this.m_Actor.Inventory.Items) {
-        ItemAmmo itemAmmo = obj as ItemAmmo;
-        if (itemAmmo != null && itemAmmo.AmmoType == rw.AmmoType) return itemAmmo;
-      }
-      return null;
-    }
-
-    protected ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
-    {
-      if (m_Actor.Inventory == null) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemRangedWeapon itemRangedWeapon = obj as ItemRangedWeapon;
-        if (itemRangedWeapon != null && itemRangedWeapon.AmmoType == am.AmmoType)
-          return itemRangedWeapon;
-      }
-      return null;
     }
 
     protected ItemMeleeWeapon GetBestMeleeWeapon(RogueGame game, Predicate<Item> fn)
