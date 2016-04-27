@@ -11107,34 +11107,34 @@ namespace djack.RogueSurvivor.Engine
             this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("choice {0} : {1} from {2} to {3} - {4}", (object) (index + 1), (object) Skills.Name(id), (object) skillLevel, (object) (skillLevel + 1), (object) this.DescribeSkillShort(id)), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
           }
         }
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("ESC if you don't want to upgrade.", this.m_Session.WorldTime.TurnCounter, Color.White));
-        this.RedrawPlayScreen();
-        KeyEventArgs key = this.m_UI.UI_WaitKey();
+        AddMessage(new djack.RogueSurvivor.Data.Message("ESC if you don't want to upgrade; SPACE to get wiser skills.", m_Session.WorldTime.TurnCounter, Color.White));
+        RedrawPlayScreen();
+        KeyEventArgs key = m_UI.UI_WaitKey();
         int num = (int) InputTranslator.KeyToCommand(key);
-        if (key.KeyCode == Keys.Escape)
+        if (key.KeyCode == Keys.Escape) break;
+        if (key.KeyCode == Keys.Space)
         {
-          flag = false;
+          upgrade = RollSkillsToUpgrade(upgradeActor, 300);
+          continue;
         }
-        else
+
+        int choiceNumber = KeyToChoiceNumber(key.KeyCode);
+        if (choiceNumber >= 1 && choiceNumber <= upgrade.Count)
         {
-          int choiceNumber = this.KeyToChoiceNumber(key.KeyCode);
-          if (choiceNumber >= 1 && choiceNumber <= upgrade.Count)
+          Skills.IDs id = upgrade[choiceNumber - 1];
+          Skill skill = SkillUpgrade(upgradeActor, id);
+          if (skill.Level == 1)
           {
-            Skills.IDs id = upgrade[choiceNumber - 1];
-            Skill skill = this.SkillUpgrade(upgradeActor, id);
-            if (skill.Level == 1)
-            {
-              this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-              this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)));
-            }
-            else
-            {
-              this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-              this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level));
-            }
-            this.AddMessagePressEnter();
-            flag = false;
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+            m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)));
           }
+          else
+          {
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+            m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level));
+          }
+          AddMessagePressEnter();
+          flag = false;
         }
       }
       while (flag);
