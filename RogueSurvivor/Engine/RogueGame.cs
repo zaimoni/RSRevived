@@ -3498,52 +3498,47 @@ namespace djack.RogueSurvivor.Engine
     private void SpawnNewUndead(Map map, int day)
     {
       Actor newUndead = this.m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
-      if (RogueGame.s_Options.AllowUndeadsEvolution && Rules.HasEvolution(this.m_Session.GameMode))
-      {
-        int chance = Math.Min(75, day * 2);
-        bool flag = false;
+      if (RogueGame.s_Options.AllowUndeadsEvolution && Rules.HasEvolution(m_Session.GameMode)) {
         GameActors.IDs fromModelID = (GameActors.IDs) newUndead.Model.ID;
-        if (this.m_Rules.RollChance(chance))
-        {
-          flag = true;
-          fromModelID = this.NextUndeadEvolution((GameActors.IDs) newUndead.Model.ID);
-          if (this.m_Rules.RollChance(chance))
-            fromModelID = this.NextUndeadEvolution(fromModelID);
+        if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) { 
+          int chance = Math.Min(75, day * 2);
+          if (m_Rules.RollChance(chance)) {
+            fromModelID = NextUndeadEvolution(fromModelID);
+            if (m_Rules.RollChance(chance))
+              fromModelID = NextUndeadEvolution(fromModelID);
+            newUndead.Model = GameActors[fromModelID];
+          }
         }
-        if (fromModelID == GameActors.IDs.UNDEAD_ZOMBIE_LORD && day < 7)
-          flag = false;
-        if (flag)
-          newUndead.Model = this.GameActors[fromModelID];
       }
       this.SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);
     }
 
-    private void SpawnNewSewersUndead(Map map, int day)
+    private void SpawnNewSewersUndead(Map map)
     {
       Actor newSewersUndead = this.m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
-      this.SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false);
+      SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false);
     }
 
     private void SpawnNewRefugee(Map map)
     {
       Actor newRefugee = this.m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
-      this.SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true);
+      SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true);
     }
 
     private Actor SpawnNewSurvivor(Map map)
     {
       Actor newSurvivor = this.m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
-      if (this.SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, true))
+      if (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, true))
         return newSurvivor;
-      return (Actor) null;
+      return null;
     }
 
     private Actor SpawnNewSurvivor(Map map, Point bandPos)
     {
       Actor newSurvivor = this.m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
-      if (this.SpawnActorNear(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, bandPos, 3))
+      if (SpawnActorNear(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, bandPos, 3))
         return newSurvivor;
-      return (Actor) null;
+      return null;
     }
 
     private Actor SpawnNewNatGuardLeader(Map map)
