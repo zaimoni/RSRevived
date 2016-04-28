@@ -3397,13 +3397,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return this.m_Game.GameActors.RatZombie.CreateNumberedName(this.m_Game.GameFactions.TheUndeads, spawnTime);
     }
 
-    public Actor CreateNewSubwayUndead(int spawnTime)
-    {
-      if (!Rules.HasAllZombies(this.m_Game.Session.GameMode))
-        return this.CreateNewUndead(spawnTime);
-      return this.m_Game.GameActors.Zombie.CreateNumberedName(this.m_Game.GameFactions.TheUndeads, spawnTime);
-    }
-
     public Actor CreateNewCHARGuard(int spawnTime)
     {
       Actor numberedName = this.m_Game.GameActors.CHARGuard.CreateNumberedName(this.m_Game.GameFactions.TheCHARCorporation, spawnTime);

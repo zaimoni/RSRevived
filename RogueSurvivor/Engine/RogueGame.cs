@@ -3524,12 +3524,6 @@ namespace djack.RogueSurvivor.Engine
       this.SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false);
     }
 
-    private void SpawnNewSubwayUndead(Map map, int day)
-    {
-      Actor newSubwayUndead = this.m_TownGenerator.CreateNewSubwayUndead(map.LocalTime.TurnCounter);
-      this.SpawnActorOnMapBorder(map, newSubwayUndead, SPAWN_DISTANCE_TO_PLAYER, false);
-    }
-
     private void SpawnNewRefugee(Map map)
     {
       Actor newRefugee = this.m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
