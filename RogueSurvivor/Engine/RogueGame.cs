@@ -3452,25 +3452,23 @@ namespace djack.RogueSurvivor.Engine
       int num1 = 4 * (map.Width + map.Height);
       int num2 = 0;
       Point point = new Point();
-      do
-      {
-        ++num2;
-        int num3 = this.m_Rules.RollChance(50) ? 0 : map.Width - 1;
-        int num4 = this.m_Rules.RollChance(50) ? 0 : map.Height - 1;
-        if (this.m_Rules.RollChance(50))
-          num3 = this.m_Rules.RollX(map);
-        else
-          num4 = this.m_Rules.RollY(map);
-        point.X = num3;
-        point.Y = num4;
-        if ((!mustBeOutside || !map.GetTileAt(point.X, point.Y).IsInside) && (this.m_Rules.IsWalkableFor(actorToSpawn, map, point.X, point.Y) && this.DistanceToPlayer(map, point) >= minDistToPlayer) && !this.IsAdjacentToEnemy(map, point, actorToSpawn))
-        {
-          map.PlaceActorAt(actorToSpawn, point);
-          this.OnActorEnterTile(actorToSpawn);
-          return true;
+      do {
+        if (m_Rules.RollChance(50)) {
+          point.X = m_Rules.RollX(map);
+          point.Y = m_Rules.RollChance(50) ? 0 : map.Height - 1;
+        } else{
+          point.X = m_Rules.RollChance(50) ? 0 : map.Width - 1;
+          point.Y = m_Rules.RollY(map);
         }
+        if (mustBeOutside && map.GetTileAt(point.X, point.Y).IsInside) continue;
+        if (!m_Rules.IsWalkableFor(actorToSpawn, map, point.X, point.Y)) continue;
+        if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
+        if (IsAdjacentToEnemy(map, point, actorToSpawn)) continue;
+        map.PlaceActorAt(actorToSpawn, point);
+        OnActorEnterTile(actorToSpawn);
+        return true;
       }
-      while (num2 <= num1);
+      while (++num2 <= num1);
       return false;
     }
 
