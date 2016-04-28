@@ -247,60 +247,6 @@ namespace djack.RogueSurvivor.Engine
       return this.m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 
-    public Location RollNeighbourInMap(Location from)
-    {
-      Location location;
-      do
-      {
-        location = from + this.RollDirection();
-      }
-      while (location.Map != from.Map || !from.Map.IsInBounds(location.Position.X, location.Position.Y));
-      return location;
-    }
-
-    public bool RollValidMoveInMap(Actor actor, int maxTries, out Location nextLocation)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      for (int index = 0; index < maxTries; ++index)
-      {
-        nextLocation = this.RollNeighbourInMap(actor.Location);
-        if (this.IsWalkableFor(actor, nextLocation.Map, nextLocation.Position.X, nextLocation.Position.Y))
-          return true;
-      }
-      nextLocation = actor.Location;
-      return false;
-    }
-
-    public bool RollValidMoveDirection(Actor actor, int maxTries, out Direction direction)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      for (int index = 0; index < maxTries; ++index)
-      {
-        direction = this.RollDirection();
-        Location location = actor.Location + direction;
-        if (location.Map == actor.Location.Map && this.IsWalkableFor(actor, location))
-          return true;
-      }
-      direction = (Direction) null;
-      return false;
-    }
-
-    public bool RollValidBumpDirection(Actor actor, int maxTries, out Direction direction)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      for (int index = 0; index < maxTries; ++index)
-      {
-        direction = this.RollDirection();
-        if ((actor.Location + direction).Map == actor.Location.Map)
-          return true;
-      }
-      direction = (Direction) null;
-      return false;
-    }
-
     public bool CanActorGetItemFromContainer(Actor actor, Point position)
     {
       string reason;
