@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor
   {
     public const string GAME_NAME = "Rogue Survivor";
     public const string GAME_NAME_CAPS = "ROGUE SURVIVOR";
-    public const string GAME_VERSION = "alpha 9 fork RC 5";
+    public const string GAME_VERSION = "alpha 9 fork RC 6";
 
     public static SetupConfig.eVideo Video { get; set; }
 
