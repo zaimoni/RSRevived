@@ -7792,7 +7792,7 @@ namespace djack.RogueSurvivor.Engine
       if (it is ItemFood)
       {
         ItemFood food = it as ItemFood;
-        if (food.IsExpiredAt(m_Session.WorldTime.TurnCounter))
+        if (food.IsSpoiledAt(m_Session.WorldTime.TurnCounter))
           str += " (spoiled)";
         else if (food.IsExpiredAt(m_Session.WorldTime.TurnCounter))
           str += " (expired)";
