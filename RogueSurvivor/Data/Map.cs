@@ -1059,6 +1059,16 @@ namespace djack.RogueSurvivor.Data
         for (int index2 = 0; index2 < Height; ++index2)
           m_Tiles[index1, index2].OptimizeBeforeSaving();
       }
+
+      int i = 0;
+      if (null != m_ActorsList)
+      {
+        i = m_ActorsList.Count;
+        while (0 < i--) {
+          if (m_ActorsList[i].IsDead) m_ActorsList.RemoveAt(i);
+        }
+      }
+
       foreach (Actor mActors in m_ActorsList)
         mActors.OptimizeBeforeSaving();
       m_ActorsList.TrimExcess();

@@ -1003,13 +1003,37 @@ namespace djack.RogueSurvivor.Data
       this.m_Flags &= ~f;
     }
 
+    // This is a backstop for bugs elsewhere.
+    // Just optimize everything that's an Actor or contains an Actor.
     public void OptimizeBeforeSaving()
     {
-      if (this.m_TargetActor != null && this.m_TargetActor.IsDead)
-        this.m_TargetActor = (Actor) null;
-      if (this.m_BoringItems == null)
-        return;
-      this.m_BoringItems.TrimExcess();
+      if (m_TargetActor != null && m_TargetActor.IsDead) m_TargetActor = null;
+      if (m_Leader != null && m_Leader.IsDead) m_Leader = null;
+      int i = 0;
+      if (null != m_Followers) {
+        i = m_Followers.Count;
+        while(0 < i--) {
+          if (m_Followers[i].IsDead) m_Followers.RemoveAt(i);
+        }
+        if (0 == m_Followers.Count) m_Followers = null;
+      }
+      if (null != m_AggressorOf) {
+        i = m_AggressorOf.Count;
+        while(0 < i--) {
+          if (m_AggressorOf[i].IsDead) m_AggressorOf.RemoveAt(i);
+        }
+        if (0 == m_AggressorOf.Count) m_AggressorOf = null;
+      }
+      if (null != m_SelfDefenceFrom) {
+        i = m_SelfDefenceFrom.Count;
+        while(0 < i--) {
+          if (m_SelfDefenceFrom[i].IsDead) m_SelfDefenceFrom.RemoveAt(i);
+        }
+        if (0 == m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
+      }
+
+      if (m_BoringItems == null) return;
+      m_BoringItems.TrimExcess();
     }
 
     [System.Flags]
