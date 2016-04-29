@@ -10554,10 +10554,13 @@ namespace djack.RogueSurvivor.Engine
         else
           this.DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
       }
-      if (deadGuy != this.m_Session.UniqueActors.TheSewersThing.TheActor || killer != this.m_Player && killer.Leader != this.m_Player)
+
+      deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
+
+      if (deadGuy != m_Session.UniqueActors.TheSewersThing.TheActor || (killer != m_Player && killer.Leader != m_Player))
         return;
-      this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
-      this.ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
+      m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
+      ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
     }
 
     private ActorModel CheckUndeadEvolution(Actor undead)
