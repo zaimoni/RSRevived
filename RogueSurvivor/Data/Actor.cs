@@ -1032,8 +1032,8 @@ namespace djack.RogueSurvivor.Data
         if (0 == m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
       }
 
-      if (m_BoringItems == null) return;
-      m_BoringItems.TrimExcess();
+      if (null != m_Controller) m_Controller.OptimizeBeforeSaving();
+      if (null != m_BoringItems) m_BoringItems.TrimExcess();
     }
 
     [System.Flags]

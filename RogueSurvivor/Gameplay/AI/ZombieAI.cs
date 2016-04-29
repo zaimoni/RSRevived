@@ -42,6 +42,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       this.m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }
 
+    public override void OptimizeBeforeSaving()
+    {
+      m_MemLOSSensor.Forget(m_Actor);
+    }
+
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
       List<Percept> perceptList = this.m_MemLOSSensor.Sense(game, this.m_Actor);

@@ -27,6 +27,9 @@ namespace djack.RogueSurvivor.Data
 
     public abstract ActorAction GetAction(RogueGame game);
 
+    // savegame support
+    public virtual void OptimizeBeforeSaving() { }  // override this if there are memorized sensors
+
     // trading support
     protected bool HasEnoughFoodFor(int nutritionNeed)
     {

@@ -46,6 +46,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       this.m_MemorizedSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, LOS_MEMORY);
     }
 
+    public override void OptimizeBeforeSaving()
+    {
+      m_MemorizedSensor.Forget(m_Actor);
+    }
+
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
       return this.m_MemorizedSensor.Sense(game, this.m_Actor);

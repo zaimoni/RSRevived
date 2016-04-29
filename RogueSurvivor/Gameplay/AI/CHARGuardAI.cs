@@ -39,6 +39,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       base.TakeControl(actor);
     }
 
+    public override void OptimizeBeforeSaving()
+    {
+      m_MemorizedSensor.Forget(m_Actor);
+    }
+
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
       return this.m_MemorizedSensor.Sense(game, this.m_Actor);
