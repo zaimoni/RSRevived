@@ -25,25 +25,21 @@ namespace djack.RogueSurvivor.Engine
 
     public int Roll(int min, int max)
     {
-      if (max <= min)
-        return min;
-      int num;
-      lock (this.m_Rng)
-        num = this.m_Rng.Next(min, max);
-      if (num >= max)
-        num = max - 1;
-      return num;
+      if (max <= min) return min;
+      // should not need to defend aganst bugs in the C# library
+      lock(m_Rng) { return m_Rng.Next(min, max); }
     }
 
     public float RollFloat()
     {
-      lock (this.m_Rng)
-        return (float) this.m_Rng.NextDouble();
+      lock(m_Rng) { return (float) m_Rng.NextDouble(); }
     }
 
     public bool RollChance(int chance)
     {
-      return this.Roll(0, 100) < chance;
+      if (100<=chance) return true;
+      if (0>=chance) return false;
+      return Roll(0, 100) < chance; // mathematical range 0, ..., 99 allows above specializations
     }
   }
 }
