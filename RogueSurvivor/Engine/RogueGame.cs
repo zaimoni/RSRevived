@@ -2272,8 +2272,10 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(District district, RogueGame.SimFlags sim)
     {
-      bool isNight1 = this.m_Session.WorldTime.IsNight;
-      DayPhase phase1 = this.m_Session.WorldTime.Phase;
+      bool isNight1 = m_Session.WorldTime.IsNight;
+      DayPhase phase1 = m_Session.WorldTime.Phase;
+
+      lock(district) { 
       using (IEnumerator<Map> enumerator = district.Maps.GetEnumerator()) {
         while(enumerator.MoveNext()) {
           Map current = enumerator.Current;
@@ -2286,43 +2288,37 @@ namespace djack.RogueSurvivor.Engine
           while (current.LocalTime.TurnCounter == turnCounter);
         }
       }
-      if (district == this.m_Session.CurrentMap.District)
-      {
-        ++this.m_Session.WorldTime.TurnCounter;
-        bool isNight2 = this.m_Session.WorldTime.IsNight;
-        DayPhase phase2 = this.m_Session.WorldTime.Phase;
+
+      if (district == this.m_Session.CurrentMap.District) {
+        ++m_Session.WorldTime.TurnCounter;
+        bool isNight2 = m_Session.WorldTime.IsNight;
+        DayPhase phase2 = m_Session.WorldTime.Phase;
         if (isNight1 && !isNight2)
         {
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("The sun is rising again for you...", this.m_Session.WorldTime.TurnCounter, this.DAY_COLOR));
-          this.OnNewDay();
+          AddMessage(new djack.RogueSurvivor.Data.Message("The sun is rising again for you...", this.m_Session.WorldTime.TurnCounter, this.DAY_COLOR));
+          OnNewDay();
         }
         else if (!isNight1 && isNight2)
         {
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("Night is falling upon you...", this.m_Session.WorldTime.TurnCounter, this.NIGHT_COLOR));
-          this.OnNewNight();
+          AddMessage(new djack.RogueSurvivor.Data.Message("Night is falling upon you...", this.m_Session.WorldTime.TurnCounter, this.NIGHT_COLOR));
+          OnNewNight();
         }
         else if (phase1 != phase2)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Time passes, it is now {0}...", (object) this.DescribeDayPhase(phase2)), this.m_Session.WorldTime.TurnCounter, isNight2 ? this.NIGHT_COLOR : this.DAY_COLOR));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Time passes, it is now {0}...", (object) this.DescribeDayPhase(phase2)), this.m_Session.WorldTime.TurnCounter, isNight2 ? this.NIGHT_COLOR : this.DAY_COLOR));
       }
-      if (this.CheckForEvent_ZombieInvasion(district.EntryMap))
-        this.FireEvent_ZombieInvasion(district.EntryMap);
-      if (this.CheckForEvent_RefugeesWave(district.EntryMap))
-        this.FireEvent_RefugeesWave(district);
-      if (this.CheckForEvent_NationalGuard(district.EntryMap))
-        this.FireEvent_NationalGuard(district.EntryMap);
-      if (this.CheckForEvent_ArmySupplies(district.EntryMap))
-        this.FireEvent_ArmySupplies(district.EntryMap);
-      if (this.CheckForEvent_BikersRaid(district.EntryMap))
-        this.FireEvent_BikersRaid(district.EntryMap);
-      if (this.CheckForEvent_GangstasRaid(district.EntryMap))
-        this.FireEvent_GangstasRaid(district.EntryMap);
-      if (this.CheckForEvent_BlackOpsRaid(district.EntryMap))
-        this.FireEvent_BlackOpsRaid(district.EntryMap);
-      if (this.CheckForEvent_BandOfSurvivors(district.EntryMap))
-        this.FireEvent_BandOfSurvivors(district.EntryMap);
-      if (this.CheckForEvent_SewersInvasion(district.SewersMap))
-        this.FireEvent_SewersInvasion(district.SewersMap);
-      if (!RogueGame.s_Options.IsSimON || this.m_Player == null || (!this.m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) || this.m_Player.Location.Map.District != district)
+
+      if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);
+      if (CheckForEvent_RefugeesWave(district.EntryMap)) FireEvent_RefugeesWave(district);
+      if (CheckForEvent_NationalGuard(district.EntryMap)) FireEvent_NationalGuard(district.EntryMap);
+      if (CheckForEvent_ArmySupplies(district.EntryMap)) FireEvent_ArmySupplies(district.EntryMap);
+      if (CheckForEvent_BikersRaid(district.EntryMap)) FireEvent_BikersRaid(district.EntryMap);
+      if (CheckForEvent_GangstasRaid(district.EntryMap)) FireEvent_GangstasRaid(district.EntryMap);
+      if (CheckForEvent_BlackOpsRaid(district.EntryMap)) FireEvent_BlackOpsRaid(district.EntryMap);
+      if (CheckForEvent_BandOfSurvivors(district.EntryMap)) FireEvent_BandOfSurvivors(district.EntryMap);
+      if (CheckForEvent_SewersInvasion(district.SewersMap)) FireEvent_SewersInvasion(district.SewersMap);
+      } // end lock(district)
+
+      if (!RogueGame.s_Options.IsSimON || m_Player == null || (!m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) || m_Player.Location.Map.District != district)
         return;
       this.SimulateNearbyDistricts(district);
     }
