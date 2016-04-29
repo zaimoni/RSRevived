@@ -102,6 +102,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES);
     }
 
+    // we don't have memory, but we do have taboo trades
+    public override void OptimizeBeforeSaving()
+    {
+      if (null == TabooTrades) return;
+      int i = TabooTrades.Count;
+      while(0 < i--) {
+        if (TabooTrades[i].IsDead) TabooTrades.RemoveAt(i);
+      }
+    }
+
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
       if (this.m_Emotes == null)
