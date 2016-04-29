@@ -9465,6 +9465,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (this.m_Rules.RollChance(this.m_Rules.ActorCharismaticTradeChance(speaker)))
         return true;
+      if (target.IsPlayer) return true;
       return target.Controller.IsInterestingItem(offeredItem);
     }
 
