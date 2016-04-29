@@ -3106,7 +3106,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = this.CountUndeads(map);
       int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double)(RogueGame.s_Options.MaxUndeads/2)) - num1;
       for (int index = 0; index < num2; ++index)
-        this.SpawnNewSewersUndead(map, map.LocalTime.Day);
+        this.SpawnNewSewersUndead(map);
     }
 
     private bool CheckForEvent_RefugeesWave(Map map)
