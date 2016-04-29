@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       this.m_FOV = LOS.ComputeFOVFor(game.Rules, actor, actor.Location.Map.LocalTime, game.Session.World.Weather);
       int num = game.Rules.ActorFOV(actor, actor.Location.Map.LocalTime, game.Session.World.Weather);
       List<Percept> perceptList = new List<Percept>();
-      if ((this.m_Filters & LOSSensor.SensingFilter.ACTORS) != (LOSSensor.SensingFilter) 0)
+      if ((this.m_Filters & LOSSensor.SensingFilter.ACTORS) != LOSSensor.SensingFilter.NONE)
       {
         if (num * num < actor.Location.Map.CountActors)
         {
@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           }
         }
       }
-      if ((this.m_Filters & LOSSensor.SensingFilter.ITEMS) != (LOSSensor.SensingFilter) 0)
+      if ((this.m_Filters & LOSSensor.SensingFilter.ITEMS) != LOSSensor.SensingFilter.NONE)
       {
         foreach (Point position in this.m_FOV)
         {
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
             perceptList.Add(new Percept((object) itemsAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));
         }
       }
-      if ((this.m_Filters & LOSSensor.SensingFilter.CORPSES) != (LOSSensor.SensingFilter) 0)
+      if ((this.m_Filters & LOSSensor.SensingFilter.CORPSES) != LOSSensor.SensingFilter.NONE)
       {
         foreach (Point position in this.m_FOV)
         {
@@ -93,6 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     [System.Flags]
     public enum SensingFilter
     {
+      NONE = 0,
       ACTORS = 1,
       ITEMS = 2,
       CORPSES = 4,
