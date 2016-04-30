@@ -2517,40 +2517,5 @@ namespace djack.RogueSurvivor.Engine
     {
       return grabber.Sheet.SkillTable.GetSkillLevel(22) * Rules.SKILL_ZGRAB_CHANCE;
     }
-
-    public static bool HasImmediateZombification(GameMode mode)
-    {
-      return mode == GameMode.GM_STANDARD;
-    }
-
-    public static bool HasInfection(GameMode mode)
-    {
-      return mode != GameMode.GM_STANDARD;
-    }
-
-    public static bool HasCorpses(GameMode mode)
-    {
-      return mode != GameMode.GM_STANDARD;
-    }
-
-    public static bool HasEvolution(GameMode mode)
-    {
-      return mode != GameMode.GM_VINTAGE;
-    }
-
-    public static bool HasAllZombies(GameMode mode)
-    {
-      return mode != GameMode.GM_VINTAGE;
-    }
-
-    public static bool HasZombiesInBasements(GameMode mode)
-    {
-      return mode != GameMode.GM_VINTAGE;
-    }
-
-    public static bool HasZombiesInSewers(GameMode mode)
-    {
-      return mode != GameMode.GM_VINTAGE;
-    }
   }
 }

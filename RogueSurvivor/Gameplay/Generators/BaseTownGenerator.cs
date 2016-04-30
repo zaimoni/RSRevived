@@ -861,21 +861,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 shopBasement.DropItemAt(it, pt);
             }
           }
-          if (!Rules.HasZombiesInBasements(this.m_Game.Session.GameMode) || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE))
-            return;
+          if (!m_Game.Session.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           shopBasement.PlaceActorAt(this.CreateNewBasementRatZombie(0), pt);
         }));
-        Point point1 = new Point();
-        point1.X = this.m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2;
-        point1.Y = this.m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2;
-        int num1 = point1.X - 1;
+        Point point1 = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
-        int left2 = rectangle.Left;
-        int x2 = num1 + left2;
-        int num2 = point1.Y - 1;
-        int top2 = rectangle.Top;
-        int y2 = num2 + top2;
-        Point point2 = new Point(x2, y2);
+        Point point2 = new Point(point1.X - 1 + rectangle.Left, point1.Y - 1 + rectangle.Top);
         this.AddExit(shopBasement, point1, map, point2, "Tiles\\Decoration\\stairs_up", true);
         this.AddExit(map, point2, shopBasement, point1, "Tiles\\Decoration\\stairs_down", true);
         if (map.GetMapObjectAt(point2) != null)
@@ -2250,11 +2241,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             throw new ArgumentOutOfRangeException("unhandled roll");
         }
       }));
-      if (Rules.HasZombiesInBasements(this.m_Game.Session.GameMode))
+      if (m_Game.Session.HasZombiesInBasements)
         this.DoForEachTile(basement, basement.Rect, (Action<Point>) (pt =>
         {
-          if (!basement.IsWalkable(pt.X, pt.Y) || basement.GetExitAt(pt) != null || !this.m_DiceRoller.RollChance(5))
-            return;
+          if (!basement.IsWalkable(pt.X, pt.Y) || basement.GetExitAt(pt) != null || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           basement.PlaceActorAt(this.CreateNewBasementRatZombie(0), pt);
         }));
       if (this.m_DiceRoller.RollChance(20))
@@ -3343,9 +3333,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewUndead(int spawnTime)
     {
       Actor actor;
-      if (Rules.HasAllZombies(this.m_Game.Session.GameMode))
+      if (m_Game.Session.HasAllZombies)
       {
-        int num = this.m_Rules.Roll(0, 100);
+        int num = m_Rules.Roll(0, 100);
         actor = (num < RogueGame.Options.SpawnSkeletonChance ? this.m_Game.GameActors.Skeleton : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? this.m_Game.GameActors.Zombie : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? this.m_Game.GameActors.ZombieMaster : this.m_Game.GameActors.Skeleton))).CreateNumberedName(this.m_Game.GameFactions.TheUndeads, spawnTime);
       }
       else
@@ -3385,16 +3375,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewSewersUndead(int spawnTime)
     {
-      if (!Rules.HasAllZombies(this.m_Game.Session.GameMode))
-        return this.CreateNewUndead(spawnTime);
-      return (this.m_DiceRoller.RollChance(80) ? this.m_Game.GameActors.RatZombie : this.m_Game.GameActors.Zombie).CreateNumberedName(this.m_Game.GameFactions.TheUndeads, spawnTime);
+      if (!m_Game.Session.HasAllZombies) return CreateNewUndead(spawnTime);
+      return (m_DiceRoller.RollChance(80) ? m_Game.GameActors.RatZombie : m_Game.GameActors.Zombie).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewBasementRatZombie(int spawnTime)
     {
-      if (!Rules.HasAllZombies(this.m_Game.Session.GameMode))
-        return this.CreateNewUndead(spawnTime);
-      return this.m_Game.GameActors.RatZombie.CreateNumberedName(this.m_Game.GameFactions.TheUndeads, spawnTime);
+      if (!m_Game.Session.HasAllZombies) return CreateNewUndead(spawnTime);
+      return m_Game.GameActors.RatZombie.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewCHARGuard(int spawnTime)

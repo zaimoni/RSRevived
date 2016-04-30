@@ -2422,171 +2422,121 @@ namespace djack.RogueSurvivor.Engine
 
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
-      if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING)
-      {
-        bool flag1 = Rules.HasCorpses(this.m_Session.GameMode);
-        bool flag2 = Rules.HasInfection(this.m_Session.GameMode);
-        if (flag1 || flag2)
-        {
-          if (flag1 && map.CountCorpses > 0)
-          {
-            List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
-            List<Corpse> corpseList2 = new List<Corpse>(map.CountCorpses);
-            foreach (Corpse corpse in map.Corpses)
-            {
-              if (this.m_Rules.RollChance(this.m_Rules.CorpseZombifyChance(corpse, map.LocalTime, true)))
-              {
-                corpseList1.Add(corpse);
-              }
-              else
-              {
-                this.InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
-                if ((double) corpse.HitPoints <= 0.0)
-                  corpseList2.Add(corpse);
-              }
+      if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
+        if (m_Session.HasCorpses && map.CountCorpses > 0) {
+          List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
+          List<Corpse> corpseList2 = new List<Corpse>(map.CountCorpses);
+          foreach (Corpse corpse in map.Corpses) {
+            if (this.m_Rules.RollChance(this.m_Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
+              corpseList1.Add(corpse);
+            } else {
+              this.InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
+              if ((double) corpse.HitPoints <= 0.0) corpseList2.Add(corpse);
             }
-            if (corpseList1.Count > 0)
-            {
-              List<Corpse> corpseList3 = new List<Corpse>(corpseList1.Count);
-              foreach (Corpse corpse in corpseList1)
-              {
-                if (map.GetActorAt(corpse.Position) == null)
-                {
-                  float num = corpse.HitPoints / (float) corpse.MaxHitPoints;
-                  this.m_Rules.ActorMaxHPs(corpse.DeadGuy);
-                  corpseList3.Add(corpse);
-                  this.Zombify((Actor) null, corpse.DeadGuy, false);
-                  if (this.IsVisibleToPlayer(map, corpse.Position))
-                  {
-                    this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("The corpse of {0} rise again!!", (object) corpse.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
-                    this.m_MusicManager.Play(GameSounds.UNDEAD_RISE);
-                  }
+          }
+          if (corpseList1.Count > 0) {
+            List<Corpse> corpseList3 = new List<Corpse>(corpseList1.Count);
+            foreach (Corpse corpse in corpseList1) {
+              if (map.GetActorAt(corpse.Position) == null) {
+                float num = corpse.HitPoints / (float) corpse.MaxHitPoints;
+                m_Rules.ActorMaxHPs(corpse.DeadGuy);
+                corpseList3.Add(corpse);
+                Zombify((Actor) null, corpse.DeadGuy, false);
+                if (this.IsVisibleToPlayer(map, corpse.Position)) {
+                  this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("The corpse of {0} rise again!!", (object) corpse.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
+                  this.m_MusicManager.Play(GameSounds.UNDEAD_RISE);
                 }
               }
-              foreach (Corpse c in corpseList3)
-                this.DestroyCorpse(c, map);
             }
-            if (this.m_Player != null && this.m_Player.Location.Map == map)
-            {
-              foreach (Corpse c in corpseList2)
-              {
-                this.DestroyCorpse(c, map);
-                if (this.IsVisibleToPlayer(map, c.Position))
-                  this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("The corpse of {0} turns into dust.", (object) c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
+            foreach (Corpse c in corpseList3) DestroyCorpse(c, map);
+          }
+          if (this.m_Player != null && this.m_Player.Location.Map == map) {
+            foreach (Corpse c in corpseList2) {
+              DestroyCorpse(c, map);
+              if (IsVisibleToPlayer(map, c.Position))
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("The corpse of {0} turns into dust.", (object) c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
+            }
+          }
+        }
+        if (m_Session.HasInfection) {
+          List<Actor> actorList = null;
+          foreach (Actor actor in map.Actors) {
+            if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
+              int infectionPercent = this.m_Rules.ActorInfectionPercent(actor);
+              if (this.m_Rules.Roll(0, 1000) < this.m_Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
+                bool player = this.IsVisibleToPlayer(actor);
+                bool flag3 = actor == this.m_Player;
+                if (actor.IsSleeping) DoWakeUp(actor);
+                bool flag4 = false;
+                if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
+                else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED) {
+                  DoVomit(actor);
+                  actor.HitPoints -= Rules.INFECTION_LEVEL_4_BLEED_HP;
+                  if (player) {
+                    if (flag3) ClearMessages();
+                    AddMessage(MakeMessage(actor, string.Format("{0} blood.", (object) Conjugate(actor, VERB_VOMIT)), Color.Purple));
+                    if (flag3) {
+                      AddMessagePressEnter();
+                      ClearMessages();
+                    }
+                  }
+                  if (actor.HitPoints <= 0) flag4 = true;
+                } else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT) {
+                  DoVomit(actor);
+                  if (player) {
+                    if (flag3) ClearMessages();
+                    AddMessage(MakeMessage(actor, string.Format("{0}.", (object) Conjugate(actor, VERB_VOMIT)), Color.Purple));
+                    if (flag3) {
+                      AddMessagePressEnter();
+                      ClearMessages();
+                    }
+                  }
+                } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
+                  SpendActorStaminaPoints(actor, Rules.INFECTION_LEVEL_2_TIRED_STA);
+                  actor.SleepPoints -= Rules.INFECTION_LEVEL_2_TIRED_SLP;
+                  if (actor.SleepPoints < 0) actor.SleepPoints = 0;
+                  if (player) {
+                    if (flag3) ClearMessages();
+                    AddMessage(this.MakeMessage(actor, string.Format("{0} sick and tired.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
+                    if (flag3) {
+                      AddMessagePressEnter();
+                      ClearMessages();
+                    }
+                  }
+                } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
+                  SpendActorStaminaPoints(actor, Rules.INFECTION_LEVEL_1_WEAK_STA);
+                  if (player) {
+                    if (flag3) ClearMessages();
+                    AddMessage(this.MakeMessage(actor, string.Format("{0} sick and weak.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
+                    if (flag3) {
+                      AddMessagePressEnter();
+                      ClearMessages();
+                    }
+                  }
+                }
+                if (flag4) {
+                  if (actorList == null) actorList = new List<Actor>(map.CountActors);
+                  actorList.Add(actor);
+                }
               }
             }
           }
-          if (flag2)
-          {
-            List<Actor> actorList = (List<Actor>) null;
-            foreach (Actor actor in map.Actors)
-            {
-              if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead)
-              {
-                int infectionPercent = this.m_Rules.ActorInfectionPercent(actor);
-                if (this.m_Rules.Roll(0, 1000) < this.m_Rules.InfectionEffectTriggerChance1000(infectionPercent))
-                {
-                  bool player = this.IsVisibleToPlayer(actor);
-                  bool flag3 = actor == this.m_Player;
-                  if (actor.IsSleeping)
-                    this.DoWakeUp(actor);
-                  bool flag4 = false;
-                  if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH)
-                    flag4 = true;
-                  else if (infectionPercent >= Rules.INFECTION_LEVEL_4_BLEED)
-                  {
-                    this.DoVomit(actor);
-                    actor.HitPoints -= Rules.INFECTION_LEVEL_4_BLEED_HP;
-                    if (player)
-                    {
-                      if (flag3)
-                        this.ClearMessages();
-                      this.AddMessage(this.MakeMessage(actor, string.Format("{0} blood.", (object) this.Conjugate(actor, this.VERB_VOMIT)), Color.Purple));
-                      if (flag3)
-                      {
-                        this.AddMessagePressEnter();
-                        this.ClearMessages();
-                      }
-                    }
-                    if (actor.HitPoints <= 0)
-                      flag4 = true;
-                  }
-                  else if (infectionPercent >= Rules.INFECTION_LEVEL_3_VOMIT)
-                  {
-                    this.DoVomit(actor);
-                    if (player)
-                    {
-                      if (flag3)
-                        this.ClearMessages();
-                      this.AddMessage(this.MakeMessage(actor, string.Format("{0}.", (object) this.Conjugate(actor, this.VERB_VOMIT)), Color.Purple));
-                      if (flag3)
-                      {
-                        this.AddMessagePressEnter();
-                        this.ClearMessages();
-                      }
-                    }
-                  }
-                  else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED)
-                  {
-                    this.SpendActorStaminaPoints(actor, Rules.INFECTION_LEVEL_2_TIRED_STA);
-                    actor.SleepPoints -= Rules.INFECTION_LEVEL_2_TIRED_SLP;
-                    if (actor.SleepPoints < 0)
-                      actor.SleepPoints = 0;
-                    if (player)
-                    {
-                      if (flag3)
-                        this.ClearMessages();
-                      this.AddMessage(this.MakeMessage(actor, string.Format("{0} sick and tired.", (object) this.Conjugate(actor, this.VERB_FEEL)), Color.Purple));
-                      if (flag3)
-                      {
-                        this.AddMessagePressEnter();
-                        this.ClearMessages();
-                      }
-                    }
-                  }
-                  else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK)
-                  {
-                    this.SpendActorStaminaPoints(actor, Rules.INFECTION_LEVEL_1_WEAK_STA);
-                    if (player)
-                    {
-                      if (flag3)
-                        this.ClearMessages();
-                      this.AddMessage(this.MakeMessage(actor, string.Format("{0} sick and weak.", (object) this.Conjugate(actor, this.VERB_FEEL)), Color.Purple));
-                      if (flag3)
-                      {
-                        this.AddMessagePressEnter();
-                        this.ClearMessages();
-                      }
-                    }
-                  }
-                  if (flag4)
-                  {
-                    if (actorList == null)
-                      actorList = new List<Actor>(map.CountActors);
-                    actorList.Add(actor);
-                  }
-                }
-              }
-            }
-            if (actorList != null)
-            {
-              foreach (Actor actor in actorList)
-              {
-                if (this.IsVisibleToPlayer(actor))
-                  this.AddMessage(this.MakeMessage(actor, string.Format("{0} of infection!", (object) this.Conjugate(actor, this.VERB_DIE))));
-                this.KillActor((Actor) null, actor, "infection");
-                if (actor.IsPlayer)
-                {
-                  map.TryRemoveCorpseOf(actor);
-                  this.Zombify((Actor) null, actor, false);
-                  this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, "turn") + " into a Zombie!"));
-                  this.RedrawPlayScreen();
-                  AnimDelay(DELAY_LONG);
-                }
+          if (actorList != null) {
+            foreach (Actor actor in actorList) {
+              if (IsVisibleToPlayer(actor))
+                AddMessage(this.MakeMessage(actor, string.Format("{0} of infection!", (object) this.Conjugate(actor, this.VERB_DIE))));
+              KillActor((Actor) null, actor, "infection");
+              if (actor.IsPlayer) {
+                map.TryRemoveCorpseOf(actor);
+                Zombify((Actor) null, actor, false);
+                AddMessage(this.MakeMessage(actor, this.Conjugate(actor, "turn") + " into a Zombie!"));
+                RedrawPlayScreen();
+                AnimDelay(DELAY_LONG);
               }
             }
           }
         }
+
         List<OdorScent> odorScentList1 = new List<OdorScent>();
         foreach (OdorScent scent in map.Scents)
         {
@@ -2787,7 +2737,7 @@ namespace djack.RogueSurvivor.Engine
               this.RedrawPlayScreen();
             }
             this.KillActor((Actor) null, actor, "starvation");
-            if (!actor.Model.Abilities.IsUndead && Rules.HasImmediateZombification(this.m_Session.GameMode) && this.m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance))
+            if (!actor.Model.Abilities.IsUndead && m_Session.HasImmediateZombification && m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance))
             {
               map.TryRemoveCorpseOf(actor);
               this.Zombify((Actor) null, actor, false);
@@ -3094,7 +3044,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_SewersInvasion(Map map)
     {
-      return Rules.HasZombiesInSewers(m_Session.GameMode) && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && CountUndeads(map) < RogueGame.s_Options.MaxUndeads/2;
+      return m_Session.HasZombiesInSewers && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && CountUndeads(map) < RogueGame.s_Options.MaxUndeads/2;
     }
 
     private void FireEvent_SewersInvasion(Map map)
@@ -3494,7 +3444,7 @@ namespace djack.RogueSurvivor.Engine
     private void SpawnNewUndead(Map map, int day)
     {
       Actor newUndead = this.m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
-      if (RogueGame.s_Options.AllowUndeadsEvolution && Rules.HasEvolution(m_Session.GameMode)) {
+      if (RogueGame.s_Options.AllowUndeadsEvolution && m_Session.HasEvolution) {
         GameActors.IDs fromModelID = (GameActors.IDs) newUndead.Model.ID;
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) { 
           int chance = Math.Min(75, day * 2);
@@ -8037,7 +7987,7 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(string.Format("Sanity  : +{0}", (object) itemMedicineModel.SanityCure));
       else
         stringList.Add(string.Format("Sanity  : +{0} (+{1})", (object) num4, (object) itemMedicineModel.SanityCure));
-      if (Rules.HasInfection(this.m_Session.GameMode))
+      if (m_Session.HasInfection)
       {
         int num5 = this.m_Player == null ? itemMedicineModel.InfectionCure : this.m_Rules.ActorMedicineEffect(this.m_Player, itemMedicineModel.InfectionCure);
         if (num5 == itemMedicineModel.InfectionCure)
@@ -9001,7 +8951,7 @@ namespace djack.RogueSurvivor.Engine
             this.KillActor(attacker, defender, "hit");
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", (object) defender.Name));
-            if (Rules.HasImmediateZombification(this.m_Session.GameMode) || defender == this.m_Player)
+            if (m_Session.HasImmediateZombification || defender == m_Player)
             {
               if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && this.m_Rules.RollChance(RogueGame.s_Options.ZombificationChance))
               {
@@ -10471,15 +10421,11 @@ namespace djack.RogueSurvivor.Engine
             this.DropItem(deadGuy, it);
         }
       }
-      if (!deadGuy.Model.Abilities.IsUndead)
-        this.SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
-      if (Rules.HasCorpses(this.m_Session.GameMode) && !deadGuy.Model.Abilities.IsUndead)
-        this.DropCorpse(deadGuy);
-      if (killer != null)
-        ++killer.KillsCount;
-      if (killer == this.m_Player)
-        this.PlayerKill(deadGuy);
-      if (killer != null && Rules.HasEvolution(this.m_Session.GameMode) && killer.Model.Abilities.IsUndead)
+      if (!deadGuy.Model.Abilities.IsUndead) SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
+      if (m_Session.HasCorpses && !deadGuy.Model.Abilities.IsUndead) DropCorpse(deadGuy);
+      if (killer != null) ++killer.KillsCount;
+      if (killer == m_Player) PlayerKill(deadGuy);
+      if (killer != null && m_Session.HasEvolution && killer.Model.Abilities.IsUndead)
       {
         ActorModel actorModel = this.CheckUndeadEvolution(killer);
         if (actorModel != null)
@@ -10562,62 +10508,41 @@ namespace djack.RogueSurvivor.Engine
 
     private ActorModel CheckUndeadEvolution(Actor undead)
     {
-      if (!RogueGame.s_Options.AllowUndeadsEvolution || !Rules.HasEvolution(this.m_Session.GameMode))
-        return (ActorModel) null;
-      bool flag;
+      if (!RogueGame.s_Options.AllowUndeadsEvolution || !m_Session.HasEvolution) return null;
       switch (undead.Model.ID)
       {
         case 0:
-          if (undead.KillsCount < 2)
-            return (ActorModel) null;
-          flag = true;
+          if (undead.KillsCount < 2) return null;
           break;
         case 1:
-          if (undead.KillsCount < 4)
-            return (ActorModel) null;
-          flag = true;
+          if (undead.KillsCount < 4) return null;
           break;
         case 3:
-          flag = true;
-          break;
         case 4:
-          flag = true;
           break;
         case 6:
-          if (undead.KillsCount < 4)
+          if (undead.KillsCount < 4) return null;
+          if (undead.Location.Map.LocalTime.Day < ZOMBIE_LORD_EVOLUTION_MIN_DAY && !undead.IsPlayer)
             return (ActorModel) null;
-          if (undead.Location.Map.LocalTime.Day < 7 && !undead.IsPlayer)
-            return (ActorModel) null;
-          flag = true;
           break;
         case 7:
-          if (undead.KillsCount < 8)
-            return (ActorModel) null;
-          flag = true;
+          if (undead.KillsCount < 8) return null;
           break;
         case 9:
         case 10:
-          if (undead.KillsCount < 2)
-            return (ActorModel) null;
-          flag = true;
+          if (undead.KillsCount < 2) return null;
           break;
         case 11:
         case 12:
-          if (undead.KillsCount < 4)
+          if (undead.KillsCount < 4) return null;
+          if (undead.Location.Map.LocalTime.Day < DISCIPLE_EVOLUTION_MIN_DAY && !undead.IsPlayer)
             return (ActorModel) null;
-          if (undead.Location.Map.LocalTime.Day < 7 && !undead.IsPlayer)
-            return (ActorModel) null;
-          flag = true;
           break;
         default:
-          flag = false;
-          break;
+          return null;
       }
-      if (!flag)
-        return (ActorModel) null;
       GameActors.IDs index = this.NextUndeadEvolution((GameActors.IDs) undead.Model.ID);
-      if (index == (GameActors.IDs) undead.Model.ID)
-        return (ActorModel) null;
+      if (index == (GameActors.IDs) undead.Model.ID) return null;
       return this.GameActors[index];
     }
 
@@ -12375,7 +12300,7 @@ namespace djack.RogueSurvivor.Engine
         else
           this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) this.m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
       }
-      if (Rules.HasInfection(this.m_Session.GameMode) && !actor.Model.Abilities.IsUndead)
+      if (m_Session.HasInfection && !actor.Model.Abilities.IsUndead)
       {
         int maxValue2 = this.m_Rules.ActorInfectionHPs(actor);
         int refValue = Rules.INFECTION_LEVEL_1_WEAK * maxValue2 / 100;

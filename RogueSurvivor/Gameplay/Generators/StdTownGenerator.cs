@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public override Map GenerateSewersMap(int seed, District district)
     {
       Map sewersMap = base.GenerateSewersMap(seed, district);
-      if (Rules.HasZombiesInSewers(this.m_Game.Session.GameMode))
+      if (m_Game.Session.HasZombiesInSewers)
       {
         int maxTries = 10 * sewersMap.Width * sewersMap.Height;
         int num = (int) (0.5 * (double) (RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent) / 100.0);

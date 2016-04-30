@@ -363,6 +363,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    // game mode support
     public static string DescGameMode(GameMode mode)
     {
       switch (mode)
@@ -391,6 +392,34 @@ namespace djack.RogueSurvivor.Engine
         default:
           throw new Exception("unhandled game mode");
       }
+    }
+
+    public bool HasImmediateZombification {
+      get { return GameMode.GM_STANDARD == m_GameMode; }
+    }
+
+    public bool HasInfection {
+      get { return GameMode.GM_STANDARD != m_GameMode; }
+    }
+
+    public bool HasCorpses {
+      get { return GameMode.GM_STANDARD != m_GameMode; }
+    }
+
+    public bool HasEvolution {
+      get { return GameMode.GM_VINTAGE != m_GameMode; }
+    }
+
+    public bool HasAllZombies {
+      get { return GameMode.GM_VINTAGE != m_GameMode; }
+    }
+
+    public bool HasZombiesInBasements {
+      get { return GameMode.GM_VINTAGE != m_GameMode; }
+    }
+
+    public bool HasZombiesInSewers {
+      get { return GameMode.GM_VINTAGE != m_GameMode; }
     }
 
     public enum SaveFormat
