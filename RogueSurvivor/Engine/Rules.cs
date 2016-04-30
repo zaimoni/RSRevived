@@ -1876,7 +1876,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    // L1 metric i.e. distance in moves
+    // L-infinity metric i.e. distance in moves
     public int GridDistance(Point pA, int bX, int bY)
     {
       return Math.Max(Math.Abs(pA.X - bX), Math.Abs(pA.Y - bY));
@@ -2210,7 +2210,7 @@ namespace djack.RogueSurvivor.Engine
           MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position);
           if (mapObjectAt != null && mapObjectAt.StandOnFovBonus)
             ++val2;
-          return Math.Max(2, val2);
+          return Math.Max(MINIMAL_FOV, val2);
         default:
           throw new ArgumentOutOfRangeException("unhandled lighting");
       }
