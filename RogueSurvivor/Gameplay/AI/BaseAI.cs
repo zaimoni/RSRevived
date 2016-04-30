@@ -802,8 +802,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
-      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(3) == 0)
-        return (ActorAction) null;
+      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (game.Rules.CountBarricadingMaterial(this.m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(this.m_Actor, false))
         return (ActorAction) null;
       Map map = this.m_Actor.Location.Map;
@@ -824,8 +823,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
     {
-      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(3) == 0)
-        return (ActorAction) null;
+      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (game.Rules.CountBarricadingMaterial(this.m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(this.m_Actor, true))
         return (ActorAction) null;
       Map map = this.m_Actor.Location.Map;
@@ -1629,12 +1627,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorGoReviveCorpse(RogueGame game, List<Percept> corpsesPercepts)
     {
-      if (corpsesPercepts == null)
-        return (ActorAction) null;
-      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(14) == 0)
-        return (ActorAction) null;
-      if (!m_Actor.HasItemOfModel((ItemModel) game.GameItems.MEDIKIT))
-        return (ActorAction) null;
+      if (corpsesPercepts == null) return null;
+      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
+      if (!m_Actor.HasItemOfModel((ItemModel) game.GameItems.MEDIKIT)) return null;
       List<Percept> percepts = this.Filter(game, corpsesPercepts, (Predicate<Percept>) (p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>)

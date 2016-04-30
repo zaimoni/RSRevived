@@ -504,7 +504,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(9) >= 1 && (!flag2 && this.m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(this.m_Actor)))
+      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!flag2 && this.m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(this.m_Actor)))
       {
         Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
         if (target != null) {

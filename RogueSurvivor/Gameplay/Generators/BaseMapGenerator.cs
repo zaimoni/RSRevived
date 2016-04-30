@@ -602,9 +602,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public void GiveStartingSkillToActor(Actor actor, Skills.IDs skillID)
     {
-      if (actor.Sheet.SkillTable.GetSkillLevel((int) skillID) >= Skills.MaxSkillLevel(skillID))
-        return;
-      actor.Sheet.SkillTable.AddOrIncreaseSkill((int) skillID);
+      if (actor.Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
+      actor.Sheet.SkillTable.AddOrIncreaseSkill(skillID);
       this.RecomputeActorStartingStats(actor);
     }
 

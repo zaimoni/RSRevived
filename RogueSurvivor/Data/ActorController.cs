@@ -92,7 +92,7 @@ namespace djack.RogueSurvivor.Data
             }
         if (it is ItemMeleeWeapon)
             {
-            if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return true;   // martial artists+melee weapons needs work
+            if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return true;   // martial artists+melee weapons needs work
             return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
             }
         // player should be able to trade for blue pills
@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is ItemMeleeWeapon)
       {
-        if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(13) > 0) return false;
+        if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
         return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
       }
       if (it is ItemMedicine)

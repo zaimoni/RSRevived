@@ -657,8 +657,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool HasActorJumpAbility(Actor actor)
     {
-      if (!actor.Model.Abilities.CanJump && actor.Sheet.SkillTable.GetSkillLevel(0) <= 0)
-        return actor.Sheet.SkillTable.GetSkillLevel(20) > 0;
+      if (!actor.Model.Abilities.CanJump && actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) <= 0)
+        return actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE) > 0;
       return true;
     }
 
@@ -1175,8 +1175,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool HasActorPushAbility(Actor actor)
     {
-      if (!actor.Model.Abilities.CanPush && actor.Sheet.SkillTable.GetSkillLevel(16) <= 0)
-        return actor.Sheet.SkillTable.GetSkillLevel(26) > 0;
+      if (!actor.Model.Abilities.CanPush && actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) <= 0)
+        return actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG) > 0;
       return true;
     }
 
@@ -1668,7 +1668,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == null)
         throw new ArgumentNullException("actor");
-      if (actor.Sheet.SkillTable.GetSkillLevel(3) == 0)
+      if (actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0)
       {
         reason = "no skill in carpentry";
         return false;
@@ -1714,7 +1714,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorDamageVsCorpses(Actor a)
     {
-      return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(15);
+      return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
     public bool CanActorEatCorpse(Actor actor, Corpse corpse)
@@ -1833,7 +1833,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (corpse == null)
         throw new ArgumentNullException("corpse");
-      if (actor.Sheet.SkillTable.GetSkillLevel(14) == 0)
+      if (actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0)
       {
         reason = "lack medic skill";
         return false;
@@ -1971,50 +1971,50 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorMaxHPs(Actor actor)
     {
-      int num = Rules.SKILL_TOUGH_HP_BONUS * actor.Sheet.SkillTable.GetSkillLevel(18) + Rules.SKILL_ZTOUGH_HP_BONUS * actor.Sheet.SkillTable.GetSkillLevel(27);
+      int num = Rules.SKILL_TOUGH_HP_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.TOUGH) + Rules.SKILL_ZTOUGH_HP_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TOUGH);
       return actor.Sheet.BaseHitPoints + num;
     }
 
     public int ActorMaxSTA(Actor actor)
     {
-      int num = Rules.SKILL_HIGH_STAMINA_STA_BONUS * actor.Sheet.SkillTable.GetSkillLevel(8);
+      int num = Rules.SKILL_HIGH_STAMINA_STA_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
       return actor.Sheet.BaseStaminaPoints + num;
     }
 
     public int ActorItemNutritionValue(Actor actor, int baseValue)
     {
-      int num = (int) ((double) baseValue * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(10));
+      int num = (int) ((double) baseValue * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
       return baseValue + num;
     }
 
     public int ActorSanRegenValue(Actor actor, int baseValue)
     {
-      int num = (int) ((double) baseValue * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(17));
+      int num = (int) ((double) baseValue * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE));
       return baseValue + num;
     }
 
     public int ActorMaxFood(Actor actor)
     {
-      int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(10));
+      int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
       return actor.Sheet.BaseFoodPoints + num;
     }
 
     public int ActorMaxRot(Actor actor)
     {
-      int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(24));
+      int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER));
       return actor.Sheet.BaseFoodPoints + num;
     }
 
     public int ActorMaxSleep(Actor actor)
     {
-      int num = (int) ((double) actor.Sheet.BaseSleepPoints * (double) Rules.SKILL_AWAKE_SLEEP_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(1));
+      int num = (int) ((double) actor.Sheet.BaseSleepPoints * (double) Rules.SKILL_AWAKE_SLEEP_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
       return actor.Sheet.BaseSleepPoints + num;
     }
 
     public int ActorSleepRegen(Actor actor, bool isOnCouch)
     {
       int num1 = isOnCouch ? SLEEP_COUCH_SLEEPING_REGEN : SLEEP_NOCOUCH_SLEEPING_REGEN;
-      int num2 = (int) ((double) num1 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(1));
+      int num2 = (int) ((double) num1 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
       return num1 + num2;
     }
 
@@ -2025,7 +2025,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorDisturbedLevel(Actor actor)
     {
-      return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(17)));
+      return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
     }
 
     // This is the authoritative source for a living actor's maximum inventory.
@@ -2033,25 +2033,25 @@ namespace djack.RogueSurvivor.Engine
     // use this to prevent accidental overwriting of MaxCapacity by bugs.
     public static int ActorMaxInv(Actor actor)
     {
-      int num = Rules.SKILL_HAULER_INV_BONUS * actor.Sheet.SkillTable.GetSkillLevel(7);
+      int num = Rules.SKILL_HAULER_INV_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
       return actor.Sheet.BaseInventoryCapacity + num;
     }
 
     public int ActorDamageBonusVsUndeads(Actor actor)
     {
-      return Rules.SKILL_NECROLOGY_UNDEAD_BONUS * actor.Sheet.SkillTable.GetSkillLevel(15);
+      return Rules.SKILL_NECROLOGY_UNDEAD_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
     public Attack ActorMeleeAttack(Actor actor, Attack baseAttack, Actor target)
     {
       float num1 = (float) baseAttack.HitValue;
       float num2 = (float) baseAttack.DamageValue;
-      int num3 = Rules.SKILL_AGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(0) + Rules.SKILL_ZAGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(20);
-      int num4 = Rules.SKILL_STRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(16) + Rules.SKILL_ZSTRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(26);
+      int num3 = Rules.SKILL_AGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = Rules.SKILL_STRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Rules.SKILL_ZSTRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (actor.GetEquippedWeapon() == null)
       {
-        num3 += Rules.SKILL_MARTIAL_ARTS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(13);
-        num4 += Rules.SKILL_MARTIAL_ARTS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(13);
+        num3 += Rules.SKILL_MARTIAL_ARTS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        num4 += Rules.SKILL_MARTIAL_ARTS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       }
       if (target != null && target.Model.Abilities.IsUndead)
         num4 += this.ActorDamageBonusVsUndeads(actor);
@@ -2071,12 +2071,12 @@ namespace djack.RogueSurvivor.Engine
       switch (baseAttack.Kind)
       {
         case AttackKind.FIREARM:
-          num1 = Rules.SKILL_FIREARMS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(5);
-          num2 = Rules.SKILL_FIREARMS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(5);
+          num1 = Rules.SKILL_FIREARMS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          num2 = Rules.SKILL_FIREARMS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
           break;
         case AttackKind.BOW:
-          num1 = Rules.SKILL_BOWS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(2);
-          num2 = Rules.SKILL_BOWS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(2);
+          num1 = Rules.SKILL_BOWS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          num2 = Rules.SKILL_BOWS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
           break;
       }
       if (target != null && target.Model.Abilities.IsUndead)
@@ -2102,7 +2102,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorMaxThrowRange(Actor actor, int baseRange)
     {
-      int num = Rules.SKILL_STRONG_THROW_BONUS * actor.Sheet.SkillTable.GetSkillLevel(16);
+      int num = Rules.SKILL_STRONG_THROW_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG);
       return baseRange + num;
     }
 
@@ -2110,7 +2110,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsSleeping)
         return new Defence(0, 0, 0);
-      int num1 = Rules.SKILL_AGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(0) + Rules.SKILL_ZAGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(20);
+      int num1 = Rules.SKILL_AGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
       float num2 = (float) (baseDefence.Value + num1);
       if (this.IsActorExhausted(actor))
         num2 /= 2f;
@@ -2121,24 +2121,24 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorMedicineEffect(Actor actor, int baseEffect)
     {
-      int num = (int) Math.Ceiling((double) Rules.SKILL_MEDIC_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(14) * (double) baseEffect);
+      int num = (int) Math.Ceiling((double) Rules.SKILL_MEDIC_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * (double) baseEffect);
       return baseEffect + num;
     }
 
     public int ActorHealChanceBonus(Actor actor)
     {
-      return Rules.SKILL_HARDY_HEAL_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(6);
+      return Rules.SKILL_HARDY_HEAL_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.HARDY);
     }
 
     public int ActorBarricadingPoints(Actor actor, int baseBarricadingPoints)
     {
-      int num = (int) ((double) baseBarricadingPoints * (double) Rules.SKILL_CARPENTRY_BARRICADING_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(3));
+      int num = (int) ((double) baseBarricadingPoints * (double) Rules.SKILL_CARPENTRY_BARRICADING_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY));
       return baseBarricadingPoints + num;
     }
 
     public int ActorMaxFollowers(Actor actor)
     {
-      return Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS * actor.Sheet.SkillTable.GetSkillLevel(9);
+      return Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
     }
 
     public int ActorFOV(Actor actor, WorldTime time, Weather weather)
@@ -2188,7 +2188,7 @@ namespace djack.RogueSurvivor.Engine
 
     public float ActorSmell(Actor actor)
     {
-      return (float) (1.0 + (double) Rules.SKILL_ZTRACKER_SMELL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(28)) * actor.Model.StartingSheet.BaseSmellRating;
+      return (float) (1.0 + (double) Rules.SKILL_ZTRACKER_SMELL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * actor.Model.StartingSheet.BaseSmellRating;
     }
 
     public int ActorSmellThreshold(Actor actor)
@@ -2216,27 +2216,27 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)
     {
-      return 10 + Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(12) + Math.Max(0, (5 - noiseDistance) * 10);
+      return 10 + Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (5 - noiseDistance) * 10);
     }
 
     public int ActorBarricadingMaterialNeedForFortification(Actor builder, bool isLarge)
     {
-      return Math.Max(1, (isLarge ? 4 : 2) - (builder.Sheet.SkillTable.GetSkillLevel(3) >= 3 ? Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
+      return Math.Max(1, (isLarge ? 4 : 2) - (builder.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) >= 3 ? Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
     }
 
     public int ActorTrustIncrease(Actor actor)
     {
-      return 1 + Rules.SKILL_CHARISMATIC_TRUST_BONUS * actor.Sheet.SkillTable.GetSkillLevel(4);
+      return 1 + Rules.SKILL_CHARISMATIC_TRUST_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
     }
 
     public int ActorCharismaticTradeChance(Actor actor)
     {
-      return Rules.SKILL_CHARISMATIC_TRADE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(4);
+      return Rules.SKILL_CHARISMATIC_TRADE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
     }
 
     public int ActorUnsuspicousChance(Actor observer, Actor actor)
     {
-      int num1 = Rules.SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(19);
+      int num1 = Rules.SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
       int num2 = 0;
       ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
       if (itemBodyArmor != null)
@@ -2346,13 +2346,13 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorBiteHpRegen(Actor a, int dmg)
     {
-      int num = (int) ((double) Rules.SKILL_ZEATER_REGEN_BONUS * (double) a.Sheet.SkillTable.GetSkillLevel(21) * (double) dmg);
+      int num = (int) ((double) Rules.SKILL_ZEATER_REGEN_BONUS * (double) a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_EATER) * (double) dmg);
       return dmg + num;
     }
 
     public int ActorBiteNutritionValue(Actor actor, int baseValue)
     {
-      return (int) (10.0 + (double) (Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS * (float) actor.Sheet.SkillTable.GetSkillLevel(24)) + (double) (Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (float) actor.Sheet.SkillTable.GetSkillLevel(10))) * baseValue;
+      return (int) (10.0 + (double) (Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS * (float) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER)) + (double) (Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (float) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER))) * baseValue;
     }
 
     public int CorpseEeatingInfectionTransmission(int infection)
@@ -2367,7 +2367,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static int InfectionForDamage(Actor infector, int dmg)
     {
-      return (int) ((1.0 + (double) infector.Sheet.SkillTable.GetSkillLevel(23) * (double) Rules.SKILL_ZINFECTOR_BONUS) * (double) dmg);
+      return (int) ((1.0 + (double) infector.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * (double) Rules.SKILL_ZINFECTOR_BONUS) * (double) dmg);
     }
 
     public int ActorInfectionPercent(Actor a)
@@ -2424,19 +2424,19 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!this.CanActorReviveCorpse(actor, corpse))
         return 0;
-      return this.CorpseFreshnessPercent(corpse) / 2 + actor.Sheet.SkillTable.GetSkillLevel(14) * Rules.SKILL_MEDIC_REVIVE_BONUS;
+      return this.CorpseFreshnessPercent(corpse) / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
     }
 
     public int CorpseReviveHPs(Actor actor, Corpse corpse)
     {
-      return 5 + actor.Sheet.SkillTable.GetSkillLevel(14);
+      return 5 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC);
     }
 
     public bool CheckTrapTriggers(ItemTrap trap, Actor a)
     {
       if (a.Model.Abilities.IsSmall && this.RollChance(90))
         return false;
-      int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(11) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(25) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
+      int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
       return this.RollChance(trap.TrapModel.TriggerChance * trap.Quantity - num);
     }
 
@@ -2460,7 +2460,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapEscape(ItemTrap trap, Actor a)
     {
-      return this.RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(11) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(25) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
+      return this.RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
     }
 
     public bool IsTrapCoveringMapObjectThere(Map map, Point pos)
@@ -2485,7 +2485,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ZGrabChance(Actor grabber, Actor victim)
     {
-      return grabber.Sheet.SkillTable.GetSkillLevel(22) * Rules.SKILL_ZGRAB_CHANCE;
+      return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * Rules.SKILL_ZGRAB_CHANCE;
     }
   }
 }

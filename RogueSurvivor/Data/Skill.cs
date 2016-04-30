@@ -34,9 +34,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Skill(int id)
+    public Skill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      this.m_ID = id;
+      m_ID = (int) id;
     }
   }
 }

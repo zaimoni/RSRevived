@@ -284,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
-      bool flag7 = this.m_Actor.Sheet.SkillTable.GetSkillLevel(9) >= 1;
+      bool flag7 = this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1;
       if (!flag3 && flag7 && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
         Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
         if (target != null) {

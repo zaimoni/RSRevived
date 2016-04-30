@@ -5122,9 +5122,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerBuildFortification(Actor player, bool isLarge)
     {
-      if (player.Sheet.SkillTable.GetSkillLevel(3) == 0)
-      {
-        this.AddMessage(this.MakeErrorMessage("need carpentry skill."));
+      if (player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) {
+        AddMessage(this.MakeErrorMessage("need carpentry skill."));
         return false;
       }
       int num = this.m_Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
@@ -7668,7 +7667,7 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>(10);
       stringList.Add(string.Format("Corpse of {0}.", (object) c.DeadGuy.Name));
       stringList.Add(" ");
-      int skillLevel = this.m_Player.Sheet.SkillTable.GetSkillLevel(15);
+      int skillLevel = this.m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       string str1 = "???";
       if (skillLevel > 0)
         str1 = WorldTime.MakeTimeDurationMessage(this.m_Session.WorldTime.TurnCounter - c.Turn);
@@ -7712,8 +7711,7 @@ namespace djack.RogueSurvivor.Engine
           throw new Exception("unhandled rot level");
       }
       string str4 = "???";
-      if (this.m_Player.Sheet.SkillTable.GetSkillLevel(14) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST)
-      {
+      if (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST) {
         int num = this.m_Rules.CorpseReviveChance(this.m_Player, c);
         str4 = num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
       }
@@ -10428,7 +10426,7 @@ namespace djack.RogueSurvivor.Engine
             {
               for (int index = 0; index < skill.Level; ++index)
               {
-                killer.Sheet.SkillTable.AddOrIncreaseSkill(skill.ID);
+                killer.Sheet.SkillTable.AddOrIncreaseSkill((Skills.IDs) skill.ID);
                 this.OnSkillUpgrade(killer, (Skills.IDs) skill.ID);
               }
             }
@@ -11001,7 +10999,7 @@ namespace djack.RogueSurvivor.Engine
           for (int index = 0; index < upgrade.Count; ++index)
           {
             Skills.IDs id = upgrade[index];
-            int skillLevel = upgradeActor.Sheet.SkillTable.GetSkillLevel((int) id);
+            int skillLevel = upgradeActor.Sheet.SkillTable.GetSkillLevel(id);
             this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("choice {0} : {1} from {2} to {3} - {4}", (object) (index + 1), (object) Skills.Name(id), (object) skillLevel, (object) (skillLevel + 1), (object) this.DescribeSkillShort(id)), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
           }
         }
@@ -11220,36 +11218,34 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = 0;
       bool isUndead = actor.Model.Abilities.IsUndead;
-      int id;
+      Skills.IDs id;
       do
       {
         ++num;
-        id = isUndead ? (int) Skills.RollUndead(this.Rules.DiceRoller) : (int) Skills.RollLiving(this.Rules.DiceRoller);
+        id = isUndead ? Skills.RollUndead(this.Rules.DiceRoller) : Skills.RollLiving(this.Rules.DiceRoller);
       }
       while (actor.Sheet.SkillTable.GetSkillLevel(id) >= Skills.MaxSkillLevel(id) && num < maxTries);
       if (num >= maxTries)
         return new Skills.IDs?();
-      return new Skills.IDs?((Skills.IDs) id);
+      return new Skills.IDs?(id);
     }
 
     private void DoLooseRandomSkill(Actor actor)
     {
       int[] skillsList = actor.Sheet.SkillTable.SkillsList;
-      if (skillsList == null)
-        return;
+      if (skillsList == null) return;
       int index = this.m_Rules.Roll(0, skillsList.Length);
       Skills.IDs id = (Skills.IDs) skillsList[index];
-      actor.Sheet.SkillTable.DecOrRemoveSkill((int) id);
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, string.Format("regressed in {0}!", (object) Skills.Name(id))));
+      actor.Sheet.SkillTable.DecOrRemoveSkill(id);
+      if (!this.IsVisibleToPlayer(actor)) return;
+      AddMessage(this.MakeMessage(actor, string.Format("regressed in {0}!", (object) Skills.Name(id))));
     }
 
     public Skill SkillUpgrade(Actor actor, Skills.IDs id)
     {
-      actor.Sheet.SkillTable.AddOrIncreaseSkill((int) id);
-      Skill skill = actor.Sheet.SkillTable.GetSkill((int) id);
-      this.OnSkillUpgrade(actor, id);
+      actor.Sheet.SkillTable.AddOrIncreaseSkill(id);
+      Skill skill = actor.Sheet.SkillTable.GetSkill(id);
+      OnSkillUpgrade(actor, id);
       return skill;
     }
 
@@ -13584,7 +13580,7 @@ namespace djack.RogueSurvivor.Engine
         actor = (this.m_CharGen.IsMale ? this.m_GameActors.MaleCivilian : this.m_GameActors.FemaleCivilian).CreateAnonymous(this.m_GameFactions.TheCivilians, 0);
         townGen.DressCivilian(roller, actor);
         townGen.GiveNameToActor(roller, actor);
-        actor.Sheet.SkillTable.AddOrIncreaseSkill((int) this.m_CharGen.StartingSkill);
+        actor.Sheet.SkillTable.AddOrIncreaseSkill(m_CharGen.StartingSkill);
         townGen.RecomputeActorStartingStats(actor);
         this.OnSkillUpgrade(actor, this.m_CharGen.StartingSkill);
         int max1 = (int) (0.25 * (double) actor.FoodPoints);
