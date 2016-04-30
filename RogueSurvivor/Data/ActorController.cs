@@ -107,10 +107,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInterestingItem(Item it)
     {
-      if (this.m_Actor.Inventory.CountItems == Rules.ActorMaxInv(this.m_Actor) - 1)
-        return it is ItemFood;
       if (it.IsForbiddenToAI || it is ItemSprayPaint || it is ItemTrap && (it as ItemTrap).IsActivated)
         return false;
+      // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
       if (it is ItemFood)
       {
         if (m_Actor.IsHungry) return true;
@@ -118,6 +117,9 @@ namespace djack.RogueSurvivor.Data
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
+      // don't lose last inventory slot to non-food unless we have enough
+      if (m_Actor.Inventory.CountItems >= Rules.ActorMaxInv(m_Actor)-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
+
       if (it is ItemRangedWeapon)
       {
         if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
