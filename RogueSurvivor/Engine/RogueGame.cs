@@ -13941,7 +13941,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SimThreadProc()
     {
-      while (true) {
+      while (m_SimThread.IsAlive) {
         Thread.Sleep(10);
         lock (m_SimMutex) {
           if (m_Player != null)
