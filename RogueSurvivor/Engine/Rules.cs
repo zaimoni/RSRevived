@@ -1924,18 +1924,6 @@ namespace djack.RogueSurvivor.Engine
       return (Actor) null;
     }
 
-    public bool IsActorBeforeInMapList(Map map, Actor actor, Actor other)
-    {
-      foreach (Actor actor1 in map.Actors)
-      {
-        if (actor1 == actor)
-          return true;
-        if (actor1 == other)
-          return false;
-      }
-      return true;
-    }
-
     public bool CanActorActThisTurn(Actor actor)
     {
       if (actor == null)
@@ -1952,14 +1940,13 @@ namespace djack.RogueSurvivor.Engine
 
     public bool WillActorActAgainBefore(Actor actor, Actor other)
     {
-      return other.ActionPoints <= 0 && (other.ActionPoints + this.ActorSpeed(other) <= 0 || !this.IsActorBeforeInMapList(actor.Location.Map, other, actor));
+      return other.ActionPoints <= 0 && (other.ActionPoints + ActorSpeed(other) <= 0 || actor.IsBefore(other));
     }
 
     public bool WillOtherActTwiceBefore(Actor actor, Actor other)
     {
-      if (this.IsActorBeforeInMapList(actor.Location.Map, actor, other))
-        return other.ActionPoints > BASE_ACTION_COST;
-      return other.ActionPoints + this.ActorSpeed(other) > BASE_ACTION_COST;
+      if (actor.IsBefore(other)) return other.ActionPoints > BASE_ACTION_COST;
+      return other.ActionPoints + ActorSpeed(other) > BASE_ACTION_COST;
     }
 
     public bool IsEnemyOf(Actor actor, Actor target)

@@ -872,6 +872,17 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // map-related, loosely
+    public bool IsBefore(Actor other)
+    {
+      Map map = Location.Map;
+      foreach (Actor actor1 in map.Actors) {
+        if (actor1 == this) return true;
+        if (actor1 == other) return false;
+      }
+      return true;
+    }
+
     // hunger
     public bool IsHungry {
       get {
