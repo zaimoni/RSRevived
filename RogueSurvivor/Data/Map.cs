@@ -455,6 +455,7 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // Actor manipulation functions
     public bool HasActor(Actor actor)
     {
       return this.m_ActorsList.Contains(actor);
@@ -519,6 +520,22 @@ namespace djack.RogueSurvivor.Data
       this.m_iCheckNextActorIndex = 0;
     }
 
+    public Actor NextActorToAct { 
+      get {
+        int countActors = m_ActorsList.Count;
+        int turnCounter = LocalTime.TurnCounter;
+        for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
+          Actor actor = m_ActorsList[checkNextActorIndex];
+          if (actor.ActionPoints > 0 && !actor.IsSleeping) {
+            m_iCheckNextActorIndex = checkNextActorIndex;
+            return actor;
+          }
+        }
+        return null;
+      }
+    }
+
+    // map object manipulation functions
     public bool HasMapObject(MapObject mapObj)
     {
       return this.m_MapObjectsList.Contains(mapObj);

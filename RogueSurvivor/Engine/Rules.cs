@@ -1907,23 +1907,6 @@ namespace djack.RogueSurvivor.Engine
       return (float) Math.Sqrt(0.75 * (double) (num1 * num1 + num2 * num2));
     }
 
-    public Actor GetNextActorToAct(Map map, int turnCounter)
-    {
-      if (map == null)
-        return (Actor) null;
-      int countActors = map.CountActors;
-      for (int checkNextActorIndex = map.CheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex)
-      {
-        Actor actor = map.GetActor(checkNextActorIndex);
-        if (actor.ActionPoints > 0 && !actor.IsSleeping)
-        {
-          map.CheckNextActorIndex = checkNextActorIndex;
-          return actor;
-        }
-      }
-      return (Actor) null;
-    }
-
     public bool CanActorActThisTurn(Actor actor)
     {
       if (actor == null)

@@ -2339,7 +2339,7 @@ namespace djack.RogueSurvivor.Engine
       }
       else
       {
-        Actor nextActorToAct = this.m_Rules.GetNextActorToAct(map, map.LocalTime.TurnCounter);
+        Actor nextActorToAct = map.NextActorToAct;
         if (nextActorToAct == null)
         {
           this.NextMapTurn(map, sim);
