@@ -92,21 +92,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> percepts3 = this.FilterFireTargets(game, perceptList1);
         if (percepts3 != null)
         {
-          Percept target = this.FilterNearest(game, percepts3);
+          Percept target = FilterNearest(percepts3);
           Actor actor = target.Percepted as Actor;
-          ActorAction actorAction3 = this.BehaviorRangedAttack(game, target);
+          ActorAction actorAction3 = BehaviorRangedAttack(game, target);
           if (actorAction3 != null)
           {
-            this.m_Actor.Activity = Activity.FIGHTING;
-            this.m_Actor.TargetActor = actor;
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = actor;
             return actorAction3;
           }
         }
       }
       if (perceptList1 != null)
       {
-        object percepted = this.FilterNearest(game, perceptList1).Percepted;
-        ActorAction actorAction3 = this.BehaviorFightOrFlee(game, perceptList1, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
+        object percepted = FilterNearest(perceptList1).Percepted;
+        ActorAction actorAction3 = BehaviorFightOrFlee(game, perceptList1, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (actorAction3 != null)
           return actorAction3;
       }
@@ -122,16 +122,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }));
         if (percepts3 != null)
         {
-          Actor target = this.FilterNearest(game, percepts3).Percepted as Actor;
+          Actor target = FilterNearest(percepts3).Percepted as Actor;
           game.DoMakeAggression(this.m_Actor, target);
-          this.m_Actor.Activity = Activity.FIGHTING;
-          this.m_Actor.TargetActor = target;
-          return (ActorAction) new ActionSay(this.m_Actor, game, target, "Hey YOU!", RogueGame.Sayflags.IS_IMPORTANT);
+          m_Actor.Activity = Activity.FIGHTING;
+          m_Actor.TargetActor = target;
+          return new ActionSay(this.m_Actor, game, target, "Hey YOU!", RogueGame.Sayflags.IS_IMPORTANT);
         }
       }
       if (flag2 && perceptList2 != null)
       {
-        ActorAction actorAction3 = this.BehaviorWarnFriends(game, perceptList2, this.FilterNearest(game, percepts2).Percepted as Actor);
+        ActorAction actorAction3 = this.BehaviorWarnFriends(game, perceptList2, FilterNearest(percepts2).Percepted as Actor);
         if (actorAction3 != null)
         {
           this.m_Actor.Activity = Activity.IDLE;
@@ -145,8 +145,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (percepts2 != null)
       {
-        Percept target = this.FilterNearest(game, percepts2);
-        if (this.m_Actor.Location == target.Location)
+        Percept target = FilterNearest(percepts2);
+        if (m_Actor.Location == target.Location)
         {
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, this.m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);

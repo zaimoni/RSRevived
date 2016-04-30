@@ -122,7 +122,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end item juggling check
 
-
       List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
       List<Percept> perceptList = FilterCurrent(percepts2);
       bool flag1 = perceptList != null;
@@ -132,37 +131,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool flag4 = !game.Rules.IsActorTired(this.m_Actor);
 
       // all free actions must be above the enemies check
-      if (flag1 && (flag3 || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)))
-      {
+      if (flag1 && (flag3 || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
         List<Percept> percepts3 = this.FilterFireTargets(game, perceptList);
-        if (percepts3 != null)
-        {
-          Percept target = this.FilterNearest(game, percepts3);
-          ActorAction actorAction3 = this.BehaviorRangedAttack(game, target);
-          if (actorAction3 != null)
-          {
-            this.m_Actor.Activity = Activity.FIGHTING;
-            this.m_Actor.TargetActor = target.Percepted as Actor;
+        if (percepts3 != null) {
+          Percept target = FilterNearest(percepts3);
+          ActorAction actorAction3 = BehaviorRangedAttack(game, target);
+          if (actorAction3 != null) {
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = target.Percepted as Actor;
             return actorAction3;
           }
         }
       }
-      if (flag1)
-      {
-        if (game.Rules.RollChance(50))
-        {
+      if (flag1) {
+        if (game.Rules.RollChance(50)) {
           List<Percept> friends = this.FilterNonEnemies(game, percepts1);
-          if (friends != null)
-          {
-            ActorAction actorAction3 = this.BehaviorWarnFriends(game, friends, this.FilterNearest(game, perceptList).Percepted as Actor);
-            if (actorAction3 != null)
-            {
-              this.m_Actor.Activity = Activity.IDLE;
+          if (friends != null) {
+            ActorAction actorAction3 = this.BehaviorWarnFriends(game, friends, FilterNearest(perceptList).Percepted as Actor);
+            if (actorAction3 != null) {
+              m_Actor.Activity = Activity.IDLE;
               return actorAction3;
             }
           }
         }
-        ActorAction actorAction4 = this.BehaviorFightOrFlee(game, perceptList, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
+        ActorAction actorAction4 = BehaviorFightOrFlee(game, perceptList, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
         if (actorAction4 != null)
           return actorAction4;
       }
@@ -179,12 +171,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (flag1 && flag4)
       {
-        Percept target = this.FilterNearest(game, perceptList);
-        ActorAction actorAction3 = this.BehaviorChargeEnemy(game, target);
+        Percept target = FilterNearest(perceptList);
+        ActorAction actorAction3 = BehaviorChargeEnemy(game, target);
         if (actorAction3 != null)
         {
-          this.m_Actor.Activity = Activity.FIGHTING;
-          this.m_Actor.TargetActor = target.Percepted as Actor;
+          m_Actor.Activity = Activity.FIGHTING;
+          m_Actor.TargetActor = target.Percepted as Actor;
           return actorAction3;
         }
       }
@@ -243,13 +235,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return this.IsOccupiedByOther(map, p.Location.Position);
           return true;
         }));
-        if (percepts3 != null)
-        {
-          Percept percept = this.FilterNearest(game, percepts3);
-          ActorAction actorAction3 = this.BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
-          if (actorAction3 != null)
-          {
-            this.m_Actor.Activity = Activity.IDLE;
+        if (percepts3 != null) {
+          Percept percept = FilterNearest(percepts3);
+          ActorAction actorAction3 = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
+          if (actorAction3 != null) {
+            m_Actor.Activity = Activity.IDLE;
             return actorAction3;
           }
         }
@@ -266,14 +256,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object) this.m_Actor.Name));
           return false;
         }));
-        if (percepts3 != null)
-        {
-          Actor target = this.FilterNearest(game, percepts3).Percepted as Actor;
+        if (percepts3 != null) {
+          Actor target = FilterNearest(percepts3).Percepted as Actor;
           Item obj = FirstInterestingItem(target.Inventory);
-          game.DoMakeAggression(this.m_Actor, target);
-          this.m_Actor.Activity = Activity.CHASING;
-          this.m_Actor.TargetActor = target;
-          return (ActorAction) new ActionSay(this.m_Actor, game, target, string.Format("Hey! That's some nice {0} you have here!", (object) obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT);
+          game.DoMakeAggression(m_Actor, target);
+          m_Actor.Activity = Activity.CHASING;
+          m_Actor.TargetActor = target;
+          return new ActionSay(this.m_Actor, game, target, string.Format("Hey! That's some nice {0} you have here!", (object) obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT);
         }
       }
       ActorAction actorAction7 = this.BehaviorAttackBarricade(game);
@@ -296,16 +285,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       bool flag7 = this.m_Actor.Sheet.SkillTable.GetSkillLevel(9) >= 1;
-      if (!flag3 && flag7 && this.m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(this.m_Actor))
-      {
-        Percept target = this.FilterNearest(game, this.FilterNonEnemies(game, percepts1));
-        if (target != null)
-        {
-          ActorAction actorAction3 = this.BehaviorLeadActor(game, target);
-          if (actorAction3 != null)
-          {
-            this.m_Actor.Activity = Activity.IDLE;
-            this.m_Actor.TargetActor = target.Percepted as Actor;
+      if (!flag3 && flag7 && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
+        Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
+        if (target != null) {
+          ActorAction actorAction3 = BehaviorLeadActor(game, target);
+          if (actorAction3 != null) {
+            m_Actor.Activity = Activity.IDLE;
+            m_Actor.TargetActor = target.Percepted as Actor;
             return actorAction3;
           }
         }

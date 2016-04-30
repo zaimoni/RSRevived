@@ -1558,7 +1558,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y)
         {
-          if (this.CountAdjWalls(map, left, y) >= 2 && this.CountAdjDoors(map, left, y) <= 0 && this.m_Game.Rules.GridDistance(new Point(left, y), new Point(x1, num)) >= 2)
+          if (this.CountAdjWalls(map, left, y) >= 2 && this.CountAdjDoors(map, left, y) <= 0 && Rules.GridDistance(new Point(left, y), new Point(x1, num)) >= 2)
             map.PlaceMapObjectAt(this.MakeObjIronBench("MapObjects\\iron_bench"), new Point(left, y));
         }
       }

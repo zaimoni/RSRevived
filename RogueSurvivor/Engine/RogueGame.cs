@@ -455,7 +455,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (msg == null)
         throw new ArgumentNullException("msg");
-      if (this.m_Player == null || this.m_Player.IsSleeping || location.Map != this.m_Player.Location.Map || (double) this.m_Rules.StdDistance(this.m_Player.Location.Position, location.Position) > (double) this.m_Player.AudioRange)
+      if (this.m_Player == null || this.m_Player.IsSleeping || location.Map != this.m_Player.Location.Map || (double) Rules.StdDistance(this.m_Player.Location.Position, location.Position) > (double) this.m_Player.AudioRange)
         return;
       msg.Color = this.PLAYER_AUDIO_COLOR;
       this.AddMessage(msg);
@@ -467,7 +467,7 @@ namespace djack.RogueSurvivor.Engine
     private djack.RogueSurvivor.Data.Message MakePlayerCentricMessage(string eventText, Point position)
     {
       Point v = new Point(position.X - this.m_Player.Location.Position.X, position.Y - this.m_Player.Location.Position.Y);
-      return new djack.RogueSurvivor.Data.Message(string.Format("{0} {1} tiles to the {2}.", (object) eventText, (object) (int) this.m_Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v)), this.m_Session.WorldTime.TurnCounter);
+      return new djack.RogueSurvivor.Data.Message(string.Format("{0} {1} tiles to the {2}.", (object) eventText, (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v)), this.m_Session.WorldTime.TurnCounter);
     }
 
     private djack.RogueSurvivor.Data.Message MakeErrorMessage(string text)
@@ -3359,7 +3359,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (this.m_Player == null || this.m_Player.Location.Map != map)
         return int.MaxValue;
-      return this.m_Rules.GridDistance(this.m_Player.Location.Position, x, y);
+      return Rules.GridDistance(this.m_Player.Location.Position, x, y);
     }
 
     private int DistanceToPlayer(Map map, Point pos)
@@ -5203,7 +5203,7 @@ namespace djack.RogueSurvivor.Engine
         LoF.Clear();
         string reason;
         bool flag3 = this.m_Rules.CanActorFireAt(player, actor, LoF, out reason);
-        int num1 = this.m_Rules.GridDistance(player.Location.Position, actor.Location.Position);
+        int num1 = Rules.GridDistance(player.Location.Position, actor.Location.Position);
         this.ClearOverlays();
         this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.FIRE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
         this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(actor.Location.Position), "Icons\\target"));
@@ -5346,7 +5346,7 @@ namespace djack.RogueSurvivor.Engine
           if (flag3)
           {
             bool flag4 = true;
-            if (this.m_Rules.GridDistance(player.Location.Position, point1) <= itemGrenadeModel.BlastAttack.Radius)
+            if (Rules.GridDistance(player.Location.Position, point1) <= itemGrenadeModel.BlastAttack.Radius)
             {
               this.ClearMessages();
               this.AddMessage(new djack.RogueSurvivor.Data.Message("You are in the blast radius!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
@@ -5376,7 +5376,7 @@ namespace djack.RogueSurvivor.Engine
           if (direction != null)
           {
             Point point2 = point1 + direction;
-            if (map.IsInBounds(point2) && this.m_Rules.GridDistance(player.Location.Position, point2) <= num)
+            if (map.IsInBounds(point2) && Rules.GridDistance(player.Location.Position, point2) <= num)
               point1 = point2;
           }
         }
@@ -6420,7 +6420,7 @@ namespace djack.RogueSurvivor.Engine
         this.AddMessagePressEnter();
         return false;
       }
-      if (player.Location.Map != follower.Location.Map || !this.m_Rules.IsAdjacent(player.Location.Position, follower.Location.Position))
+      if (player.Location.Map != follower.Location.Map || !Rules.IsAdjacent(player.Location.Position, follower.Location.Position))
       {
         this.ClearMessages();
         this.AddMessage(this.MakeErrorMessage(string.Format("{0} is not next to you.", (object) follower.TheName)));
@@ -8674,7 +8674,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
         List<Point> pointList = (List<Point>) null;
-        if (this.m_Rules.IsAdjacent(fromPos, fo.Location.Position)) {
+        if (Rules.IsAdjacent(fromPos, fo.Location.Position)) {
           pointList = toMap.FilterAdjacentInMap(toPos, (Predicate<Point>) (pt => this.m_Rules.IsWalkableFor(fo, toMap, pt.X, pt.Y)));
           flag3 = pointList != null && pointList.Count != 0;
         }
@@ -9037,7 +9037,7 @@ namespace djack.RogueSurvivor.Engine
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
-      int distance = this.m_Rules.GridDistance(attacker.Location.Position, defender.Location.Position);
+      int distance = Rules.GridDistance(attacker.Location.Position, defender.Location.Position);
       Attack attack = this.m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
       Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
       this.SpendActorStaminaPoints(attacker, attack.StaminaPenalty);
@@ -10142,7 +10142,7 @@ namespace djack.RogueSurvivor.Engine
         List<Actor> actorList = (List<Actor>) null;
         foreach (Actor follower in actor.Followers)
         {
-          if (!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && this.m_Rules.IsAdjacent(follower.Location, mapObj.Location))
+          if (!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location))
           {
             if (actorList == null)
               actorList = new List<Actor>(actor.CountFollowers);
@@ -10167,7 +10167,7 @@ namespace djack.RogueSurvivor.Engine
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
-      if (!this.m_Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y))
+      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y))
       {
         map.RemoveActor(actor);
         map.PlaceActorAt(actor, position);
@@ -10196,7 +10196,7 @@ namespace djack.RogueSurvivor.Engine
         Map map = target.Location.Map;
         Point position = target.Location.Position;
         map.PlaceActorAt(target, toPos);
-        if (!this.m_Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y))
+        if (!Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y))
         {
           if (!this.TryActorLeaveTile(actor))
             return;
@@ -10292,7 +10292,7 @@ namespace djack.RogueSurvivor.Engine
           Actor actorAt = map.GetActorAt(index1, index2);
           if (actorAt != null && actorAt.IsSleeping)
           {
-            int noiseDistance = this.m_Rules.GridDistance(noisePosition, index1, index2);
+            int noiseDistance = Rules.GridDistance(noisePosition, index1, index2);
             if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(this.m_Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance)))
             {
               this.DoWakeUp(actorAt);
@@ -10449,7 +10449,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor follower in killer.Followers)
         {
           bool flag2 = false;
-          if (follower.TargetActor == deadGuy || this.m_Rules.IsEnemyOf(follower, deadGuy) && this.m_Rules.IsAdjacent(follower.Location, deadGuy.Location))
+          if (follower.TargetActor == deadGuy || this.m_Rules.IsEnemyOf(follower, deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location))
             flag2 = true;
           if (flag2)
           {
@@ -10469,7 +10469,7 @@ namespace djack.RogueSurvivor.Engine
         Point position = killer.Location.Position;
         foreach (Actor actor in map.Actors)
         {
-          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (this.m_Rules.GridDistance(actor.Location.Position, position) <= this.m_Rules.ActorFOV(actor, map.LocalTime, this.m_Session.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
+          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (Rules.GridDistance(actor.Location.Position, position) <= this.m_Rules.ActorFOV(actor, map.LocalTime, this.m_Session.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
           {
             this.DoSay(actor, killer, string.Format("MURDER! {0} HAS KILLED {1}!", (object) killer.TheName, (object) deadGuy.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
             this.DoMakeAggression(actor, killer);
@@ -11544,7 +11544,7 @@ namespace djack.RogueSurvivor.Engine
             this.DrawMapObject(mapObjectAt, screen, tint);
             flag2 = true;
           }
-          if (!this.m_Player.IsSleeping && map.IsInBounds(x, y) && this.m_Rules.GridDistance(this.m_Player.Location.Position, point) <= 1)
+          if (!m_Player.IsSleeping && map.IsInBounds(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1)
           {
             if (isUndead)
             {
@@ -12145,7 +12145,7 @@ namespace djack.RogueSurvivor.Engine
           {
             foreach (Actor actor in map.Actors)
             {
-              if (actor != this.m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == this.m_Player.Location.Map && this.m_Rules.GridDistance(actor.Location.Position, this.m_Player.Location.Position) <= 6)
+              if (actor != m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == m_Player.Location.Map && Rules.GridDistance(actor.Location.Position, m_Player.Location.Position) <= Rules.ZTRACKINGRADIUS)
               {
                 Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
                 this.m_UI.UI_DrawImage("mini_undead_position", point.X - 1, point.Y - 1);
@@ -13986,7 +13986,7 @@ namespace djack.RogueSurvivor.Engine
             else
               break;
           case ScriptStage.STAGE_1:
-            if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && (this.m_Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping))
+            if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && (Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping))
             {
               lock (this.m_Session)
               {

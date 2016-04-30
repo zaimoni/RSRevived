@@ -616,7 +616,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("target");
       if (actor.Location.Map == target.Location.Map)
       {
-        if (!this.IsAdjacent(actor.Location.Position, target.Location.Position))
+        if (!Rules.IsAdjacent(actor.Location.Position, target.Location.Position))
         {
           reason = "not adjacent";
           return false;
@@ -1325,8 +1325,8 @@ namespace djack.RogueSurvivor.Engine
       if (actorList != null)
         actorList.Sort((Comparison<Actor>) ((a, b) =>
         {
-          float num1 = this.StdDistance(a.Location.Position, actor.Location.Position);
-          float num2 = this.StdDistance(b.Location.Position, actor.Location.Position);
+          float num1 = Rules.StdDistance(a.Location.Position, actor.Location.Position);
+          float num2 = Rules.StdDistance(b.Location.Position, actor.Location.Position);
           if ((double) num1 < (double) num2)
             return -1;
           return (double) num1 <= (double) num2 ? 0 : 1;
@@ -1365,7 +1365,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "no ranged weapon equipped";
         return false;
       }
-      if (actor.CurrentRangedAttack.Range < this.GridDistance(actor.Location.Position, target.Location.Position))
+      if (actor.CurrentRangedAttack.Range < Rules.GridDistance(actor.Location.Position, target.Location.Position))
       {
         reason = "out of range";
         return false;
@@ -1410,7 +1410,7 @@ namespace djack.RogueSurvivor.Engine
       }
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? (itemGrenadePrimed.Model as ItemGrenadePrimedModel).GrenadeModel : itemGrenade.Model as ItemGrenadeModel;
       int maxRange = this.ActorMaxThrowRange(actor, itemGrenadeModel.MaxThrowDistance);
-      if (this.GridDistance(actor.Location.Position, pos) > maxRange)
+      if (Rules.GridDistance(actor.Location.Position, pos) > maxRange)
       {
         reason = "out of throwing range";
         return false;
@@ -1862,14 +1862,14 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsAdjacent(Location a, Location b)
+    public static bool IsAdjacent(Location a, Location b)
     {
       if (a.Map != b.Map)
         return false;
-      return this.IsAdjacent(a.Position, b.Position);
+      return Rules.IsAdjacent(a.Position, b.Position);
     }
 
-    public bool IsAdjacent(Point pA, Point pB)
+    public static bool IsAdjacent(Point pA, Point pB)
     {
       if (Math.Abs(pA.X - pB.X) < 2)
         return Math.Abs(pA.Y - pB.Y) < 2;
@@ -1877,30 +1877,30 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // L-infinity metric i.e. distance in moves
-    public int GridDistance(Point pA, int bX, int bY)
+    public static int GridDistance(Point pA, int bX, int bY)
     {
       return Math.Max(Math.Abs(pA.X - bX), Math.Abs(pA.Y - bY));
     }
 
-    public int GridDistance(Point pA, Point pB)
+    public static int GridDistance(Point pA, Point pB)
     {
       return Math.Max(Math.Abs(pA.X - pB.X), Math.Abs(pA.Y - pB.Y));
     }
 
     // Euclidean plane distance
-    public float StdDistance(Point from, Point to)
+    public static float StdDistance(Point from, Point to)
     {
       int num1 = to.X - from.X;
       int num2 = to.Y - from.Y;
       return (float) Math.Sqrt((double) (num1 * num1 + num2 * num2));
     }
 
-    public float StdDistance(Point v)
+    public static float StdDistance(Point v)
     {
       return (float) Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
-    public float LOSDistance(Point from, Point to)
+    public static float LOSDistance(Point from, Point to)
     {
       int num1 = to.X - from.X;
       int num2 = to.Y - from.Y;
@@ -2261,7 +2261,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorSpotMurdererChance(Actor spotter, Actor murderer)
     {
-      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * this.GridDistance(spotter.Location.Position, murderer.Location.Position);
+      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location.Position, murderer.Location.Position);
     }
 
     private int NightFovPenalty(Actor actor, WorldTime time)

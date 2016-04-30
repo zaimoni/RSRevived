@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         {
           foreach (Actor actor1 in actor.Location.Map.Actors)
           {
-            if (actor1 != actor && (double) game.Rules.LOSDistance(actor.Location.Position, actor1.Location.Position) <= (double) num && this.m_FOV.Contains(actor1.Location.Position))
+            if (actor1 != actor && (double) Rules.LOSDistance(actor.Location.Position, actor1.Location.Position) <= (double) num && this.m_FOV.Contains(actor1.Location.Position))
               perceptList.Add(new Percept((object) actor1, actor.Location.Map.LocalTime.TurnCounter, actor1.Location));
           }
         }

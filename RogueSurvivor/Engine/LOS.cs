@@ -277,7 +277,7 @@ namespace djack.RogueSurvivor.Engine
         for (int y3 = y1; y3 <= y2; ++y3)
         {
           point1.Y = y3;
-          if ((double) rules.LOSDistance(position, point1) <= (double) maxRange && !visibleSet.Contains(point1))
+          if ((double) Rules.LOSDistance(position, point1) <= (double) maxRange && !visibleSet.Contains(point1))
           {
             if (!LOS.FOVSub(location, point1, maxRange, ref visibleSet))
             {

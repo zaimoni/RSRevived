@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!this.m_Actor.Model.Abilities.IsUndeadMaster)
       {
-        Percept percept = FilterNearest(game, FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
+        Percept percept = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
         if (percept != null)
         {
           ActorAction actorAction = this.BehaviorStupidBumpToward(game, this.RandomPositionNear(game.Rules, this.m_Actor.Location.Map, percept.Location.Position, 3));

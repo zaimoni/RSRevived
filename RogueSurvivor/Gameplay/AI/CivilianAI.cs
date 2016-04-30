@@ -247,14 +247,9 @@ label_10:
         List<Percept> percepts2 = this.FilterFireTargets(game, perceptList1);
         if (percepts2 != null)
         {
-          Percept percept = this.FilterNearest(game, percepts2);
+          Percept percept = FilterNearest(percepts2);
           Actor actor = percept.Percepted as Actor;
-          Rules rules = game.Rules;
-          location = percept.Location;
-          Point position1 = location.Position;
-          location = this.m_Actor.Location;
-          Point position2 = location.Position;
-          if (rules.GridDistance(position1, position2) == 1 && !this.HasEquipedRangedWeapon(actor) && this.HasSpeedAdvantage(game, this.m_Actor, actor))
+          if (Rules.GridDistance(percept.Location.Position, m_Actor.Location.Position) == 1 && !HasEquipedRangedWeapon(actor) && HasSpeedAdvantage(game, m_Actor, actor))
           {
             ActorAction actorAction2 = this.BehaviorWalkAwayFrom(game, percept);
             if (actorAction2 != null)
@@ -280,10 +275,10 @@ label_10:
           List<Percept> friends = this.FilterNonEnemies(game, percepts1);
           if (friends != null)
           {
-            ActorAction actorAction2 = this.BehaviorWarnFriends(game, friends, this.FilterNearest(game, perceptList1).Percepted as Actor);
+            ActorAction actorAction2 = this.BehaviorWarnFriends(game, friends, FilterNearest(perceptList1).Percepted as Actor);
             if (actorAction2 != null)
             {
-              this.m_Actor.Activity = Activity.IDLE;
+              m_Actor.Activity = Activity.IDLE;
               return actorAction2;
             }
           }
@@ -305,12 +300,12 @@ label_10:
       }
       if (flag1 && flag3)
       {
-        Percept target = this.FilterNearest(game, perceptList1);
-        ActorAction actorAction2 = this.BehaviorChargeEnemy(game, target);
+        Percept target = FilterNearest(perceptList1);
+        ActorAction actorAction2 = BehaviorChargeEnemy(game, target);
         if (actorAction2 != null)
         {
-          this.m_Actor.Activity = Activity.FIGHTING;
-          this.m_Actor.TargetActor = target.Percepted as Actor;
+          m_Actor.Activity = Activity.FIGHTING;
+          m_Actor.TargetActor = target.Percepted as Actor;
           return actorAction2;
         }
       }
@@ -372,7 +367,7 @@ label_10:
         }));
         if (perceptList2 != null)
         {
-          Percept percept = this.FilterNearest(game, perceptList2);
+          Percept percept = FilterNearest(perceptList2);
           this.m_LastItemsSaw = percept;
           ActorAction actorAction2 = this.BehaviorMakeRoomForFood(game, perceptList2);
           if (actorAction2 != null)
@@ -410,8 +405,8 @@ label_10:
           }));
           if (percepts2 != null)
           {
-            Actor actor = this.FilterNearest(game, percepts2).Percepted as Actor;
-            if (game.Rules.IsAdjacent(this.m_Actor.Location, actor.Location))
+            Actor actor = FilterNearest(percepts2).Percepted as Actor;
+            if (Rules.IsAdjacent(m_Actor.Location, actor.Location))
             {
               ActorAction actorAction2 = (ActorAction) new ActionTrade(this.m_Actor, game, actor);
               if (actorAction2.IsLegal())
@@ -439,7 +434,7 @@ label_10:
       }
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!this.m_Actor.HasLeader && !this.m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && this.HasNoFoodItems(this.m_Actor)))
       {
-        Percept target = this.FilterNearest(game, FilterActors(percepts1, (Predicate<Actor>) (a =>
+        Percept target = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a =>
         {
           if (a == this.m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == this.m_Actor || this.m_Actor.Leader == a))
             return false;
@@ -511,14 +506,12 @@ label_10:
       }
       if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(9) >= 1 && (!flag2 && this.m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(this.m_Actor)))
       {
-        Percept target = this.FilterNearest(game, this.FilterNonEnemies(game, percepts1));
-        if (target != null)
-        {
-          ActorAction actorAction2 = this.BehaviorLeadActor(game, target);
-          if (actorAction2 != null)
-          {
-            this.m_Actor.Activity = Activity.IDLE;
-            this.m_Actor.TargetActor = target.Percepted as Actor;
+        Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
+        if (target != null) {
+          ActorAction actorAction2 = BehaviorLeadActor(game, target);
+          if (actorAction2 != null) {
+            m_Actor.Activity = Activity.IDLE;
+            m_Actor.TargetActor = target.Percepted as Actor;
             return actorAction2;
           }
         }
