@@ -534,7 +534,7 @@ label_10:
         }
         if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE))
         {
-          ActorAction actorAction5 = this.BehaviorPushNonWalkableObject(game);
+          ActorAction actorAction5 = BehaviorPushNonWalkableObjectForFood(game);
           if (actorAction5 != null)
           {
             game.DoEmote(this.m_Actor, "Where is all the damn food?!");

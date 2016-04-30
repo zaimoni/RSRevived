@@ -903,23 +903,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorPushNonWalkableObject(RogueGame game)
     {
-      if (!game.Rules.HasActorPushAbility(this.m_Actor))
-        return (ActorAction) null;
-      Map map = this.m_Actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(this.m_Actor.Location.Position, (Predicate<Point>) (pt =>
+      if (!game.Rules.HasActorPushAbility(m_Actor)) return null;
+      Map map = m_Actor.Location.Map;
+      List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || mapObjectAt.IsWalkable)
           return false;
         return game.Rules.CanActorPush(this.m_Actor, mapObjectAt);
       }));
-      if (pointList == null)
-        return (ActorAction) null;
+      if (pointList == null) return null;
       MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);
-      ActionPush actionPush = new ActionPush(this.m_Actor, game, mapObjectAt1, game.Rules.RollDirection());
-      if (actionPush.IsLegal())
-        return (ActorAction) actionPush;
-      return (ActorAction) null;
+      ActionPush actionPush = new ActionPush(m_Actor, game, mapObjectAt1, game.Rules.RollDirection());
+      if (actionPush.IsLegal()) return actionPush;
+      return null;
+    }
+
+    protected ActorAction BehaviorPushNonWalkableObjectForFood(RogueGame game)
+    {
+      if (!game.Rules.HasActorPushAbility(m_Actor)) return null;
+      Map map = m_Actor.Location.Map;
+      List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
+      {
+        MapObject mapObjectAt = map.GetMapObjectAt(pt);
+        // Wrecked cars are very tiring to push, and are jumpable so they don't need to be pushed.
+        if (mapObjectAt == null || mapObjectAt.IsWalkable || mapObjectAt.IsJumpable)
+          return false;
+        return game.Rules.CanActorPush(this.m_Actor, mapObjectAt);
+      }));
+      if (pointList == null) return null;
+      MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);
+      ActionPush actionPush = new ActionPush(m_Actor, game, mapObjectAt1, game.Rules.RollDirection());
+      if (actionPush.IsLegal()) return actionPush;
+      return null;
     }
 
     protected ActorAction BehaviorUseMedecine(RogueGame game, int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
