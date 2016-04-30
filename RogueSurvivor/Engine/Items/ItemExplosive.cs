@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (!(model is ItemExplosiveModel))
         throw new ArgumentException("model is not ItemExplosiveModel");
-      this.PrimedModelID = primedModel.ID;
+      this.PrimedModelID = (int) primedModel.ID;
     }
   }
 }

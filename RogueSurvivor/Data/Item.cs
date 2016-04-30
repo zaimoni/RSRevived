@@ -99,7 +99,7 @@ namespace djack.RogueSurvivor.Data
 
     public Item(ItemModel model)
     {
-      m_ModelID = model.ID;
+      m_ModelID = (int) model.ID;
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;
     }

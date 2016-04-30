@@ -8,7 +8,7 @@ namespace djack.RogueSurvivor.Data
 {
   internal class ItemModel
   {
-    public int ID { get; set; }
+    public djack.RogueSurvivor.Gameplay.GameItems.IDs ID { get; set; }
     private string m_SingleName;
     public string PluralName { get; private set; }
     public bool IsPlural { get; set; }
