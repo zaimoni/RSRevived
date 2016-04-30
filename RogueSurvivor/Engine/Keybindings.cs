@@ -115,14 +115,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckForConflict()
     {
-      using (Dictionary<PlayerCommand, Keys>.ValueCollection.Enumerator enumerator = this.m_CommandToKeyData.Values.GetEnumerator())
-      {
-        while (enumerator.MoveNext())
-        {
-          Keys key1 = enumerator.Current;
-          if (this.m_KeyToCommand.Keys.Count<Keys>((Func<Keys, bool>) (k => k == key1)) > 1)
-            return true;
-        }
+      foreach(Keys key1 in  m_CommandToKeyData.Values) {
+        if (m_KeyToCommand.Keys.Count<Keys>((Func<Keys, bool>) (k => k == key1)) > 1) return true;
       }
       return false;
     }

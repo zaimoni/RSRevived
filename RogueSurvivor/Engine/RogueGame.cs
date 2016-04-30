@@ -2275,18 +2275,15 @@ namespace djack.RogueSurvivor.Engine
       bool isNight1 = m_Session.WorldTime.IsNight;
       DayPhase phase1 = m_Session.WorldTime.Phase;
 
-      lock(district) { 
-      using (IEnumerator<Map> enumerator = district.Maps.GetEnumerator()) {
-        while(enumerator.MoveNext()) {
-          Map current = enumerator.Current;
-          int turnCounter = current.LocalTime.TurnCounter;
-          do {
-             AdvancePlay(current, sim);
-             if (m_Player.IsDead) HandleReincarnation();
-             if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
-          }
-          while (current.LocalTime.TurnCounter == turnCounter);
+      lock(district) {
+      foreach(Map current in district.Maps) {
+        int turnCounter = current.LocalTime.TurnCounter;
+        do {
+          AdvancePlay(current, sim);
+          if (m_Player.IsDead) HandleReincarnation();
+          if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         }
+        while (current.LocalTime.TurnCounter == turnCounter);
       }
 
       if (district == this.m_Session.CurrentMap.District) {
@@ -8673,37 +8670,26 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = toMap.District != fromMap.District;
       bool flag2 = this.m_Player == leader;
-      List<Actor> actorList = (List<Actor>) null;
-      using (IEnumerator<Actor> enumerator = leader.Followers.GetEnumerator())
-      {
-        while (enumerator.MoveNext())
-        {
-          Actor fo = enumerator.Current;
-          bool flag3 = false;
-          List<Point> pointList = (List<Point>) null;
-          if (this.m_Rules.IsAdjacent(fromPos, fo.Location.Position))
-          {
-            pointList = toMap.FilterAdjacentInMap(toPos, (Predicate<Point>) (pt => this.m_Rules.IsWalkableFor(fo, toMap, pt.X, pt.Y)));
-            flag3 = pointList != null && pointList.Count != 0;
-          }
-          if (!flag3)
-          {
-            if (actorList == null)
-              actorList = new List<Actor>(3);
-            actorList.Add(fo);
-          }
-          else if (this.TryActorLeaveTile(fo))
-          {
-            Point position = pointList[this.m_Rules.Roll(0, pointList.Count)];
-            fromMap.RemoveActor(fo);
-            toMap.PlaceActorAt(fo, position);
-            toMap.MoveActorToFirstPosition(fo);
-            this.OnActorEnterTile(fo);
-          }
+      List<Actor> actorList = null;
+      foreach(Actor fo in leader.Followers) {
+        bool flag3 = false;
+        List<Point> pointList = (List<Point>) null;
+        if (this.m_Rules.IsAdjacent(fromPos, fo.Location.Position)) {
+          pointList = toMap.FilterAdjacentInMap(toPos, (Predicate<Point>) (pt => this.m_Rules.IsWalkableFor(fo, toMap, pt.X, pt.Y)));
+          flag3 = pointList != null && pointList.Count != 0;
         }
+        if (!flag3) {
+          if (actorList == null) actorList = new List<Actor>(3);
+          actorList.Add(fo);
+        } else if (this.TryActorLeaveTile(fo)) {
+          Point position = pointList[this.m_Rules.Roll(0, pointList.Count)];
+          fromMap.RemoveActor(fo);
+          toMap.PlaceActorAt(fo, position);
+          toMap.MoveActorToFirstPosition(fo);
+          OnActorEnterTile(fo);
+        }      
       }
-      if (actorList == null)
-        return;
+      if (actorList == null) return;
       foreach (Actor other in actorList)
       {
         if (flag1)
