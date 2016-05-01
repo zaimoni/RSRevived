@@ -2598,7 +2598,7 @@ namespace djack.RogueSurvivor.Engine
         map.CheckNextActorIndex = 0;
         foreach (Actor actor in map.Actors)
         {
-          if (actor.IsRunning && actor.StaminaPoints < 10)
+          if (actor.IsRunning && actor.StaminaPoints < Rules.STAMINA_MIN_FOR_ACTIVITY)
           {
             actor.IsRunning = false;
             if (actor == this.m_Player)

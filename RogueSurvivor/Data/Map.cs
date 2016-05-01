@@ -620,7 +620,7 @@ namespace djack.RogueSurvivor.Data
       Inventory itemsAt = this.GetItemsAt(position);
       if (itemsAt == null)
       {
-        Inventory inventory = new Inventory(10);
+        Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
         this.m_aux_GroundItemsList.Add(inventory);
         this.m_GroundItemsByPosition.Add(position, inventory);
         inventory.AddAll(it);

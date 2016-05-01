@@ -583,7 +583,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "no ability to run";
         return false;
       }
-      if (actor.StaminaPoints < 10)
+      if (actor.StaminaPoints < STAMINA_MIN_FOR_ACTIVITY)
       {
         reason = "not enough stamina to run";
         return false;
@@ -597,7 +597,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == null)
         throw new ArgumentNullException("actor");
       if (actor.Model.Abilities.CanTire)
-        return actor.StaminaPoints < 10;
+        return actor.StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
       return false;
     }
 
@@ -640,7 +640,7 @@ namespace djack.RogueSurvivor.Engine
           return false;
         }
       }
-      if (actor.StaminaPoints < 10)
+      if (actor.StaminaPoints < STAMINA_MIN_FOR_ACTIVITY)
       {
         reason = "not enough stamina to attack";
         return false;
