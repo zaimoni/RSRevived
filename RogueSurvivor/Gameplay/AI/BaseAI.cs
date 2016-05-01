@@ -701,8 +701,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (actorAction != null)
           return actorAction;
       }
-      if (game.Rules.IsOnCouch(this.m_Actor))
-        return (ActorAction) new ActionSleep(this.m_Actor, game);
+      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor, game);
       Point? nullable = new Point?();
       float num1 = float.MaxValue;
       foreach (Point point in FOV)

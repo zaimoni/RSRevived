@@ -883,6 +883,14 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
+    public bool IsOnCouch {
+      get {
+        MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
+        if (mapObjectAt == null) return false;
+        return mapObjectAt.IsCouch;
+      }
+    }
+
     // sanity
     public bool IsInsane {
       get {

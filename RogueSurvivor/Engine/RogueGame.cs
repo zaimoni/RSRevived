@@ -2661,14 +2661,12 @@ namespace djack.RogueSurvivor.Engine
             else
             {
               --actor.SleepPoints;
-              if (map.LocalTime.IsNight)
-                --actor.SleepPoints;
-              if (actor.SleepPoints < 0)
-                actor.SleepPoints = 0;
+              if (map.LocalTime.IsNight) --actor.SleepPoints;
+              if (actor.SleepPoints < 0) actor.SleepPoints = 0;
             }
             if (actor.IsSleeping)
             {
-              bool isOnCouch = this.m_Rules.IsOnCouch(actor);
+              bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Activity.SLEEPING;
               int num = this.m_Rules.ActorSleepRegen(actor, isOnCouch);
               actor.SleepPoints += num;
@@ -11781,7 +11779,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (this.m_Player != null && this.m_Rules.CanActorInitiateTradeWith(this.m_Player, actor))
             this.m_UI.UI_DrawImage("Icons\\can_trade", gx2, gy2, tint);
-          if (actor.IsSleeping && (this.m_Rules.IsOnCouch(actor) || this.m_Rules.ActorHealChanceBonus(actor) > 0))
+          if (actor.IsSleeping && (actor.IsOnCouch || this.m_Rules.ActorHealChanceBonus(actor) > 0))
             this.m_UI.UI_DrawImage("Icons\\healing", gx2, gy2, tint);
           if (actor.CountFollowers > 0)
             this.m_UI.UI_DrawImage("Icons\\leader", gx2, gy2, tint);

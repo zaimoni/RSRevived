@@ -1487,16 +1487,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsOnCouch(Actor actor)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position);
-      if (mapObjectAt == null)
-        return false;
-      return mapObjectAt.IsCouch;
-    }
-
     public bool IsActorDisturbed(Actor a)
     {
       if (a.Model.Abilities.HasSanity)
