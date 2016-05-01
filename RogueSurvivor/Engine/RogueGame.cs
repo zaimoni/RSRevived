@@ -3887,7 +3887,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool TryPlayerInsanity()
     {
-      if (!this.m_Rules.IsActorInsane(this.m_Player) || !this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
+      if (!m_Player.IsInsane || !this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
         return false;
       ActorAction insaneAction = this.GenerateInsaneAction(this.m_Player);
       if (insaneAction == null || !insaneAction.IsLegal())
@@ -6481,7 +6481,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleAiActor(Actor aiActor)
     {
       ActorAction actorAction = aiActor.Controller.GetAction(this);
-      if (this.m_Rules.IsActorInsane(aiActor) && this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
+      if (aiActor.IsInsane && this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
       {
         ActorAction insaneAction = this.GenerateInsaneAction(aiActor);
         if (insaneAction != null && insaneAction.IsLegal())
@@ -7493,7 +7493,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor.Model.Abilities.HasSanity)
       {
-        if (this.m_Rules.IsActorInsane(actor))
+        if (actor.IsInsane)
           stringList.Add("Insane!");
         else if (this.m_Rules.IsActorDisturbed(actor))
           stringList.Add("Disturbed.");
@@ -11774,7 +11774,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (actor.Model.Abilities.HasSanity)
           {
-            if (this.m_Rules.IsActorInsane(actor))
+            if (actor.IsInsane)
               this.m_UI.UI_DrawImage("Icons\\sanity_insane", gx2, gy2, tint);
             else if (this.m_Rules.IsActorDisturbed(actor))
               this.m_UI.UI_DrawImage("Icons\\sanity_disturbed", gx2, gy2, tint);
@@ -12274,7 +12274,7 @@ namespace djack.RogueSurvivor.Engine
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (this.m_Rules.IsActorDisturbed(actor))
         {
-          if (this.m_Rules.IsActorInsane(actor))
+          if (actor.IsInsane)
             this.m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
           else
             this.m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());

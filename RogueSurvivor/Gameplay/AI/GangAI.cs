@@ -193,7 +193,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           this.m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
-        if (m_Actor.IsStarving || game.Rules.IsActorInsane(this.m_Actor))
+        if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
           ActorAction actorAction4 = this.BehaviorGoEatCorpse(game, this.FilterCorpses(game, percepts1));
           if (actorAction4 != null)

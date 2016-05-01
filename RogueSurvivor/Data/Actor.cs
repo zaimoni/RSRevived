@@ -883,6 +883,14 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
+    // sanity
+    public bool IsInsane {
+      get {
+        if (Model.Abilities.HasSanity) return Sanity <= 0;
+        return false;
+      }
+    }
+
     // hunger
     public bool IsHungry {
       get {

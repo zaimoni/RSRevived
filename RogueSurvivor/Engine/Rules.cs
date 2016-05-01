@@ -1504,13 +1504,6 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public bool IsActorInsane(Actor a)
-    {
-      if (a.Model.Abilities.HasSanity)
-        return a.Sanity <= 0;
-      return false;
-    }
-
     public int SanityToHoursUntilUnstable(Actor a)
     {
       int num = a.Sanity - this.ActorDisturbedLevel(a);
@@ -1729,7 +1722,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (corpse == null)
         throw new ArgumentNullException("corpse");
-      if (!actor.Model.Abilities.IsUndead && !actor.IsStarving && !IsActorInsane(actor))
+      if (!actor.Model.Abilities.IsUndead && !actor.IsStarving && !actor.IsInsane)
       {
         reason = "not starving or insane";
         return false;

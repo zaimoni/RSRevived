@@ -322,7 +322,7 @@ label_10:
           this.m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
-        if (m_Actor.IsStarving || game.Rules.IsActorInsane(m_Actor))
+        if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
           ActorAction actorAction5 = this.BehaviorGoEatCorpse(game, this.FilterCorpses(game, percepts1));
           if (actorAction5 != null)
