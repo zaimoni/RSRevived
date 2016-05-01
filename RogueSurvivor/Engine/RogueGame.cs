@@ -6481,7 +6481,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleAiActor(Actor aiActor)
     {
       ActorAction actorAction = aiActor.Controller.GetAction(this);
-      if (this.m_Rules.IsActorInsane(aiActor) && this.m_Rules.RollChance(5))
+      if (this.m_Rules.IsActorInsane(aiActor) && this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
       {
         ActorAction insaneAction = this.GenerateInsaneAction(aiActor);
         if (insaneAction != null && insaneAction.IsLegal())
