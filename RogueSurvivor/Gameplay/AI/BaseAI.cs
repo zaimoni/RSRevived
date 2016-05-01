@@ -932,7 +932,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ActorAction) null;
       bool needHP = this.m_Actor.HitPoints < game.Rules.ActorMaxHPs(this.m_Actor);
       bool needSTA = game.Rules.IsActorTired(this.m_Actor);
-      bool needSLP = this.m_Actor.Model.Abilities.HasToSleep && this.WouldLikeToSleep(game, this.m_Actor);
+      bool needSLP = m_Actor.WouldLikeToSleep;
       bool needCure = this.m_Actor.Infection > 0;
       bool needSan = this.m_Actor.Model.Abilities.HasSanity && this.m_Actor.Sanity < (int) (0.75 * (double) game.Rules.ActorMaxSanity(this.m_Actor));
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan)
@@ -2085,13 +2085,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (actor != null)
         return actor.Controller is SoldierAI;
       return false;
-    }
-
-    protected bool WouldLikeToSleep(RogueGame game, Actor actor)
-    {
-      if (!game.Rules.IsAlmostSleepy(actor))
-        return game.Rules.IsActorSleepy(actor);
-      return true;
     }
 
     protected bool IsOccupiedByOther(Map map, Point position)

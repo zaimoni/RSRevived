@@ -14,6 +14,7 @@ namespace djack.RogueSurvivor.Data
   {
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
+    public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
 
     private Actor.Flags m_Flags;
     private int m_ModelID;
@@ -928,6 +929,42 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // sleep
+    public int SleepToHoursUntilSleepy {
+      get {
+        int num = SleepPoints - SLEEP_SLEEPY_LEVEL;
+        if (Location.Map.LocalTime.IsNight) num /= 2;
+        if (num <= 0) return 0;
+        return num / WorldTime.TURNS_PER_HOUR;
+      }
+    }
+
+    public bool IsAlmostSleepy {
+      get {
+        if (!Model.Abilities.HasToSleep) return false;
+        return 3 >= SleepToHoursUntilSleepy;
+      }
+    }
+
+    public bool IsSleepy { 
+      get {
+        if (Model.Abilities.HasToSleep) return SLEEP_SLEEPY_LEVEL >= SleepPoints;
+        return false;
+      }
+    }
+
+    public bool IsExhausted { 
+      get {
+        if (Model.Abilities.HasToSleep) return 0 >= SleepPoints;
+        return false;
+      }
+    }
+
+    public bool WouldLikeToSleep {
+      get {
+        return IsAlmostSleepy /* || IsSleepy */;    // cf above partial ordering
+      }
+    }
 
     // boring items
     public void AddBoringItem(Item it)

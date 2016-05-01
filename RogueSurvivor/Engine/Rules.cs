@@ -111,8 +111,7 @@ namespace djack.RogueSurvivor.Engine
     public const int BODY_ARMOR_BREAK_CHANCE = 2;
     public const int FOOD_BASE_POINTS = 2*Actor.FOOD_HUNGRY_LEVEL;
     public const int ROT_BASE_POINTS = 2*Actor.ROT_HUNGRY_LEVEL;
-    public const int SLEEP_BASE_POINTS = 60*WorldTime.TURNS_PER_HOUR;
-    public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
+    public const int SLEEP_BASE_POINTS = 2*Actor.SLEEP_SLEEPY_LEVEL;
     public const int SANITY_BASE_POINTS = 4*WorldTime.TURNS_PER_DAY;
     public const int SANITY_UNSTABLE_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SANITY_NIGHTMARE_CHANCE = 2;
@@ -1424,35 +1423,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsActorSleepy(Actor a)
-    {
-      if (a.Model.Abilities.HasToSleep)
-        return a.SleepPoints <= Rules.SLEEP_SLEEPY_LEVEL;
-      return false;
-    }
-
-    public bool IsActorExhausted(Actor a)
-    {
-      if (a.Model.Abilities.HasToSleep)
-        return a.SleepPoints <= 0;
-      return false;
-    }
-
-    public int SleepToHoursUntilSleepy(int sleep, bool isNight)
-    {
-      int num = sleep - Rules.SLEEP_SLEEPY_LEVEL;
-      if (isNight) num /= 2;
-      if (num <= 0) return 0;
-      return num / WorldTime.TURNS_PER_HOUR;
-    }
-
-    public bool IsAlmostSleepy(Actor actor)
-    {
-      if (!actor.Model.Abilities.HasToSleep)
-        return false;
-      return this.SleepToHoursUntilSleepy(actor.SleepPoints, actor.Location.Map.LocalTime.IsNight) <= 3;
-    }
-
     public bool CanActorSleep(Actor actor)
     {
       string reason;
@@ -1938,17 +1908,12 @@ namespace djack.RogueSurvivor.Engine
     public int ActorSpeed(Actor actor)
     {
       float num = (float) actor.Doll.Body.Speed;
-      if (this.IsActorTired(actor))
-        num *= 0.6666667f;
-      if (this.IsActorExhausted(actor))
-        num /= 2f;
-      else if (this.IsActorSleepy(actor))
-        num *= 0.6666667f;
+      if (this.IsActorTired(actor)) num *= 2f/3f;
+      if (actor.IsExhausted) num /= 2f;
+      else if (actor.IsSleepy) num *= 2f/3f;
       ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
-      if (itemBodyArmor != null)
-        num -= (float) itemBodyArmor.Weight;
-      if (actor.DraggedCorpse != null)
-        num /= 2f;
+      if (itemBodyArmor != null) num -= (float) itemBodyArmor.Weight;
+      if (actor.DraggedCorpse != null) num /= 2f;
       return Math.Max((int) num, 0);
     }
 
@@ -2027,8 +1992,6 @@ namespace djack.RogueSurvivor.Engine
 
     public Attack ActorMeleeAttack(Actor actor, Attack baseAttack, Actor target)
     {
-      float num1 = (float) baseAttack.HitValue;
-      float num2 = (float) baseAttack.DamageValue;
       int num3 = Rules.SKILL_AGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
       int num4 = Rules.SKILL_STRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Rules.SKILL_ZSTRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (actor.GetEquippedWeapon() == null)
@@ -2038,13 +2001,10 @@ namespace djack.RogueSurvivor.Engine
       }
       if (target != null && target.Model.Abilities.IsUndead)
         num4 += this.ActorDamageBonusVsUndeads(actor);
-      float num5 = num1 + (float) num3;
-      float num6 = num2 + (float) num4;
-      if (this.IsActorExhausted(actor))
-        num5 /= 2f;
-      else if (this.IsActorSleepy(actor))
-        num5 *= 0.75f;
-      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, (int) num6, baseAttack.StaminaPenalty);
+      float num5 = (float)baseAttack.HitValue + (float) num3;
+      if (actor.IsExhausted) num5 /= 2f;
+      else if (actor.IsSleepy) num5 *= 0.75f;
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
     public Attack ActorRangedAttack(Actor actor, Attack baseAttack, int distance, Actor target)
@@ -2063,24 +2023,19 @@ namespace djack.RogueSurvivor.Engine
           break;
       }
       if (target != null && target.Model.Abilities.IsUndead)
-        num2 += this.ActorDamageBonusVsUndeads(actor);
+        num2 += ActorDamageBonusVsUndeads(actor);
       int efficientRange = baseAttack.EfficientRange;
-      if (distance != efficientRange)
-      {
-        int num3 = efficientRange - distance;
-        num1 += num3 * FIRE_DISTANCE_VS_RANGE_MODIFIER;
+      if (distance != efficientRange) {
+        num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
       }
       float num4 = (float) (baseAttack.HitValue + num1);
-      float num5 = (float) (baseAttack.DamageValue + num2);
-      if (this.IsActorExhausted(actor))
-        num4 /= 2f;
-      else if (this.IsActorSleepy(actor))
-        num4 *= 0.75f;
+      if (actor.IsExhausted) num4 /= 2f;
+      else if (actor.IsSleepy) num4 *= 0.75f;
       if (this.IsActorTired(actor))
         num4 *= FIRING_WHEN_STA_TIRED;
       else if (actor.StaminaPoints < this.ActorMaxSTA(actor))
         num4 *= FIRING_WHEN_STA_NOT_FULL;
-      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, (int) num5, baseAttack.StaminaPenalty, baseAttack.Range);
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
     }
 
     public int ActorMaxThrowRange(Actor actor, int baseRange)
@@ -2091,14 +2046,11 @@ namespace djack.RogueSurvivor.Engine
 
     public Defence ActorDefence(Actor actor, Defence baseDefence)
     {
-      if (actor.IsSleeping)
-        return new Defence(0, 0, 0);
+      if (actor.IsSleeping) return new Defence(0, 0, 0);
       int num1 = Rules.SKILL_AGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_DEF_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
       float num2 = (float) (baseDefence.Value + num1);
-      if (this.IsActorExhausted(actor))
-        num2 /= 2f;
-      else if (this.IsActorSleepy(actor))
-        num2 *= 0.75f;
+      if (actor.IsExhausted) num2 /= 2f;
+      else if (actor.IsSleepy) num2 *= 0.75f;
       return new Defence((int) num2, baseDefence.Protection_Hit, baseDefence.Protection_Shot);
     }
 
@@ -2126,8 +2078,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorFOV(Actor actor, WorldTime time, Weather weather)
     {
-      if (actor.IsSleeping)
-        return 0;
+      if (actor.IsSleeping) return 0;
       int val2 = actor.Sheet.BaseViewRange;
       Lighting lighting = actor.Location.Map.Lighting;
       switch (lighting)
@@ -2139,10 +2090,8 @@ namespace djack.RogueSurvivor.Engine
           val2 = val2 - this.NightFovPenalty(actor, time) - this.WeatherFovPenalty(actor, weather);
           goto case Lighting.LIT;
         case Lighting.LIT:
-          if (this.IsActorExhausted(actor))
-            val2 -= 2;
-          else if (this.IsActorSleepy(actor))
-            --val2;
+          if (actor.IsExhausted) val2 -= 2;
+          else if (actor.IsSleepy) --val2;
           if (lighting == Lighting._FIRST || lighting == Lighting.OUTSIDE && time.IsNight)
           {
             int num = this.GetLightBonusEquipped(actor);
@@ -2152,8 +2101,7 @@ namespace djack.RogueSurvivor.Engine
               if (map.HasAnyAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt =>
               {
                 Actor actorAt = map.GetActorAt(pt);
-                if (actorAt == null)
-                  return false;
+                if (actorAt == null) return false;
                 return this.HasLightOnEquipped(actorAt);
               })))
                 num = 1;
@@ -2161,8 +2109,7 @@ namespace djack.RogueSurvivor.Engine
             val2 += num;
           }
           MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position);
-          if (mapObjectAt != null && mapObjectAt.StandOnFovBonus)
-            ++val2;
+          if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) ++val2;
           return Math.Max(MINIMAL_FOV, val2);
         default:
           throw new ArgumentOutOfRangeException("unhandled lighting");

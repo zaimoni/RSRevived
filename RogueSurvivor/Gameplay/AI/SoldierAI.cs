@@ -156,7 +156,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (!flag3 && this.WouldLikeToSleep(game, this.m_Actor) && (this.IsInside(this.m_Actor) && game.Rules.CanActorSleep(this.m_Actor))) {
+      if (!flag3 && m_Actor.WouldLikeToSleep && (this.IsInside(this.m_Actor) && game.Rules.CanActorSleep(this.m_Actor))) {
         tmpAction = BehaviorSecurePerimeter(game, this.m_LOSSensor.FOV);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;

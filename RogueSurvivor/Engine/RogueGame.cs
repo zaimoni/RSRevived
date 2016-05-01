@@ -2378,8 +2378,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (actor.Location.Map.LocalTime.IsNight && staminaCost > 0)
           staminaCost += this.m_Rules.NightStaminaPenalty(actor);
-        if (this.m_Rules.IsActorExhausted(actor))
-          staminaCost *= 2;
+        if (actor.IsExhausted) staminaCost *= 2;
         actor.StaminaPoints -= staminaCost;
       }
       else
@@ -2690,7 +2689,7 @@ namespace djack.RogueSurvivor.Engine
                 this.RedrawPlayScreen();
               }
             }
-            if (m_Rules.IsActorExhausted(actor) && this.m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE))
+            if (actor.IsExhausted && this.m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE))
             {
               this.DoStartSleeping(actor);
               if (this.IsVisibleToPlayer(actor))
@@ -5753,16 +5752,16 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void StartPlayerWaitLong(Actor player)
     {
-      this.m_IsPlayerLongWait = true;
-      this.m_IsPlayerLongWaitForcedStop = false;
-      this.m_PlayerLongWaitEnd = new WorldTime(this.m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
-      this.AddMessage(this.MakeMessage(player, string.Format("{0} waiting.", (object) this.Conjugate(player, this.VERB_START))));
-      this.RedrawPlayScreen();
+      m_IsPlayerLongWait = true;
+      m_IsPlayerLongWaitForcedStop = false;
+      m_PlayerLongWaitEnd = new WorldTime(this.m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
+      AddMessage(this.MakeMessage(player, string.Format("{0} waiting.", (object) Conjugate(player, VERB_START))));
+      RedrawPlayScreen();
     }
 
     private bool CheckPlayerWaitLong(Actor player)
     {
-      if (this.m_IsPlayerLongWaitForcedStop || this.m_Session.WorldTime.TurnCounter >= this.m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (this.m_Rules.IsActorSleepy(player) || this.m_Rules.IsActorExhausted(player)))
+      if (this.m_IsPlayerLongWaitForcedStop || this.m_Session.WorldTime.TurnCounter >= this.m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (player.IsSleepy || player.IsExhausted))
         return false;
       foreach (Point position in this.m_PlayerFOV)
       {
@@ -6701,20 +6700,17 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-            if (mapObjectAt == null)
-              return false;
+            if (mapObjectAt == null) return false;
             return this.m_Rules.IsBreakableFor(this.m_Player, mapObjectAt);
           }));
         case AdvisorHint.BARRICADE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null)
-              return false;
+            if (door == null) return false;
             return this.m_Rules.CanActorBarricadeDoor(this.m_Player, door);
           }));
-        case AdvisorHint.EXIT_STAIRS_LADDERS:
-          return map.GetExitAt(position) != null;
+        case AdvisorHint.EXIT_STAIRS_LADDERS: return map.GetExitAt(position) != null;
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
           foreach (Direction direction in Direction.COMPASS)
           {
@@ -6723,35 +6719,29 @@ namespace djack.RogueSurvivor.Engine
               return true;
           }
           return false;
-        case AdvisorHint.STATE_SLEEPY:
-          return this.m_Rules.IsActorSleepy(this.m_Player);
-        case AdvisorHint.STATE_HUNGRY:
-          return m_Player.IsHungry;
+        case AdvisorHint.STATE_SLEEPY: return m_Player.IsSleepy;
+        case AdvisorHint.STATE_HUNGRY: return m_Player.IsHungry;
         case AdvisorHint.NPC_TRADE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
-            if (actorAt == null)
-              return false;
+            if (actorAt == null) return false;
             return this.m_Rules.CanActorInitiateTradeWith(this.m_Player, actorAt);
           }));
         case AdvisorHint.NPC_GIVING_ITEM:
           Inventory inventory8 = this.m_Player.Inventory;
-          if (inventory8 == null || inventory8.IsEmpty)
-            return false;
+          if (inventory8 == null || inventory8.IsEmpty) return false;
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
-            if (actorAt == null)
-              return false;
+            if (actorAt == null) return false;
             return !this.m_Rules.IsEnemyOf(this.m_Player, actorAt);
           }));
         case AdvisorHint.NPC_SHOUTING:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
-            if (actorAt == null || !actorAt.IsSleeping)
-              return false;
+            if (actorAt == null || !actorAt.IsSleeping) return false;
             return !this.m_Rules.IsEnemyOf(this.m_Player, actorAt);
           }));
         case AdvisorHint.BUILD_FORTIFICATION:
@@ -7433,7 +7423,7 @@ namespace djack.RogueSurvivor.Engine
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
           stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object) this.FoodToHoursUntilHungry(actor.FoodPoints)));
-          stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, (object) this.m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, actor.Location.Map.LocalTime.IsNight)));
+          stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, (object) actor.SleepToHoursUntilSleepy));
           stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, (object) this.m_Rules.SanityToHoursUntilUnstable(actor)));
           stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, (object) this.m_Rules.ActorInfectionPercent(actor)));
         }
@@ -7464,37 +7454,26 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("You are enemies through relationships.");
       stringList.Add("");
       string str = this.DescribeActorActivity(actor);
-      if (str != null)
-        stringList.Add(str);
-      else
-        stringList.Add(" ");
+      stringList.Add(null != str ? str: " ");
       if (actor.Model.Abilities.HasToSleep)
       {
-        if (this.m_Rules.IsActorExhausted(actor))
-          stringList.Add("Exhausted!");
-        else if (this.m_Rules.IsActorSleepy(actor))
-          stringList.Add("Sleepy.");
+        if (actor.IsExhausted) stringList.Add("Exhausted!");
+        else if (actor.IsSleepy) stringList.Add("Sleepy.");
       }
       if (actor.Model.Abilities.HasToEat)
       {
-        if (actor.IsStarving)
-          stringList.Add("Starving!");
-        else if (actor.IsHungry)
-          stringList.Add("Hungry.");
+        if (actor.IsStarving) stringList.Add("Starving!");
+        else if (actor.IsHungry) stringList.Add("Hungry.");
       }
       else if (actor.Model.Abilities.IsRotting)
       {
-        if (actor.IsRotStarving)
-          stringList.Add("Starving!");
-        else if (actor.IsRotHungry)
-          stringList.Add("Hungry.");
+        if (actor.IsRotStarving) stringList.Add("Starving!");
+        else if (actor.IsRotHungry) stringList.Add("Hungry.");
       }
       if (actor.Model.Abilities.HasSanity)
       {
-        if (actor.IsInsane)
-          stringList.Add("Insane!");
-        else if (this.m_Rules.IsActorDisturbed(actor))
-          stringList.Add("Disturbed.");
+        if (actor.IsInsane) stringList.Add("Insane!");
+        else if (this.m_Rules.IsActorDisturbed(actor)) stringList.Add("Disturbed.");
       }
       stringList.Add(string.Format("Spd : {0:F2}", (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0)));
       StringBuilder stringBuilder = new StringBuilder();
@@ -11745,11 +11724,11 @@ namespace djack.RogueSurvivor.Engine
             this.m_UI.UI_DrawImage("Icons\\cant_run", gx2, gy2, tint);
           if (actor.Model.Abilities.HasToSleep)
           {
-            if (this.m_Rules.IsActorExhausted(actor))
+            if (actor.IsExhausted)
               this.m_UI.UI_DrawImage("Icons\\sleep_exhausted", gx2, gy2, tint);
-            else if (this.m_Rules.IsActorSleepy(actor))
+            else if (actor.IsSleepy)
               this.m_UI.UI_DrawImage("Icons\\sleep_sleepy", gx2, gy2, tint);
-            else if (this.m_Rules.IsAlmostSleepy(actor))
+            else if (actor.IsAlmostSleepy)
               this.m_UI.UI_DrawImage("Icons\\sleep_almost_sleepy", gx2, gy2, tint);
           }
           if (actor.Model.Abilities.HasToEat)
@@ -12251,17 +12230,17 @@ namespace djack.RogueSurvivor.Engine
       {
         int maxValue2 = this.m_Rules.ActorMaxSleep(actor);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
-        DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Rules.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
+        DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Actor.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (this.m_Rules.IsActorSleepy(actor))
+        if (actor.IsSleepy)
         {
-          if (this.m_Rules.IsActorExhausted(actor))
+          if (actor.IsExhausted)
             this.m_UI.UI_DrawStringBold(Color.Red, "EXHAUSTED!", gx + 126 + 100, gy, new Color?());
           else
             this.m_UI.UI_DrawStringBold(Color.Yellow, "Sleepy", gx + 126 + 100, gy, new Color?());
         }
         else
-          this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) this.m_Rules.SleepToHoursUntilSleepy(actor.SleepPoints, this.m_Session.WorldTime.IsNight)), gx + 126 + 100, gy, new Color?());
+          this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasSanity)

@@ -159,7 +159,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
-      if (game.Rules.IsActorSleepy(this.m_Actor) && !flag2)
+      if (m_Actor.IsSleepy && !flag2)
       {
         ActorAction actorAction3 = this.BehaviorSleep(game, this.m_LOSSensor.FOV);
         if (actorAction3 != null)

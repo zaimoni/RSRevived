@@ -20,11 +20,11 @@ namespace djack.RogueSurvivor.Gameplay
     private ActorModel[] m_Models = new ActorModel[27];
     private const int UNDEAD_FOOD = 2*Actor.ROT_HUNGRY_LEVEL;
     private const int HUMAN_HUN = 2*Actor.FOOD_HUNGRY_LEVEL;
-    private const int HUMAN_SLP = 60*WorldTime.TURNS_PER_HOUR;
+    private const int HUMAN_SLP = 2*Actor.SLEEP_SLEEPY_LEVEL;
     private const int HUMAN_SAN = 4*WorldTime.TURNS_PER_DAY;
     private const int HUMAN_INVENTORY = 7;
     private const int DOG_HUN = 2*Actor.FOOD_HUNGRY_LEVEL;
-    private const int DOG_SLP = 60*WorldTime.TURNS_PER_HOUR;
+    private const int DOG_SLP = 2*Actor.SLEEP_SLEEPY_LEVEL;
     private const int DOG_INVENTORY = 1;
     private const int NO_INVENTORY = 0;
     private const int NO_FOOD = 0;
