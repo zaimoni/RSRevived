@@ -529,44 +529,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionEquipItem(m_Actor, game, (Item) bestMeleeWeapon);
     }
 
-    protected ActorAction BehaviorEquipBodyArmor(RogueGame game)
-    {
-      ItemBodyArmor bestBodyArmor = GetBestBodyArmor(game, (Predicate<Item>) (it => !this.IsItemTaboo(it)));
-      if (bestBodyArmor == null) return null;
-      Item equippedBodyArmor = GetEquippedBodyArmor();
-      if (equippedBodyArmor == bestBodyArmor) return null;
-      return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) bestBodyArmor);
-    }
-
-    protected ActorAction BehaviorEquipCellPhone(RogueGame game)
-    {
-      bool wantCellPhone = false;
-      if (m_Actor.CountFollowers > 0)
-        wantCellPhone = true;
-      else if (this.m_Actor.HasLeader)
-      {
-        ItemTracker itemTracker = this.m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-        wantCellPhone = (null != itemTracker && itemTracker.CanTrackFollowersOrLeader);
-      }
-
-      Item equippedCellPhone = GetEquippedCellPhone();
-      if (equippedCellPhone != null)
-      {
-        if (wantCellPhone) return null;
-        return (ActorAction) new ActionUnequipItem(this.m_Actor, game, equippedCellPhone);
-      }
-      if (!wantCellPhone) return null;
-      Item firstTracker = this.GetFirstTracker((Predicate<ItemTracker>) (it =>
-      {
-        if (it.CanTrackFollowersOrLeader && 0 < it.Batteries)
-          return !this.IsItemTaboo((Item) it);
-        return false;
-      }));
-      if (firstTracker != null && game.Rules.CanActorEquipItem(this.m_Actor, firstTracker))
-        return (ActorAction) new ActionEquipItem(this.m_Actor, game, firstTracker);
-      return null;
-    }
-
     protected ActorAction BehaviorUnequipCellPhoneIfLeaderHasNot(RogueGame game)
     {
       ItemTracker itemTracker1 = this.m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
@@ -576,20 +538,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((itemTracker2 == null || !itemTracker2.CanTrackFollowersOrLeader))
         return (ActorAction) new ActionUnequipItem(this.m_Actor, game, (Item) itemTracker1);
       return null;
-    }
-
-    protected ActorAction BehaviorEquipLight(RogueGame game)
-    {
-      if (this.GetEquippedLight() != null)
-        return (ActorAction) null;
-      Item firstLight = this.GetFirstLight((Predicate<ItemLight>)(it =>
-      {
-          if (0 < it.Batteries) return !this.IsItemTaboo((Item)it);
-          return false;
-      }));
-      if (firstLight != null && game.Rules.CanActorEquipItem(this.m_Actor, firstLight))
-        return (ActorAction) new ActionEquipItem(this.m_Actor, game, firstLight);
-      return (ActorAction) null;
     }
 
     protected ActorAction BehaviorEquipStenchKiller(RogueGame game)
@@ -669,66 +617,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionWait(this.m_Actor, game);
     }
 
-    protected ActorAction BehaviorEat(RogueGame game)
-    {
-      Item bestEdibleItem = GetBestEdibleItem(game);
-      if (null == bestEdibleItem) return null;
-      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
-      return new ActionUseItem(m_Actor, game, bestEdibleItem);
-    }
-
-    protected ActorAction BehaviorEatProactively(RogueGame game)
-    {
-      Item bestEdibleItem = GetBestPerishableItem(game);
-      if (null == bestEdibleItem) return null;
-      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
-      return new ActionUseItem(m_Actor, game, bestEdibleItem);
-    }
-
-    protected ActorAction BehaviorSleep(RogueGame game, HashSet<Point> FOV)
-    {
-      if (!game.Rules.CanActorSleep(this.m_Actor))
-        return (ActorAction) null;
-      Map map = this.m_Actor.Location.Map;
-      if (map.HasAnyAdjacentInMap(this.m_Actor.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is DoorWindow)))
-      {
-        ActorAction actorAction = this.BehaviorWander(game, (Predicate<Location>) (loc =>
-        {
-          if (!(map.GetMapObjectAt(loc.Position) is DoorWindow))
-            return !map.HasAnyAdjacentInMap(loc.Position, (Predicate<Point>) (pt => loc.Map.GetMapObjectAt(pt) is DoorWindow));
-          return false;
-        }));
-        if (actorAction != null)
-          return actorAction;
-      }
-      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor, game);
-      Point? nullable = new Point?();
-      float num1 = float.MaxValue;
-      foreach (Point point in FOV)
-      {
-        MapObject mapObjectAt = map.GetMapObjectAt(point);
-        if (mapObjectAt != null && mapObjectAt.IsCouch && map.GetActorAt(point) == null)
-        {
-          float num2 = Rules.StdDistance(this.m_Actor.Location.Position, point);
-          if ((double) num2 < (double) num1)
-          {
-            num1 = num2;
-            nullable = new Point?(point);
-          }
-        }
-      }
-      if (nullable.HasValue)
-      {
-        ActorAction actorAction = this.BehaviorIntelligentBumpToward(game, nullable.Value);
-        if (actorAction != null)
-          return actorAction;
-      }
-
-      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);  // all battery powered items are left hand, currently
-      if (game.Rules.IsItemBatteryPowered(it)) game.DoUnequipItem(m_Actor, it);
-      return (ActorAction) new ActionSleep(this.m_Actor, game);
-    }
-
     protected int ComputeTrapsMaxDamage(Map map, Point pos)
     {
       Inventory itemsAt = map.GetItemsAt(pos);
@@ -797,56 +685,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return false;
         return itemTrap.IsActivated;
       })) <= 3;
-    }
-
-    protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
-    {
-      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(this.m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(this.m_Actor, false))
-        return (ActorAction) null;
-      Map map = this.m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = this.Choose<Direction>(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-      {
-        Point point = this.m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.GetExitAt(point) != null)
-          return false;
-        return this.IsDoorwayOrCorridor(game, map, point);
-      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      if (choiceEval == null)
-        return (ActorAction) null;
-      Point point1 = this.m_Actor.Location.Position + choiceEval.Choice;
-      if (!game.Rules.CanActorBuildFortification(this.m_Actor, point1, false))
-        return (ActorAction) null;
-      return (ActorAction) new ActionBuildFortification(this.m_Actor, game, point1, false);
-    }
-
-    protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
-    {
-      if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(this.m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(this.m_Actor, true))
-        return (ActorAction) null;
-      Map map = this.m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = this.Choose<Direction>(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-      {
-        Point point = this.m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.GetExitAt(point) != null || map.GetTileAt(point.X, point.Y).IsInside))
-          return false;
-        int num1 = map.CountAdjacentInMap(point, (Predicate<Point>) (ptAdj => !map.GetTileAt(ptAdj).Model.IsWalkable));
-        int num2 = map.CountAdjacentInMap(point, (Predicate<Point>) (ptAdj =>
-        {
-          Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
-          if (fortification != null)
-            return !fortification.IsTransparent;
-          return false;
-        }));
-        return num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance) || num1 == 0 && num2 == 1;
-      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      if (choiceEval == null)
-        return (ActorAction) null;
-      Point point1 = this.m_Actor.Location.Position + choiceEval.Choice;
-      if (!game.Rules.CanActorBuildFortification(this.m_Actor, point1, true))
-        return (ActorAction) null;
-      return (ActorAction) new ActionBuildFortification(this.m_Actor, game, point1, true);
     }
 
     protected ActorAction BehaviorAttackBarricade(RogueGame game)
@@ -1055,41 +893,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmpAction;
     }
 
-    protected ActorAction BehaviorLeadActor(RogueGame game, Percept target)
-    {
-      Actor target1 = target.Percepted as Actor;
-      if (!game.Rules.CanActorTakeLead(this.m_Actor, target1)) return null;
-      if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
-        return new ActionTakeLead(m_Actor, game, target1);
-      return BehaviorIntelligentBumpToward(game, target1.Location.Position);
-    }
-
-    protected ActorAction BehaviorDontLeaveFollowersBehind(RogueGame game, int distance, out Actor target)
-    {
-      target = (Actor) null;
-      int num1 = int.MinValue;
-      Map map = this.m_Actor.Location.Map;
-      Point position = this.m_Actor.Location.Position;
-      int num2 = 0;
-      int num3 = this.m_Actor.CountFollowers / 2;
-      foreach (Actor follower in this.m_Actor.Followers)
-      {
-        if (follower.Location.Map == map)
-        {
-          if (Rules.GridDistance(follower.Location.Position, position) <= distance && ++num2 >= num3) return null;
-          int num4 = Rules.GridDistance(follower.Location.Position, position);
-          if (target == null || num4 > num1)
-          {
-            target = follower;
-            num1 = num4;
-          }
-        }
-      }
-      if (target == null)
-        return (ActorAction) null;
-      return this.BehaviorIntelligentBumpToward(game, target.Location.Position);
-    }
-
     protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
     {
       Percept target = FilterNearest(enemies);
@@ -1228,62 +1031,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) null;
     }
 
-    protected ActorAction BehaviorWarnFriends(RogueGame game, List<Percept> friends, Actor nearestEnemy)
-    {
-      if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
-      if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor, game);
-      foreach (Percept friend in friends) {
-        Actor actor = friend.Percepted as Actor;
-        if (actor == null) throw new ArgumentException("percept not an actor");
-        if (actor != m_Actor && (actor.IsSleeping && !game.Rules.IsEnemyOf(m_Actor, actor)) && game.Rules.IsEnemyOf(actor, nearestEnemy)) {
-          string text = nearestEnemy == null ? string.Format("Wake up {0}!", (object) actor.Name) : string.Format("Wake up {0}! {1} sighted!", (object) actor.Name, (object) nearestEnemy.Name);
-          return new ActionShout(this.m_Actor, game, text);
-        }
-      }
-      return null;
-    }
-
-    protected ActorAction BehaviorTellFriendAboutPercept(RogueGame game, Percept percept)
-    {
-      Map map = this.m_Actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(this.m_Actor.Location.Position, (Predicate<Point>) (pt =>
-      {
-        Actor actorAt = map.GetActorAt(pt);
-        return actorAt != null && !actorAt.IsSleeping && !game.Rules.IsEnemyOf(this.m_Actor, actorAt);
-      }));
-      if (pointList == null || pointList.Count == 0)
-        return (ActorAction) null;
-      Actor actorAt1 = map.GetActorAt(pointList[game.Rules.Roll(0, pointList.Count)]);
-      string str1 = this.MakeCentricLocationDirection(this.m_Actor.Location, percept.Location);
-      string str2 = string.Format("{0} ago", (object) WorldTime.MakeTimeDurationMessage(this.m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
-      string text;
-      if (percept.Percepted is Actor)
-        text = string.Format("I saw {0} {1} {2}.", (object) (percept.Percepted as Actor).Name, (object) str1, (object) str2);
-      else if (percept.Percepted is Inventory)
-      {
-        Inventory inventory = percept.Percepted as Inventory;
-        if (inventory.IsEmpty)
-          return (ActorAction) null;
-        Item it = inventory[game.Rules.Roll(0, inventory.CountItems)];
-        if (!this.IsItemWorthTellingAbout(it))
-          return (ActorAction) null;
-        int num = game.Rules.ActorFOV(actorAt1, map.LocalTime, game.Session.World.Weather);
-        if (percept.Location.Map == actorAt1.Location.Map && (double) Rules.StdDistance(percept.Location.Position, actorAt1.Location.Position) <= (double) (2 + num))
-          return (ActorAction) null;
-        text = string.Format("I saw {0} {1} {2}.", (object) it.AName, (object) str1, (object) str2);
-      }
-      else
-      {
-        if (!(percept.Percepted is string))
-          throw new InvalidOperationException("unhandled percept.Percepted type");
-        text = string.Format("I heard {0} {1} {2}!", (object) (percept.Percepted as string), (object) str1, (object) str2);
-      }
-      ActionSay actionSay = new ActionSay(this.m_Actor, game, actorAt1, text, RogueGame.Sayflags.NONE);
-      if (actionSay.IsLegal())
-        return (ActorAction) actionSay;
-      return (ActorAction) null;
-    }
-
     protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration)
     {
       Direction prevDirection = Direction.FromVector(this.m_Actor.Location.Position.X - this.m_prevLocation.Position.X, this.m_Actor.Location.Position.Y - this.m_prevLocation.Position.Y);
@@ -1342,35 +1089,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) null;
     }
 
-    protected ActorAction BehaviorSecurePerimeter(RogueGame game, HashSet<Point> fov)
-    {
-      Map map = this.m_Actor.Location.Map;
-      foreach (Point position in fov)
-      {
-        MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt != null)
-        {
-          DoorWindow door = mapObjectAt as DoorWindow;
-          if (door != null)
-          {
-            if (door.IsOpen && game.Rules.IsClosableFor(this.m_Actor, door))
-            {
-              if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return (ActorAction) new ActionCloseDoor(this.m_Actor, game, door);
-              return this.BehaviorIntelligentBumpToward(game, door.Location.Position);
-            }
-            if (door.IsWindow && !door.IsBarricaded && game.Rules.CanActorBarricadeDoor(this.m_Actor, door))
-            {
-              if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return (ActorAction) new ActionBarricadeDoor(this.m_Actor, game, door);
-              return this.BehaviorIntelligentBumpToward(game, door.Location.Position);
-            }
-          }
-        }
-      }
-      return (ActorAction) null;
-    }
-
     protected ActorAction BehaviorUseExit(RogueGame game, BaseAI.UseExitFlags useFlags)
     {
       Exit exitAt = this.m_Actor.Location.Map.GetExitAt(this.m_Actor.Location.Position);
@@ -1395,94 +1113,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorUseExit(this.m_Actor, this.m_Actor.Location.Position))
         return (ActorAction) null;
       return (ActorAction) new ActionUseExit(this.m_Actor, this.m_Actor.Location.Position, game);
-    }
-
-    protected ActorAction BehaviorFleeFromExplosives(RogueGame game, List<Percept> itemStacks)
-    {
-      if (itemStacks == null || itemStacks.Count == 0)
-        return (ActorAction) null;
-      List<Percept> goals = this.Filter(game, itemStacks, (Predicate<Percept>) (p =>
-      {
-        Inventory inventory = p.Percepted as Inventory;
-        if (inventory == null || inventory.IsEmpty)
-          return false;
-        foreach (Item obj in inventory.Items)
-        {
-          if (obj is ItemPrimedExplosive)
-            return true;
-        }
-        return false;
-      }));
-      if (goals == null || goals.Count == 0)
-        return (ActorAction) null;
-      ActorAction actorAction = this.BehaviorWalkAwayFrom(game, goals);
-      if (actorAction == null)
-        return (ActorAction) null;
-      this.RunIfPossible(game.Rules);
-      return actorAction;
-    }
-
-    protected ActorAction BehaviorThrowGrenade(RogueGame game, HashSet<Point> fov, List<Percept> enemies)
-    {
-      if (enemies == null || enemies.Count == 0)
-        return (ActorAction) null;
-      if (enemies.Count < 3)
-        return (ActorAction) null;
-      Inventory inventory = this.m_Actor.Inventory;
-      if (inventory == null || inventory.IsEmpty)
-        return (ActorAction) null;
-      ItemGrenade firstGrenade = this.GetFirstGrenade((Predicate<Item>) (it => !this.IsItemTaboo(it)));
-      if (firstGrenade == null)
-        return (ActorAction) null;
-      ItemGrenadeModel itemGrenadeModel = firstGrenade.Model as ItemGrenadeModel;
-      int maxRange = game.Rules.ActorMaxThrowRange(this.m_Actor, itemGrenadeModel.MaxThrowDistance);
-      Point? nullable = new Point?();
-      int num1 = 0;
-      foreach (Point point in fov)
-      {
-        if (Rules.GridDistance(m_Actor.Location.Position, point) > itemGrenadeModel.BlastAttack.Radius && (Rules.GridDistance(m_Actor.Location.Position, point) <= maxRange && LOS.CanTraceThrowLine(this.m_Actor.Location, point, maxRange, (List<Point>) null)))
-        {
-          int num2 = 0;
-          for (int x = point.X - itemGrenadeModel.BlastAttack.Radius; x <= point.X + itemGrenadeModel.BlastAttack.Radius; ++x)
-          {
-            for (int y = point.Y - itemGrenadeModel.BlastAttack.Radius; y <= point.Y + itemGrenadeModel.BlastAttack.Radius; ++y)
-            {
-              if (this.m_Actor.Location.Map.IsInBounds(x, y))
-              {
-                Actor actorAt = this.m_Actor.Location.Map.GetActorAt(x, y);
-                if (actorAt != null && actorAt != this.m_Actor)
-                {
-                  int distance = Rules.GridDistance(point, actorAt.Location.Position);
-                  if (distance <= itemGrenadeModel.BlastAttack.Radius)
-                  {
-                    if (game.Rules.IsEnemyOf(this.m_Actor, actorAt))
-                    {
-                      int num3 = game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * game.Rules.ActorMaxHPs(actorAt);
-                      num2 += num3;
-                    }
-                    else
-                    {
-                      num2 = -1;
-                      break;
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if (num2 > 0 && (!nullable.HasValue || num2 > num1))
-          {
-            nullable = new Point?(point);
-            num1 = num2;
-          }
-        }
-      }
-      if (!nullable.HasValue) return null;
-      if (!firstGrenade.IsEquipped)
-        return (ActorAction) new ActionEquipItem(this.m_Actor, game, (Item) firstGrenade);
-      ActorAction actorAction = (ActorAction) new ActionThrowGrenade(this.m_Actor, game, nullable.Value);
-      if (!actorAction.IsLegal()) return null;
-      return actorAction;
     }
 
     protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
@@ -1655,21 +1285,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return this.BehaviorIntelligentBumpToward(game, percept.Location.Position);
     }
 
-    private string MakeCentricLocationDirection(Location from, Location to)
-    {
-      if (from.Map != to.Map)
-        return string.Format("in {0}", (object) to.Map.Name);
-      Point position1 = from.Position;
-      Point position2 = to.Position;
-      Point v = new Point(position2.X - position1.X, position2.Y - position1.Y);
-      return string.Format("{0} tiles to the {1}", (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v));
-    }
-
-    protected bool IsItemWorthTellingAbout(Item it)
-    {
-      return it != null && !(it is ItemBarricadeMaterial) && (this.m_Actor.Inventory == null || this.m_Actor.Inventory.IsEmpty || !this.m_Actor.Inventory.Contains(it));
-    }
-
     protected Item GetEquippedWeapon()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
@@ -1743,63 +1358,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemGrenade GetFirstGrenade(Predicate<Item> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemGrenade && (fn == null || fn(obj))) return obj as ItemGrenade;
-      }
-      return null;
-    }
-
-    protected Item GetEquippedBodyArmor()
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemBodyArmor) return obj;
-      }
-      return null;
-    }
-
-    protected Item GetEquippedCellPhone()
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemTracker && (obj as ItemTracker).CanTrackFollowersOrLeader)
-          return obj;
-      }
-      return null;
-    }
-
-    protected Item GetFirstTracker(Predicate<ItemTracker> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemTracker itemTracker = obj as ItemTracker;
-        if (itemTracker != null && (fn == null || fn(itemTracker))) return obj;
-      }
-      return null;
-    }
-
-    protected Item GetEquippedLight()
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemLight) return obj;
-      }
-      return null;
-    }
-
-    protected Item GetFirstLight(Predicate<ItemLight> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in this.m_Actor.Inventory.Items) {
-        ItemLight itemLight = obj as ItemLight;
-        if (null != itemLight && (fn == null || fn(itemLight))) return obj;
-      }
-      return null;
-    }
-
     protected ItemSprayScent GetEquippedStenchKiller()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
@@ -1827,56 +1385,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       return itemRangedWeapon.Ammo <= 0;
     }
-
-    // This is only called when the actor is hungry.
-    protected ItemFood GetBestEdibleItem(RogueGame game)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
-      ItemFood obj1 = null;
-      int rating = int.MinValue;
-      foreach (Item obj2 in m_Actor.Inventory.Items) {
-        ItemFood food = obj2 as ItemFood;
-        if (null == food) continue;
-        int num3 = 0;
-        int num4 = food.NutritionAt(turnCounter);
-        int num5 = num4 - need;
-        if (num5 > 0) num3 -= num5;
-        if (!food.IsPerishable) num3 -= num4;
-        if (num3 > rating) {
-          obj1 = food;
-          rating = num3;
-        }
-      }
-      return obj1;
-    }
-
-    // This is more pro-active.  We might want to flag whether
-    // an AI uses the behavior based on this
-    protected ItemFood GetBestPerishableItem(RogueGame game)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
-      ItemFood obj1 = null;
-      int rating = int.MinValue;
-      foreach (Item obj2 in m_Actor.Inventory.Items) {
-        ItemFood food = obj2 as ItemFood;
-        if (null == food) continue;
-        if (!food.IsPerishable) continue;
-        if (food.IsSpoiledAt(turnCounter)) continue;
-        int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
-        if (num4 > need) continue; // more work needed
-        int num3 = need-num4;
-        if (num3 > rating) {
-          obj1 = food;
-          rating = num3;
-        }
-      }
-      return obj1;
-    }
-
 
     public List<Item> GetTradeableItems(Inventory inv)
     {
@@ -2145,31 +1653,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       return itemMeleeWeapon1;
-    }
-
-    protected ItemBodyArmor GetBestBodyArmor(RogueGame game, Predicate<Item> fn)
-    {
-      if (this.m_Actor.Inventory == null)
-        return (ItemBodyArmor) null;
-      int num1 = 0;
-      ItemBodyArmor itemBodyArmor1 = (ItemBodyArmor) null;
-      foreach (Item obj in this.m_Actor.Inventory.Items)
-      {
-        if (fn == null || fn(obj))
-        {
-          ItemBodyArmor itemBodyArmor2 = obj as ItemBodyArmor;
-          if (itemBodyArmor2 != null)
-          {
-            int num2 = itemBodyArmor2.Protection_Hit + itemBodyArmor2.Protection_Shot;
-            if (num2 > num1)
-            {
-              num1 = num2;
-              itemBodyArmor1 = itemBodyArmor2;
-            }
-          }
-        }
-      }
-      return itemBodyArmor1;
     }
 
     protected bool WantToEvadeMelee(RogueGame game, Actor actor, ActorCourage courage, Actor target)
