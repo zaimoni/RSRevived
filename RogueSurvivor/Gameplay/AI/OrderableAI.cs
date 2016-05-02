@@ -433,35 +433,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, game, bestEdibleItem);
     }
 
-    protected Item GetEquippedLight()
+    protected ItemLight GetEquippedLight()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemLight) return obj;
+        if (obj.IsEquipped) return obj as ItemLight;
       }
       return null;
     }
 
-    protected Item GetFirstLight(Predicate<ItemLight> fn)
+    protected ItemLight GetFirstLight(Predicate<ItemLight> fn)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in this.m_Actor.Inventory.Items) {
         ItemLight itemLight = obj as ItemLight;
-        if (null != itemLight && (fn == null || fn(itemLight))) return obj;
+        if (null != itemLight && (fn == null || fn(itemLight))) return itemLight;
       }
       return null;
     }
 
     protected ActorAction BehaviorEquipLight(RogueGame game)
     {
-      if (GetEquippedLight() != null) return null;
-      Item firstLight = GetFirstLight((Predicate<ItemLight>)(it =>
+      ItemLight tmp = GetEquippedLight();
+      if (null != tmp && !tmp.IsUseless) return null;
+      tmp = GetFirstLight((Predicate<ItemLight>)(it =>
       {
-          if (0 < it.Batteries) return !IsItemTaboo(it);
+          if (!it.IsUseless) return !IsItemTaboo(it);
           return false;
       }));
-      if (firstLight != null && game.Rules.CanActorEquipItem(m_Actor, firstLight))
-        return new ActionEquipItem(m_Actor, game, firstLight);
+      if (tmp != null && game.Rules.CanActorEquipItem(m_Actor, tmp))
+        return new ActionEquipItem(m_Actor, game, tmp);
       return null;
     }
 
