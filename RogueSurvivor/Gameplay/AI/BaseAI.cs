@@ -2198,18 +2198,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return b;
     }
 
+    // XXX doesn't work at night or with substantial melee weapons
     protected bool WillTireAfterAttack(RogueGame game, Actor actor)
     {
       if (!actor.Model.Abilities.CanTire)
         return false;
-      return actor.StaminaPoints - 8 < 10;
+      return actor.StaminaPoints - 8 < Rules.STAMINA_MIN_FOR_ACTIVITY;
     }
 
+    // XXX doesn't work at night
     protected bool WillTireAfterRunning(RogueGame game, Actor actor)
     {
       if (!actor.Model.Abilities.CanTire)
         return false;
-      return actor.StaminaPoints - 4 < 10;
+      return actor.StaminaPoints - 4 < Rules.STAMINA_MIN_FOR_ACTIVITY;
     }
 
     protected bool HasSpeedAdvantage(RogueGame game, Actor actor, Actor target)
