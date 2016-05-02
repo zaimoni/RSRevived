@@ -21,7 +21,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal abstract class BaseAI : AIController
   {
     private const int FLEE_THROUGH_EXIT_CHANCE = 50;
-    private const int EMOTE_GRAB_ITEM_CHANCE = 30;
     private const int EMOTE_FLEE_CHANCE = 30;
     private const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
     private const int EMOTE_CHARGE_CHANCE = 30;
@@ -445,7 +444,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-        protected ActorAction BehaviorWalkAwayFrom(RogueGame game, Percept goal)
+    protected ActorAction BehaviorWalkAwayFrom(RogueGame game, Percept goal)
     {
       return this.BehaviorWalkAwayFrom(game, new List<Percept>(1) { goal });
     }
@@ -561,33 +560,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionUnequipItem(m_Actor, game, equippedItem);
     }
 
-    protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
-    {
-      if (stack == null || stack.IsEmpty) return null;
-      MapObject mapObjectAt = this.m_Actor.Location.Map.GetMapObjectAt(position);
-      if (mapObjectAt != null)
-      {
-        Fortification fortification = mapObjectAt as Fortification;
-        if (fortification != null && !fortification.IsWalkable) return null;
-        DoorWindow doorWindow = mapObjectAt as DoorWindow;
-        if (doorWindow != null && doorWindow.IsBarricaded) return null;
-      }
-      Item obj = null;
-      foreach (Item it in stack.Items) {
-        if (game.Rules.CanActorGetItem(m_Actor, it) && IsInterestingItem(it)) {
-          obj = it;
-          break;
-        }
-      }
-      if (obj == null) return null;
-      Item it1 = obj;
-      if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        game.DoEmote(this.m_Actor, string.Format("{0}! Great!", (object) it1.AName));
-      if (position == this.m_Actor.Location.Position)
-        return (ActorAction) new ActionTakeItem(this.m_Actor, game, position, it1);
-      return this.BehaviorIntelligentBumpToward(game, position);
-    }
-
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
     {
       if (it == null) return null;
@@ -599,22 +571,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorDropItem(this.m_Actor, it)) return null;
       UnmarkItemAsTaboo(it);
       return (ActorAction) new ActionDropItem(m_Actor, game, it);
-    }
-
-    protected ActorAction BehaviorDropUselessItem(RogueGame game)
-    {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item it in m_Actor.Inventory.Items) {
-        if (it.IsUseless) return BehaviorDropItem(game, it);
-      }
-      return null;
-    }
-
-    protected ActorAction BehaviorRestIfTired(RogueGame game)
-    {
-      if (this.m_Actor.StaminaPoints >= Rules.STAMINA_MIN_FOR_ACTIVITY)
-        return (ActorAction) null;
-      return (ActorAction) new ActionWait(this.m_Actor, game);
     }
 
     protected int ComputeTrapsMaxDamage(Map map, Point pos)

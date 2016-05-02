@@ -19,6 +19,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal abstract class OrderableAI : BaseAI
   {
+    private const int EMOTE_GRAB_ITEM_CHANCE = 30;
+
     protected Percept m_LastEnemySaw;
     protected Percept m_LastItemsSaw;
     protected Percept m_LastSoldierSaw;
@@ -785,6 +787,47 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);  // all battery powered items are left hand, currently
       if (game.Rules.IsItemBatteryPowered(it)) game.DoUnequipItem(m_Actor, it);
       return new ActionSleep(this.m_Actor, game);
+    }
+
+    protected ActorAction BehaviorRestIfTired(RogueGame game)
+    {
+      if (m_Actor.StaminaPoints >= Rules.STAMINA_MIN_FOR_ACTIVITY) return null;
+      return new ActionWait(m_Actor, game);
+    }
+
+    protected ActorAction BehaviorDropUselessItem(RogueGame game)
+    {
+      if (m_Actor.Inventory.IsEmpty) return null;
+      foreach (Item it in m_Actor.Inventory.Items) {
+        if (it.IsUseless) return BehaviorDropItem(game, it);
+      }
+      return null;
+    }
+
+    protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
+    {
+      if (stack == null || stack.IsEmpty) return null;
+      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);
+      if (mapObjectAt != null) {
+        Fortification fortification = mapObjectAt as Fortification;
+        if (fortification != null && !fortification.IsWalkable) return null;
+        DoorWindow doorWindow = mapObjectAt as DoorWindow;
+        if (doorWindow != null && doorWindow.IsBarricaded) return null;
+      }
+      Item obj = null;
+      foreach (Item it in stack.Items) {
+        if (game.Rules.CanActorGetItem(m_Actor, it) && IsInterestingItem(it)) {
+          obj = it;
+          break;
+        }
+      }
+      if (obj == null) return null;
+      Item it1 = obj;
+      if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        game.DoEmote(this.m_Actor, string.Format("{0}! Great!", (object) it1.AName));
+      if (position == this.m_Actor.Location.Position)
+        return new ActionTakeItem(m_Actor, game, position, it1);
+      return BehaviorIntelligentBumpToward(game, position);
     }
   }
 }
