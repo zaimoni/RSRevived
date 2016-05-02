@@ -733,6 +733,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, game, point1, true);
     }
 
+    protected bool IsDoorwayOrCorridor(RogueGame game, Map map, Point pos)
+    {
+      if (!map.GetTileAt(pos).Model.IsWalkable)
+        return false;
+      Point p1 = pos + Direction.N;
+      bool flag1 = map.IsInBounds(p1) && !map.GetTileAt(p1).Model.IsWalkable;
+      Point p2 = pos + Direction.S;
+      bool flag2 = map.IsInBounds(p2) && !map.GetTileAt(p2).Model.IsWalkable;
+      Point p3 = pos + Direction.E;
+      bool flag3 = map.IsInBounds(p3) && !map.GetTileAt(p3).Model.IsWalkable;
+      Point p4 = pos + Direction.W;
+      bool flag4 = map.IsInBounds(p4) && !map.GetTileAt(p4).Model.IsWalkable;
+      Point p5 = pos + Direction.NE;
+      bool flag5 = map.IsInBounds(p5) && !map.GetTileAt(p5).Model.IsWalkable;
+      Point p6 = pos + Direction.NW;
+      bool flag6 = map.IsInBounds(p6) && !map.GetTileAt(p6).Model.IsWalkable;
+      Point p7 = pos + Direction.SE;
+      bool flag7 = map.IsInBounds(p7) && !map.GetTileAt(p7).Model.IsWalkable;
+      Point p8 = pos + Direction.SW;
+      bool flag8 = map.IsInBounds(p8) && !map.GetTileAt(p8).Model.IsWalkable;
+      bool flag9 = !flag5 && !flag7 && !flag6 && !flag8;
+      return flag9 && flag1 && (flag2 && !flag3) && !flag4 || flag9 && flag3 && (flag4 && !flag1) && !flag2;
+    }
+
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
@@ -829,5 +853,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionTakeItem(m_Actor, game, position, it1);
       return BehaviorIntelligentBumpToward(game, position);
     }
+
+    protected bool NeedsLight(RogueGame game)
+    {
+      switch (this.m_Actor.Location.Map.Lighting)
+      {
+        case Lighting._FIRST:
+          return true;
+        case Lighting.OUTSIDE:
+          if (!this.m_Actor.Location.Map.LocalTime.IsNight)
+            return false;
+          if (game.Session.World.Weather != Weather.HEAVY_RAIN)
+            return !this.m_Actor.Location.Map.GetTileAt(this.m_Actor.Location.Position.X, this.m_Actor.Location.Position.Y).IsInside;
+          return true;
+        case Lighting.LIT:
+          return false;
+        default:
+          throw new ArgumentOutOfRangeException("unhandled lighting");
+      }
+    }
+
   }
 }
