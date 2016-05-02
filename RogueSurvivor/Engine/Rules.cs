@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Engine
     private const int FOV_PENALTY_MIDNIGHT = 3;
     private const int FOV_PENALTY_DEEP_NIGHT = 4;
     private const int FOV_PENALTY_SUNRISE = 2;
-    private const int NIGHT_STA_PENALTY = 2;
+    public const int NIGHT_STA_PENALTY = 2;
     private const int FOV_PENALTY_RAIN = 1;
     private const int FOV_PENALTY_HEAVY_RAIN = 2;
     public const int MELEE_WEAPON_BREAK_CHANCE = 1;

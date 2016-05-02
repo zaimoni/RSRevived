@@ -1630,20 +1630,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return b;
     }
 
-    // XXX doesn't work at night or with substantial melee weapons
     protected bool WillTireAfterAttack(RogueGame game, Actor actor)
     {
-      if (!actor.Model.Abilities.CanTire)
-        return false;
-      return actor.StaminaPoints - 8 < Rules.STAMINA_MIN_FOR_ACTIVITY;
+      if (!actor.Model.Abilities.CanTire) return false;
+      int night_stamina = (actor.Location.Map.LocalTime.IsNight ? Rules.NIGHT_STA_PENALTY : 0);
+      return actor.StaminaPoints - Rules.STAMINA_COST_MELEE_ATTACK - night_stamina - actor.CurrentMeleeAttack.StaminaPenalty < Rules.STAMINA_MIN_FOR_ACTIVITY;
     }
 
-    // XXX doesn't work at night
+    // XXX doesn't work in the presence of jumping
     protected bool WillTireAfterRunning(RogueGame game, Actor actor)
     {
-      if (!actor.Model.Abilities.CanTire)
-        return false;
-      return actor.StaminaPoints - 4 < Rules.STAMINA_MIN_FOR_ACTIVITY;
+      if (!actor.Model.Abilities.CanTire) return false;
+      int night_stamina = (actor.Location.Map.LocalTime.IsNight ? Rules.NIGHT_STA_PENALTY : 0);
+      return actor.StaminaPoints - Rules.STAMINA_COST_RUNNING - night_stamina < Rules.STAMINA_MIN_FOR_ACTIVITY;
     }
 
     protected bool HasSpeedAdvantage(RogueGame game, Actor actor, Actor target)

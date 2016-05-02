@@ -8869,7 +8869,7 @@ namespace djack.RogueSurvivor.Engine
       Attack attack = this.m_Rules.ActorMeleeAttack(attacker, attacker.CurrentMeleeAttack, defender);
       Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
       SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
-      this.SpendActorStaminaPoints(attacker, 8 + attack.StaminaPenalty);
+      this.SpendActorStaminaPoints(attacker, Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       int num1 = this.m_Rules.RollSkill(attack.HitValue);
       int num2 = this.m_Rules.RollSkill(defence.Value);
       this.OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
@@ -12284,9 +12284,9 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       Defence defence = this.m_Rules.ActorDefence(actor, actor.CurrentDefence);
       if (actor.Model.Abilities.IsUndead)
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} Sml {3:F2} Kills {4}", (object) defence.Value, (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0), (object) this.m_Rules.ActorFOV(actor, this.m_Session.WorldTime, this.m_Session.World.Weather), (object) this.m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
+        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0), (object) actor.ActionPoints, (object) this.m_Rules.ActorFOV(actor, this.m_Session.WorldTime, this.m_Session.World.Weather), (object) this.m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
       else
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} FoV {4} Fol {5}/{6}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0), (object) this.m_Rules.ActorFOV(actor, this.m_Session.WorldTime, this.m_Session.World.Weather), (object) actor.CountFollowers, (object) this.m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
+        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0), (object)actor.ActionPoints, (object) this.m_Rules.ActorFOV(actor, this.m_Session.WorldTime, this.m_Session.World.Weather), (object) actor.CountFollowers, (object) this.m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
     }
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
