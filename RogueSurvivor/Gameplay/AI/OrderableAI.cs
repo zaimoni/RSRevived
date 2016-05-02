@@ -864,7 +864,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!this.m_Actor.Location.Map.LocalTime.IsNight)
             return false;
           if (game.Session.World.Weather != Weather.HEAVY_RAIN)
-            return !this.m_Actor.Location.Map.GetTileAt(this.m_Actor.Location.Position.X, this.m_Actor.Location.Position.Y).IsInside;
+            return !m_Actor.IsInside;
           return true;
         case Lighting.LIT:
           return false;
