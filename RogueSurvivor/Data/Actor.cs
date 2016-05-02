@@ -892,6 +892,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool IsInside {
+      get {
+        return Location.Map.GetTileAt(Location.Position.X, Location.Position.Y).IsInside;
+      }
+    }
+
     // sanity
     public bool IsInsane {
       get {

@@ -203,7 +203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (!flag2 && m_Actor.WouldLikeToSleep && (this.IsInside(this.m_Actor) && game.Rules.CanActorSleep(this.m_Actor)))
+      if (!flag2 && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(this.m_Actor)))
       {
         ActorAction actorAction3 = this.BehaviorSecurePerimeter(game, this.m_LOSSensor.FOV);
         if (actorAction3 != null)

@@ -332,7 +332,7 @@ label_10:
           }
         }
       }
-      if (this.m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && this.Directives.CanSleep && (m_Actor.WouldLikeToSleep && this.IsInside(this.m_Actor)) && game.Rules.CanActorSleep(this.m_Actor))
+      if (this.m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && this.Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(this.m_Actor))
       {
         ActorAction actorAction2 = this.BehaviorSecurePerimeter(game, this.m_LOSSensor.FOV);
         if (actorAction2 != null)

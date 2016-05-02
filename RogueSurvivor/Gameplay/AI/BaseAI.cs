@@ -1573,13 +1573,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
-    protected bool IsInside(Actor actor)
-    {
-      if (actor == null)
-        return false;
-      return actor.Location.Map.GetTileAt(actor.Location.Position.X, actor.Location.Position.Y).IsInside;
-    }
-
     protected bool HasEquipedRangedWeapon(Actor actor)
     {
       return actor.GetEquippedWeapon() is ItemRangedWeapon;
