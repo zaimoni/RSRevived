@@ -137,9 +137,9 @@ namespace djack.RogueSurvivor.Data
     private enum Flags
     {
       NONE = 0,
-      IS_INSIDE = 1,
-      IS_IN_VIEW = 2,
-      IS_VISITED = 4,
+      IS_INSIDE = 1,    // tile flag
+      IS_IN_VIEW = 2,   // tile-player flag
+      IS_VISITED = 4,   // tile-player flag
     }
   }
 }
