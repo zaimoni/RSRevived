@@ -828,7 +828,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       switch (this.m_Actor.Location.Map.Lighting)
       {
-        case Lighting._FIRST:
+        case Lighting.DARKNESS:
           return true;
         case Lighting.OUTSIDE:
           if (!this.m_Actor.Location.Map.LocalTime.IsNight)

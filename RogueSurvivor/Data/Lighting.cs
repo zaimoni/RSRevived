@@ -12,7 +12,6 @@ namespace djack.RogueSurvivor.Data
   internal enum Lighting
   {
     DARKNESS = 0,
-    _FIRST = 0,
     OUTSIDE = 1,
     LIT = 2,
     _LAST = 3,

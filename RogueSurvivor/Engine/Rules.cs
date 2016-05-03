@@ -2083,7 +2083,7 @@ namespace djack.RogueSurvivor.Engine
       Lighting lighting = actor.Location.Map.Lighting;
       switch (lighting)
       {
-        case Lighting._FIRST:
+        case Lighting.DARKNESS:
           val2 = this.DarknessFov(actor);
           goto case Lighting.LIT;
         case Lighting.OUTSIDE:
@@ -2092,7 +2092,7 @@ namespace djack.RogueSurvivor.Engine
         case Lighting.LIT:
           if (actor.IsExhausted) val2 -= 2;
           else if (actor.IsSleepy) --val2;
-          if (lighting == Lighting._FIRST || lighting == Lighting.OUTSIDE && time.IsNight)
+          if (lighting == Lighting.DARKNESS || lighting == Lighting.OUTSIDE && time.IsNight)
           {
             int num = this.GetLightBonusEquipped(actor);
             if (num == 0)

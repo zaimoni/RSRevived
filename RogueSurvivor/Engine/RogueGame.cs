@@ -11233,7 +11233,7 @@ namespace djack.RogueSurvivor.Engine
                 string text;
                 switch (m_Session.CurrentMap.Lighting)
                 {
-                    case Lighting._FIRST:
+                    case Lighting.DARKNESS:
                         color = Color.Blue;
                         text = "Darkness";
                         break;
@@ -14258,9 +14258,9 @@ namespace djack.RogueSurvivor.Engine
               }
             }
           }
-          else if (map.Lighting != Lighting._FIRST)
+          else if (map.Lighting != Lighting.DARKNESS)
           {
-            map.Lighting = Lighting._FIRST;
+            map.Lighting = Lighting.DARKNESS;
             if (this.m_Player.Location.Map == map)
             {
               this.ClearMessages();
@@ -14289,7 +14289,7 @@ namespace djack.RogueSurvivor.Engine
               this.DoOpenSubwayGates(map);
             }
           }
-          else if (map.Lighting != Lighting._FIRST)
+          else if (map.Lighting != Lighting.DARKNESS)
           {
             if (this.m_Player.Location.Map == map)
             {
@@ -14298,7 +14298,7 @@ namespace djack.RogueSurvivor.Engine
               this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
               this.RedrawPlayScreen();
             }
-            map.Lighting = Lighting._FIRST;
+            map.Lighting = Lighting.DARKNESS;
             this.DoCloseSubwayGates(map);
           }
         }
@@ -14345,7 +14345,7 @@ namespace djack.RogueSurvivor.Engine
         }
         else
         {
-          if (map.Lighting == Lighting._FIRST)
+          if (map.Lighting == Lighting.DARKNESS)
             return;
           if (this.m_Player.Location.Map == map)
           {
@@ -14445,26 +14445,22 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoHospitalPowerOff()
     {
-      this.m_Session.UniqueMaps.Hospital_Admissions.TheMap.Lighting = Lighting._FIRST;
-      this.m_Session.UniqueMaps.Hospital_Offices.TheMap.Lighting = Lighting._FIRST;
-      this.m_Session.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting._FIRST;
-      this.m_Session.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting._FIRST;
-      this.m_Session.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting._FIRST;
-      Map theMap = this.m_Session.UniqueMaps.Hospital_Storage.TheMap;
-      foreach (MapObject mapObject in theMap.MapObjects)
-      {
-        if (mapObject.ImageID == "MapObjects\\gate_open")
-        {
+      m_Session.UniqueMaps.Hospital_Admissions.TheMap.Lighting = Lighting.DARKNESS;
+      m_Session.UniqueMaps.Hospital_Offices.TheMap.Lighting = Lighting.DARKNESS;
+      m_Session.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting.DARKNESS;
+      m_Session.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.DARKNESS;
+      m_Session.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.DARKNESS;
+      Map theMap = m_Session.UniqueMaps.Hospital_Storage.TheMap;
+      foreach (MapObject mapObject in theMap.MapObjects) {
+        if (mapObject.ImageID == "MapObjects\\gate_open") {
           mapObject.IsWalkable = false;
           mapObject.ImageID = "MapObjects\\gate_closed";
           Actor actorAt = theMap.GetActorAt(mapObject.Location.Position);
-          if (actorAt != null)
-          {
-            this.KillActor((Actor) null, actorAt, "crushed");
-            if (this.m_Player.Location.Map == theMap)
-            {
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("Someone got crushed between the closing gate!", theMap.LocalTime.TurnCounter, Color.Red));
-              this.RedrawPlayScreen();
+          if (actorAt != null) {
+            KillActor((Actor) null, actorAt, "crushed");
+            if (m_Player.Location.Map == theMap) {
+              AddMessage(new Data.Message("Someone got crushed between the closing gate!", theMap.LocalTime.TurnCounter, Color.Red));
+              RedrawPlayScreen();
             }
           }
         }
