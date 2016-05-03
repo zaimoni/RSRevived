@@ -2363,11 +2363,6 @@ namespace djack.RogueSurvivor.Engine
       actor.HitPoints = Math.Min(m_Rules.ActorMaxHPs(actor), actor.HitPoints + hpRegen);
     }
 
-    private void RegenActorSleep(Actor actor, int sleepRegen)
-    {
-      actor.SleepPoints = Math.Min(m_Rules.ActorMaxSleep(actor), actor.SleepPoints + sleepRegen);
-    }
-
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
