@@ -442,21 +442,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemLight GetFirstLight(Predicate<ItemLight> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in this.m_Actor.Inventory.Items) {
-        ItemLight itemLight = obj as ItemLight;
-        if (null != itemLight && (fn == null || fn(itemLight))) return itemLight;
-      }
-      return null;
-    }
-
     protected ActorAction BehaviorEquipLight(RogueGame game)
     {
       ItemLight tmp = GetEquippedLight();
       if (null != tmp && !tmp.IsUseless) return null;
-      tmp = GetFirstLight((Predicate<ItemLight>)(it =>
+      tmp = m_Actor.GetFirstMatching<ItemLight>((Predicate<ItemLight>)(it =>
       {
           if (!it.IsUseless) return !IsItemTaboo(it);
           return false;
@@ -476,16 +466,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected Item GetFirstTracker(Predicate<ItemTracker> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemTracker itemTracker = obj as ItemTracker;
-        if (itemTracker != null && (fn == null || fn(itemTracker))) return obj;
-      }
-      return null;
-    }
-
     protected ActorAction BehaviorEquipCellPhone(RogueGame game)
     {
       bool wantCellPhone = false;
@@ -501,7 +481,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionUnequipItem(m_Actor, game, equippedCellPhone);
       }
       if (!wantCellPhone) return null;
-      Item firstTracker = GetFirstTracker((Predicate<ItemTracker>) (it =>
+      ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it =>
       {
         if (it.CanTrackFollowersOrLeader && 0 < it.Batteries)
           return !IsItemTaboo(it);
@@ -512,22 +492,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemGrenade GetFirstGrenade(Predicate<Item> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemGrenade && (fn == null || fn(obj))) return obj as ItemGrenade;
-      }
-      return null;
-    }
-
     protected ActorAction BehaviorThrowGrenade(RogueGame game, HashSet<Point> fov, List<Percept> enemies)
     {
       if (enemies == null || enemies.Count == 0) return null;
       if (enemies.Count < 3) return null;
-      Inventory inventory = m_Actor.Inventory;
-      if (inventory == null || inventory.IsEmpty) return null;
-      ItemGrenade firstGrenade = GetFirstGrenade((Predicate<Item>) (it => !IsItemTaboo(it)));
+      ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>((Predicate<ItemGrenade>) (it => !IsItemTaboo(it)));
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model as ItemGrenadeModel;
       int maxRange = game.Rules.ActorMaxThrowRange(this.m_Actor, itemGrenadeModel.MaxThrowDistance);

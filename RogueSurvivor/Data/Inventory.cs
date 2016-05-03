@@ -266,6 +266,15 @@ namespace djack.RogueSurvivor.Data
       return (Item) null;
     }
 
+    public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
+    {
+      foreach (Item obj in m_Items) {
+        _T_ tmp = obj as _T_;
+        if (tmp != null && (fn == null || fn(tmp))) return tmp;
+      }
+      return null;
+    }
+
     public int CountItemsMatching(Predicate<Item> fn)
     {
       int num = 0;

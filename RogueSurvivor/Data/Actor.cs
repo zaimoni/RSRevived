@@ -987,6 +987,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     // inventory stats
+    public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return null;
+      return m_Inventory.GetFirstMatching<_T_>(fn);
+    }
+
     public bool HasItemOfModel(ItemModel model)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
