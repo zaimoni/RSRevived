@@ -4346,7 +4346,7 @@ namespace djack.RogueSurvivor.Engine
         string[] lines = this.DescribeItemLong(inventoryItem, isPlayerInventory);
         int num = 1 + this.FindLongestLine(lines);
         int x = itemPos.X - 7 * num;
-        int y = itemPos.Y + 32;
+        int y = itemPos.Y + TILE_SIZE;
         this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, this.POPUP_FILLCOLOR, new Point(x, y)));
         if (mouseButtons.HasValue)
         {
@@ -4470,7 +4470,7 @@ namespace djack.RogueSurvivor.Engine
         string[] lines = this.DescribeCorpseLong(corpse, true);
         int num = 1 + this.FindLongestLine(lines);
         int x = corpsePos.X - 7 * num;
-        int y = corpsePos.Y + 32;
+        int y = corpsePos.Y + TILE_SIZE;
         this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, this.POPUP_FILLCOLOR, new Point(x, y)));
         if (mouseButtons.HasValue)
         {
@@ -11630,7 +11630,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawTileRectangle(Point mapPosition, Color color)
     {
-      this.m_UI.UI_DrawRect(color, new Rectangle(this.MapToScreen(mapPosition), new Size(32, 32)));
+      this.m_UI.UI_DrawRect(color, new Rectangle(this.MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
     }
 
     public void DrawMapObject(MapObject mapObj, Point screen, Color tint)
@@ -11920,24 +11920,19 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       int gx1 = gx;
       int gy1 = gy;
-      for (int index = 0; index < slots; ++index)
-      {
-        this.m_UI.UI_DrawImage("Items\\itemslot", gx1, gy1);
-        gx1 += 32;
+      for (int index = 0; index < slots; ++index) {
+        m_UI.UI_DrawImage("Items\\itemslot", gx1, gy1);
+        gx1 += TILE_SIZE;
       }
-      if (list == null)
-        return;
+      if (list == null) return;
       int gx2 = gx;
       int gy2 = gy;
       int num3 = 0;
-      foreach (Corpse c in list)
-      {
-        if (c.IsDragged)
-          this.m_UI.UI_DrawImage("corpse_dragged", gx2, gy2);
-        this.DrawCorpse(c, gx2, gy2, Color.White);
-        if (++num3 >= slots)
-          break;
-        gx2 += 32;
+      foreach (Corpse c in list) {
+        if (c.IsDragged) m_UI.UI_DrawImage("corpse_dragged", gx2, gy2);
+        DrawCorpse(c, gx2, gy2, Color.White);
+        if (++num3 >= slots) break;
+        gx2 += TILE_SIZE;
       }
     }
 
@@ -11985,7 +11980,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawMapIcon(Point position, string imageID)
     {
-      this.m_UI.UI_DrawImage(imageID, position.X * 32, position.Y * 32);
+      this.m_UI.UI_DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
@@ -11996,12 +11991,11 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy, Color barColor)
     {
       int x = gx + 4;
-      int y = gy + 32 - 4;
+      int y = gy + TILE_SIZE - 4;
       int width = (int) (20.0 * (double) hitPoints / (double) maxHitPoints);
       this.m_UI.UI_FillRect(Color.Black, new Rectangle(x, y, 20, 4));
-      if (width <= 0)
-        return;
-      this.m_UI.UI_FillRect(barColor, new Rectangle(x + 1, y + 1, width, 2));
+      if (width <= 0) return;
+      m_UI.UI_FillRect(barColor, new Rectangle(x + 1, y + 1, width, 2));
     }
 
     public void DrawBar(int value, int previousValue, int maxValue, int refValue, int maxWidth, int height, int gx, int gy, Color fillColor, Color lossFillColor, Color gainFillColor, Color emptyColor)
@@ -12300,11 +12294,11 @@ namespace djack.RogueSurvivor.Engine
         if (++num1 >= slotsPerLine)
         {
           num1 = 0;
-          gy1 += 32;
+          gy1 += TILE_SIZE;
           gx1 = gx;
         }
         else
-          gx1 += 32;
+          gx1 += TILE_SIZE;
       }
       if (inventory == null)
         return;
@@ -12363,25 +12357,24 @@ namespace djack.RogueSurvivor.Engine
             this.m_UI.UI_DrawImage("Icons\\trap_activated", gx2, gy2);
         }
         else if (it is ItemEntertainment && this.m_Player != null && this.m_Player.IsBoredOf(it))
-          this.m_UI.UI_DrawImage("Icons\\boring_item", gx2, gy2);
+          m_UI.UI_DrawImage("Icons\\boring_item", gx2, gy2);
         this.DrawItem(it, gx2, gy2);
         if (++num2 >= slotsPerLine)
         {
           num2 = 0;
-          gy2 += 32;
+          gy2 += TILE_SIZE;
           gx2 = gx;
         }
         else
-          gx2 += 32;
+          gx2 += TILE_SIZE;
       }
-      if (!drawSlotsNumbers)
-        return;
+      if (!drawSlotsNumbers) return;
       int gx3 = gx + 4;
-      int gy3 = gy + 32;
+      int gy3 = gy + TILE_SIZE;
       for (int index = 0; index < inventory.MaxCapacity; ++index)
       {
         this.m_UI.UI_DrawString(Color.White, (index + 1).ToString(), gx3, gy3, new Color?());
-        gx3 += 32;
+        gx3 += TILE_SIZE;
       }
     }
 
@@ -12392,30 +12385,25 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawItem(Item it, int gx, int gy, Color tint)
     {
-      this.m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
+      m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
       if (it.Model.IsStackable)
       {
         string text = string.Format("{0}", (object) it.Quantity);
-        int gx1 = gx + 32 - 10;
+        int gx1 = gx + TILE_SIZE - 10;
         if (it.Quantity > 100)
           gx1 -= 10;
         else if (it.Quantity > 10)
           gx1 -= 4;
-        this.m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
-        this.m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
+        m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
+        m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
       }
-      if (!(it is ItemTrap))
-        return;
+      if (!(it is ItemTrap)) return;
       ItemTrap itemTrap = it as ItemTrap;
-      if (itemTrap.IsTriggered)
-      {
-        this.m_UI.UI_DrawImage("Icons\\trap_triggered", gx, gy);
-      }
-      else
-      {
-        if (!itemTrap.IsActivated)
-          return;
-        this.m_UI.UI_DrawImage("Icons\\trap_activated", gx, gy);
+      if (itemTrap.IsTriggered) {
+        m_UI.UI_DrawImage("Icons\\trap_triggered", gx, gy);
+      } else {
+        if (!itemTrap.IsActivated) return;
+        m_UI.UI_DrawImage("Icons\\trap_activated", gx, gy);
       }
     }
 
@@ -12464,7 +12452,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Point MapToScreen(int x, int y)
     {
-      return new Point((x - this.m_MapViewRect.Left) * 32, (y - this.m_MapViewRect.Top) * 32);
+      return new Point((x - this.m_MapViewRect.Left) * TILE_SIZE, (y - this.m_MapViewRect.Top) * TILE_SIZE);
     }
 
     private Point ScreenToMap(Point screenPosition)
@@ -12474,7 +12462,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Point ScreenToMap(int gx, int gy)
     {
-      return new Point(this.m_MapViewRect.Left + gx / 32, this.m_MapViewRect.Top + gy / 32);
+      return new Point(this.m_MapViewRect.Left + gx / TILE_SIZE, this.m_MapViewRect.Top + gy / TILE_SIZE);
     }
 
     private Point MouseToMap(Point mousePosition)
@@ -12493,12 +12481,12 @@ namespace djack.RogueSurvivor.Engine
     {
       mouseX = (int) ((double) mouseX / (double) this.m_UI.UI_GetCanvasScaleX());
       mouseY = (int) ((double) mouseY / (double) this.m_UI.UI_GetCanvasScaleY());
-      return new Point((mouseX - invX) / 32, (mouseY - invY) / 32);
+      return new Point((mouseX - invX) / TILE_SIZE, (mouseY - invY) / TILE_SIZE);
     }
 
     private Point InventorySlotToScreen(int invX, int invY, int slotX, int slotY)
     {
-      return new Point(invX + slotX * 32, invY + slotY * 32);
+      return new Point(invX + slotX * TILE_SIZE, invY + slotY * TILE_SIZE);
     }
 
     private bool IsVisibleToPlayer(Location location)
@@ -13449,9 +13437,8 @@ namespace djack.RogueSurvivor.Engine
 
     private DistrictKind GenerateDistrictKind(World world, int gridX, int gridY)
     {
-      if (gridX == 0 && gridY == 0)
-        return DistrictKind.BUSINESS;
-      return (DistrictKind) this.m_Rules.Roll(0, 5);
+      if (gridX == 0 && gridY == 0) return DistrictKind.BUSINESS;
+      return (DistrictKind) m_Rules.Roll(0, (int) DistrictKind._COUNT);
     }
 
     private Map GenerateDistrictEntryMap(World world, District district, Point policeStationDistrictPos, Point hospitalDistrictPos)
