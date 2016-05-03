@@ -22,8 +22,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (target == null)
         throw new ArgumentNullException("target");
-      this.m_Target = target;
-      this.m_Mode = mode;
+            m_Target = target;
+            m_Mode = mode;
     }
 
     public ActionRangedAttack(Actor actor, RogueGame game, Actor target)
@@ -33,13 +33,13 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      this.m_LoF.Clear();
-      return this.m_Game.Rules.CanActorFireAt(this.m_Actor, this.m_Target, this.m_LoF, out this.m_FailReason);
+            m_LoF.Clear();
+      return m_Game.Rules.CanActorFireAt(m_Actor, m_Target, m_LoF, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoSingleRangedAttack(this.m_Actor, this.m_Target, this.m_LoF, this.m_Mode);
+            m_Game.DoSingleRangedAttack(m_Actor, m_Target, m_LoF, m_Mode);
     }
   }
 }

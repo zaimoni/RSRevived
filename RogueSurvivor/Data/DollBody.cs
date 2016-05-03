@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_IsMale;
+        return m_IsMale;
       }
     }
 
@@ -28,14 +28,14 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Speed;
+        return m_Speed;
       }
     }
 
     public DollBody(bool isMale, int speed)
     {
-      this.m_IsMale = isMale;
-      this.m_Speed = speed;
+            m_IsMale = isMale;
+            m_Speed = speed;
     }
   }
 }

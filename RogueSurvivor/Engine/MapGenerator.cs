@@ -20,34 +20,34 @@ namespace djack.RogueSurvivor.Engine
     {
       if (rules == null)
         throw new ArgumentNullException("rules");
-      this.m_Rules = rules;
+            m_Rules = rules;
     }
 
     public abstract Map Generate(int seed);
 
     public void TileFill(Map map, TileModel model)
     {
-      this.TileFill(map, model, (Action<Tile, TileModel, int, int>) null);
+            TileFill(map, model, (Action<Tile, TileModel, int, int>) null);
     }
 
     public void TileFill(Map map, TileModel model, Action<Tile, TileModel, int, int> decoratorFn)
     {
-      this.TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
+            TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
     }
 
     public void TileFill(Map map, TileModel model, Rectangle rect)
     {
-      this.TileFill(map, model, rect, (Action<Tile, TileModel, int, int>) null);
+            TileFill(map, model, rect, (Action<Tile, TileModel, int, int>) null);
     }
 
     public void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, int, int> decoratorFn)
     {
-      this.TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
+            TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
     }
 
     public void TileFill(Map map, TileModel model, int left, int top, int width, int height)
     {
-      this.TileFill(map, model, left, top, width, height, (Action<Tile, TileModel, int, int>) null);
+            TileFill(map, model, left, top, width, height, (Action<Tile, TileModel, int, int>) null);
     }
 
     public void TileFill(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn)
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileHLine(Map map, TileModel model, int left, int top, int width)
     {
-      this.TileHLine(map, model, left, top, width, (Action<Tile, TileModel, int, int>) null);
+            TileHLine(map, model, left, top, width, (Action<Tile, TileModel, int, int>) null);
     }
 
     public void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, int, int> decoratorFn)
@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileVLine(Map map, TileModel model, int left, int top, int height)
     {
-      this.TileVLine(map, model, left, top, height, (Action<Tile, TileModel, int, int>) null);
+            TileVLine(map, model, left, top, height, (Action<Tile, TileModel, int, int>) null);
     }
 
     public void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, int, int> decoratorFn)
@@ -110,12 +110,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileRectangle(Map map, TileModel model, Rectangle rect)
     {
-      this.TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
+            TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
     }
 
     public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height)
     {
-      this.TileRectangle(map, model, left, top, width, height, (Action<Tile, TileModel, int, int>) null);
+            TileRectangle(map, model, left, top, width, height, (Action<Tile, TileModel, int, int>) null);
     }
 
     public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn)
@@ -124,10 +124,10 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("map");
       if (model == null)
         throw new ArgumentNullException("model");
-      this.TileHLine(map, model, left, top, width, decoratorFn);
-      this.TileHLine(map, model, left, top + height - 1, width, decoratorFn);
-      this.TileVLine(map, model, left, top, height, decoratorFn);
-      this.TileVLine(map, model, left + width - 1, top, height, decoratorFn);
+            TileHLine(map, model, left, top, width, decoratorFn);
+            TileHLine(map, model, left, top + height - 1, width, decoratorFn);
+            TileVLine(map, model, left, top, height, decoratorFn);
+            TileVLine(map, model, left + width - 1, top, height, decoratorFn);
     }
 
     public Point DigUntil(Map map, TileModel model, Point startPos, Direction digDirection, Predicate<Point> stopFn)
@@ -189,17 +189,17 @@ namespace djack.RogueSurvivor.Engine
 
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor)
     {
-      return this.ActorPlace(roller, maxTries, map, actor, (Predicate<Point>) null);
+      return ActorPlace(roller, maxTries, map, actor, (Predicate<Point>) null);
     }
 
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, int left, int top, int width, int height)
     {
-      return this.ActorPlace(roller, maxTries, map, actor, left, top, width, height, (Predicate<Point>) null);
+      return ActorPlace(roller, maxTries, map, actor, left, top, width, height, (Predicate<Point>) null);
     }
 
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, Predicate<Point> goodPositionFn)
     {
-      return this.ActorPlace(roller, maxTries, map, actor, 0, 0, map.Width, map.Height, goodPositionFn);
+      return ActorPlace(roller, maxTries, map, actor, 0, 0, map.Width, map.Height, goodPositionFn);
     }
 
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, int left, int top, int width, int height, Predicate<Point> goodPositionFn)
@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Engine
       {
         position.X = roller.Roll(left, left + width);
         position.Y = roller.Roll(top, top + height);
-        if (this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y) && (goodPositionFn == null || goodPositionFn(position)))
+        if (m_Rules.IsWalkableFor(actor, map, position.X, position.Y) && (goodPositionFn == null || goodPositionFn(position)))
         {
           map.PlaceActorAt(actor, position);
           return true;
@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
-      this.MapObjectFill(map, rect.Left, rect.Top, rect.Width, rect.Height, createFn);
+            MapObjectFill(map, rect.Left, rect.Top, rect.Width, rect.Height, createFn);
     }
 
     public void MapObjectFill(Map map, int left, int top, int width, int height, Func<Point, MapObject> createFn)
@@ -252,7 +252,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
     {
-      this.MapObjectPlaceInGoodPosition(map, rect.Left, rect.Top, rect.Width, rect.Height, isGoodPosFn, roller, createFn);
+            MapObjectPlaceInGoodPosition(map, rect.Left, rect.Top, rect.Width, rect.Height, isGoodPosFn, roller, createFn);
     }
 
     public void MapObjectPlaceInGoodPosition(Map map, int left, int top, int width, int height, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
@@ -349,22 +349,22 @@ namespace djack.RogueSurvivor.Engine
 
     public int CountAdjWalls(Map map, int x, int y)
     {
-      return this.CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => !map.GetTileAt(pt.X, pt.Y).Model.IsWalkable));
+      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => !map.GetTileAt(pt.X, pt.Y).Model.IsWalkable));
     }
 
     public int CountAdjWalls(Map map, Point p)
     {
-      return this.CountAdjWalls(map, p.X, p.Y);
+      return CountAdjWalls(map, p.X, p.Y);
     }
 
     public int CountAdjWalkables(Map map, int x, int y)
     {
-      return this.CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetTileAt(pt.X, pt.Y).Model.IsWalkable));
+      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetTileAt(pt.X, pt.Y).Model.IsWalkable));
     }
 
     public int CountAdjDoors(Map map, int x, int y)
     {
-      return this.CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetMapObjectAt(pt.X, pt.Y) is DoorWindow));
+      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetMapObjectAt(pt.X, pt.Y) is DoorWindow));
     }
 
     public void PlaceIf(Map map, int x, int y, TileModel floor, Func<int, int, bool> predicateFn, Func<int, int, MapObject> createFn)
@@ -375,12 +375,12 @@ namespace djack.RogueSurvivor.Engine
       if (mapObj == null)
         return;
       map.SetTileModelAt(x, y, floor);
-      this.MapObjectPlace(map, x, y, mapObj);
+            MapObjectPlace(map, x, y, mapObj);
     }
 
     public bool IsAccessible(Map map, int x, int y)
     {
-      return this.CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.IsWalkable(pt.X, pt.Y))) >= 6;
+      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.IsWalkable(pt.X, pt.Y))) >= 6;
     }
 
     public bool HasNoObjectAt(Map map, int x, int y)

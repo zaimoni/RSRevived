@@ -28,11 +28,11 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(model is ItemMedicineModel))
         throw new ArgumentException("model is not a MedecineModel");
       ItemMedicineModel itemMedicineModel = model as ItemMedicineModel;
-      this.Healing = itemMedicineModel.Healing;
-      this.StaminaBoost = itemMedicineModel.StaminaBoost;
-      this.SleepBoost = itemMedicineModel.SleepBoost;
-      this.InfectionCure = itemMedicineModel.InfectionCure;
-      this.SanityCure = itemMedicineModel.SanityCure;
+            Healing = itemMedicineModel.Healing;
+            StaminaBoost = itemMedicineModel.StaminaBoost;
+            SleepBoost = itemMedicineModel.SleepBoost;
+            InfectionCure = itemMedicineModel.InfectionCure;
+            SanityCure = itemMedicineModel.SanityCure;
     }
   }
 }

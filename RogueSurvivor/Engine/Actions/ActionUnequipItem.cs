@@ -18,17 +18,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (it == null)
         throw new ArgumentNullException("item");
-      this.m_Item = it;
+            m_Item = it;
     }
 
     public override bool IsLegal()
     {
-      return Rules.CanActorUnequipItem(this.m_Actor, this.m_Item, out this.m_FailReason);
+      return Rules.CanActorUnequipItem(m_Actor, m_Item, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoUnequipItem(this.m_Actor, this.m_Item);
+            m_Game.DoUnequipItem(m_Actor, m_Item);
     }
   }
 }

@@ -20,11 +20,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Color;
+        return m_Color;
       }
       set
       {
-        this.m_Color = value;
+                m_Color = value;
       }
     }
 
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Turn;
+        return m_Turn;
       }
     }
 

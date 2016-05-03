@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_MaxSprayQuantity;
+        return m_MaxSprayQuantity;
       }
     }
 
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Strength;
+        return m_Strength;
       }
     }
 
@@ -34,16 +34,16 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Odor;
+        return m_Odor;
       }
     }
 
     public ItemSprayScentModel(string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength)
       : base(aName, theNames, imageID)
     {
-      this.m_MaxSprayQuantity = sprayQuantity;
-      this.m_Odor = odor;
-      this.m_Strength = strength;
+            m_MaxSprayQuantity = sprayQuantity;
+            m_Odor = odor;
+            m_Strength = strength;
     }
   }
 }

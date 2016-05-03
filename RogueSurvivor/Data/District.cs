@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_WorldPosition;
+        return m_WorldPosition;
       }
     }
 
@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Kind;
+        return m_Kind;
       }
     }
 
@@ -41,11 +41,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Name;
+        return m_Name;
       }
       set
       {
-        this.m_Name = value;
+                m_Name = value;
       }
     }
 
@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Map>) this.m_Maps;
+        return (IEnumerable<Map>)m_Maps;
       }
     }
 
@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Maps.Count;
+        return m_Maps.Count;
       }
     }
 
@@ -69,16 +69,16 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_EntryMap;
+        return m_EntryMap;
       }
       set
       {
-        if (this.m_EntryMap != null)
-          this.RemoveMap(this.m_EntryMap);
-        this.m_EntryMap = value;
+        if (m_EntryMap != null)
+                    RemoveMap(m_EntryMap);
+                m_EntryMap = value;
         if (value == null)
           return;
-        this.AddMap(value);
+                AddMap(value);
       }
     }
 
@@ -86,16 +86,16 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_SewersMap;
+        return m_SewersMap;
       }
       set
       {
-        if (this.m_SewersMap != null)
-          this.RemoveMap(this.m_SewersMap);
-        this.m_SewersMap = value;
+        if (m_SewersMap != null)
+                    RemoveMap(m_SewersMap);
+                m_SewersMap = value;
         if (value == null)
           return;
-        this.AddMap(value);
+                AddMap(value);
       }
     }
 
@@ -103,16 +103,16 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_SubwayMap;
+        return m_SubwayMap;
       }
       set
       {
-        if (this.m_SubwayMap != null)
-          this.RemoveMap(this.m_SubwayMap);
-        this.m_SubwayMap = value;
+        if (m_SubwayMap != null)
+                    RemoveMap(m_SubwayMap);
+                m_SubwayMap = value;
         if (value == null)
           return;
-        this.AddMap(value);
+                AddMap(value);
       }
     }
 
@@ -120,54 +120,54 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_SubwayMap != null;
+        return m_SubwayMap != null;
       }
     }
 
     public District(Point worldPos, DistrictKind kind)
     {
-      this.m_WorldPosition = worldPos;
-      this.m_Kind = kind;
+            m_WorldPosition = worldPos;
+            m_Kind = kind;
     }
 
     protected void AddMap(Map map)
     {
       if (map == null)
         throw new ArgumentNullException("map");
-      if (this.m_Maps.Contains(map))
+      if (m_Maps.Contains(map))
         return;
       map.District = this;
-      this.m_Maps.Add(map);
+            m_Maps.Add(map);
     }
 
     public void AddUniqueMap(Map map)
     {
-      this.AddMap(map);
+            AddMap(map);
     }
 
     public Map GetMap(int index)
     {
-      return this.m_Maps[index];
+      return m_Maps[index];
     }
 
     protected void RemoveMap(Map map)
     {
       if (map == null)
         throw new ArgumentNullException("map");
-      this.m_Maps.Remove(map);
+            m_Maps.Remove(map);
       map.District = (District) null;
     }
 
     public void OptimizeBeforeSaving()
     {
-      this.m_Maps.TrimExcess();
-      foreach (Map mMap in this.m_Maps)
+            m_Maps.TrimExcess();
+      foreach (Map mMap in m_Maps)
         mMap.OptimizeBeforeSaving();
     }
 
     public override int GetHashCode()
     {
-      return this.m_WorldPosition.GetHashCode();
+      return m_WorldPosition.GetHashCode();
     }
   }
 }

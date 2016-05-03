@@ -18,13 +18,13 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Batteries;
+        return m_Batteries;
       }
       set
       {
         if (value < 0)
           value = 0;
-        this.m_Batteries = Math.Min(value, (this.Model as ItemLightModel).MaxBatteries);
+                m_Batteries = Math.Min(value, (Model as ItemLightModel).MaxBatteries);
       }
     }
 
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Model as ItemLightModel).FovBonus;
+        return (Model as ItemLightModel).FovBonus;
       }
     }
 
@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Batteries >= (this.Model as ItemLightModel).MaxBatteries;
+        return m_Batteries >= (Model as ItemLightModel).MaxBatteries;
       }
     }
 
@@ -48,9 +48,9 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        if (this.IsEquipped && this.Batteries > 0)
+        if (IsEquipped && Batteries > 0)
           return base.ImageID;
-        return (this.Model as ItemLightModel).OutOfBatteriesImageID;
+        return (Model as ItemLightModel).OutOfBatteriesImageID;
       }
     }
 
@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (!(model is ItemLightModel))
         throw new ArgumentException("model is not a LightModel");
-      this.Batteries = (model as ItemLightModel).MaxBatteries;
+            Batteries = (model as ItemLightModel).MaxBatteries;
     }
 
     public void Recharge()

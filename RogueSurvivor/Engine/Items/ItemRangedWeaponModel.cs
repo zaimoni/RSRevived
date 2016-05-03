@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.Attack.Kind == AttackKind.FIREARM;
+        return Attack.Kind == AttackKind.FIREARM;
       }
     }
 
@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.Attack.Kind == AttackKind.BOW;
+        return Attack.Kind == AttackKind.BOW;
       }
     }
 
@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_MaxAmmo;
+        return m_MaxAmmo;
       }
     }
 
@@ -41,15 +41,15 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_AmmoType;
+        return m_AmmoType;
       }
     }
 
     public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType)
       : base(aName, theNames, imageID, attack)
     {
-      this.m_MaxAmmo = maxAmmo;
-      this.m_AmmoType = ammoType;
+            m_MaxAmmo = maxAmmo;
+            m_AmmoType = ammoType;
     }
   }
 }

@@ -48,8 +48,8 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (!(model is ItemFoodModel))
         throw new ArgumentException("model is not a FoodModel");
-      this.Nutrition = (model as ItemFoodModel).Nutrition;
-      this.IsPerishable = false;
+            Nutrition = (model as ItemFoodModel).Nutrition;
+            IsPerishable = false;
     }
 
     public ItemFood(ItemModel model, int bestBefore)
@@ -57,9 +57,9 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (!(model is ItemFoodModel))
         throw new ArgumentException("model is not a FoodModel");
-      this.Nutrition = (model as ItemFoodModel).Nutrition;
-      this.BestBefore = new WorldTime(bestBefore);
-      this.IsPerishable = true;
+            Nutrition = (model as ItemFoodModel).Nutrition;
+            BestBefore = new WorldTime(bestBefore);
+            IsPerishable = true;
     }
   }
 }

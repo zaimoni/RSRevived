@@ -33,11 +33,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Side;
+        return m_Side;
       }
       set
       {
-        this.m_Side = value;
+                m_Side = value;
       }
     }
 
@@ -45,11 +45,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_StartScoringTurn;
+        return m_StartScoringTurn;
       }
       set
       {
-        this.m_StartScoringTurn = value;
+                m_StartScoringTurn = value;
       }
     }
 
@@ -57,11 +57,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ReincarnationNumber;
+        return m_ReincarnationNumber;
       }
       set
       {
-        this.m_ReincarnationNumber = value;
+                m_ReincarnationNumber = value;
       }
     }
 
@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (IEnumerable<Scoring.GameEventData>) this.m_Events;
+        return (IEnumerable<Scoring.GameEventData>)m_Events;
       }
     }
 
@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Events.Count == 0;
+        return m_Events.Count == 0;
       }
     }
 
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (IEnumerable<Scoring.KillData>) this.m_Kills.Values;
+        return (IEnumerable<Scoring.KillData>)m_Kills.Values;
       }
     }
 
@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Kills.Count == 0;
+        return m_Kills.Count == 0;
       }
     }
 
@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (IEnumerable<int>) this.m_Sightings;
+        return (IEnumerable<int>)m_Sightings;
       }
     }
 
@@ -119,7 +119,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_FollowersWhenDied;
+        return m_FollowersWhenDied;
       }
     }
 
@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Killer;
+        return m_Killer;
       }
     }
 
@@ -135,7 +135,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ZombifiedPlayer;
+        return m_ZombifiedPlayer;
       }
     }
 
@@ -143,7 +143,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_KillPoints;
+        return m_KillPoints;
       }
     }
 
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return 2 * (this.TurnsSurvived - this.m_StartScoringTurn);
+        return 2 * (TurnsSurvived - m_StartScoringTurn);
       }
     }
 
@@ -162,8 +162,8 @@ namespace djack.RogueSurvivor.Engine
         int num = 0;
         for (int index = 0; index < 8; ++index)
         {
-          if (this.HasCompletedAchievement((Achievement.IDs) index))
-            num += this.GetAchievement((Achievement.IDs) index).ScoreValue;
+          if (HasCompletedAchievement((Achievement.IDs) index))
+            num += GetAchievement((Achievement.IDs) index).ScoreValue;
         }
         return num;
       }
@@ -173,11 +173,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_DifficultyRating / (float) (1 + this.m_ReincarnationNumber);
+        return m_DifficultyRating / (float) (1 + m_ReincarnationNumber);
       }
       set
       {
-        this.m_DifficultyRating = value;
+                m_DifficultyRating = value;
       }
     }
 
@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (int) ((double) this.DifficultyRating * (double) (this.m_KillPoints + this.SurvivalPoints + this.AchievementPoints));
+        return (int) ((double)DifficultyRating * (double) (m_KillPoints + SurvivalPoints + AchievementPoints));
       }
     }
 
@@ -195,17 +195,17 @@ namespace djack.RogueSurvivor.Engine
 
     public Scoring()
     {
-      this.RealLifePlayingTime = new TimeSpan(0L);
-      this.Achievements = new Achievement[8];
-      this.InitAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]
+            RealLifePlayingTime = new TimeSpan(0L);
+            Achievements = new Achievement[8];
+            InitAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]
       {
         "Now try not to die too soon..."
       }, GameMusics.HEYTHERE, 1000));
-      this.InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
+            InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
       {
         "Now, where is the light switch?..."
       }, GameMusics.CHAR_UNDERGROUND_FACILITY, 2000));
-      this.InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
+            InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
       {
         "Personal message from the game developper : ",
         "Sorry, the rest of the plot is missing.",
@@ -213,23 +213,23 @@ namespace djack.RogueSurvivor.Engine
         "Enjoy the rest of the game.",
         "See you in a next game version :)"
       }, GameMusics.CHAR_UNDERGROUND_FACILITY, 3000));
-      this.InitAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, new Achievement(Achievement.IDs.KILLED_THE_SEWERS_THING, "Killed The Sewers Thing", "Did not kill the XXX", new string[1]
+            InitAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, new Achievement(Achievement.IDs.KILLED_THE_SEWERS_THING, "Killed The Sewers Thing", "Did not kill the XXX", new string[1]
       {
         "One less Thing to worry about!"
       }, GameMusics.HEYTHERE, 1000));
-      this.InitAchievement(Achievement.IDs._FIRST, new Achievement(Achievement.IDs._FIRST, "Reached Day 7", "Did not reach XXX", new string[1]
+            InitAchievement(Achievement.IDs._FIRST, new Achievement(Achievement.IDs._FIRST, "Reached Day 7", "Did not reach XXX", new string[1]
       {
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
-      this.InitAchievement(Achievement.IDs.REACHED_DAY_14, new Achievement(Achievement.IDs.REACHED_DAY_14, "Reached Day 14", "Did not reach XXX", new string[1]
+            InitAchievement(Achievement.IDs.REACHED_DAY_14, new Achievement(Achievement.IDs.REACHED_DAY_14, "Reached Day 14", "Did not reach XXX", new string[1]
       {
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
-      this.InitAchievement(Achievement.IDs.REACHED_DAY_21, new Achievement(Achievement.IDs.REACHED_DAY_21, "Reached Day 21", "Did not reach XXX", new string[1]
+            InitAchievement(Achievement.IDs.REACHED_DAY_21, new Achievement(Achievement.IDs.REACHED_DAY_21, "Reached Day 21", "Did not reach XXX", new string[1]
       {
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
-      this.InitAchievement(Achievement.IDs.REACHED_DAY_28, new Achievement(Achievement.IDs.REACHED_DAY_28, "Reached Day 28", "Did not reach XXX", new string[1]
+            InitAchievement(Achievement.IDs.REACHED_DAY_28, new Achievement(Achievement.IDs.REACHED_DAY_28, "Reached Day 28", "Did not reach XXX", new string[1]
       {
         "Is this the end?"
       }, GameMusics.HEYTHERE, 1000));
@@ -237,39 +237,39 @@ namespace djack.RogueSurvivor.Engine
 
     public void StartNewLife(int gameTurn)
     {
-      ++this.m_ReincarnationNumber;
-      foreach (Achievement achievement in this.Achievements)
+      ++m_ReincarnationNumber;
+      foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
-      this.CompletedAchievementsCount = 0;
-      this.m_VisitedMaps.Clear();
-      this.m_Events.Clear();
-      this.m_Sightings.Clear();
-      this.m_Kills.Clear();
-      this.m_Killer = (Actor) null;
-      this.m_FollowersWhenDied = (List<Actor>) null;
-      this.m_ZombifiedPlayer = (Actor) null;
-      this.m_KillPoints = 0;
-      this.m_StartScoringTurn = gameTurn;
+            CompletedAchievementsCount = 0;
+            m_VisitedMaps.Clear();
+            m_Events.Clear();
+            m_Sightings.Clear();
+            m_Kills.Clear();
+            m_Killer = (Actor) null;
+            m_FollowersWhenDied = (List<Actor>) null;
+            m_ZombifiedPlayer = (Actor) null;
+            m_KillPoints = 0;
+            m_StartScoringTurn = gameTurn;
     }
 
     public bool HasCompletedAchievement(Achievement.IDs id)
     {
-      return this.Achievements[(int) id].IsDone;
+      return Achievements[(int) id].IsDone;
     }
 
     public void SetCompletedAchievement(Achievement.IDs id)
     {
-      this.Achievements[(int) id].IsDone = true;
+            Achievements[(int) id].IsDone = true;
     }
 
     public Achievement GetAchievement(Achievement.IDs id)
     {
-      return this.Achievements[(int) id];
+      return Achievements[(int) id];
     }
 
     private void InitAchievement(Achievement.IDs id, Achievement a)
     {
-      this.Achievements[(int) id] = a;
+            Achievements[(int) id] = a;
     }
 
     public static float ComputeDifficultyRating(GameOptions options, DifficultySide side, int reincarnationNumber)
@@ -393,66 +393,66 @@ namespace djack.RogueSurvivor.Engine
     {
       int id = victim.Model.ID;
       Scoring.KillData killData;
-      if (this.m_Kills.TryGetValue(id, out killData))
+      if (m_Kills.TryGetValue(id, out killData))
       {
         ++killData.Amount;
       }
       else
       {
-        this.m_Kills.Add(id, new Scoring.KillData(id, turn));
-        this.m_Events.Add(new Scoring.GameEventData(turn, string.Format("Killed first {0}.", (object) Models.Actors[id].Name)));
+                m_Kills.Add(id, new Scoring.KillData(id, turn));
+                m_Events.Add(new Scoring.GameEventData(turn, string.Format("Killed first {0}.", (object) Models.Actors[id].Name)));
       }
-      this.m_KillPoints += Models.Actors[id].ScoreValue;
-      if (this.m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[id].Abilities.IsUndead)
+            m_KillPoints += Models.Actors[id].ScoreValue;
+      if (m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[id].Abilities.IsUndead)
         return;
       m_KillPoints += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD;
     }
 
     public void AddSighting(int actorModelID, int turn)
     {
-      if (this.m_Sightings.Contains(actorModelID))
+      if (m_Sightings.Contains(actorModelID))
         return;
-      this.m_Sightings.Add(actorModelID);
-      this.m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[actorModelID].Name)));
+            m_Sightings.Add(actorModelID);
+            m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[actorModelID].Name)));
     }
 
     public bool HasSighted(int actorModelID)
     {
-      return this.m_Sightings.Contains(actorModelID);
+      return m_Sightings.Contains(actorModelID);
     }
 
     public bool HasVisited(Map map)
     {
-      return this.m_VisitedMaps.Contains(map);
+      return m_VisitedMaps.Contains(map);
     }
 
     public void AddVisit(int turn, Map map)
     {
-      lock (this.m_VisitedMaps)
-        this.m_VisitedMaps.Add(map);
+      lock (m_VisitedMaps)
+                m_VisitedMaps.Add(map);
     }
 
     public void SetKiller(Actor k)
     {
-      this.m_Killer = k;
+            m_Killer = k;
     }
 
     public void SetZombifiedPlayer(Actor z)
     {
-      this.m_ZombifiedPlayer = z;
+            m_ZombifiedPlayer = z;
     }
 
     public void AddFollowerWhenDied(Actor fo)
     {
-      if (this.m_FollowersWhenDied == null)
-        this.m_FollowersWhenDied = new List<Actor>();
-      this.m_FollowersWhenDied.Add(fo);
+      if (m_FollowersWhenDied == null)
+                m_FollowersWhenDied = new List<Actor>();
+            m_FollowersWhenDied.Add(fo);
     }
 
     public void AddEvent(int turn, string text)
     {
-      lock (this.m_Events)
-        this.m_Events.Add(new Scoring.GameEventData(turn, text));
+      lock (m_Events)
+                m_Events.Add(new Scoring.GameEventData(turn, text));
     }
 
     [Serializable]
@@ -466,9 +466,9 @@ namespace djack.RogueSurvivor.Engine
 
       public KillData(int actorModelID, int turn)
       {
-        this.ActorModelID = actorModelID;
-        this.Amount = 1;
-        this.FirstKillTurn = turn;
+                ActorModelID = actorModelID;
+                Amount = 1;
+                FirstKillTurn = turn;
       }
     }
 
@@ -481,8 +481,8 @@ namespace djack.RogueSurvivor.Engine
 
       public GameEventData(int turn, string text)
       {
-        this.Turn = turn;
-        this.Text = text;
+                Turn = turn;
+                Text = text;
       }
     }
   }

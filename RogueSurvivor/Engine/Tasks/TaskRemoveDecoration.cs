@@ -19,14 +19,14 @@ namespace djack.RogueSurvivor.Engine.Tasks
     public TaskRemoveDecoration(int turns, int x, int y, string imageID)
       : base(turns)
     {
-      this.m_X = x;
-      this.m_Y = y;
-      this.m_imageID = imageID;
+            m_X = x;
+            m_Y = y;
+            m_imageID = imageID;
     }
 
     public override void Trigger(Map m)
     {
-      m.GetTileAt(this.m_X, this.m_Y).RemoveDecoration(this.m_imageID);
+      m.GetTileAt(m_X, m_Y).RemoveDecoration(m_imageID);
     }
   }
 }

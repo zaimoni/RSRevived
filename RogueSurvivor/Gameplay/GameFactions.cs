@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Gameplay
     {
       get
       {
-        return this.m_Factions[id];
+        return m_Factions[id];
       }
     }
 
@@ -38,8 +38,8 @@ namespace djack.RogueSurvivor.Gameplay
       }
       private set
       {
-        this.m_Factions[(int) id] = value;
-        this.m_Factions[(int) id].ID = (int) id;
+                m_Factions[(int) id] = value;
+                m_Factions[(int) id].ID = (int) id;
       }
     }
 
@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameFactions.IDs.TheSurvivors].AddEnemy(this[GameFactions.IDs.TheUndeads]);
       this[GameFactions.IDs.TheSurvivors].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
       this[GameFactions.IDs.TheFerals].AddEnemy(this[GameFactions.IDs.TheUndeads]);
-      foreach (Faction mFaction in this.m_Factions)
+      foreach (Faction mFaction in m_Factions)
       {
         foreach (Faction enemy in mFaction.Enemies)
         {

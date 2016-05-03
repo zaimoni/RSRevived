@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_ID;
+        return m_ID;
       }
     }
 
@@ -26,11 +26,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Level;
+        return m_Level;
       }
       set
       {
-        this.m_Level = value;
+                m_Level = value;
       }
     }
 

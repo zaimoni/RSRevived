@@ -27,30 +27,30 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(model is ItemBodyArmorModel))
         throw new ArgumentException("model is not a BodyArmorModel");
       ItemBodyArmorModel itemBodyArmorModel = model as ItemBodyArmorModel;
-      this.Protection_Hit = itemBodyArmorModel.Protection_Hit;
-      this.Protection_Shot = itemBodyArmorModel.Protection_Shot;
-      this.Encumbrance = itemBodyArmorModel.Encumbrance;
-      this.Weight = itemBodyArmorModel.Weight;
+            Protection_Hit = itemBodyArmorModel.Protection_Hit;
+            Protection_Shot = itemBodyArmorModel.Protection_Shot;
+            Encumbrance = itemBodyArmorModel.Encumbrance;
+            Weight = itemBodyArmorModel.Weight;
     }
 
     public bool IsHostileForCops()
     {
-      return Array.IndexOf<GameItems.IDs>(GameFactions.BAD_POLICE_OUTFITS, (GameItems.IDs) this.Model.ID) >= 0;
+      return Array.IndexOf<GameItems.IDs>(GameFactions.BAD_POLICE_OUTFITS, (GameItems.IDs)Model.ID) >= 0;
     }
 
     public bool IsFriendlyForCops()
     {
-      return Array.IndexOf<GameItems.IDs>(GameFactions.GOOD_POLICE_OUTFITS, (GameItems.IDs) this.Model.ID) >= 0;
+      return Array.IndexOf<GameItems.IDs>(GameFactions.GOOD_POLICE_OUTFITS, (GameItems.IDs)Model.ID) >= 0;
     }
 
     public bool IsHostileForBiker(GameGangs.IDs gangID)
     {
-      return Array.IndexOf<GameItems.IDs>(GameGangs.BAD_GANG_OUTFITS[(int) gangID], (GameItems.IDs) this.Model.ID) >= 0;
+      return Array.IndexOf<GameItems.IDs>(GameGangs.BAD_GANG_OUTFITS[(int) gangID], (GameItems.IDs)Model.ID) >= 0;
     }
 
     public bool IsFriendlyForBiker(GameGangs.IDs gangID)
     {
-      return Array.IndexOf<GameItems.IDs>(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], (GameItems.IDs) this.Model.ID) >= 0;
+      return Array.IndexOf<GameItems.IDs>(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], (GameItems.IDs)Model.ID) >= 0;
     }
   }
 }

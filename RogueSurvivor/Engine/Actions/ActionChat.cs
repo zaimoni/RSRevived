@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       get
       {
-        return this.m_Target;
+        return m_Target;
       }
     }
 
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (target == null)
         throw new ArgumentNullException("target");
-      this.m_Target = target;
+            m_Target = target;
     }
 
     public override bool IsLegal()
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      this.m_Game.DoChat(this.m_Actor, this.m_Target);
+            m_Game.DoChat(m_Actor, m_Target);
     }
   }
 }

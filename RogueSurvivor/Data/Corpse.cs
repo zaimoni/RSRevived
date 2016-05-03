@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_DeadGuy;
+        return m_DeadGuy;
       }
     }
 
@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Turn;
+        return m_Turn;
       }
     }
 
@@ -41,11 +41,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Position;
+        return m_Position;
       }
       set
       {
-        this.m_Position = value;
+                m_Position = value;
       }
     }
 
@@ -53,11 +53,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_HitPoints;
+        return m_HitPoints;
       }
       set
       {
-        this.m_HitPoints = value;
+                m_HitPoints = value;
       }
     }
 
@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_MaxHitPoints;
+        return m_MaxHitPoints;
       }
     }
 
@@ -73,11 +73,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Rotation;
+        return m_Rotation;
       }
       set
       {
-        this.m_Rotation = value;
+                m_Rotation = value;
       }
     }
 
@@ -85,11 +85,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Scale;
+        return m_Scale;
       }
       set
       {
-        this.m_Scale = Math.Max(0.0f, Math.Min(1f, value));
+                m_Scale = Math.Max(0.0f, Math.Min(1f, value));
       }
     }
 
@@ -97,8 +97,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_DraggedBy != null)
-          return !this.m_DraggedBy.IsDead;
+        if (m_DraggedBy != null)
+          return !m_DraggedBy.IsDead;
         return false;
       }
     }
@@ -107,23 +107,23 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_DraggedBy;
+        return m_DraggedBy;
       }
       set
       {
-        this.m_DraggedBy = value;
+                m_DraggedBy = value;
       }
     }
 
     public Corpse(Actor deadGuy, int hitPoints, int maxHitPoints, int corpseTurn, float rotation, float scale)
     {
-      this.m_DeadGuy = deadGuy;
-      this.m_Turn = corpseTurn;
-      this.m_HitPoints = (float) hitPoints;
-      this.m_MaxHitPoints = maxHitPoints;
-      this.m_Rotation = rotation;
-      this.m_Scale = scale;
-      this.m_DraggedBy = (Actor) null;
+            m_DeadGuy = deadGuy;
+            m_Turn = corpseTurn;
+            m_HitPoints = (float) hitPoints;
+            m_MaxHitPoints = maxHitPoints;
+            m_Rotation = rotation;
+            m_Scale = scale;
+            m_DraggedBy = (Actor) null;
     }
   }
 }

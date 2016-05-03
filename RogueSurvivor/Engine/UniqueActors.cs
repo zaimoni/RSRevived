@@ -33,14 +33,14 @@ namespace djack.RogueSurvivor.Engine
     {
       return new UniqueActor[8]
       {
-        this.BigBear,
-        this.Duckman,
-        this.FamuFataru,
-        this.HansVonHanz,
-        this.PoliceStationPrisonner,
-        this.Roguedjack,
-        this.Santaman,
-        this.TheSewersThing
+        BigBear,
+        Duckman,
+        FamuFataru,
+        HansVonHanz,
+        PoliceStationPrisonner,
+        Roguedjack,
+        Santaman,
+        TheSewersThing
       };
     }
   }

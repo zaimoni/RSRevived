@@ -14,11 +14,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Fields[field];
+        return m_Fields[field];
       }
       set
       {
-        this.m_Fields[field] = value;
+                m_Fields[field] = value;
       }
     }
 
@@ -26,13 +26,13 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Fields.Length;
+        return m_Fields.Length;
       }
     }
 
     public CSVLine(int nbFields)
     {
-      this.m_Fields = new CSVField[nbFields];
+            m_Fields = new CSVField[nbFields];
     }
   }
 }

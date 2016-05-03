@@ -20,17 +20,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionShout(Actor actor, RogueGame game, string text)
       : base(actor, game)
     {
-      this.m_Text = text;
+            m_Text = text;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorShout(this.m_Actor, out this.m_FailReason);
+      return m_Game.Rules.CanActorShout(m_Actor, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoShout(this.m_Actor, this.m_Text);
+            m_Game.DoShout(m_Actor, m_Text);
     }
   }
 }

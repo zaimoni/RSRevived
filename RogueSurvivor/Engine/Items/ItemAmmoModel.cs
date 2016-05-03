@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_AmmoType;
+        return m_AmmoType;
       }
     }
 
@@ -24,15 +24,15 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.StackingLimit;
+        return StackingLimit;
       }
     }
 
     public ItemAmmoModel(string aName, string theNames, string imageID, AmmoType ammoType, int maxQuantity)
       : base(aName, theNames, imageID)
     {
-      this.m_AmmoType = ammoType;
-      this.StackingLimit = maxQuantity;
+            m_AmmoType = ammoType;
+            StackingLimit = maxQuantity;
     }
   }
 }

@@ -27,13 +27,13 @@ namespace djack.RogueSurvivor.Engine
 
     public Achievement(Achievement.IDs id, string name, string teaseName, string[] text, string musicID, int scoreValue)
     {
-      this.ID = id;
-      this.Name = name;
-      this.TeaseName = teaseName;
-      this.Text = text;
-      this.MusicID = musicID;
-      this.ScoreValue = scoreValue;
-      this.IsDone = false;
+            ID = id;
+            Name = name;
+            TeaseName = teaseName;
+            Text = text;
+            MusicID = musicID;
+            ScoreValue = scoreValue;
+            IsDone = false;
     }
 
     [Serializable]

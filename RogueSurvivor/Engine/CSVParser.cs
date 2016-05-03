@@ -17,17 +17,17 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Delimiter;
+        return m_Delimiter;
       }
       set
       {
-        this.m_Delimiter = value;
+                m_Delimiter = value;
       }
     }
 
     public CSVParser()
     {
-      this.m_Delimiter = ',';
+            m_Delimiter = ',';
     }
 
     public string[] Parse(string line)
@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine
       if (line == null)
         return new string[0];
       line = line.TrimEnd();
-      List<string> stringList = new List<string>((IEnumerable<string>) line.Split(this.m_Delimiter));
+      List<string> stringList = new List<string>((IEnumerable<string>) line.Split(m_Delimiter));
       int index1 = 0;
       do
       {
@@ -67,14 +67,14 @@ namespace djack.RogueSurvivor.Engine
       if (lines == null)
         return strArrayList;
       foreach (string line in lines)
-        strArrayList.Add(this.Parse(line));
+        strArrayList.Add(Parse(line));
       return strArrayList;
     }
 
     public CSVTable ParseToTable(string[] lines, int nbFields)
     {
       CSVTable csvTable = new CSVTable(nbFields);
-      foreach (string[] strArray in this.Parse(lines))
+      foreach (string[] strArray in Parse(lines))
       {
         CSVLine line = new CSVLine(strArray.Length);
         for (int index = 0; index < line.FieldsCount; ++index)
@@ -87,12 +87,12 @@ namespace djack.RogueSurvivor.Engine
     public string Format(string[] fields)
     {
       if (fields == null)
-        return string.Format("{0}", (object) this.m_Delimiter);
+        return string.Format("{0}", (object)m_Delimiter);
       StringBuilder stringBuilder = new StringBuilder();
       foreach (string field in fields)
       {
         stringBuilder.Append(field);
-        stringBuilder.Append(this.m_Delimiter);
+        stringBuilder.Append(m_Delimiter);
       }
       return stringBuilder.ToString();
     }

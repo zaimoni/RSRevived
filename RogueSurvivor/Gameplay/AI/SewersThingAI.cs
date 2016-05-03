@@ -24,9 +24,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS), LOS_MEMORY);
-      this.m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
-      this.m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
+            m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS), LOS_MEMORY);
+            m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+            m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }
 
     public override void OptimizeBeforeSaving()
@@ -36,16 +36,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      List<Percept> perceptList = this.m_LOSSensor.Sense(game, this.m_Actor);
-      perceptList.AddRange((IEnumerable<Percept>) this.m_LivingSmellSensor.Sense(game, this.m_Actor));
-      perceptList.AddRange((IEnumerable<Percept>) this.m_MasterSmellSensor.Sense(game, this.m_Actor));
+      List<Percept> perceptList = m_LOSSensor.Sense(game, m_Actor);
+      perceptList.AddRange((IEnumerable<Percept>)m_LivingSmellSensor.Sense(game, m_Actor));
+      perceptList.AddRange((IEnumerable<Percept>)m_MasterSmellSensor.Sense(game, m_Actor));
       return perceptList;
     }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(percepts);
-      List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
+      List<Percept> percepts1 = FilterSameMap(percepts);
+      List<Percept> percepts2 = FilterEnemies(game, percepts1);
       if (percepts2 != null)
       {
         List<Percept> perceptList1 = FilterCurrent(percepts2);
@@ -55,32 +55,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ActorAction actorAction1 = TargetGridMelee(game, perceptList1, out percept1);
           if (actorAction1 != null)
           {
-            this.m_Actor.Activity = Activity.CHASING;
-            this.m_Actor.TargetActor = percept1.Percepted as Actor;
+                        m_Actor.Activity = Activity.CHASING;
+                        m_Actor.TargetActor = percept1.Percepted as Actor;
             return actorAction1;
           }
         }
-        List<Percept> perceptList2 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != this.m_Actor.Location.Map.LocalTime.TurnCounter));
+        List<Percept> perceptList2 = Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
         if (perceptList2 != null)
         {
           Percept percept1;
           ActorAction actorAction1 = TargetGridMelee(game, perceptList2, out percept1);
           if (actorAction1 != null)
           {
-            this.m_Actor.Activity = Activity.CHASING;
-            this.m_Actor.TargetActor = percept1.Percepted as Actor;
+                        m_Actor.Activity = Activity.CHASING;
+                        m_Actor.TargetActor = percept1.Percepted as Actor;
             return actorAction1;
           }
         }
       }
-      ActorAction actorAction = this.BehaviorTrackScent(game, this.m_LivingSmellSensor.Scents);
+      ActorAction actorAction = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
       if (actorAction != null)
       {
-        this.m_Actor.Activity = Activity.TRACKING;
+                m_Actor.Activity = Activity.TRACKING;
         return actorAction;
       }
-      this.m_Actor.Activity = Activity.IDLE;
-      return this.BehaviorWander(game);
+            m_Actor.Activity = Activity.IDLE;
+      return BehaviorWander(game);
     }
   }
 }

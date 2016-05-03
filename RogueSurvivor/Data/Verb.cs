@@ -17,8 +17,8 @@ namespace djack.RogueSurvivor.Data
 
     public Verb(string youForm, string heForm)
     {
-      this.YouForm = youForm;
-      this.HeForm = heForm;
+            YouForm = youForm;
+            HeForm = heForm;
     }
 
     public Verb(string youForm)

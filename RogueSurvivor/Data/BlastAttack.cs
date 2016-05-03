@@ -24,10 +24,10 @@ namespace djack.RogueSurvivor.Data
       this = new BlastAttack();
       if (damage.Length != radius + 1)
         throw new ArgumentException("damage.Length != radius + 1");
-      this.Radius = radius;
-      this.Damage = damage;
-      this.CanDamageObjects = canDamageObjects;
-      this.CanDestroyWalls = canDestroyWalls;
+            Radius = radius;
+            Damage = damage;
+            CanDamageObjects = canDamageObjects;
+            CanDestroyWalls = canDestroyWalls;
     }
   }
 }

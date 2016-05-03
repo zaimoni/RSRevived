@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return Models.Items[this.m_ModelID];
+        return Models.Items[m_ModelID];
       }
     }
 

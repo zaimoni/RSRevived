@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (grenadeModel == null)
         throw new ArgumentNullException("grenadeModel");
-      this.GrenadeModel = grenadeModel;
+            GrenadeModel = grenadeModel;
     }
   }
 }

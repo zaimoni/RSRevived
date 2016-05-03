@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.State == 2;
+        return State == 2;
       }
     }
 
@@ -34,7 +34,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.State == 1;
+        return State == 1;
       }
     }
 
@@ -42,7 +42,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.State == 3;
+        return State == 3;
       }
     }
 
@@ -50,11 +50,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        if (this.m_BarricadePoints > 0)
+        if (m_BarricadePoints > 0)
           return false;
-        if (this.State != 2)
+        if (State != 2)
           return base.IsTransparent;
-        return this.FireState != MapObject.Fire.ONFIRE;
+        return FireState != MapObject.Fire.ONFIRE;
       }
     }
 
@@ -62,11 +62,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.m_IsWindow;
+        return m_IsWindow;
       }
       set
       {
-        this.m_IsWindow = value;
+                m_IsWindow = value;
       }
     }
 
@@ -74,21 +74,21 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.m_BarricadePoints;
+        return m_BarricadePoints;
       }
       set
       {
-        if (value > 0 && this.m_BarricadePoints <= 0)
+        if (value > 0 && m_BarricadePoints <= 0)
         {
-          --this.JumpLevel;
-          this.IsWalkable = false;
+          --JumpLevel;
+                    IsWalkable = false;
         }
-        else if (value <= 0 && this.m_BarricadePoints > 0)
-          this.SetState(this.State);
-        this.m_BarricadePoints = value;
-        if (this.m_BarricadePoints >= 0)
+        else if (value <= 0 && m_BarricadePoints > 0)
+                    SetState(State);
+                m_BarricadePoints = value;
+        if (m_BarricadePoints >= 0)
           return;
-        this.m_BarricadePoints = 0;
+                m_BarricadePoints = 0;
       }
     }
 
@@ -96,18 +96,18 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.m_BarricadePoints > 0;
+        return m_BarricadePoints > 0;
       }
     }
 
     public DoorWindow(string name, string closedImageID, string openImageID, string brokenImageID, int hitPoints)
       : base(name, closedImageID, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)
     {
-      this.m_ClosedImageID = closedImageID;
-      this.m_OpenImageID = openImageID;
-      this.m_BrokenImageID = brokenImageID;
-      this.m_BarricadePoints = 0;
-      this.SetState(1);
+            m_ClosedImageID = closedImageID;
+            m_OpenImageID = openImageID;
+            m_BrokenImageID = brokenImageID;
+            m_BarricadePoints = 0;
+            SetState(1);
     }
 
     public override void SetState(int newState)
@@ -115,19 +115,19 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       switch (newState)
       {
         case 1:
-          this.ImageID = this.m_ClosedImageID;
-          this.IsWalkable = false;
+                    ImageID = m_ClosedImageID;
+                    IsWalkable = false;
           break;
         case 2:
-          this.ImageID = this.m_OpenImageID;
-          this.IsWalkable = true;
+                    ImageID = m_OpenImageID;
+                    IsWalkable = true;
           break;
         case 3:
-          this.ImageID = this.m_BrokenImageID;
-          this.BreakState = MapObject.Break.BROKEN;
-          this.HitPoints = 0;
-          this.m_BarricadePoints = 0;
-          this.IsWalkable = true;
+                    ImageID = m_BrokenImageID;
+                    BreakState = MapObject.Break.BROKEN;
+                    HitPoints = 0;
+                    m_BarricadePoints = 0;
+                    IsWalkable = true;
           break;
         default:
           throw new ArgumentOutOfRangeException("newState unhandled");

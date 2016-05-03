@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       get
       {
-        return this.m_Direction;
+        return m_Direction;
       }
     }
 
@@ -26,30 +26,30 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       get
       {
-        return this.m_ConcreteAction;
+        return m_ConcreteAction;
       }
     }
 
     public ActionBump(Actor actor, RogueGame game, Direction direction)
       : base(actor, game)
     {
-      this.m_Direction = direction;
-      this.m_NewLocation = actor.Location + direction;
-      this.m_ConcreteAction = game.Rules.IsBumpableFor(this.m_Actor, game, this.m_NewLocation, out this.m_FailReason);
+            m_Direction = direction;
+            m_NewLocation = actor.Location + direction;
+            m_ConcreteAction = game.Rules.IsBumpableFor(m_Actor, game, m_NewLocation, out m_FailReason);
     }
 
     public override bool IsLegal()
     {
-      if (this.m_ConcreteAction == null)
+      if (m_ConcreteAction == null)
         return false;
-      return this.m_ConcreteAction.IsLegal();
+      return m_ConcreteAction.IsLegal();
     }
 
     public override void Perform()
     {
-      if (this.m_ConcreteAction == null)
+      if (m_ConcreteAction == null)
         return;
-      this.m_ConcreteAction.Perform();
+            m_ConcreteAction.Perform();
     }
   }
 }

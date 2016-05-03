@@ -21,15 +21,15 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       get
       {
-        return this.State == 1;
+        return State == 1;
       }
     }
 
     public PowerGenerator(string name, string offImageID, string onImageID)
       : base(name, offImageID)
     {
-      this.m_OffImageID = offImageID;
-      this.m_OnImageID = onImageID;
+            m_OffImageID = offImageID;
+            m_OnImageID = onImageID;
     }
 
     public override void SetState(int newState)
@@ -38,10 +38,10 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       switch (newState)
       {
         case 0:
-          this.ImageID = this.m_OffImageID;
+                    ImageID = m_OffImageID;
           break;
         case 1:
-          this.ImageID = this.m_OnImageID;
+                    ImageID = m_OnImageID;
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled state");
@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public void TogglePower()
     {
-      this.SetState(this.State == 0 ? 1 : 0);
+            SetState(State == 0 ? 1 : 0);
     }
   }
 }

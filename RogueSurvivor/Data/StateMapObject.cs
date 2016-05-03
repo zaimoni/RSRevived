@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_State;
+        return m_State;
       }
     }
 
@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Data
 
     public virtual void SetState(int newState)
     {
-      this.m_State = newState;
+            m_State = newState;
     }
   }
 }

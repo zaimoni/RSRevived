@@ -20,8 +20,8 @@ namespace djack.RogueSurvivor.Data
 
     public Exit(Map toMap, Point toPosition)
     {
-      this.ToMap = toMap;
-      this.ToPosition = toPosition;
+            ToMap = toMap;
+            ToPosition = toPosition;
     }
   }
 }

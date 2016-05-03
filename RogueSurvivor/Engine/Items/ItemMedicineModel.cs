@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Healing;
+        return m_Healing;
       }
     }
 
@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_StaminaBoost;
+        return m_StaminaBoost;
       }
     }
 
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_SleepBoost;
+        return m_SleepBoost;
       }
     }
 
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_InfectionCure;
+        return m_InfectionCure;
       }
     }
 
@@ -52,18 +52,18 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_SanityCure;
+        return m_SanityCure;
       }
     }
 
     public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure)
       : base(aName, theNames, imageID)
     {
-      this.m_Healing = healing;
-      this.m_StaminaBoost = staminaBoost;
-      this.m_SleepBoost = sleepBoost;
-      this.m_InfectionCure = infectionCure;
-      this.m_SanityCure = sanityCure;
+            m_Healing = healing;
+            m_StaminaBoost = staminaBoost;
+            m_SleepBoost = sleepBoost;
+            m_InfectionCure = infectionCure;
+            m_SanityCure = sanityCure;
     }
   }
 }

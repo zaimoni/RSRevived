@@ -20,11 +20,11 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       get
       {
-        return this.m_Turn;
+        return m_Turn;
       }
       set
       {
-        this.m_Turn = value;
+                m_Turn = value;
       }
     }
 
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       get
       {
-        return this.m_Percepted;
+        return m_Percepted;
       }
     }
 
@@ -40,11 +40,11 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       get
       {
-        return this.m_Location;
+        return m_Location;
       }
       set
       {
-        this.m_Location = value;
+                m_Location = value;
       }
     }
 
@@ -52,14 +52,14 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       if (percepted == null)
         throw new ArgumentNullException("percepted");
-      this.m_Percepted = percepted;
-      this.m_Turn = turn;
-      this.m_Location = location;
+            m_Percepted = percepted;
+            m_Turn = turn;
+            m_Location = location;
     }
 
     public int GetAge(int currentGameTurn)
     {
-      return Math.Max(0, currentGameTurn - this.m_Turn);
+      return Math.Max(0, currentGameTurn - m_Turn);
     }
   }
 }

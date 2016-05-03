@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_DiceRoller;
+        return m_DiceRoller;
       }
     }
 
@@ -185,67 +185,67 @@ namespace djack.RogueSurvivor.Engine
     {
       if (diceRoller == null)
         throw new ArgumentNullException("diceRoller");
-      this.m_DiceRoller = diceRoller;
+            m_DiceRoller = diceRoller;
     }
 
     public int Roll(int min, int max)
     {
-      return this.m_DiceRoller.Roll(min, max);
+      return m_DiceRoller.Roll(min, max);
     }
 
     public bool RollChance(int chance)
     {
-      return this.m_DiceRoller.RollChance(chance);
+      return m_DiceRoller.RollChance(chance);
     }
 
     public float RollFloat()
     {
-      return this.m_DiceRoller.RollFloat();
+      return m_DiceRoller.RollFloat();
     }
 
     public float Randomize(float value, float deviation)
     {
       float num = deviation / 2f;
-      return (float) ((double) value - (double) num * (double) this.m_DiceRoller.RollFloat() + (double) num * (double) this.m_DiceRoller.RollFloat());
+      return (float) ((double) value - (double) num * (double)m_DiceRoller.RollFloat() + (double) num * (double)m_DiceRoller.RollFloat());
     }
 
     public int RollX(Map map)
     {
       if (map == null)
         throw new ArgumentNullException("map");
-      return this.m_DiceRoller.Roll(0, map.Width);
+      return m_DiceRoller.Roll(0, map.Width);
     }
 
     public int RollY(Map map)
     {
       if (map == null)
         throw new ArgumentNullException("map");
-      return this.m_DiceRoller.Roll(0, map.Height);
+      return m_DiceRoller.Roll(0, map.Height);
     }
 
     public Direction RollDirection()
     {
-      return Direction.COMPASS[this.m_DiceRoller.Roll(0, 8)];
+      return Direction.COMPASS[m_DiceRoller.Roll(0, 8)];
     }
 
     public int RollSkill(int skillValue)
     {
       if (skillValue <= 0)
         return 0;
-      return (this.m_DiceRoller.Roll(0, skillValue + 1) + this.m_DiceRoller.Roll(0, skillValue + 1)) / 2;
+      return (m_DiceRoller.Roll(0, skillValue + 1) + m_DiceRoller.Roll(0, skillValue + 1)) / 2;
     }
 
     public int RollDamage(int damageValue)
     {
       if (damageValue <= 0)
         return 0;
-      return this.m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
+      return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 
     public bool CanActorGetItemFromContainer(Actor actor, Point position)
     {
       string reason;
-      return this.CanActorGetItemFromContainer(actor, position, out reason);
+      return CanActorGetItemFromContainer(actor, position, out reason);
     }
 
     public bool CanActorGetItemFromContainer(Actor actor, Point position, out string reason)
@@ -264,7 +264,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "nothing to take there";
         return false;
       }
-      if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || (actor.Inventory == null || !this.CanActorGetItem(actor, itemsAt.TopItem)))
+      if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || (actor.Inventory == null || !CanActorGetItem(actor, itemsAt.TopItem)))
       {
         reason = "cannot take an item";
         return false;
@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorGetItem(Actor actor, Item it)
     {
       string reason;
-      return this.CanActorGetItem(actor, it, out reason);
+      return CanActorGetItem(actor, it, out reason);
     }
 
     public bool CanActorGetItem(Actor actor, Item it, out string reason)
@@ -307,7 +307,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorEquipItem(Actor actor, Item it)
     {
       string reason;
-      return this.CanActorEquipItem(actor, it, out reason);
+      return CanActorEquipItem(actor, it, out reason);
     }
 
     public bool CanActorEquipItem(Actor actor, Item it, out string reason)
@@ -360,7 +360,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorDropItem(Actor actor, Item it)
     {
       string reason;
-      return this.CanActorDropItem(actor, it, out reason);
+      return CanActorDropItem(actor, it, out reason);
     }
 
     public bool CanActorDropItem(Actor actor, Item it, out string reason)
@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorUseItem(Actor actor, Item it)
     {
       string reason;
-      return this.CanActorUseItem(actor, it, out reason);
+      return CanActorUseItem(actor, it, out reason);
     }
 
     public bool CanActorUseItem(Actor actor, Item it, out string reason)
@@ -512,7 +512,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "item not equipped";
         return false;
       }
-      if (!this.IsItemBatteryPowered(it))
+      if (!IsItemBatteryPowered(it))
       {
         reason = "not a battery powered item";
         return false;
@@ -546,7 +546,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("target");
       if (gift == null)
         throw new ArgumentNullException("gift");
-      if (this.IsEnemyOf(actor, target))
+      if (IsEnemyOf(actor, target))
       {
         reason = "enemy";
         return false;
@@ -561,13 +561,13 @@ namespace djack.RogueSurvivor.Engine
         reason = "sleeping";
         return false;
       }
-      return this.CanActorGetItem(target, gift, out reason);
+      return CanActorGetItem(target, gift, out reason);
     }
 
     public bool CanActorRun(Actor actor)
     {
       string reason;
-      return this.CanActorRun(actor, out reason);
+      return CanActorRun(actor, out reason);
     }
 
     public bool CanActorRun(Actor actor, out string reason)
@@ -600,7 +600,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorMeleeAttack(Actor actor, Actor target)
     {
       string reason;
-      return this.CanActorMeleeAttack(actor, target, out reason);
+      return CanActorMeleeAttack(actor, target, out reason);
     }
 
     public bool CanActorMeleeAttack(Actor actor, Actor target, out string reason)
@@ -660,7 +660,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsWalkableFor(Actor actor, Map map, int x, int y)
     {
       string reason;
-      return this.IsWalkableFor(actor, map, x, y, out reason);
+      return IsWalkableFor(actor, map, x, y, out reason);
     }
 
     public bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
@@ -684,7 +684,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (mapObjectAt.IsJumpable)
         {
-          if (!this.HasActorJumpAbility(actor))
+          if (!HasActorJumpAbility(actor))
           {
             reason = "cannot jump";
             return false;
@@ -715,7 +715,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "someone is there";
         return false;
       }
-      if (actor.DraggedCorpse != null && this.IsActorTired(actor))
+      if (actor.DraggedCorpse != null && IsActorTired(actor))
       {
         reason = "dragging a corpse when tired";
         return false;
@@ -727,12 +727,12 @@ namespace djack.RogueSurvivor.Engine
     public bool IsWalkableFor(Actor actor, Location location)
     {
       string reason;
-      return this.IsWalkableFor(actor, location, out reason);
+      return IsWalkableFor(actor, location, out reason);
     }
 
     public bool IsWalkableFor(Actor actor, Location location, out string reason)
     {
-      return this.IsWalkableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
+      return IsWalkableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Map map, int x, int y, out string reason)
@@ -744,7 +744,7 @@ namespace djack.RogueSurvivor.Engine
       reason = "";
       if (!map.IsInBounds(x, y))
       {
-        if (!this.CanActorLeaveMap(actor, out reason))
+        if (!CanActorLeaveMap(actor, out reason))
           return (ActorAction) null;
         reason = "";
         return (ActorAction) new ActionLeaveMap(actor, game, new Point(x, y));
@@ -760,15 +760,15 @@ namespace djack.RogueSurvivor.Engine
       Actor actorAt = map.GetActorAt(point);
       if (actorAt != null)
       {
-        if (this.IsEnemyOf(actor, actorAt))
+        if (IsEnemyOf(actor, actorAt))
         {
-          if (this.CanActorMeleeAttack(actor, actorAt, out reason))
+          if (CanActorMeleeAttack(actor, actorAt, out reason))
             return (ActorAction) new ActionMeleeAttack(actor, game, actorAt);
           return (ActorAction) null;
         }
-        if (!actor.IsPlayer && !actorAt.IsPlayer && this.CanActorSwitchPlaceWith(actor, actorAt, out reason))
+        if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
           return (ActorAction) new ActionSwitchPlace(actor, game, actorAt);
-        if (this.CanActorChatWith(actor, actorAt, out reason))
+        if (CanActorChatWith(actor, actorAt, out reason))
           return (ActorAction) new ActionChat(actor, game, actorAt);
         return (ActorAction) null;
       }
@@ -780,23 +780,23 @@ namespace djack.RogueSurvivor.Engine
         {
           if (door.IsClosed)
           {
-            if (this.IsOpenableFor(actor, door, out reason))
+            if (IsOpenableFor(actor, door, out reason))
               return (ActorAction) new ActionOpenDoor(actor, game, door);
-            if (this.IsBashableFor(actor, door, out reason))
+            if (IsBashableFor(actor, door, out reason))
               return (ActorAction) new ActionBashDoor(actor, game, door);
             return (ActorAction) null;
           }
           if (door.BarricadePoints > 0)
           {
-            if (this.IsBashableFor(actor, door, out reason))
+            if (IsBashableFor(actor, door, out reason))
               return (ActorAction) new ActionBashDoor(actor, game, door);
             reason = "cannot bash the barricade";
             return (ActorAction) null;
           }
         }
-        if (this.CanActorGetItemFromContainer(actor, point, out reason))
+        if (CanActorGetItemFromContainer(actor, point, out reason))
           return (ActorAction) new ActionGetFromContainer(actor, game, point);
-        if (actor.Model.Abilities.CanBashDoors && this.IsBreakableFor(actor, mapObjectAt, out reason))
+        if (actor.Model.Abilities.CanBashDoors && IsBreakableFor(actor, mapObjectAt, out reason))
           return (ActorAction) new ActionBreak(actor, game, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
         if (powGen != null)
@@ -804,13 +804,13 @@ namespace djack.RogueSurvivor.Engine
           if (powGen.IsOn)
           {
             Item equippedItem1 = actor.GetEquippedItem(DollPart.LEFT_HAND);
-            if (equippedItem1 != null && this.CanActorRechargeItemBattery(actor, equippedItem1, out reason))
+            if (equippedItem1 != null && CanActorRechargeItemBattery(actor, equippedItem1, out reason))
               return (ActorAction) new ActionRechargeItemBattery(actor, game, equippedItem1);
             Item equippedItem2 = actor.GetEquippedItem(DollPart._FIRST);
-            if (equippedItem2 != null && this.CanActorRechargeItemBattery(actor, equippedItem2, out reason))
+            if (equippedItem2 != null && CanActorRechargeItemBattery(actor, equippedItem2, out reason))
               return (ActorAction) new ActionRechargeItemBattery(actor, game, equippedItem2);
           }
-          if (this.IsSwitchableFor(actor, powGen, out reason))
+          if (IsSwitchableFor(actor, powGen, out reason))
             return (ActorAction) new ActionSwitchPowerGenerator(actor, game, powGen);
           return (ActorAction) null;
         }
@@ -821,12 +821,12 @@ namespace djack.RogueSurvivor.Engine
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Location location)
     {
       string reason;
-      return this.IsBumpableFor(actor, game, location, out reason);
+      return IsBumpableFor(actor, game, location, out reason);
     }
 
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Location location, out string reason)
     {
-      return this.IsBumpableFor(actor, game, location.Map, location.Position.X, location.Position.Y, out reason);
+      return IsBumpableFor(actor, game, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
     public bool IsSwitchableFor(Actor actor, PowerGenerator powGen, out string reason)
@@ -865,7 +865,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorUseExit(Actor actor, Point exitPoint)
     {
       string reason;
-      return this.CanActorUseExit(actor, exitPoint, out reason);
+      return CanActorUseExit(actor, exitPoint, out reason);
     }
 
     public bool CanActorUseExit(Actor actor, Point exitPoint, out string reason)
@@ -924,7 +924,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorInitiateTradeWith(Actor speaker, Actor target)
     {
       string reason;
-      return this.CanActorInitiateTradeWith(speaker, target, out reason);
+      return CanActorInitiateTradeWith(speaker, target, out reason);
     }
 
     public bool CanActorInitiateTradeWith(Actor speaker, Actor target, out string reason)
@@ -948,7 +948,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "target can't trade";
         return false;
       }
-      if (this.IsEnemyOf(speaker, target))
+      if (IsEnemyOf(speaker, target))
       {
         reason = "is an enemy";
         return false;
@@ -975,7 +975,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorShout(Actor speaker)
     {
       string reason;
-      return this.CanActorShout(speaker, out reason);
+      return CanActorShout(speaker, out reason);
     }
 
     public bool CanActorShout(Actor speaker, out string reason)
@@ -999,7 +999,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsOpenableFor(Actor actor, DoorWindow door)
     {
       string reason;
-      return this.IsOpenableFor(actor, door, out reason);
+      return IsOpenableFor(actor, door, out reason);
     }
 
     public bool IsOpenableFor(Actor actor, DoorWindow door, out string reason)
@@ -1025,7 +1025,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsClosableFor(Actor actor, DoorWindow door)
     {
       string reason;
-      return this.IsClosableFor(actor, door, out reason);
+      return IsClosableFor(actor, door, out reason);
     }
 
     public bool IsClosableFor(Actor actor, DoorWindow door, out string reason)
@@ -1056,7 +1056,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorBarricadeDoor(Actor actor, DoorWindow door)
     {
       string reason;
-      return this.CanActorBarricadeDoor(actor, door, out reason);
+      return CanActorBarricadeDoor(actor, door, out reason);
     }
 
     public bool CanActorBarricadeDoor(Actor actor, DoorWindow door, out string reason)
@@ -1102,7 +1102,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsBashableFor(Actor actor, DoorWindow door)
     {
       string reason;
-      return this.IsBashableFor(actor, door, out reason);
+      return IsBashableFor(actor, door, out reason);
     }
 
     public bool IsBashableFor(Actor actor, DoorWindow door, out string reason)
@@ -1116,7 +1116,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "can't bash doors";
         return false;
       }
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
       {
         reason = "tired";
         return false;
@@ -1133,7 +1133,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsBreakableFor(Actor actor, MapObject mapObj)
     {
       string reason;
-      return this.IsBreakableFor(actor, mapObj, out reason);
+      return IsBreakableFor(actor, mapObj, out reason);
     }
 
     public bool IsBreakableFor(Actor actor, MapObject mapObj, out string reason)
@@ -1147,7 +1147,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "cannot break objects";
         return false;
       }
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
       {
         reason = "tired";
         return false;
@@ -1178,7 +1178,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorPush(Actor actor, MapObject mapObj)
     {
       string reason;
-      return this.CanActorPush(actor, mapObj, out reason);
+      return CanActorPush(actor, mapObj, out reason);
     }
 
     public bool CanActorPush(Actor actor, MapObject mapObj, out string reason)
@@ -1187,12 +1187,12 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (mapObj == null)
         throw new ArgumentNullException("mapObj");
-      if (!this.HasActorPushAbility(actor))
+      if (!HasActorPushAbility(actor))
       {
         reason = "cannot push objects";
         return false;
       }
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
       {
         reason = "tired";
         return false;
@@ -1219,7 +1219,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanPushObjectTo(MapObject mapObj, Point toPos)
     {
       string reason;
-      return this.CanPushObjectTo(mapObj, toPos, out reason);
+      return CanPushObjectTo(mapObj, toPos, out reason);
     }
 
     public bool CanPushObjectTo(MapObject mapObj, Point toPos, out string reason)
@@ -1256,12 +1256,12 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (other == null)
         throw new ArgumentNullException("other");
-      if (!this.HasActorPushAbility(actor))
+      if (!HasActorPushAbility(actor))
       {
         reason = "cannot shove people";
         return false;
       }
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
       {
         reason = "tired";
         return false;
@@ -1310,7 +1310,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Point position in fov)
       {
         Actor actorAt = actor.Location.Map.GetActorAt(position);
-        if (actorAt != null && actorAt != actor && this.IsEnemyOf(actor, actorAt))
+        if (actorAt != null && actorAt != actor && IsEnemyOf(actor, actorAt))
         {
           if (actorList == null)
             actorList = new List<Actor>(3);
@@ -1332,18 +1332,18 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorFireAt(Actor actor, Actor target)
     {
       string reason;
-      return this.CanActorFireAt(actor, target, out reason);
+      return CanActorFireAt(actor, target, out reason);
     }
 
     public bool CanActorFireAt(Actor actor, Actor target, out string reason)
     {
-      return this.CanActorFireAt(actor, target, (List<Point>) null, out reason);
+      return CanActorFireAt(actor, target, (List<Point>) null, out reason);
     }
 
     public bool CanActorFireAt(Actor actor, Actor target, List<Point> LoF)
     {
       string reason;
-      return this.CanActorFireAt(actor, target, LoF, out reason);
+      return CanActorFireAt(actor, target, LoF, out reason);
     }
 
     public bool CanActorFireAt(Actor actor, Actor target, List<Point> LoF, out string reason)
@@ -1387,7 +1387,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF)
     {
       string reason;
-      return this.CanActorThrowTo(actor, pos, LoF, out reason);
+      return CanActorThrowTo(actor, pos, LoF, out reason);
     }
 
     public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF, out string reason)
@@ -1404,7 +1404,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? (itemGrenadePrimed.Model as ItemGrenadePrimedModel).GrenadeModel : itemGrenade.Model as ItemGrenadeModel;
-      int maxRange = this.ActorMaxThrowRange(actor, itemGrenadeModel.MaxThrowDistance);
+      int maxRange = ActorMaxThrowRange(actor, itemGrenadeModel.MaxThrowDistance);
       if (Rules.GridDistance(actor.Location.Position, pos) > maxRange)
       {
         reason = "out of throwing range";
@@ -1422,7 +1422,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorSleep(Actor actor)
     {
       string reason;
-      return this.CanActorSleep(actor, out reason);
+      return CanActorSleep(actor, out reason);
     }
 
     public bool CanActorSleep(Actor actor, out string reason)
@@ -1444,7 +1444,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "hungry";
         return false;
       }
-      if (actor.SleepPoints >= this.ActorMaxSleep(actor) - WorldTime.TURNS_PER_HOUR)
+      if (actor.SleepPoints >= ActorMaxSleep(actor) - WorldTime.TURNS_PER_HOUR)
       {
         reason = "not sleepy at all";
         return false;
@@ -1456,13 +1456,13 @@ namespace djack.RogueSurvivor.Engine
     public bool IsActorDisturbed(Actor a)
     {
       if (a.Model.Abilities.HasSanity)
-        return a.Sanity <= this.ActorDisturbedLevel(a);
+        return a.Sanity <= ActorDisturbedLevel(a);
       return false;
     }
 
     public int SanityToHoursUntilUnstable(Actor a)
     {
-      int num = a.Sanity - this.ActorDisturbedLevel(a);
+      int num = a.Sanity - ActorDisturbedLevel(a);
       if (num <= 0) return 0;
       return num / WorldTime.TURNS_PER_HOUR;
     }
@@ -1470,7 +1470,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorTakeLead(Actor actor, Actor target)
     {
       string reason;
-      return this.CanActorTakeLead(actor, target, out reason);
+      return CanActorTakeLead(actor, target, out reason);
     }
 
     public bool CanActorTakeLead(Actor actor, Actor target, out string reason)
@@ -1484,7 +1484,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "undead";
         return false;
       }
-      if (this.IsEnemyOf(actor, target))
+      if (IsEnemyOf(actor, target))
       {
         reason = "enemy";
         return false;
@@ -1504,7 +1504,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "is a leader";
         return false;
       }
-      int num = this.ActorMaxFollowers(actor);
+      int num = ActorMaxFollowers(actor);
       if (num == 0)
       {
         reason = "can't lead";
@@ -1553,7 +1553,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorSwitchPlaceWith(Actor actor, Actor target)
     {
       string reason;
-      return this.CanActorSwitchPlaceWith(actor, target, out reason);
+      return CanActorSwitchPlaceWith(actor, target, out reason);
     }
 
     public bool CanActorSwitchPlaceWith(Actor actor, Actor target, out string reason)
@@ -1610,7 +1610,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge)
     {
       string reason;
-      return this.CanActorBuildFortification(actor, pos, isLarge, out reason);
+      return CanActorBuildFortification(actor, pos, isLarge, out reason);
     }
 
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge, out string reason)
@@ -1628,8 +1628,8 @@ namespace djack.RogueSurvivor.Engine
         reason = "cannot build on walls";
         return false;
       }
-      int num = this.ActorBarricadingMaterialNeedForFortification(actor, isLarge);
-      if (this.CountBarricadingMaterial(actor) < num)
+      int num = ActorBarricadingMaterialNeedForFortification(actor, isLarge);
+      if (CountBarricadingMaterial(actor) < num)
       {
         reason = string.Format("not enough barricading material, need {0}.", (object) num);
         return false;
@@ -1652,7 +1652,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "cannot use map objects";
         return false;
       }
-      if (this.CountBarricadingMaterial(actor) <= 0)
+      if (CountBarricadingMaterial(actor) <= 0)
       {
         reason = "no barricading material";
         return false;
@@ -1669,7 +1669,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorEatCorpse(Actor actor, Corpse corpse)
     {
       string reason;
-      return this.CanActorEatCorpse(actor, corpse, out reason);
+      return CanActorEatCorpse(actor, corpse, out reason);
     }
 
     public bool CanActorEatCorpse(Actor actor, Corpse corpse, out string reason)
@@ -1690,7 +1690,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorButcherCorpse(Actor actor, Corpse corpse)
     {
       string reason;
-      return this.CanActorButcherCorpse(actor, corpse, out reason);
+      return CanActorButcherCorpse(actor, corpse, out reason);
     }
 
     public bool CanActorButcherCorpse(Actor actor, Corpse corpse, out string reason)
@@ -1699,7 +1699,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("actor");
       if (corpse == null)
         throw new ArgumentNullException("corpse");
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
       {
         reason = "tired";
         return false;
@@ -1716,7 +1716,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorStartDragCorpse(Actor actor, Corpse corpse)
     {
       string reason;
-      return this.CanActorStartDragCorpse(actor, corpse, out reason);
+      return CanActorStartDragCorpse(actor, corpse, out reason);
     }
 
     public bool CanActorStartDragCorpse(Actor actor, Corpse corpse, out string reason)
@@ -1730,7 +1730,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "corpse is already being dragged";
         return false;
       }
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
       {
         reason = "tired";
         return false;
@@ -1752,7 +1752,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorStopDragCorpse(Actor actor, Corpse corpse)
     {
       string reason;
-      return this.CanActorStopDragCorpse(actor, corpse, out reason);
+      return CanActorStopDragCorpse(actor, corpse, out reason);
     }
 
     public bool CanActorStopDragCorpse(Actor actor, Corpse corpse, out string reason)
@@ -1773,7 +1773,7 @@ namespace djack.RogueSurvivor.Engine
     public bool CanActorReviveCorpse(Actor actor, Corpse corpse)
     {
       string reason;
-      return this.CanActorReviveCorpse(actor, corpse, out reason);
+      return CanActorReviveCorpse(actor, corpse, out reason);
     }
 
     public bool CanActorReviveCorpse(Actor actor, Corpse corpse, out string reason)
@@ -1792,7 +1792,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "not there";
         return false;
       }
-      if (this.CorpseRotLevel(corpse) > 0)
+      if (CorpseRotLevel(corpse) > 0)
       {
         reason = "corpse not fresh";
         return false;
@@ -1867,7 +1867,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == null)
         return false;
-      return actor.ActionPoints + this.ActorSpeed(actor) > 0;
+      return actor.ActionPoints + ActorSpeed(actor) > 0;
     }
 
     public bool WillActorActAgainBefore(Actor actor, Actor other)
@@ -1904,7 +1904,7 @@ namespace djack.RogueSurvivor.Engine
     public int ActorSpeed(Actor actor)
     {
       float num = (float) actor.Doll.Body.Speed;
-      if (this.IsActorTired(actor)) num *= 2f/3f;
+      if (IsActorTired(actor)) num *= 2f/3f;
       if (actor.IsExhausted) num /= 2f;
       else if (actor.IsSleepy) num *= 2f/3f;
       ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
@@ -1990,7 +1990,7 @@ namespace djack.RogueSurvivor.Engine
         num4 += Rules.SKILL_MARTIAL_ARTS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       }
       if (target != null && target.Model.Abilities.IsUndead)
-        num4 += this.ActorDamageBonusVsUndeads(actor);
+        num4 += ActorDamageBonusVsUndeads(actor);
       float num5 = (float)baseAttack.HitValue + (float) num3;
       if (actor.IsExhausted) num5 /= 2f;
       else if (actor.IsSleepy) num5 *= 0.75f;
@@ -2021,7 +2021,7 @@ namespace djack.RogueSurvivor.Engine
       float num4 = (float) (baseAttack.HitValue + num1);
       if (actor.IsExhausted) num4 /= 2f;
       else if (actor.IsSleepy) num4 *= 0.75f;
-      if (this.IsActorTired(actor))
+      if (IsActorTired(actor))
         num4 *= FIRING_WHEN_STA_TIRED;
       else if (actor.StaminaPoints < actor.MaxSTA)
         num4 *= FIRING_WHEN_STA_NOT_FULL;
@@ -2074,17 +2074,17 @@ namespace djack.RogueSurvivor.Engine
       switch (lighting)
       {
         case Lighting.DARKNESS:
-          val2 = this.DarknessFov(actor);
+          val2 = DarknessFov(actor);
           goto case Lighting.LIT;
         case Lighting.OUTSIDE:
-          val2 = val2 - this.NightFovPenalty(actor, time) - this.WeatherFovPenalty(actor, weather);
+          val2 = val2 - NightFovPenalty(actor, time) - WeatherFovPenalty(actor, weather);
           goto case Lighting.LIT;
         case Lighting.LIT:
           if (actor.IsExhausted) val2 -= 2;
           else if (actor.IsSleepy) --val2;
           if (lighting == Lighting.DARKNESS || lighting == Lighting.OUTSIDE && time.IsNight)
           {
-            int num = this.GetLightBonusEquipped(actor);
+            int num = GetLightBonusEquipped(actor);
             if (num == 0)
             {
               Map map = actor.Location.Map;
@@ -2092,7 +2092,7 @@ namespace djack.RogueSurvivor.Engine
               {
                 Actor actorAt = map.GetActorAt(pt);
                 if (actorAt == null) return false;
-                return this.HasLightOnEquipped(actorAt);
+                return HasLightOnEquipped(actorAt);
               })))
                 num = 1;
             }
@@ -2115,7 +2115,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsSleeping)
         return -1;
-      return 271 - (int) ((double) this.ActorSmell(actor) * 270.0);
+      return 271 - (int) ((double)ActorSmell(actor) * 270.0);
     }
 
     private bool HasLightOnEquipped(Actor actor)
@@ -2277,7 +2277,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorInfectionHPs(Actor a)
     {
-      return this.ActorMaxHPs(a) + a.MaxSTA;
+      return ActorMaxHPs(a) + a.MaxSTA;
     }
 
     public static int InfectionForDamage(Actor infector, int dmg)
@@ -2287,7 +2287,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorInfectionPercent(Actor a)
     {
-      return 100 * a.Infection / this.ActorInfectionHPs(a);
+      return 100 * a.Infection / ActorInfectionHPs(a);
     }
 
     public int InfectionEffectTriggerChance1000(int infectionPercent)
@@ -2297,12 +2297,12 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseFreshnessPercent(Corpse c)
     {
-      return (int) (100.0 * (double) c.HitPoints / (double) this.ActorMaxHPs(c.DeadGuy));
+      return (int) (100.0 * (double) c.HitPoints / (double)ActorMaxHPs(c.DeadGuy));
     }
 
     public int CorpseRotLevel(Corpse c)
     {
-      int num = this.CorpseFreshnessPercent(c);
+      int num = CorpseFreshnessPercent(c);
       if (num < 5)
         return 5;
       if (num < 25)
@@ -2324,7 +2324,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = timeNow.TurnCounter - c.Turn;
       if (checkDelay && num1 < CORPSE_ZOMBIFY_DELAY)
         return 0;
-      int num2 = this.ActorInfectionPercent(c.DeadGuy);
+      int num2 = ActorInfectionPercent(c.DeadGuy);
       if (checkDelay)
       {
         int num3 = num2 >= 100 ? 1 : 100 / (1 + num2);
@@ -2337,9 +2337,9 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseReviveChance(Actor actor, Corpse corpse)
     {
-      if (!this.CanActorReviveCorpse(actor, corpse))
+      if (!CanActorReviveCorpse(actor, corpse))
         return 0;
-      return this.CorpseFreshnessPercent(corpse) / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
+      return CorpseFreshnessPercent(corpse) / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
     }
 
     public int CorpseReviveHPs(Actor actor, Corpse corpse)
@@ -2349,15 +2349,15 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapTriggers(ItemTrap trap, Actor a)
     {
-      if (a.Model.Abilities.IsSmall && this.RollChance(90))
+      if (a.Model.Abilities.IsSmall && RollChance(90))
         return false;
       int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
-      return this.RollChance(trap.TrapModel.TriggerChance * trap.Quantity - num);
+      return RollChance(trap.TrapModel.TriggerChance * trap.Quantity - num);
     }
 
     public bool CheckTrapTriggers(ItemTrap trap, MapObject mobj)
     {
-      return this.RollChance(trap.TrapModel.TriggerChance * mobj.Weight);
+      return RollChance(trap.TrapModel.TriggerChance * mobj.Weight);
     }
 
     public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj = null)
@@ -2365,17 +2365,17 @@ namespace djack.RogueSurvivor.Engine
       int breakChance = trap.TrapModel.BreakChance;
       if (mobj != null)
         breakChance *= mobj.Weight;
-      return this.RollChance(breakChance);
+      return RollChance(breakChance);
     }
 
     public bool CheckTrapEscapeBreaks(ItemTrap trap, Actor a)
     {
-      return this.RollChance(trap.TrapModel.BreakChanceWhenEscape);
+      return RollChance(trap.TrapModel.BreakChanceWhenEscape);
     }
 
     public bool CheckTrapEscape(ItemTrap trap, Actor a)
     {
-      return this.RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
+      return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
     }
 
     public bool IsTrapCoveringMapObjectThere(Map map, Point pos)

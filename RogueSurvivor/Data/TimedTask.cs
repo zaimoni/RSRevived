@@ -17,20 +17,20 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.TurnsLeft <= 0;
+        return TurnsLeft <= 0;
       }
     }
 
     protected TimedTask(int turnsLeft)
     {
-      this.TurnsLeft = turnsLeft;
+            TurnsLeft = turnsLeft;
     }
 
     public void Tick(Map m)
     {
-      if (--this.TurnsLeft > 0)
+      if (--TurnsLeft > 0)
         return;
-      this.Trigger(m);
+            Trigger(m);
     }
 
     public abstract void Trigger(Map m);

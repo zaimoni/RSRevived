@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (target == null)
         throw new ArgumentNullException("target");
-      this.m_Target = target;
+            m_Target = target;
     }
 
     public override bool IsLegal()
@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      this.m_Game.DoMeleeAttack(this.m_Actor, this.m_Target);
+            m_Game.DoMeleeAttack(m_Actor, m_Target);
     }
   }
 }

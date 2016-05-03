@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_AmmoType;
+        return m_AmmoType;
       }
     }
 
@@ -28,8 +28,8 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(model is ItemAmmoModel))
         throw new ArgumentException("model is not a AmmoModel");
       ItemAmmoModel itemAmmoModel = model as ItemAmmoModel;
-      this.m_AmmoType = itemAmmoModel.AmmoType;
-      this.Quantity = itemAmmoModel.MaxQuantity;
+            m_AmmoType = itemAmmoModel.AmmoType;
+            Quantity = itemAmmoModel.MaxQuantity;
     }
   }
 }

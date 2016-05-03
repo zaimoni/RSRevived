@@ -16,14 +16,14 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Attack;
+        return m_Attack;
       }
     }
 
     public ItemWeaponModel(string aName, string theNames, string imageID, Attack attack)
       : base(aName, theNames, imageID)
     {
-      this.m_Attack = attack;
+            m_Attack = attack;
     }
   }
 }

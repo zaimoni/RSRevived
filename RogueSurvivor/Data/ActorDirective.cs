@@ -25,17 +25,17 @@ namespace djack.RogueSurvivor.Data
 
     public ActorDirective()
     {
-      this.Reset();
+            Reset();
     }
 
     public void Reset()
     {
-      this.CanTakeItems = true;
-      this.CanFireWeapons = true;
-      this.CanThrowGrenades = true;
-      this.CanSleep = true;
-      this.CanTrade = true;
-      this.Courage = ActorCourage.CAUTIOUS;
+            CanTakeItems = true;
+            CanFireWeapons = true;
+            CanThrowGrenades = true;
+            CanSleep = true;
+            CanTrade = true;
+            Courage = ActorCourage.CAUTIOUS;
     }
 
     public static string CourageString(ActorCourage c)

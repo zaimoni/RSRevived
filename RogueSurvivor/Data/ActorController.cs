@@ -17,12 +17,12 @@ namespace djack.RogueSurvivor.Data
 
     public virtual void TakeControl(Actor actor)
     {
-      this.m_Actor = actor;
+            m_Actor = actor;
     }
 
     public virtual void LeaveControl()
     {
-      this.m_Actor = (Actor) null;
+            m_Actor = (Actor) null;
     }
 
     public abstract ActorAction GetAction(RogueGame game);
@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Data
     protected ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)
     {
       if (m_Actor.Inventory == null) return null;
-      foreach (Item obj in this.m_Actor.Inventory.Items) {
+      foreach (Item obj in m_Actor.Inventory.Items) {
         ItemAmmo itemAmmo = obj as ItemAmmo;
         if (itemAmmo != null && itemAmmo.AmmoType == rw.AmmoType) return itemAmmo;
       }
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Data
             }
         if (it is ItemRangedWeapon)
             {
-            if (this.m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
+            if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
             ItemRangedWeapon rw = it as ItemRangedWeapon;
             if (0 < rw.Ammo) return false;
             if (null != GetCompatibleAmmoItem(rw)) return false;
@@ -92,7 +92,7 @@ namespace djack.RogueSurvivor.Data
             }
         if (it is ItemMeleeWeapon)
             {
-            if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return true;   // martial artists+melee weapons needs work
+            if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return true;   // martial artists+melee weapons needs work
             return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
             }
         // player should be able to trade for blue pills
@@ -113,7 +113,7 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemFood)
       {
         if (m_Actor.IsHungry) return true;
-        if (!this.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
+        if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
@@ -136,12 +136,12 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is ItemMeleeWeapon)
       {
-        if (this.m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
+        if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
         return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
       }
       if (it is ItemMedicine)
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-      if (it.IsUseless || it is ItemPrimedExplosive || this.m_Actor.IsBoredOf(it))
+      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))
         return false;
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
     }

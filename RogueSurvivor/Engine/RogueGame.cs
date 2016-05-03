@@ -310,7 +310,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Session;
+        return m_Session;
       }
     }
 
@@ -318,7 +318,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Rules;
+        return m_Rules;
       }
     }
 
@@ -326,7 +326,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_UI;
+        return m_UI;
       }
     }
 
@@ -334,11 +334,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_IsGameRunning;
+        return m_IsGameRunning;
       }
       set
       {
-        this.m_IsGameRunning = value;
+                m_IsGameRunning = value;
       }
     }
 
@@ -362,7 +362,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_GameFactions;
+        return m_GameFactions;
       }
     }
 
@@ -370,7 +370,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_GameActors;
+        return m_GameActors;
       }
     }
 
@@ -378,7 +378,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_GameItems;
+        return m_GameItems;
       }
     }
 
@@ -386,7 +386,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_GameTiles;
+        return m_GameTiles;
       }
     }
 
@@ -394,14 +394,14 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Player;
+        return m_Player;
       }
     }
 
     public RogueGame(IRogueUI UI)
     {
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame()");
-      this.m_UI = UI;
+            m_UI = UI;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
       switch (SetupConfig.Sound)
       {
@@ -412,19 +412,19 @@ namespace djack.RogueSurvivor.Engine
 //          this.m_MusicManager = (ISoundManager) new SFMLSoundManager();
 //          break;
         default:
-          this.m_MusicManager = (ISoundManager) new NullSoundManager();
+                    m_MusicManager = (ISoundManager) new NullSoundManager();
           break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
-      this.m_MessageManager = new MessageManager(12, 25, 59);
-      this.m_Session = Session.Get;
+            m_MessageManager = new MessageManager(12, 25, 59);
+            m_Session = Session.Get;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules");
-      this.m_Rules = new Rules(new DiceRoller(this.m_Session.Seed));
+            m_Rules = new Rules(new DiceRoller(m_Session.Seed));
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
       parameters.MapWidth = MAP_MAX_WIDTH;
       parameters.MapHeight = RogueGame.MAP_MAX_HEIGHT;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
-      this.m_TownGenerator = (BaseTownGenerator) new StdTownGenerator(this, parameters);
+            m_TownGenerator = (BaseTownGenerator) new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
       RogueGame.s_Options = new GameOptions();
       RogueGame.s_Options.ResetToDefaultValues();
@@ -433,10 +433,10 @@ namespace djack.RogueSurvivor.Engine
       RogueGame.s_Hints = new GameHintsStatus();
       RogueGame.s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
-      this.m_GameFactions = new GameFactions();
-      this.m_GameActors = new GameActors();
-      this.m_GameItems = new GameItems();
-      this.m_GameTiles = new GameTiles();
+            m_GameFactions = new GameFactions();
+            m_GameActors = new GameActors();
+            m_GameItems = new GameItems();
+            m_GameTiles = new GameTiles();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -444,10 +444,10 @@ namespace djack.RogueSurvivor.Engine
     {
       if (msg.Text.Length == 0)
         return;
-      if (this.m_MessageManager.Count >= 7)
-        this.m_MessageManager.Clear();
-      msg.Text = string.Format("{0} {1}", (object) this.m_Session.WorldTime.TurnCounter, (object) this.Capitalize(msg.Text));
-      this.m_MessageManager.Add(msg);
+      if (m_MessageManager.Count >= 7)
+                m_MessageManager.Clear();
+      msg.Text = string.Format("{0} {1}", (object)m_Session.WorldTime.TurnCounter, (object)Capitalize(msg.Text));
+            m_MessageManager.Add(msg);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -455,150 +455,150 @@ namespace djack.RogueSurvivor.Engine
     {
       if (msg == null)
         throw new ArgumentNullException("msg");
-      if (this.m_Player == null || this.m_Player.IsSleeping || location.Map != this.m_Player.Location.Map || (double) Rules.StdDistance(this.m_Player.Location.Position, location.Position) > (double) this.m_Player.AudioRange)
+      if (m_Player == null || m_Player.IsSleeping || location.Map != m_Player.Location.Map || (double) Rules.StdDistance(m_Player.Location.Position, location.Position) > (double)m_Player.AudioRange)
         return;
-      msg.Color = this.PLAYER_AUDIO_COLOR;
-      this.AddMessage(msg);
-      if (this.m_IsPlayerLongWait)
-        this.m_IsPlayerLongWaitForcedStop = true;
-      this.RedrawPlayScreen();
+      msg.Color = PLAYER_AUDIO_COLOR;
+            AddMessage(msg);
+      if (m_IsPlayerLongWait)
+                m_IsPlayerLongWaitForcedStop = true;
+            RedrawPlayScreen();
     }
 
     private djack.RogueSurvivor.Data.Message MakePlayerCentricMessage(string eventText, Point position)
     {
-      Point v = new Point(position.X - this.m_Player.Location.Position.X, position.Y - this.m_Player.Location.Position.Y);
-      return new djack.RogueSurvivor.Data.Message(string.Format("{0} {1} tiles to the {2}.", (object) eventText, (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v)), this.m_Session.WorldTime.TurnCounter);
+      Point v = new Point(position.X - m_Player.Location.Position.X, position.Y - m_Player.Location.Position.Y);
+      return new djack.RogueSurvivor.Data.Message(string.Format("{0} {1} tiles to the {2}.", (object) eventText, (object) (int) Rules.StdDistance(v), (object) Direction.ApproximateFromVector(v)), m_Session.WorldTime.TurnCounter);
     }
 
     private djack.RogueSurvivor.Data.Message MakeErrorMessage(string text)
     {
-      return new djack.RogueSurvivor.Data.Message(text, this.m_Session.WorldTime.TurnCounter, Color.Red);
+      return new djack.RogueSurvivor.Data.Message(text, m_Session.WorldTime.TurnCounter, Color.Red);
     }
 
     private djack.RogueSurvivor.Data.Message MakeYesNoMessage(string question)
     {
-      return new djack.RogueSurvivor.Data.Message(string.Format("{0}? Y to confirm, N to cancel", (object) question), this.m_Session.WorldTime.TurnCounter, Color.Yellow);
+      return new djack.RogueSurvivor.Data.Message(string.Format("{0}? Y to confirm, N to cancel", (object) question), m_Session.WorldTime.TurnCounter, Color.Yellow);
     }
 
     private string ActorVisibleIdentity(Actor actor)
     {
-      if (!this.IsVisibleToPlayer(actor))
+      if (!IsVisibleToPlayer(actor))
         return "someone";
       return actor.TheName;
     }
 
     private string ObjectVisibleIdentity(MapObject mapObj)
     {
-      if (!this.IsVisibleToPlayer(mapObj))
+      if (!IsVisibleToPlayer(mapObj))
         return "something";
       return mapObj.TheName;
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat)
     {
-      return this.MakeMessage(actor, doWhat, this.OTHER_ACTION_COLOR);
+      return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, Color color)
     {
       StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.Append(this.ActorVisibleIdentity(actor));
+      stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
-      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), this.m_Session.WorldTime.TurnCounter)
+      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), m_Session.WorldTime.TurnCounter)
       {
-        Color = !actor.IsPlayer ? color : this.PLAYER_ACTION_COLOR
+        Color = !actor.IsPlayer ? color : PLAYER_ACTION_COLOR
       };
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, Actor target)
     {
-      return this.MakeMessage(actor, doWhat, target, ".");
+      return MakeMessage(actor, doWhat, target, ".");
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd)
     {
       StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.Append(this.ActorVisibleIdentity(actor));
+      stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
       stringBuilder.Append(" ");
-      stringBuilder.Append(this.ActorVisibleIdentity(target));
+      stringBuilder.Append(ActorVisibleIdentity(target));
       stringBuilder.Append(phraseEnd);
-      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), this.m_Session.WorldTime.TurnCounter)
+      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), m_Session.WorldTime.TurnCounter)
       {
-        Color = actor.IsPlayer || target.IsPlayer ? this.PLAYER_ACTION_COLOR : this.OTHER_ACTION_COLOR
+        Color = actor.IsPlayer || target.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR
       };
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, MapObject target)
     {
-      return this.MakeMessage(actor, doWhat, target, ".");
+      return MakeMessage(actor, doWhat, target, ".");
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
       StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.Append(this.ActorVisibleIdentity(actor));
+      stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
       stringBuilder.Append(" ");
-      stringBuilder.Append(this.ObjectVisibleIdentity(target));
+      stringBuilder.Append(ObjectVisibleIdentity(target));
       stringBuilder.Append(phraseEnd);
-      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), this.m_Session.WorldTime.TurnCounter)
+      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), m_Session.WorldTime.TurnCounter)
       {
-        Color = !actor.IsPlayer ? this.OTHER_ACTION_COLOR : this.PLAYER_ACTION_COLOR
+        Color = !actor.IsPlayer ? OTHER_ACTION_COLOR : PLAYER_ACTION_COLOR
       };
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, Item target)
     {
-      return this.MakeMessage(actor, doWhat, target, ".");
+      return MakeMessage(actor, doWhat, target, ".");
     }
 
     private djack.RogueSurvivor.Data.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd)
     {
       StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.Append(this.ActorVisibleIdentity(actor));
+      stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
       stringBuilder.Append(" ");
       stringBuilder.Append(target.TheName);
       stringBuilder.Append(phraseEnd);
-      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), this.m_Session.WorldTime.TurnCounter)
+      return new djack.RogueSurvivor.Data.Message(stringBuilder.ToString(), m_Session.WorldTime.TurnCounter)
       {
-        Color = !actor.IsPlayer ? this.OTHER_ACTION_COLOR : this.PLAYER_ACTION_COLOR
+        Color = !actor.IsPlayer ? OTHER_ACTION_COLOR : PLAYER_ACTION_COLOR
       };
     }
 
     private void ClearMessages()
     {
-      this.m_MessageManager.Clear();
+            m_MessageManager.Clear();
     }
 
     private void ClearMessagesHistory()
     {
-      this.m_MessageManager.ClearHistory();
+            m_MessageManager.ClearHistory();
     }
 
     private void RemoveLastMessage()
     {
-      this.m_MessageManager.RemoveLastMessage();
+            m_MessageManager.RemoveLastMessage();
     }
 
     private void DrawMessages()
     {
-      this.m_MessageManager.Draw(this.m_UI, this.m_Session.LastTurnPlayerActed, 4, 676);
+            m_MessageManager.Draw(m_UI, m_Session.LastTurnPlayerActed, 4, 676);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AddMessagePressEnter()
     {
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.RedrawPlayScreen();
-      this.WaitEnter();
-      this.RemoveLastMessage();
-      this.RedrawPlayScreen();
+            AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            RedrawPlayScreen();
+            WaitEnter();
+            RemoveLastMessage();
+            RedrawPlayScreen();
     }
 
     private string Conjugate(Actor actor, string verb)
@@ -669,99 +669,99 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!RogueGame.s_Options.IsAnimDelayOn)
         return;
-      this.m_UI.UI_Wait(msecs);
+            m_UI.UI_Wait(msecs);
     }
 
     public void Run()
     {
-      this.InitDirectories();
-      this.LoadData();
-      this.LoadOptions();
-      this.LoadHints();
-      this.ApplyOptions(false);
-      this.LoadKeybindings();
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading music...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
-      this.m_MusicManager.Load(GameMusics.ARMY, GameMusics.ARMY_FILE);
-      this.m_MusicManager.Load(GameMusics.BIGBEAR_THEME_SONG, GameMusics.BIGBEAR_THEME_SONG_FILE);
-      this.m_MusicManager.Load(GameMusics.BIKER, GameMusics.BIKER_FILE);
-      this.m_MusicManager.Load(GameMusics.CHAR_UNDERGROUND_FACILITY, GameMusics.CHAR_UNDERGROUND_FACILITY_FILE);
-      this.m_MusicManager.Load(GameMusics.DUCKMAN_THEME_SONG, GameMusics.DUCKMAN_THEME_SONG_FILE);
-      this.m_MusicManager.Load(GameMusics.FAMU_FATARU_THEME_SONG, GameMusics.FAMU_FATARU_THEME_SONG_FILE);
-      this.m_MusicManager.Load(GameMusics.FIGHT, GameMusics.FIGHT_FILE);
-      this.m_MusicManager.Load(GameMusics.GANGSTA, GameMusics.GANGSTA_FILE);
-      this.m_MusicManager.Load(GameMusics.HANS_VON_HANZ_THEME_SONG, GameMusics.HANS_VON_HANZ_THEME_SONG_FILE);
-      this.m_MusicManager.Load(GameMusics.HEYTHERE, GameMusics.HEYTHERE_FILE);
-      this.m_MusicManager.Load(GameMusics.HOSPITAL, GameMusics.HOSPITAL_FILE);
-      this.m_MusicManager.Load(GameMusics.INSANE, GameMusics.INSANE_FILE);
-      this.m_MusicManager.Load(GameMusics.INTERLUDE, GameMusics.INTERLUDE_FILE);
-      this.m_MusicManager.Load(GameMusics.INTRO, GameMusics.INTRO_FILE);
-      this.m_MusicManager.Load(GameMusics.LIMBO, GameMusics.LIMBO_FILE);
-      this.m_MusicManager.Load(GameMusics.PLAYER_DEATH, GameMusics.PLAYER_DEATH_FILE);
-      this.m_MusicManager.Load(GameMusics.REINCARNATE, GameMusics.REINCARNATE_FILE);
-      this.m_MusicManager.Load(GameMusics.ROGUEDJACK_THEME_SONG, GameMusics.ROGUEDJACK_THEME_SONG_FILE);
-      this.m_MusicManager.Load(GameMusics.SANTAMAN_THEME_SONG, GameMusics.SANTAMAN_THEME_SONG_FILE);
-      this.m_MusicManager.Load(GameMusics.SEWERS, GameMusics.SEWERS_FILE);
-      this.m_MusicManager.Load(GameMusics.SLEEP, GameMusics.SLEEP_FILE);
-      this.m_MusicManager.Load(GameMusics.SUBWAY, GameMusics.SUBWAY_FILE);
-      this.m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
-      this.m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
-      this.m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
-      this.m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
-      this.LoadManual();
-      this.LoadHiScoreTable();
-      while (this.m_IsGameRunning)
-        this.GameLoop();
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.Dispose();
-      this.m_UI.UI_DoQuit();
+            InitDirectories();
+            LoadData();
+            LoadOptions();
+            LoadHints();
+            ApplyOptions(false);
+            LoadKeybindings();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading music...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
+            m_MusicManager.Load(GameMusics.ARMY, GameMusics.ARMY_FILE);
+            m_MusicManager.Load(GameMusics.BIGBEAR_THEME_SONG, GameMusics.BIGBEAR_THEME_SONG_FILE);
+            m_MusicManager.Load(GameMusics.BIKER, GameMusics.BIKER_FILE);
+            m_MusicManager.Load(GameMusics.CHAR_UNDERGROUND_FACILITY, GameMusics.CHAR_UNDERGROUND_FACILITY_FILE);
+            m_MusicManager.Load(GameMusics.DUCKMAN_THEME_SONG, GameMusics.DUCKMAN_THEME_SONG_FILE);
+            m_MusicManager.Load(GameMusics.FAMU_FATARU_THEME_SONG, GameMusics.FAMU_FATARU_THEME_SONG_FILE);
+            m_MusicManager.Load(GameMusics.FIGHT, GameMusics.FIGHT_FILE);
+            m_MusicManager.Load(GameMusics.GANGSTA, GameMusics.GANGSTA_FILE);
+            m_MusicManager.Load(GameMusics.HANS_VON_HANZ_THEME_SONG, GameMusics.HANS_VON_HANZ_THEME_SONG_FILE);
+            m_MusicManager.Load(GameMusics.HEYTHERE, GameMusics.HEYTHERE_FILE);
+            m_MusicManager.Load(GameMusics.HOSPITAL, GameMusics.HOSPITAL_FILE);
+            m_MusicManager.Load(GameMusics.INSANE, GameMusics.INSANE_FILE);
+            m_MusicManager.Load(GameMusics.INTERLUDE, GameMusics.INTERLUDE_FILE);
+            m_MusicManager.Load(GameMusics.INTRO, GameMusics.INTRO_FILE);
+            m_MusicManager.Load(GameMusics.LIMBO, GameMusics.LIMBO_FILE);
+            m_MusicManager.Load(GameMusics.PLAYER_DEATH, GameMusics.PLAYER_DEATH_FILE);
+            m_MusicManager.Load(GameMusics.REINCARNATE, GameMusics.REINCARNATE_FILE);
+            m_MusicManager.Load(GameMusics.ROGUEDJACK_THEME_SONG, GameMusics.ROGUEDJACK_THEME_SONG_FILE);
+            m_MusicManager.Load(GameMusics.SANTAMAN_THEME_SONG, GameMusics.SANTAMAN_THEME_SONG_FILE);
+            m_MusicManager.Load(GameMusics.SEWERS, GameMusics.SEWERS_FILE);
+            m_MusicManager.Load(GameMusics.SLEEP, GameMusics.SLEEP_FILE);
+            m_MusicManager.Load(GameMusics.SUBWAY, GameMusics.SUBWAY_FILE);
+            m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
+            m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
+            m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
+            m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
+            LoadManual();
+            LoadHiScoreTable();
+      while (m_IsGameRunning)
+                GameLoop();
+            m_MusicManager.StopAll();
+            m_MusicManager.Dispose();
+            m_UI.UI_DoQuit();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void GameLoop()
     {
-      this.HandleMainMenu();
-      while (this.m_Player != null && !this.m_Player.IsDead && this.m_IsGameRunning)
+            HandleMainMenu();
+      while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
         DateTime now = DateTime.Now;
-        this.m_HasLoadedGame = false;
-        this.AdvancePlay(this.m_Session.CurrentMap.District, RogueGame.SimFlags.NOT_SIMULATING);
-        if (!this.m_IsGameRunning)
+                m_HasLoadedGame = false;
+                AdvancePlay(m_Session.CurrentMap.District, RogueGame.SimFlags.NOT_SIMULATING);
+        if (!m_IsGameRunning)
           break;
-        this.m_Session.Scoring.RealLifePlayingTime = this.m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
+                m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
       }
     }
 
     private void InitDirectories()
     {
       int gy1 = 0;
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy1, new Color?());
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-      this.m_UI.UI_Repaint();
-      if (!(false | this.CheckDirectory(RogueGame.GetUserBasePath(), "base user", ref gy2) | this.CheckDirectory(RogueGame.GetUserConfigPath(), "config", ref gy2) | this.CheckDirectory(RogueGame.GetUserDocsPath(), "docs", ref gy2) | this.CheckDirectory(RogueGame.GetUserGraveyardPath(), "graveyard", ref gy2) | this.CheckDirectory(RogueGame.GetUserSavesPath(), "saves", ref gy2) | this.CheckDirectory(RogueGame.GetUserScreenshotsPath(), "screenshots", ref gy2) | this.CheckCopyOfManual()))
+            m_UI.UI_Repaint();
+      if (!(false | CheckDirectory(RogueGame.GetUserBasePath(), "base user", ref gy2) | CheckDirectory(RogueGame.GetUserConfigPath(), "config", ref gy2) | CheckDirectory(RogueGame.GetUserDocsPath(), "docs", ref gy2) | CheckDirectory(RogueGame.GetUserGraveyardPath(), "graveyard", ref gy2) | CheckDirectory(RogueGame.GetUserSavesPath(), "saves", ref gy2) | CheckDirectory(RogueGame.GetUserScreenshotsPath(), "screenshots", ref gy2) | CheckCopyOfManual()))
         return;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Directories and game manual created.", 0, gy2, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Directories and game manual created.", 0, gy2, new Color?());
       int gy3 = gy2 + 14;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Your game data directory is in the game folder:", 0, gy3, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Your game data directory is in the game folder:", 0, gy3, new Color?());
       int gy4 = gy3 + 14;
-      this.m_UI.UI_DrawString(Color.LightGreen, RogueGame.GetUserBasePath(), 0, gy4, new Color?());
+            m_UI.UI_DrawString(Color.LightGreen, RogueGame.GetUserBasePath(), 0, gy4, new Color?());
       int gy5 = gy4 + 14;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy5, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy5, new Color?());
       int num = gy5 + 14;
-      this.DrawFootnote(Color.White, "press ENTER");
-      this.m_UI.UI_Repaint();
-      this.WaitEnter();
+            DrawFootnote(Color.White, "press ENTER");
+            m_UI.UI_Repaint();
+            WaitEnter();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -784,42 +784,42 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        if (!this.m_MusicManager.IsPlaying(GameMusics.INTRO) && !this.m_PlayedIntro)
+        if (!m_MusicManager.IsPlaying(GameMusics.INTRO) && !m_PlayedIntro)
         {
-          this.m_MusicManager.StopAll();
-          this.m_MusicManager.Play(GameMusics.INTRO);
-          this.m_PlayedIntro = true;
+                    m_MusicManager.StopAll();
+                    m_MusicManager.Play(GameMusics.INTRO);
+                    m_PlayedIntro = true;
         }
         int gy1;
         int gx1 = gy1 = 0;
-        this.m_UI.UI_Clear(Color.Black);
-        this.DrawHeader();
+                m_UI.UI_Clear(Color.Black);
+                DrawHeader();
         gy1 += 14;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
         gy1 += 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.White, (string[]) null, gx1, ref gy1, 256);
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to select");
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.White, (string[]) null, gx1, ref gy1, 256);
+                DrawFootnote(Color.White, "cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26)
         {
           for (int index = 0; index < 10; ++index)
           {
-            int gx2 = this.m_Rules.Roll(0, 1024);
-            int gy2 = this.m_Rules.Roll(0, 768);
-            this.m_UI.UI_DrawImage("Actors\\santaman", gx2, gy2);
-            this.m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
+            int gx2 = m_Rules.Roll(0, 1024);
+            int gy2 = m_Rules.Roll(0, 768);
+                        m_UI.UI_DrawImage("Actors\\santaman", gx2, gy2);
+                        m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
         }
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             switch (currentChoice)
             {
               case 0:
-                if (this.HandleNewCharacter())
+                if (HandleNewCharacter())
                 {
-                  this.StartNewGame();
+                                    StartNewGame();
                   flag1 = false;
                   break;
                 }
@@ -828,34 +828,34 @@ namespace djack.RogueSurvivor.Engine
                 if (flag2)
                 {
                   gy1 += 28;
-                  this.m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
-                  this.m_UI.UI_Repaint();
-                  this.LoadGame(RogueGame.GetUserSave());
+                                    m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
+                                    m_UI.UI_Repaint();
+                                    LoadGame(RogueGame.GetUserSave());
                   flag1 = false;
                   break;
                 }
                 break;
               case 2:
-                this.HandleRedefineKeys();
+                                HandleRedefineKeys();
                 break;
               case 3:
-                this.HandleOptions(false);
-                this.ApplyOptions(false);
+                                HandleOptions(false);
+                                ApplyOptions(false);
                 break;
               case 4:
-                this.HandleHelpMode();
+                                HandleHelpMode();
                 break;
               case 5:
-                this.HandleHintsScreen();
+                                HandleHintsScreen();
                 break;
               case 6:
-                this.HandleHiScores(true);
+                                HandleHiScores(true);
                 break;
               case 7:
-                this.HandleCredits();
+                                HandleCredits();
                 break;
               case 8:
-                this.m_IsGameRunning = false;
+                                m_IsGameRunning = false;
                 flag1 = false;
                 break;
             }
@@ -879,32 +879,32 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleNewCharacter()
     {
       DiceRoller roller = new DiceRoller();
-      this.m_Session.Reset();
+            m_Session.Reset();
       bool isUndead;
-      if (!this.HandleNewGameMode() || !this.HandleNewCharacterRace(roller, out isUndead))
+      if (!HandleNewGameMode() || !HandleNewCharacterRace(roller, out isUndead))
         return false;
-      this.m_CharGen.IsUndead = isUndead;
+            m_CharGen.IsUndead = isUndead;
       if (isUndead)
       {
         GameActors.IDs modelID;
-        if (!this.HandleNewCharacterUndeadType(roller, out modelID))
+        if (!HandleNewCharacterUndeadType(roller, out modelID))
           return false;
-        this.m_CharGen.UndeadModel = modelID;
+                m_CharGen.UndeadModel = modelID;
       }
       else
       {
         bool isMale;
-        if (!this.HandleNewCharacterGender(roller, out isMale))
+        if (!HandleNewCharacterGender(roller, out isMale))
           return false;
-        this.m_CharGen.IsMale = isMale;
+                m_CharGen.IsMale = isMale;
       }
       if (!isUndead)
       {
         Skills.IDs skID;
-        if (!this.HandleNewCharacterSkill(roller, out skID))
+        if (!HandleNewCharacterSkill(roller, out skID))
           return false;
-        this.m_CharGen.StartingSkill = skID;
-        this.m_Session.Scoring.StartingSkill = skID;
+                m_CharGen.StartingSkill = skID;
+                m_Session.Scoring.StartingSkill = skID;
       }
       return true;
     }
@@ -928,12 +928,12 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int gy1;
         int gx = gy1 = 0;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
         int gy2 = gy1 + 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
         int gy3 = gy2 + 28;
         string[] strArray = new string[0];
         switch (currentChoice)
@@ -976,33 +976,33 @@ namespace djack.RogueSurvivor.Engine
         }
         foreach (string text in strArray)
         {
-          this.m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy3, new Color?());
+                    m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy3, new Color?());
           gy3 += 14;
         }
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             switch (currentChoice)
             {
               case 0:
-                this.m_Session.GameMode = GameMode.GM_STANDARD;
+                                m_Session.GameMode = GameMode.GM_STANDARD;
                 flag2 = true;
                 flag1 = false;
                 break;
               case 1:
-                this.m_Session.GameMode = GameMode.GM_CORPSES_INFECTION;
+                                m_Session.GameMode = GameMode.GM_CORPSES_INFECTION;
                 flag2 = true;
                 flag1 = false;
                 break;
               case 2:
-                this.m_Session.GameMode = GameMode.GM_VINTAGE;
+                                m_Session.GameMode = GameMode.GM_VINTAGE;
                 RogueGame.s_Options.AllowUndeadsEvolution = false;
                 RogueGame.s_Options.ShamblersUpgrade = false;
                 RogueGame.s_Options.RatsUpgrade = false;
                 RogueGame.s_Options.SkeletonsUpgrade = false;
-                this.ApplyOptions(false);
+                                ApplyOptions(false);
                 flag2 = true;
                 flag1 = false;
                 break;
@@ -1049,16 +1049,16 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int gy1;
         int gx = gy1 = 0;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", (object) Session.DescGameMode(this.m_Session.GameMode)), gx, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", (object) Session.DescGameMode(m_Session.GameMode)), gx, gy1, new Color?());
         int gy2 = gy1 + 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
         int num = gy2 + 28;
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             switch (currentChoice)
@@ -1066,11 +1066,11 @@ namespace djack.RogueSurvivor.Engine
               case 0:
                 isUndead = roller.RollChance(50);
                 int gy3 = num + 14;
-                this.m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? (object) "Undead" : (object) "Living"), gx, gy3, new Color?());
+                                m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? (object) "Undead" : (object) "Living"), gx, gy3, new Color?());
                 int gy4 = gy3 + 14;
-                this.m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
-                this.m_UI.UI_Repaint();
-                if (this.WaitYesOrNo())
+                                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
+                                m_UI.UI_Repaint();
+                if (WaitYesOrNo())
                 {
                   flag2 = true;
                   flag1 = false;
@@ -1112,8 +1112,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewCharacterGender(DiceRoller roller, out bool isMale)
     {
-      ActorModel maleCivilian = this.GameActors.MaleCivilian;
-      ActorModel femaleCivilian = this.GameActors.FemaleCivilian;
+      ActorModel maleCivilian = GameActors.MaleCivilian;
+      ActorModel femaleCivilian = GameActors.FemaleCivilian;
       string[] entries = new string[3]
       {
         "*Random*",
@@ -1132,15 +1132,15 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int gy;
         int gx = gy = 0;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", (object) Session.DescGameMode(this.m_Session.GameMode)), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", (object) Session.DescGameMode(m_Session.GameMode)), gx, gy, new Color?());
         gy += 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy, 256);
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy, 256);
+                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             switch (currentChoice)
@@ -1148,11 +1148,11 @@ namespace djack.RogueSurvivor.Engine
               case 0:
                 isMale = roller.RollChance(50);
                 gy += 14;
-                this.m_UI.UI_DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? (object) "Male" : (object) "Female"), gx, gy, new Color?());
+                                m_UI.UI_DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? (object) "Male" : (object) "Female"), gx, gy, new Color?());
                 gy += 14;
-                this.m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
-                this.m_UI.UI_Repaint();
-                if (this.WaitYesOrNo())
+                                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
+                                m_UI.UI_Repaint();
+                if (WaitYesOrNo())
                 {
                   flag2 = true;
                   flag1 = false;
@@ -1199,11 +1199,11 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewCharacterUndeadType(DiceRoller roller, out GameActors.IDs modelID)
     {
-      ActorModel skeleton = this.GameActors.Skeleton;
-      ActorModel zombie = this.GameActors.Zombie;
-      ActorModel maleZombified = this.GameActors.MaleZombified;
-      ActorModel femaleZombified = this.GameActors.FemaleZombified;
-      ActorModel zombieMaster = this.GameActors.ZombieMaster;
+      ActorModel skeleton = GameActors.Skeleton;
+      ActorModel zombie = GameActors.Zombie;
+      ActorModel maleZombified = GameActors.MaleZombified;
+      ActorModel femaleZombified = GameActors.FemaleZombified;
+      ActorModel zombieMaster = GameActors.ZombieMaster;
       string[] entries = new string[6]
       {
         "*Random*",
@@ -1216,11 +1216,11 @@ namespace djack.RogueSurvivor.Engine
       string[] values = new string[6]
       {
         "(picks a type at random for you)",
-        this.DescribeUndeadModelStatLine(skeleton),
-        this.DescribeUndeadModelStatLine(zombie),
-        this.DescribeUndeadModelStatLine(maleZombified),
-        this.DescribeUndeadModelStatLine(femaleZombified),
-        this.DescribeUndeadModelStatLine(zombieMaster)
+        DescribeUndeadModelStatLine(skeleton),
+        DescribeUndeadModelStatLine(zombie),
+        DescribeUndeadModelStatLine(maleZombified),
+        DescribeUndeadModelStatLine(femaleZombified),
+        DescribeUndeadModelStatLine(zombieMaster)
       };
       modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
       bool flag1 = true;
@@ -1228,15 +1228,15 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int gy1;
         int gx = gy1 = 0;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", (object) Session.DescGameMode(this.m_Session.GameMode)), gx, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", (object) Session.DescGameMode(m_Session.GameMode)), gx, gy1, new Color?());
         int gy2 = gy1 + 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
+                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             switch (currentChoice)
@@ -1264,11 +1264,11 @@ namespace djack.RogueSurvivor.Engine
                     throw new ArgumentOutOfRangeException("unhandled select " + (object) currentChoice);
                 }
                 int gy3 = gy2 + 14;
-                this.m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object) this.GameActors[modelID].Name), gx, gy3, new Color?());
+                                m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3, new Color?());
                 int gy4 = gy3 + 14;
-                this.m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
-                this.m_UI.UI_Repaint();
-                if (this.WaitYesOrNo())
+                                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
+                                m_UI.UI_Repaint();
+                if (WaitYesOrNo())
                 {
                   flag2 = true;
                   flag1 = false;
@@ -1287,13 +1287,13 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case 3:
                 modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-                this.m_CharGen.IsMale = true;
+                                m_CharGen.IsMale = true;
                 flag2 = true;
                 flag1 = false;
                 break;
               case 4:
                 modelID = GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED;
-                this.m_CharGen.IsMale = false;
+                                m_CharGen.IsMale = false;
                 flag2 = true;
                 flag1 = false;
                 break;
@@ -1336,7 +1336,7 @@ namespace djack.RogueSurvivor.Engine
       {
         idsArray[id] = (Skills.IDs) id;
         entries[id + 1] = Skills.Name(idsArray[id]);
-        values[id + 1] = string.Format("{0} max - {1}", (object) Skills.MaxSkillLevel(id), (object) this.DescribeSkillShort(idsArray[id]));
+        values[id + 1] = string.Format("{0} max - {1}", (object) Skills.MaxSkillLevel(id), (object)DescribeSkillShort(idsArray[id]));
       }
       skID = Skills.IDs._FIRST;
       bool flag1 = true;
@@ -1344,24 +1344,24 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int gy1;
         int gx = gy1 = 0;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", (object) Session.DescGameMode(this.m_Session.GameMode), this.m_CharGen.IsMale ? (object) "Male" : (object) "Female"), gx, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", (object) Session.DescGameMode(m_Session.GameMode), m_CharGen.IsMale ? (object) "Male" : (object) "Female"), gx, gy1, new Color?());
         int gy2 = gy1 + 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
+                DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
             int gy3 = gy2 + 14;
-            this.m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", (object) Skills.Name(skID)), gx, gy3, new Color?());
+                        m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", (object) Skills.Name(skID)), gx, gy3, new Color?());
             int gy4 = gy3 + 14;
-            this.m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
-            this.m_UI.UI_Repaint();
-            if (this.WaitYesOrNo())
+                        m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
+                        m_UI.UI_Repaint();
+            if (WaitYesOrNo())
             {
               flag2 = true;
               flag1 = false;
@@ -1391,33 +1391,33 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadManual()
     {
-      this.m_UI.UI_Clear(Color.Black);
+            m_UI.UI_Clear(Color.Black);
       int num1 = 0;
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
       int gy1 = num1 + 14;
-      this.m_UI.UI_Repaint();
-      this.m_Manual = new TextFile();
-      this.m_ManualLine = 0;
-      if (!this.m_Manual.Load(this.GetUserManualFilePath()))
+            m_UI.UI_Repaint();
+            m_Manual = new TextFile();
+            m_ManualLine = 0;
+      if (!m_Manual.Load(GetUserManualFilePath()))
       {
-        this.m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
-        this.m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy2, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy2, new Color?());
         int num2 = gy2 + 14;
-        this.m_UI.UI_Repaint();
-        this.DrawFootnote(Color.White, "press ENTER");
-        this.WaitEnter();
-        this.m_Manual = (TextFile) null;
+                m_UI.UI_Repaint();
+                DrawFootnote(Color.White, "press ENTER");
+                WaitEnter();
+                m_Manual = (TextFile) null;
       }
       else
       {
-        this.m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Repaint();
         m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy2, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy2, new Color?());
+                m_UI.UI_Repaint();
       }
     }
 
@@ -1426,15 +1426,15 @@ namespace djack.RogueSurvivor.Engine
       TextFile textFile = (TextFile) null;
       if (saveToTextfile)
         textFile = new TextFile();
-      this.m_UI.UI_Clear(Color.Black);
+            m_UI.UI_Clear(Color.Black);
       int num1 = 0;
-      this.DrawHeader();
+            DrawHeader();
       int gy1 = num1 + 14;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Hi Scores", 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Hi Scores", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
       int gy3 = gy2 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy3, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy3, new Color?());
       int gy4 = gy3 + 14;
       if (saveToTextfile)
       {
@@ -1442,18 +1442,18 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append("Hi Scores");
         textFile.Append("Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time");
       }
-      for (int index = 0; index < this.m_HiScoreTable.Count; ++index)
+      for (int index = 0; index < m_HiScoreTable.Count; ++index)
       {
         Color color = index == 0 ? Color.LightYellow : (index == 1 ? Color.LightCyan : (index == 2 ? Color.LightGreen : Color.DimGray));
-        this.m_UI.UI_DrawStringBold(color, "------------------------------------------------------------------------------------------------------------------------", 0, gy4, new Color?());
+                m_UI.UI_DrawStringBold(color, "------------------------------------------------------------------------------------------------------------------------", 0, gy4, new Color?());
         int gy5 = gy4 + 14;
-        HiScore hiScore = this.m_HiScoreTable[index];
-        string str = string.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}", (object) (index + 1), (object) this.TruncateString(hiScore.Name, 25), (object) hiScore.TotalPoints, (object) hiScore.DifficultyPercent, (object) hiScore.SurvivalPoints, (object) hiScore.KillPoints, (object) hiScore.AchievementPoints, (object) new WorldTime(hiScore.TurnSurvived).ToString(), (object) this.TimeSpanToString(hiScore.PlayingTime));
-        this.m_UI.UI_DrawStringBold(color, str, 0, gy5, new Color?());
+        HiScore hiScore = m_HiScoreTable[index];
+        string str = string.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}", (object) (index + 1), (object)TruncateString(hiScore.Name, 25), (object) hiScore.TotalPoints, (object) hiScore.DifficultyPercent, (object) hiScore.SurvivalPoints, (object) hiScore.KillPoints, (object) hiScore.AchievementPoints, (object) new WorldTime(hiScore.TurnSurvived).ToString(), (object)TimeSpanToString(hiScore.PlayingTime));
+                m_UI.UI_DrawStringBold(color, str, 0, gy5, new Color?());
         int gy6 = gy5 + 14;
-        this.m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.SkillsDescription), 0, gy6, new Color?());
+                m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.SkillsDescription), 0, gy6, new Color?());
         int gy7 = gy6 + 14;
-        this.m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.Death), 0, gy7, new Color?());
+                m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.Death), 0, gy7, new Color?());
         gy4 = gy7 + 14;
         if (saveToTextfile)
         {
@@ -1463,135 +1463,135 @@ namespace djack.RogueSurvivor.Engine
           textFile.Append(string.Format("     | {0}", (object) hiScore.Death));
         }
       }
-      string scoreTextFilePath = this.GetUserHiScoreTextFilePath();
+      string scoreTextFilePath = GetUserHiScoreTextFilePath();
       if (saveToTextfile)
         textFile.Save(scoreTextFilePath);
-      this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy4, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy4, new Color?());
       int gy8 = gy4 + 14;
       if (saveToTextfile)
       {
-        this.m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy8, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy8, new Color?());
         int num2 = gy8 + 14;
       }
-      this.DrawFootnote(Color.White, "press ESC to leave");
-      this.m_UI.UI_Repaint();
-      this.WaitEscape();
+            DrawFootnote(Color.White, "press ESC to leave");
+            m_UI.UI_Repaint();
+            WaitEscape();
     }
 
     private void LoadHiScoreTable()
     {
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
-      this.m_HiScoreTable = HiScoreTable.Load(this.GetUserHiScoreFilePath());
-      if (this.m_HiScoreTable == null)
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
+            m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
+      if (m_HiScoreTable == null)
       {
-        this.m_HiScoreTable = new HiScoreTable(12);
-        this.m_HiScoreTable.Clear();
+                m_HiScoreTable = new HiScoreTable(12);
+                m_HiScoreTable.Clear();
       }
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
     }
 
     private void SaveHiScoreTable()
     {
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
-      HiScoreTable.Save(this.m_HiScoreTable, this.GetUserHiScoreFilePath());
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
+      HiScoreTable.Save(m_HiScoreTable, GetUserHiScoreFilePath());
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Saving hiscores table... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void StartNewGame()
     {
-      bool isUndead = this.m_CharGen.IsUndead;
-      this.GenerateWorld(true, RogueGame.s_Options.CitySize);
-      this.m_Session.Scoring.AddVisit(this.m_Session.WorldTime.TurnCounter, this.m_Player.Location.Map);
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", (object) this.m_Player.Location.Map.Name));
-      this.m_Session.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
+      bool isUndead = m_CharGen.IsUndead;
+            GenerateWorld(true, RogueGame.s_Options.CitySize);
+            m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", (object)m_Player.Location.Map.Name));
+            m_Session.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       if (RogueGame.s_Options.IsAdvisorEnabled)
       {
-        this.ClearMessages();
-        this.ClearMessagesHistory();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} during the game to change the options.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", 0, Color.Yellow));
-        this.RedrawPlayScreen();
-        this.WaitEnter();
+                ClearMessages();
+                ClearMessagesHistory();
+                AddMessage(new djack.RogueSurvivor.Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message("The hints help a beginner learning the basic controls.", 0, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message("You can disable the Advisor by going to the Options screen.", 0, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} during the game to change the options.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE)), 0, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", 0, Color.Yellow));
+                RedrawPlayScreen();
+                WaitEnter();
       }
-      this.ClearMessages();
-      this.ClearMessagesHistory();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("*****************************", 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("* Welcome to "+SetupConfig.GAME_NAME+" *", 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("* We hope you like Zombies  *", 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("*****************************", 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} for help", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} to redefine keys", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", 0, Color.Yellow));
-      this.RefreshPlayer();
-      this.RedrawPlayScreen();
-      this.WaitEnter();
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", (object) this.m_Player.Name), 0, Color.White));
-      this.RedrawPlayScreen();
-      this.RestartSimThread();
+            ClearMessages();
+            ClearMessagesHistory();
+            AddMessage(new djack.RogueSurvivor.Data.Message("*****************************", 0, Color.LightGreen));
+            AddMessage(new djack.RogueSurvivor.Data.Message("* Welcome to "+SetupConfig.GAME_NAME+" *", 0, Color.LightGreen));
+            AddMessage(new djack.RogueSurvivor.Data.Message("* We hope you like Zombies  *", 0, Color.LightGreen));
+            AddMessage(new djack.RogueSurvivor.Data.Message("*****************************", 0, Color.LightGreen));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} for help", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Press {0} to redefine keys", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
+            AddMessage(new djack.RogueSurvivor.Data.Message("<press ENTER>", 0, Color.Yellow));
+            RefreshPlayer();
+            RedrawPlayScreen();
+            WaitEnter();
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", (object)m_Player.Name), 0, Color.White));
+            RedrawPlayScreen();
+            RestartSimThread();
     }
 
     private void HandleCredits()
     {
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.PlayLooping(GameMusics.SLEEP);
-      this.m_UI.UI_Clear(Color.Black);
-      this.DrawHeader();
+            m_MusicManager.StopAll();
+            m_MusicManager.PlayLooping(GameMusics.SLEEP);
+            m_UI.UI_Clear(Color.Black);
+            DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Credits", 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Credits", 0, gy1, new Color?());
       gy1 += 2*BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Programming, Graphics & Music by Jacques Ruiz (roguedjack)", 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Programming, Graphics & Music by Jacques Ruiz (roguedjack)", 0, gy1, new Color?());
       gy1 += 2*BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Programming", 0, gy1, new Color?());
-      this.m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2010 Express", 256, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Programming", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2010 Express", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "(zaimoni)", 0, gy1, new Color?());
-      this.m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2015 Community", 256, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "(zaimoni)", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2015 Community", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Graphics softwares", 0, gy1, new Color?());
-      this.m_UI.UI_DrawString(Color.White, "- Inkscape, Paint.NET", 256, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Graphics softwares", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "- Inkscape, Paint.NET", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Sound & Music softwares", 0, gy1, new Color?());
-      this.m_UI.UI_DrawString(Color.White, "- GuitarPro 6, Audacity", 256, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Sound & Music softwares", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "- GuitarPro 6, Audacity", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Sound samples", 0, gy1, new Color?());
-      this.m_UI.UI_DrawString(Color.White, "- http://www.sound-fishing.net  http://www.soundsnap.com/", 256, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Sound samples", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "- http://www.sound-fishing.net  http://www.soundsnap.com/", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Installer", 0, gy1, new Color?());
-      this.m_UI.UI_DrawString(Color.White, "- NSIS", 256, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Installer", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "- NSIS", 256, gy1, new Color?());
       gy1 += 2*BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Contact", 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Contact", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "Email      : roguedjack@yahoo.fr", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "Email      : roguedjack@yahoo.fr", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "Blog       : http://roguesurvivor.blogspot.com/", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "Blog       : http://roguesurvivor.blogspot.com/", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "Fans Forum : http://roguesurvivor.proboards.com/", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "Fans Forum : http://roguesurvivor.proboards.com/", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "(zaimoni)", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "(zaimoni)", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "forum post : http://www.bay12forums.com/smf/index.php?topic=157701.0", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "forum post : http://www.bay12forums.com/smf/index.php?topic=157701.0", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "forum post : http://smf.cataclysmdda.com/index.php?topic=12463.0", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "forum post : http://smf.cataclysmdda.com/index.php?topic=12463.0", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawString(Color.White, "source code: https://bitbucket.org/zaimoni/roguesurvivor-revived", 0, gy1, new Color?());
+            m_UI.UI_DrawString(Color.White, "source code: https://bitbucket.org/zaimoni/roguesurvivor-revived", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-      this.m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
-      this.DrawFootnote(Color.White, "ESC to leave");
-      this.m_UI.UI_Repaint();
-      this.WaitEscape();
+            m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
+            DrawFootnote(Color.White, "ESC to leave");
+            m_UI.UI_Repaint();
+            WaitEscape();
     }
 
     private void HandleOptions(bool ingame)
@@ -1645,26 +1645,26 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         for (int index = 0; index < idsArray.Length; ++index)
-          values[index] = RogueGame.s_Options.DescribeValue(this.m_Session.GameMode, idsArray[index]);
+          values[index] = RogueGame.s_Options.DescribeValue(m_Session.GameMode, idsArray[index]);
         int gy;
         int gx = gy = 0;
-        this.m_UI.UI_Clear(Color.Black);
-        this.DrawHeader();
+                m_UI.UI_Clear(Color.Black);
+                DrawHeader();
         gy += 14;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", (object) Session.DescGameMode(this.m_Session.GameMode)), 0, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", (object) Session.DescGameMode(m_Session.GameMode)), 0, gy, new Color?());
         gy += 28;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 400);
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 400);
         gy += 14;
-        this.m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
         gy += 14;
         gy += 14;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_SURVIVOR, 0)), (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_SURVIVOR, 0)), (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
         gy += 14;
-        this.m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
         gy += 28;
-        this.DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Escape:
             flag = false;
@@ -1737,7 +1737,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.RevealStartingDistrict = !RogueGame.s_Options.RevealStartingDistrict;
                 break;
               case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                RogueGame.s_Options.AllowUndeadsEvolution = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.AllowUndeadsEvolution;
+                RogueGame.s_Options.AllowUndeadsEvolution = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.AllowUndeadsEvolution;
                 break;
               case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
                 RogueGame.s_Options.DayZeroUndeadsPercent -= 5;
@@ -1783,13 +1783,13 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE:
-                RogueGame.s_Options.RatsUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.RatsUpgrade;
+                RogueGame.s_Options.RatsUpgrade = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.RatsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-                RogueGame.s_Options.SkeletonsUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.SkeletonsUpgrade;
+                RogueGame.s_Options.SkeletonsUpgrade = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.SkeletonsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-                RogueGame.s_Options.ShamblersUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
+                RogueGame.s_Options.ShamblersUpgrade = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
             break;
@@ -1869,7 +1869,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.RevealStartingDistrict = !RogueGame.s_Options.RevealStartingDistrict;
                 break;
               case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                RogueGame.s_Options.AllowUndeadsEvolution = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.AllowUndeadsEvolution;
+                RogueGame.s_Options.AllowUndeadsEvolution = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.AllowUndeadsEvolution;
                 break;
               case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
                 RogueGame.s_Options.DayZeroUndeadsPercent += 5;
@@ -1915,15 +1915,15 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE:
-                RogueGame.s_Options.RatsUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.RatsUpgrade;
+                RogueGame.s_Options.RatsUpgrade = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.RatsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-                if (this.m_Session.GameMode == GameMode.GM_VINTAGE)
+                if (m_Session.GameMode == GameMode.GM_VINTAGE)
                   RogueGame.s_Options.SkeletonsUpgrade = false;
                 RogueGame.s_Options.SkeletonsUpgrade = !RogueGame.s_Options.SkeletonsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-                RogueGame.s_Options.ShamblersUpgrade = this.m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
+                RogueGame.s_Options.ShamblersUpgrade = m_Session.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
             break;
@@ -1936,10 +1936,10 @@ namespace djack.RogueSurvivor.Engine
         }
         if (RogueGame.s_Options.SimThread)
           RogueGame.s_Options.SimulateWhenSleeping = false;
-        this.ApplyOptions(false);
+                ApplyOptions(false);
       }
       while (flag);
-      this.SaveOptions();
+            SaveOptions();
     }
 
     private void HandleRedefineKeys()
@@ -2057,29 +2057,29 @@ namespace djack.RogueSurvivor.Engine
         };
         int gy;
         int gx = gy = 0;
-        this.m_UI.UI_Clear(Color.Black);
-        this.DrawHeader();
+                m_UI.UI_Clear(Color.Black);
+                DrawHeader();
         gy += 14;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
         gy += 14;
-        this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
+                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
         if (flag2)
         {
-          this.m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
+                    m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
           gy += 14;
         }
-        this.DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
-            this.m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", (object) entries[currentChoice]), gx, gy, new Color?());
-            this.m_UI.UI_Repaint();
+                        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", (object) entries[currentChoice]), gx, gy, new Color?());
+                        m_UI.UI_Repaint();
             bool flag3 = true;
             Keys key = Keys.None;
             do
             {
-              KeyEventArgs keyEventArgs = this.m_UI.UI_WaitKey();
+              KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
               if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt)
               {
                 key = keyEventArgs.KeyData;
@@ -2266,7 +2266,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-      this.SaveKeybindings();
+            SaveKeybindings();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -2286,22 +2286,22 @@ namespace djack.RogueSurvivor.Engine
         while (current.LocalTime.TurnCounter == turnCounter);
       }
 
-      if (district == this.m_Session.CurrentMap.District) {
+      if (district == m_Session.CurrentMap.District) {
         ++m_Session.WorldTime.TurnCounter;
         bool isNight2 = m_Session.WorldTime.IsNight;
         DayPhase phase2 = m_Session.WorldTime.Phase;
         if (isNight1 && !isNight2)
         {
-          AddMessage(new djack.RogueSurvivor.Data.Message("The sun is rising again for you...", this.m_Session.WorldTime.TurnCounter, this.DAY_COLOR));
+          AddMessage(new djack.RogueSurvivor.Data.Message("The sun is rising again for you...", m_Session.WorldTime.TurnCounter, DAY_COLOR));
           OnNewDay();
         }
         else if (!isNight1 && isNight2)
         {
-          AddMessage(new djack.RogueSurvivor.Data.Message("Night is falling upon you...", this.m_Session.WorldTime.TurnCounter, this.NIGHT_COLOR));
+          AddMessage(new djack.RogueSurvivor.Data.Message("Night is falling upon you...", m_Session.WorldTime.TurnCounter, NIGHT_COLOR));
           OnNewNight();
         }
         else if (phase1 != phase2)
-          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Time passes, it is now {0}...", (object) this.DescribeDayPhase(phase2)), this.m_Session.WorldTime.TurnCounter, isNight2 ? this.NIGHT_COLOR : this.DAY_COLOR));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Time passes, it is now {0}...", (object)DescribeDayPhase(phase2)), m_Session.WorldTime.TurnCounter, isNight2 ? NIGHT_COLOR : DAY_COLOR));
       }
 
       if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);
@@ -2317,7 +2317,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (!RogueGame.s_Options.IsSimON || m_Player == null || (!m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) || m_Player.Location.Map.District != district)
         return;
-      this.SimulateNearbyDistricts(district);
+            SimulateNearbyDistricts(district);
     }
 
     private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
@@ -2360,12 +2360,12 @@ namespace djack.RogueSurvivor.Engine
 
     private void RegenActorHitPoints(Actor actor, int hpRegen)
     {
-      actor.HitPoints = Math.Min(this.m_Rules.ActorMaxHPs(actor), actor.HitPoints + hpRegen);
+      actor.HitPoints = Math.Min(m_Rules.ActorMaxHPs(actor), actor.HitPoints + hpRegen);
     }
 
     private void RegenActorSleep(Actor actor, int sleepRegen)
     {
-      actor.SleepPoints = Math.Min(this.m_Rules.ActorMaxSleep(actor), actor.SleepPoints + sleepRegen);
+      actor.SleepPoints = Math.Min(m_Rules.ActorMaxSleep(actor), actor.SleepPoints + sleepRegen);
     }
 
     private void SpendActorSanity(Actor actor, int sanCost)
@@ -2378,7 +2378,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void RegenActorSanity(Actor actor, int sanRegen)
     {
-      actor.Sanity = Math.Min(this.m_Rules.ActorMaxSanity(actor), actor.Sanity + sanRegen);
+      actor.Sanity = Math.Min(m_Rules.ActorMaxSanity(actor), actor.Sanity + sanRegen);
     }
 
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
@@ -2388,10 +2388,10 @@ namespace djack.RogueSurvivor.Engine
           List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
           List<Corpse> corpseList2 = new List<Corpse>(map.CountCorpses);
           foreach (Corpse corpse in map.Corpses) {
-            if (this.m_Rules.RollChance(this.m_Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
+            if (m_Rules.RollChance(m_Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
               corpseList1.Add(corpse);
             } else {
-              this.InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
+                            InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
               if ((double) corpse.HitPoints <= 0.0) corpseList2.Add(corpse);
             }
           }
@@ -2403,15 +2403,15 @@ namespace djack.RogueSurvivor.Engine
                 m_Rules.ActorMaxHPs(corpse.DeadGuy);
                 corpseList3.Add(corpse);
                 Zombify((Actor) null, corpse.DeadGuy, false);
-                if (this.IsVisibleToPlayer(map, corpse.Position)) {
-                  this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("The corpse of {0} rise again!!", (object) corpse.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
-                  this.m_MusicManager.Play(GameSounds.UNDEAD_RISE);
+                if (IsVisibleToPlayer(map, corpse.Position)) {
+                                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("The corpse of {0} rise again!!", (object) corpse.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
+                                    m_MusicManager.Play(GameSounds.UNDEAD_RISE);
                 }
               }
             }
             foreach (Corpse c in corpseList3) DestroyCorpse(c, map);
           }
-          if (this.m_Player != null && this.m_Player.Location.Map == map) {
+          if (m_Player != null && m_Player.Location.Map == map) {
             foreach (Corpse c in corpseList2) {
               DestroyCorpse(c, map);
               if (IsVisibleToPlayer(map, c.Position))
@@ -2423,10 +2423,10 @@ namespace djack.RogueSurvivor.Engine
           List<Actor> actorList = null;
           foreach (Actor actor in map.Actors) {
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
-              int infectionPercent = this.m_Rules.ActorInfectionPercent(actor);
-              if (this.m_Rules.Roll(0, 1000) < this.m_Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
-                bool player = this.IsVisibleToPlayer(actor);
-                bool flag3 = actor == this.m_Player;
+              int infectionPercent = m_Rules.ActorInfectionPercent(actor);
+              if (m_Rules.Roll(0, 1000) < m_Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
+                bool player = IsVisibleToPlayer(actor);
+                bool flag3 = actor == m_Player;
                 if (actor.IsSleeping) DoWakeUp(actor);
                 bool flag4 = false;
                 if (infectionPercent >= Rules.INFECTION_LEVEL_5_DEATH) flag4 = true;
@@ -2458,7 +2458,7 @@ namespace djack.RogueSurvivor.Engine
                   if (actor.SleepPoints < 0) actor.SleepPoints = 0;
                   if (player) {
                     if (flag3) ClearMessages();
-                    AddMessage(this.MakeMessage(actor, string.Format("{0} sick and tired.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
+                    AddMessage(MakeMessage(actor, string.Format("{0} sick and tired.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
                     if (flag3) {
                       AddMessagePressEnter();
                       ClearMessages();
@@ -2468,7 +2468,7 @@ namespace djack.RogueSurvivor.Engine
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
                   if (player) {
                     if (flag3) ClearMessages();
-                    AddMessage(this.MakeMessage(actor, string.Format("{0} sick and weak.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
+                    AddMessage(MakeMessage(actor, string.Format("{0} sick and weak.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
                     if (flag3) {
                       AddMessagePressEnter();
                       ClearMessages();
@@ -2485,12 +2485,12 @@ namespace djack.RogueSurvivor.Engine
           if (actorList != null) {
             foreach (Actor actor in actorList) {
               if (IsVisibleToPlayer(actor))
-                AddMessage(this.MakeMessage(actor, string.Format("{0} of infection!", (object) this.Conjugate(actor, this.VERB_DIE))));
+                AddMessage(MakeMessage(actor, string.Format("{0} of infection!", (object)Conjugate(actor, VERB_DIE))));
               KillActor((Actor) null, actor, "infection");
               if (actor.IsPlayer) {
                 map.TryRemoveCorpseOf(actor);
                 Zombify((Actor) null, actor, false);
-                AddMessage(this.MakeMessage(actor, this.Conjugate(actor, "turn") + " into a Zombie!"));
+                AddMessage(MakeMessage(actor, Conjugate(actor, "turn") + " into a Zombie!"));
                 RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
@@ -2523,7 +2523,7 @@ namespace djack.RogueSurvivor.Engine
             num += 2;
           else if (map.Lighting == Lighting.OUTSIDE)
           {
-            switch (this.m_Session.World.Weather)
+            switch (m_Session.World.Weather)
             {
               case Weather._FIRST:
               case Weather.CLOUDY:
@@ -2552,11 +2552,11 @@ namespace djack.RogueSurvivor.Engine
             map.RemoveScent(scent);
         }
         foreach (Actor actor in map.Actors)
-          this.DropActorScent(actor);
+                    DropActorScent(actor);
         foreach (Actor actor in map.Actors)
         {
           if (!actor.IsSleeping)
-            actor.ActionPoints += this.m_Rules.ActorSpeed(actor);
+            actor.ActionPoints += m_Rules.ActorSpeed(actor);
           if (actor.StaminaPoints < actor.MaxSTA)
             actor.RegenStaminaPoints(Rules.STAMINA_REGEN_WAIT);
         }
@@ -2566,10 +2566,10 @@ namespace djack.RogueSurvivor.Engine
           if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
           {
             actor.IsRunning = false;
-            if (actor == this.m_Player)
+            if (actor == m_Player)
             {
-              this.AddMessage(this.MakeMessage(actor, string.Format("{0} too tired to continue running!", (object) this.Conjugate(actor, this.VERB_BE))));
-              this.RedrawPlayScreen();
+                            AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", (object)Conjugate(actor, VERB_BE))));
+                            RedrawPlayScreen();
             }
           }
         }
@@ -2579,7 +2579,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.Model.Abilities.HasToEat)
           {
             if (--actor.FoodPoints < 0) actor.FoodPoints = 0;
-            if (actor.IsStarving && this.m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
+            if (actor.IsStarving && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
             {
               if (actorList1 == null)
                 actorList1 = new List<Actor>();
@@ -2591,7 +2591,7 @@ namespace djack.RogueSurvivor.Engine
             if (--actor.FoodPoints < 0) actor.FoodPoints = 0;
             if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
             {
-              if (this.IsVisibleToPlayer(actor))
+              if (IsVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, "is rotting away."));
               if (--actor.HitPoints <= 0) {
                   if (actorList1 == null) actorList1 = new List<Actor>();
@@ -2613,12 +2613,12 @@ namespace djack.RogueSurvivor.Engine
                 if (actor.SleepPoints < 0)
                   actor.SleepPoints = 0;
                 SpendActorSanity(actor, Rules.SANITY_NIGHTMARE_SAN_LOSS);
-                if (this.IsVisibleToPlayer(actor))
-                  this.AddMessage(this.MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object) this.Conjugate(actor, this.VERB_WAKE_UP))));
+                if (IsVisibleToPlayer(actor))
+                                    AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object)Conjugate(actor, VERB_WAKE_UP))));
                 if (actor.IsPlayer)
                 {
-                  this.m_MusicManager.StopAll();
-                  this.m_MusicManager.Play(GameSounds.NIGHTMARE);
+                                    m_MusicManager.StopAll();
+                                    m_MusicManager.Play(GameSounds.NIGHTMARE);
                 }
               }
             }
@@ -2632,41 +2632,41 @@ namespace djack.RogueSurvivor.Engine
             {
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Activity.SLEEPING;
-              int num = this.m_Rules.ActorSleepRegen(actor, isOnCouch);
+              int num = m_Rules.ActorSleepRegen(actor, isOnCouch);
               actor.SleepPoints += num;
-              actor.SleepPoints = Math.Min(actor.SleepPoints, this.m_Rules.ActorMaxSleep(actor));
-              if (actor.HitPoints < this.m_Rules.ActorMaxHPs(actor) && this.m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + this.m_Rules.ActorHealChanceBonus(actor)))
-                this.RegenActorHitPoints(actor, Rules.SLEEP_HEAL_HITPOINTS);
-              if (actor.IsHungry || actor.SleepPoints >= this.m_Rules.ActorMaxSleep(actor))
-                this.DoWakeUp(actor);
+              actor.SleepPoints = Math.Min(actor.SleepPoints, m_Rules.ActorMaxSleep(actor));
+              if (actor.HitPoints < m_Rules.ActorMaxHPs(actor) && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + m_Rules.ActorHealChanceBonus(actor)))
+                                RegenActorHitPoints(actor, Rules.SLEEP_HEAL_HITPOINTS);
+              if (actor.IsHungry || actor.SleepPoints >= m_Rules.ActorMaxSleep(actor))
+                                DoWakeUp(actor);
               else if (actor.IsPlayer)
               {
-                if (this.m_MusicManager.IsPaused(GameMusics.SLEEP))
-                  this.m_MusicManager.ResumeLooping(GameMusics.SLEEP);
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
-                this.RedrawPlayScreen();
+                if (m_MusicManager.IsPaused(GameMusics.SLEEP))
+                                    m_MusicManager.ResumeLooping(GameMusics.SLEEP);
+                                AddMessage(new djack.RogueSurvivor.Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
+                                RedrawPlayScreen();
                 if (RogueGame.s_Options.SimThread)
                   Thread.Sleep(10);
               }
-              else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && this.IsVisibleToPlayer(actor))
+              else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && IsVisibleToPlayer(actor))
               {
-                this.AddMessage(this.MakeMessage(actor, string.Format("{0}.", (object) this.Conjugate(actor, this.VERB_SNORE))));
-                this.RedrawPlayScreen();
+                                AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_SNORE))));
+                                RedrawPlayScreen();
               }
             }
-            if (actor.IsExhausted && this.m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE))
+            if (actor.IsExhausted && m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE))
             {
-              this.DoStartSleeping(actor);
-              if (this.IsVisibleToPlayer(actor))
+                            DoStartSleeping(actor);
+              if (IsVisibleToPlayer(actor))
               {
-                this.AddMessage(this.MakeMessage(actor, string.Format("{0} from exhaustion !!", (object) this.Conjugate(actor, this.VERB_COLLAPSE))));
-                this.RedrawPlayScreen();
+                                AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", (object)Conjugate(actor, VERB_COLLAPSE))));
+                                RedrawPlayScreen();
               }
-              if (actor == this.m_Player)
+              if (actor == m_Player)
               {
-                this.UpdatePlayerFOV(this.m_Player);
-                this.ComputeViewRect(this.m_Player.Location.Position);
-                this.RedrawPlayScreen();
+                                UpdatePlayerFOV(m_Player);
+                                ComputeViewRect(m_Player.Location.Position);
+                                RedrawPlayScreen();
               }
             }
           }
@@ -2674,15 +2674,15 @@ namespace djack.RogueSurvivor.Engine
             actor.Sanity = 0;
           if (actor.HasLeader)
           {
-            this.ModifyActorTrustInLeader(actor, this.m_Rules.ActorTrustIncrease(actor.Leader), false);
+                        ModifyActorTrustInLeader(actor, m_Rules.ActorTrustIncrease(actor.Leader), false);
             if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE))
             {
               RegenActorSanity(actor, m_Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
               RegenActorSanity(actor.Leader, m_Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
-              if (this.IsVisibleToPlayer(actor))
-                this.AddMessage(this.MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", (object) this.Conjugate(actor, this.VERB_FEEL), (object) actor.Leader.Name, (object) this.HimOrHer(actor))));
-              if (this.IsVisibleToPlayer(actor.Leader))
-                this.AddMessage(this.MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", (object) this.Conjugate(actor.Leader, this.VERB_FEEL), (object) actor.Name, (object) this.HimOrHer(actor.Leader))));
+              if (IsVisibleToPlayer(actor))
+                                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor, VERB_FEEL), (object) actor.Leader.Name, (object)HimOrHer(actor))));
+              if (IsVisibleToPlayer(actor.Leader))
+                                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor.Leader, VERB_FEEL), (object) actor.Name, (object)HimOrHer(actor.Leader))));
             }
           }
         }
@@ -2690,20 +2690,20 @@ namespace djack.RogueSurvivor.Engine
         {
           foreach (Actor actor in actorList1)
           {
-            if (this.IsVisibleToPlayer(actor))
+            if (IsVisibleToPlayer(actor))
             {
-              this.AddMessage(this.MakeMessage(actor, string.Format("{0} !!", (object) this.Conjugate(actor, this.VERB_DIE_FROM_STARVATION))));
-              this.RedrawPlayScreen();
+                            AddMessage(MakeMessage(actor, string.Format("{0} !!", (object)Conjugate(actor, VERB_DIE_FROM_STARVATION))));
+                            RedrawPlayScreen();
             }
-            this.KillActor((Actor) null, actor, "starvation");
+                        KillActor((Actor) null, actor, "starvation");
             if (!actor.Model.Abilities.IsUndead && m_Session.HasImmediateZombification && m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance))
             {
               map.TryRemoveCorpseOf(actor);
-              this.Zombify((Actor) null, actor, false);
-              if (this.IsVisibleToPlayer(actor))
+                            Zombify((Actor) null, actor, false);
+              if (IsVisibleToPlayer(actor))
               {
-                this.AddMessage(this.MakeMessage(actor, string.Format("{0} into a Zombie!", (object) this.Conjugate(actor, "turn"))));
-                this.RedrawPlayScreen();
+                                AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", (object)Conjugate(actor, "turn"))));
+                                RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
             }
@@ -2720,8 +2720,8 @@ namespace djack.RogueSurvivor.Engine
               if (itemLight.Batteries > 0)
               {
                 --itemLight.Batteries;
-                if (itemLight.Batteries <= 0 && this.IsVisibleToPlayer(actor))
-                  this.AddMessage(this.MakeMessage(actor, string.Format(": {0} light goes off.", (object) itemLight.TheName)));
+                if (itemLight.Batteries <= 0 && IsVisibleToPlayer(actor))
+                                    AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", (object) itemLight.TheName)));
               }
             }
             else
@@ -2730,8 +2730,8 @@ namespace djack.RogueSurvivor.Engine
               if (itemTracker != null && itemTracker.Batteries > 0)
               {
                 --itemTracker.Batteries;
-                if (itemTracker.Batteries <= 0 && this.IsVisibleToPlayer(actor))
-                  this.AddMessage(this.MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
+                if (itemTracker.Batteries <= 0 && IsVisibleToPlayer(actor))
+                                    AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
               }
             }
           }
@@ -2786,7 +2786,7 @@ namespace djack.RogueSurvivor.Engine
                   if (itemPrimedExplosive != null && itemPrimedExplosive.FuseTimeLeft <= 0)
                   {
                     map.RemoveItemAt((Item) itemPrimedExplosive, inventoryPosition.Value);
-                    this.DoBlast(new Location(map, inventoryPosition.Value), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
+                                        DoBlast(new Location(map, inventoryPosition.Value), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
                     flag3 = true;
                     break;
                   }
@@ -2808,7 +2808,7 @@ namespace djack.RogueSurvivor.Engine
                     if (itemPrimedExplosive != null && itemPrimedExplosive.FuseTimeLeft <= 0)
                     {
                       actor.Inventory.RemoveAllQuantity((Item) itemPrimedExplosive);
-                      this.DoBlast(new Location(map, actor.Location.Position), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
+                                            DoBlast(new Location(map, actor.Location.Position), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
                       flag3 = true;
                       break;
                     }
@@ -2819,15 +2819,15 @@ namespace djack.RogueSurvivor.Engine
           }
           while (flag3);
         }
-        if (this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) && this.m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE))
+        if (m_Rules.IsWeatherRain(m_Session.World.Weather) && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE))
         {
           foreach (MapObject mapObject in map.MapObjects)
           {
-            if (mapObject.IsOnFire && this.m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE))
+            if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE))
             {
-              this.UnapplyOnFire(mapObject);
-              if (this.IsVisibleToPlayer(mapObject))
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
+                            UnapplyOnFire(mapObject);
+              if (IsVisibleToPlayer(mapObject))
+                                AddMessage(new djack.RogueSurvivor.Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
             }
           }
         }
@@ -2856,13 +2856,13 @@ namespace djack.RogueSurvivor.Engine
       bool flag = !map.LocalTime.IsNight;
       if (isNight && flag)
       {
-        this.HandleLivingNPCsUpgrade(map);
+                HandleLivingNPCsUpgrade(map);
       }
       else
       {
         if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || isNight || (flag || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day)))
           return;
-        this.HandleUndeadNPCsUpgrade(map);
+                HandleUndeadNPCsUpgrade(map);
       }
     }
 
@@ -2887,7 +2887,7 @@ namespace djack.RogueSurvivor.Engine
         a.TrustInLeader = Rules.TRUST_MIN;
       if (!addMessage || !a.Leader.IsPlayer)
         return;
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("({0} trust with {1})", (object) mod, (object) a.TheName), this.m_Session.WorldTime.TurnCounter, Color.White));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("({0} trust with {1})", (object) mod, (object) a.TheName), m_Session.WorldTime.TurnCounter, Color.White));
     }
 
     private int CountLivings(Map map)
@@ -2985,20 +2985,20 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_ZombieInvasion(Map map)
     {
-      return map.LocalTime.IsStrikeOfMidnight && this.CountUndeads(map) < RogueGame.s_Options.MaxUndeads;
+      return map.LocalTime.IsStrikeOfMidnight && CountUndeads(map) < RogueGame.s_Options.MaxUndeads;
     }
 
     private void FireEvent_ZombieInvasion(Map map)
     {
-      if (map == this.m_Player.Location.Map && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      if (map == m_Player.Location.Map && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("It is Midnight! Zombies are invading!", this.m_Session.WorldTime.TurnCounter, Color.Crimson));
-        this.RedrawPlayScreen();
+                AddMessage(new djack.RogueSurvivor.Data.Message("It is Midnight! Zombies are invading!", m_Session.WorldTime.TurnCounter, Color.Crimson));
+                RedrawPlayScreen();
       }
-      int num1 = this.CountUndeads(map);
+      int num1 = CountUndeads(map);
       int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double) RogueGame.s_Options.MaxUndeads) - num1;
       for (int index = 0; index < num2; ++index)
-        this.SpawnNewUndead(map, map.LocalTime.Day);
+                SpawnNewUndead(map, map.LocalTime.Day);
     }
 
     private bool CheckForEvent_SewersInvasion(Map map)
@@ -3008,10 +3008,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_SewersInvasion(Map map)
     {
-      int num1 = this.CountUndeads(map);
+      int num1 = CountUndeads(map);
       int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double)(RogueGame.s_Options.MaxUndeads/2)) - num1;
       for (int index = 0; index < num2; ++index)
-        this.SpawnNewSewersUndead(map);
+                SpawnNewSewersUndead(map);
     }
 
     private bool CheckForEvent_RefugeesWave(Map map)
@@ -3023,7 +3023,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
-      int num1 = this.m_Session.World.Size - 1;
+      int num1 = m_Session.World.Size - 1;
       int num2 = num1 / 2;
       if (x == 0 || y == 0 || (x == num1 || y == num1))
         return 2f;
@@ -3032,24 +3032,24 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_RefugeesWave(District district)
     {
-      if (district == this.m_Player.Location.Map.District && !this.m_Player.IsSleeping && !this.m_Player.Model.Abilities.IsUndead)
+      if (district == m_Player.Location.Map.District && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("A new wave of refugees has arrived!", this.m_Session.WorldTime.TurnCounter, Color.Pink));
-        this.RedrawPlayScreen();
+                AddMessage(new djack.RogueSurvivor.Data.Message("A new wave of refugees has arrived!", m_Session.WorldTime.TurnCounter, Color.Pink));
+                RedrawPlayScreen();
       }
-      int num1 = this.CountActors(district.EntryMap, (Predicate<Actor>) (a =>
+      int num1 = CountActors(district.EntryMap, (Predicate<Actor>) (a =>
       {
-        if (a.Faction != this.GameFactions.TheCivilians)
-          return a.Faction == this.GameFactions.ThePolice;
+        if (a.Faction != GameFactions.TheCivilians)
+          return a.Faction == GameFactions.ThePolice;
         return true;
       }));
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)RogueGame.s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), RogueGame.s_Options.MaxCivilians - num1);
       for (int index = 0; index < num2; ++index)
-        SpawnNewRefugee(!this.m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (this.m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
+        SpawnNewRefugee(!m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
       if (!m_Rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
-      lock (this.m_Session)
+      lock (m_Session)
       {
-        UniqueActor[] local_6 = Array.FindAll<UniqueActor>(this.m_Session.UniqueActors.ToArray(), (Predicate<UniqueActor>) (a =>
+        UniqueActor[] local_6 = Array.FindAll<UniqueActor>(m_Session.UniqueActors.ToArray(), (Predicate<UniqueActor>) (a =>
         {
           if (a.IsWithRefugees && !a.IsSpawned)
             return !a.TheActor.IsDead;
@@ -3057,45 +3057,45 @@ namespace djack.RogueSurvivor.Engine
         }));
         if (local_6 == null || local_6.Length <= 0)
           return;
-        int local_7 = this.m_Rules.Roll(0, local_6.Length);
-        this.FireEvent_UniqueActorArrive(district.EntryMap, local_6[local_7]);
+        int local_7 = m_Rules.Roll(0, local_6.Length);
+                FireEvent_UniqueActorArrive(district.EntryMap, local_6[local_7]);
       }
     }
 
     private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
     {
-      if (!this.SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER, true))
+      if (!SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER, true))
         return;
       unique.IsSpawned = true;
-      if (map != this.m_Player.Location.Map || this.m_Player.IsSleeping || this.m_Player.Model.Abilities.IsUndead)
+      if (map != m_Player.Location.Map || m_Player.IsSleeping || m_Player.Model.Abilities.IsUndead)
         return;
       if (unique.EventMessage != null)
       {
         if (unique.EventThemeMusic != null)
         {
-          this.m_MusicManager.StopAll();
-          this.m_MusicManager.Play(unique.EventThemeMusic);
+                    m_MusicManager.StopAll();
+                    m_MusicManager.Play(unique.EventThemeMusic);
         }
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(unique.EventMessage, this.m_Session.WorldTime.TurnCounter, Color.Pink));
-        this.AddMessage(this.MakePlayerCentricMessage("Seems to come from", unique.TheActor.Location.Position));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(unique.EventMessage, m_Session.WorldTime.TurnCounter, Color.Pink));
+                AddMessage(MakePlayerCentricMessage("Seems to come from", unique.TheActor.Location.Position));
+                AddMessagePressEnter();
+                ClearMessages();
       }
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, unique.TheActor.Name + " arrived.");
     }
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
       if (RogueGame.s_Options.NatGuardFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
         return false;
-      int num = this.CountLivings(map) + this.CountFaction(map, this.GameFactions.TheArmy);
-      return (double) ((float) this.CountUndeads(map) / (float) num) * ((double) RogueGame.s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
+      int num = CountLivings(map) + CountFaction(map, GameFactions.TheArmy);
+      return (double) ((float)CountUndeads(map) / (float) num) * ((double) RogueGame.s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
     }
 
     private void FireEvent_NationalGuard(Map map)
     {
-      Actor actor = this.SpawnNewNatGuardLeader(map);
+      Actor actor = SpawnNewNatGuardLeader(map);
       if (actor == null) return;
 
       for (int index = 0; index < NATGUARD_SQUAD_SIZE-1; ++index)
@@ -3108,13 +3108,13 @@ namespace djack.RogueSurvivor.Engine
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.ARMY);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("A National Guard squad has arrived!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(this.MakePlayerCentricMessage("Soldiers seem to come from", actor.Location.Position));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.ARMY);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("A National Guard squad has arrived!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(MakePlayerCentricMessage("Soldiers seem to come from", actor.Location.Position));
+                AddMessagePressEnter();
+                ClearMessages();
       }
       m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "A National Guard squad arrived.");
     }
@@ -3123,19 +3123,19 @@ namespace djack.RogueSurvivor.Engine
     {
       if (RogueGame.s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
         return false;
-      int num = 1 + this.CountActors(map, (Predicate<Actor>) (a =>
+      int num = 1 + CountActors(map, (Predicate<Actor>) (a =>
       {
         if (!a.Model.Abilities.IsUndead && a.Model.Abilities.HasToEat)
-          return a.Faction == this.GameFactions.TheCivilians;
+          return a.Faction == GameFactions.TheCivilians;
         return false;
       }));
-      return (double) ((float) (1 + this.CountFoodItemsNutrition(map)) / (float) num) < (double) RogueGame.s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
+      return (double) ((float) (1 + CountFoodItemsNutrition(map)) / (float) num) < (double) RogueGame.s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
     }
 
     private void FireEvent_ArmySupplies(Map map)
     {
       Point dropPoint;
-      if (!this.FindDropSuppliesPoint(map, out dropPoint))
+      if (!FindDropSuppliesPoint(map, out dropPoint))
         return;
       int x1 = dropPoint.X - ARMY_SUPPLIES_SCATTER;
       int x2 = dropPoint.X + ARMY_SUPPLIES_SCATTER;
@@ -3147,24 +3147,24 @@ namespace djack.RogueSurvivor.Engine
       {
         for (int y3 = y1; y3 <= y2; ++y3)
         {
-          if (this.IsSuitableDropSuppliesPoint(map, x3, y3))
+          if (IsSuitableDropSuppliesPoint(map, x3, y3))
           {
-            Item it = this.m_Rules.RollChance(80) ? this.m_TownGenerator.MakeItemArmyRation() : this.m_TownGenerator.MakeItemMedikit();
+            Item it = m_Rules.RollChance(80) ? m_TownGenerator.MakeItemArmyRation() : m_TownGenerator.MakeItemMedikit();
             map.DropItemAt(it, x3, y3);
           }
         }
       }
-      this.NotifyOrderablesAI(map, RaidType.ARMY_SUPLLIES, dropPoint);
+            NotifyOrderablesAI(map, RaidType.ARMY_SUPLLIES, dropPoint);
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.ARMY);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("An Army chopper has dropped supplies!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(this.MakePlayerCentricMessage("The drop point seems to be", dropPoint));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.ARMY);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("An Army chopper has dropped supplies!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(MakePlayerCentricMessage("The drop point seems to be", dropPoint));
+                AddMessagePressEnter();
+                ClearMessages();
       }
       m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
@@ -3174,7 +3174,7 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(x, y))
         return false;
       Tile tileAt = map.GetTileAt(x, y);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && map.GetMapObjectAt(x, y) == null) && this.DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && map.GetMapObjectAt(x, y) == null) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
@@ -3183,9 +3183,9 @@ namespace djack.RogueSurvivor.Engine
       int num = 4 * map.Width;
       for (int index = 0; index < num; ++index)
       {
-        dropPoint.X = this.m_Rules.RollX(map);
-        dropPoint.Y = this.m_Rules.RollY(map);
-        if (this.IsSuitableDropSuppliesPoint(map, dropPoint.X, dropPoint.Y))
+        dropPoint.X = m_Rules.RollX(map);
+        dropPoint.Y = m_Rules.RollY(map);
+        if (IsSuitableDropSuppliesPoint(map, dropPoint.X, dropPoint.Y))
           return true;
       }
       return false;
@@ -3193,8 +3193,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
     {
-      if (this.m_Session.HasRaidHappened(raid, district))
-        return mapTime.TurnCounter - this.m_Session.LastRaidTime(raid, district) < sinceNTurns;
+      if (m_Session.HasRaidHappened(raid, district))
+        return mapTime.TurnCounter - m_Session.LastRaidTime(raid, district) < sinceNTurns;
       return false;
     }
 
@@ -3205,28 +3205,28 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_BikersRaid(Map map)
     {
-      this.m_Session.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
-      GameGangs.IDs gangId = GameGangs.BIKERS[this.m_Rules.Roll(0, GameGangs.BIKERS.Length)];
-      Actor actor = this.SpawnNewBikerLeader(map, gangId);
+            m_Session.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
+      GameGangs.IDs gangId = GameGangs.BIKERS[m_Rules.Roll(0, GameGangs.BIKERS.Length)];
+      Actor actor = SpawnNewBikerLeader(map, gangId);
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index)
       {
         Actor other = SpawnNewBiker(map, gangId, actor.Location.Position);
         if (other != null) actor.AddFollower(other);
       }
-      this.NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
+            NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.BIKER);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear the sound of roaring engines!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(this.MakePlayerCentricMessage("Motorbikes seem to come from", actor.Location.Position));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.BIKER);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("You hear the sound of roaring engines!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(MakePlayerCentricMessage("Motorbikes seem to come from", actor.Location.Position));
+                AddMessagePressEnter();
+                ClearMessages();
       }
-      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Bikers raided the district.");
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Bikers raided the district.");
     }
 
     private bool CheckForEvent_GangstasRaid(Map map)
@@ -3236,58 +3236,58 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_GangstasRaid(Map map)
     {
-      this.m_Session.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
-      GameGangs.IDs gangId = GameGangs.GANGSTAS[this.m_Rules.Roll(0, GameGangs.GANGSTAS.Length)];
-      Actor actor = this.SpawnNewGangstaLeader(map, gangId);
+            m_Session.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
+      GameGangs.IDs gangId = GameGangs.GANGSTAS[m_Rules.Roll(0, GameGangs.GANGSTAS.Length)];
+      Actor actor = SpawnNewGangstaLeader(map, gangId);
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index)
       {
-        Actor other = this.SpawnNewGangsta(map, gangId, actor.Location.Position);
+        Actor other = SpawnNewGangsta(map, gangId, actor.Location.Position);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(map, RaidType.GANGSTA, actor.Location.Position);
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.GANGSTA);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear obnoxious loud music!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(this.MakePlayerCentricMessage("Cars seem to come from", actor.Location.Position));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.GANGSTA);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("You hear obnoxious loud music!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(MakePlayerCentricMessage("Cars seem to come from", actor.Location.Position));
+                AddMessagePressEnter();
+                ClearMessages();
       }
-      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Gangstas raided the district.");
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Gangstas raided the district.");
     }
 
     private bool CheckForEvent_BlackOpsRaid(Map map)
     {
-      return map.LocalTime.Day >= BLACKOPS_RAID_DAY && !HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY) && this.m_Rules.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
+      return map.LocalTime.Day >= BLACKOPS_RAID_DAY && !HasRaidHappenedSince(RaidType.BLACKOPS, map.District, map.LocalTime, BLACKOPS_RAID_DAY_GAP*WorldTime.TURNS_PER_DAY) && m_Rules.RollChance(BLACKOPS_RAID_CHANCE_PER_TURN);
     }
 
     private void FireEvent_BlackOpsRaid(Map map)
     {
-      this.m_Session.SetLastRaidTime(RaidType.BLACKOPS, map.District, map.LocalTime.TurnCounter);
-      Actor actor = this.SpawnNewBlackOpsLeader(map);
+            m_Session.SetLastRaidTime(RaidType.BLACKOPS, map.District, map.LocalTime.TurnCounter);
+      Actor actor = SpawnNewBlackOpsLeader(map);
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index)
       {
-        Actor other = this.SpawnNewBlackOpsTrooper(map, actor.Location.Position);
+        Actor other = SpawnNewBlackOpsTrooper(map, actor.Location.Position);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(map, RaidType.BLACKOPS, actor.Location.Position);
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.ARMY);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear a chopper flying over the city!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(this.MakePlayerCentricMessage("The chopper has dropped something", actor.Location.Position));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.ARMY);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("You hear a chopper flying over the city!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(MakePlayerCentricMessage("The chopper has dropped something", actor.Location.Position));
+                AddMessagePressEnter();
+                ClearMessages();
       }
-      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "BlackOps raided the district.");
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "BlackOps raided the district.");
     }
 
     private bool CheckForEvent_BandOfSurvivors(Map map)
@@ -3297,8 +3297,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_BandOfSurvivors(Map map)
     {
-      this.m_Session.SetLastRaidTime(RaidType.SURVIVORS, map.District, map.LocalTime.TurnCounter);
-      Actor actor = this.SpawnNewSurvivor(map);
+            m_Session.SetLastRaidTime(RaidType.SURVIVORS, map.District, map.LocalTime.TurnCounter);
+      Actor actor = SpawnNewSurvivor(map);
       if (actor == null) return;
       for (int index = 0; index < SURVIVORS_BAND_SIZE-1; ++index)
         SpawnNewSurvivor(map, actor.Location.Position);
@@ -3306,27 +3306,27 @@ namespace djack.RogueSurvivor.Engine
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.SURVIVORS);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear shooting and honking in the distance.", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(this.MakePlayerCentricMessage("A van has stopped", actor.Location.Position));
-        this.AddMessagePressEnter();
-        this.ClearMessages();
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.SURVIVORS);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("You hear shooting and honking in the distance.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(MakePlayerCentricMessage("A van has stopped", actor.Location.Position));
+                AddMessagePressEnter();
+                ClearMessages();
       }
-      m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
     }
 
     private int DistanceToPlayer(Map map, int x, int y)
     {
-      if (this.m_Player == null || this.m_Player.Location.Map != map)
+      if (m_Player == null || m_Player.Location.Map != map)
         return int.MaxValue;
-      return Rules.GridDistance(this.m_Player.Location.Position, x, y);
+      return Rules.GridDistance(m_Player.Location.Position, x, y);
     }
 
     private int DistanceToPlayer(Map map, Point pos)
     {
-      return this.DistanceToPlayer(map, pos.X, pos.Y);
+      return DistanceToPlayer(map, pos.X, pos.Y);
     }
 
     private bool IsAdjacentToEnemy(Map map, Point pos, Actor actor)
@@ -3344,7 +3344,7 @@ namespace djack.RogueSurvivor.Engine
           if (x3 != pos.X || y3 != pos.Y)
           {
             Actor actorAt = map.GetActorAt(x3, y3);
-            if (actorAt != null && this.m_Rules.IsEnemyOf(actor, actorAt))
+            if (actorAt != null && m_Rules.IsEnemyOf(actor, actorAt))
               return true;
           }
         }
@@ -3385,12 +3385,12 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         ++num2;
-        int num3 = nearPoint.X + this.m_Rules.Roll(1, maxDistToPoint + 1) - this.m_Rules.Roll(1, maxDistToPoint + 1);
-        int num4 = nearPoint.Y + this.m_Rules.Roll(1, maxDistToPoint + 1) - this.m_Rules.Roll(1, maxDistToPoint + 1);
+        int num3 = nearPoint.X + m_Rules.Roll(1, maxDistToPoint + 1) - m_Rules.Roll(1, maxDistToPoint + 1);
+        int num4 = nearPoint.Y + m_Rules.Roll(1, maxDistToPoint + 1) - m_Rules.Roll(1, maxDistToPoint + 1);
         p.X = num3;
         p.Y = num4;
         map.TrimToBounds(ref p);
-        if (!map.GetTileAt(p.X, p.Y).IsInside && this.m_Rules.IsWalkableFor(actorToSpawn, map, p.X, p.Y) && (this.DistanceToPlayer(map, p) >= minDistToPlayer && !this.IsAdjacentToEnemy(map, p, actorToSpawn)))
+        if (!map.GetTileAt(p.X, p.Y).IsInside && m_Rules.IsWalkableFor(actorToSpawn, map, p.X, p.Y) && (DistanceToPlayer(map, p) >= minDistToPlayer && !IsAdjacentToEnemy(map, p, actorToSpawn)))
         {
           map.PlaceActorAt(actorToSpawn, p);
           return true;
@@ -3402,7 +3402,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SpawnNewUndead(Map map, int day)
     {
-      Actor newUndead = this.m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
+      Actor newUndead = m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
       if (RogueGame.s_Options.AllowUndeadsEvolution && m_Session.HasEvolution) {
         GameActors.IDs fromModelID = (GameActors.IDs) newUndead.Model.ID;
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) { 
@@ -3415,24 +3415,24 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      this.SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);
+            SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);
     }
 
     private void SpawnNewSewersUndead(Map map)
     {
-      Actor newSewersUndead = this.m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
+      Actor newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
       SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false);
     }
 
     private void SpawnNewRefugee(Map map)
     {
-      Actor newRefugee = this.m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
+      Actor newRefugee = m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
       SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true);
     }
 
     private Actor SpawnNewSurvivor(Map map)
     {
-      Actor newSurvivor = this.m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
+      Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
       if (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, true))
         return newSurvivor;
       return null;
@@ -3440,7 +3440,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor SpawnNewSurvivor(Map map, Point bandPos)
     {
-      Actor newSurvivor = this.m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
+      Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
       if (SpawnActorNear(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, bandPos, 3))
         return newSurvivor;
       return null;
@@ -3448,99 +3448,99 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor SpawnNewNatGuardLeader(Map map)
     {
-      Actor armyNationalGuard = this.m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");
-      this.m_TownGenerator.GiveStartingSkillToActor(armyNationalGuard, Skills.IDs.LEADERSHIP);
+      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");
+            m_TownGenerator.GiveStartingSkillToActor(armyNationalGuard, Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
-        armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemZTracker());
-      if (!this.SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true))
+        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemZTracker());
+      if (!SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return armyNationalGuard;
     }
 
     private Actor SpawnNewNatGuardTrooper(Map map, Point leaderPos)
     {
-      Actor armyNationalGuard = this.m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Pvt");
-      if (this.m_Rules.RollChance(50))
-        armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemCombatKnife());
+      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Pvt");
+      if (m_Rules.RollChance(50))
+        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemCombatKnife());
       else
-        armyNationalGuard.Inventory.AddAll(this.m_TownGenerator.MakeItemGrenade());
-      if (!this.SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
+        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());
+      if (!SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return armyNationalGuard;
     }
 
     private Actor SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
     {
-      Actor newBikerMan = this.m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      if (!this.SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, true))
+      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
+      if (!SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return newBikerMan;
     }
 
     private Actor SpawnNewBiker(Map map, GameGangs.IDs gangId, Point leaderPos)
     {
-      Actor newBikerMan = this.m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      if (!this.SpawnActorNear(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
+      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
+      if (!SpawnActorNear(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return newBikerMan;
     }
 
     private Actor SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
     {
-      Actor newGangstaMan = this.m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
-      this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.FIREARMS);
-      if (!this.SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, true))
+      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
+            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.FIREARMS);
+      if (!SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return newGangstaMan;
     }
 
     private Actor SpawnNewGangsta(Map map, GameGangs.IDs gangId, Point leaderPos)
     {
-      Actor newGangstaMan = this.m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
-      this.m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-      if (!this.SpawnActorNear(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
+      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
+            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
+      if (!SpawnActorNear(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return newGangstaMan;
     }
 
     private Actor SpawnNewBlackOpsLeader(Map map)
     {
-      Actor newBlackOps = this.m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      if (!this.SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, true))
+      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
+      if (!SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, true))
         return (Actor) null;
       return newBlackOps;
     }
 
     private Actor SpawnNewBlackOpsTrooper(Map map, Point leaderPos)
     {
-      Actor newBlackOps = this.m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Agent");
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      if (!this.SpawnActorNear(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
+      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Agent");
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
+      if (!SpawnActorNear(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
         return (Actor) null;
       return newBlackOps;
     }
@@ -3549,30 +3549,30 @@ namespace djack.RogueSurvivor.Engine
     {
       if (player == null)
         return;
-      this.m_PlayerFOV = LOS.ComputeFOVFor(this.m_Rules, player, this.m_Session.WorldTime, this.m_Session.World.Weather);
-      player.Location.Map.SetViewAndMarkVisited((IEnumerable<Point>) this.m_PlayerFOV);
+            m_PlayerFOV = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
+      player.Location.Map.SetViewAndMarkVisited((IEnumerable<Point>)m_PlayerFOV);
     }
 
     private void HandlePlayerActor(Actor player)
     {
-      this.UpdatePlayerFOV(player);
-      this.m_Player = player;
-      this.m_Session.CurrentMap = player.Location.Map;  // multi-PC support
-      this.ComputeViewRect(player.Location.Position);
-      this.m_Session.Scoring.TurnsSurvived = this.m_Session.WorldTime.TurnCounter;
-      if (this.m_IsPlayerLongWait)
+            UpdatePlayerFOV(player);
+            m_Player = player;
+            m_Session.CurrentMap = player.Location.Map;  // multi-PC support
+            ComputeViewRect(player.Location.Position);
+            m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
+      if (m_IsPlayerLongWait)
       {
-        if (this.CheckPlayerWaitLong(player))
+        if (CheckPlayerWaitLong(player))
         {
-          this.DoWait(player);
+                    DoWait(player);
           return;
         }
-        this.m_IsPlayerLongWait = false;
-        this.m_IsPlayerLongWaitForcedStop = false;
-        if (this.m_Session.WorldTime.TurnCounter >= this.m_PlayerLongWaitEnd.TurnCounter)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("Wait ended.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                m_IsPlayerLongWait = false;
+                m_IsPlayerLongWaitForcedStop = false;
+        if (m_Session.WorldTime.TurnCounter >= m_PlayerLongWaitEnd.TurnCounter)
+                    AddMessage(new djack.RogueSurvivor.Data.Message("Wait ended.", m_Session.WorldTime.TurnCounter, Color.Yellow));
         else
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("Wait interrupted!", this.m_Session.WorldTime.TurnCounter, Color.Red));
+                    AddMessage(new djack.RogueSurvivor.Data.Message("Wait interrupted!", m_Session.WorldTime.TurnCounter, Color.Red));
       }
 
       GC.Collect(); // force garbage collection when things should be slow anyway
@@ -3580,23 +3580,23 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       do
       {
-        this.m_UI.UI_SetCursor((Cursor) null);
-        if (RogueGame.s_Options.IsAdvisorEnabled && this.HasAdvisorAnyHintToGive())
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
+                m_UI.UI_SetCursor((Cursor) null);
+        if (RogueGame.s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
           {
             string.Format("HINT AVAILABLE PRESS <{0}>", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString())
-          }, Color.White, Color.White, Color.Black, this.MapToScreen(this.m_Player.Location.Position.X - 3, this.m_Player.Location.Position.Y - 1)));
-        this.RedrawPlayScreen();
-        this.m_UI.UI_PeekKey();
+          }, Color.White, Color.White, Color.Black, MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1)));
+                RedrawPlayScreen();
+                m_UI.UI_PeekKey();
         bool flag2 = true;
         bool flag3 = false;
-        Point mousePosition = this.m_UI.UI_GetMousePosition();
+        Point mousePosition = m_UI.UI_GetMousePosition();
         Point point = new Point(-1, -1);
         MouseButtons? mouseButtons = new MouseButtons?();
         KeyEventArgs key;
         do
         {
-          key = this.m_UI.UI_PeekKey();
+          key = m_UI.UI_PeekKey();
           if (key != null)
           {
             flag3 = true;
@@ -3604,8 +3604,8 @@ namespace djack.RogueSurvivor.Engine
           }
           else
           {
-            point = this.m_UI.UI_GetMousePosition();
-            mouseButtons = this.m_UI.UI_PeekMouseButtons();
+            point = m_UI.UI_GetMousePosition();
+            mouseButtons = m_UI.UI_PeekMouseButtons();
             if (point != mousePosition || mouseButtons.HasValue)
               flag2 = false;
           }
@@ -3616,11 +3616,11 @@ namespace djack.RogueSurvivor.Engine
           PlayerCommand command = InputTranslator.KeyToCommand(key);
           if (command == PlayerCommand.QUIT_GAME)
           {
-            if (this.HandleQuitGame())
+            if (HandleQuitGame())
             {
-              this.StopSimThread();
-              this.RedrawPlayScreen();
-              this.m_IsGameRunning = false;
+                            StopSimThread();
+                            RedrawPlayScreen();
+                            m_IsGameRunning = false;
               return;
             }
           }
@@ -3631,200 +3631,200 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.NONE:
                 break;
               case PlayerCommand.HELP_MODE:
-                this.HandleHelpMode();
+                                HandleHelpMode();
                 break;
               case PlayerCommand.ADVISOR:
-                this.HandleAdvisor(player);
+                                HandleAdvisor(player);
                 break;
               case PlayerCommand.OPTIONS_MODE:
-                this.HandleOptions(true);
-                this.ApplyOptions(true);
+                                HandleOptions(true);
+                                ApplyOptions(true);
                 break;
               case PlayerCommand.KEYBINDING_MODE:
-                this.HandleRedefineKeys();
+                                HandleRedefineKeys();
                 break;
               case PlayerCommand.HINTS_SCREEN_MODE:
-                this.HandleHintsScreen();
+                                HandleHintsScreen();
                 break;
               case PlayerCommand.SCREENSHOT:
-                this.HandleScreenshot();
+                                HandleScreenshot();
                 break;
               case PlayerCommand.SAVE_GAME:
-                this.StopSimThread();
-                this.HandleSaveGame();
-                this.RestartSimThread();
+                                StopSimThread();
+                                HandleSaveGame();
+                                RestartSimThread();
                 break;
               case PlayerCommand.LOAD_GAME:
-                this.StopSimThread();
-                this.HandleLoadGame();
-                this.RestartSimThread();
-                player = this.m_Player;
+                                StopSimThread();
+                                HandleLoadGame();
+                                RestartSimThread();
+                player = m_Player;
                 flag1 = false;
-                this.m_HasLoadedGame = true;
+                                m_HasLoadedGame = true;
                 break;
               case PlayerCommand.ABANDON_GAME:
-                if (this.HandleAbandonGame())
+                if (HandleAbandonGame())
                 {
-                  this.StopSimThread();
+                                    StopSimThread();
                   flag1 = false;
-                  this.KillActor((Actor) null, this.m_Player, "suicide");
+                                    KillActor((Actor) null, m_Player, "suicide");
                   break;
                 }
                 break;
               case PlayerCommand.MOVE_N:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.N);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.N);
                 break;
               case PlayerCommand.MOVE_NE:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.NE);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.NE);
                 break;
               case PlayerCommand.MOVE_E:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.E);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.E);
                 break;
               case PlayerCommand.MOVE_SE:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.SE);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.SE);
                 break;
               case PlayerCommand.MOVE_S:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.S);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.S);
                 break;
               case PlayerCommand.MOVE_SW:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.SW);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.SW);
                 break;
               case PlayerCommand.MOVE_W:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.W);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.W);
                 break;
               case PlayerCommand.MOVE_NW:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerBump(player, Direction.NW);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.NW);
                 break;
               case PlayerCommand.RUN_TOGGLE:
-                if (this.TryPlayerInsanity())
+                if (TryPlayerInsanity())
                 {
                   flag1 = false;
                   break;
                 }
-                this.HandlePlayerRunToggle(player);
+                                HandlePlayerRunToggle(player);
                 break;
               case PlayerCommand.WAIT_OR_SELF:
-                if (this.TryPlayerInsanity())
+                if (TryPlayerInsanity())
                 {
                   flag1 = false;
                   break;
                 }
                 flag1 = false;
-                this.DoWait(player);
+                                DoWait(player);
                 break;
               case PlayerCommand.WAIT_LONG:
-                if (this.TryPlayerInsanity())
+                if (TryPlayerInsanity())
                 {
                   flag1 = false;
                   break;
                 }
                 flag1 = false;
-                this.StartPlayerWaitLong(player);
+                                StartPlayerWaitLong(player);
                 break;
               case PlayerCommand.BARRICADE_MODE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerBarricade(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerBarricade(player);
                 break;
               case PlayerCommand.BREAK_MODE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerBreak(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerBreak(player);
                 break;
               case PlayerCommand.BUILD_LARGE_FORTIFICATION:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerBuildFortification(player, true);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerBuildFortification(player, true);
                 break;
               case PlayerCommand.BUILD_SMALL_FORTIFICATION:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerBuildFortification(player, false);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerBuildFortification(player, false);
                 break;
               case PlayerCommand.CLOSE_DOOR:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerCloseDoor(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerCloseDoor(player);
                 break;
               case PlayerCommand.EAT_CORPSE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerEatCorpse(player, point);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerEatCorpse(player, point);
                 break;
               case PlayerCommand.FIRE_MODE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerFireMode(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerFireMode(player);
                 break;
               case PlayerCommand.GIVE_ITEM:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerGiveItem(player, point);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerGiveItem(player, point);
                 break;
               case PlayerCommand.INITIATE_TRADE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerInitiateTrade(player, point);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerInitiateTrade(player, point);
                 break;
               case PlayerCommand.LEAD_MODE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerTakeLead(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerTakeLead(player);
                 break;
               case PlayerCommand.MARK_ENEMIES_MODE:
-                if (this.TryPlayerInsanity())
+                if (TryPlayerInsanity())
                 {
                   flag1 = false;
                   break;
                 }
-                this.HandlePlayerMarkEnemies(player);
+                                HandlePlayerMarkEnemies(player);
                 break;
               case PlayerCommand.ORDER_MODE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerOrderMode(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(player);
                 break;
               case PlayerCommand.PUSH_MODE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerPush(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerPush(player);
                 break;
               case PlayerCommand.REVIVE_CORPSE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerReviveCorpse(player, point);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerReviveCorpse(player, point);
                 break;
               case PlayerCommand.SHOUT:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerShout(player, (string) null);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerShout(player, (string) null);
                 break;
               case PlayerCommand.SLEEP:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerSleep(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerSleep(player);
                 break;
               case PlayerCommand.SWITCH_PLACE:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerSwitchPlace(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerSwitchPlace(player);
                 break;
               case PlayerCommand.USE_EXIT:
-                flag1 = !this.TryPlayerInsanity() && !this.DoUseExit(player, player.Location.Position);
+                flag1 = !TryPlayerInsanity() && !DoUseExit(player, player.Location.Position);
                 break;
               case PlayerCommand.USE_SPRAY:
-                flag1 = !this.TryPlayerInsanity() && !this.HandlePlayerUseSpray(player);
+                flag1 = !TryPlayerInsanity() && !HandlePlayerUseSpray(player);
                 break;
               case PlayerCommand.CITY_INFO:
-                this.HandleCityInfo();
+                                HandleCityInfo();
                 break;
               case PlayerCommand.MESSAGE_LOG:
-                this.HandleMessageLog();
+                                HandleMessageLog();
                 break;
               case PlayerCommand.ITEM_SLOT_0:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 0, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 0, key);
                 break;
               case PlayerCommand.ITEM_SLOT_1:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 1, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 1, key);
                 break;
               case PlayerCommand.ITEM_SLOT_2:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 2, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 2, key);
                 break;
               case PlayerCommand.ITEM_SLOT_3:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 3, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 3, key);
                 break;
               case PlayerCommand.ITEM_SLOT_4:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 4, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 4, key);
                 break;
               case PlayerCommand.ITEM_SLOT_5:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 5, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 5, key);
                 break;
               case PlayerCommand.ITEM_SLOT_6:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 6, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 6, key);
                 break;
               case PlayerCommand.ITEM_SLOT_7:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 7, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 7, key);
                 break;
               case PlayerCommand.ITEM_SLOT_8:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 8, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 8, key);
                 break;
               case PlayerCommand.ITEM_SLOT_9:
-                flag1 = !this.TryPlayerInsanity() && !this.DoPlayerItemSlot(player, 9, key);
+                flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 9, key);
                 break;
               default:
                 throw new ArgumentException("command unhandled");
             }
           }
         }
-        else if (!this.HandleMouseLook(point))
+        else if (!HandleMouseLook(point))
         {
           bool hasDoneAction1;
           if (HandleMouseInventory(point, mouseButtons, out hasDoneAction1))
@@ -3842,129 +3842,129 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-      this.UpdatePlayerFOV(player);
-      this.ComputeViewRect(player.Location.Position);
-      this.m_Session.LastTurnPlayerActed = this.m_Session.WorldTime.TurnCounter;
+            UpdatePlayerFOV(player);
+            ComputeViewRect(player.Location.Position);
+            m_Session.LastTurnPlayerActed = m_Session.WorldTime.TurnCounter;
     }
 
     private bool TryPlayerInsanity()
     {
-      if (!m_Player.IsInsane || !this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
+      if (!m_Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
         return false;
-      ActorAction insaneAction = this.GenerateInsaneAction(this.m_Player);
+      ActorAction insaneAction = GenerateInsaneAction(m_Player);
       if (insaneAction == null || !insaneAction.IsLegal())
         return false;
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("(your insanity takes over)", this.m_Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
-      this.AddMessagePressEnter();
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("(your insanity takes over)", m_Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
+            AddMessagePressEnter();
       insaneAction.Perform();
       return true;
     }
 
     private bool HandleQuitGame()
     {
-      this.AddMessage(this.MakeYesNoMessage("REALLY QUIT GAME"));
-      this.RedrawPlayScreen();
-      bool flag = this.WaitYesOrNo();
+            AddMessage(MakeYesNoMessage("REALLY QUIT GAME"));
+            RedrawPlayScreen();
+      bool flag = WaitYesOrNo();
       if (!flag)
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Good. Keep roguing!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Good. Keep roguing!", m_Session.WorldTime.TurnCounter, Color.Yellow));
       else
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Bye!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Bye!", m_Session.WorldTime.TurnCounter, Color.Yellow));
       return flag;
     }
 
     private bool HandleAbandonGame()
     {
-      this.AddMessage(this.MakeYesNoMessage("REALLY KILL YOURSELF"));
-      this.RedrawPlayScreen();
-      bool flag = this.WaitYesOrNo();
+            AddMessage(MakeYesNoMessage("REALLY KILL YOURSELF"));
+            RedrawPlayScreen();
+      bool flag = WaitYesOrNo();
       if (!flag)
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Good. No reason to make the undeads life easier by removing yours!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Good. No reason to make the undeads life easier by removing yours!", m_Session.WorldTime.TurnCounter, Color.Yellow));
       else
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You can't bear the horror anymore...", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("You can't bear the horror anymore...", m_Session.WorldTime.TurnCounter, Color.Yellow));
       return flag;
     }
 
     private void HandleScreenshot()
     {
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("Taking screenshot...", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.RedrawPlayScreen();
-      string screenshot = this.DoTakeScreenshot();
+            AddMessage(new djack.RogueSurvivor.Data.Message("Taking screenshot...", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            RedrawPlayScreen();
+      string screenshot = DoTakeScreenshot();
       if (screenshot == null)
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Could not save screenshot.", this.m_Session.WorldTime.TurnCounter, Color.Red));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Could not save screenshot.", m_Session.WorldTime.TurnCounter, Color.Red));
       else
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("screenshot {0} saved.", (object) screenshot), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.RedrawPlayScreen();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("screenshot {0} saved.", (object) screenshot), m_Session.WorldTime.TurnCounter, Color.Yellow));
+            RedrawPlayScreen();
     }
 
     private string DoTakeScreenshot()
     {
-      string newScreenshotName = this.GetUserNewScreenshotName();
-      if (this.m_UI.UI_SaveScreenshot(this.ScreenshotFilePath(newScreenshotName)) != null)
+      string newScreenshotName = GetUserNewScreenshotName();
+      if (m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) != null)
         return newScreenshotName;
       return (string) null;
     }
 
     private void HandleHelpMode()
     {
-      if (this.m_Manual == null)
+      if (m_Manual == null)
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int gy = 0;
-        this.m_UI.UI_DrawStringBold(Color.Red, "Game manual not available ingame.", 0, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "Game manual not available ingame.", 0, gy, new Color?());
         int num = gy + 14;
-        this.DrawFootnote(Color.White, "press ENTER");
-        this.m_UI.UI_Repaint();
-        this.WaitEnter();
+                DrawFootnote(Color.White, "press ENTER");
+                m_UI.UI_Repaint();
+                WaitEnter();
       }
       else
       {
         bool flag = true;
-        List<string> formatedLines = this.m_Manual.FormatedLines;
+        List<string> formatedLines = m_Manual.FormatedLines;
         do
         {
-          this.m_UI.UI_Clear(Color.Black);
+                    m_UI.UI_Clear(Color.Black);
           int num1 = 0;
-          this.DrawHeader();
+                    DrawHeader();
           int gy1 = num1 + 14;
-          this.m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1, new Color?());
+                    m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1, new Color?());
           int gy2 = gy1 + 14;
-          this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
           int gy3 = gy2 + 14;
-          int index = this.m_ManualLine;
+          int index = m_ManualLine;
           do
           {
             if (!(formatedLines[index] == "<SECTION>"))
             {
-              this.m_UI.UI_DrawStringBold(Color.LightGray, formatedLines[index], 0, gy3, new Color?());
+                            m_UI.UI_DrawStringBold(Color.LightGray, formatedLines[index], 0, gy3, new Color?());
               gy3 += 14;
             }
             ++index;
           }
           while (index < formatedLines.Count && gy3 < 740);
-          this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy3, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy3, new Color?());
           int num2 = gy3 + 14;
-          this.DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
-          this.m_UI.UI_Repaint();
-          KeyEventArgs keyEventArgs = this.m_UI.UI_WaitKey();
-          int choiceNumber = this.KeyToChoiceNumber(keyEventArgs.KeyCode);
+                    DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
+                    m_UI.UI_Repaint();
+          KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+          int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
           if (choiceNumber >= 0)
           {
             if (choiceNumber == 0)
             {
-              this.m_ManualLine = 0;
+                            m_ManualLine = 0;
             }
             else
             {
-              int num3 = this.m_ManualLine;
+              int num3 = m_ManualLine;
               int num4 = 0;
-              for (this.m_ManualLine = 0; num4 < choiceNumber && this.m_ManualLine < formatedLines.Count; ++this.m_ManualLine)
+              for (m_ManualLine = 0; num4 < choiceNumber && m_ManualLine < formatedLines.Count; ++m_ManualLine)
               {
-                if (formatedLines[this.m_ManualLine] == "<SECTION>")
+                if (formatedLines[m_ManualLine] == "<SECTION>")
                   ++num4;
               }
-              if (this.m_ManualLine >= formatedLines.Count)
-                this.m_ManualLine = num3;
+              if (m_ManualLine >= formatedLines.Count)
+                                m_ManualLine = num3;
             }
           }
           else
@@ -3975,23 +3975,23 @@ namespace djack.RogueSurvivor.Engine
                 flag = false;
                 break;
               case Keys.Prior:
-                this.m_ManualLine -= 50;
+                                m_ManualLine -= 50;
                 break;
               case Keys.Next:
-                this.m_ManualLine += 50;
+                                m_ManualLine += 50;
                 break;
               case Keys.Up:
-                --this.m_ManualLine;
+                --m_ManualLine;
                 break;
               case Keys.Down:
-                ++this.m_ManualLine;
+                ++m_ManualLine;
                 break;
             }
           }
-          if (this.m_ManualLine < 0)
-            this.m_ManualLine = 0;
-          if (this.m_ManualLine + 50 >= formatedLines.Count)
-            this.m_ManualLine = Math.Max(0, formatedLines.Count - 50);
+          if (m_ManualLine < 0)
+                        m_ManualLine = 0;
+          if (m_ManualLine + 50 >= formatedLines.Count)
+                        m_ManualLine = Math.Max(0, formatedLines.Count - 50);
         }
         while (flag);
       }
@@ -3999,21 +3999,21 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleHintsScreen()
     {
-      this.m_UI.UI_Clear(Color.Black);
+            m_UI.UI_Clear(Color.Black);
       int num1 = 0;
-      this.DrawHeader();
+            DrawHeader();
       int gy1 = num1 + 14;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "preparing...", 0, gy2, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "preparing...", 0, gy2, new Color?());
       int num2 = gy2 + 14;
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Repaint();
       List<string> stringList = new List<string>();
       for (int index = 0; index < 46; ++index)
       {
         string title;
         string[] body;
-        this.GetAdvisorHintText((AdvisorHint) index, out title, out body);
+                GetAdvisorHintText((AdvisorHint) index, out title, out body);
         stringList.Add(string.Format("HINT {0} : {1}", (object) index, (object) title));
         stringList.AddRange((IEnumerable<string>) body);
         stringList.Add("~~~~");
@@ -4023,27 +4023,27 @@ namespace djack.RogueSurvivor.Engine
       bool flag = true;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int num4 = 0;
-        this.DrawHeader();
+                DrawHeader();
         int gy3 = num4 + 14;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3, new Color?());
         int gy4 = gy3 + 14;
-        this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy4, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy4, new Color?());
         int gy5 = gy4 + 14;
         int index = num3;
         do
         {
-          this.m_UI.UI_DrawStringBold(Color.LightGray, stringList[index], 0, gy5, new Color?());
+                    m_UI.UI_DrawStringBold(Color.LightGray, stringList[index], 0, gy5, new Color?());
           gy5 += 14;
           ++index;
         }
         while (index < stringList.Count && gy5 < 740);
-        this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy5, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy5, new Color?());
         num2 = gy5 + 14;
-        this.DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
-        this.m_UI.UI_Repaint();
-        switch (this.m_UI.UI_WaitKey().KeyCode)
+                DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
+                m_UI.UI_Repaint();
+        switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Up:
             --num3;
@@ -4053,13 +4053,13 @@ namespace djack.RogueSurvivor.Engine
             break;
           case Keys.R:
             RogueGame.s_Hints.ResetAllHints();
-            this.m_UI.UI_Clear(Color.Black);
+                        m_UI.UI_Clear(Color.Black);
             int num5 = 0;
-            this.DrawHeader();
+                        DrawHeader();
             int gy6 = num5 + 14;
-            this.m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy6, new Color?());
-            this.m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, gy6 + 14, new Color?());
-            this.m_UI.UI_Repaint();
+                        m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy6, new Color?());
+                        m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, gy6 + 14, new Color?());
+                        m_UI.UI_Repaint();
             m_UI.UI_Wait(DELAY_LONG);
             break;
           case Keys.Escape:
@@ -4082,61 +4082,61 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleMessageLog()
     {
-      this.m_UI.UI_Clear(Color.Black);
+            m_UI.UI_Clear(Color.Black);
       int num = 0;
-      this.DrawHeader();
+            DrawHeader();
       int gy1 = num + 14;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Message Log", 0, gy1, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Message Log", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
       int gy3 = gy2 + 14;
-      foreach (djack.RogueSurvivor.Data.Message message in this.m_MessageManager.History)
+      foreach (djack.RogueSurvivor.Data.Message message in m_MessageManager.History)
       {
-        this.m_UI.UI_DrawString(message.Color, message.Text, 0, gy3, new Color?());
+                m_UI.UI_DrawString(message.Color, message.Text, 0, gy3, new Color?());
         gy3 += 12;
       }
-      this.DrawFootnote(Color.White, "press ESC to leave");
-      this.m_UI.UI_Repaint();
-      this.WaitEscape();
+            DrawFootnote(Color.White, "press ESC to leave");
+            m_UI.UI_Repaint();
+            WaitEscape();
     }
 
     private void HandleCityInfo()
     {
       int num1;
       int gx = num1 = 0;
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION", num1, num1, new Color?());
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION", num1, num1, new Color?());
       int gy1 = num1 + 28;
-      if (this.m_Player.Model.Abilities.IsUndead)
+      if (m_Player.Model.Abilities.IsUndead)
       {
-        this.m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy1, new Color?());
         int gy2 = gy1 + 14;
-        this.m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy2, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy2, new Color?());
         int num2 = gy2 + 28;
       }
       else
       {
-        this.m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy1, new Color?());
         int num2 = gy1 + 14 + 14;
-        for (int index = 0; index < this.m_Session.World.Size; ++index)
+        for (int index = 0; index < m_Session.World.Size; ++index)
         {
-          Color color = index == this.m_Player.Location.Map.District.WorldPosition.Y ? Color.LightGreen : Color.White;
-          this.m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * 14 + 14, new Color?());
-          this.m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * 14, new Color?());
-          this.m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * 14 + 28, new Color?());
+          Color color = index == m_Player.Location.Map.District.WorldPosition.Y ? Color.LightGreen : Color.White;
+                    m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * 14 + 14, new Color?());
+                    m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * 14, new Color?());
+                    m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * 14 + 28, new Color?());
         }
         int gy2 = num2 - 14;
-        for (int index = 0; index < this.m_Session.World.Size; ++index)
-          this.m_UI.UI_DrawStringBold(index == this.m_Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (object) (char) (65 + index)), 32 + index * 48, gy2, new Color?());
+        for (int index = 0; index < m_Session.World.Size; ++index)
+                    m_UI.UI_DrawStringBold(index == m_Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (object) (char) (65 + index)), 32 + index * 48, gy2, new Color?());
         int num3 = gy2 + 14;
         int num4 = 32;
         int num5 = num3;
-        for (int index1 = 0; index1 < this.m_Session.World.Size; ++index1)
+        for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
         {
-          for (int index2 = 0; index2 < this.m_Session.World.Size; ++index2)
+          for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
           {
-            District district = this.m_Session.World[index2, index1];
-            char ch = district == this.m_Session.CurrentMap.District ? '*' : (this.m_Session.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
+            District district = m_Session.World[index2, index1];
+            char ch = district == m_Session.CurrentMap.District ? '*' : (m_Session.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
             Color color;
             string str;
             switch (district.Kind)
@@ -4167,37 +4167,37 @@ namespace djack.RogueSurvivor.Engine
             string text = "";
             for (int index3 = 0; index3 < 5; ++index3)
               text += ch;
-            this.m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * 14, new Color?());
-            this.m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", (object) ch, (object) str, (object) ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * 14, new Color?());
-            this.m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * 14, new Color?());
+                        m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * 14, new Color?());
+                        m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", (object) ch, (object) str, (object) ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * 14, new Color?());
+                        m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * 14, new Color?());
           }
         }
-        int num6 = this.m_Session.World.Size / 2;
-        for (int index = 1; index < this.m_Session.World.Size; ++index)
-          this.m_UI.UI_DrawStringBold(Color.White, "=", num4 + index * 48 - 8, num5 + num6 * 3 * 14 + 14, new Color?());
-        int gy3 = num3 + (this.m_Session.World.Size * 3 + 1) * 14;
-        this.m_UI.UI_DrawStringBold(Color.White, "Legend", gx, gy3, new Color?());
+        int num6 = m_Session.World.Size / 2;
+        for (int index = 1; index < m_Session.World.Size; ++index)
+                    m_UI.UI_DrawStringBold(Color.White, "=", num4 + index * 48 - 8, num5 + num6 * 3 * 14 + 14, new Color?());
+        int gy3 = num3 + (m_Session.World.Size * 3 + 1) * 14;
+                m_UI.UI_DrawStringBold(Color.White, "Legend", gx, gy3, new Color?());
         int gy4 = gy3 + 14;
-        this.m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy4, new Color?());
+                m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy4, new Color?());
         int gy5 = gy4 + 12;
-        this.m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy5, new Color?());
+                m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy5, new Color?());
         int gy6 = gy5 + 12;
-        this.m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy6, new Color?());
+                m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy6, new Color?());
         int gy7 = gy6 + 12;
-        this.m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy7, new Color?());
+                m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy7, new Color?());
         int gy8 = gy7 + 12 + 14;
-        this.m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy8, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy8, new Color?());
         int gy9 = gy8 + 14;
         int num7 = gy9;
-        for (int y = 0; y < this.m_Session.World.Size; ++y)
+        for (int y = 0; y < m_Session.World.Size; ++y)
         {
-          for (int x = 0; x < this.m_Session.World.Size; ++x)
+          for (int x = 0; x < m_Session.World.Size; ++x)
           {
-            Map entryMap = this.m_Session.World[x, y].EntryMap;
+            Map entryMap = m_Session.World[x, y].EntryMap;
             Zone zoneByPartialName1;
             if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) != null)
             {
-              this.m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName1.Name), gx, gy9, new Color?());
+                            m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName1.Name), gx, gy9, new Color?());
               gy9 += 14;
               if (gy9 >= 740)
               {
@@ -4208,7 +4208,7 @@ namespace djack.RogueSurvivor.Engine
             Zone zoneByPartialName2;
             if ((zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance")) != null)
             {
-              this.m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName2.Name), gx, gy9, new Color?());
+                            m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName2.Name), gx, gy9, new Color?());
               gy9 += 14;
               if (gy9 >= 740)
               {
@@ -4216,9 +4216,9 @@ namespace djack.RogueSurvivor.Engine
                 gx += 350;
               }
             }
-            if (entryMap == this.m_Session.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap)
+            if (entryMap == m_Session.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap)
             {
-              this.m_UI.UI_DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
+                            m_UI.UI_DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += 14;
               if (gy9 >= 740)
               {
@@ -4226,9 +4226,9 @@ namespace djack.RogueSurvivor.Engine
                 gx += 350;
               }
             }
-            if (entryMap == this.m_Session.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap)
+            if (entryMap == m_Session.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap)
             {
-              this.m_UI.UI_DrawStringBold(Color.White, string.Format("at {0} : Hospital.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
+                            m_UI.UI_DrawStringBold(Color.White, string.Format("at {0} : Hospital.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += 14;
               if (gy9 >= 740)
               {
@@ -4236,9 +4236,9 @@ namespace djack.RogueSurvivor.Engine
                 gx += 350;
               }
             }
-            if (this.m_Session.PlayerKnows_CHARUndergroundFacilityLocation && entryMap == this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap)
+            if (m_Session.PlayerKnows_CHARUndergroundFacilityLocation && entryMap == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap)
             {
-              this.m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy9, new Color?());
+                            m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object)m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy9, new Color?());
               gy9 += 14;
               if (gy9 >= 740)
               {
@@ -4246,9 +4246,9 @@ namespace djack.RogueSurvivor.Engine
                 gx += 350;
               }
             }
-            if (this.m_Session.PlayerKnows_TheSewersThingLocation && (entryMap == this.m_Session.UniqueActors.TheSewersThing.TheActor.Location.Map.District.EntryMap && !this.m_Session.UniqueActors.TheSewersThing.TheActor.IsDead))
+            if (m_Session.PlayerKnows_TheSewersThingLocation && (entryMap == m_Session.UniqueActors.TheSewersThing.TheActor.Location.Map.District.EntryMap && !m_Session.UniqueActors.TheSewersThing.TheActor.IsDead))
             {
-              this.m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
+                            m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += 14;
               if (gy9 >= 740)
               {
@@ -4259,32 +4259,32 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      this.DrawFootnote(Color.White, "press ESC to leave");
-      this.m_UI.UI_Repaint();
-      this.WaitEscape();
+            DrawFootnote(Color.White, "press ESC to leave");
+            m_UI.UI_Repaint();
+            WaitEscape();
     }
 
     private bool HandleMouseLook(Point mousePos)
     {
-      Point map = this.MouseToMap(mousePos);
-      if (!this.IsInViewRect(map))
+      Point map = MouseToMap(mousePos);
+      if (!IsInViewRect(map))
         return false;
-      if (!this.m_Session.CurrentMap.IsInBounds(map))
+      if (!m_Session.CurrentMap.IsInBounds(map))
         return true;
-      this.ClearOverlays();
-      if (this.IsVisibleToPlayer(this.m_Session.CurrentMap, map))
+            ClearOverlays();
+      if (IsVisibleToPlayer(m_Session.CurrentMap, map))
       {
-        Point screen = this.MapToScreen(map);
-        string[] lines = this.DescribeStuffAt(this.m_Session.CurrentMap, map);
+        Point screen = MapToScreen(map);
+        string[] lines = DescribeStuffAt(m_Session.CurrentMap, map);
         if (lines != null)
         {
           Point screenPos = new Point(screen.X + 32, screen.Y);
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, this.POPUP_FILLCOLOR, screenPos));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
           if (RogueGame.s_Options.ShowTargets)
           {
-            Actor actorAt = this.m_Session.CurrentMap.GetActorAt(map);
+            Actor actorAt = m_Session.CurrentMap.GetActorAt(map);
             if (actorAt != null)
-              this.DrawActorTargets(actorAt);
+                            DrawActorTargets(actorAt);
           }
         }
       }
@@ -4295,36 +4295,36 @@ namespace djack.RogueSurvivor.Engine
     {
       Inventory inv;
       Point itemPos;
-      Item inventoryItem = this.MouseToInventoryItem(mousePos, out inv, out itemPos);
+      Item inventoryItem = MouseToInventoryItem(mousePos, out inv, out itemPos);
       if (inv == null)
       {
         hasDoneAction = false;
         return false;
       }
-      bool isPlayerInventory = inv == this.m_Player.Inventory;
+      bool isPlayerInventory = inv == m_Player.Inventory;
       hasDoneAction = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, 32, 32)));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, 30, 30)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, 32, 32)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, 30, 30)));
       if (inventoryItem != null)
       {
-        string[] lines = this.DescribeItemLong(inventoryItem, isPlayerInventory);
-        int num = 1 + this.FindLongestLine(lines);
+        string[] lines = DescribeItemLong(inventoryItem, isPlayerInventory);
+        int num = 1 + FindLongestLine(lines);
         int x = itemPos.X - 7 * num;
         int y = itemPos.Y + TILE_SIZE;
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, this.POPUP_FILLCOLOR, new Point(x, y)));
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
         if (mouseButtons.HasValue)
         {
           MouseButtons? nullable1 = mouseButtons;
           if ((nullable1.GetValueOrDefault() != MouseButtons.Left ? 0 : (nullable1.HasValue ? 1 : 0)) != 0)
           {
-            hasDoneAction = this.OnLMBItem(inv, inventoryItem);
+            hasDoneAction = OnLMBItem(inv, inventoryItem);
           }
           else
           {
             MouseButtons? nullable2 = mouseButtons;
             if ((nullable2.GetValueOrDefault() != MouseButtons.Right ? 0 : (nullable2.HasValue ? 1 : 0)) != 0)
-              hasDoneAction = this.OnRMBItem(inv, inventoryItem);
+              hasDoneAction = OnRMBItem(inv, inventoryItem);
           }
         }
       }
@@ -4335,18 +4335,18 @@ namespace djack.RogueSurvivor.Engine
     {
       inv = (Inventory) null;
       itemPos = Point.Empty;
-      if (this.m_Player == null)
+      if (m_Player == null)
         return (Item) null;
-      Inventory inventory = this.m_Player.Inventory;
+      Inventory inventory = m_Player.Inventory;
       Point inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity)
       {
         inv = inventory;
-        itemPos = this.InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1.X, inventorySlot1.Y);
+        itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1.X, inventorySlot1.Y);
         return inventory[index1];
       }
-      Inventory itemsAt = this.m_Player.Location.Map.GetItemsAt(this.m_Player.Location.Position);
+      Inventory itemsAt = m_Player.Location.Map.GetItemsAt(m_Player.Location.Position);
       Point inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
       itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2.X, inventorySlot2.Y);
       if (itemsAt == null)
@@ -4360,95 +4360,95 @@ namespace djack.RogueSurvivor.Engine
 
     private bool OnLMBItem(Inventory inv, Item it)
     {
-      if (inv == this.m_Player.Inventory)
+      if (inv == m_Player.Inventory)
       {
         if (it.IsEquipped)
         {
           string reason;
-          if (Rules.CanActorUnequipItem(this.m_Player, it, out reason))
+          if (Rules.CanActorUnequipItem(m_Player, it, out reason))
           {
-            this.DoUnequipItem(this.m_Player, it);
+                        DoUnequipItem(m_Player, it);
             return false;
           }
-          this.AddMessage(this.MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
           return false;
         }
         if (it.Model.IsEquipable)
         {
           string reason;
-          if (this.m_Rules.CanActorEquipItem(this.m_Player, it, out reason))
+          if (m_Rules.CanActorEquipItem(m_Player, it, out reason))
           {
-            this.DoEquipItem(this.m_Player, it);
+                        DoEquipItem(m_Player, it);
             return false;
           }
-          this.AddMessage(this.MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
+                    AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
           return false;
         }
         string reason1;
-        if (this.m_Rules.CanActorUseItem(this.m_Player, it, out reason1))
+        if (m_Rules.CanActorUseItem(m_Player, it, out reason1))
         {
-          this.DoUseItem(this.m_Player, it);
+                    DoUseItem(m_Player, it);
           return true;
         }
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
         return false;
       }
       string reason2;
-      if (this.m_Rules.CanActorGetItem(this.m_Player, it, out reason2))
+      if (m_Rules.CanActorGetItem(m_Player, it, out reason2))
       {
-        this.DoTakeItem(this.m_Player, this.m_Player.Location.Position, it);
+                DoTakeItem(m_Player, m_Player.Location.Position, it);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason2)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason2)));
       return false;
     }
 
     private bool OnRMBItem(Inventory inv, Item it)
     {
-      if (inv != this.m_Player.Inventory)
+      if (inv != m_Player.Inventory)
         return false;
       string reason;
-      if (this.m_Rules.CanActorDropItem(this.m_Player, it, out reason))
+      if (m_Rules.CanActorDropItem(m_Player, it, out reason))
       {
-        this.DoDropItem(this.m_Player, it);
+                DoDropItem(m_Player, it);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
       return false;
     }
 
     private bool HandleMouseOverCorpses(Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
       Point corpsePos;
-      Corpse corpse = this.MouseToCorpse(mousePos, out corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
       if (corpse == null)
       {
         hasDoneAction = false;
         return false;
       }
       hasDoneAction = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, 32, 32)));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, 30, 30)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, 32, 32)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, 30, 30)));
       if (corpse != null)
       {
-        string[] lines = this.DescribeCorpseLong(corpse, true);
-        int num = 1 + this.FindLongestLine(lines);
+        string[] lines = DescribeCorpseLong(corpse, true);
+        int num = 1 + FindLongestLine(lines);
         int x = corpsePos.X - 7 * num;
         int y = corpsePos.Y + TILE_SIZE;
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, this.POPUP_FILLCOLOR, new Point(x, y)));
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
         if (mouseButtons.HasValue)
         {
           MouseButtons? nullable1 = mouseButtons;
           if ((nullable1.GetValueOrDefault() != MouseButtons.Left ? 0 : (nullable1.HasValue ? 1 : 0)) != 0)
           {
-            hasDoneAction = this.OnLMBCorpse(corpse);
+            hasDoneAction = OnLMBCorpse(corpse);
           }
           else
           {
             MouseButtons? nullable2 = mouseButtons;
             if ((nullable2.GetValueOrDefault() != MouseButtons.Right ? 0 : (nullable2.HasValue ? 1 : 0)) != 0)
-              hasDoneAction = this.OnRMBCorpse(corpse);
+              hasDoneAction = OnRMBCorpse(corpse);
           }
         }
       }
@@ -4458,9 +4458,9 @@ namespace djack.RogueSurvivor.Engine
     private Corpse MouseToCorpse(Point screen, out Point corpsePos)
     {
       corpsePos = Point.Empty;
-      if (this.m_Player == null)
+      if (m_Player == null)
         return (Corpse) null;
-      List<Corpse> corpsesAt = this.m_Player.Location.Map.GetCorpsesAt(this.m_Player.Location.Position);
+      List<Corpse> corpsesAt = m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position);
       if (corpsesAt == null)
         return (Corpse) null;
       Point inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen.X, screen.Y);
@@ -4476,76 +4476,76 @@ namespace djack.RogueSurvivor.Engine
       if (c.IsDragged)
       {
         string reason;
-        if (this.m_Rules.CanActorStopDragCorpse(this.m_Player, c, out reason))
+        if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason))
         {
-          this.DoStopDragCorpse(this.m_Player, c);
+                    DoStopDragCorpse(m_Player, c);
           return false;
         }
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
         return false;
       }
       string reason1;
-      if (this.m_Rules.CanActorStartDragCorpse(this.m_Player, c, out reason1))
+      if (m_Rules.CanActorStartDragCorpse(m_Player, c, out reason1))
       {
-        this.DoStartDragCorpse(this.m_Player, c);
+                DoStartDragCorpse(m_Player, c);
         return false;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
       return false;
     }
 
     private bool OnRMBCorpse(Corpse c)
     {
-      if (this.m_Player.Model.Abilities.IsUndead)
+      if (m_Player.Model.Abilities.IsUndead)
       {
         string reason;
-        if (this.m_Rules.CanActorEatCorpse(this.m_Player, c, out reason))
+        if (m_Rules.CanActorEatCorpse(m_Player, c, out reason))
         {
-          this.DoEatCorpse(this.m_Player, c);
+                    DoEatCorpse(m_Player, c);
           return true;
         }
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
         return false;
       }
       string reason1;
-      if (this.m_Rules.CanActorButcherCorpse(this.m_Player, c, out reason1))
+      if (m_Rules.CanActorButcherCorpse(m_Player, c, out reason1))
       {
-        this.DoButcherCorpse(this.m_Player, c);
+                DoButcherCorpse(m_Player, c);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
       return false;
     }
 
     private bool HandlePlayerEatCorpse(Actor player, Point mousePos)
     {
       Point corpsePos;
-      Corpse corpse = this.MouseToCorpse(mousePos, out corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
       if (corpse == null)
         return false;
       string reason;
-      if (!this.m_Rules.CanActorEatCorpse(player, corpse, out reason))
+      if (!m_Rules.CanActorEatCorpse(player, corpse, out reason))
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
         return false;
       }
-      this.DoEatCorpse(player, corpse);
+            DoEatCorpse(player, corpse);
       return true;
     }
 
     private bool HandlePlayerReviveCorpse(Actor player, Point mousePos)
     {
       Point corpsePos;
-      Corpse corpse = this.MouseToCorpse(mousePos, out corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
       if (corpse == null)
         return false;
       string reason;
-      if (!this.m_Rules.CanActorReviveCorpse(player, corpse, out reason))
+      if (!m_Rules.CanActorReviveCorpse(player, corpse, out reason))
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
         return false;
       }
-      this.DoReviveCorpse(player, corpse);
+            DoReviveCorpse(player, corpse);
       return true;
     }
 
@@ -4553,39 +4553,39 @@ namespace djack.RogueSurvivor.Engine
     {
       c.DraggedBy = a;
       a.DraggedCorpse = c;
-      if (!this.IsVisibleToPlayer(a))
+      if (!IsVisibleToPlayer(a))
         return;
-      this.AddMessage(this.MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object) this.Conjugate(a, this.VERB_START), (object) c.DeadGuy.Name)));
+            AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_START), (object) c.DeadGuy.Name)));
     }
 
     public void DoStopDragCorpse(Actor a, Corpse c)
     {
       c.DraggedBy = (Actor) null;
       a.DraggedCorpse = (Corpse) null;
-      if (!this.IsVisibleToPlayer(a))
+      if (!IsVisibleToPlayer(a))
         return;
-      this.AddMessage(this.MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object) this.Conjugate(a, this.VERB_STOP), (object) c.DeadGuy.Name)));
+            AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_STOP), (object) c.DeadGuy.Name)));
     }
 
     public void DoStopDraggingCorpses(Actor a)
     {
       if (a.DraggedCorpse == null) return;
-      this.DoStopDragCorpse(a, a.DraggedCorpse);
+            DoStopDragCorpse(a, a.DraggedCorpse);
     }
 
     public void DoButcherCorpse(Actor a, Corpse c)
     {
-      bool player = this.IsVisibleToPlayer(a);
+      bool player = IsVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
       SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", (object) a.Name, (object) c.DeadGuy.Name));
-      int num = this.m_Rules.ActorDamageVsCorpses(a);
+      int num = m_Rules.ActorDamageVsCorpses(a);
       if (player)
-        this.AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", (object) this.Conjugate(a, this.VERB_BUTCHER), (object) c.DeadGuy.Name, (object) num)));
-      this.InflictDamageToCorpse(c, (float) num);
+                AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", (object)Conjugate(a, VERB_BUTCHER), (object) c.DeadGuy.Name, (object) num)));
+            InflictDamageToCorpse(c, (float) num);
       if ((double) c.HitPoints > 0.0) return;
-      this.DestroyCorpse(c, a.Location.Map);
+            DestroyCorpse(c, a.Location.Map);
       if (!player) return;
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} corpse is no more.", (object) c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} corpse is no more.", (object) c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
     }
 
     public void DoEatCorpse(Actor a, Corpse c)
@@ -4594,7 +4594,7 @@ namespace djack.RogueSurvivor.Engine
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) {
-        AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse.", (object) Conjugate(a, VERB_FEAST_ON), (object) c.DeadGuy.Name)));
+        AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", (object) Conjugate(a, VERB_FEAST_ON), (object) c.DeadGuy.Name)));
         m_MusicManager.Play(GameSounds.UNDEAD_EAT);
       }
       InflictDamageToCorpse(c, (float) num);
@@ -4623,9 +4623,9 @@ namespace djack.RogueSurvivor.Engine
         if (!player) return;
         AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", (object) Conjugate(actor, VERB_HAVE), (object) corpse.DeadGuy.Name)));
       } else {
-        Point position = pointList[this.m_Rules.Roll(0, pointList.Count)];
-        int chance = this.m_Rules.CorpseReviveChance(actor, corpse);
-        Item firstMatching = actor.Inventory.GetFirstMatching((Predicate<Item>) (it => it.Model == this.GameItems.MEDIKIT));
+        Point position = pointList[m_Rules.Roll(0, pointList.Count)];
+        int chance = m_Rules.CorpseReviveChance(actor, corpse);
+        Item firstMatching = actor.Inventory.GetFirstMatching((Predicate<Item>) (it => it.Model == GameItems.MEDIKIT));
         actor.Inventory.Consume(firstMatching);
         if (m_Rules.RollChance(chance)) {
           corpse.DeadGuy.IsDead = false;
@@ -4642,7 +4642,7 @@ namespace djack.RogueSurvivor.Engine
           corpse.DeadGuy.AddTrustIn(actor, Rules.TRUST_REVIVE_BONUS);
         } else {
           if (!player) return;
-          AddMessage(MakeMessage(actor, string.Format("{0} to revive", (object) Conjugate(actor, this.VERB_FAIL)), corpse.DeadGuy));
+          AddMessage(MakeMessage(actor, string.Format("{0} to revive", (object) Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
         }
       }
     }
@@ -4665,11 +4665,11 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlot(Actor player, int slot, KeyEventArgs key)
     {
       if ((key.Modifiers & Keys.Control) != Keys.None)
-        return this.DoPlayerItemSlotUse(player, slot);
+        return DoPlayerItemSlotUse(player, slot);
       if (key.Shift)
-        return this.DoPlayerItemSlotTake(player, slot);
+        return DoPlayerItemSlotTake(player, slot);
       if (key.Alt)
-        return this.DoPlayerItemSlotDrop(player, slot);
+        return DoPlayerItemSlotDrop(player, slot);
       return false;
     }
 
@@ -4678,7 +4678,7 @@ namespace djack.RogueSurvivor.Engine
       Item it = player.Inventory[slot];
       if (it == null)
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
+                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
         return false;
       }
       if (it.IsEquipped)
@@ -4686,30 +4686,30 @@ namespace djack.RogueSurvivor.Engine
         string reason;
         if (Rules.CanActorUnequipItem(player, it, out reason))
         {
-          this.DoUnequipItem(player, it);
+                    DoUnequipItem(player, it);
           return false;
         }
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
         return false;
       }
       if (it.Model.IsEquipable)
       {
         string reason;
-        if (this.m_Rules.CanActorEquipItem(player, it, out reason))
+        if (m_Rules.CanActorEquipItem(player, it, out reason))
         {
-          this.DoEquipItem(player, it);
+                    DoEquipItem(player, it);
           return false;
         }
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
         return false;
       }
       string reason1;
-      if (this.m_Rules.CanActorUseItem(player, it, out reason1))
+      if (m_Rules.CanActorUseItem(player, it, out reason1))
       {
-        this.DoUseItem(player, it);
+                DoUseItem(player, it);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
       return false;
     }
 
@@ -4718,22 +4718,22 @@ namespace djack.RogueSurvivor.Engine
       Inventory itemsAt = player.Location.Map.GetItemsAt(player.Location.Position);
       if (itemsAt == null || itemsAt.IsEmpty)
       {
-        this.AddMessage(this.MakeErrorMessage("No items on ground."));
+                AddMessage(MakeErrorMessage("No items on ground."));
         return false;
       }
       Item it = itemsAt[slot];
       if (it == null)
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("No item at ground slot {0}.", (object) (slot + 1))));
+                AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", (object) (slot + 1))));
         return false;
       }
       string reason;
-      if (this.m_Rules.CanActorGetItem(player, it, out reason))
+      if (m_Rules.CanActorGetItem(player, it, out reason))
       {
-        this.DoTakeItem(player, player.Location.Position, it);
+                DoTakeItem(player, player.Location.Position, it);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason)));
       return false;
     }
 
@@ -4742,28 +4742,28 @@ namespace djack.RogueSurvivor.Engine
       Item it = player.Inventory[slot];
       if (it == null)
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
+                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
         return false;
       }
       string reason;
-      if (this.m_Rules.CanActorDropItem(player, it, out reason))
+      if (m_Rules.CanActorDropItem(player, it, out reason))
       {
-        this.DoDropItem(player, it);
+                DoDropItem(player, it);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
       return false;
     }
 
     private bool HandlePlayerShout(Actor player, string text)
     {
       string reason;
-      if (!this.m_Rules.CanActorShout(player, out reason))
+      if (!m_Rules.CanActorShout(player, out reason))
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("Can't shout : {0}.", (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", (object) reason)));
         return false;
       }
-      this.DoShout(player, text);
+            DoShout(player, text);
       return true;
     }
 
@@ -4771,17 +4771,17 @@ namespace djack.RogueSurvivor.Engine
     {
       Inventory inv;
       Point itemPos;
-      Item inventoryItem = this.MouseToInventoryItem(screen, out inv, out itemPos);
+      Item inventoryItem = MouseToInventoryItem(screen, out inv, out itemPos);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.GIVE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Giving {0} to...", (object) inventoryItem.TheName), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Giving {0} to...", (object) inventoryItem.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -4793,22 +4793,22 @@ namespace djack.RogueSurvivor.Engine
             if (actorAt != null)
             {
               string reason;
-              if (this.m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason))
+              if (m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason))
               {
                 flag2 = true;
                 flag1 = false;
-                this.DoGiveItemTo(player, actorAt, inventoryItem);
+                                DoGiveItemTo(player, actorAt, inventoryItem);
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", (object) inventoryItem.TheName, (object) actorAt.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", (object) inventoryItem.TheName, (object) actorAt.TheName, (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Noone there."));
+                            AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -4816,17 +4816,17 @@ namespace djack.RogueSurvivor.Engine
     {
       Inventory inv;
       Point itemPos;
-      Item inventoryItem = this.MouseToInventoryItem(screen, out inv, out itemPos);
+      Item inventoryItem = MouseToInventoryItem(screen, out inv, out itemPos);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.INITIATE_TRADE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Trading {0} with...", (object) inventoryItem.TheName), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Trading {0} with...", (object) inventoryItem.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -4838,38 +4838,38 @@ namespace djack.RogueSurvivor.Engine
             if (actorAt != null)
             {
               string reason;
-              if (this.m_Rules.CanActorInitiateTradeWith(player, actorAt, out reason))
+              if (m_Rules.CanActorInitiateTradeWith(player, actorAt, out reason))
               {
                 flag2 = true;
                 flag1 = false;
-                this.ClearOverlays();
-                this.RedrawPlayScreen();
-                this.DoTrade(player, inventoryItem, actorAt, true);
+                                ClearOverlays();
+                                RedrawPlayScreen();
+                                DoTrade(player, inventoryItem, actorAt, true);
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", (object) actorAt.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", (object) actorAt.TheName, (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Noone there."));
+                            AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
     private void HandlePlayerRunToggle(Actor player)
     {
       string reason;
-      if (!this.m_Rules.CanActorRun(player, out reason))
+      if (!m_Rules.CanActorRun(player, out reason))
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot run now : {0}.", (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", (object) reason)));
       }
       else
       {
         player.IsRunning = !player.IsRunning;
-        this.AddMessage(this.MakeMessage(player, string.Format("{0} running.", (object) this.Conjugate(player, player.IsRunning ? this.VERB_START : this.VERB_STOP))));
+                AddMessage(MakeMessage(player, string.Format("{0} running.", (object)Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
       }
     }
 
@@ -4877,12 +4877,12 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.CLOSE_DOOR_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -4895,23 +4895,23 @@ namespace djack.RogueSurvivor.Engine
             {
               DoorWindow door = mapObjectAt as DoorWindow;
               string reason;
-              if (this.m_Rules.IsClosableFor(player, door, out reason))
+              if (m_Rules.IsClosableFor(player, door, out reason))
               {
-                this.DoCloseDoor(player, door);
-                this.RedrawPlayScreen();
+                                DoCloseDoor(player, door);
+                                RedrawPlayScreen();
                 flag1 = false;
                 flag2 = true;
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Can't close {0} : {1}.", (object) door.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", (object) door.TheName, (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Nothing to close there."));
+                            AddMessage(MakeErrorMessage("Nothing to close there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -4919,12 +4919,12 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.BARRICADE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -4939,40 +4939,40 @@ namespace djack.RogueSurvivor.Engine
               {
                 DoorWindow door = mapObjectAt as DoorWindow;
                 string reason;
-                if (this.m_Rules.CanActorBarricadeDoor(player, door, out reason))
+                if (m_Rules.CanActorBarricadeDoor(player, door, out reason))
                 {
-                  this.DoBarricadeDoor(player, door);
-                  this.RedrawPlayScreen();
+                                    DoBarricadeDoor(player, door);
+                                    RedrawPlayScreen();
                   flag1 = false;
                   flag2 = true;
                 }
                 else
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", (object) door.TheName, (object) reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", (object) door.TheName, (object) reason)));
               }
               else if (mapObjectAt is Fortification)
               {
                 Fortification fort = mapObjectAt as Fortification;
                 string reason;
-                if (this.m_Rules.CanActorRepairFortification(player, fort, out reason))
+                if (m_Rules.CanActorRepairFortification(player, fort, out reason))
                 {
-                  this.DoRepairFortification(player, fort);
-                  this.RedrawPlayScreen();
+                                    DoRepairFortification(player, fort);
+                                    RedrawPlayScreen();
                   flag1 = false;
                   flag2 = true;
                 }
                 else
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", (object) fort.TheName, (object) reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", (object) fort.TheName, (object) reason)));
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", (object) mapObjectAt.TheName)));
+                                AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", (object) mapObjectAt.TheName)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Nothing to barricade there."));
+                            AddMessage(MakeErrorMessage("Nothing to barricade there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -4980,12 +4980,12 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.BREAK_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction == Direction.NEUTRAL)
@@ -4993,7 +4993,7 @@ namespace djack.RogueSurvivor.Engine
           Exit exitAt = player.Location.Map.GetExitAt(player.Location.Position);
           if (exitAt == null)
           {
-            this.AddMessage(this.MakeErrorMessage("No exit there."));
+                        AddMessage(MakeErrorMessage("No exit there."));
           }
           else
           {
@@ -5002,36 +5002,36 @@ namespace djack.RogueSurvivor.Engine
             string reason;
             if (actorAt != null)
             {
-              if (this.m_Rules.IsEnemyOf(player, actorAt))
+              if (m_Rules.IsEnemyOf(player, actorAt))
               {
-                if (this.m_Rules.CanActorMeleeAttack(player, actorAt, out reason))
+                if (m_Rules.CanActorMeleeAttack(player, actorAt, out reason))
                 {
-                  this.DoMeleeAttack(player, actorAt);
+                                    DoMeleeAttack(player, actorAt);
                   flag1 = false;
                   flag2 = true;
                 }
                 else
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", (object) actorAt.Name, (object) reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", (object) actorAt.Name, (object) reason)));
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("{0} is not your enemy.", (object) actorAt.Name)));
+                                AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", (object) actorAt.Name)));
             }
             else
             {
               MapObject mapObjectAt = toMap.GetMapObjectAt(exitAt.ToPosition);
               if (mapObjectAt != null)
               {
-                if (this.m_Rules.IsBreakableFor(player, mapObjectAt, out reason))
+                if (m_Rules.IsBreakableFor(player, mapObjectAt, out reason))
                 {
-                  this.DoBreak(player, mapObjectAt);
+                                    DoBreak(player, mapObjectAt);
                   flag1 = false;
                   flag2 = true;
                 }
                 else
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
               }
               else
-                this.AddMessage(this.MakeErrorMessage("Nothing to break or attack on the other side."));
+                                AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
             }
           }
         }
@@ -5044,46 +5044,46 @@ namespace djack.RogueSurvivor.Engine
             if (mapObjectAt != null)
             {
               string reason;
-              if (this.m_Rules.IsBreakableFor(player, mapObjectAt, out reason))
+              if (m_Rules.IsBreakableFor(player, mapObjectAt, out reason))
               {
-                this.DoBreak(player, mapObjectAt);
-                this.RedrawPlayScreen();
+                                DoBreak(player, mapObjectAt);
+                                RedrawPlayScreen();
                 flag1 = false;
                 flag2 = true;
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Nothing to break there."));
+                            AddMessage(MakeErrorMessage("Nothing to break there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
     private bool HandlePlayerBuildFortification(Actor player, bool isLarge)
     {
       if (player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) {
-        AddMessage(this.MakeErrorMessage("need carpentry skill."));
+        AddMessage(MakeErrorMessage("need carpentry skill."));
         return false;
       }
-      int num = this.m_Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
-      if (this.m_Rules.CountBarricadingMaterial(player) < num)
+      int num = m_Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
+      if (m_Rules.CountBarricadingMaterial(player) < num)
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("not enough barricading material, need {0}.", (object) num)));
+                AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", (object) num)));
         return false;
       }
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(isLarge ? this.BUILD_LARGE_FORT_MODE_TEXT : this.BUILD_SMALL_FORT_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(isLarge ? BUILD_LARGE_FORT_MODE_TEXT : BUILD_SMALL_FORT_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5092,20 +5092,20 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsInBounds(point))
           {
             string reason;
-            if (this.m_Rules.CanActorBuildFortification(player, point, isLarge, out reason))
+            if (m_Rules.CanActorBuildFortification(player, point, isLarge, out reason))
             {
-              this.DoBuildFortification(player, point, isLarge);
-              this.RedrawPlayScreen();
+                            DoBuildFortification(player, point, isLarge);
+                            RedrawPlayScreen();
               flag1 = false;
               flag2 = true;
             }
             else
-              this.AddMessage(this.MakeErrorMessage(string.Format("Cannot build here : {0}.", (object) reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot build here : {0}.", (object) reason)));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5114,29 +5114,29 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
-        return this.HandlePlayerThrowGrenade(player);
+        return HandlePlayerThrowGrenade(player);
       ItemRangedWeapon itemRangedWeapon = player.GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null)
       {
-        this.AddMessage(this.MakeErrorMessage("No weapon ready to fire."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No weapon ready to fire."));
+                RedrawPlayScreen();
         return false;
       }
       if (itemRangedWeapon.Ammo <= 0)
       {
-        this.AddMessage(this.MakeErrorMessage("No ammo left."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No ammo left."));
+                RedrawPlayScreen();
         return false;
       }
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(this.m_Rules, player, this.m_Session.WorldTime, this.m_Session.World.Weather);
-      List<Actor> enemiesInFov = this.m_Rules.GetEnemiesInFov(player, fovFor);
+      HashSet<Point> fovFor = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
+      List<Actor> enemiesInFov = m_Rules.GetEnemiesInFov(player, fovFor);
       if (enemiesInFov == null || enemiesInFov.Count == 0)
       {
-        this.AddMessage(this.MakeErrorMessage("No targets to fire at."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No targets to fire at."));
+                RedrawPlayScreen();
         return false;
       }
-      Attack attack = this.m_Rules.ActorRangedAttack(player, player.CurrentRangedAttack, 0, (Actor) null);
+      Attack attack = m_Rules.ActorRangedAttack(player, player.CurrentRangedAttack, 0, (Actor) null);
       int index = 0;
       List<Point> LoF = new List<Point>(attack.Range);
       FireMode mode = FireMode.DEFAULT;
@@ -5145,16 +5145,16 @@ namespace djack.RogueSurvivor.Engine
         Actor actor = enemiesInFov[index];
         LoF.Clear();
         string reason;
-        bool flag3 = this.m_Rules.CanActorFireAt(player, actor, LoF, out reason);
+        bool flag3 = m_Rules.CanActorFireAt(player, actor, LoF, out reason);
         int num1 = Rules.GridDistance(player.Location.Position, actor.Location.Position);
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.FIRE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(actor.Location.Position), "Icons\\target"));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\target"));
         string imageID = flag3 ? (num1 <= attack.EfficientRange ? "Icons\\line_clear" : "Icons\\line_bad") : "Icons\\line_blocked";
         foreach (Point mapPosition in LoF)
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(mapPosition), imageID));
-        this.RedrawPlayScreen();
-        KeyEventArgs key = this.m_UI.UI_WaitKey();
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapPosition), imageID));
+                RedrawPlayScreen();
+        KeyEventArgs key = m_UI.UI_WaitKey();
         int num2 = (int) InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape)
           flag1 = false;
@@ -5163,23 +5163,23 @@ namespace djack.RogueSurvivor.Engine
         else if (key.KeyCode == Keys.M)
         {
           mode = (FireMode) ((int) (mode + 1) % 2);
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Switched to {0} fire mode.", (object) mode.ToString()), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Switched to {0} fire mode.", (object) mode.ToString()), m_Session.WorldTime.TurnCounter, Color.Yellow));
         }
         else if (key.KeyCode == Keys.F)
         {
           if (flag3)
           {
-            this.DoSingleRangedAttack(player, actor, LoF, mode);
-            this.RedrawPlayScreen();
+                        DoSingleRangedAttack(player, actor, LoF, mode);
+                        RedrawPlayScreen();
             flag1 = false;
             flag2 = true;
           }
           else
-            this.AddMessage(this.MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", (object) actor.TheName, (object) reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Can't fire at {0} : {1}.", (object) actor.TheName, (object) reason)));
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5187,13 +5187,13 @@ namespace djack.RogueSurvivor.Engine
     {
       if (player.Model.Abilities.IsUndead)
       {
-        this.AddMessage(this.MakeErrorMessage("Undeads can't have personal enemies."));
+                AddMessage(MakeErrorMessage("Undeads can't have personal enemies."));
       }
       else
       {
         Map map = player.Location.Map;
         List<Actor> actorList = new List<Actor>();
-        foreach (Point position in this.m_PlayerFOV)
+        foreach (Point position in m_PlayerFOV)
         {
           Actor actorAt = map.GetActorAt(position);
           if (actorAt != null && actorAt!=player)
@@ -5201,8 +5201,8 @@ namespace djack.RogueSurvivor.Engine
         }
         if (actorList.Count == 0)
         {
-          this.AddMessage(this.MakeErrorMessage("No visible actors to mark."));
-          this.RedrawPlayScreen();
+                    AddMessage(MakeErrorMessage("No visible actors to mark."));
+                    RedrawPlayScreen();
         }
         else
         {
@@ -5211,11 +5211,11 @@ namespace djack.RogueSurvivor.Engine
           do
           {
             Actor target = actorList[index];
-            this.ClearOverlays();
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.MARK_ENEMIES_MODE, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(target.Location.Position), "Icons\\target"));
-            this.RedrawPlayScreen();
-            KeyEventArgs key = this.m_UI.UI_WaitKey();
+                        ClearOverlays();
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(target.Location.Position), "Icons\\target"));
+                        RedrawPlayScreen();
+            KeyEventArgs key = m_UI.UI_WaitKey();
             int num = (int) InputTranslator.KeyToCommand(key);
             if (key.KeyCode == Keys.Escape)
               flag1 = false;
@@ -5226,28 +5226,28 @@ namespace djack.RogueSurvivor.Engine
               bool flag2 = true;
               if (target.Leader == player)
               {
-                this.AddMessage(this.MakeErrorMessage("Can't make a follower your enemy."));
+                                AddMessage(MakeErrorMessage("Can't make a follower your enemy."));
                 flag2 = false;
               }
               else if (player.Leader == target)
               {
-                this.AddMessage(this.MakeErrorMessage("Can't make your leader your enemy."));
+                                AddMessage(MakeErrorMessage("Can't make your leader your enemy."));
                 flag2 = false;
               }
-              else if (this.m_Rules.IsEnemyOf(this.m_Player, target))
+              else if (m_Rules.IsEnemyOf(m_Player, target))
               {
-                this.AddMessage(this.MakeErrorMessage("Already enemies."));
+                                AddMessage(MakeErrorMessage("Already enemies."));
                 flag2 = false;
               }
               if (flag2)
               {
-                this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is now a personal enemy.", (object) target.TheName), this.m_Session.WorldTime.TurnCounter, Color.Orange));
-                this.DoMakeAggression(player, target);
+                                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is now a personal enemy.", (object) target.TheName), m_Session.WorldTime.TurnCounter, Color.Orange));
+                                DoMakeAggression(player, target);
               }
             }
           }
           while (flag1);
-          this.ClearOverlays();
+                    ClearOverlays();
         }
       }
     }
@@ -5260,27 +5260,27 @@ namespace djack.RogueSurvivor.Engine
       ItemGrenadePrimed itemGrenadePrimed = player.GetEquippedWeapon() as ItemGrenadePrimed;
       if (itemGrenade == null && itemGrenadePrimed == null)
       {
-        this.AddMessage(this.MakeErrorMessage("No grenade to throw."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No grenade to throw."));
+                RedrawPlayScreen();
         return false;
       }
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? (itemGrenadePrimed.Model as ItemGrenadePrimedModel).GrenadeModel : itemGrenade.Model as ItemGrenadeModel;
       Map map = player.Location.Map;
       Point point1 = player.Location.Position;
-      int num = this.m_Rules.ActorMaxThrowRange(player, itemGrenadeModel.MaxThrowDistance);
+      int num = m_Rules.ActorMaxThrowRange(player, itemGrenadeModel.MaxThrowDistance);
       List<Point> LoF = new List<Point>();
       do
       {
         LoF.Clear();
         string reason;
-        bool flag3 = this.m_Rules.CanActorThrowTo(player, point1, LoF, out reason);
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.THROW_GRENADE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+        bool flag3 = m_Rules.CanActorThrowTo(player, point1, LoF, out reason);
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         string imageID = flag3 ? "Icons\\line_clear" : "Icons\\line_blocked";
         foreach (Point mapPosition in LoF)
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(mapPosition), imageID));
-        this.RedrawPlayScreen();
-        KeyEventArgs key = this.m_UI.UI_WaitKey();
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapPosition), imageID));
+                RedrawPlayScreen();
+        KeyEventArgs key = m_UI.UI_WaitKey();
         PlayerCommand command = InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape)
           flag1 = false;
@@ -5291,27 +5291,27 @@ namespace djack.RogueSurvivor.Engine
             bool flag4 = true;
             if (Rules.GridDistance(player.Location.Position, point1) <= itemGrenadeModel.BlastAttack.Radius)
             {
-              this.ClearMessages();
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("You are in the blast radius!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-              this.AddMessage(this.MakeYesNoMessage("Really throw there"));
-              this.RedrawPlayScreen();
-              flag4 = this.WaitYesOrNo();
-              this.ClearMessages();
-              this.RedrawPlayScreen();
+                            ClearMessages();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("You are in the blast radius!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                            AddMessage(MakeYesNoMessage("Really throw there"));
+                            RedrawPlayScreen();
+              flag4 = WaitYesOrNo();
+                            ClearMessages();
+                            RedrawPlayScreen();
             }
             if (flag4)
             {
               if (itemGrenade != null)
-                this.DoThrowGrenadeUnprimed(player, point1);
+                                DoThrowGrenadeUnprimed(player, point1);
               else
-                this.DoThrowGrenadePrimed(player, point1);
-              this.RedrawPlayScreen();
+                                DoThrowGrenadePrimed(player, point1);
+                            RedrawPlayScreen();
               flag1 = false;
               flag2 = true;
             }
           }
           else
-            this.AddMessage(this.MakeErrorMessage(string.Format("Can't throw there : {0}.", (object) reason)));
+                        AddMessage(MakeErrorMessage(string.Format("Can't throw there : {0}.", (object) reason)));
         }
         else
         {
@@ -5325,30 +5325,30 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
     private bool HandlePlayerSleep(Actor player)
     {
       string reason;
-      if (!this.m_Rules.CanActorSleep(player, out reason))
+      if (!m_Rules.CanActorSleep(player, out reason))
       {
-        this.AddMessage(this.MakeErrorMessage(string.Format("Cannot sleep now : {0}.", (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot sleep now : {0}.", (object) reason)));
         return false;
       }
-      this.AddMessage(this.MakeYesNoMessage("Really sleep there"));
-      this.RedrawPlayScreen();
-      if (!this.WaitYesOrNo())
+            AddMessage(MakeYesNoMessage("Really sleep there"));
+            RedrawPlayScreen();
+      if (!WaitYesOrNo())
       {
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Good, keep those eyes wide open.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Good, keep those eyes wide open.", m_Session.WorldTime.TurnCounter, Color.Yellow));
         return false;
       }
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("Goodnight, happy nightmares!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.DoStartSleeping(player);
-      this.RedrawPlayScreen();
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.PlayLooping(GameMusics.SLEEP);
+            AddMessage(new djack.RogueSurvivor.Data.Message("Goodnight, happy nightmares!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            DoStartSleeping(player);
+            RedrawPlayScreen();
+            m_MusicManager.StopAll();
+            m_MusicManager.PlayLooping(GameMusics.SLEEP);
       return true;
     }
 
@@ -5356,12 +5356,12 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.SWITCH_PLACE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5373,22 +5373,22 @@ namespace djack.RogueSurvivor.Engine
             if (actorAt != null)
             {
               string reason;
-              if (this.m_Rules.CanActorSwitchPlaceWith(player, actorAt, out reason))
+              if (m_Rules.CanActorSwitchPlaceWith(player, actorAt, out reason))
               {
                 flag2 = true;
                 flag1 = false;
-                this.DoSwitchPlace(player, actorAt);
+                                DoSwitchPlace(player, actorAt);
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Can't switch place : {0}", (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Noone there."));
+                            AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5396,12 +5396,12 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.TAKE_LEAD_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5413,67 +5413,67 @@ namespace djack.RogueSurvivor.Engine
             if (actorAt != null)
             {
               string reason;
-              if (this.m_Rules.CanActorTakeLead(player, actorAt, out reason))
+              if (m_Rules.CanActorTakeLead(player, actorAt, out reason))
               {
                 flag2 = true;
                 flag1 = false;
-                this.DoTakeLead(player, actorAt);
-                this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("Recruited {0}.", (object) actorAt.TheName));
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("(you can now set directives and orders for your new follower).", this.m_Session.WorldTime.TurnCounter, Color.White));
-                this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("(to give order : press <{0}>).", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), this.m_Session.WorldTime.TurnCounter, Color.White));
+                                DoTakeLead(player, actorAt);
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Recruited {0}.", (object) actorAt.TheName));
+                                AddMessage(new djack.RogueSurvivor.Data.Message("(you can now set directives and orders for your new follower).", m_Session.WorldTime.TurnCounter, Color.White));
+                                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("(to give order : press <{0}>).", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
               }
               else if (actorAt.Leader == player)
               {
-                if (this.m_Rules.CanActorCancelLead(player, actorAt, out reason))
+                if (m_Rules.CanActorCancelLead(player, actorAt, out reason))
                 {
-                  this.AddMessage(this.MakeYesNoMessage(string.Format("Really ask {0} to leave", (object) actorAt.TheName)));
-                  this.RedrawPlayScreen();
-                  if (this.WaitYesOrNo())
+                                    AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", (object) actorAt.TheName)));
+                                    RedrawPlayScreen();
+                  if (WaitYesOrNo())
                   {
                     flag2 = true;
                     flag1 = false;
-                    this.DoCancelLead(player, actorAt);
-                    this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("Fired {0}.", (object) actorAt.TheName));
+                                        DoCancelLead(player, actorAt);
+                                        m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Fired {0}.", (object) actorAt.TheName));
                   }
                   else
-                    this.AddMessage(new djack.RogueSurvivor.Data.Message("Good, together you are strong.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                                        AddMessage(new djack.RogueSurvivor.Data.Message("Good, together you are strong.", m_Session.WorldTime.TurnCounter, Color.Yellow));
                 }
                 else
-                  this.AddMessage(this.MakeErrorMessage(string.Format("{0} can't leave : {1}.", (object) actorAt.TheName, (object) reason)));
+                                    AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", (object) actorAt.TheName, (object) reason)));
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Can't lead {0} : {1}.", (object) actorAt.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", (object) actorAt.TheName, (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Noone there."));
+                            AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
     private bool HandlePlayerPush(Actor player)
     {
-      if (!this.m_Rules.HasActorPushAbility(player))
+      if (!m_Rules.HasActorPushAbility(player))
       {
-        this.AddMessage(this.MakeErrorMessage("Cannot push objects."));
+                AddMessage(MakeErrorMessage("Cannot push objects."));
         return false;
       }
-      if (this.m_Rules.IsActorTired(player))
+      if (m_Rules.IsActorTired(player))
       {
-        this.AddMessage(this.MakeErrorMessage("Too tired to push."));
+                AddMessage(MakeErrorMessage("Too tired to push."));
         return false;
       }
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
+            ClearOverlays();
       do
       {
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.PUSH_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5486,37 +5486,37 @@ namespace djack.RogueSurvivor.Engine
             string reason;
             if (actorAt != null)
             {
-              if (this.m_Rules.CanActorShove(player, actorAt, out reason))
+              if (m_Rules.CanActorShove(player, actorAt, out reason))
               {
-                if (this.HandlePlayerShoveActor(player, actorAt))
+                if (HandlePlayerShoveActor(player, actorAt))
                 {
                   flag1 = false;
                   flag2 = true;
                 }
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
             }
             else if (mapObjectAt != null)
             {
-              if (this.m_Rules.CanActorPush(player, mapObjectAt, out reason))
+              if (m_Rules.CanActorPush(player, mapObjectAt, out reason))
               {
-                if (this.HandlePlayerPushObject(player, mapObjectAt))
+                if (HandlePlayerPushObject(player, mapObjectAt))
                 {
                   flag1 = false;
                   flag2 = true;
                 }
               }
               else
-                this.AddMessage(this.MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+                                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
             }
             else
-              this.AddMessage(this.MakeErrorMessage("Nothing to push there."));
+                            AddMessage(MakeErrorMessage("Nothing to push there."));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5524,16 +5524,16 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
       {
-        string.Format(this.PUSH_OBJECT_MODE_TEXT, (object) mapObj.TheName)
-      }, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(mapObj.Location.Position), new Size(32, 32))));
+        string.Format(PUSH_OBJECT_MODE_TEXT, (object) mapObj.TheName)
+      }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5542,19 +5542,19 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsInBounds(point))
           {
             string reason;
-            if (this.m_Rules.CanPushObjectTo(mapObj, point, out reason))
+            if (m_Rules.CanPushObjectTo(mapObj, point, out reason))
             {
-              this.DoPush(player, mapObj, point);
+                            DoPush(player, mapObj, point);
               flag1 = false;
               flag2 = true;
             }
             else
-              this.AddMessage(this.MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5562,16 +5562,16 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
       {
-        string.Format(this.SHOVE_ACTOR_MODE_TEXT, (object) other.TheName)
-      }, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(other.Location.Position), new Size(32, 32))));
+        string.Format(SHOVE_ACTOR_MODE_TEXT, (object) other.TheName)
+      }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(32, 32))));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5580,19 +5580,19 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsInBounds(point))
           {
             string reason;
-            if (this.m_Rules.CanShoveActorTo(other, point, out reason))
+            if (m_Rules.CanShoveActorTo(other, point, out reason))
             {
-              this.DoShove(player, other, point);
+                            DoShove(player, other, point);
               flag1 = false;
               flag2 = true;
             }
             else
-              this.AddMessage(this.MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", (object) other.TheName, (object) reason)));
+                            AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", (object) other.TheName, (object) reason)));
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5601,27 +5601,27 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
       if (equippedItem == null)
       {
-        this.AddMessage(this.MakeErrorMessage("No spray equipped."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No spray equipped."));
+                RedrawPlayScreen();
         return false;
       }
       if (equippedItem is ItemSprayPaint)
-        return this.HandlePlayerTag(player);
+        return HandlePlayerTag(player);
       ItemSprayScent spray = equippedItem as ItemSprayScent;
       if (spray != null)
       {
         string reason;
-        if (!this.m_Rules.CanActorUseItem(player, (Item) spray, out reason))
+        if (!m_Rules.CanActorUseItem(player, (Item) spray, out reason))
         {
-          this.AddMessage(this.MakeErrorMessage(string.Format("Can't use the spray : {0}.", (object) reason)));
-          this.RedrawPlayScreen();
+                    AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", (object) reason)));
+                    RedrawPlayScreen();
           return false;
         }
-        this.DoUseSprayScentItem(player, spray);
+                DoUseSprayScentItem(player, spray);
         return true;
       }
-      this.AddMessage(this.MakeErrorMessage("No spray equipped."));
-      this.RedrawPlayScreen();
+            AddMessage(MakeErrorMessage("No spray equipped."));
+            RedrawPlayScreen();
       return false;
     }
 
@@ -5632,22 +5632,22 @@ namespace djack.RogueSurvivor.Engine
       ItemSprayPaint spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
       if (spray == null)
       {
-        this.AddMessage(this.MakeErrorMessage("No spray paint equipped."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No spray paint equipped."));
+                RedrawPlayScreen();
         return false;
       }
       if (spray.PaintQuantity <= 0)
       {
-        this.AddMessage(this.MakeErrorMessage("No paint left."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("No paint left."));
+                RedrawPlayScreen();
         return false;
       }
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.TAG_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TAG_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do
       {
-        this.RedrawPlayScreen();
-        Direction direction = this.WaitDirectionOrCancel();
+                RedrawPlayScreen();
+        Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
         else if (direction != Direction.NEUTRAL)
@@ -5656,22 +5656,22 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsInBounds(point))
           {
             string reason;
-            if (this.CanTag(player.Location.Map, point, out reason))
+            if (CanTag(player.Location.Map, point, out reason))
             {
-              this.DoTag(player, spray, point);
+                            DoTag(player, spray, point);
               flag1 = false;
               flag2 = true;
             }
             else
             {
-              this.AddMessage(this.MakeErrorMessage(string.Format("Can't tag there : {0}.", (object) reason)));
-              this.RedrawPlayScreen();
+                            AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", (object) reason)));
+                            RedrawPlayScreen();
             }
           }
         }
       }
       while (flag1);
-      this.ClearOverlays();
+            ClearOverlays();
       return flag2;
     }
 
@@ -5701,29 +5701,29 @@ namespace djack.RogueSurvivor.Engine
     {
       m_IsPlayerLongWait = true;
       m_IsPlayerLongWaitForcedStop = false;
-      m_PlayerLongWaitEnd = new WorldTime(this.m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
-      AddMessage(this.MakeMessage(player, string.Format("{0} waiting.", (object) Conjugate(player, VERB_START))));
+      m_PlayerLongWaitEnd = new WorldTime(m_Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
+      AddMessage(MakeMessage(player, string.Format("{0} waiting.", (object) Conjugate(player, VERB_START))));
       RedrawPlayScreen();
     }
 
     private bool CheckPlayerWaitLong(Actor player)
     {
-      if (this.m_IsPlayerLongWaitForcedStop || this.m_Session.WorldTime.TurnCounter >= this.m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (player.IsSleepy || player.IsExhausted))
+      if (m_IsPlayerLongWaitForcedStop || m_Session.WorldTime.TurnCounter >= m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (player.IsSleepy || player.IsExhausted))
         return false;
-      foreach (Point position in this.m_PlayerFOV)
+      foreach (Point position in m_PlayerFOV)
       {
         Actor actorAt = player.Location.Map.GetActorAt(position);
-        if (actorAt != null && this.m_Rules.IsEnemyOf(player, actorAt))
+        if (actorAt != null && m_Rules.IsEnemyOf(player, actorAt))
           return false;
       }
-      return !this.TryPlayerInsanity();
+      return !TryPlayerInsanity();
     }
 
     private bool HandlePlayerOrderMode(Actor player)
     {
       if (player.CountFollowers == 0)
       {
-        this.AddMessage(this.MakeErrorMessage("No followers to give orders to."));
+                AddMessage(MakeErrorMessage("No followers to give orders to."));
         return false;
       }
       Actor[] actorArray = new Actor[player.CountFollowers];
@@ -5733,17 +5733,17 @@ namespace djack.RogueSurvivor.Engine
       foreach (Actor follower in player.Followers)
       {
         actorArray[index1] = follower;
-        pointSetArray[index1] = LOS.ComputeFOVFor(this.m_Rules, follower, this.m_Session.WorldTime, this.m_Session.World.Weather);
-        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && this.m_PlayerFOV.Contains(follower.Location.Position);
-        bool flag2 = this.AreLinkedByPhone(player, follower);
+        pointSetArray[index1] = LOS.ComputeFOVFor(m_Rules, follower, m_Session.WorldTime, m_Session.World.Weather);
+        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_PlayerFOV.Contains(follower.Location.Position);
+        bool flag2 = AreLinkedByPhone(player, follower);
         flagArray[index1] = flag1 || flag2;
         ++index1;
       }
       if (player.CountFollowers == 1 && flagArray[0])
       {
-        bool flag = this.HandlePlayerOrderFollower(player, actorArray[0]);
-        this.ClearOverlays();
-        this.ClearMessages();
+        bool flag = HandlePlayerOrderFollower(player, actorArray[0]);
+                ClearOverlays();
+                ClearMessages();
         return flag;
       }
       bool flag3 = true;
@@ -5751,26 +5751,26 @@ namespace djack.RogueSurvivor.Engine
       int num1 = 0;
       do
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Choose a follower.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("Choose a follower.", m_Session.WorldTime.TurnCounter, Color.Yellow));
         int num2;
         for (num2 = 0; num2 < 5 && num1 + num2 < actorArray.Length; ++num2)
         {
           int index2 = num2 + num1;
           Actor follower = actorArray[index2];
-          string str = this.DescribePlayerFollowerStatus(follower);
+          string str = DescribePlayerFollowerStatus(follower);
           if (flagArray[index2])
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0}. {1}/{2} {3}... {4}.", (object) (1 + num2), (object) (index2 + 1), (object) actorArray.Length, (object) follower.Name, (object) str), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                        AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0}. {1}/{2} {3}... {4}.", (object) (1 + num2), (object) (index2 + 1), (object) actorArray.Length, (object) follower.Name, (object) str), m_Session.WorldTime.TurnCounter, Color.LightGreen));
           else
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0}. {1}/{2} ({3}) {4}.", (object) (1 + num2), (object) (index2 + 1), (object) actorArray.Length, (object) follower.Name, (object) str), this.m_Session.WorldTime.TurnCounter, Color.DarkGray));
+                        AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0}. {1}/{2} ({3}) {4}.", (object) (1 + num2), (object) (index2 + 1), (object) actorArray.Length, (object) follower.Name, (object) str), m_Session.WorldTime.TurnCounter, Color.DarkGray));
         }
         if (num2 < actorArray.Length)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("9. next", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = this.m_UI.UI_WaitKey();
-        int choiceNumber = this.KeyToChoiceNumber(keyEventArgs.KeyCode);
+                    AddMessage(new djack.RogueSurvivor.Data.Message("9. next", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape)
           flag3 = false;
         else if (choiceNumber == 9)
@@ -5785,7 +5785,7 @@ namespace djack.RogueSurvivor.Engine
           if (flagArray[index2])
           {
             Actor follower = actorArray[index2];
-            if (this.HandlePlayerOrderFollower(player, follower))
+            if (HandlePlayerOrderFollower(player, follower))
             {
               flag3 = false;
               flag4 = true;
@@ -5794,8 +5794,8 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag3);
-      this.ClearOverlays();
-      this.ClearMessages();
+            ClearOverlays();
+            ClearMessages();
       return flag4;
     }
 
@@ -5806,19 +5806,19 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         ActorDirective directives = (follower.Controller as AIController).Directives;
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} directives...", (object) follower.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("1. {0} items.", directives.CanTakeItems ? (object) "Take" : (object) "Don't take"), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("2. {0} weapons.", directives.CanFireWeapons ? (object) "Fire" : (object) "Don't fire"), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? (object) "Throw" : (object) "Don't throw"), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("4. {0}.", directives.CanSleep ? (object) "Sleep" : (object) "Don't sleep"), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("5. {0}.", directives.CanTrade ? (object) "Trade" : (object) "Don't trade"), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("6. {0}.", (object) ActorDirective.CourageString(directives.Courage)), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = this.m_UI.UI_WaitKey();
-        int choiceNumber = this.KeyToChoiceNumber(keyEventArgs.KeyCode);
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} directives...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("1. {0} items.", directives.CanTakeItems ? (object) "Take" : (object) "Don't take"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("2. {0} weapons.", directives.CanFireWeapons ? (object) "Fire" : (object) "Don't fire"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? (object) "Throw" : (object) "Don't throw"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("4. {0}.", directives.CanSleep ? (object) "Sleep" : (object) "Don't sleep"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("5. {0}.", directives.CanTrade ? (object) "Trade" : (object) "Don't trade"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("6. {0}.", (object) ActorDirective.CourageString(directives.Courage)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape)
         {
           flag1 = false;
@@ -5865,38 +5865,38 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerOrderFollower(Actor player, Actor follower)
     {
-      if (!this.m_Rules.IsActorTrustingLeader(follower))
+      if (!m_Rules.IsActorTrustingLeader(follower))
       {
-        if (this.IsVisibleToPlayer(follower))
-          this.DoSay(follower, player, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
-        else if (this.AreLinkedByPhone(follower, player))
+        if (IsVisibleToPlayer(follower))
+                    DoSay(follower, player, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+        else if (AreLinkedByPhone(follower, player))
         {
-          this.ClearMessages();
-          this.AddMessage(this.MakeMessage(follower, "Sorry, I don't trust you enough yet."));
-          this.AddMessagePressEnter();
+                    ClearMessages();
+                    AddMessage(MakeMessage(follower, "Sorry, I don't trust you enough yet."));
+                    AddMessagePressEnter();
         }
         return false;
       }
-      string str1 = this.DescribePlayerFollowerStatus(follower);
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(this.m_Rules, follower, this.m_Session.WorldTime, this.m_Session.World.Weather);
+      string str1 = DescribePlayerFollowerStatus(follower);
+      HashSet<Point> fovFor = LOS.ComputeFOVFor(m_Rules, follower, m_Session.WorldTime, m_Session.World.Weather);
       bool flag1 = true;
       bool flag2 = false;
       do
       {
         string str2 = (follower.Controller as OrderableAI).DontFollowLeader ? "Start" : "Stop";
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Order {0} to...", (object) follower.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("0. Cancel current order {0}.", (object) str1), this.m_Session.WorldTime.TurnCounter, Color.Green));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("1. Set directives...", this.m_Session.WorldTime.TurnCounter, Color.Cyan));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("2. Barricade (one)...    6. Drop all items.      A. Give me...", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("3. Barricade (max)...    7. Build small fort.    B. Sleep now.", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", (object) str2), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("5. Patrol...             9. Report events.       D. Where are you?", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = this.m_UI.UI_WaitKey();
-        int choiceNumber = this.KeyToChoiceNumber(keyEventArgs.KeyCode);
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Order {0} to...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("0. Cancel current order {0}.", (object) str1), m_Session.WorldTime.TurnCounter, Color.Green));
+                AddMessage(new djack.RogueSurvivor.Data.Message("1. Set directives...", m_Session.WorldTime.TurnCounter, Color.Cyan));
+                AddMessage(new djack.RogueSurvivor.Data.Message("2. Barricade (one)...    6. Drop all items.      A. Give me...", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message("3. Barricade (max)...    7. Build small fort.    B. Sleep now.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("4. Guard...              8. Build large fort.    C. {0} following me.   ", (object) str2), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                AddMessage(new djack.RogueSurvivor.Data.Message("5. Patrol...             9. Report events.       D. Where are you?", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape)
           flag1 = false;
         else if (choiceNumber >= 0 && choiceNumber <= 9)
@@ -5904,15 +5904,15 @@ namespace djack.RogueSurvivor.Engine
           switch (choiceNumber)
           {
             case 0:
-              this.DoCancelOrder(player, follower);
+                            DoCancelOrder(player, follower);
               flag1 = false;
               flag2 = true;
               break;
             case 1:
-              this.HandlePlayerDirectiveFollower(player, follower);
+                            HandlePlayerDirectiveFollower(player, follower);
               break;
             case 2:
-              if (this.HandlePlayerOrderFollowerToBarricade(player, follower, fovFor, false))
+              if (HandlePlayerOrderFollowerToBarricade(player, follower, fovFor, false))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5920,7 +5920,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 3:
-              if (this.HandlePlayerOrderFollowerToBarricade(player, follower, fovFor, true))
+              if (HandlePlayerOrderFollowerToBarricade(player, follower, fovFor, true))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5928,7 +5928,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 4:
-              if (this.HandlePlayerOrderFollowerToGuard(player, follower, fovFor))
+              if (HandlePlayerOrderFollowerToGuard(player, follower, fovFor))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5936,7 +5936,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 5:
-              if (this.HandlePlayerOrderFollowerToPatrol(player, follower, fovFor))
+              if (HandlePlayerOrderFollowerToPatrol(player, follower, fovFor))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5944,7 +5944,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 6:
-              if (this.HandlePlayerOrderFollowerToDropAllItems(player, follower))
+              if (HandlePlayerOrderFollowerToDropAllItems(player, follower))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5952,7 +5952,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 7:
-              if (this.HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, false))
+              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, false))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5960,7 +5960,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 8:
-              if (this.HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, true))
+              if (HandlePlayerOrderFollowerToBuildFortification(player, follower, fovFor, true))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5968,7 +5968,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case 9:
-              if (this.HandlePlayerOrderFollowerToReport(player, follower))
+              if (HandlePlayerOrderFollowerToReport(player, follower))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5982,7 +5982,7 @@ namespace djack.RogueSurvivor.Engine
           switch (keyEventArgs.KeyCode)
           {
             case Keys.A:
-              if (this.HandlePlayerOrderFollowerToGiveItems(player, follower))
+              if (HandlePlayerOrderFollowerToGiveItems(player, follower))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5990,7 +5990,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case Keys.B:
-              if (this.HandlePlayerOrderFollowerToSleep(player, follower))
+              if (HandlePlayerOrderFollowerToSleep(player, follower))
               {
                 flag1 = false;
                 flag2 = true;
@@ -5998,7 +5998,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case Keys.C:
-              if (this.HandlePlayerOrderFollowerToToggleFollow(player, follower))
+              if (HandlePlayerOrderFollowerToToggleFollow(player, follower))
               {
                 flag1 = false;
                 flag2 = true;
@@ -6006,7 +6006,7 @@ namespace djack.RogueSurvivor.Engine
               }
               break;
             case Keys.D:
-              if (this.HandlePlayerOrderFollowerToReportPosition(player, follower))
+              if (HandlePlayerOrderFollowerToReportPosition(player, follower))
               {
                 flag1 = false;
                 flag2 = true;
@@ -6029,18 +6029,18 @@ namespace djack.RogueSurvivor.Engine
       Color color = Color.White;
       do
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(this.MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to build {1} fortification...", (object) follower.Name, isLarge ? (object) "large" : (object) "small"), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map object.", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to build {1} fortification...", (object) follower.Name, isLarge ? (object) "large" : (object) "small"), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map object.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
         KeyEventArgs key;
         Point mousePos;
         MouseButtons? mouseButtons;
-        this.WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+                WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
         if (key != null)
         {
           if (key.KeyCode == Keys.Escape)
@@ -6048,19 +6048,19 @@ namespace djack.RogueSurvivor.Engine
         }
         else
         {
-          Point map2 = this.MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && this.IsInViewRect(map2))
+          Point map2 = MouseToMap(mousePos);
+          if (map1.IsInBounds(map2) && IsInViewRect(map2))
           {
-            if (this.IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
+            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
             {
               string reason;
-              if (this.m_Rules.CanActorBuildFortification(follower, map2, isLarge, out reason))
+              if (m_Rules.CanActorBuildFortification(follower, map2, isLarge, out reason))
               {
                 nullable = new Point?(map2);
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                 {
-                  this.DoGiveOrderTo(player, follower, new ActorOrder(isLarge ? ActorTasks.BUILD_LARGE_FORTIFICATION : ActorTasks.BUILD_SMALL_FORTIFICATION, new Location(player.Location.Map, map2)));
+                                    DoGiveOrderTo(player, follower, new ActorOrder(isLarge ? ActorTasks.BUILD_LARGE_FORTIFICATION : ActorTasks.BUILD_SMALL_FORTIFICATION, new Location(player.Location.Map, map2)));
                   flag1 = false;
                   flag2 = true;
                 }
@@ -6071,8 +6071,8 @@ namespace djack.RogueSurvivor.Engine
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                 {
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Can't build {0} fortification : {1}.", isLarge ? (object) "large" : (object) "small", (object) reason)));
-                  this.AddMessagePressEnter();
+                                    AddMessage(MakeErrorMessage(string.Format("Can't build {0} fortification : {1}.", isLarge ? (object) "large" : (object) "small", (object) reason)));
+                                    AddMessagePressEnter();
                 }
               }
             }
@@ -6097,18 +6097,18 @@ namespace djack.RogueSurvivor.Engine
       Color color = Color.White;
       do
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(this.MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to barricade...", (object) follower.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map object.", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to barricade...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map object.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
         KeyEventArgs key;
         Point mousePos;
         MouseButtons? mouseButtons;
-        this.WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+                WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
         if (key != null)
         {
           if (key.KeyCode == Keys.Escape)
@@ -6116,22 +6116,22 @@ namespace djack.RogueSurvivor.Engine
         }
         else
         {
-          Point map2 = this.MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && this.IsInViewRect(map2))
+          Point map2 = MouseToMap(mousePos);
+          if (map1.IsInBounds(map2) && IsInViewRect(map2))
           {
-            if (this.IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
+            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
             {
               DoorWindow door = map1.GetMapObjectAt(map2) as DoorWindow;
               if (door != null)
               {
                 string reason;
-                if (this.m_Rules.CanActorBarricadeDoor(follower, door, out reason))
+                if (m_Rules.CanActorBarricadeDoor(follower, door, out reason))
                 {
                   nullable = new Point?(map2);
                   color = Color.LightGreen;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                   {
-                    this.DoGiveOrderTo(player, follower, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
+                                        DoGiveOrderTo(player, follower, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
                     flag1 = false;
                     flag2 = true;
                   }
@@ -6142,8 +6142,8 @@ namespace djack.RogueSurvivor.Engine
                   color = Color.Red;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                   {
-                    this.AddMessage(this.MakeErrorMessage(string.Format("Can't barricade {0} : {1}.", (object) door.TheName, (object) reason)));
-                    this.AddMessagePressEnter();
+                                        AddMessage(MakeErrorMessage(string.Format("Can't barricade {0} : {1}.", (object) door.TheName, (object) reason)));
+                                        AddMessagePressEnter();
                   }
                 }
               }
@@ -6174,18 +6174,18 @@ namespace djack.RogueSurvivor.Engine
       Color color = Color.White;
       do
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(this.MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to guard...", (object) follower.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map position.", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to guard...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map position.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
         KeyEventArgs key;
         Point mousePos;
         MouseButtons? mouseButtons;
-        this.WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+                WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
         if (key != null)
         {
           if (key.KeyCode == Keys.Escape)
@@ -6193,19 +6193,19 @@ namespace djack.RogueSurvivor.Engine
         }
         else
         {
-          Point map2 = this.MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && this.IsInViewRect(map2))
+          Point map2 = MouseToMap(mousePos);
+          if (map1.IsInBounds(map2) && IsInViewRect(map2))
           {
-            if (this.IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
+            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
             {
               string reason;
-              if (map2 == follower.Location.Position || this.m_Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
+              if (map2 == follower.Location.Position || m_Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
               {
                 nullable = new Point?(map2);
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                 {
-                  this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.GUARD, new Location(map1, map2)));
+                                    DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.GUARD, new Location(map1, map2)));
                   flag1 = false;
                   flag2 = true;
                 }
@@ -6216,8 +6216,8 @@ namespace djack.RogueSurvivor.Engine
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                 {
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Can't guard here : {0}", (object) reason)));
-                  this.AddMessagePressEnter();
+                                    AddMessage(MakeErrorMessage(string.Format("Can't guard here : {0}", (object) reason)));
+                                    AddMessagePressEnter();
                 }
               }
             }
@@ -6242,11 +6242,11 @@ namespace djack.RogueSurvivor.Engine
       Color color = Color.White;
       do
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
         {
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(this.MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), new Size(32, 32))));
           List<Zone> zonesAt = map1.GetZonesAt(nullable.Value.X, nullable.Value.Y);
           if (zonesAt != null && zonesAt.Count > 0)
           {
@@ -6254,17 +6254,17 @@ namespace djack.RogueSurvivor.Engine
             lines[0] = "Zone(s) here :";
             for (int index = 0; index < zonesAt.Count; ++index)
               lines[index + 1] = string.Format("- {0}", (object) zonesAt[index].Name);
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, this.POPUP_FILLCOLOR, this.MapToScreen(nullable.Value.X + 1, nullable.Value.Y + 1)));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, MapToScreen(nullable.Value.X + 1, nullable.Value.Y + 1)));
           }
         }
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to patrol...", (object) follower.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map position.", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to patrol...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                AddMessage(new djack.RogueSurvivor.Data.Message("Left-Click on a map position.", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
         KeyEventArgs key;
         Point mousePos;
         MouseButtons? mouseButtons;
-        this.WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+                WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
         if (key != null)
         {
           if (key.KeyCode == Keys.Escape)
@@ -6272,10 +6272,10 @@ namespace djack.RogueSurvivor.Engine
         }
         else
         {
-          Point map2 = this.MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && this.IsInViewRect(map2))
+          Point map2 = MouseToMap(mousePos);
+          if (map1.IsInBounds(map2) && IsInViewRect(map2))
           {
-            if (this.IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
+            if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
             {
               bool flag3 = true;
               string reason = "";
@@ -6284,7 +6284,7 @@ namespace djack.RogueSurvivor.Engine
                 flag3 = false;
                 reason = "no zone here";
               }
-              else if (!(map2 == follower.Location.Position) && !this.m_Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
+              else if (!(map2 == follower.Location.Position) && !m_Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
                 flag3 = false;
               if (flag3)
               {
@@ -6292,7 +6292,7 @@ namespace djack.RogueSurvivor.Engine
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                 {
-                  this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.PATROL, new Location(map1, map2)));
+                                    DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.PATROL, new Location(map1, map2)));
                   flag1 = false;
                   flag2 = true;
                 }
@@ -6303,8 +6303,8 @@ namespace djack.RogueSurvivor.Engine
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left)
                 {
-                  this.AddMessage(this.MakeErrorMessage(string.Format("Can't patrol here : {0}", (object) reason)));
-                  this.AddMessagePressEnter();
+                                    AddMessage(MakeErrorMessage(string.Format("Can't patrol here : {0}", (object) reason)));
+                                    AddMessagePressEnter();
                 }
               }
             }
@@ -6324,33 +6324,33 @@ namespace djack.RogueSurvivor.Engine
     {
       if (follower.Inventory.IsEmpty)
         return false;
-      this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.DROP_ALL_ITEMS, follower.Location));
-      this.DoSay(follower, player, "Well ok...", RogueGame.Sayflags.IS_FREE_ACTION);
+            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.DROP_ALL_ITEMS, follower.Location));
+            DoSay(follower, player, "Well ok...", RogueGame.Sayflags.IS_FREE_ACTION);
       ModifyActorTrustInLeader(follower, follower.Inventory.CountItems * Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToReport(Actor player, Actor follower)
     {
-      this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
+            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.REPORT_EVENTS, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToSleep(Actor player, Actor follower)
     {
-      this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
+            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.SLEEP_NOW, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToToggleFollow(Actor player, Actor follower)
     {
-      this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
+            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.FOLLOW_TOGGLE, follower.Location));
       return true;
     }
 
     private bool HandlePlayerOrderFollowerToReportPosition(Actor player, Actor follower)
     {
-      this.DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
+            DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.WHERE_ARE_YOU, follower.Location));
       return true;
     }
 
@@ -6358,16 +6358,16 @@ namespace djack.RogueSurvivor.Engine
     {
       if (follower.Inventory == null || follower.Inventory.IsEmpty)
       {
-        this.ClearMessages();
-        this.AddMessage(this.MakeErrorMessage(string.Format("{0} has no items to give.", (object) follower.TheName)));
-        this.AddMessagePressEnter();
+                ClearMessages();
+                AddMessage(MakeErrorMessage(string.Format("{0} has no items to give.", (object) follower.TheName)));
+                AddMessagePressEnter();
         return false;
       }
       if (player.Location.Map != follower.Location.Map || !Rules.IsAdjacent(player.Location.Position, follower.Location.Position))
       {
-        this.ClearMessages();
-        this.AddMessage(this.MakeErrorMessage(string.Format("{0} is not next to you.", (object) follower.TheName)));
-        this.AddMessagePressEnter();
+                ClearMessages();
+                AddMessage(MakeErrorMessage(string.Format("{0} is not next to you.", (object) follower.TheName)));
+                AddMessagePressEnter();
         return false;
       }
       bool flag1 = true;
@@ -6376,21 +6376,21 @@ namespace djack.RogueSurvivor.Engine
       Inventory inventory = follower.Inventory;
       do
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.ORDER_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, new Point(0, 0)));
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to give...", (object) follower.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Ordering {0} to give...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
         int num2;
         for (num2 = 0; num2 < 5 && num1 + num2 < inventory.CountItems; ++num2)
         {
           int index = num1 + num2;
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) inventory.CountItems, (object) this.DescribeItemShort(inventory[index])), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) inventory.CountItems, (object)DescribeItemShort(inventory[index])), m_Session.WorldTime.TurnCounter, Color.LightGreen));
         }
         if (num2 < inventory.CountItems)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("9. next", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-        this.RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = this.m_UI.UI_WaitKey();
-        int choiceNumber = this.KeyToChoiceNumber(keyEventArgs.KeyCode);
+                    AddMessage(new djack.RogueSurvivor.Data.Message("9. next", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape)
           flag1 = false;
         else if (choiceNumber == 9)
@@ -6404,17 +6404,17 @@ namespace djack.RogueSurvivor.Engine
           int index = num1 + choiceNumber - 1;
           Item obj = inventory[index];
           string reason;
-          if (this.m_Rules.CanActorGiveItemTo(follower, player, obj, out reason))
+          if (m_Rules.CanActorGiveItemTo(follower, player, obj, out reason))
           {
-            this.DoGiveItemTo(follower, this.m_Player, obj);
+                        DoGiveItemTo(follower, m_Player, obj);
             flag1 = false;
             flag2 = true;
           }
           else
           {
-            this.ClearMessages();
-            this.AddMessage(this.MakeErrorMessage(string.Format("{0} cannot give {1} : {2}.", (object) follower.TheName, (object) this.DescribeItemShort(obj), (object) reason)));
-            this.AddMessagePressEnter();
+                        ClearMessages();
+                        AddMessage(MakeErrorMessage(string.Format("{0} cannot give {1} : {2}.", (object) follower.TheName, (object)DescribeItemShort(obj), (object) reason)));
+                        AddMessagePressEnter();
           }
         }
       }
@@ -6445,7 +6445,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (RogueGame.s_Hints.HasAdvisorGivenAllHints())
       {
-        this.ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]
+                ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]
         {
           "The Advisor has given you all the hints.",
           "You can disable the advisor in the options.",
@@ -6460,13 +6460,13 @@ namespace djack.RogueSurvivor.Engine
       {
         for (int index = 0; index < 46; ++index)
         {
-          if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && this.IsAdvisorHintAppliable((AdvisorHint) index))
+          if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
           {
-            this.AdvisorGiveHint((AdvisorHint) index);
+                        AdvisorGiveHint((AdvisorHint) index);
             return;
           }
         }
-        this.ShowAdvisorMessage("No hint available.", new string[5]
+                ShowAdvisorMessage("No hint available.", new string[5]
         {
           "The Advisor has now new hint for you in this situation.",
           "You will see a popup when he has something to say.",
@@ -6481,7 +6481,7 @@ namespace djack.RogueSurvivor.Engine
     {
       for (int index = 0; index < 46; ++index)
       {
-        if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && this.IsAdvisorHintAppliable((AdvisorHint) index))
+        if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
           return true;
       }
       return false;
@@ -6490,14 +6490,14 @@ namespace djack.RogueSurvivor.Engine
     private void AdvisorGiveHint(AdvisorHint hint)
     {
       RogueGame.s_Hints.SetAdvisorHintAsGiven(hint);
-      this.SaveHints();
-      this.ShowAdvisorHint(hint);
+            SaveHints();
+            ShowAdvisorHint(hint);
     }
 
     private bool IsAdvisorHintAppliable(AdvisorHint hint)
     {
-      Map map = this.m_Player.Location.Map;
-      Point position = this.m_Player.Location.Position;
+      Map map = m_Player.Location.Map;
+      Point position = m_Player.Location.Position;
       switch (hint)
       {
         case AdvisorHint._FIRST:
@@ -6513,15 +6513,15 @@ namespace djack.RogueSurvivor.Engine
             return map.LocalTime.TurnCounter >= 2*WorldTime.TURNS_PER_HOUR;
           return false;
         case AdvisorHint.ACTOR_MELEE:
-          return this.IsAdjacentToEnemy(map, position, this.m_Player);
+          return IsAdjacentToEnemy(map, position, m_Player);
         case AdvisorHint.MOVE_RUN:
           if (map.LocalTime.TurnCounter >= 5)
-            return this.m_Rules.CanActorRun(this.m_Player);
+            return m_Rules.CanActorRun(m_Player);
           return false;
         case AdvisorHint.MOVE_RESTING:
-          return this.m_Rules.IsActorTired(this.m_Player);
+          return m_Rules.IsActorTired(m_Player);
         case AdvisorHint.MOVE_JUMP:
-          if (!this.m_Rules.IsActorTired(this.m_Player))
+          if (!m_Rules.IsActorTired(m_Player))
             return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
             {
               MapObject mapObjectAt = map.GetMapObjectAt(pt);
@@ -6531,19 +6531,19 @@ namespace djack.RogueSurvivor.Engine
             }));
           return false;
         case AdvisorHint.ITEM_GRAB_CONTAINER:
-          return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => this.m_Rules.CanActorGetItemFromContainer(this.m_Player, pt)));
+          return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => m_Rules.CanActorGetItemFromContainer(m_Player, pt)));
         case AdvisorHint.ITEM_GRAB_FLOOR:
           Inventory itemsAt = map.GetItemsAt(position);
           if (itemsAt == null)
             return false;
           foreach (Item it in itemsAt.Items)
           {
-            if (this.m_Rules.CanActorGetItem(this.m_Player, it))
+            if (m_Rules.CanActorGetItem(m_Player, it))
               return true;
           }
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
-          Inventory inventory1 = this.m_Player.Inventory;
+          Inventory inventory1 = m_Player.Inventory;
           if (inventory1 == null || inventory1.IsEmpty)
             return false;
           foreach (Item it in inventory1.Items)
@@ -6552,62 +6552,62 @@ namespace djack.RogueSurvivor.Engine
           }
           return false;
         case AdvisorHint.ITEM_EQUIP:
-          Inventory inventory2 = this.m_Player.Inventory;
+          Inventory inventory2 = m_Player.Inventory;
           if (inventory2 == null || inventory2.IsEmpty)
             return false;
           foreach (Item it in inventory2.Items)
           {
-            if (!it.IsEquipped && this.m_Rules.CanActorEquipItem(this.m_Player, it))
+            if (!it.IsEquipped && m_Rules.CanActorEquipItem(m_Player, it))
               return true;
           }
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
-          Inventory inventory3 = this.m_Player.Inventory;
+          Inventory inventory3 = m_Player.Inventory;
           if (inventory3 == null || inventory3.IsEmpty)
             return false;
           return inventory3.HasItemOfType(typeof (ItemBarricadeMaterial));
         case AdvisorHint.ITEM_DROP:
-          Inventory inventory4 = this.m_Player.Inventory;
+          Inventory inventory4 = m_Player.Inventory;
           if (inventory4 == null || inventory4.IsEmpty)
             return false;
           foreach (Item it in inventory4.Items)
           {
-            if (this.m_Rules.CanActorDropItem(this.m_Player, it))
+            if (m_Rules.CanActorDropItem(m_Player, it))
               return true;
           }
           return false;
         case AdvisorHint.ITEM_USE:
-          Inventory inventory5 = this.m_Player.Inventory;
+          Inventory inventory5 = m_Player.Inventory;
           if (inventory5 == null || inventory5.IsEmpty)
             return false;
           foreach (Item it in inventory5.Items)
           {
-            if (this.m_Rules.CanActorUseItem(this.m_Player, it))
+            if (m_Rules.CanActorUseItem(m_Player, it))
               return true;
           }
           return false;
         case AdvisorHint.FLASHLIGHT:
-          return this.m_Player.Inventory.HasItemOfType(typeof (ItemLight));
+          return m_Player.Inventory.HasItemOfType(typeof (ItemLight));
         case AdvisorHint.CELLPHONES:
-          return this.m_Player.Inventory.GetFirstByModel((ItemModel) this.GameItems.CELL_PHONE) != null;
+          return m_Player.Inventory.GetFirstByModel((ItemModel)GameItems.CELL_PHONE) != null;
         case AdvisorHint.SPRAYS_PAINT:
-          return this.m_Player.Inventory.HasItemOfType(typeof (ItemSprayPaint));
+          return m_Player.Inventory.HasItemOfType(typeof (ItemSprayPaint));
         case AdvisorHint.SPRAYS_SCENT:
-          return this.m_Player.Inventory.HasItemOfType(typeof (ItemSprayScent));
+          return m_Player.Inventory.HasItemOfType(typeof (ItemSprayScent));
         case AdvisorHint.WEAPON_FIRE:
-          ItemRangedWeapon itemRangedWeapon = this.m_Player.GetEquippedWeapon() as ItemRangedWeapon;
+          ItemRangedWeapon itemRangedWeapon = m_Player.GetEquippedWeapon() as ItemRangedWeapon;
           if (itemRangedWeapon == null)
             return false;
           return itemRangedWeapon.Ammo >= 0;
         case AdvisorHint.WEAPON_RELOAD:
-          if (!(this.m_Player.GetEquippedWeapon() is ItemRangedWeapon))
+          if (!(m_Player.GetEquippedWeapon() is ItemRangedWeapon))
             return false;
-          Inventory inventory6 = this.m_Player.Inventory;
+          Inventory inventory6 = m_Player.Inventory;
           if (inventory6 == null || inventory6.IsEmpty)
             return false;
           foreach (Item it in inventory6.Items)
           {
-            if (it is ItemAmmo && this.m_Rules.CanActorUseItem(this.m_Player, it))
+            if (it is ItemAmmo && m_Rules.CanActorUseItem(m_Player, it))
               return true;
           }
           return false;
@@ -6619,7 +6619,7 @@ namespace djack.RogueSurvivor.Engine
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
             if (door == null)
               return false;
-            return this.m_Rules.IsOpenableFor(this.m_Player, door);
+            return m_Rules.IsOpenableFor(m_Player, door);
           }));
         case AdvisorHint.DOORWINDOW_CLOSE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
@@ -6627,7 +6627,7 @@ namespace djack.RogueSurvivor.Engine
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
             if (door == null)
               return false;
-            return this.m_Rules.IsClosableFor(this.m_Player, door);
+            return m_Rules.IsClosableFor(m_Player, door);
           }));
         case AdvisorHint.OBJECT_PUSH:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
@@ -6635,21 +6635,21 @@ namespace djack.RogueSurvivor.Engine
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
             if (mapObjectAt == null)
               return false;
-            return this.m_Rules.CanActorPush(this.m_Player, mapObjectAt);
+            return m_Rules.CanActorPush(m_Player, mapObjectAt);
           }));
         case AdvisorHint.OBJECT_BREAK:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
             if (mapObjectAt == null) return false;
-            return this.m_Rules.IsBreakableFor(this.m_Player, mapObjectAt);
+            return m_Rules.IsBreakableFor(m_Player, mapObjectAt);
           }));
         case AdvisorHint.BARRICADE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
             if (door == null) return false;
-            return this.m_Rules.CanActorBarricadeDoor(this.m_Player, door);
+            return m_Rules.CanActorBarricadeDoor(m_Player, door);
           }));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.GetExitAt(position) != null;
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
@@ -6667,33 +6667,33 @@ namespace djack.RogueSurvivor.Engine
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null) return false;
-            return this.m_Rules.CanActorInitiateTradeWith(this.m_Player, actorAt);
+            return m_Rules.CanActorInitiateTradeWith(m_Player, actorAt);
           }));
         case AdvisorHint.NPC_GIVING_ITEM:
-          Inventory inventory8 = this.m_Player.Inventory;
+          Inventory inventory8 = m_Player.Inventory;
           if (inventory8 == null || inventory8.IsEmpty) return false;
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null) return false;
-            return !this.m_Rules.IsEnemyOf(this.m_Player, actorAt);
+            return !m_Rules.IsEnemyOf(m_Player, actorAt);
           }));
         case AdvisorHint.NPC_SHOUTING:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null || !actorAt.IsSleeping) return false;
-            return !this.m_Rules.IsEnemyOf(this.m_Player, actorAt);
+            return !m_Rules.IsEnemyOf(m_Player, actorAt);
           }));
         case AdvisorHint.BUILD_FORTIFICATION:
-          return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => this.m_Rules.CanActorBuildFortification(this.m_Player, pt, false)));
+          return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => m_Rules.CanActorBuildFortification(m_Player, pt, false)));
         case AdvisorHint.LEADING_NEED_SKILL:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null)
               return false;
-            return !this.m_Rules.IsEnemyOf(this.m_Player, actorAt);
+            return !m_Rules.IsEnemyOf(m_Player, actorAt);
           }));
         case AdvisorHint.LEADING_CAN_RECRUIT:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
@@ -6701,36 +6701,36 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null)
               return false;
-            return this.m_Rules.CanActorTakeLead(this.m_Player, actorAt);
+            return m_Rules.CanActorTakeLead(m_Player, actorAt);
           }));
         case AdvisorHint.LEADING_GIVE_ORDERS:
-          return this.m_Player.CountFollowers > 0;
+          return m_Player.CountFollowers > 0;
         case AdvisorHint.LEADING_SWITCH_PLACE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null)
               return false;
-            return this.m_Rules.CanActorSwitchPlaceWith(this.m_Player, actorAt);
+            return m_Rules.CanActorSwitchPlaceWith(m_Player, actorAt);
           }));
         case AdvisorHint.GAME_SAVE_LOAD:
           return map.LocalTime.Hour >= 7;
         case AdvisorHint.CITY_INFORMATION:
           return map.LocalTime.Hour >= 12;
         case AdvisorHint.CORPSE_BUTCHER:
-          if (!this.m_Player.Model.Abilities.IsUndead)
+          if (!m_Player.Model.Abilities.IsUndead)
             return map.GetCorpsesAt(position) != null;
           return false;
         case AdvisorHint.CORPSE_EAT:
-          if (this.m_Player.Model.Abilities.IsUndead)
+          if (m_Player.Model.Abilities.IsUndead)
             return map.GetCorpsesAt(position) != null;
           return false;
         case AdvisorHint.CORPSE_DRAG_START:
-          if (this.m_Player.DraggedCorpse == null)
+          if (m_Player.DraggedCorpse == null)
             return map.GetCorpsesAt(position) != null;
           return false;
         case AdvisorHint.CORPSE_DRAG_MOVE:
-          return this.m_Player.DraggedCorpse != null;
+          return m_Player.DraggedCorpse != null;
         default:
           throw new ArgumentOutOfRangeException("unhandled hint");
       }
@@ -7192,44 +7192,44 @@ namespace djack.RogueSurvivor.Engine
     {
       string title;
       string[] body;
-      this.GetAdvisorHintText(hint, out title, out body);
-      this.ShowAdvisorMessage(title, body);
+            GetAdvisorHintText(hint, out title, out body);
+            ShowAdvisorMessage(title, body);
     }
 
     private void ShowAdvisorMessage(string title, string[] lines)
     {
-      this.ClearMessages();
-      this.ClearOverlays();
+            ClearMessages();
+            ClearOverlays();
       string[] lines1 = new string[lines.Length + 2];
       lines1[0] = "HINT : " + title;
       Array.Copy((Array) lines, 0, (Array) lines1, 1, lines.Length);
       lines1[lines.Length + 1] = string.Format("(hint {0}/{1})", (object) RogueGame.s_Hints.CountAdvisorHintsGiven(), (object) 46);
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines1, Color.White, Color.White, Color.Black, new Point(0, 0)));
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("You can disable the advisor in the options screen.", this.m_Session.WorldTime.TurnCounter, Color.White));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("To show the options screen : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), this.m_Session.WorldTime.TurnCounter, Color.White));
-      this.AddMessagePressEnter();
-      this.ClearMessages();
-      this.ClearOverlays();
-      this.RedrawPlayScreen();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines1, Color.White, Color.White, Color.Black, new Point(0, 0)));
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("You can disable the advisor in the options screen.", m_Session.WorldTime.TurnCounter, Color.White));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("To show the options screen : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), m_Session.WorldTime.TurnCounter, Color.White));
+            AddMessagePressEnter();
+            ClearMessages();
+            ClearOverlays();
+            RedrawPlayScreen();
     }
 
     private void WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons)
     {
-      this.m_UI.UI_PeekKey();
-      Point mousePosition = this.m_UI.UI_GetMousePosition();
+            m_UI.UI_PeekKey();
+      Point mousePosition = m_UI.UI_GetMousePosition();
       mousePos = new Point(-1, -1);
       mouseButtons = new MouseButtons?();
       do
       {
-        KeyEventArgs keyEventArgs = this.m_UI.UI_PeekKey();
+        KeyEventArgs keyEventArgs = m_UI.UI_PeekKey();
         if (keyEventArgs != null)
         {
           key = keyEventArgs;
           return;
         }
-        mousePos = this.m_UI.UI_GetMousePosition();
-        mouseButtons = this.m_UI.UI_PeekMouseButtons();
+        mousePos = m_UI.UI_GetMousePosition();
+        mouseButtons = m_UI.UI_PeekMouseButtons();
       }
       while (!(mousePos != mousePosition) && !mouseButtons.HasValue);
       key = (KeyEventArgs) null;
@@ -7240,7 +7240,7 @@ namespace djack.RogueSurvivor.Engine
       Direction direction;
       do
       {
-        KeyEventArgs key = this.m_UI.UI_WaitKey();
+        KeyEventArgs key = m_UI.UI_WaitKey();
         PlayerCommand command = InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape)
           return (Direction) null;
@@ -7254,14 +7254,14 @@ namespace djack.RogueSurvivor.Engine
     {
       do
         ;
-      while (this.m_UI.UI_WaitKey().KeyCode != Keys.Return);
+      while (m_UI.UI_WaitKey().KeyCode != Keys.Return);
     }
 
     private void WaitEscape()
     {
       do
         ;
-      while (this.m_UI.UI_WaitKey().KeyCode != Keys.Escape);
+      while (m_UI.UI_WaitKey().KeyCode != Keys.Escape);
     }
 
     private int KeyToChoiceNumber(Keys key)
@@ -7308,7 +7308,7 @@ namespace djack.RogueSurvivor.Engine
       KeyEventArgs keyEventArgs;
       do
       {
-        keyEventArgs = this.m_UI.UI_WaitKey();
+        keyEventArgs = m_UI.UI_WaitKey();
         if (keyEventArgs.KeyCode == Keys.Y)
           return true;
       }
@@ -7320,16 +7320,16 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor actorAt = map.GetActorAt(mapPos);
       if (actorAt != null)
-        return this.DescribeActor(actorAt);
+        return DescribeActor(actorAt);
       MapObject mapObjectAt = map.GetMapObjectAt(mapPos);
       if (mapObjectAt != null)
-        return this.DescribeMapObject(mapObjectAt, map, mapPos);
+        return DescribeMapObject(mapObjectAt, map, mapPos);
       Inventory itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null && !itemsAt.IsEmpty)
-        return this.DescribeInventory(itemsAt);
+        return DescribeInventory(itemsAt);
       List<Corpse> corpsesAt = map.GetCorpsesAt(mapPos);
       if (corpsesAt != null)
-        return this.DescribeCorpses(corpsesAt);
+        return DescribeCorpses(corpsesAt);
       return (string[]) null;
     }
 
@@ -7339,13 +7339,13 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Faction != null)
       {
         if (actor.IsInAGang)
-          stringList.Add(string.Format("{0}, {1}-{2}.", (object) this.Capitalize(actor.Name), (object) actor.Faction.MemberName, (object) GameGangs.NAMES[actor.GangID]));
+          stringList.Add(string.Format("{0}, {1}-{2}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName, (object) GameGangs.NAMES[actor.GangID]));
         else
-          stringList.Add(string.Format("{0}, {1}.", (object) this.Capitalize(actor.Name), (object) actor.Faction.MemberName));
+          stringList.Add(string.Format("{0}, {1}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName));
       }
       else
-        stringList.Add(string.Format("{0}.", (object) this.Capitalize(actor.Name)));
-      stringList.Add(string.Format("{0}.", (object) this.Capitalize(actor.Model.Name)));
+        stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Name)));
+      stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Model.Name)));
       stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? (object) "Undead" : (object) "Staying alive", (object) new WorldTime(actor.SpawnTime).ToString()));
       AIController aiController = actor.Controller as AIController;
       if (aiController != null && aiController.Order != null)
@@ -7363,38 +7363,38 @@ namespace djack.RogueSurvivor.Engine
           OrderableAI orderableAi = aiController as OrderableAI;
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
-          stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object) this.FoodToHoursUntilHungry(actor.FoodPoints)));
+          stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object)FoodToHoursUntilHungry(actor.FoodPoints)));
           stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, (object) actor.SleepToHoursUntilSleepy));
-          stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, (object) this.m_Rules.SanityToHoursUntilUnstable(actor)));
-          stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, (object) this.m_Rules.ActorInfectionPercent(actor)));
+          stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, (object)m_Rules.SanityToHoursUntilUnstable(actor)));
+          stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, (object)m_Rules.ActorInfectionPercent(actor)));
         }
         else
-          stringList.Add(string.Format("Leader : {0}.", (object) this.Capitalize(actor.Leader.Name)));
+          stringList.Add(string.Format("Leader : {0}.", (object)Capitalize(actor.Leader.Name)));
       }
-      if (actor.MurdersCounter > 0 && this.m_Player.Model.Abilities.IsLawEnforcer)
+      if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer)
       {
         stringList.Add("WANTED FOR MURDER!");
         stringList.Add(string.Format("{0} murder{1}!", (object) actor.MurdersCounter, actor.MurdersCounter > 1 ? (object) "s" : (object) ""));
       }
-      else if (actor.HasLeader && actor.Leader.IsPlayer && this.m_Rules.IsActorTrustingLeader(actor))
+      else if (actor.HasLeader && actor.Leader.IsPlayer && m_Rules.IsActorTrustingLeader(actor))
       {
         if (actor.MurdersCounter > 0)
           stringList.Add(string.Format("* Confess {0} murder{1}! *", (object) actor.MurdersCounter, actor.MurdersCounter > 1 ? (object) "s" : (object) ""));
         else
           stringList.Add("Has committed no murders.");
       }
-      if (actor.IsAggressorOf(this.m_Player))
+      if (actor.IsAggressorOf(m_Player))
         stringList.Add("Aggressed you.");
-      if (this.m_Player.IsSelfDefenceFrom(actor))
-        stringList.Add(string.Format("You can kill {0} in self-defence.", (object) this.HimOrHer(actor)));
-      if (this.m_Player.IsAggressorOf(actor))
-        stringList.Add(string.Format("You aggressed {0}.", (object) this.HimOrHer(actor)));
-      if (actor.IsSelfDefenceFrom(this.m_Player))
+      if (m_Player.IsSelfDefenceFrom(actor))
+        stringList.Add(string.Format("You can kill {0} in self-defence.", (object)HimOrHer(actor)));
+      if (m_Player.IsAggressorOf(actor))
+        stringList.Add(string.Format("You aggressed {0}.", (object)HimOrHer(actor)));
+      if (actor.IsSelfDefenceFrom(m_Player))
         stringList.Add("Killing you would be self-defence.");
-      if (this.m_Player.AreIndirectEnemies(actor))
+      if (m_Player.AreIndirectEnemies(actor))
         stringList.Add("You are enemies through relationships.");
       stringList.Add("");
-      string str = this.DescribeActorActivity(actor);
+      string str = DescribeActorActivity(actor);
       stringList.Add(null != str ? str: " ");
       if (actor.Model.Abilities.HasToSleep)
       {
@@ -7414,11 +7414,11 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.HasSanity)
       {
         if (actor.IsInsane) stringList.Add("Insane!");
-        else if (this.m_Rules.IsActorDisturbed(actor)) stringList.Add("Disturbed.");
+        else if (m_Rules.IsActorDisturbed(actor)) stringList.Add("Disturbed.");
       }
-      stringList.Add(string.Format("Spd : {0:F2}", (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0)));
+      stringList.Add(string.Format("Spd : {0:F2}", (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0)));
       StringBuilder stringBuilder = new StringBuilder();
-      int num1 = this.m_Rules.ActorMaxHPs(actor);
+      int num1 = m_Rules.ActorMaxHPs(actor);
       if (actor.HitPoints != num1)
         stringBuilder.Append(string.Format("HP  : {0:D2}/{1:D2}", (object) actor.HitPoints, (object) num1));
       else
@@ -7432,9 +7432,9 @@ namespace djack.RogueSurvivor.Engine
           stringBuilder.Append(string.Format("   STA : {0} MAX", (object) actor.StaminaPoints));
       }
       stringList.Add(stringBuilder.ToString());
-      Attack attack = this.m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
+      Attack attack = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
       stringList.Add(string.Format("Atk : {0:D2} Dmg : {1:D2}", (object) attack.HitValue, (object) attack.DamageValue));
-      Defence defence = this.m_Rules.ActorDefence(actor, actor.CurrentDefence);
+      Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
       stringList.Add(string.Format("Def : {0:D2}", (object) defence.Value));
       stringList.Add(string.Format("Arm : {0}/{1}", (object) defence.Protection_Hit, (object) defence.Protection_Shot));
       stringList.Add(" ");
@@ -7449,7 +7449,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Inventory != null && !actor.Inventory.IsEmpty)
       {
         stringList.Add(string.Format("Items {0}/{1} : ", (object) actor.Inventory.CountItems, (object) Rules.ActorMaxInv(actor)));
-        stringList.AddRange((IEnumerable<string>) this.DescribeInventory(actor.Inventory));
+        stringList.AddRange((IEnumerable<string>)DescribeInventory(actor.Inventory));
       }
       return stringList.ToArray();
     }
@@ -7523,7 +7523,7 @@ namespace djack.RogueSurvivor.Engine
           stringList.Add("Currently ON.");
         else
           stringList.Add("Currently OFF.");
-        float mapPowerRatio = this.m_Rules.ComputeMapPowerRatio(obj.Location.Map);
+        float mapPowerRatio = m_Rules.ComputeMapPowerRatio(obj.Location.Map);
         stringList.Add(string.Format("The power gauge reads {0}%.", (object) (int) (100.0 * (double) mapPowerRatio)));
       }
       else if (obj is Board)
@@ -7550,7 +7550,7 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(string.Format("Weight    : {0}", (object) obj.Weight));
       Inventory itemsAt = map.GetItemsAt(mapPos);
       if (itemsAt != null && !itemsAt.IsEmpty)
-        stringList.AddRange((IEnumerable<string>) this.DescribeInventory(itemsAt));
+        stringList.AddRange((IEnumerable<string>)DescribeInventory(itemsAt));
       return stringList.ToArray();
     }
 
@@ -7560,9 +7560,9 @@ namespace djack.RogueSurvivor.Engine
       foreach (Item it in inv.Items)
       {
         if (it.IsEquipped)
-          stringList.Add(string.Format("- {0} (equipped)", (object) this.DescribeItemShort(it)));
+          stringList.Add(string.Format("- {0} (equipped)", (object)DescribeItemShort(it)));
         else
-          stringList.Add(string.Format("- {0}", (object) this.DescribeItemShort(it)));
+          stringList.Add(string.Format("- {0}", (object)DescribeItemShort(it)));
       }
       return stringList.ToArray();
     }
@@ -7585,27 +7585,27 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>(10);
       stringList.Add(string.Format("Corpse of {0}.", (object) c.DeadGuy.Name));
       stringList.Add(" ");
-      int skillLevel = this.m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
+      int skillLevel = m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       string str1 = "???";
       if (skillLevel > 0)
-        str1 = WorldTime.MakeTimeDurationMessage(this.m_Session.WorldTime.TurnCounter - c.Turn);
+        str1 = WorldTime.MakeTimeDurationMessage(m_Session.WorldTime.TurnCounter - c.Turn);
       stringList.Add(string.Format("Death     : {0}.", (object) str1));
       string str2 = "???";
       if (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION)
       {
-        int num = this.m_Rules.ActorInfectionPercent(c.DeadGuy);
+        int num = m_Rules.ActorInfectionPercent(c.DeadGuy);
         str2 = num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
       }
       stringList.Add(string.Format("Infection : {0}.", (object) str2));
       string str3 = "???";
       if (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE)
       {
-        int num = 2 * this.m_Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false);
+        int num = 2 * m_Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false);
         str3 = num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
       }
       stringList.Add(string.Format("Rise      : {0}.", (object) str3));
       stringList.Add(" ");
-      switch (this.Rules.CorpseRotLevel(c))
+      switch (Rules.CorpseRotLevel(c))
       {
         case 0:
           stringList.Add("The corpse looks fresh.");
@@ -7630,7 +7630,7 @@ namespace djack.RogueSurvivor.Engine
       }
       string str4 = "???";
       if (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST) {
-        int num = this.m_Rules.CorpseReviveChance(this.m_Player, c);
+        int num = m_Rules.CorpseReviveChance(m_Player, c);
         str4 = num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
       }
       stringList.Add(string.Format("Revive    : {0}.", (object) str4));
@@ -7639,8 +7639,8 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(" ");
         stringList.Add("----");
         stringList.Add("LBM to start/stop dragging.");
-        stringList.Add(string.Format("RBM to {0}.", this.m_Player.Model.Abilities.IsUndead ? (object) "eat" : (object) "butcher"));
-        if (!this.m_Player.Model.Abilities.IsUndead)
+        stringList.Add(string.Format("RBM to {0}.", m_Player.Model.Abilities.IsUndead ? (object) "eat" : (object) "butcher"));
+        if (!m_Player.Model.Abilities.IsUndead)
         {
           stringList.Add(string.Format("to eat: <{0}>", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.EAT_CORPSE).ToString()));
           stringList.Add(string.Format("to revive : <{0}>", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.REVIVE_CORPSE).ToString()));
@@ -7682,57 +7682,57 @@ namespace djack.RogueSurvivor.Engine
     {
       List<string> stringList = new List<string>();
       if (it.Model.IsStackable)
-        stringList.Add(string.Format("{0} {1}/{2}", (object) this.DescribeItemShort(it), (object) it.Quantity, (object) it.Model.StackingLimit));
+        stringList.Add(string.Format("{0} {1}/{2}", (object)DescribeItemShort(it), (object) it.Quantity, (object) it.Model.StackingLimit));
       else
-        stringList.Add(this.DescribeItemShort(it));
+        stringList.Add(DescribeItemShort(it));
       if (it.Model.IsUnbreakable)
         stringList.Add("Unbreakable.");
       string str = (string) null;
       if (it is ItemWeapon)
       {
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemWeapon(it as ItemWeapon));
+        stringList.AddRange((IEnumerable<string>)DescribeItemWeapon(it as ItemWeapon));
         if (it is ItemRangedWeapon)
           str = string.Format("to fire : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
       else if (it is ItemFood)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemFood(it as ItemFood));
+        stringList.AddRange((IEnumerable<string>)DescribeItemFood(it as ItemFood));
       else if (it is ItemMedicine)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemMedicine(it as ItemMedicine));
+        stringList.AddRange((IEnumerable<string>)DescribeItemMedicine(it as ItemMedicine));
       else if (it is ItemBarricadeMaterial)
       {
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
+        stringList.AddRange((IEnumerable<string>)DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
         str = string.Format("to use : <{0}>/<{1}>/<{2}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), (object) RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), (object) RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
       }
       else if (it is ItemBodyArmor)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemBodyArmor(it as ItemBodyArmor));
+        stringList.AddRange((IEnumerable<string>)DescribeItemBodyArmor(it as ItemBodyArmor));
       else if (it is ItemSprayPaint)
       {
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemSprayPaint(it as ItemSprayPaint));
+        stringList.AddRange((IEnumerable<string>)DescribeItemSprayPaint(it as ItemSprayPaint));
         str = string.Format("to spray : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
       }
       else if (it is ItemSprayScent)
       {
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemSprayScent(it as ItemSprayScent));
+        stringList.AddRange((IEnumerable<string>)DescribeItemSprayScent(it as ItemSprayScent));
         str = string.Format("to spray : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
       }
       else if (it is ItemLight)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemLight(it as ItemLight));
+        stringList.AddRange((IEnumerable<string>)DescribeItemLight(it as ItemLight));
       else if (it is ItemTracker)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemTracker(it as ItemTracker));
+        stringList.AddRange((IEnumerable<string>)DescribeItemTracker(it as ItemTracker));
       else if (it is ItemAmmo)
       {
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemAmmo(it as ItemAmmo));
+        stringList.AddRange((IEnumerable<string>)DescribeItemAmmo(it as ItemAmmo));
         str = "to reload : left-click.";
       }
       else if (it is ItemExplosive)
       {
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemExplosive(it as ItemExplosive));
+        stringList.AddRange((IEnumerable<string>)DescribeItemExplosive(it as ItemExplosive));
         str = string.Format("to throw : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
       else if (it is ItemTrap)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemTrap(it as ItemTrap));
+        stringList.AddRange((IEnumerable<string>)DescribeItemTrap(it as ItemTrap));
       else if (it is ItemEntertainment)
-        stringList.AddRange((IEnumerable<string>) this.DescribeItemEntertainment(it as ItemEntertainment));
+        stringList.AddRange((IEnumerable<string>)DescribeItemEntertainment(it as ItemEntertainment));
       stringList.Add(" ");
       stringList.Add(it.Model.FlavorDescription);
       if (isPlayerInventory)
@@ -7764,14 +7764,14 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add(string.Format("Blast radius  : {0}", (object) itemExplosiveModel.BlastAttack.Radius));
       StringBuilder stringBuilder = new StringBuilder();
       for (int distance = 0; distance <= itemExplosiveModel.BlastAttack.Radius; ++distance)
-        stringBuilder.Append(string.Format("{0};", (object) this.m_Rules.BlastDamage(distance, itemExplosiveModel.BlastAttack)));
+        stringBuilder.Append(string.Format("{0};", (object)m_Rules.BlastDamage(distance, itemExplosiveModel.BlastAttack)));
       stringList.Add(string.Format("Blast damages : {0}", (object) stringBuilder.ToString()));
       ItemGrenade itemGrenade = ex as ItemGrenade;
       if (itemGrenade != null)
       {
         stringList.Add("> grenade");
         ItemGrenadeModel itemGrenadeModel = itemGrenade.Model as ItemGrenadeModel;
-        int num = this.m_Rules.ActorMaxThrowRange(this.m_Player, itemGrenadeModel.MaxThrowDistance);
+        int num = m_Rules.ActorMaxThrowRange(m_Player, itemGrenadeModel.MaxThrowDistance);
         if (num != itemGrenadeModel.MaxThrowDistance)
           stringList.Add(string.Format("Throwing rng  : {0} ({1})", (object) num, (object) itemGrenadeModel.MaxThrowDistance));
         else
@@ -7813,7 +7813,7 @@ namespace djack.RogueSurvivor.Engine
             stringList.Add(string.Format("Amo  : {0}/{1}", (object) itemRangedWeapon.Ammo, (object) rangedWeaponModel.MaxAmmo));
           else
             stringList.Add(string.Format("Amo  : {0} MAX", (object) itemRangedWeapon.Ammo));
-          stringList.Add(string.Format("Type : {0}", (object) this.DescribeAmmoType(rangedWeaponModel.AmmoType)));
+          stringList.Add(string.Format("Type : {0}", (object)DescribeAmmoType(rangedWeaponModel.AmmoType)));
         }
       }
       return stringList.ToArray();
@@ -7845,7 +7845,7 @@ namespace djack.RogueSurvivor.Engine
       return new List<string>()
       {
         "> ammo",
-        string.Format("Type : {0}", (object) this.DescribeAmmoType(am.AmmoType))
+        string.Format("Type : {0}", (object) DescribeAmmoType(am.AmmoType))
       }.ToArray();
     }
 
@@ -7867,7 +7867,7 @@ namespace djack.RogueSurvivor.Engine
       else
         stringList.Add("Always fresh.");
       int baseValue = f.NutritionAt(m_Session.WorldTime.TurnCounter);
-      int num = this.m_Player == null ? baseValue : this.m_Rules.ActorItemNutritionValue(this.m_Player, baseValue);
+      int num = m_Player == null ? baseValue : m_Rules.ActorItemNutritionValue(m_Player, baseValue);
       if (num == itemFoodModel.Nutrition)
         stringList.Add(string.Format("Nutrition   : +{0}", (object) baseValue));
       else
@@ -7880,29 +7880,29 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>();
       ItemMedicineModel itemMedicineModel = med.Model as ItemMedicineModel;
       stringList.Add("> medicine");
-      int num1 = this.m_Player == null ? itemMedicineModel.Healing : this.m_Rules.ActorMedicineEffect(this.m_Player, itemMedicineModel.Healing);
+      int num1 = m_Player == null ? itemMedicineModel.Healing : m_Rules.ActorMedicineEffect(m_Player, itemMedicineModel.Healing);
       if (num1 == itemMedicineModel.Healing)
         stringList.Add(string.Format("Healing : +{0}", (object) itemMedicineModel.Healing));
       else
         stringList.Add(string.Format("Healing : +{0} (+{1})", (object) num1, (object) itemMedicineModel.Healing));
-      int num2 = this.m_Player == null ? itemMedicineModel.StaminaBoost : this.m_Rules.ActorMedicineEffect(this.m_Player, itemMedicineModel.StaminaBoost);
+      int num2 = m_Player == null ? itemMedicineModel.StaminaBoost : m_Rules.ActorMedicineEffect(m_Player, itemMedicineModel.StaminaBoost);
       if (num2 == itemMedicineModel.StaminaBoost)
         stringList.Add(string.Format("Stamina : +{0}", (object) itemMedicineModel.StaminaBoost));
       else
         stringList.Add(string.Format("Stamina : +{0} (+{1})", (object) num2, (object) itemMedicineModel.StaminaBoost));
-      int num3 = this.m_Player == null ? itemMedicineModel.SleepBoost : this.m_Rules.ActorMedicineEffect(this.m_Player, itemMedicineModel.SleepBoost);
+      int num3 = m_Player == null ? itemMedicineModel.SleepBoost : m_Rules.ActorMedicineEffect(m_Player, itemMedicineModel.SleepBoost);
       if (num3 == itemMedicineModel.SleepBoost)
         stringList.Add(string.Format("Sleep   : +{0}", (object) itemMedicineModel.SleepBoost));
       else
         stringList.Add(string.Format("Sleep   : +{0} (+{1})", (object) num3, (object) itemMedicineModel.SleepBoost));
-      int num4 = this.m_Player == null ? itemMedicineModel.SanityCure : this.m_Rules.ActorMedicineEffect(this.m_Player, itemMedicineModel.SanityCure);
+      int num4 = m_Player == null ? itemMedicineModel.SanityCure : m_Rules.ActorMedicineEffect(m_Player, itemMedicineModel.SanityCure);
       if (num4 == itemMedicineModel.SanityCure)
         stringList.Add(string.Format("Sanity  : +{0}", (object) itemMedicineModel.SanityCure));
       else
         stringList.Add(string.Format("Sanity  : +{0} (+{1})", (object) num4, (object) itemMedicineModel.SanityCure));
       if (m_Session.HasInfection)
       {
-        int num5 = this.m_Player == null ? itemMedicineModel.InfectionCure : this.m_Rules.ActorMedicineEffect(this.m_Player, itemMedicineModel.InfectionCure);
+        int num5 = m_Player == null ? itemMedicineModel.InfectionCure : m_Rules.ActorMedicineEffect(m_Player, itemMedicineModel.InfectionCure);
         if (num5 == itemMedicineModel.InfectionCure)
           stringList.Add(string.Format("Cure    : +{0}", (object) itemMedicineModel.InfectionCure));
         else
@@ -7916,7 +7916,7 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>();
       ItemBarricadeMaterialModel barricadeMaterialModel = bm.Model as ItemBarricadeMaterialModel;
       stringList.Add("> barricade material");
-      int num = this.m_Player == null ? barricadeMaterialModel.BarricadingValue : this.m_Rules.ActorBarricadingPoints(this.m_Player, barricadeMaterialModel.BarricadingValue);
+      int num = m_Player == null ? barricadeMaterialModel.BarricadingValue : m_Rules.ActorBarricadingPoints(m_Player, barricadeMaterialModel.BarricadingValue);
       if (num == barricadeMaterialModel.BarricadingValue)
         stringList.Add(string.Format("Barricading : +{0}", (object) barricadeMaterialModel.BarricadingValue));
       else
@@ -7996,7 +7996,7 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>();
       ItemLightModel itemLightModel = lt.Model as ItemLightModel;
       stringList.Add("> light");
-      stringList.Add(this.DescribeBatteries(lt.Batteries, itemLightModel.MaxBatteries));
+      stringList.Add(DescribeBatteries(lt.Batteries, itemLightModel.MaxBatteries));
       stringList.Add(string.Format("FOV       : +{0}", (object) lt.FovBonus));
       return stringList.ToArray();
     }
@@ -8006,7 +8006,7 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>();
       ItemTrackerModel itemTrackerModel = tr.Model as ItemTrackerModel;
       stringList.Add("> tracker");
-      stringList.Add(this.DescribeBatteries(tr.Batteries, itemTrackerModel.MaxBatteries));
+      stringList.Add(DescribeBatteries(tr.Batteries, itemTrackerModel.MaxBatteries));
       return stringList.ToArray();
     }
 
@@ -8038,9 +8038,9 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>();
       ItemEntertainmentModel entertainmentModel = ent.EntertainmentModel;
       stringList.Add("> entertainment");
-      if (this.m_Player != null && this.m_Player.IsBoredOf((Item) ent))
+      if (m_Player != null && m_Player.IsBoredOf((Item) ent))
         stringList.Add("* BORED OF IT! *");
-      int num = this.m_Player == null ? entertainmentModel.Value : this.m_Rules.ActorSanRegenValue(this.m_Player, entertainmentModel.Value);
+      int num = m_Player == null ? entertainmentModel.Value : m_Rules.ActorSanRegenValue(m_Player, entertainmentModel.Value);
       if (num != entertainmentModel.Value)
         stringList.Add(string.Format("Sanity : +{0} (+{1})", (object) num, (object) entertainmentModel.Value));
       else
@@ -8051,7 +8051,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string DescribeBatteries(int batteries, int maxBatteries)
     {
-      int hours = this.BatteriesToHours(batteries);
+      int hours = BatteriesToHours(batteries);
       if (batteries < maxBatteries)
         return string.Format("Batteries : {0}/{1} ({2}h)", (object) batteries, (object) maxBatteries, (object) hours);
       return string.Format("Batteries : {0} MAX ({1}h)", (object) batteries, (object) hours);
@@ -8208,14 +8208,14 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!actor.Model.Abilities.HasToEat)
         return false;
-      return this.FoodToHoursUntilHungry(actor.FoodPoints) <= 3;
+      return FoodToHoursUntilHungry(actor.FoodPoints) <= 3;
     }
 
     public bool IsAlmostRotHungry(Actor actor)
     {
       if (!actor.Model.Abilities.IsRotting)
         return false;
-      return this.FoodToHoursUntilRotHungry(actor.FoodPoints) <= 3;
+      return FoodToHoursUntilRotHungry(actor.FoodPoints) <= 3;
     }
 
     public static Direction CommandToDirection(PlayerCommand cmd)
@@ -8248,7 +8248,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoMoveActor(Actor actor, Location newLocation)
     {
       Location location = actor.Location;
-      if (!this.TryActorLeaveTile(actor)) {
+      if (!TryActorLeaveTile(actor)) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       } else {
         if (location.Map != newLocation.Map)
@@ -8297,14 +8297,14 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMoveActor(Actor actor, Direction direction)
     {
-      this.DoMoveActor(actor, actor.Location + direction);
+            DoMoveActor(actor, actor.Location + direction);
     }
 
     public void OnActorEnterTile(Actor actor)
     {
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
-      if (this.m_Rules.IsTrapCoveringMapObjectThere(map, position))
+      if (m_Rules.IsTrapCoveringMapObjectThere(map, position))
         return;
       Inventory itemsAt = map.GetItemsAt(position);
       if (itemsAt == null)
@@ -8313,7 +8313,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Item obj in itemsAt.Items)
       {
         ItemTrap trap = obj as ItemTrap;
-        if (trap != null && trap.IsActivated && this.TryTriggerTrap(trap, actor))
+        if (trap != null && trap.IsActivated && TryTriggerTrap(trap, actor))
         {
           if (objList == null)
             objList = new List<Item>(itemsAt.CountItems);
@@ -8327,7 +8327,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor.HitPoints > 0)
         return;
-      this.KillActor((Actor) null, actor, "trap");
+            KillActor((Actor) null, actor, "trap");
     }
 
     private bool TryActorLeaveTile(Actor actor)
@@ -8335,7 +8335,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
       bool canLeave = true;
-      if (!this.m_Rules.IsTrapCoveringMapObjectThere(map, position))
+      if (!m_Rules.IsTrapCoveringMapObjectThere(map, position))
       {
         Inventory itemsAt = map.GetItemsAt(position);
         if (itemsAt != null)
@@ -8349,7 +8349,7 @@ namespace djack.RogueSurvivor.Engine
             {
               flag = true;
               bool isDestroyed = false;
-              if (!this.TryEscapeTrap(trap, actor, out isDestroyed))
+              if (!TryEscapeTrap(trap, actor, out isDestroyed))
                 canLeave = false;
               else if (isDestroyed)
               {
@@ -8365,17 +8365,17 @@ namespace djack.RogueSurvivor.Engine
               map.RemoveItemAt(it, position);
           }
           if (canLeave && flag)
-            this.UntriggerAllTrapsHere(actor.Location);
+                        UntriggerAllTrapsHere(actor.Location);
         }
       }
-      bool visible = this.IsVisibleToPlayer(actor);
+      bool visible = IsVisibleToPlayer(actor);
       map.ForEachAdjacentInMap(position, (Action<Point>) (adj =>
       {
         Actor actorAt = map.GetActorAt(adj);
-        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || (!this.m_Rules.IsEnemyOf(actorAt, actor) || this.m_Rules.ZGrabChance(actorAt, actor) == 0) || !this.m_Rules.RollChance(this.m_Rules.ZGrabChance(actorAt, actor)))
+        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || (!m_Rules.IsEnemyOf(actorAt, actor) || m_Rules.ZGrabChance(actorAt, actor) == 0) || !m_Rules.RollChance(m_Rules.ZGrabChance(actorAt, actor)))
           return;
         if (visible)
-          this.AddMessage(this.MakeMessage(actorAt, this.Conjugate(actorAt, this.VERB_GRAB), actor));
+              AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
         canLeave = false;
       }));
       return canLeave;
@@ -8383,10 +8383,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool TryTriggerTrap(ItemTrap trap, Actor victim)
     {
-      if (this.m_Rules.CheckTrapTriggers(trap, victim))
-        this.DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim, (MapObject) null);
-      else if (this.IsVisibleToPlayer(victim))
-        this.AddMessage(this.MakeMessage(victim, string.Format("safely {0} {1}.", (object) this.Conjugate(victim, this.VERB_AVOID), (object) trap.TheName)));
+      if (m_Rules.CheckTrapTriggers(trap, victim))
+                DoTriggerTrap(trap, victim.Location.Map, victim.Location.Position, victim, (MapObject) null);
+      else if (IsVisibleToPlayer(victim))
+                AddMessage(MakeMessage(victim, string.Format("safely {0} {1}.", (object)Conjugate(victim, VERB_AVOID), (object) trap.TheName)));
       return trap.Quantity == 0;
     }
 
@@ -8395,24 +8395,24 @@ namespace djack.RogueSurvivor.Engine
       isDestroyed = false;
       if (trap.TrapModel.BlockChance <= 0)
         return true;
-      bool player = this.IsVisibleToPlayer(victim);
+      bool player = IsVisibleToPlayer(victim);
       bool flag = false;
-      if (this.m_Rules.CheckTrapEscape(trap, victim))
+      if (m_Rules.CheckTrapEscape(trap, victim))
       {
         trap.IsTriggered = false;
         flag = true;
         if (player)
-          this.AddMessage(this.MakeMessage(victim, string.Format("{0} {1}.", (object) this.Conjugate(victim, this.VERB_ESCAPE), (object) trap.TheName)));
-        if (this.m_Rules.CheckTrapEscapeBreaks(trap, victim))
+                    AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_ESCAPE), (object) trap.TheName)));
+        if (m_Rules.CheckTrapEscapeBreaks(trap, victim))
         {
           if (player)
-            this.AddMessage(this.MakeMessage(victim, string.Format("{0} {1}.", (object) this.Conjugate(victim, this.VERB_BREAK), (object) trap.TheName)));
+                        AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_BREAK), (object) trap.TheName)));
           --trap.Quantity;
           isDestroyed = trap.Quantity <= 0;
         }
       }
       else if (player)
-        this.AddMessage(this.MakeMessage(victim, string.Format("is trapped by {0}!", (object) trap.TheName)));
+                AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", (object) trap.TheName)));
       return flag;
     }
 
@@ -8431,7 +8431,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void CheckMapObjectTriggersTraps(Map map, Point pos)
     {
-      if (!this.m_Rules.IsTrapTriggeringMapObjectThere(map, pos))
+      if (!m_Rules.IsTrapTriggeringMapObjectThere(map, pos))
         return;
       MapObject mapObjectAt = map.GetMapObjectAt(pos);
       Inventory itemsAt = map.GetItemsAt(pos);
@@ -8443,7 +8443,7 @@ namespace djack.RogueSurvivor.Engine
         ItemTrap trap = obj as ItemTrap;
         if (trap != null && trap.IsActivated)
         {
-          this.DoTriggerTrap(trap, map, pos, (Actor) null, mapObjectAt);
+                    DoTriggerTrap(trap, map, pos, (Actor) null, mapObjectAt);
           if (trap.Quantity <= 0)
           {
             if (objList == null)
@@ -8461,21 +8461,21 @@ namespace djack.RogueSurvivor.Engine
     private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, Actor victim, MapObject mobj)
     {
       ItemTrapModel trapModel = trap.TrapModel;
-      bool player = this.IsVisibleToPlayer(map, pos);
+      bool player = IsVisibleToPlayer(map, pos);
       trap.IsTriggered = true;
       int dmg = trapModel.Damage * trap.Quantity;
       if (dmg > 0 && victim != null)
       {
-        this.InflictDamage(victim, dmg);
+                InflictDamage(victim, dmg);
         if (player)
         {
-          this.AddMessage(this.MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", (object) trap.AName, (object) dmg)));
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(victim.Location.Position), "Icons\\melee_damage"));
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(this.MapToScreen(victim.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
-          this.RedrawPlayScreen();
+                    AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", (object) trap.AName, (object) dmg)));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(victim.Location.Position), "Icons\\melee_damage"));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(victim.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
+                    RedrawPlayScreen();
           AnimDelay(victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
-          this.ClearOverlays();
-          this.RedrawPlayScreen();
+                    ClearOverlays();
+                    RedrawPlayScreen();
         }
       }
       if (trapModel.IsNoisy)
@@ -8483,22 +8483,22 @@ namespace djack.RogueSurvivor.Engine
         if (player)
         {
           if (victim != null)
-            this.AddMessage(this.MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", (object) trap.AName)));
+                        AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", (object) trap.AName)));
           else if (mobj != null)
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} makes a lot of noise!", (object) this.Capitalize(trap.TheName)), map.LocalTime.TurnCounter));
+                        AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} makes a lot of noise!", (object)Capitalize(trap.TheName)), map.LocalTime.TurnCounter));
         }
-        this.OnLoudNoise(map, pos, trapModel.NoiseName);
+                OnLoudNoise(map, pos, trapModel.NoiseName);
       }
       if (trapModel.IsOneTimeUse)
         trap.IsActivated = false;
-      if (!this.m_Rules.CheckTrapStepOnBreaks(trap, mobj))
+      if (!m_Rules.CheckTrapStepOnBreaks(trap, mobj))
         return;
       if (player)
       {
         if (victim != null)
-          this.AddMessage(this.MakeMessage(victim, string.Format("{0} {1}.", (object) this.Conjugate(victim, this.VERB_CRUSH), (object) trap.TheName)));
+                    AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_CRUSH), (object) trap.TheName)));
         else if (mobj != null)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} breaks the {1}.", (object) this.Capitalize(mobj.TheName), (object) trap.TheName), map.LocalTime.TurnCounter));
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} breaks the {1}.", (object)Capitalize(mobj.TheName), (object) trap.TheName), map.LocalTime.TurnCounter));
       }
       --trap.Quantity;
     }
@@ -8516,7 +8516,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (isPlayer && askForConfirmation) {
         ClearMessages();
-        AddMessage(this.MakeYesNoMessage(string.Format("REALLY LEAVE {0}", (object) map.Name)));
+        AddMessage(MakeYesNoMessage(string.Format("REALLY LEAVE {0}", (object) map.Name)));
         RedrawPlayScreen();
         if (!WaitYesOrNo()) {
           AddMessage(new djack.RogueSurvivor.Data.Message("Let's stay here a bit longer...", m_Session.WorldTime.TurnCounter, Color.Yellow));
@@ -8555,17 +8555,17 @@ namespace djack.RogueSurvivor.Engine
       exitAt.ToMap.MoveActorToFirstPosition(actor);
       if (actor.DraggedCorpse != null)
         exitAt.ToMap.AddCorpseAt(actor.DraggedCorpse, exitAt.ToPosition);
-      if (this.IsVisibleToPlayer(actor) || isPlayer)
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1}.", (object) this.Conjugate(actor, this.VERB_ENTER), (object) exitAt.ToMap.Name)));
+      if (IsVisibleToPlayer(actor) || isPlayer)
+                AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
       if (isPlayer)
       {
         if (map.District != exitAt.ToMap.District)
-          this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("Entered district {0}.", (object) exitAt.ToMap.District.Name));
-        this.SetCurrentMap(exitAt.ToMap);
+                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Entered district {0}.", (object) exitAt.ToMap.District.Name));
+                SetCurrentMap(exitAt.ToMap);
       }
-      this.OnActorEnterTile(actor);
+            OnActorEnterTile(actor);
       if (actor.CountFollowers > 0)
-        this.DoFollowersEnterMap(actor, map, position, exitAt.ToMap, exitAt.ToPosition);
+                DoFollowersEnterMap(actor, map, position, exitAt.ToMap, exitAt.ToPosition);
       return true;
     }
 
@@ -8573,20 +8573,20 @@ namespace djack.RogueSurvivor.Engine
     private void DoFollowersEnterMap(Actor leader, Map fromMap, Point fromPos, Map toMap, Point toPos)
     {
       bool flag1 = toMap.District != fromMap.District;
-      bool flag2 = this.m_Player == leader;
+      bool flag2 = m_Player == leader;
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
         List<Point> pointList = (List<Point>) null;
         if (Rules.IsAdjacent(fromPos, fo.Location.Position)) {
-          pointList = toMap.FilterAdjacentInMap(toPos, (Predicate<Point>) (pt => this.m_Rules.IsWalkableFor(fo, toMap, pt.X, pt.Y)));
+          pointList = toMap.FilterAdjacentInMap(toPos, (Predicate<Point>) (pt => m_Rules.IsWalkableFor(fo, toMap, pt.X, pt.Y)));
           flag3 = pointList != null && pointList.Count != 0;
         }
         if (!flag3) {
           if (actorList == null) actorList = new List<Actor>(3);
           actorList.Add(fo);
-        } else if (this.TryActorLeaveTile(fo)) {
-          Point position = pointList[this.m_Rules.Roll(0, pointList.Count)];
+        } else if (TryActorLeaveTile(fo)) {
+          Point position = pointList[m_Rules.Roll(0, pointList.Count)];
           fromMap.RemoveActor(fo);
           toMap.PlaceActorAt(fo, position);
           toMap.MoveActorToFirstPosition(fo);
@@ -8601,26 +8601,26 @@ namespace djack.RogueSurvivor.Engine
           leader.RemoveFollower(other);
           if (flag2)
           {
-            this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} was left behind.", (object) other.TheName));
-            this.ClearMessages();
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} could not follow you out of the district and left you!", (object) other.TheName), this.m_Session.WorldTime.TurnCounter, Color.Red));
-            this.AddMessagePressEnter();
-            this.ClearMessages();
+                        m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} was left behind.", (object) other.TheName));
+                        ClearMessages();
+                        AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} could not follow you out of the district and left you!", (object) other.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
+                        AddMessagePressEnter();
+                        ClearMessages();
           }
         }
         else if (other.Location.Map == fromMap && flag2)
         {
-          this.ClearMessages();
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} could not follow and is still in {1}.", (object) other.TheName, (object) fromMap.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-          this.AddMessagePressEnter();
-          this.ClearMessages();
+                    ClearMessages();
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} could not follow and is still in {1}.", (object) other.TheName, (object) fromMap.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    AddMessagePressEnter();
+                    ClearMessages();
         }
       }
     }
 
     public bool DoUseExit(Actor actor, Point exitPoint)
     {
-      return this.DoLeaveMap(actor, exitPoint, false);
+      return DoLeaveMap(actor, exitPoint, false);
     }
 
     public void DoSwitchPlace(Actor actor, Actor other)
@@ -8681,21 +8681,21 @@ namespace djack.RogueSurvivor.Engine
       }
       DoorWindow doorWindow = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
       if (doorWindow != null && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead) {
-        if (!this.m_Rules.IsActorTired(player)) {
-          this.AddMessage(this.MakeYesNoMessage("Really tear down the barricade"));
-          this.RedrawPlayScreen();
-          if (this.WaitYesOrNo()) {
-            this.DoBreak(player, (MapObject) doorWindow);
+        if (!m_Rules.IsActorTired(player)) {
+                    AddMessage(MakeYesNoMessage("Really tear down the barricade"));
+                    RedrawPlayScreen();
+          if (WaitYesOrNo()) {
+                        DoBreak(player, (MapObject) doorWindow);
             return true;
           }
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("Good, keep everything secure.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    AddMessage(new djack.RogueSurvivor.Data.Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
           return false;
         }
-        this.AddMessage(this.MakeErrorMessage("Too tired to tear down the barricade."));
-        this.RedrawPlayScreen();
+                AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
+                RedrawPlayScreen();
         return false;
       }
-      this.AddMessage(this.MakeErrorMessage(string.Format("Cannot do that : {0}.", (object) actionBump.FailReason)));
+            AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", (object) actionBump.FailReason)));
       return false;
     }
 
@@ -8705,57 +8705,57 @@ namespace djack.RogueSurvivor.Engine
         return;
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
       if (!target.IsPlayer && !target.IsSleeping && (!aggressor.IsAggressorOf(target) && !target.IsAggressorOf(aggressor)))
-        this.DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION);
+                DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION);
       aggressor.MarkAsAgressorOf(target);
       target.MarkAsSelfDefenceFrom(aggressor);
       if (target.IsSleeping)
         return;
       Faction faction = target.Faction;
-      if (faction == this.GameFactions.ThePolice)
+      if (faction == GameFactions.ThePolice)
       {
-        if (aggressor.Model.Abilities.IsLawEnforcer && !this.m_Rules.IsMurder(aggressor, target))
+        if (aggressor.Model.Abilities.IsLawEnforcer && !m_Rules.IsMurder(aggressor, target))
           return;
-        this.OnMakeEnemyOfCop(aggressor, target, wasAlreadyEnemy);
+                OnMakeEnemyOfCop(aggressor, target, wasAlreadyEnemy);
       }
       else
       {
-        if (faction != this.GameFactions.TheArmy)
+        if (faction != GameFactions.TheArmy)
           return;
-        this.OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
+                OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
       }
     }
 
     private void OnMakeEnemyOfCop(Actor aggressor, Actor cop, bool wasAlreadyEnemy)
     {
       if (!wasAlreadyEnemy)
-        this.DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
-      this.MakeEnemyOfTargetFactionInDistrict(aggressor, cop, (Action<Actor>) (a =>
+                DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
+            MakeEnemyOfTargetFactionInDistrict(aggressor, cop, (Action<Actor>) (a =>
       {
-        if (!a.IsPlayer || a == cop || (a.IsSleeping || this.m_Rules.IsEnemyOf(a, aggressor)))
+        if (!a.IsPlayer || a == cop || (a.IsSleeping || m_Rules.IsEnemyOf(a, aggressor)))
           return;
-        int turnCounter = this.m_Session.WorldTime.TurnCounter;
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You get a message from your police radio.", turnCounter, Color.White));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object) aggressor.TheName), turnCounter, Color.White));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Current location : {0}@{1},{2}", (object) aggressor.Location.Map.Name, (object) aggressor.Location.Position.X, (object) aggressor.Location.Position.Y), turnCounter, Color.White));
-        this.AddMessagePressEnter();
+        int turnCounter = m_Session.WorldTime.TurnCounter;
+          ClearMessages();
+          AddMessage(new djack.RogueSurvivor.Data.Message("You get a message from your police radio.", turnCounter, Color.White));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object) aggressor.TheName), turnCounter, Color.White));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Current location : {0}@{1},{2}", (object) aggressor.Location.Map.Name, (object) aggressor.Location.Position.X, (object) aggressor.Location.Position.Y), turnCounter, Color.White));
+          AddMessagePressEnter();
       }));
     }
 
     private void OnMakeEnemyOfSoldier(Actor aggressor, Actor soldier, bool wasAlreadyEnemy)
     {
       if (!wasAlreadyEnemy)
-        this.DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
-      this.MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, (Action<Actor>) (a =>
+                DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
+            MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, (Action<Actor>) (a =>
       {
-        if (!a.IsPlayer || a == soldier || (a.IsSleeping || this.m_Rules.IsEnemyOf(a, aggressor)))
+        if (!a.IsPlayer || a == soldier || (a.IsSleeping || m_Rules.IsEnemyOf(a, aggressor)))
           return;
-        int turnCounter = this.m_Session.WorldTime.TurnCounter;
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You get a message from your army radio.", turnCounter, Color.White));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object) aggressor.Name), turnCounter, Color.White));
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Current location : {0}@{1},{2}", (object) aggressor.Location.Map.Name, (object) aggressor.Location.Position.X, (object) aggressor.Location.Position.Y), turnCounter, Color.White));
-        this.AddMessagePressEnter();
+        int turnCounter = m_Session.WorldTime.TurnCounter;
+          ClearMessages();
+          AddMessage(new djack.RogueSurvivor.Data.Message("You get a message from your army radio.", turnCounter, Color.White));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object) aggressor.Name), turnCounter, Color.White));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Current location : {0}@{1},{2}", (object) aggressor.Location.Map.Name, (object) aggressor.Location.Position.X, (object) aggressor.Location.Position.Y), turnCounter, Color.White));
+          AddMessagePressEnter();
       }));
     }
 
@@ -8783,8 +8783,8 @@ namespace djack.RogueSurvivor.Engine
       attacker.TargetActor = defender;
       if (!m_Rules.IsEnemyOf(attacker, defender))
         DoMakeAggression(attacker, defender);
-      Attack attack = this.m_Rules.ActorMeleeAttack(attacker, attacker.CurrentMeleeAttack, defender);
-      Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
+      Attack attack = m_Rules.ActorMeleeAttack(attacker, attacker.CurrentMeleeAttack, defender);
+      Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       int num1 = m_Rules.RollSkill(attack.HitValue);
@@ -8804,94 +8804,94 @@ namespace djack.RogueSurvivor.Engine
       }
       if (num1 > num2)
       {
-        int num3 = this.m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit;
+        int num3 = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit;
         if (num3 > 0)
         {
-          this.InflictDamage(defender, num3);
+                    InflictDamage(defender, num3);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead)
           {
-            this.RegenActorHitPoints(attacker, this.Rules.ActorBiteHpRegen(attacker, num3));
-            attacker.FoodPoints = Math.Min(attacker.FoodPoints + this.m_Rules.ActorBiteNutritionValue(attacker, num3), this.m_Rules.ActorMaxRot(attacker));
+                        RegenActorHitPoints(attacker, Rules.ActorBiteHpRegen(attacker, num3));
+            attacker.FoodPoints = Math.Min(attacker.FoodPoints + m_Rules.ActorBiteNutritionValue(attacker, num3), m_Rules.ActorMaxRot(attacker));
             if (player2)
-              this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, this.VERB_FEAST_ON), defender, " flesh !"));
-            this.InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
+                            AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
+                        InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
           }
           if (defender.HitPoints <= 0)
           {
             if (player2 || player1)
             {
-              this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, defender.Model.Abilities.IsUndead ? this.VERB_DESTROY : (this.m_Rules.IsMurder(attacker, defender) ? this.VERB_MURDER : this.VERB_KILL)), defender, " !"));
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\killed"));
-              this.RedrawPlayScreen();
+                            AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\killed"));
+                            RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
             }
-            this.KillActor(attacker, defender, "hit");
+                        KillActor(attacker, defender, "hit");
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", (object) defender.Name));
             if (m_Session.HasImmediateZombification || defender == m_Player)
             {
-              if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && this.m_Rules.RollChance(RogueGame.s_Options.ZombificationChance))
+              if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(RogueGame.s_Options.ZombificationChance))
               {
                 if (defender.IsPlayer)
                   defender.Location.Map.TryRemoveCorpseOf(defender);
-                this.Zombify(attacker, defender, false);
+                                Zombify(attacker, defender, false);
                 if (player1)
                 {
-                  this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, "turn"), defender, " into a Zombie!"));
-                  this.RedrawPlayScreen();
+                                    AddMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"));
+                                    RedrawPlayScreen();
                   AnimDelay(DELAY_LONG);
                 }
               }
-              else if (defender == this.m_Player && !defender.Model.Abilities.IsUndead && defender.Infection > 0)
+              else if (defender == m_Player && !defender.Model.Abilities.IsUndead && defender.Infection > 0)
               {
                 defender.Location.Map.TryRemoveCorpseOf(defender);
-                this.Zombify((Actor) null, defender, false);
-                this.AddMessage(this.MakeMessage(defender, this.Conjugate(defender, "turn") + " into a Zombie!"));
-                this.RedrawPlayScreen();
+                                Zombify((Actor) null, defender, false);
+                                AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
+                                RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
             }
           }
           else if (player2 || player1)
           {
-            this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) num3)));
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(this.MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
-            this.RedrawPlayScreen();
+                        AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) num3)));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
+                        RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         else if (player2 || player1)
         {
-          this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, attack.Verb), defender, " for no effect."));
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
-          this.RedrawPlayScreen();
+                    AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+                    RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (player2 || player1)
       {
-        this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, this.VERB_MISS), defender));
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
-        this.RedrawPlayScreen();
+                AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+                RedrawPlayScreen();
         AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
       ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
-      if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && this.m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
+      if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
-        this.OnUnequipItem(attacker, (Item) itemMeleeWeapon);
+                OnUnequipItem(attacker, (Item) itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
           --itemMeleeWeapon.Quantity;
         else
           attacker.Inventory.RemoveAllQuantity((Item) itemMeleeWeapon);
         if (player2)
         {
-          this.AddMessage(this.MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", (object) itemMeleeWeapon.TheName)));
-          this.RedrawPlayScreen();
+                    AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", (object) itemMeleeWeapon.TheName)));
+                    RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      this.ClearOverlays();
+            ClearOverlays();
     }
 
     public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
@@ -8928,12 +8928,12 @@ namespace djack.RogueSurvivor.Engine
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
       int distance = Rules.GridDistance(attacker.Location.Position, defender.Location.Position);
-      Attack attack = this.m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
-      Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
+      Attack attack = m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
+      Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendStaminaPoints(attack.StaminaPenalty);
-      if (attack.Kind == AttackKind.FIREARM && (this.m_Rules.RollChance(this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && this.IsVisibleToPlayer(attacker)))
+      if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(m_Rules.IsWeatherRain(m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && IsVisibleToPlayer(attacker)))
       {
-        this.AddMessage(this.MakeMessage(attacker, " : weapon jam!"));
+                AddMessage(MakeMessage(attacker, " : weapon jam!"));
       }
       else
       {
@@ -8941,65 +8941,65 @@ namespace djack.RogueSurvivor.Engine
         if (itemRangedWeapon == null)
           throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
-        if (this.DoCheckFireThrough(attacker, LoF))
+        if (DoCheckFireThrough(attacker, LoF))
           return;
-        if (this.m_IsPlayerLongWait && defender.IsPlayer)
-          this.m_IsPlayerLongWaitForcedStop = true;
-        int num1 = (int) ((double) accuracyFactor * (double) this.m_Rules.RollSkill(attack.HitValue));
-        int num2 = this.m_Rules.RollSkill(defence.Value);
-        bool player1 = this.IsVisibleToPlayer(defender.Location);
-        bool player2 = this.IsVisibleToPlayer(attacker.Location);
+        if (m_IsPlayerLongWait && defender.IsPlayer)
+                    m_IsPlayerLongWaitForcedStop = true;
+        int num1 = (int) ((double) accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
+        int num2 = m_Rules.RollSkill(defence.Value);
+        bool player1 = IsVisibleToPlayer(defender.Location);
+        bool player2 = IsVisibleToPlayer(attacker.Location);
         bool flag = attacker.IsPlayer || defender.IsPlayer;
-        if (!player1 && !player2 && (!flag && this.m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
-          this.AddMessageIfAudibleForPlayer(attacker.Location, this.MakePlayerCentricMessage("You hear firing", attacker.Location.Position));
+        if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
+                    AddMessageIfAudibleForPlayer(attacker.Location, MakePlayerCentricMessage("You hear firing", attacker.Location.Position));
         if (player2)
         {
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(attacker.Location.Position), new Size(32, 32))));
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(defender.Location.Position), new Size(32, 32))));
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location.Position), new Size(32, 32))));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
         }
         if (num1 > num2)
         {
-          int dmg = this.m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
+          int dmg = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
           if (dmg > 0)
           {
-            this.InflictDamage(defender, dmg);
+                        InflictDamage(defender, dmg);
             if (defender.HitPoints <= 0)
             {
               if (player1)
               {
-                this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, defender.Model.Abilities.IsUndead ? this.VERB_DESTROY : (this.m_Rules.IsMurder(attacker, defender) ? this.VERB_MURDER : this.VERB_KILL)), defender, " !"));
-                this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\killed"));
-                this.RedrawPlayScreen();
+                                AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
+                                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\killed"));
+                                RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
-              this.KillActor(attacker, defender, "shot");
+                            KillActor(attacker, defender, "shot");
             }
             else if (player1)
             {
-              this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) dmg)));
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\ranged_damage"));
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(this.MapToScreen(defender.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
-              this.RedrawPlayScreen();
+                            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) dmg)));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_damage"));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
+                            RedrawPlayScreen();
               AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
             }
           }
           else if (player1)
           {
-            this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, attack.Verb), defender, " for no effect."));
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
-            this.RedrawPlayScreen();
+                        AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
+                        RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         else if (player1)
         {
-          this.AddMessage(this.MakeMessage(attacker, this.Conjugate(attacker, this.VERB_MISS), defender));
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
-          this.RedrawPlayScreen();
+                    AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
+                    RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
-        this.ClearOverlays();
+                ClearOverlays();
       }
     }
 
@@ -9010,20 +9010,20 @@ namespace djack.RogueSurvivor.Engine
         MapObject mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
         if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable))
         {
-          bool player1 = this.IsVisibleToPlayer(attacker);
-          bool player2 = this.IsVisibleToPlayer(mapObjectAt);
+          bool player1 = IsVisibleToPlayer(attacker);
+          bool player2 = IsVisibleToPlayer(mapObjectAt);
           if (player1 || player2)
           {
             if (player1)
             {
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(attacker.Location.Position), new Size(32, 32))));
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
             }
             if (player2)
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(point), new Size(32, 32))));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(point), new Size(32, 32))));
             AnimDelay(attacker.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
-          this.DoDestroyObject(mapObjectAt);
+                    DoDestroyObject(mapObjectAt);
           return true;
         }
       }
@@ -9037,7 +9037,7 @@ namespace djack.RogueSurvivor.Engine
         throw new InvalidOperationException("throwing grenade but no grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
-      actor.Location.Map.DropItemAt(new ItemGrenadePrimed(this.m_GameItems[itemGrenade.PrimedModelID]), targetPos);
+      actor.Location.Map.DropItemAt(new ItemGrenadePrimed(m_GameItems[itemGrenade.PrimedModelID]), targetPos);
       if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
       AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(32, 32))));
@@ -9071,33 +9071,33 @@ namespace djack.RogueSurvivor.Engine
       float alpha = (float) (0.1 + (double) damage / (double) attack.Damage[0]);
       if ((double) alpha > 1.0)
         alpha = 1f;
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayTransparentImage(alpha, screenPos, "Icons\\blast"));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(screenPos, Color.Red, damage.ToString(), new Color?(Color.Black)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayTransparentImage(alpha, screenPos, "Icons\\blast"));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(screenPos, Color.Red, damage.ToString(), new Color?(Color.Black)));
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
-      this.OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
-      if (this.IsVisibleToPlayer(location))
+            OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
+      if (IsVisibleToPlayer(location))
       {
-        this.ShowBlastImage(this.MapToScreen(location.Position), blastAttack, blastAttack.Damage[0]);
-        this.RedrawPlayScreen();
+                ShowBlastImage(MapToScreen(location.Position), blastAttack, blastAttack.Damage[0]);
+                RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
-        this.RedrawPlayScreen();
+                RedrawPlayScreen();
       }
-      else if (this.m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
-        this.AddMessageIfAudibleForPlayer(location, this.MakePlayerCentricMessage("You hear an explosion", location.Position));
-      this.ApplyExplosionDamage(location, 0, blastAttack);
+      else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
+                AddMessageIfAudibleForPlayer(location, MakePlayerCentricMessage("You hear an explosion", location.Position));
+            ApplyExplosionDamage(location, 0, blastAttack);
       for (int waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance)
       {
-        if (this.ApplyExplosionWave(location, waveDistance, blastAttack))
+        if (ApplyExplosionWave(location, waveDistance, blastAttack))
         {
-          this.RedrawPlayScreen();
-          this.AnimDelay(DELAY_NORMAL);
+                    RedrawPlayScreen();
+                    AnimDelay(DELAY_NORMAL);
         }
       }
-      this.ClearOverlays();
+            ClearOverlays();
     }
 
     private bool ApplyExplosionWave(Location center, int waveDistance, BlastAttack blast)
@@ -9115,7 +9115,7 @@ namespace djack.RogueSurvivor.Engine
         for (int index = num1; index <= num2; ++index)
         {
           pt.X = index;
-          flag |= this.ApplyExplosionWaveSub(center, pt, waveDistance, blast);
+          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
       }
       if (num4 < map.Height)
@@ -9124,7 +9124,7 @@ namespace djack.RogueSurvivor.Engine
         for (int index = num1; index <= num2; ++index)
         {
           pt.X = index;
-          flag |= this.ApplyExplosionWaveSub(center, pt, waveDistance, blast);
+          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
       }
       if (num1 >= 0)
@@ -9133,7 +9133,7 @@ namespace djack.RogueSurvivor.Engine
         for (int index = num3 + 1; index < num4; ++index)
         {
           pt.Y = index;
-          flag |= this.ApplyExplosionWaveSub(center, pt, waveDistance, blast);
+          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
       }
       if (num2 < map.Width)
@@ -9142,7 +9142,7 @@ namespace djack.RogueSurvivor.Engine
         for (int index = num3 + 1; index < num4; ++index)
         {
           pt.Y = index;
-          flag |= this.ApplyExplosionWaveSub(center, pt, waveDistance, blast);
+          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
       }
       return flag;
@@ -9152,48 +9152,48 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!blastCenter.Map.IsInBounds(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance, (List<Point>) null))
         return false;
-      int damage = this.ApplyExplosionDamage(new Location(blastCenter.Map, pt), waveDistance, blast);
-      if (!this.IsVisibleToPlayer(blastCenter.Map, pt))
+      int damage = ApplyExplosionDamage(new Location(blastCenter.Map, pt), waveDistance, blast);
+      if (!IsVisibleToPlayer(blastCenter.Map, pt))
         return false;
-      this.ShowBlastImage(this.MapToScreen(pt), blast, damage);
+            ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
     }
 
     private int ApplyExplosionDamage(Location location, int distanceFromBlast, BlastAttack blast)
     {
       Map map = location.Map;
-      int num1 = this.m_Rules.BlastDamage(distanceFromBlast, blast);
+      int num1 = m_Rules.BlastDamage(distanceFromBlast, blast);
       if (num1 <= 0)
         return 0;
       Actor actorAt = map.GetActorAt(location.Position);
       if (actorAt != null)
       {
-        this.ExplosionChainReaction(actorAt.Inventory, location);
+                ExplosionChainReaction(actorAt.Inventory, location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
         if (dmg > 0)
         {
-          this.InflictDamage(actorAt, dmg);
-          if (this.IsVisibleToPlayer(actorAt))
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is hit for {1} damage!", (object) actorAt.Name, (object) dmg), map.LocalTime.TurnCounter, Color.Crimson));
+                    InflictDamage(actorAt, dmg);
+          if (IsVisibleToPlayer(actorAt))
+                        AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is hit for {1} damage!", (object) actorAt.Name, (object) dmg), map.LocalTime.TurnCounter, Color.Crimson));
           if (actorAt.HitPoints <= 0 && !actorAt.IsDead)
           {
-            this.KillActor((Actor) null, actorAt, string.Format("explosion {0} damage", (object) dmg));
-            if (this.IsVisibleToPlayer(actorAt))
-              this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} dies in the explosion!", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));
+                        KillActor((Actor) null, actorAt, string.Format("explosion {0} damage", (object) dmg));
+            if (IsVisibleToPlayer(actorAt))
+                            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} dies in the explosion!", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));
           }
         }
         else
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is hit for no damage.", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.White));
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} is hit for no damage.", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.White));
       }
       Inventory itemsAt = map.GetItemsAt(location.Position);
       if (itemsAt != null)
       {
-        this.ExplosionChainReaction(itemsAt, location);
+                ExplosionChainReaction(itemsAt, location);
         int chance = num1;
         List<Item> objList = new List<Item>(itemsAt.CountItems);
         foreach (Item obj in itemsAt.Items)
         {
-          if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && this.m_Rules.RollChance(chance))
+          if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance))
             objList.Add(obj);
         }
         foreach (Item it in objList)
@@ -9218,7 +9218,7 @@ namespace djack.RogueSurvivor.Engine
             {
               mapObjectAt.HitPoints -= val2;
               if (mapObjectAt.HitPoints <= 0)
-                this.DoDestroyObject(mapObjectAt);
+                                DoDestroyObject(mapObjectAt);
             }
           }
         }
@@ -9227,7 +9227,7 @@ namespace djack.RogueSurvivor.Engine
       if (corpsesAt != null)
       {
         foreach (Corpse c in corpsesAt)
-          this.InflictDamageToCorpse(c, (float) num1);
+                    InflictDamageToCorpse(c, (float) num1);
       }
       if (blast.CanDestroyWalls)
         throw new NotImplementedException("blast.destroyWalls");
@@ -9257,7 +9257,7 @@ namespace djack.RogueSurvivor.Engine
               itemPrimedExplosiveList = new List<ItemPrimedExplosive>();
             itemExplosiveList.Add(itemExplosive);
             for (int index = 0; index < obj.Quantity; ++index)
-              itemPrimedExplosiveList.Add(new ItemPrimedExplosive(this.m_GameItems[itemExplosive.PrimedModelID])
+              itemPrimedExplosiveList.Add(new ItemPrimedExplosive(m_GameItems[itemExplosive.PrimedModelID])
               {
                 FuseTimeLeft = 0
               });
@@ -9286,7 +9286,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsInterestingTradeItem(Actor speaker, Item offeredItem, Actor target)
     {
-      if (this.m_Rules.RollChance(this.m_Rules.ActorCharismaticTradeChance(speaker)))
+      if (m_Rules.RollChance(m_Rules.ActorCharismaticTradeChance(speaker)))
         return true;
       if (target.IsPlayer) return true;
       return target.Controller.IsInterestingItem(offeredItem);
@@ -9299,7 +9299,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
-      bool flag1 = this.IsVisibleToPlayer(speaker) || this.IsVisibleToPlayer(target);
+      bool flag1 = IsVisibleToPlayer(speaker) || IsVisibleToPlayer(target);
       bool wantedItem = true;
       bool flag3 = itSpeaker != null && IsInterestingTradeItem(speaker, itSpeaker, target);
       if (target.Leader == speaker)
@@ -9311,9 +9311,9 @@ namespace djack.RogueSurvivor.Engine
       { // offered item is not of perceived use
         if (!flag1) return;
         if (itSpeaker == null)
-          AddMessage(this.MakeMessage(target, string.Format("is not interested in {0} items.", (object) speaker.Name)));
+          AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", (object) speaker.Name)));
         else
-          AddMessage(this.MakeMessage(target, string.Format("is not interested in {0}.", (object) itSpeaker.TheName)));
+          AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", (object) itSpeaker.TheName)));
         return;
       };
 
@@ -9330,14 +9330,14 @@ namespace djack.RogueSurvivor.Engine
         if (itSpeaker.Model.ID == trade.Model.ID)
         {
             if (!flag1) return;
-            AddMessage(this.MakeMessage(target, "has no interesting deal to offer."));
+            AddMessage(MakeMessage(target, "has no interesting deal to offer."));
             return;
         }
       }
 
       bool isPlayer = speaker.IsPlayer;
       if (flag1)
-        AddMessage(this.MakeMessage(target, string.Format("{0} {1} for {2}.", (object) this.Conjugate(target, this.VERB_OFFER), (object) trade.AName, (object) itSpeaker.AName)));
+        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", (object)Conjugate(target, VERB_OFFER), (object) trade.AName, (object) itSpeaker.AName)));
 
       bool acceptDeal = true;
       if (speaker.IsPlayer)
@@ -9354,7 +9354,7 @@ namespace djack.RogueSurvivor.Engine
       if (!acceptDeal)
       {
         if (!flag1) return;
-        AddMessage(MakeMessage(speaker, string.Format("{0}.", (object)this.Conjugate(speaker, this.VERB_REFUSE_THE_DEAL))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", (object)Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
         if (!isPlayer) return;
         RedrawPlayScreen();
         return;
@@ -9362,7 +9362,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (flag1)
       {
-        AddMessage(this.MakeMessage(speaker, string.Format("{0}.", (object) this.Conjugate(speaker, this.VERB_ACCEPT_THE_DEAL))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", (object)Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
         if (isPlayer) RedrawPlayScreen();
       }
       if (target.Leader == speaker && flag3)
@@ -9381,8 +9381,8 @@ namespace djack.RogueSurvivor.Engine
       string reason;
       if (!m_Rules.CanActorInitiateTradeWith(speaker,target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
-      Item trade = this.PickItemToTrade(speaker, target);
-      this.DoTrade(speaker, trade, target, false);
+      Item trade = PickItemToTrade(speaker, target);
+            DoTrade(speaker, trade, target, false);
     }
 
     private List<Item> GetInterestingTradeableItems(Actor speaker, Actor buyer)
@@ -9406,7 +9406,7 @@ namespace djack.RogueSurvivor.Engine
     {
       List<Item> objList = GetInterestingTradeableItems(speaker,buyer);
       if (objList == null) return null;
-      return objList[this.m_Rules.Roll(0, objList.Count)];
+      return objList[m_Rules.Roll(0, objList.Count)];
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -9452,15 +9452,15 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEmote(Actor actor, string text)
     {
-      if (!this.IsVisibleToPlayer(actor))
+      if (!IsVisibleToPlayer(actor))
         return;
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} : {1}", (object) actor.Name, (object) text), actor.Location.Map.LocalTime.TurnCounter, this.SAYOREMOTE_COLOR));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} : {1}", (object) actor.Name, (object) text), actor.Location.Map.LocalTime.TurnCounter, SAYOREMOTE_COLOR));
     }
 
     public void DoTakeFromContainer(Actor actor, Point position)
     {
       Item topItem = actor.Location.Map.GetItemsAt(position).TopItem;
-      this.DoTakeItem(actor, position, topItem);
+            DoTakeItem(actor, position, topItem);
     }
 
     public void DoTakeItem(Actor actor, Point position, Item it)
@@ -9523,17 +9523,17 @@ namespace djack.RogueSurvivor.Engine
       // postcondition: item is unequippable
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
 #endif
-      if (!this.IsVisibleToPlayer(actor)) return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_EQUIP), it));
+      if (!IsVisibleToPlayer(actor)) return;
+            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
     }
 
     public void DoUnequipItem(Actor actor, Item it)
     {
       it.EquippedPart = DollPart.NONE;
-      this.OnUnequipItem(actor, it);
-      if (!this.IsVisibleToPlayer(actor))
+            OnUnequipItem(actor, it);
+      if (!IsVisibleToPlayer(actor))
         return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_UNEQUIP), it));
+            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
 
     private void OnEquipItem(Actor actor, Item it)
@@ -9646,22 +9646,22 @@ namespace djack.RogueSurvivor.Engine
     public void DoUseItem(Actor actor, Item it)
     {
       if (it is ItemFood)
-        this.DoUseFoodItem(actor, it as ItemFood);
+                DoUseFoodItem(actor, it as ItemFood);
       else if (it is ItemMedicine)
-        this.DoUseMedicineItem(actor, it as ItemMedicine);
+                DoUseMedicineItem(actor, it as ItemMedicine);
       else if (it is ItemAmmo)
-        this.DoUseAmmoItem(actor, it as ItemAmmo);
+                DoUseAmmoItem(actor, it as ItemAmmo);
       else if (it is ItemSprayScent)
-        this.DoUseSprayScentItem(actor, it as ItemSprayScent);
+                DoUseSprayScentItem(actor, it as ItemSprayScent);
       else if (it is ItemTrap)
       {
-        this.DoUseTrapItem(actor, it as ItemTrap);
+                DoUseTrapItem(actor, it as ItemTrap);
       }
       else
       {
         if (!(it is ItemEntertainment))
           return;
-        this.DoUseEntertainmentItem(actor, it as ItemEntertainment);
+                DoUseEntertainmentItem(actor, it as ItemEntertainment);
       }
     }
 
@@ -9690,7 +9690,7 @@ namespace djack.RogueSurvivor.Engine
         actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), m_Rules.ActorMaxFood(actor));
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
-          ItemTrap itemTrap = new ItemTrap(this.GameItems.EMPTY_CAN)
+          ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)
           {
             IsActivated = true
           };
@@ -9717,7 +9717,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)
     {
-      if (actor == this.m_Player)
+      if (actor == m_Player)
       {
         int num1 = m_Rules.ActorMaxHPs(actor) - actor.HitPoints;
         int num2 = actor.MaxSTA - actor.StaminaPoints;
@@ -9726,7 +9726,7 @@ namespace djack.RogueSurvivor.Engine
         int num4 = m_Rules.ActorMaxSanity(actor) - actor.Sanity;
         if ((num1 <= 0 || med.Healing <= 0) && (num2 <= 0 || med.StaminaBoost <= 0) && ((num3 <= 0 || med.SleepBoost <= 0) && (infection <= 0 || med.InfectionCure <= 0)) && (num4 <= 0 || med.SanityCure <= 0))
         {
-          AddMessage(this.MakeErrorMessage("Don't waste medicine!"));
+          AddMessage(MakeErrorMessage("Don't waste medicine!"));
           return;
         }
       }
@@ -9830,7 +9830,7 @@ namespace djack.RogueSurvivor.Engine
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
       actor.Inventory.Consume(barricadeMaterial);
-      door.BarricadePoints = Math.Min(door.BarricadePoints + this.m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), 80);
+      door.BarricadePoints = Math.Min(door.BarricadePoints + m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), 80);
       if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -9857,7 +9857,7 @@ namespace djack.RogueSurvivor.Engine
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
       if (barricadeMaterial == null) throw new InvalidOperationException("no material");
       actor.Inventory.Consume(barricadeMaterial);
-      fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + this.m_Rules.ActorBarricadingPoints(actor, (barricadeMaterial.Model as ItemBarricadeMaterialModel).BarricadingValue));
+      fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + m_Rules.ActorBarricadingPoints(actor, (barricadeMaterial.Model as ItemBarricadeMaterialModel).BarricadingValue));
       if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer((MapObject) fort)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), (MapObject) fort));
     }
@@ -9881,17 +9881,17 @@ namespace djack.RogueSurvivor.Engine
         int val2 = 1 + mapObj.MaxHitPoints / 40;
         while (val2 > 0)
         {
-          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial((ItemModel) this.m_GameItems.WOODENPLANK);
-          barricadeMaterial.Quantity = Math.Min(this.m_GameItems.WOODENPLANK.StackingLimit, val2);
+          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial((ItemModel)m_GameItems.WOODENPLANK);
+          barricadeMaterial.Quantity = Math.Min(m_GameItems.WOODENPLANK.StackingLimit, val2);
           Item it = (Item) barricadeMaterial;
           if (it.Quantity < 1)
             it.Quantity = 1;
           mapObj.Location.Map.DropItemAt(it, mapObj.Location.Position);
           val2 -= it.Quantity;
         }
-        if (this.m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE))
+        if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE))
         {
-          ItemMeleeWeapon itemMeleeWeapon = !this.m_Rules.RollChance(50) ? new ItemMeleeWeapon((ItemModel) this.m_GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon((ItemModel) this.m_GameItems.IMPROVISED_CLUB);
+          ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon((ItemModel)m_GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon((ItemModel)m_GameItems.IMPROVISED_CLUB);
           mapObj.Location.Map.DropItemAt((Item) itemMeleeWeapon, mapObj.Location.Position);
         }
       }
@@ -9899,7 +9899,7 @@ namespace djack.RogueSurvivor.Engine
         doorWindow.SetState(3);
       else
         mapObj.Location.Map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
-      this.OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
+            OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -9913,7 +9913,7 @@ namespace djack.RogueSurvivor.Engine
         doorWindow.BarricadePoints -= attack.DamageValue;
         OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
         if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(doorWindow)) {
-          AddMessage(this.MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
+          AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
         } else {
           if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;
           AddMessageIfAudibleForPlayer(doorWindow.Location, MakePlayerCentricMessage("You hear someone bashing barricades", doorWindow.Location.Position));
@@ -9929,45 +9929,45 @@ namespace djack.RogueSurvivor.Engine
           DoDestroyObject(mapObj);
           flag = true;
         }
-        this.OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
-        bool player1 = this.IsVisibleToPlayer(actor);
-        bool player2 = this.IsVisibleToPlayer(mapObj);
+                OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
+        bool player1 = IsVisibleToPlayer(actor);
+        bool player2 = IsVisibleToPlayer(mapObj);
         bool isPlayer = actor.IsPlayer;
         if (player1 || player2)
         {
           if (player1)
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(actor.Location.Position), new Size(32, 32))));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
           if (player2)
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(mapObj.Location.Position), new Size(32, 32))));
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
           if (flag)
           {
-            this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_BREAK), mapObj));
+                        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj));
             if (player1)
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
             if (player2)
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(mapObj.Location.Position), "Icons\\killed"));
-            this.RedrawPlayScreen();
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), "Icons\\killed"));
+                        RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
           }
           else
           {
-            this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_BASH), mapObj));
+                        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj));
             if (player1)
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
             if (player2)
-              this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(mapObj.Location.Position), "Icons\\melee_damage"));
-            this.RedrawPlayScreen();
+                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), "Icons\\melee_damage"));
+                        RedrawPlayScreen();
             AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
         else if (flag)
         {
-          if (this.m_Rules.RollChance(PLAYER_HEAR_BREAK_CHANCE))
-            this.AddMessageIfAudibleForPlayer(mapObj.Location, this.MakePlayerCentricMessage("You hear someone breaking furniture", mapObj.Location.Position));
+          if (m_Rules.RollChance(PLAYER_HEAR_BREAK_CHANCE))
+                        AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone breaking furniture", mapObj.Location.Position));
         }
-        else if (this.m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
-          this.AddMessageIfAudibleForPlayer(mapObj.Location, this.MakePlayerCentricMessage("You hear someone bashing furniture", mapObj.Location.Position));
-        this.ClearOverlays();
+        else if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
+                    AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone bashing furniture", mapObj.Location.Position));
+                ClearOverlays();
       }
     }
 
@@ -9991,7 +9991,7 @@ namespace djack.RogueSurvivor.Engine
             actor1.SpendActionPoints(Rules.BASE_ACTION_COST);
             actor1.SpendStaminaPoints(staminaCost);
             if (flag)
-              AddMessage(MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", (object) this.Conjugate(actor1, this.VERB_HELP), (object) actor.Name, (object) mapObj.TheName)));
+              AddMessage(MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", (object)Conjugate(actor1, VERB_HELP), (object) actor.Name, (object) mapObj.TheName)));
           }
         }
       }
@@ -10001,17 +10001,17 @@ namespace djack.RogueSurvivor.Engine
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
-      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
+      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
         map.RemoveActor(actor);
         map.PlaceActorAt(actor, position);
       }
       if (flag) {
-        AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_PUSH), mapObj));
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PUSH), mapObj));
         RedrawPlayScreen();
       } else {
         OnLoudNoise(map, toPos, "Something being pushed");
         if (m_Rules.RollChance(PLAYER_HEAR_PUSH_CHANCE))
-          AddMessageIfAudibleForPlayer(mapObj.Location, this.MakePlayerCentricMessage("You hear something being pushed", toPos));
+          AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear something being pushed", toPos));
       }
       CheckMapObjectTriggersTraps(map, toPos);
     }
@@ -10052,11 +10052,11 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.Activity = Activity.IDLE;
       actor.IsSleeping = false;
-      if (this.IsVisibleToPlayer(actor))
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0}.", (object) this.Conjugate(actor, this.VERB_WAKE_UP))));
+      if (IsVisibleToPlayer(actor))
+                AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_WAKE_UP))));
       if (!actor.IsPlayer)
         return;
-      this.m_MusicManager.StopAll();
+            m_MusicManager.StopAll();
     }
 
     private void DoTag(Actor actor, ItemSprayPaint spray, Point pos)
@@ -10073,8 +10073,8 @@ namespace djack.RogueSurvivor.Engine
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (master != slave.Leader)
         DoSay(slave, master, "Who are you to give me orders?", RogueGame.Sayflags.IS_FREE_ACTION);
-      else if (!this.m_Rules.IsActorTrustingLeader(slave)) {
-        this.DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+      else if (!m_Rules.IsActorTrustingLeader(slave)) {
+                DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
       } else {
         AIController aiController = slave.Controller as AIController;
         if (aiController == null) return;
@@ -10110,21 +10110,21 @@ namespace djack.RogueSurvivor.Engine
           if (actorAt != null && actorAt.IsSleeping)
           {
             int noiseDistance = Rules.GridDistance(noisePosition, index1, index2);
-            if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(this.m_Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance)))
+            if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(m_Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance)))
             {
-              this.DoWakeUp(actorAt);
-              if (this.IsVisibleToPlayer(actorAt))
+                            DoWakeUp(actorAt);
+              if (IsVisibleToPlayer(actorAt))
               {
-                this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} wakes {1} up!", (object) noiseName, (object) actorAt.TheName), map.LocalTime.TurnCounter, actorAt == this.m_Player ? Color.Red : Color.White));
-                this.RedrawPlayScreen();
+                                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} wakes {1} up!", (object) noiseName, (object) actorAt.TheName), map.LocalTime.TurnCounter, actorAt == m_Player ? Color.Red : Color.White));
+                                RedrawPlayScreen();
               }
             }
           }
         }
       }
-      if (!this.m_IsPlayerLongWait || (map != this.m_Player.Location.Map || !this.IsVisibleToPlayer(map, noisePosition)))
+      if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !IsVisibleToPlayer(map, noisePosition)))
         return;
-      this.m_IsPlayerLongWaitForcedStop = true;
+            m_IsPlayerLongWaitForcedStop = true;
     }
 
     private void InflictDamage(Actor actor, int dmg)
@@ -10135,39 +10135,39 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(DollPart.TORSO);
       if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE))
       {
-        this.OnUnequipItem(actor, equippedItem);
+                OnUnequipItem(actor, equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
-        if (this.IsVisibleToPlayer(actor))
+        if (IsVisibleToPlayer(actor))
         {
-          this.AddMessage(this.MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
-          this.RedrawPlayScreen();
-          this.AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+                    AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
+                    RedrawPlayScreen();
+                    AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       if (!actor.IsSleeping)
         return;
-      this.DoWakeUp(actor);
+            DoWakeUp(actor);
     }
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
     {
       deadGuy.IsDead = true;
-      this.DoStopDraggingCorpses(deadGuy);
-      this.UntriggerAllTrapsHere(deadGuy.Location);
+            DoStopDraggingCorpses(deadGuy);
+            UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
-        this.RegenActorSanity(killer, this.m_Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
+                RegenActorSanity(killer, m_Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
       if (deadGuy.HasLeader)
       {
-        if (this.m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy))
+        if (m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy))
         {
-          this.SpendActorSanity(deadGuy.Leader, Rules.SANITY_HIT_BOND_DEATH);
-          if (this.IsVisibleToPlayer(deadGuy.Leader))
+                    SpendActorSanity(deadGuy.Leader, Rules.SANITY_HIT_BOND_DEATH);
+          if (IsVisibleToPlayer(deadGuy.Leader))
           {
             if (deadGuy.Leader.IsPlayer)
-              this.ClearMessages();
-            this.AddMessage(this.MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!", (object) this.Conjugate(deadGuy.Leader, this.VERB_BE), (object) deadGuy.Name)));
+                            ClearMessages();
+                        AddMessage(MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(deadGuy.Leader, VERB_BE), (object) deadGuy.Name)));
             if (deadGuy.Leader.IsPlayer)
-              this.AddMessagePressEnter();
+                            AddMessagePressEnter();
           }
         }
       }
@@ -10175,16 +10175,16 @@ namespace djack.RogueSurvivor.Engine
       {
         foreach (Actor follower in deadGuy.Followers)
         {
-          if (this.m_Rules.HasActorBondWith(follower, deadGuy))
+          if (m_Rules.HasActorBondWith(follower, deadGuy))
           {
-            this.SpendActorSanity(follower, Rules.SANITY_HIT_BOND_DEATH);
-            if (this.IsVisibleToPlayer(follower))
+                        SpendActorSanity(follower, Rules.SANITY_HIT_BOND_DEATH);
+            if (IsVisibleToPlayer(follower))
             {
               if (follower.IsPlayer)
-                this.ClearMessages();
-              this.AddMessage(this.MakeMessage(follower, string.Format("{0} deeply disturbed by {1} sudden death!", (object) this.Conjugate(follower, this.VERB_BE), (object) deadGuy.Name)));
+                                ClearMessages();
+                            AddMessage(MakeMessage(follower, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(follower, VERB_BE), (object) deadGuy.Name)));
               if (follower.IsPlayer)
-                this.AddMessagePressEnter();
+                                AddMessagePressEnter();
             }
           }
         }
@@ -10192,23 +10192,23 @@ namespace djack.RogueSurvivor.Engine
       if (deadGuy.IsUnique)
       {
         if (killer != null)
-          this.m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} was killed by {1} {2}! *", (object) deadGuy.TheName, (object) killer.Model.Name, (object) killer.TheName));
+                    m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} was killed by {1} {2}! *", (object) deadGuy.TheName, (object) killer.Model.Name, (object) killer.TheName));
         else
-          this.m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} died by {1}! *", (object) deadGuy.TheName, (object) reason));
+                    m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} died by {1}! *", (object) deadGuy.TheName, (object) reason));
       }
-      if (deadGuy == this.m_Player)
-        this.PlayerDied(killer, reason);
+      if (deadGuy == m_Player)
+                PlayerDied(killer, reason);
       deadGuy.RemoveAllFollowers();
       if (deadGuy.Leader != null)
       {
         if (deadGuy.Leader.IsPlayer)
         {
           string text = killer == null ? string.Format("Follower {0} died by {1}!", (object) deadGuy.TheName, (object) reason) : string.Format("Follower {0} was killed by {1} {2}!", (object) deadGuy.TheName, (object) killer.Model.Name, (object) killer.TheName);
-          this.m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
+                    m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
         }
         deadGuy.Leader.RemoveFollower(deadGuy);
       }
-      bool flag1 = killer != null && this.m_Rules.IsMurder(killer, deadGuy);
+      bool flag1 = killer != null && m_Rules.IsMurder(killer, deadGuy);
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.Location.Map.RemoveActor(deadGuy);
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty)
@@ -10220,8 +10220,8 @@ namespace djack.RogueSurvivor.Engine
         {
           Item it = objArray[index];
           int chance = it is ItemAmmo || it is ItemFood ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
-          if (it.Model.IsUnbreakable || it.IsUnique || this.m_Rules.RollChance(chance))
-            this.DropItem(deadGuy, it);
+          if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(chance))
+                        DropItem(deadGuy, it);
         }
       }
       if (!deadGuy.Model.Abilities.IsUndead) SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
@@ -10230,7 +10230,7 @@ namespace djack.RogueSurvivor.Engine
       if (killer == m_Player) PlayerKill(deadGuy);
       if (killer != null && m_Session.HasEvolution && killer.Model.Abilities.IsUndead)
       {
-        ActorModel actorModel = this.CheckUndeadEvolution(killer);
+        ActorModel actorModel = CheckUndeadEvolution(killer);
         if (actorModel != null)
         {
           SkillTable skillTable = (SkillTable) null;
@@ -10247,13 +10247,13 @@ namespace djack.RogueSurvivor.Engine
             }
             m_TownGenerator.RecomputeActorStartingStats(killer);
           }
-          if (this.IsVisibleToPlayer(killer))
+          if (IsVisibleToPlayer(killer))
           {
-            this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(killer.Location.Position), new Size(32, 32))));
-            this.AddMessage(this.MakeMessage(killer, string.Format("{0} a {1} horror!", (object) this.Conjugate(killer, this.VERB_TRANSFORM_INTO), (object) actorModel.Name)));
-            this.RedrawPlayScreen();
+                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location.Position), new Size(32, 32))));
+                        AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", (object)Conjugate(killer, VERB_TRANSFORM_INTO), (object) actorModel.Name)));
+                        RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
-            this.ClearOverlays();
+                        ClearOverlays();
           }
         }
       }
@@ -10262,12 +10262,12 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor follower in killer.Followers)
         {
           bool flag2 = false;
-          if (follower.TargetActor == deadGuy || this.m_Rules.IsEnemyOf(follower, deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location))
+          if (follower.TargetActor == deadGuy || m_Rules.IsEnemyOf(follower, deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location))
             flag2 = true;
           if (flag2)
           {
-            this.DoSay(follower, killer, "That was close! Thanks for the help!!", RogueGame.Sayflags.IS_FREE_ACTION);
-            this.ModifyActorTrustInLeader(follower, 90, true);
+                        DoSay(follower, killer, "That was close! Thanks for the help!!", RogueGame.Sayflags.IS_FREE_ACTION);
+                        ModifyActorTrustInLeader(follower, 90, true);
           }
         }
       }
@@ -10275,26 +10275,26 @@ namespace djack.RogueSurvivor.Engine
       {
         ++killer.MurdersCounter;
         if (killer.IsPlayer)
-          this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", (object) deadGuy.TheName, (object) deadGuy.Model.Name));
-        if (this.IsVisibleToPlayer(killer))
-          this.AddMessage(this.MakeMessage(killer, string.Format("murdered {0}!!", (object) deadGuy.Name)));
+                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", (object) deadGuy.TheName, (object) deadGuy.Model.Name));
+        if (IsVisibleToPlayer(killer))
+                    AddMessage(MakeMessage(killer, string.Format("murdered {0}!!", (object) deadGuy.Name)));
         Map map = killer.Location.Map;
         Point position = killer.Location.Position;
         foreach (Actor actor in map.Actors)
         {
-          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (Rules.GridDistance(actor.Location.Position, position) <= this.m_Rules.ActorFOV(actor, map.LocalTime, this.m_Session.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
+          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (Rules.GridDistance(actor.Location.Position, position) <= m_Rules.ActorFOV(actor, map.LocalTime, m_Session.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
           {
-            this.DoSay(actor, killer, string.Format("MURDER! {0} HAS KILLED {1}!", (object) killer.TheName, (object) deadGuy.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
-            this.DoMakeAggression(actor, killer);
+                        DoSay(actor, killer, string.Format("MURDER! {0} HAS KILLED {1}!", (object) killer.TheName, (object) deadGuy.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+                        DoMakeAggression(actor, killer);
           }
         }
       }
       if (killer != null && deadGuy.MurdersCounter > 0 && (killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction)))
       {
         if (killer.IsPlayer)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("You feel like you did your duty with killing a murderer.", this.m_Session.WorldTime.TurnCounter, Color.White));
+                    AddMessage(new djack.RogueSurvivor.Data.Message("You feel like you did your duty with killing a murderer.", m_Session.WorldTime.TurnCounter, Color.White));
         else
-          this.DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
+                    DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
@@ -10340,9 +10340,9 @@ namespace djack.RogueSurvivor.Engine
         default:
           return null;
       }
-      GameActors.IDs index = this.NextUndeadEvolution((GameActors.IDs) undead.Model.ID);
+      GameActors.IDs index = NextUndeadEvolution((GameActors.IDs) undead.Model.ID);
       if (index == (GameActors.IDs) undead.Model.ID) return null;
-      return this.GameActors[index];
+      return GameActors[index];
     }
 
     public GameActors.IDs NextUndeadEvolution(GameActors.IDs fromModelID)
@@ -10384,7 +10384,7 @@ namespace djack.RogueSurvivor.Engine
       }
       foreach (Direction direction in Direction.COMPASS)
       {
-        if (this.m_Rules.RollChance(20))
+        if (m_Rules.RollChance(20))
         {
           Point p = position + direction;
           if (map.IsInBounds(p))
@@ -10411,9 +10411,9 @@ namespace djack.RogueSurvivor.Engine
     public void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\bloodied");
-      int num = this.m_Rules.ActorMaxHPs(deadGuy);
-      float rotation = (float) this.m_Rules.Roll(30, 60);
-      if (this.m_Rules.RollChance(50))
+      int num = m_Rules.ActorMaxHPs(deadGuy);
+      float rotation = (float)m_Rules.Roll(30, 60);
+      if (m_Rules.RollChance(50))
         rotation = -rotation;
       float scale = 1f;
       deadGuy.Location.Map.AddCorpseAt(new Corpse(deadGuy, num, num, deadGuy.Location.Map.LocalTime.TurnCounter, rotation, scale), deadGuy.Location.Position);
@@ -10421,51 +10421,51 @@ namespace djack.RogueSurvivor.Engine
 
     private void PlayerDied(Actor killer, string reason)
     {
-      this.StopSimThread();
-      this.m_UI.UI_SetCursor((Cursor) null);
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.Play(GameMusics.PLAYER_DEATH);
-      this.m_Session.Scoring.TurnsSurvived = this.m_Session.WorldTime.TurnCounter;
-      this.m_Session.Scoring.SetKiller(killer);
-      if (this.m_Player.CountFollowers > 0)
+            StopSimThread();
+            m_UI.UI_SetCursor((Cursor) null);
+            m_MusicManager.StopAll();
+            m_MusicManager.Play(GameMusics.PLAYER_DEATH);
+            m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
+            m_Session.Scoring.SetKiller(killer);
+      if (m_Player.CountFollowers > 0)
       {
-        foreach (Actor follower in this.m_Player.Followers)
-          this.m_Session.Scoring.AddFollowerWhenDied(follower);
+        foreach (Actor follower in m_Player.Followers)
+                    m_Session.Scoring.AddFollowerWhenDied(follower);
       }
-      List<Zone> zonesAt = this.m_Player.Location.Map.GetZonesAt(this.m_Player.Location.Position.X, this.m_Player.Location.Position.Y);
-      this.m_Session.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", (object) this.m_Player.Location.Map.Name, (object) zonesAt[0].Name) : this.m_Player.Location.Map.Name;
-      this.m_Session.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", (object) reason) : string.Format("{0} by {1} {2}", this.m_Rules.IsMurder(killer, this.m_Player) ? (object) "Murdered" : (object) "Killed", (object) killer.Model.Name, (object) killer.TheName);
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Died.");
-      int index = this.m_Rules.Roll(0, GameTips.TIPS.Length);
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[3]
+      List<Zone> zonesAt = m_Player.Location.Map.GetZonesAt(m_Player.Location.Position.X, m_Player.Location.Position.Y);
+            m_Session.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", (object)m_Player.Location.Map.Name, (object) zonesAt[0].Name) : m_Player.Location.Map.Name;
+            m_Session.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", (object) reason) : string.Format("{0} by {1} {2}", m_Rules.IsMurder(killer, m_Player) ? (object) "Murdered" : (object) "Killed", (object) killer.Model.Name, (object) killer.TheName);
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Died.");
+      int index = m_Rules.Roll(0, GameTips.TIPS.Length);
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[3]
       {
         "TIP OF THE DEAD",
         "Did you know that...",
         GameTips.TIPS[index]
-      }, Color.White, Color.White, this.POPUP_FILLCOLOR, new Point(0, 0)));
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("**** YOU DIED! ****", this.m_Session.WorldTime.TurnCounter, Color.Red));
+      }, Color.White, Color.White, POPUP_FILLCOLOR, new Point(0, 0)));
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("**** YOU DIED! ****", m_Session.WorldTime.TurnCounter, Color.Red));
       if (killer != null)
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Killer : {0}.", (object) killer.TheName), this.m_Session.WorldTime.TurnCounter, Color.Red));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Reason : {0}.", (object) reason), this.m_Session.WorldTime.TurnCounter, Color.Red));
-      if (this.m_Player.Model.Abilities.IsUndead)
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You die one last time... Game over!", this.m_Session.WorldTime.TurnCounter, Color.Red));
+                AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Killer : {0}.", (object) killer.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
+            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Reason : {0}.", (object) reason), m_Session.WorldTime.TurnCounter, Color.Red));
+      if (m_Player.Model.Abilities.IsUndead)
+                AddMessage(new djack.RogueSurvivor.Data.Message("You die one last time... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
       else
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You join the realm of the undeads... Game over!", this.m_Session.WorldTime.TurnCounter, Color.Red));
+                AddMessage(new djack.RogueSurvivor.Data.Message("You join the realm of the undeads... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
       if (RogueGame.s_Options.IsPermadeathOn)
-        this.DeleteSavedGame(RogueGame.GetUserSave());
+                DeleteSavedGame(RogueGame.GetUserSave());
       if (RogueGame.s_Options.IsDeathScreenshotOn)
       {
-        this.RedrawPlayScreen();
-        string screenshot = this.DoTakeScreenshot();
+                RedrawPlayScreen();
+        string screenshot = DoTakeScreenshot();
         if (screenshot == null)
-          this.AddMessage(this.MakeErrorMessage("could not save death screenshot."));
+                    AddMessage(MakeErrorMessage("could not save death screenshot."));
         else
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Death screenshot saved : {0}.", (object) screenshot), this.m_Session.WorldTime.TurnCounter, Color.Red));
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Death screenshot saved : {0}.", (object) screenshot), m_Session.WorldTime.TurnCounter, Color.Red));
       }
-      this.AddMessagePressEnter();
-      this.HandlePostMortem();
-      this.m_MusicManager.StopAll();
+            AddMessagePressEnter();
+            HandlePostMortem();
+            m_MusicManager.StopAll();
     }
 
     private string TimeSpanToString(TimeSpan rt)
@@ -10476,48 +10476,48 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePostMortem()
     {
       WorldTime worldTime = new WorldTime();
-      worldTime.TurnCounter = this.m_Session.Scoring.TurnsSurvived;
-      bool isMale = this.m_Player.Model.DollBody.IsMale;
+      worldTime.TurnCounter = m_Session.Scoring.TurnsSurvived;
+      bool isMale = m_Player.Model.DollBody.IsMale;
       string str1 = isMale ? "He" : "She";
-      this.HisOrHer(this.m_Player);
+            HisOrHer(m_Player);
       string str2 = isMale ? "him" : "her";
-      string name = this.m_Player.TheName.Replace("(YOU) ", "");
-      string @string = this.TimeSpanToString(this.m_Session.Scoring.RealLifePlayingTime);
-      this.m_Session.Scoring.Side = this.m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-      this.m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, this.m_Session.Scoring.Side, this.m_Session.Scoring.ReincarnationNumber);
+      string name = m_Player.TheName.Replace("(YOU) ", "");
+      string @string = TimeSpanToString(m_Session.Scoring.RealLifePlayingTime);
+            m_Session.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
+            m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
       TextFile textFile = new TextFile();
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
-      textFile.Append(string.Format("{0} was {1} and {2}.", (object) name, (object) this.AorAn(this.m_Player.Model.Name), (object) this.AorAn(this.m_Player.Faction.MemberName)));
+      textFile.Append(string.Format("{0} was {1} and {2}.", (object) name, (object)AorAn(m_Player.Model.Name), (object)AorAn(m_Player.Faction.MemberName)));
       textFile.Append(string.Format("{0} survived to see {1}.", (object) str1, (object) worldTime.ToString()));
       textFile.Append(string.Format("{0}'s spirit guided {1} for {2}.", (object) name, (object) str2, (object) @string));
-      if (this.m_Session.Scoring.ReincarnationNumber > 0)
-        textFile.Append(string.Format("{0} was reincarnation {1}.", (object) str1, (object) this.m_Session.Scoring.ReincarnationNumber));
+      if (m_Session.Scoring.ReincarnationNumber > 0)
+        textFile.Append(string.Format("{0} was reincarnation {1}.", (object) str1, (object)m_Session.Scoring.ReincarnationNumber));
       textFile.Append(" ");
       textFile.Append("> SCORING");
-      textFile.Append(string.Format("{0} scored a total of {1} points.", (object) str1, (object) this.m_Session.Scoring.TotalPoints));
-      textFile.Append(string.Format("- difficulty rating of {0}%.", (object) (int) (100.0 * (double) this.m_Session.Scoring.DifficultyRating)));
-      textFile.Append(string.Format("- {0} base points for survival.", (object) this.m_Session.Scoring.SurvivalPoints));
-      textFile.Append(string.Format("- {0} base points for kills.", (object) this.m_Session.Scoring.KillPoints));
-      textFile.Append(string.Format("- {0} base points for achievements.", (object) this.m_Session.Scoring.AchievementPoints));
+      textFile.Append(string.Format("{0} scored a total of {1} points.", (object) str1, (object)m_Session.Scoring.TotalPoints));
+      textFile.Append(string.Format("- difficulty rating of {0}%.", (object) (int) (100.0 * (double)m_Session.Scoring.DifficultyRating)));
+      textFile.Append(string.Format("- {0} base points for survival.", (object)m_Session.Scoring.SurvivalPoints));
+      textFile.Append(string.Format("- {0} base points for kills.", (object)m_Session.Scoring.KillPoints));
+      textFile.Append(string.Format("- {0} base points for achievements.", (object)m_Session.Scoring.AchievementPoints));
       textFile.Append(" ");
       textFile.Append("> ACHIEVEMENTS");
-      foreach (Achievement achievement in this.m_Session.Scoring.Achievements)
+      foreach (Achievement achievement in m_Session.Scoring.Achievements)
       {
         if (achievement.IsDone)
           textFile.Append(string.Format("- {0} for {1} points!", (object) achievement.Name, (object) achievement.ScoreValue));
         else
           textFile.Append(string.Format("- Fail : {0}.", (object) achievement.TeaseName));
       }
-      if (this.m_Session.Scoring.CompletedAchievementsCount == 0)
+      if (m_Session.Scoring.CompletedAchievementsCount == 0)
       {
         textFile.Append("Didn't achieve anything notable. And then died.");
         textFile.Append(string.Format("(unlock all the {0} achievements to win this game version)", (object) 8));
       }
       else
       {
-        textFile.Append(string.Format("Total : {0}/{1}.", (object) this.m_Session.Scoring.CompletedAchievementsCount, (object) 8));
-        if (this.m_Session.Scoring.CompletedAchievementsCount >= 8)
+        textFile.Append(string.Format("Total : {0}/{1}.", (object)m_Session.Scoring.CompletedAchievementsCount, (object) 8));
+        if (m_Session.Scoring.CompletedAchievementsCount >= 8)
           textFile.Append("*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***");
         else
           textFile.Append("(unlock all the achievements to win this game version)");
@@ -10525,50 +10525,50 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> DEATH");
-      textFile.Append(string.Format("{0} in {1}.", (object) this.m_Session.Scoring.DeathReason, (object) this.m_Session.Scoring.DeathPlace));
+      textFile.Append(string.Format("{0} in {1}.", (object)m_Session.Scoring.DeathReason, (object)m_Session.Scoring.DeathPlace));
       textFile.Append(" ");
       textFile.Append("> KILLS");
-      if (this.m_Session.Scoring.HasNoKills)
+      if (m_Session.Scoring.HasNoKills)
       {
         textFile.Append(string.Format("{0} was a pacifist. Or too scared to fight.", (object) str1));
       }
       else
       {
-        foreach (Scoring.KillData kill in this.m_Session.Scoring.Kills)
+        foreach (Scoring.KillData kill in m_Session.Scoring.Kills)
         {
           string str3 = kill.Amount > 1 ? Models.Actors[kill.ActorModelID].PluralName : Models.Actors[kill.ActorModelID].Name;
           textFile.Append(string.Format("{0,4} {1}.", (object) kill.Amount, (object) str3));
         }
       }
-      if (!this.m_Player.Model.Abilities.IsUndead && this.m_Player.MurdersCounter > 0)
-        textFile.Append(string.Format("{0} committed {1} murder{2}!", (object) str1, (object) this.m_Player.MurdersCounter, this.m_Player.MurdersCounter > 1 ? (object) "s" : (object) ""));
+      if (!m_Player.Model.Abilities.IsUndead && m_Player.MurdersCounter > 0)
+        textFile.Append(string.Format("{0} committed {1} murder{2}!", (object) str1, (object)m_Player.MurdersCounter, m_Player.MurdersCounter > 1 ? (object) "s" : (object) ""));
       textFile.Append(" ");
       textFile.Append("> FUN FACTS!");
       textFile.Append(string.Format("While {0} has died, others are still having fun!", (object) name));
-      foreach (string compileDistrictFunFact in this.CompileDistrictFunFacts(this.m_Player.Location.Map.District))
+      foreach (string compileDistrictFunFact in CompileDistrictFunFacts(m_Player.Location.Map.District))
         textFile.Append(compileDistrictFunFact);
       textFile.Append("");
       textFile.Append("> SKILLS");
-      if (this.m_Player.Sheet.SkillTable.Skills == null)
+      if (m_Player.Sheet.SkillTable.Skills == null)
       {
         textFile.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", (object) str1));
       }
       else
       {
-        foreach (Skill skill in this.m_Player.Sheet.SkillTable.Skills)
+        foreach (Skill skill in m_Player.Sheet.SkillTable.Skills)
           textFile.Append(string.Format("{0}-{1}.", (object) skill.Level, (object) Skills.Name(skill.ID)));
       }
       textFile.Append(" ");
       textFile.Append("> INVENTORY");
-      if (this.m_Player.Inventory.IsEmpty)
+      if (m_Player.Inventory.IsEmpty)
       {
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", (object) str1));
       }
       else
       {
-        foreach (Item it in this.m_Player.Inventory.Items)
+        foreach (Item it in m_Player.Inventory.Items)
         {
-          string str3 = this.DescribeItemShort(it);
+          string str3 = DescribeItemShort(it);
           if (it.IsEquipped)
             textFile.Append(string.Format("- {0} (equipped).", (object) str3));
           else
@@ -10577,7 +10577,7 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> FOLLOWERS");
-      if (this.m_Session.Scoring.FollowersWhendDied == null || this.m_Session.Scoring.FollowersWhendDied.Count == 0)
+      if (m_Session.Scoring.FollowersWhendDied == null || m_Session.Scoring.FollowersWhendDied.Count == 0)
       {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", (object) str1));
       }
@@ -10586,8 +10586,8 @@ namespace djack.RogueSurvivor.Engine
         StringBuilder stringBuilder = new StringBuilder(string.Format("{0} was leading", (object) str1));
         bool flag = true;
         int num = 0;
-        int count = this.m_Session.Scoring.FollowersWhendDied.Count;
-        foreach (Actor actor in this.m_Session.Scoring.FollowersWhendDied)
+        int count = m_Session.Scoring.FollowersWhendDied.Count;
+        foreach (Actor actor in m_Session.Scoring.FollowersWhendDied)
         {
           if (flag)
             stringBuilder.Append(" ");
@@ -10603,7 +10603,7 @@ namespace djack.RogueSurvivor.Engine
         }
         stringBuilder.Append(".");
         textFile.Append(stringBuilder.ToString());
-        foreach (Actor actor in this.m_Session.Scoring.FollowersWhendDied)
+        foreach (Actor actor in m_Session.Scoring.FollowersWhendDied)
         {
           textFile.Append(string.Format("{0} skills : ", (object) actor.Name));
           if (actor.Sheet.SkillTable != null && actor.Sheet.SkillTable.Skills != null)
@@ -10615,13 +10615,13 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> EVENTS");
-      if (this.m_Session.Scoring.HasNoEvents)
+      if (m_Session.Scoring.HasNoEvents)
       {
         textFile.Append(string.Format("{0} had a quiet life. Or dull and boring.", (object) str1));
       }
       else
       {
-        foreach (Scoring.GameEventData @event in this.m_Session.Scoring.Events)
+        foreach (Scoring.GameEventData @event in m_Session.Scoring.Events)
           textFile.Append(string.Format("- {0,13} : {1}", (object) new WorldTime()
           {
             TurnCounter = @event.Turn
@@ -10629,7 +10629,7 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> CUSTOM OPTIONS");
-      textFile.Append(string.Format("- difficulty rating of {0}%.", (object) (int) (100.0 * (double) this.m_Session.Scoring.DifficultyRating)));
+      textFile.Append(string.Format("- difficulty rating of {0}%.", (object) (int) (100.0 * (double)m_Session.Scoring.DifficultyRating)));
       if (RogueGame.s_Options.IsPermadeathOn)
         textFile.Append(string.Format("- {0} : yes.", (object) GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
       if (!RogueGame.s_Options.AllowUndeadsEvolution)
@@ -10662,152 +10662,152 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), (object) RogueGame.s_Options.MaxReincarnations));
       textFile.Append(" ");
       textFile.Append("> R.I.P");
-      textFile.Append(string.Format("May {0} soul rest in peace.", (object) this.HisOrHer(this.m_Player)));
-      textFile.Append(string.Format("For {0} body is now a meal for evil.", (object) this.HisOrHer(this.m_Player)));
+      textFile.Append(string.Format("May {0} soul rest in peace.", (object)HisOrHer(m_Player)));
+      textFile.Append(string.Format("For {0} body is now a meal for evil.", (object)HisOrHer(m_Player)));
       textFile.Append("The End.");
       int num1;
       int num2 = num1 = 0;
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
       int gy1 = num1 + 14;
-      this.m_UI.UI_Repaint();
-      string str4 = RogueGame.GraveFilePath(this.GetUserNewGraveyardName());
+            m_UI.UI_Repaint();
+      string str4 = RogueGame.GraveFilePath(GetUserNewGraveyardName());
       int num3;
       if (!textFile.Save(str4))
       {
-        this.m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy1, new Color?());
         num3 = gy1 + 14;
       }
       else
       {
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy1, new Color?());
+                m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
-        this.m_UI.UI_DrawString(Color.White, str4, 0, gy2, new Color?());
+                m_UI.UI_DrawString(Color.White, str4, 0, gy2, new Color?());
         num3 = gy2 + 14;
       }
-      this.DrawFootnote(Color.White, "press ENTER");
-      this.m_UI.UI_Repaint();
-      this.WaitEnter();
+            DrawFootnote(Color.White, "press ENTER");
+            m_UI.UI_Repaint();
+            WaitEnter();
       textFile.FormatLines(TEXTFILE_CHARS_PER_LINE);
       int index = 0;
       do
       {
-        this.m_UI.UI_Clear(Color.Black);
+                m_UI.UI_Clear(Color.Black);
         int num4;
         int gx = num4 = 0;
-        this.DrawHeader();
+                DrawHeader();
         int gy2 = num4 + 14;
         int num5 = 0;
-        this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
         int gy3 = gy2 + 14;
         for (; num5 < 50 && index < textFile.FormatedLines.Count; ++num5)
         {
-          this.m_UI.UI_DrawStringBold(Color.White, textFile.FormatedLines[index], gx, gy3, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, textFile.FormatedLines[index], gx, gy3, new Color?());
           gy3 += 14;
           ++index;
         }
-        this.m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, 740, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, 740, new Color?());
         if (index < textFile.FormatedLines.Count)
-          this.DrawFootnote(Color.White, "press ENTER for more");
+                    DrawFootnote(Color.White, "press ENTER for more");
         else
-          this.DrawFootnote(Color.White, "press ENTER to leave");
-        this.m_UI.UI_Repaint();
-        this.WaitEnter();
+                    DrawFootnote(Color.White, "press ENTER to leave");
+                m_UI.UI_Repaint();
+                WaitEnter();
       }
       while (index < textFile.FormatedLines.Count);
       StringBuilder stringBuilder1 = new StringBuilder();
-      if (this.m_Player.Sheet.SkillTable.Skills != null)
+      if (m_Player.Sheet.SkillTable.Skills != null)
       {
-        foreach (Skill skill in this.m_Player.Sheet.SkillTable.Skills)
+        foreach (Skill skill in m_Player.Sheet.SkillTable.Skills)
           stringBuilder1.AppendFormat("{0}-{1} ", (object) skill.Level, (object) Skills.Name(skill.ID));
       }
-      if (!this.m_HiScoreTable.Register(HiScore.FromScoring(name, this.m_Session.Scoring, stringBuilder1.ToString())))
+      if (!m_HiScoreTable.Register(HiScore.FromScoring(name, m_Session.Scoring, stringBuilder1.ToString())))
         return;
-      this.SaveHiScoreTable();
-      this.HandleHiScores(true);
+            SaveHiScoreTable();
+            HandleHiScores(true);
     }
 
     private void OnNewNight()
     {
-      this.UpdatePlayerFOV(this.m_Player);
-      if (!this.m_Player.Model.Abilities.IsUndead || this.m_Player.Location.Map.LocalTime.Day % 2 != 1)
+            UpdatePlayerFOV(m_Player);
+      if (!m_Player.Model.Abilities.IsUndead || m_Player.Location.Map.LocalTime.Day % 2 != 1)
         return;
-      this.ClearOverlays();
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.UPGRADE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, Point.Empty));
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.Play(GameMusics.INTERLUDE);
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("You will hunt another day!", this.m_Session.WorldTime.TurnCounter, Color.Green));
-      this.UpdatePlayerFOV(this.m_Player);
-      this.AddMessagePressEnter();
-      this.HandlePlayerDecideUpgrade(this.m_Player);
-      this.HandlePlayerFollowersUpgrade();
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("Welcome to the night.", this.m_Session.WorldTime.TurnCounter, Color.White));
-      this.ClearOverlays();
-      this.RedrawPlayScreen();
-      this.m_MusicManager.StopAll();
+            ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+            m_MusicManager.StopAll();
+            m_MusicManager.Play(GameMusics.INTERLUDE);
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("You will hunt another day!", m_Session.WorldTime.TurnCounter, Color.Green));
+            UpdatePlayerFOV(m_Player);
+            AddMessagePressEnter();
+            HandlePlayerDecideUpgrade(m_Player);
+            HandlePlayerFollowersUpgrade();
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("Welcome to the night.", m_Session.WorldTime.TurnCounter, Color.White));
+            ClearOverlays();
+            RedrawPlayScreen();
+            m_MusicManager.StopAll();
     }
 
     private void OnNewDay()
     {
-      if (!this.m_Player.Model.Abilities.IsUndead)
+      if (!m_Player.Model.Abilities.IsUndead)
       {
-        this.ClearOverlays();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(this.UPGRADE_MODE_TEXT, this.MODE_TEXTCOLOR, this.MODE_BORDERCOLOR, this.MODE_FILLCOLOR, Point.Empty));
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.Play(GameMusics.INTERLUDE);
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("You survived another night!", this.m_Session.WorldTime.TurnCounter, Color.Green));
-        this.UpdatePlayerFOV(this.m_Player);
-        this.AddMessagePressEnter();
-        this.HandlePlayerDecideUpgrade(this.m_Player);
-        this.HandlePlayerFollowersUpgrade();
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("Welcome to tomorrow.", this.m_Session.WorldTime.TurnCounter, Color.White));
-        this.ClearOverlays();
-        this.RedrawPlayScreen();
-        this.m_MusicManager.StopAll();
+                ClearOverlays();
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+                m_MusicManager.StopAll();
+                m_MusicManager.Play(GameMusics.INTERLUDE);
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("You survived another night!", m_Session.WorldTime.TurnCounter, Color.Green));
+                UpdatePlayerFOV(m_Player);
+                AddMessagePressEnter();
+                HandlePlayerDecideUpgrade(m_Player);
+                HandlePlayerFollowersUpgrade();
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message("Welcome to tomorrow.", m_Session.WorldTime.TurnCounter, Color.White));
+                ClearOverlays();
+                RedrawPlayScreen();
+                m_MusicManager.StopAll();
       }
-      this.CheckWeatherChange();
-      if (this.m_Player.Model.Abilities.IsUndead)
+            CheckWeatherChange();
+      if (m_Player.Model.Abilities.IsUndead)
         return;
-      if (this.m_Session.WorldTime.Day == 7)
+      if (m_Session.WorldTime.Day == 7)
       {
-        this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs._FIRST);
-        this.ShowNewAchievement(Achievement.IDs._FIRST);
+                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs._FIRST);
+                ShowNewAchievement(Achievement.IDs._FIRST);
       }
-      else if (this.m_Session.WorldTime.Day == 14)
+      else if (m_Session.WorldTime.Day == 14)
       {
-        this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_14);
-        this.ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
+                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_14);
+                ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
       }
-      else if (this.m_Session.WorldTime.Day == 21)
+      else if (m_Session.WorldTime.Day == 21)
       {
-        this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_21);
-        this.ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
+                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_21);
+                ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
       }
       else
       {
-        if (this.m_Session.WorldTime.Day != 28)
+        if (m_Session.WorldTime.Day != 28)
           return;
-        this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_28);
-        this.ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
+                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_28);
+                ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
       }
     }
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
     {
-      List<Skills.IDs> upgrade = this.RollSkillsToUpgrade(upgradeActor, 300);
-      string str = upgradeActor == this.m_Player ? "You" : upgradeActor.Name;
+      List<Skills.IDs> upgrade = RollSkillsToUpgrade(upgradeActor, 300);
+      string str = upgradeActor == m_Player ? "You" : upgradeActor.Name;
       bool flag = true;
       do
       {
-        this.ClearMessages();
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(str + " can improve or learn one of these skills. Choose wisely.", this.m_Session.WorldTime.TurnCounter, Color.Green));
+                ClearMessages();
+                AddMessage(new djack.RogueSurvivor.Data.Message(str + " can improve or learn one of these skills. Choose wisely.", m_Session.WorldTime.TurnCounter, Color.Green));
         if (upgrade.Count == 0)
         {
-          this.AddMessage(this.MakeErrorMessage(str + " can't learn anything new!"));
+                    AddMessage(MakeErrorMessage(str + " can't learn anything new!"));
         }
         else
         {
@@ -10815,7 +10815,7 @@ namespace djack.RogueSurvivor.Engine
           {
             Skills.IDs id = upgrade[index];
             int skillLevel = upgradeActor.Sheet.SkillTable.GetSkillLevel(id);
-            this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("choice {0} : {1} from {2} to {3} - {4}", (object) (index + 1), (object) Skills.Name(id), (object) skillLevel, (object) (skillLevel + 1), (object) this.DescribeSkillShort(id)), this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
+                        AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("choice {0} : {1} from {2} to {3} - {4}", (object) (index + 1), (object) Skills.Name(id), (object) skillLevel, (object) (skillLevel + 1), (object)DescribeSkillShort(id)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
           }
         }
         AddMessage(new djack.RogueSurvivor.Data.Message("ESC if you don't want to upgrade; SPACE to get wiser skills.", m_Session.WorldTime.TurnCounter, Color.White));
@@ -10836,12 +10836,12 @@ namespace djack.RogueSurvivor.Engine
           if (skill.Level == 1)
           {
             AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-            m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)));
           }
           else
           {
             AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-            m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level));
           }
           AddMessagePressEnter();
           flag = false;
@@ -10852,23 +10852,23 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerFollowersUpgrade()
     {
-      if (this.m_Player.CountFollowers == 0)
+      if (m_Player.CountFollowers == 0)
         return;
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("Your followers learned new skills at your side!", this.m_Session.WorldTime.TurnCounter, Color.Green));
-      this.AddMessagePressEnter();
-      foreach (Actor follower in this.m_Player.Followers)
-        this.HandlePlayerDecideUpgrade(follower);
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("Your followers learned new skills at your side!", m_Session.WorldTime.TurnCounter, Color.Green));
+            AddMessagePressEnter();
+      foreach (Actor follower in m_Player.Followers)
+                HandlePlayerDecideUpgrade(follower);
     }
 
     private void HandleLivingNPCsUpgrade(Map map)
     {
       foreach (Actor actor in map.Actors)
       {
-        if (actor != this.m_Player && actor.Leader != this.m_Player && !actor.Model.Abilities.IsUndead)
+        if (actor != m_Player && actor.Leader != m_Player && !actor.Model.Abilities.IsUndead)
         {
-          List<Skills.IDs> upgrade1 = this.RollSkillsToUpgrade(actor, 300);
-          Skills.IDs? upgrade2 = this.NPCPickSkillToUpgrade(actor, upgrade1);
+          List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
+          Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
           if (upgrade2.HasValue)
             actor.SkillUpgrade(upgrade2.Value);
         }
@@ -10879,10 +10879,10 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Actor actor in map.Actors)
       {
-        if (actor != this.m_Player && actor.Leader != this.m_Player && actor.Model.Abilities.IsUndead && ((RogueGame.s_Options.SkeletonsUpgrade || !this.GameActors.IsSkeletonBranch(actor.Model)) && (RogueGame.s_Options.RatsUpgrade || !this.GameActors.IsRatBranch(actor.Model))) && (RogueGame.s_Options.ShamblersUpgrade || !this.GameActors.IsShamblerBranch(actor.Model)))
+        if (actor != m_Player && actor.Leader != m_Player && actor.Model.Abilities.IsUndead && ((RogueGame.s_Options.SkeletonsUpgrade || !GameActors.IsSkeletonBranch(actor.Model)) && (RogueGame.s_Options.RatsUpgrade || !GameActors.IsRatBranch(actor.Model))) && (RogueGame.s_Options.ShamblersUpgrade || !GameActors.IsShamblerBranch(actor.Model)))
         {
-          List<Skills.IDs> upgrade1 = this.RollSkillsToUpgrade(actor, 300);
-          Skills.IDs? upgrade2 = this.NPCPickSkillToUpgrade(actor, upgrade1);
+          List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
+          Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
           if (upgrade2.HasValue)
             actor.SkillUpgrade(upgrade2.Value);
         }
@@ -10900,7 +10900,7 @@ namespace djack.RogueSurvivor.Engine
         do
         {
           ++num;
-          upgrade = this.RollRandomSkillToUpgrade(actor, maxTries);
+          upgrade = RollRandomSkillToUpgrade(actor, maxTries);
           if (!upgrade.HasValue)
             return idsList;
         }
@@ -10919,7 +10919,7 @@ namespace djack.RogueSurvivor.Engine
       int num = -1;
       for (int index = 0; index < count; ++index)
       {
-        numArray[index] = this.NPCSkillUtility(npc, chooseFrom[index]);
+        numArray[index] = NPCSkillUtility(npc, chooseFrom[index]);
         if (numArray[index] > num)
           num = numArray[index];
       }
@@ -10929,7 +10929,7 @@ namespace djack.RogueSurvivor.Engine
         if (numArray[index] == num)
           idsList.Add(chooseFrom[index]);
       }
-      return new Skills.IDs?(idsList[this.m_Rules.Roll(0, idsList.Count)]);
+      return new Skills.IDs?(idsList[m_Rules.Roll(0, idsList.Count)]);
     }
 
     private int NPCSkillUtility(Actor actor, Skills.IDs skID)
@@ -11036,7 +11036,7 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         ++num;
-        id = isUndead ? Skills.RollUndead(this.Rules.DiceRoller) : Skills.RollLiving(this.Rules.DiceRoller);
+        id = isUndead ? Skills.RollUndead(Rules.DiceRoller) : Skills.RollLiving(Rules.DiceRoller);
       }
       while (actor.Sheet.SkillTable.GetSkillLevel(id) >= Skills.MaxSkillLevel(id) && num < maxTries);
       if (num >= maxTries)
@@ -11048,27 +11048,27 @@ namespace djack.RogueSurvivor.Engine
     {
       int[] skillsList = actor.Sheet.SkillTable.SkillsList;
       if (skillsList == null) return;
-      int index = this.m_Rules.Roll(0, skillsList.Length);
+      int index = m_Rules.Roll(0, skillsList.Length);
       Skills.IDs id = (Skills.IDs) skillsList[index];
       actor.Sheet.SkillTable.DecOrRemoveSkill(id);
-      if (!this.IsVisibleToPlayer(actor)) return;
-      AddMessage(this.MakeMessage(actor, string.Format("regressed in {0}!", (object) Skills.Name(id))));
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", (object) Skills.Name(id))));
     }
 
     private void CheckWeatherChange()
     {
-      if (this.m_Rules.RollChance(33))
+      if (m_Rules.RollChance(33))
       {
         Weather weather;
         string text;
-        switch (this.m_Session.World.Weather)
+        switch (m_Session.World.Weather)
         {
           case Weather._FIRST:
             weather = Weather.CLOUDY;
             text = "Clouds are hiding the sky.";
             break;
           case Weather.CLOUDY:
-            if (this.m_Rules.RollChance(50))
+            if (m_Rules.RollChance(50))
             {
               weather = Weather._FIRST;
               text = "The sky is clear again.";
@@ -11078,7 +11078,7 @@ namespace djack.RogueSurvivor.Engine
             text = "Rain is starting to fall.";
             break;
           case Weather.RAIN:
-            if (this.m_Rules.RollChance(50))
+            if (m_Rules.RollChance(50))
             {
               weather = Weather.CLOUDY;
               text = "The rain has stopped.";
@@ -11094,32 +11094,32 @@ namespace djack.RogueSurvivor.Engine
           default:
             throw new ArgumentOutOfRangeException("unhandled weather");
         }
-        this.m_Session.World.Weather = weather;
-        this.AddMessage(new djack.RogueSurvivor.Data.Message(text, this.m_Session.WorldTime.TurnCounter, Color.White));
-        this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", (object) this.DescribeWeather(this.m_Session.World.Weather)));
+                m_Session.World.Weather = weather;
+                AddMessage(new djack.RogueSurvivor.Data.Message(text, m_Session.WorldTime.TurnCounter, Color.White));
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", (object)DescribeWeather(m_Session.World.Weather)));
       }
       else
-        this.AddMessage(new djack.RogueSurvivor.Data.Message("The weather stays the same.", this.m_Session.WorldTime.TurnCounter, Color.White));
+                AddMessage(new djack.RogueSurvivor.Data.Message("The weather stays the same.", m_Session.WorldTime.TurnCounter, Color.White));
     }
 
     private void PlayerKill(Actor victim)
     {
-      this.m_Session.Scoring.AddKill(this.m_Player, victim, this.m_Session.WorldTime.TurnCounter);
+            m_Session.Scoring.AddKill(m_Player, victim, m_Session.WorldTime.TurnCounter);
     }
 
     private void InfectActor(Actor actor, int addInfection)
     {
-      actor.Infection = Math.Min(this.m_Rules.ActorInfectionHPs(actor), actor.Infection + addInfection);
+      actor.Infection = Math.Min(m_Rules.ActorInfectionHPs(actor), actor.Infection + addInfection);
     }
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
-      Actor actor = this.m_TownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
+      Actor actor = m_TownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
       if (!isStartingGame)
         deadVictim.Location.Map.PlaceActorAt(actor, deadVictim.Location.Position);
       actor.ActionPoints = 0;
-      if (deadVictim == this.m_Player || deadVictim.IsPlayer)
-        this.m_Session.Scoring.SetZombifiedPlayer(actor);
+      if (deadVictim == m_Player || deadVictim.IsPlayer)
+                m_Session.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
       if (skillTable != null && skillTable.CountSkills > 0)
       {
@@ -11129,14 +11129,14 @@ namespace djack.RogueSurvivor.Engine
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index)
         {
-          Skills.IDs? nullable = this.ZombifySkill((Skills.IDs) skillTable.SkillsList[this.m_Rules.Roll(0, countSkills)]);
+          Skills.IDs? nullable = ZombifySkill((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]);
           if (nullable.HasValue)
             actor.SkillUpgrade(nullable.Value);
         }
-        this.m_TownGenerator.RecomputeActorStartingStats(actor);
+                m_TownGenerator.RecomputeActorStartingStats(actor);
       }
       if (!isStartingGame)
-        this.SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", (object) deadVictim.Name));
+                SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", (object) deadVictim.Name));
       return actor;
     }
 
@@ -11179,12 +11179,12 @@ namespace djack.RogueSurvivor.Engine
       int num1 = mapCenter.X + 10;
       int y = mapCenter.Y - 10;
       int num2 = mapCenter.Y + 10;
-      this.m_MapViewRect = new Rectangle(x, y, 1 + num1 - x, 1 + num2 - y);
+            m_MapViewRect = new Rectangle(x, y, 1 + num1 - x, 1 + num2 - y);
     }
 
     public bool IsInViewRect(Point mapPosition)
     {
-      return this.m_MapViewRect.Contains(mapPosition);
+      return m_MapViewRect.Contains(mapPosition);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -11267,19 +11267,19 @@ namespace djack.RogueSurvivor.Engine
       switch (phase)
       {
         case DayPhase.SUNSET:
-          return this.TINT_SUNSET;
+          return TINT_SUNSET;
         case DayPhase.EVENING:
-          return this.TINT_EVENING;
+          return TINT_EVENING;
         case DayPhase.MIDNIGHT:
-          return this.TINT_MIDNIGHT;
+          return TINT_MIDNIGHT;
         case DayPhase.DEEP_NIGHT:
-          return this.TINT_NIGHT;
+          return TINT_NIGHT;
         case DayPhase.SUNRISE:
-          return this.TINT_SUNRISE;
+          return TINT_SUNRISE;
         case DayPhase.MORNING:
         case DayPhase.MIDDAY:
         case DayPhase.AFTERNOON:
-          return this.TINT_DAY;
+          return TINT_DAY;
         default:
           throw new ArgumentOutOfRangeException("unhandled dayphase");
       }
@@ -11287,56 +11287,56 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawMap(Map map, Color tint)
     {
-      int num1 = Math.Max(-1, this.m_MapViewRect.Left);
-      int num2 = Math.Min(map.Width + 1, this.m_MapViewRect.Right);
-      int num3 = Math.Max(-1, this.m_MapViewRect.Top);
-      int num4 = Math.Min(map.Height + 1, this.m_MapViewRect.Bottom);
+      int num1 = Math.Max(-1, m_MapViewRect.Left);
+      int num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
+      int num3 = Math.Max(-1, m_MapViewRect.Top);
+      int num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
       string imageID;
-      switch (this.m_Session.World.Weather)
+      switch (m_Session.World.Weather)
       {
         case Weather.RAIN:
-          imageID = this.m_Session.WorldTime.TurnCounter % 2 == 0 ? "weather_rain1" : "weather_rain2";
+          imageID = m_Session.WorldTime.TurnCounter % 2 == 0 ? "weather_rain1" : "weather_rain2";
           break;
         case Weather.HEAVY_RAIN:
-          imageID = this.m_Session.WorldTime.TurnCounter % 2 == 0 ? "weather_heavy_rain1" : "weather_heavy_rain2";
+          imageID = m_Session.WorldTime.TurnCounter % 2 == 0 ? "weather_heavy_rain1" : "weather_heavy_rain2";
           break;
         default:
           imageID = (string) null;
           break;
       }
       Point point = new Point();
-      bool isUndead = this.m_Player.Model.Abilities.IsUndead;
-      bool flag1 = (double) this.m_Player.Model.StartingSheet.BaseSmellRating > 0.0;
-      int num5 = this.m_Rules.ActorSmellThreshold(this.m_Player);
+      bool isUndead = m_Player.Model.Abilities.IsUndead;
+      bool flag1 = (double)m_Player.Model.StartingSheet.BaseSmellRating > 0.0;
+      int num5 = m_Rules.ActorSmellThreshold(m_Player);
       for (int x = num1; x < num2; ++x)
       {
         point.X = x;
         for (int y = num3; y < num4; ++y)
         {
           point.Y = y;
-          Point screen = this.MapToScreen(x, y);
-          bool player = this.IsVisibleToPlayer(map, point);
+          Point screen = MapToScreen(x, y);
+          bool player = IsVisibleToPlayer(map, point);
           bool flag2 = false;
           Tile tile = map.IsInBounds(x, y) ? map.GetTileAt(x, y) : (Tile) null;
           if (map.IsInBounds(x, y))
-            this.DrawTile(tile, screen, tint);
+                        DrawTile(tile, screen, tint);
           else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
-            this.DrawExit(screen);
+                        DrawExit(screen);
           if (player)
           {
             List<Corpse> corpsesAt = map.GetCorpsesAt(x, y);
             if (corpsesAt != null)
             {
               foreach (Corpse c in corpsesAt)
-                this.DrawCorpse(c, screen.X, screen.Y, tint);
+                                DrawCorpse(c, screen.X, screen.Y, tint);
             }
           }
-          if (RogueGame.s_Options.ShowPlayerTargets && !this.m_Player.IsSleeping && this.m_Player.Location.Position == point)
-            this.DrawPlayerActorTargets(this.m_Player);
+          if (RogueGame.s_Options.ShowPlayerTargets && !m_Player.IsSleeping && m_Player.Location.Position == point)
+                        DrawPlayerActorTargets(m_Player);
           MapObject mapObjectAt = map.GetMapObjectAt(x, y);
           if (mapObjectAt != null)
           {
-            this.DrawMapObject(mapObjectAt, screen, tint);
+                        DrawMapObject(mapObjectAt, screen, tint);
             flag2 = true;
           }
           if (!m_Player.IsSleeping && map.IsInBounds(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1)
@@ -11349,13 +11349,13 @@ namespace djack.RogueSurvivor.Engine
                 if (scentByOdorAt1 >= num5)
                 {
                   float num6 = (float) (0.899999976158142 * (double) scentByOdorAt1 / 270.0);
-                  this.m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_living", screen.X, screen.Y);
+                                    m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_living", screen.X, screen.Y);
                 }
                 int scentByOdorAt2 = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, point);
                 if (scentByOdorAt2 >= num5)
                 {
                   float num6 = (float) (0.899999976158142 * (double) scentByOdorAt2 / 270.0);
-                  this.m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_zm", screen.X, screen.Y);
+                                    m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_zm", screen.X, screen.Y);
                 }
               }
             }
@@ -11363,7 +11363,7 @@ namespace djack.RogueSurvivor.Engine
             {
               int scentByOdorAt = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, point);
               if (scentByOdorAt > 0)
-                this.m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / 270.0), "Icons\\scent_living_supressor", screen.X, screen.Y);
+                                m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / 270.0), "Icons\\scent_living_supressor", screen.X, screen.Y);
             }
           }
           if (player)
@@ -11371,29 +11371,29 @@ namespace djack.RogueSurvivor.Engine
             Inventory itemsAt = map.GetItemsAt(x, y);
             if (itemsAt != null)
             {
-              this.DrawItemsStack(itemsAt, screen.X, screen.Y, tint);
+                            DrawItemsStack(itemsAt, screen.X, screen.Y, tint);
               flag2 = true;
             }
             Actor actorAt = map.GetActorAt(x, y);
             if (actorAt != null)
             {
-              this.DrawActorSprite(actorAt, screen, tint);
+                            DrawActorSprite(actorAt, screen, tint);
               flag2 = true;
             }
           }
           if (tile != null && tile.HasDecorations)
             flag2 = true;
           if (flag2 && tile.Model.IsWater)
-            this.DrawTileWaterCover(tile, screen, tint);
+                        DrawTileWaterCover(tile, screen, tint);
           if (player && imageID != null && (tile != null && !tile.IsInside))
-            this.m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
+                        m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
         }
       }
     }
 
     private string MovingWaterImage(TileModel model, int turnCount)
     {
-      if (model != this.m_GameTiles.FLOOR_SEWER_WATER)
+      if (model != m_GameTiles.FLOOR_SEWER_WATER)
         return (string) null;
       switch (turnCount % 3)
       {
@@ -11410,27 +11410,27 @@ namespace djack.RogueSurvivor.Engine
     {
       if (tile.IsInView)
       {
-        this.m_UI.UI_DrawImage(tile.Model.ImageID, screen.X, screen.Y, tint);
-        string imageID = this.MovingWaterImage(tile.Model, this.m_Session.WorldTime.TurnCounter);
+                m_UI.UI_DrawImage(tile.Model.ImageID, screen.X, screen.Y, tint);
+        string imageID = MovingWaterImage(tile.Model, m_Session.WorldTime.TurnCounter);
         if (imageID != null)
-          this.m_UI.UI_DrawImage(imageID, screen.X, screen.Y, tint);
+                    m_UI.UI_DrawImage(imageID, screen.X, screen.Y, tint);
         if (!tile.HasDecorations)
           return;
         foreach (string decoration in tile.Decorations)
-          this.m_UI.UI_DrawImage(decoration, screen.X, screen.Y, tint);
+                    m_UI.UI_DrawImage(decoration, screen.X, screen.Y, tint);
       }
       else
       {
-        if (!tile.IsVisited || this.IsPlayerSleeping())
+        if (!tile.IsVisited || IsPlayerSleeping())
           return;
-        this.m_UI.UI_DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
-        string imageID = this.MovingWaterImage(tile.Model, this.m_Session.WorldTime.TurnCounter);
+                m_UI.UI_DrawGrayLevelImage(tile.Model.ImageID, screen.X, screen.Y);
+        string imageID = MovingWaterImage(tile.Model, m_Session.WorldTime.TurnCounter);
         if (imageID != null)
-          this.m_UI.UI_DrawGrayLevelImage(imageID, screen.X, screen.Y);
+                    m_UI.UI_DrawGrayLevelImage(imageID, screen.X, screen.Y);
         if (!tile.HasDecorations)
           return;
         foreach (string decoration in tile.Decorations)
-          this.m_UI.UI_DrawGrayLevelImage(decoration, screen.X, screen.Y);
+                    m_UI.UI_DrawGrayLevelImage(decoration, screen.X, screen.Y);
       }
     }
 
@@ -11438,49 +11438,49 @@ namespace djack.RogueSurvivor.Engine
     {
       if (tile.IsInView)
       {
-        this.m_UI.UI_DrawImage(tile.Model.WaterCoverImageID, screen.X, screen.Y, tint);
+                m_UI.UI_DrawImage(tile.Model.WaterCoverImageID, screen.X, screen.Y, tint);
       }
       else
       {
-        if (!tile.IsVisited || this.IsPlayerSleeping())
+        if (!tile.IsVisited || IsPlayerSleeping())
           return;
-        this.m_UI.UI_DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
+                m_UI.UI_DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
       }
     }
 
     public void DrawExit(Point screen)
     {
-      this.m_UI.UI_DrawImage("map_exit", screen.X, screen.Y);
+            m_UI.UI_DrawImage("map_exit", screen.X, screen.Y);
     }
 
     public void DrawTileRectangle(Point mapPosition, Color color)
     {
-      this.m_UI.UI_DrawRect(color, new Rectangle(this.MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
+            m_UI.UI_DrawRect(color, new Rectangle(MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
     }
 
     public void DrawMapObject(MapObject mapObj, Point screen, Color tint)
     {
       if (mapObj.IsMovable && mapObj.Location.Map.GetTileAt(mapObj.Location.Position.X, mapObj.Location.Position.Y).Model.IsWater)
       {
-        int num = (mapObj.Location.Position.X + this.m_Session.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
+        int num = (mapObj.Location.Position.X + m_Session.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
         screen.Y -= num;
       }
-      if (this.IsVisibleToPlayer(mapObj))
+      if (IsVisibleToPlayer(mapObj))
       {
-        this.DrawMapObject(mapObj, screen, mapObj.ImageID, (Action<string, int, int>) ((imageID, gx, gy) => this.m_UI.UI_DrawImage(imageID, gx, gy, tint)));
+                DrawMapObject(mapObj, screen, mapObj.ImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint)));
         if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
-          this.DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
+                    DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
         DoorWindow doorWindow = mapObj as DoorWindow;
         if (doorWindow == null || doorWindow.BarricadePoints <= 0)
           return;
-        this.DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
-        this.m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
+                DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
+                m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
       }
       else
       {
-        if (!this.IsKnownToPlayer(mapObj) || this.IsPlayerSleeping())
+        if (!IsKnownToPlayer(mapObj) || IsPlayerSleeping())
           return;
-        this.DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => this.m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
+                DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
       }
     }
 
@@ -11496,120 +11496,120 @@ namespace djack.RogueSurvivor.Engine
     {
       int x = screen.X;
       int y = screen.Y;
-      if (actor.Leader != null && actor.Leader == this.m_Player)
+      if (actor.Leader != null && actor.Leader == m_Player)
       {
-        if (this.m_Rules.HasActorBondWith(actor, this.m_Player))
-          this.m_UI.UI_DrawImage("Actors\\player_follower_bond", x, y, tint);
-        else if (this.m_Rules.IsActorTrustingLeader(actor))
-          this.m_UI.UI_DrawImage("Actors\\player_follower_trust", x, y, tint);
+        if (m_Rules.HasActorBondWith(actor, m_Player))
+                    m_UI.UI_DrawImage("Actors\\player_follower_bond", x, y, tint);
+        else if (m_Rules.IsActorTrustingLeader(actor))
+                    m_UI.UI_DrawImage("Actors\\player_follower_trust", x, y, tint);
         else
-          this.m_UI.UI_DrawImage("Actors\\player_follower", x, y, tint);
+                    m_UI.UI_DrawImage("Actors\\player_follower", x, y, tint);
       }
       int gx1 = x;
       int gy1 = y;
       if (actor.Model.ImageID != null)
-        this.m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
+                m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
       if (actor.GetEquippedItem(DollPart.TORSO) != null)
-        this.DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
-      this.DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
-      this.DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
-      this.DrawActorEquipment(actor, gx1, gy1, DollPart._FIRST, tint);
+                DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
+            DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
+            DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
+            DrawActorEquipment(actor, gx1, gy1, DollPart._FIRST, tint);
       int gx2 = gx1;
       int gy2 = gy1;
-      if (this.m_Player != null)
+      if (m_Player != null)
       {
-        bool flag1 = this.m_Player.IsSelfDefenceFrom(actor);
-        bool flag2 = this.m_Player.IsAggressorOf(actor);
-        bool flag3 = this.m_Player.AreIndirectEnemies(actor);
+        bool flag1 = m_Player.IsSelfDefenceFrom(actor);
+        bool flag2 = m_Player.IsAggressorOf(actor);
+        bool flag3 = m_Player.AreIndirectEnemies(actor);
         if (flag1)
-          this.m_UI.UI_DrawImage("Icons\\enemy_you_self_defence", gx2, gy2, tint);
+                    m_UI.UI_DrawImage("Icons\\enemy_you_self_defence", gx2, gy2, tint);
         else if (flag2)
-          this.m_UI.UI_DrawImage("Icons\\enemy_you_aggressor", gx2, gy2, tint);
+                    m_UI.UI_DrawImage("Icons\\enemy_you_aggressor", gx2, gy2, tint);
         else if (flag3)
-          this.m_UI.UI_DrawImage("Icons\\enemy_indirect", gx2, gy2, tint);
+                    m_UI.UI_DrawImage("Icons\\enemy_indirect", gx2, gy2, tint);
       }
       switch (actor.Activity)
       {
         case Activity.IDLE:
-          int maxHitPoints = this.m_Rules.ActorMaxHPs(actor);
+          int maxHitPoints = m_Rules.ActorMaxHPs(actor);
           if (actor.HitPoints < maxHitPoints)
-            this.DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
+                        DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
           if (actor.IsRunning)
-            this.m_UI.UI_DrawImage("Icons\\running", gx2, gy2, tint);
-          else if (actor.Model.Abilities.CanRun && !this.m_Rules.CanActorRun(actor))
-            this.m_UI.UI_DrawImage("Icons\\cant_run", gx2, gy2, tint);
+                        m_UI.UI_DrawImage("Icons\\running", gx2, gy2, tint);
+          else if (actor.Model.Abilities.CanRun && !m_Rules.CanActorRun(actor))
+                        m_UI.UI_DrawImage("Icons\\cant_run", gx2, gy2, tint);
           if (actor.Model.Abilities.HasToSleep)
           {
             if (actor.IsExhausted)
-              this.m_UI.UI_DrawImage("Icons\\sleep_exhausted", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\sleep_exhausted", gx2, gy2, tint);
             else if (actor.IsSleepy)
-              this.m_UI.UI_DrawImage("Icons\\sleep_sleepy", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\sleep_sleepy", gx2, gy2, tint);
             else if (actor.IsAlmostSleepy)
-              this.m_UI.UI_DrawImage("Icons\\sleep_almost_sleepy", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\sleep_almost_sleepy", gx2, gy2, tint);
           }
           if (actor.Model.Abilities.HasToEat)
           {
             if (actor.IsStarving)
-              this.m_UI.UI_DrawImage("Icons\\food_starving", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\food_starving", gx2, gy2, tint);
             else if (actor.IsHungry)
-              this.m_UI.UI_DrawImage("Icons\\food_hungry", gx2, gy2, tint);
-            else if (this.IsAlmostHungry(actor))
-              this.m_UI.UI_DrawImage("Icons\\food_almost_hungry", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\food_hungry", gx2, gy2, tint);
+            else if (IsAlmostHungry(actor))
+                            m_UI.UI_DrawImage("Icons\\food_almost_hungry", gx2, gy2, tint);
           }
           else if (actor.Model.Abilities.IsRotting)
           {
             if (actor.IsRotStarving)
-              this.m_UI.UI_DrawImage("Icons\\rot_starving", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\rot_starving", gx2, gy2, tint);
             else if (actor.IsRotHungry)
-              this.m_UI.UI_DrawImage("Icons\\rot_hungry", gx2, gy2, tint);
-            else if (this.IsAlmostRotHungry(actor))
-              this.m_UI.UI_DrawImage("Icons\\rot_almost_hungry", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\rot_hungry", gx2, gy2, tint);
+            else if (IsAlmostRotHungry(actor))
+                            m_UI.UI_DrawImage("Icons\\rot_almost_hungry", gx2, gy2, tint);
           }
           if (actor.Model.Abilities.HasSanity)
           {
             if (actor.IsInsane)
-              this.m_UI.UI_DrawImage("Icons\\sanity_insane", gx2, gy2, tint);
-            else if (this.m_Rules.IsActorDisturbed(actor))
-              this.m_UI.UI_DrawImage("Icons\\sanity_disturbed", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Icons\\sanity_insane", gx2, gy2, tint);
+            else if (m_Rules.IsActorDisturbed(actor))
+                            m_UI.UI_DrawImage("Icons\\sanity_disturbed", gx2, gy2, tint);
           }
-          if (this.m_Player != null && this.m_Rules.CanActorInitiateTradeWith(this.m_Player, actor))
-            this.m_UI.UI_DrawImage("Icons\\can_trade", gx2, gy2, tint);
-          if (actor.IsSleeping && (actor.IsOnCouch || this.m_Rules.ActorHealChanceBonus(actor) > 0))
-            this.m_UI.UI_DrawImage("Icons\\healing", gx2, gy2, tint);
+          if (m_Player != null && m_Rules.CanActorInitiateTradeWith(m_Player, actor))
+                        m_UI.UI_DrawImage("Icons\\can_trade", gx2, gy2, tint);
+          if (actor.IsSleeping && (actor.IsOnCouch || m_Rules.ActorHealChanceBonus(actor) > 0))
+                        m_UI.UI_DrawImage("Icons\\healing", gx2, gy2, tint);
           if (actor.CountFollowers > 0)
-            this.m_UI.UI_DrawImage("Icons\\leader", gx2, gy2, tint);
-          if (!RogueGame.s_Options.IsCombatAssistantOn || actor == this.m_Player || (this.m_Player == null || !this.m_Rules.IsEnemyOf(actor, this.m_Player)))
+                        m_UI.UI_DrawImage("Icons\\leader", gx2, gy2, tint);
+          if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !m_Rules.IsEnemyOf(actor, m_Player)))
             break;
-          if (this.m_Rules.WillActorActAgainBefore(this.m_Player, actor))
+          if (m_Rules.WillActorActAgainBefore(m_Player, actor))
           {
-            this.m_UI.UI_DrawImage("Icons\\threat_safe", gx2, gy2, tint);
+                        m_UI.UI_DrawImage("Icons\\threat_safe", gx2, gy2, tint);
             break;
           }
-          if (this.m_Rules.WillOtherActTwiceBefore(this.m_Player, actor))
+          if (m_Rules.WillOtherActTwiceBefore(m_Player, actor))
           {
-            this.m_UI.UI_DrawImage("Icons\\threat_high_danger", gx2, gy2, tint);
+                        m_UI.UI_DrawImage("Icons\\threat_high_danger", gx2, gy2, tint);
             break;
           }
-          this.m_UI.UI_DrawImage("Icons\\threat_danger", gx2, gy2, tint);
+                    m_UI.UI_DrawImage("Icons\\threat_danger", gx2, gy2, tint);
           break;
         case Activity.CHASING:
         case Activity.FIGHTING:
           if (!actor.IsPlayer && actor.TargetActor != null)
           {
-            if (actor.TargetActor != null && actor.TargetActor == this.m_Player)
+            if (actor.TargetActor != null && actor.TargetActor == m_Player)
             {
-              this.m_UI.UI_DrawImage("Activities\\chasing_player", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Activities\\chasing_player", gx2, gy2, tint);
               goto case Activity.IDLE;
             }
             else
             {
-              this.m_UI.UI_DrawImage("Activities\\chasing", gx2, gy2, tint);
+                            m_UI.UI_DrawImage("Activities\\chasing", gx2, gy2, tint);
               goto case Activity.IDLE;
             }
           }
@@ -11618,7 +11618,7 @@ namespace djack.RogueSurvivor.Engine
         case Activity.TRACKING:
           if (!actor.IsPlayer)
           {
-            this.m_UI.UI_DrawImage("Activities\\tracking", gx2, gy2, tint);
+                        m_UI.UI_DrawImage("Activities\\tracking", gx2, gy2, tint);
             goto case Activity.IDLE;
           }
           else
@@ -11626,7 +11626,7 @@ namespace djack.RogueSurvivor.Engine
         case Activity.FLEEING:
           if (!actor.IsPlayer)
           {
-            this.m_UI.UI_DrawImage("Activities\\fleeing", gx2, gy2, tint);
+                        m_UI.UI_DrawImage("Activities\\fleeing", gx2, gy2, tint);
             goto case Activity.IDLE;
           }
           else
@@ -11636,27 +11636,27 @@ namespace djack.RogueSurvivor.Engine
           {
             if (actor.TargetActor.IsPlayer)
             {
-              this.m_UI.UI_DrawImage("Activities\\following_player", gx2, gy2);
+                            m_UI.UI_DrawImage("Activities\\following_player", gx2, gy2);
               goto case Activity.IDLE;
             }
             else
             {
-              this.m_UI.UI_DrawImage("Activities\\following", gx2, gy2);
+                            m_UI.UI_DrawImage("Activities\\following", gx2, gy2);
               goto case Activity.IDLE;
             }
           }
           else
             goto case Activity.IDLE;
         case Activity.SLEEPING:
-          this.m_UI.UI_DrawImage("Activities\\sleeping", gx2, gy2);
+                    m_UI.UI_DrawImage("Activities\\sleeping", gx2, gy2);
           goto case Activity.IDLE;
         case Activity.FOLLOWING_ORDER:
-          this.m_UI.UI_DrawImage("Activities\\following_order", gx2, gy2);
+                    m_UI.UI_DrawImage("Activities\\following_order", gx2, gy2);
           goto case Activity.IDLE;
         case Activity.FLEEING_FROM_EXPLOSIVE:
           if (!actor.IsPlayer)
           {
-            this.m_UI.UI_DrawImage("Activities\\fleeing_explosive", gx2, gy2, tint);
+                        m_UI.UI_DrawImage("Activities\\fleeing_explosive", gx2, gy2, tint);
             goto case Activity.IDLE;
           }
           else
@@ -11672,7 +11672,7 @@ namespace djack.RogueSurvivor.Engine
       if (decorations == null)
         return;
       foreach (string imageID in decorations)
-        this.m_UI.UI_DrawImage(imageID, gx, gy, tint);
+                m_UI.UI_DrawImage(imageID, gx, gy, tint);
     }
 
     public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, float rotation, float scale)
@@ -11681,7 +11681,7 @@ namespace djack.RogueSurvivor.Engine
       if (decorations == null)
         return;
       foreach (string imageID in decorations)
-        this.m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
+                m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
     }
 
     public void DrawActorEquipment(Actor actor, int gx, int gy, DollPart part, Color tint)
@@ -11689,7 +11689,7 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(part);
       if (equippedItem == null)
         return;
-      this.m_UI.UI_DrawImage(equippedItem.ImageID, gx, gy, tint);
+            m_UI.UI_DrawImage(equippedItem.ImageID, gx, gy, tint);
     }
 
     public void DrawCorpse(Corpse c, int gx, int gy, Color tint)
@@ -11701,27 +11701,27 @@ namespace djack.RogueSurvivor.Engine
       gx += num1;
       gy += num1;
       if (deadGuy.Model.ImageID != null)
-        this.m_UI.UI_DrawImageTransform(deadGuy.Model.ImageID, gx, gy, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
-      this.DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
+                m_UI.UI_DrawImageTransform(deadGuy.Model.ImageID, gx, gy, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
+            DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
       gx -= num1;
       gy -= num1;
-      int num2 = this.Rules.CorpseRotLevel(c);
+      int num2 = Rules.CorpseRotLevel(c);
       string str = (string) null;
       switch (num2)
       {
         case 0:
           if (str == null)
             break;
-          string imageID = str + (object) (1 + this.m_Session.WorldTime.TurnCounter % 2);
-          int num3 = this.m_Session.WorldTime.TurnCounter % 5 - 2;
-          int num4 = this.m_Session.WorldTime.TurnCounter / 3 % 5 - 2;
-          this.m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
+          string imageID = str + (object) (1 + m_Session.WorldTime.TurnCounter % 2);
+          int num3 = m_Session.WorldTime.TurnCounter % 5 - 2;
+          int num4 = m_Session.WorldTime.TurnCounter / 3 % 5 - 2;
+                    m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
           break;
         case 1:
         case 2:
@@ -11741,7 +11741,7 @@ namespace djack.RogueSurvivor.Engine
       if (num2 > 0)
         title = title + " : " + (object) num2;
       gy -= 14;
-      this.m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
       gy += 14;
       int gx1 = gx;
       int gy1 = gy;
@@ -11764,13 +11764,13 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorTargets(Actor actor)
     {
       Point point = new Point(16, 16);
-      if (actor.TargetActor != null && !actor.TargetActor.IsDead && this.IsVisibleToPlayer(actor.TargetActor))
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(actor.TargetActor.Location.Position), "Icons\\is_target"));
+      if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
+                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.TargetActor.Location.Position), "Icons\\is_target"));
       foreach (Actor actor1 in actor.Location.Map.Actors)
       {
-        if (actor1 != actor && !actor1.IsDead && (this.IsVisibleToPlayer(actor1) && actor1.TargetActor == actor) && (actor1.Activity == Activity.CHASING || actor1.Activity == Activity.FIGHTING))
+        if (actor1 != actor && !actor1.IsDead && (IsVisibleToPlayer(actor1) && actor1.TargetActor == actor) && (actor1.Activity == Activity.CHASING || actor1.Activity == Activity.FIGHTING))
         {
-          this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(actor.Location.Position), "Icons\\is_targetted"));
+                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\is_targetted"));
           break;
         }
       }
@@ -11779,17 +11779,17 @@ namespace djack.RogueSurvivor.Engine
     public void DrawPlayerActorTargets(Actor player)
     {
       Point point = new Point(16, 16);
-      if (player.TargetActor != null && !player.TargetActor.IsDead && this.IsVisibleToPlayer(player.TargetActor))
+      if (player.TargetActor != null && !player.TargetActor.IsDead && IsVisibleToPlayer(player.TargetActor))
       {
-        Point screen = this.MapToScreen(player.TargetActor.Location.Position);
-        this.m_UI.UI_DrawImage("Icons\\is_target", screen.X, screen.Y);
+        Point screen = MapToScreen(player.TargetActor.Location.Position);
+                m_UI.UI_DrawImage("Icons\\is_target", screen.X, screen.Y);
       }
       foreach (Actor actor in player.Location.Map.Actors)
       {
-        if (actor != player && !actor.IsDead && (this.IsVisibleToPlayer(actor) && actor.TargetActor == player) && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING))
+        if (actor != player && !actor.IsDead && (IsVisibleToPlayer(actor) && actor.TargetActor == player) && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING))
         {
-          Point screen = this.MapToScreen(player.Location.Position);
-          this.m_UI.UI_DrawImage("Icons\\is_targetted", screen.X, screen.Y);
+          Point screen = MapToScreen(player.Location.Position);
+                    m_UI.UI_DrawImage("Icons\\is_targetted", screen.X, screen.Y);
           break;
         }
       }
@@ -11800,17 +11800,17 @@ namespace djack.RogueSurvivor.Engine
       if (inventory == null)
         return;
       foreach (Item it in inventory.Items)
-        this.DrawItem(it, gx, gy, tint);
+                DrawItem(it, gx, gy, tint);
     }
 
     public void DrawMapIcon(Point position, string imageID)
     {
-      this.m_UI.UI_DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
+            m_UI.UI_DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
     {
-      this.DrawMapHealthBar(hitPoints, maxHitPoints, gx, gy, Color.Red);
+            DrawMapHealthBar(hitPoints, maxHitPoints, gx, gy, Color.Red);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy, Color barColor)
@@ -11818,41 +11818,41 @@ namespace djack.RogueSurvivor.Engine
       int x = gx + 4;
       int y = gy + TILE_SIZE - 4;
       int width = (int) (20.0 * (double) hitPoints / (double) maxHitPoints);
-      this.m_UI.UI_FillRect(Color.Black, new Rectangle(x, y, 20, 4));
+            m_UI.UI_FillRect(Color.Black, new Rectangle(x, y, 20, 4));
       if (width <= 0) return;
       m_UI.UI_FillRect(barColor, new Rectangle(x + 1, y + 1, width, 2));
     }
 
     public void DrawBar(int value, int previousValue, int maxValue, int refValue, int maxWidth, int height, int gx, int gy, Color fillColor, Color lossFillColor, Color gainFillColor, Color emptyColor)
     {
-      this.m_UI.UI_FillRect(emptyColor, new Rectangle(gx, gy, maxWidth, height));
+            m_UI.UI_FillRect(emptyColor, new Rectangle(gx, gy, maxWidth, height));
       int width1 = (int) ((double) maxWidth * (double) previousValue / (double) maxValue);
       int width2 = (int) ((double) maxWidth * (double) value / (double) maxValue);
       if (value > previousValue)
       {
         if (width2 > 0)
-          this.m_UI.UI_FillRect(gainFillColor, new Rectangle(gx, gy, width2, height));
+                    m_UI.UI_FillRect(gainFillColor, new Rectangle(gx, gy, width2, height));
         if (width1 > 0)
-          this.m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width1, height));
+                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width1, height));
       }
       else if (value < previousValue)
       {
         if (width1 > 0)
-          this.m_UI.UI_FillRect(lossFillColor, new Rectangle(gx, gy, width1, height));
+                    m_UI.UI_FillRect(lossFillColor, new Rectangle(gx, gy, width1, height));
         if (width2 > 0)
-          this.m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
+                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
       }
       else if (width2 > 0)
-        this.m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
+                m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
       int num = (int) ((double) maxWidth * (double) refValue / (double) maxValue);
-      this.m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
+            m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DrawMiniMap(Map map)
     {
       if (RogueGame.s_Options.IsMinimapOn)
-        this.m_UI.UI_ClearMinimap(Color.Black);
+                m_UI.UI_ClearMinimap(Color.Black);
       if (RogueGame.s_Options.IsMinimapOn)
       {
         Point pos = new Point();
@@ -11866,9 +11866,9 @@ namespace djack.RogueSurvivor.Engine
             if (tileAt.IsVisited)
             {
               if (map.GetExitAt(pos) != null)
-                this.m_UI.UI_SetMinimapColor(x, y, Color.HotPink);
+                                m_UI.UI_SetMinimapColor(x, y, Color.HotPink);
               else
-                this.m_UI.UI_SetMinimapColor(x, y, tileAt.Model.MinimapColor);
+                                m_UI.UI_SetMinimapColor(x, y, tileAt.Model.MinimapColor);
             }
           }
         }
@@ -11897,34 +11897,34 @@ namespace djack.RogueSurvivor.Engine
               if (imageID != null)
               {
                 Point point = new Point(MINIMAP_X + x * 2, MINIMAP_Y + y * 2);
-                this.m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
+                                m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
               }
             }
           }
         }
       }
-      if (this.m_Player == null)
+      if (m_Player == null)
         return;
-      if (!this.m_Player.IsSleeping)
+      if (!m_Player.IsSleeping)
       {
-        ItemTracker itemTracker1 = this.m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
+        ItemTracker itemTracker1 = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         if (itemTracker1 != null && itemTracker1.Batteries > 0)
         {
-          if (this.m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader)
+          if (m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader)
           {
-            foreach (Actor follower in this.m_Player.Followers)
+            foreach (Actor follower in m_Player.Followers)
             {
-              if (follower.Location.Map == this.m_Player.Location.Map)
+              if (follower.Location.Map == m_Player.Location.Map)
               {
                 ItemTracker itemTracker2 = follower.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
                 if (itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader)
                 {
                   Point point = new Point(MINIMAP_X + follower.Location.Position.X * 2, MINIMAP_Y + follower.Location.Position.Y * 2);
-                  this.m_UI.UI_DrawImage("mini_follower_position", point.X - 1, point.Y - 1);
-                  if (this.IsInViewRect(follower.Location.Position) && !this.IsVisibleToPlayer(follower))
+                                    m_UI.UI_DrawImage("mini_follower_position", point.X - 1, point.Y - 1);
+                  if (IsInViewRect(follower.Location.Position) && !IsVisibleToPlayer(follower))
                   {
-                    Point screen = this.MapToScreen(follower.Location.Position);
-                    this.m_UI.UI_DrawImage("track_follower_position", screen.X, screen.Y);
+                    Point screen = MapToScreen(follower.Location.Position);
+                                        m_UI.UI_DrawImage("track_follower_position", screen.X, screen.Y);
                   }
                 }
               }
@@ -11937,11 +11937,11 @@ namespace djack.RogueSurvivor.Engine
               if (actor != m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == m_Player.Location.Map && Rules.GridDistance(actor.Location.Position, m_Player.Location.Position) <= Rules.ZTRACKINGRADIUS)
               {
                 Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
-                this.m_UI.UI_DrawImage("mini_undead_position", point.X - 1, point.Y - 1);
-                if (this.IsInViewRect(actor.Location.Position) && !this.IsVisibleToPlayer(actor))
+                                m_UI.UI_DrawImage("mini_undead_position", point.X - 1, point.Y - 1);
+                if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor))
                 {
-                  Point screen = this.MapToScreen(actor.Location.Position);
-                  this.m_UI.UI_DrawImage("track_undead_position", screen.X, screen.Y);
+                  Point screen = MapToScreen(actor.Location.Position);
+                                    m_UI.UI_DrawImage("track_undead_position", screen.X, screen.Y);
                 }
               }
             }
@@ -11950,14 +11950,14 @@ namespace djack.RogueSurvivor.Engine
           {
             foreach (Actor actor in map.Actors)
             {
-              if (actor != this.m_Player && actor.Faction == this.GameFactions.TheBlackOps && actor.Location.Map == this.m_Player.Location.Map)
+              if (actor != m_Player && actor.Faction == GameFactions.TheBlackOps && actor.Location.Map == m_Player.Location.Map)
               {
                 Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
-                this.m_UI.UI_DrawImage("mini_blackops_position", point.X - 1, point.Y - 1);
-                if (this.IsInViewRect(actor.Location.Position) && !this.IsVisibleToPlayer(actor))
+                                m_UI.UI_DrawImage("mini_blackops_position", point.X - 1, point.Y - 1);
+                if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor))
                 {
-                  Point screen = this.MapToScreen(actor.Location.Position);
-                  this.m_UI.UI_DrawImage("track_blackops_position", screen.X, screen.Y);
+                  Point screen = MapToScreen(actor.Location.Position);
+                                    m_UI.UI_DrawImage("track_blackops_position", screen.X, screen.Y);
                 }
               }
             }
@@ -11966,14 +11966,14 @@ namespace djack.RogueSurvivor.Engine
           {
             foreach (Actor actor in map.Actors)
             {
-              if (actor != this.m_Player && actor.Faction == this.GameFactions.ThePolice && actor.Location.Map == this.m_Player.Location.Map)
+              if (actor != m_Player && actor.Faction == GameFactions.ThePolice && actor.Location.Map == m_Player.Location.Map)
               {
                 Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
-                this.m_UI.UI_DrawImage("mini_police_position", point.X - 1, point.Y - 1);
-                if (this.IsInViewRect(actor.Location.Position) && !this.IsVisibleToPlayer(actor))
+                                m_UI.UI_DrawImage("mini_police_position", point.X - 1, point.Y - 1);
+                if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor))
                 {
-                  Point screen = this.MapToScreen(actor.Location.Position);
-                  this.m_UI.UI_DrawImage("track_police_position", screen.X, screen.Y);
+                  Point screen = MapToScreen(actor.Location.Position);
+                                    m_UI.UI_DrawImage("track_police_position", screen.X, screen.Y);
                 }
               }
             }
@@ -11988,134 +11988,134 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
-      this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
       gy += 14;
-      int maxValue1 = this.m_Rules.ActorMaxHPs(actor);
-      this.m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", (object) actor.HitPoints), gx, gy, new Color?());
-      this.DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
-      this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue1), gx + 84 + 100, gy, new Color?());
+      int maxValue1 = m_Rules.ActorMaxHPs(actor);
+            m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", (object) actor.HitPoints), gx, gy, new Color?());
+            DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
+            m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue1), gx + 84 + 100, gy, new Color?());
       gy += 14;
       if (actor.Model.Abilities.CanTire)
       {
         int maxValue2 = actor.MaxSTA;
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", (object) actor.StaminaPoints), gx, gy, new Color?());
-        this.DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", (object) actor.StaminaPoints), gx, gy, new Color?());
+                DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (actor.IsRunning)
-          this.m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
-        else if (this.m_Rules.CanActorRun(actor))
-          this.m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
-        else if (this.m_Rules.IsActorTired(actor))
-          this.m_UI.UI_DrawStringBold(Color.Gray, "TIRED", gx + 126 + 100, gy, new Color?());
+                    m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
+        else if (m_Rules.CanActorRun(actor))
+                    m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
+        else if (m_Rules.IsActorTired(actor))
+                    m_UI.UI_DrawStringBold(Color.Gray, "TIRED", gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasToEat)
       {
-        int maxValue2 = this.m_Rules.ActorMaxFood(actor);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        int maxValue2 = m_Rules.ActorMaxFood(actor);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
+                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (actor.IsHungry)
         {
           if (actor.IsStarving)
-            this.m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
           else
-            this.m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
         }
         else
-          this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) this.FoodToHoursUntilHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
       }
       else if (actor.Model.Abilities.IsRotting)
       {
-        int maxValue2 = this.m_Rules.ActorMaxRot(actor);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-        this.DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        int maxValue2 = m_Rules.ActorMaxRot(actor);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
+                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (actor.IsRotHungry)
         {
           if (actor.IsRotStarving)
-            this.m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
           else
-            this.m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
         }
         else
-          this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) this.FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasToSleep)
       {
-        int maxValue2 = this.m_Rules.ActorMaxSleep(actor);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
+        int maxValue2 = m_Rules.ActorMaxSleep(actor);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
         DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Actor.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (actor.IsSleepy)
         {
           if (actor.IsExhausted)
-            this.m_UI.UI_DrawStringBold(Color.Red, "EXHAUSTED!", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Red, "EXHAUSTED!", gx + 126 + 100, gy, new Color?());
           else
-            this.m_UI.UI_DrawStringBold(Color.Yellow, "Sleepy", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Yellow, "Sleepy", gx + 126 + 100, gy, new Color?());
         }
         else
-          this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasSanity)
       {
-        int maxValue2 = this.m_Rules.ActorMaxSanity(actor);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", (object) actor.Sanity), gx, gy, new Color?());
-        this.DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, this.m_Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (this.m_Rules.IsActorDisturbed(actor))
+        int maxValue2 = m_Rules.ActorMaxSanity(actor);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", (object) actor.Sanity), gx, gy, new Color?());
+                DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, m_Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        if (m_Rules.IsActorDisturbed(actor))
         {
           if (actor.IsInsane)
-            this.m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
           else
-            this.m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
         }
         else
-          this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) this.m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
       }
       if (m_Session.HasInfection && !actor.Model.Abilities.IsUndead)
       {
-        int maxValue2 = this.m_Rules.ActorInfectionHPs(actor);
+        int maxValue2 = m_Rules.ActorInfectionHPs(actor);
         int refValue = Rules.INFECTION_LEVEL_1_WEAK * maxValue2 / 100;
         gy += 14;
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("INF {0}", (object) actor.Infection), gx, gy, new Color?());
-        this.DrawBar(actor.Infection, actor.Infection, maxValue2, refValue, 100, 14, gx + 70, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", (object) this.m_Rules.ActorInfectionPercent(actor)), gx + 84 + 100, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("INF {0}", (object) actor.Infection), gx, gy, new Color?());
+                DrawBar(actor.Infection, actor.Infection, maxValue2, refValue, 100, 14, gx + 70, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
+                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", (object)m_Rules.ActorInfectionPercent(actor)), gx + 84 + 100, gy, new Color?());
       }
       gy += 14;
-      Attack attack1 = this.m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
-      int num1 = this.m_Rules.ActorDamageBonusVsUndeads(actor);
-      this.m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", (object) attack1.HitValue, (object) attack1.DamageValue, (object) (attack1.DamageValue + num1)), gx, gy, new Color?());
+      Attack attack1 = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
+      int num1 = m_Rules.ActorDamageBonusVsUndeads(actor);
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", (object) attack1.HitValue, (object) attack1.DamageValue, (object) (attack1.DamageValue + num1)), gx, gy, new Color?());
       gy += 14;
-      Attack attack2 = this.m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, (Actor) null);
+      Attack attack2 = m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, (Actor) null);
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon != null)
       {
         int ammo = itemRangedWeapon.Ammo;
         int maxAmmo = (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo;
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}", (object) attack2.HitValue, (object) attack2.DamageValue, (object) (attack2.DamageValue + num1), (object) attack2.Range, (object) attack2.EfficientRange, (object) ammo, (object) maxAmmo), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}", (object) attack2.HitValue, (object) attack2.DamageValue, (object) (attack2.DamageValue + num1), (object) attack2.Range, (object) attack2.EfficientRange, (object) ammo, (object) maxAmmo), gx, gy, new Color?());
       }
       gy += 14;
-      Defence defence = this.m_Rules.ActorDefence(actor, actor.CurrentDefence);
+      Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
       if (actor.Model.Abilities.IsUndead)
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0), (object) actor.ActionPoints, (object) this.m_Rules.ActorFOV(actor, this.m_Session.WorldTime, this.m_Session.World.Weather), (object) this.m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0), (object) actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object)m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
       else
-        this.m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) (float) ((double) this.m_Rules.ActorSpeed(actor) / 100.0), (object)actor.ActionPoints, (object) this.m_Rules.ActorFOV(actor, this.m_Session.WorldTime, this.m_Session.World.Weather), (object) actor.CountFollowers, (object) this.m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0), (object)actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object) actor.CountFollowers, (object)m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
     }
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
     {
       gy -= 14;
-      this.m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
       gy += 14;
       int gx1 = gx;
       int gy1 = gy;
       int num1 = 0;
       for (int index = 0; index < maxSlots; ++index)
       {
-        this.m_UI.UI_DrawImage("Items\\itemslot", gx1, gy1);
+                m_UI.UI_DrawImage("Items\\itemslot", gx1, gy1);
         if (++num1 >= slotsPerLine)
         {
           num1 = 0;
@@ -12133,57 +12133,57 @@ namespace djack.RogueSurvivor.Engine
       foreach (Item it in inventory.Items)
       {
         if (it.IsEquipped)
-          this.m_UI.UI_DrawImage("Items\\itemequipped", gx2, gy2);
+                    m_UI.UI_DrawImage("Items\\itemequipped", gx2, gy2);
         if (it is ItemRangedWeapon)
         {
           ItemRangedWeapon itemRangedWeapon = it as ItemRangedWeapon;
           if (itemRangedWeapon.Ammo <= 0)
-            this.m_UI.UI_DrawImage("Icons\\out_of_ammo", gx2, gy2);
-          this.DrawBar(itemRangedWeapon.Ammo, itemRangedWeapon.Ammo, (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
+                        m_UI.UI_DrawImage("Icons\\out_of_ammo", gx2, gy2);
+                    DrawBar(itemRangedWeapon.Ammo, itemRangedWeapon.Ammo, (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
         }
         else if (it is ItemSprayPaint)
         {
           ItemSprayPaint itemSprayPaint = it as ItemSprayPaint;
-          this.DrawBar(itemSprayPaint.PaintQuantity, itemSprayPaint.PaintQuantity, (itemSprayPaint.Model as ItemSprayPaintModel).MaxPaintQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
+                    DrawBar(itemSprayPaint.PaintQuantity, itemSprayPaint.PaintQuantity, (itemSprayPaint.Model as ItemSprayPaintModel).MaxPaintQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
         }
         else if (it is ItemSprayScent)
         {
           ItemSprayScent itemSprayScent = it as ItemSprayScent;
-          this.DrawBar(itemSprayScent.SprayQuantity, itemSprayScent.SprayQuantity, (itemSprayScent.Model as ItemSprayScentModel).MaxSprayQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
+                    DrawBar(itemSprayScent.SprayQuantity, itemSprayScent.SprayQuantity, (itemSprayScent.Model as ItemSprayScentModel).MaxSprayQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
         }
         else if (it is ItemLight)
         {
           ItemLight itemLight = it as ItemLight;
           if (itemLight.Batteries <= 0)
-            this.m_UI.UI_DrawImage("Icons\\out_of_batteries", gx2, gy2);
-          this.DrawBar(itemLight.Batteries, itemLight.Batteries, (itemLight.Model as ItemLightModel).MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Yellow, Color.Yellow, Color.Yellow, Color.DarkGray);
+                        m_UI.UI_DrawImage("Icons\\out_of_batteries", gx2, gy2);
+                    DrawBar(itemLight.Batteries, itemLight.Batteries, (itemLight.Model as ItemLightModel).MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Yellow, Color.Yellow, Color.Yellow, Color.DarkGray);
         }
         else if (it is ItemTracker)
         {
           ItemTracker itemTracker = it as ItemTracker;
           if (itemTracker.Batteries <= 0)
-            this.m_UI.UI_DrawImage("Icons\\out_of_batteries", gx2, gy2);
-          this.DrawBar(itemTracker.Batteries, itemTracker.Batteries, (itemTracker.Model as ItemTrackerModel).MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Pink, Color.Pink, Color.Pink, Color.DarkGray);
+                        m_UI.UI_DrawImage("Icons\\out_of_batteries", gx2, gy2);
+                    DrawBar(itemTracker.Batteries, itemTracker.Batteries, (itemTracker.Model as ItemTrackerModel).MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Pink, Color.Pink, Color.Pink, Color.DarkGray);
         }
         else if (it is ItemFood)
         {
           ItemFood food = it as ItemFood;
           if (food.IsExpiredAt(m_Session.WorldTime.TurnCounter))
-            this.m_UI.UI_DrawImage("Icons\\expired_food", gx2, gy2);
+                        m_UI.UI_DrawImage("Icons\\expired_food", gx2, gy2);
           else if (food.IsSpoiledAt(m_Session.WorldTime.TurnCounter))
-            this.m_UI.UI_DrawImage("Icons\\spoiled_food", gx2, gy2);
+                        m_UI.UI_DrawImage("Icons\\spoiled_food", gx2, gy2);
         }
         else if (it is ItemTrap)
         {
           ItemTrap itemTrap = it as ItemTrap;
           if (itemTrap.IsTriggered)
-            this.m_UI.UI_DrawImage("Icons\\trap_triggered", gx2, gy2);
+                        m_UI.UI_DrawImage("Icons\\trap_triggered", gx2, gy2);
           else if (itemTrap.IsActivated)
-            this.m_UI.UI_DrawImage("Icons\\trap_activated", gx2, gy2);
+                        m_UI.UI_DrawImage("Icons\\trap_activated", gx2, gy2);
         }
-        else if (it is ItemEntertainment && this.m_Player != null && this.m_Player.IsBoredOf(it))
+        else if (it is ItemEntertainment && m_Player != null && m_Player.IsBoredOf(it))
           m_UI.UI_DrawImage("Icons\\boring_item", gx2, gy2);
-        this.DrawItem(it, gx2, gy2);
+                DrawItem(it, gx2, gy2);
         if (++num2 >= slotsPerLine)
         {
           num2 = 0;
@@ -12198,14 +12198,14 @@ namespace djack.RogueSurvivor.Engine
       int gy3 = gy + TILE_SIZE;
       for (int index = 0; index < inventory.MaxCapacity; ++index)
       {
-        this.m_UI.UI_DrawString(Color.White, (index + 1).ToString(), gx3, gy3, new Color?());
+                m_UI.UI_DrawString(Color.White, (index + 1).ToString(), gx3, gy3, new Color?());
         gx3 += TILE_SIZE;
       }
     }
 
     public void DrawItem(Item it, int gx, int gy)
     {
-      this.DrawItem(it, gx, gy, Color.White);
+            DrawItem(it, gx, gy, Color.White);
     }
 
     public void DrawItem(Item it, int gx, int gy, Color tint)
@@ -12235,7 +12235,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
       gy -= 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy, new Color?());
       gy += 14;
       IEnumerable<Skill> skills = actor.Sheet.SkillTable.Skills;
       if (skills == null)
@@ -12245,9 +12245,9 @@ namespace djack.RogueSurvivor.Engine
       int gy1 = gy;
       foreach (Skill skill in skills)
       {
-        this.m_UI.UI_DrawString(Color.White, string.Format("{0}-", (object) skill.Level), gx1, gy1, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("{0}-", (object) skill.Level), gx1, gy1, new Color?());
         int gx2 = gx1 + 16;
-        this.m_UI.UI_DrawString(Color.White, Skills.Name(skill.ID), gx2, gy1, new Color?());
+                m_UI.UI_DrawString(Color.White, Skills.Name(skill.ID), gx2, gy1, new Color?());
         gx1 = gx2 - 16;
         if (++num >= 10)
         {
@@ -12272,40 +12272,40 @@ namespace djack.RogueSurvivor.Engine
 
     private Point MapToScreen(Point mapPosition)
     {
-      return this.MapToScreen(mapPosition.X, mapPosition.Y);
+      return MapToScreen(mapPosition.X, mapPosition.Y);
     }
 
     private Point MapToScreen(int x, int y)
     {
-      return new Point((x - this.m_MapViewRect.Left) * TILE_SIZE, (y - this.m_MapViewRect.Top) * TILE_SIZE);
+      return new Point((x - m_MapViewRect.Left) * TILE_SIZE, (y - m_MapViewRect.Top) * TILE_SIZE);
     }
 
     private Point ScreenToMap(Point screenPosition)
     {
-      return this.ScreenToMap(screenPosition.X, screenPosition.Y);
+      return ScreenToMap(screenPosition.X, screenPosition.Y);
     }
 
     private Point ScreenToMap(int gx, int gy)
     {
-      return new Point(this.m_MapViewRect.Left + gx / TILE_SIZE, this.m_MapViewRect.Top + gy / TILE_SIZE);
+      return new Point(m_MapViewRect.Left + gx / TILE_SIZE, m_MapViewRect.Top + gy / TILE_SIZE);
     }
 
     private Point MouseToMap(Point mousePosition)
     {
-      return this.MouseToMap(mousePosition.X, mousePosition.Y);
+      return MouseToMap(mousePosition.X, mousePosition.Y);
     }
 
     private Point MouseToMap(int mouseX, int mouseY)
     {
-      mouseX = (int) ((double) mouseX / (double) this.m_UI.UI_GetCanvasScaleX());
-      mouseY = (int) ((double) mouseY / (double) this.m_UI.UI_GetCanvasScaleY());
-      return this.ScreenToMap(mouseX, mouseY);
+      mouseX = (int) ((double) mouseX / (double)m_UI.UI_GetCanvasScaleX());
+      mouseY = (int) ((double) mouseY / (double)m_UI.UI_GetCanvasScaleY());
+      return ScreenToMap(mouseX, mouseY);
     }
 
     private Point MouseToInventorySlot(int invX, int invY, int mouseX, int mouseY)
     {
-      mouseX = (int) ((double) mouseX / (double) this.m_UI.UI_GetCanvasScaleX());
-      mouseY = (int) ((double) mouseY / (double) this.m_UI.UI_GetCanvasScaleY());
+      mouseX = (int) ((double) mouseX / (double)m_UI.UI_GetCanvasScaleX());
+      mouseY = (int) ((double) mouseY / (double)m_UI.UI_GetCanvasScaleY());
       return new Point((mouseX - invX) / TILE_SIZE, (mouseY - invY) / TILE_SIZE);
     }
 
@@ -12316,26 +12316,26 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsVisibleToPlayer(Location location)
     {
-      return this.IsVisibleToPlayer(location.Map, location.Position);
+      return IsVisibleToPlayer(location.Map, location.Position);
     }
 
     private bool IsVisibleToPlayer(Map map, Point position)
     {
-      if (this.m_Player != null && (map == this.m_Player.Location.Map && map.IsInBounds(position.X, position.Y)))
+      if (m_Player != null && (map == m_Player.Location.Map && map.IsInBounds(position.X, position.Y)))
         return map.GetTileAt(position.X, position.Y).IsInView;
       return false;
     }
 
     private bool IsVisibleToPlayer(Actor actor)
     {
-      if (actor != this.m_Player)
-        return this.IsVisibleToPlayer(actor.Location);
+      if (actor != m_Player)
+        return IsVisibleToPlayer(actor.Location);
       return true;
     }
 
     private bool IsVisibleToPlayer(MapObject mapObj)
     {
-      return this.IsVisibleToPlayer(mapObj.Location);
+      return IsVisibleToPlayer(mapObj.Location);
     }
 
     private bool IsKnownToPlayer(Map map, Point position)
@@ -12347,18 +12347,18 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsKnownToPlayer(Location location)
     {
-      return this.IsKnownToPlayer(location.Map, location.Position);
+      return IsKnownToPlayer(location.Map, location.Position);
     }
 
     private bool IsKnownToPlayer(MapObject mapObj)
     {
-      return this.IsKnownToPlayer(mapObj.Location);
+      return IsKnownToPlayer(mapObj.Location);
     }
 
     private bool IsPlayerSleeping()
     {
-      if (this.m_Player != null)
-        return this.m_Player.IsSleeping;
+      if (m_Player != null)
+        return m_Player.IsSleeping;
       return false;
     }
 
@@ -12377,42 +12377,42 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleSaveGame()
     {
-      this.DoSaveGame(RogueGame.GetUserSave());
+            DoSaveGame(RogueGame.GetUserSave());
     }
 
     private void HandleLoadGame()
     {
-      this.DoLoadGame(RogueGame.GetUserSave());
+            DoLoadGame(RogueGame.GetUserSave());
     }
 
     private void DoSaveGame(string saveName)
     {
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("SAVING GAME, PLEASE WAIT...", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.RedrawPlayScreen();
-      this.m_UI.UI_Repaint();
-      Session.Save(this.m_Session, saveName, Session.SaveFormat.FORMAT_BIN);
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("SAVING DONE.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.RedrawPlayScreen();
-      this.m_UI.UI_Repaint();
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("SAVING GAME, PLEASE WAIT...", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            RedrawPlayScreen();
+            m_UI.UI_Repaint();
+      Session.Save(m_Session, saveName, Session.SaveFormat.FORMAT_BIN);
+            AddMessage(new djack.RogueSurvivor.Data.Message("SAVING DONE.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            RedrawPlayScreen();
+            m_UI.UI_Repaint();
     }
 
     private void DoLoadGame(string saveName)
     {
-      this.ClearMessages();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("LOADING GAME, PLEASE WAIT...", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.RedrawPlayScreen();
-      this.m_UI.UI_Repaint();
-      if (this.LoadGame(saveName))
+            ClearMessages();
+            AddMessage(new djack.RogueSurvivor.Data.Message("LOADING GAME, PLEASE WAIT...", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            RedrawPlayScreen();
+            m_UI.UI_Repaint();
+      if (LoadGame(saveName))
         return;
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", this.m_Session.WorldTime.TurnCounter, Color.Red));
+            AddMessage(new djack.RogueSurvivor.Data.Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", m_Session.WorldTime.TurnCounter, Color.Red));
     }
 
     private void DeleteSavedGame(string saveName)
     {
       if (!Session.Delete(saveName))
         return;
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("PERMADEATH : SAVE GAME DELETED!", this.m_Session.WorldTime.TurnCounter, Color.Red));
+            AddMessage(new djack.RogueSurvivor.Data.Message("PERMADEATH : SAVE GAME DELETED!", m_Session.WorldTime.TurnCounter, Color.Red));
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -12420,14 +12420,14 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN))
         return false;
-      this.m_Session = Session.Get;
-      this.m_Rules = new Rules(new DiceRoller(this.m_Session.Seed));
-      this.RefreshPlayer();
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("LOADING DONE.", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-      this.AddMessage(new djack.RogueSurvivor.Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", this.m_Session.WorldTime.TurnCounter, Color.LightGreen));
-      this.RedrawPlayScreen();
-      this.m_UI.UI_Repaint();
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "<Loaded game>");
+            m_Session = Session.Get;
+            m_Rules = new Rules(new DiceRoller(m_Session.Seed));
+            RefreshPlayer();
+            AddMessage(new djack.RogueSurvivor.Data.Message("LOADING DONE.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+            AddMessage(new djack.RogueSurvivor.Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+            RedrawPlayScreen();
+            m_UI.UI_Repaint();
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "<Loaded game>");
       return true;
     }
 
@@ -12443,49 +12443,49 @@ namespace djack.RogueSurvivor.Engine
 
     private void ApplyOptions(bool ingame)
     {
-      this.m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
-      this.m_MusicManager.Volume = RogueGame.Options.MusicVolume;
-      if (this.m_Session != null && this.m_Session.Scoring != null)
+            m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
+            m_MusicManager.Volume = RogueGame.Options.MusicVolume;
+      if (m_Session != null && m_Session.Scoring != null)
       {
-        this.m_Session.Scoring.Side = this.m_Player == null || !this.m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
-        this.m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, this.m_Session.Scoring.Side, this.m_Session.Scoring.ReincarnationNumber);
+                m_Session.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
+                m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
       }
-      if (this.m_MusicManager.IsMusicEnabled)
+      if (m_MusicManager.IsMusicEnabled)
         return;
-      this.m_MusicManager.StopAll();
+            m_MusicManager.StopAll();
     }
 
     private void LoadKeybindings()
     {
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading keybindings...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
       RogueGame.s_KeyBindings = Keybindings.Load(RogueGame.GetUserConfigPath() + "keys.dat");
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading keybindings... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
     }
 
     private void SaveKeybindings()
     {
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
       Keybindings.Save(RogueGame.s_KeyBindings, RogueGame.GetUserConfigPath() + "keys.dat");
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
     }
 
     private void LoadHints()
     {
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
+            m_UI.UI_Repaint();
       RogueGame.s_Hints = GameHintsStatus.Load(RogueGame.GetUserConfigPath() + "hints.dat");
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
     }
 
     private void SaveHints()
@@ -12502,11 +12502,11 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < entries.Length; ++index)
       {
         string text1 = index != currentChoice ? string.Format("     {0}", (object) entries[index]) : string.Format("---> {0}", (object) entries[index]);
-        this.m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
+                m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
         if (values != null)
         {
           string text2 = index != currentChoice ? values[index] : string.Format("{0} <---", (object) values[index]);
-          this.m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
+                    m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
         }
         gy += 14;
       }
@@ -12514,13 +12514,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void DrawHeader()
     {
-      this.m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
+            m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
     }
 
     private void DrawFootnote(Color color, string text)
     {
       Color color1 = Color.FromArgb((int) color.A, (int) color.R / 2, (int) color.G / 2, (int) color.B / 2);
-      this.m_UI.UI_DrawStringBold(color, string.Format("<{0}>", (object) text), 0, 754, new Color?(color1));
+            m_UI.UI_DrawStringBold(color, string.Format("<{0}>", (object) text), 0, 754, new Color?(color1));
     }
 
     public static string GetUserBasePath()
@@ -12591,7 +12591,7 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         shotname = string.Format("screenshot_{0:D3}", (object) num);
-        flag = !File.Exists(this.ScreenshotFilePath(shotname));
+        flag = !File.Exists(ScreenshotFilePath(shotname));
         ++num;
       }
       while (!flag);
@@ -12600,7 +12600,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string ScreenshotFilePath(string shotname)
     {
-      return RogueGame.GetUserScreenshotsPath() + shotname + "." + this.m_UI.UI_ScreenshotExtension();
+      return RogueGame.GetUserScreenshotsPath() + shotname + "." + m_UI.UI_ScreenshotExtension();
     }
 
     private bool CreateDirectory(string path)
@@ -12613,13 +12613,13 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckDirectory(string path, string description, ref int gy)
     {
-      this.m_UI.UI_DrawString(Color.White, string.Format("{0} : {1}...", (object) description, (object) path), 0, gy, new Color?());
+            m_UI.UI_DrawString(Color.White, string.Format("{0} : {1}...", (object) description, (object) path), 0, gy, new Color?());
       gy += 14;
-      this.m_UI.UI_Repaint();
-      bool directory = this.CreateDirectory(path);
-      this.m_UI.UI_DrawString(Color.White, "ok.", 0, gy, new Color?());
+            m_UI.UI_Repaint();
+      bool directory = CreateDirectory(path);
+            m_UI.UI_DrawString(Color.White, "ok.", 0, gy, new Color?());
       gy += 14;
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Repaint();
       return directory;
     }
 
@@ -12653,40 +12653,40 @@ namespace djack.RogueSurvivor.Engine
 
     private string GetUserHiScoreFilePath()
     {
-      return this.GetUserHiScorePath() + "hiscores.dat";
+      return GetUserHiScorePath() + "hiscores.dat";
     }
 
     private string GetUserHiScoreTextFilePath()
     {
-      return this.GetUserHiScorePath() + "hiscores.txt";
+      return GetUserHiScorePath() + "hiscores.txt";
     }
 
     private void GenerateWorld(bool isVerbose, int size)
     {
       if (isVerbose)
       {
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.White, "Generating game world...", 0, 0, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.White, "Generating game world...", 0, 0, new Color?());
+                m_UI.UI_Repaint();
       }
       if (isVerbose)
       {
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
+                m_UI.UI_Repaint();
       }
-      this.m_Session.World = new World(size);
-      World world = this.m_Session.World;
-      world.Weather = (Weather) this.m_Rules.Roll(0, 4);
+            m_Session.World = new World(size);
+      World world = m_Session.World;
+      world.Weather = (Weather)m_Rules.Roll(0, 4);
       List<Point> pointList = new List<Point>();
       for (int x = 0; x < world.Size; ++x)
       {
         for (int y = 0; y < world.Size; ++y)
           pointList.Add(new Point(x, y));
       }
-      Point policeStationDistrictPos = pointList[this.m_Rules.Roll(0, pointList.Count)];
+      Point policeStationDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
       pointList.Remove(policeStationDistrictPos);
-      Point hospitalDistrictPos = pointList[this.m_Rules.Roll(0, pointList.Count)];
+      Point hospitalDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
       pointList.Remove(hospitalDistrictPos);
       for (int index1 = 0; index1 < world.Size; ++index1)
       {
@@ -12694,53 +12694,53 @@ namespace djack.RogueSurvivor.Engine
         {
           if (isVerbose)
           {
-            this.m_UI.UI_Clear(Color.Black);
-            this.m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", (object) World.CoordToString(index1, index2)), 0, 0, new Color?());
-            this.m_UI.UI_Repaint();
+                        m_UI.UI_Clear(Color.Black);
+                        m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", (object) World.CoordToString(index1, index2)), 0, 0, new Color?());
+                        m_UI.UI_Repaint();
           }
-          District district = new District(new Point(index1, index2), this.GenerateDistrictKind(world, index1, index2));
+          District district = new District(new Point(index1, index2), GenerateDistrictKind(world, index1, index2));
           world[index1, index2] = district;
-          district.EntryMap = this.GenerateDistrictEntryMap(world, district, policeStationDistrictPos, hospitalDistrictPos);
+          district.EntryMap = GenerateDistrictEntryMap(world, district, policeStationDistrictPos, hospitalDistrictPos);
           district.Name = district.EntryMap.Name;
-          Map districtSewersMap = this.GenerateDistrictSewersMap(district);
+          Map districtSewersMap = GenerateDistrictSewersMap(district);
           district.SewersMap = districtSewersMap;
           if (index2 == world.Size / 2)
           {
-            Map districtSubwayMap = this.GenerateDistrictSubwayMap(district);
+            Map districtSubwayMap = GenerateDistrictSubwayMap(district);
             district.SubwayMap = districtSubwayMap;
           }
         }
       }
       if (isVerbose)
       {
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.White, "Generating unique maps...", 0, 0, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.White, "Generating unique maps...", 0, 0, new Color?());
+                m_UI.UI_Repaint();
       }
-      this.m_Session.UniqueMaps.CHARUndergroundFacility = this.CreateUniqueMap_CHARUndegroundFacility(world);
+            m_Session.UniqueMaps.CHARUndergroundFacility = CreateUniqueMap_CHARUndegroundFacility(world);
       if (isVerbose)
       {
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
+                m_UI.UI_Repaint();
       }
-      this.m_Session.UniqueActors.TheSewersThing = this.SpawnUniqueSewersThing(world);
-      this.m_Session.UniqueActors.BigBear = this.CreateUniqueBigBear(world);
-      this.m_Session.UniqueActors.FamuFataru = this.CreateUniqueFamuFataru(world);
-      this.m_Session.UniqueActors.Santaman = this.CreateUniqueSantaman(world);
-      this.m_Session.UniqueActors.Roguedjack = this.CreateUniqueRoguedjack(world);
-      this.m_Session.UniqueActors.Duckman = this.CreateUniqueDuckman(world);
-      this.m_Session.UniqueActors.HansVonHanz = this.CreateUniqueHansVonHanz(world);
-      this.m_Session.UniqueItems.TheSubwayWorkerBadge = this.SpawnUniqueSubwayWorkerBadge(world);
+            m_Session.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
+            m_Session.UniqueActors.BigBear = CreateUniqueBigBear(world);
+            m_Session.UniqueActors.FamuFataru = CreateUniqueFamuFataru(world);
+            m_Session.UniqueActors.Santaman = CreateUniqueSantaman(world);
+            m_Session.UniqueActors.Roguedjack = CreateUniqueRoguedjack(world);
+            m_Session.UniqueActors.Duckman = CreateUniqueDuckman(world);
+            m_Session.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz(world);
+            m_Session.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
       for (int x1 = 0; x1 < world.Size; ++x1)
       {
         for (int y1 = 0; y1 < world.Size; ++y1)
         {
           if (isVerbose)
           {
-            this.m_UI.UI_Clear(Color.Black);
-            this.m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", (object) World.CoordToString(x1, y1)), 0, 0, new Color?());
-            this.m_UI.UI_Repaint();
+                        m_UI.UI_Clear(Color.Black);
+                        m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", (object) World.CoordToString(x1, y1)), 0, 0, new Color?());
+                        m_UI.UI_Repaint();
           }
           Map entryMap1 = world[x1, y1].EntryMap;
           if (y1 > 0)
@@ -12748,16 +12748,16 @@ namespace djack.RogueSurvivor.Engine
             Map entryMap2 = world[x1, y1 - 1].EntryMap;
             for (int x2 = 0; x2 < entryMap1.Width; ++x2)
             {
-              if (x2 < entryMap2.Width && this.m_Rules.RollChance(15))
+              if (x2 < entryMap2.Width && m_Rules.RollChance(15))
               {
                 Point from1 = new Point(x2, -1);
                 Point to1 = new Point(x2, entryMap2.Height - 1);
                 Point from2 = new Point(x2, entryMap2.Height);
                 Point to2 = new Point(x2, 0);
-                if (this.CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && this.CheckIfExitIsGood(entryMap2, from2, entryMap1, to2))
+                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2))
                 {
-                  this.GenerateExit(entryMap1, from1, entryMap2, to1);
-                  this.GenerateExit(entryMap2, from2, entryMap1, to2);
+                                    GenerateExit(entryMap1, from1, entryMap2, to1);
+                                    GenerateExit(entryMap2, from2, entryMap1, to2);
                 }
               }
             }
@@ -12767,16 +12767,16 @@ namespace djack.RogueSurvivor.Engine
             Map entryMap2 = world[x1 - 1, y1].EntryMap;
             for (int y2 = 0; y2 < entryMap1.Height; ++y2)
             {
-              if (y2 < entryMap2.Height && this.m_Rules.RollChance(15))
+              if (y2 < entryMap2.Height && m_Rules.RollChance(15))
               {
                 Point from1 = new Point(-1, y2);
                 Point to1 = new Point(entryMap2.Width - 1, y2);
                 Point from2 = new Point(entryMap2.Width, y2);
                 Point to2 = new Point(0, y2);
-                if (this.CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && this.CheckIfExitIsGood(entryMap2, from2, entryMap1, to2))
+                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2))
                 {
-                  this.GenerateExit(entryMap1, from1, entryMap2, to1);
-                  this.GenerateExit(entryMap2, from2, entryMap1, to2);
+                                    GenerateExit(entryMap1, from1, entryMap2, to1);
+                                    GenerateExit(entryMap2, from2, entryMap1, to2);
                 }
               }
             }
@@ -12793,8 +12793,8 @@ namespace djack.RogueSurvivor.Engine
                 Point to1 = new Point(x2, sewersMap2.Height - 1);
                 Point from2 = new Point(x2, sewersMap2.Height);
                 Point to2 = new Point(x2, 0);
-                this.GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                this.GenerateExit(sewersMap2, from2, sewersMap1, to2);
+                                GenerateExit(sewersMap1, from1, sewersMap2, to1);
+                                GenerateExit(sewersMap2, from2, sewersMap1, to2);
               }
             }
           }
@@ -12809,8 +12809,8 @@ namespace djack.RogueSurvivor.Engine
                 Point to1 = new Point(sewersMap2.Width - 1, y2);
                 Point from2 = new Point(sewersMap2.Width, y2);
                 Point to2 = new Point(0, y2);
-                this.GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                this.GenerateExit(sewersMap2, from2, sewersMap1, to2);
+                                GenerateExit(sewersMap1, from1, sewersMap2, to1);
+                                GenerateExit(sewersMap2, from2, sewersMap1, to2);
               }
             }
           }
@@ -12828,8 +12828,8 @@ namespace djack.RogueSurvivor.Engine
                 Point to2 = new Point(0, y2);
                 if (subwayMap1.IsWalkable(subwayMap1.Width - 1, y2) && subwayMap2.IsWalkable(0, y2))
                 {
-                  this.GenerateExit(subwayMap1, from1, subwayMap2, to1);
-                  this.GenerateExit(subwayMap2, from2, subwayMap1, to2);
+                                    GenerateExit(subwayMap1, from1, subwayMap2, to1);
+                                    GenerateExit(subwayMap2, from2, subwayMap1, to2);
                 }
               }
             }
@@ -12842,22 +12842,22 @@ namespace djack.RogueSurvivor.Engine
       sewersMap.GetTileAt(1, 1).AddDecoration("Tiles\\Decoration\\roguedjack");
       if (isVerbose)
       {
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
+                m_UI.UI_Repaint();
       }
       int index = world.Size / 2;
       Map entryMap = world[index, index].EntryMap;
-      this.GeneratePlayerOnMap(entryMap, this.m_TownGenerator);
-      this.SetCurrentMap(entryMap);
-      this.RefreshPlayer();
-      this.UpdatePlayerFOV(this.m_Player);
+            GeneratePlayerOnMap(entryMap, m_TownGenerator);
+            SetCurrentMap(entryMap);
+            RefreshPlayer();
+            UpdatePlayerFOV(m_Player);
       if (RogueGame.s_Options.RevealStartingDistrict)
       {
         Map map = entryMap;
-        Location location = this.m_Player.Location;
+        Location location = m_Player.Location;
         int x1 = location.Position.X;
-        location = this.m_Player.Location;
+        location = m_Player.Location;
         int y1 = location.Position.Y;
         List<Zone> zonesAt1 = map.GetZonesAt(x1, y1);
         if (zonesAt1 != null)
@@ -12881,9 +12881,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!isVerbose)
         return;
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.White, "Generating game world... done!", 0, 0, new Color?());
-      this.m_UI.UI_Repaint();
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, "Generating game world... done!", 0, 0, new Color?());
+            m_UI.UI_Repaint();
     }
 
     private bool CheckIfExitIsGood(Map fromMap, Point from, Map toMap, Point to)
@@ -12898,19 +12898,19 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor SpawnUniqueSewersThing(World world)
     {
-      Map map = world[this.m_Rules.Roll(0, world.Size), this.m_Rules.Roll(0, world.Size)].SewersMap;
-      Actor named = this.GameActors.SewersThing.CreateNamed(this.GameFactions.TheUndeads, "The Sewers Thing", false, 0);
+      Map map = world[m_Rules.Roll(0, world.Size), m_Rules.Roll(0, world.Size)].SewersMap;
+      Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", false, 0);
       DiceRoller roller = new DiceRoller(map.Seed);
-      if (!this.m_TownGenerator.ActorPlace(roller, 10000, map, named))
+      if (!m_TownGenerator.ActorPlace(roller, 10000, map, named))
         throw new InvalidOperationException("could not spawn unique The Sewers Thing");
       Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
       if (zoneByPartialName != null)
-        this.m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, (Func<Point, bool>) (pt =>
+                m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, (Func<Point, bool>) (pt =>
         {
           if (map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null)
             return map.GetItemsAt(pt) == null;
           return false;
-        }), roller, (Func<Point, MapObject>) (pt => this.m_TownGenerator.MakeObjBoard("MapObjects\\announcement_board", new string[7]
+        }), roller, (Func<Point, MapObject>) (pt => m_TownGenerator.MakeObjBoard("MapObjects\\announcement_board", new string[7]
         {
           "TO SEWER WORKERS :",
           "- It lives here.",
@@ -12929,36 +12929,36 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor CreateUniqueBigBear(World world)
     {
-      Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Big Bear", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\big_bear");
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel) this.GameItems.UNIQUE_BIGBEAR_BAT);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)GameItems.UNIQUE_BIGBEAR_BAT);
       itemMeleeWeapon.IsUnique = true;
       Item it = (Item) itemMeleeWeapon;
       named.Inventory.AddAll(it);
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor()
       {
         TheActor = named,
@@ -12971,36 +12971,36 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor CreateUniqueFamuFataru(World world)
     {
-      Actor named = this.GameActors.FemaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Famu Fataru", false, 0);
+      Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\famu_fataru");
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel) this.GameItems.UNIQUE_FAMU_FATARU_KATANA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)GameItems.UNIQUE_FAMU_FATARU_KATANA);
       itemMeleeWeapon.IsUnique = true;
       Item it = (Item) itemMeleeWeapon;
       named.Inventory.AddAll(it);
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor()
       {
         TheActor = named,
@@ -13013,36 +13013,36 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor CreateUniqueSantaman(World world)
     {
-      Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Santaman", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\santaman");
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel) this.GameItems.UNIQUE_SANTAMAN_SHOTGUN);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+      ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel)GameItems.UNIQUE_SANTAMAN_SHOTGUN);
       itemRangedWeapon.IsUnique = true;
       Item it = (Item) itemRangedWeapon;
       named.Inventory.AddAll(it);
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor()
       {
         TheActor = named,
@@ -13055,36 +13055,36 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor CreateUniqueRoguedjack(World world)
     {
-      Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Roguedjack", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\roguedjack");
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel) this.GameItems.UNIQUE_ROGUEDJACK_KEYBOARD);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)GameItems.UNIQUE_ROGUEDJACK_KEYBOARD);
       itemMeleeWeapon.IsUnique = true;
       Item it = (Item) itemMeleeWeapon;
       named.Inventory.AddAll(it);
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor()
       {
         TheActor = named,
@@ -13097,36 +13097,36 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor CreateUniqueDuckman(World world)
     {
-      Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Duckman", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\duckman");
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor()
       {
         TheActor = named,
@@ -13139,36 +13139,36 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueActor CreateUniqueHansVonHanz(World world)
     {
-      Actor named = this.GameActors.MaleCivilian.CreateNamed(this.GameFactions.TheCivilians, "Hans von Hanz", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\hans_von_hanz");
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-      this.m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-      ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel) this.GameItems.UNIQUE_HANS_VON_HANZ_PISTOL);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
+            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
+      ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel)GameItems.UNIQUE_HANS_VON_HANZ_PISTOL);
       itemRangedWeapon.IsUnique = true;
       Item it = (Item) itemRangedWeapon;
       named.Inventory.AddAll(it);
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(this.m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor()
       {
         TheActor = named,
@@ -13181,7 +13181,7 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
     {
-      Item it = new Item(this.GameItems.UNIQUE_SUBWAY_BADGE)
+      Item it = new Item(GameItems.UNIQUE_SUBWAY_BADGE)
       {
         IsUnique = true,
         IsForbiddenToAI = true
@@ -13201,9 +13201,9 @@ namespace djack.RogueSurvivor.Engine
           TheItem = it,
           IsSpawned = false
         };
-      Map map = mapList[this.m_Rules.Roll(0, mapList.Count)];
+      Map map = mapList[m_Rules.Roll(0, mapList.Count)];
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
-      Point point = new Point(this.m_Rules.Roll(bounds.Left, bounds.Right), this.m_Rules.Roll(bounds.Top, bounds.Bottom));
+      Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, point);
       map.GetTileAt(point).AddDecoration("Tiles\\Decoration\\bloodied_floor");
       return new UniqueItem()
@@ -13242,15 +13242,15 @@ namespace djack.RogueSurvivor.Engine
       }
       if (districtList == null)
         throw new InvalidOperationException("world has no business districts with offices");
-      District district = districtList[this.m_Rules.Roll(0, districtList.Count)];
+      District district = districtList[m_Rules.Roll(0, districtList.Count)];
       List<Zone> zoneList = new List<Zone>();
       foreach (Zone zone in district.EntryMap.Zones)
       {
         if (zone.HasGameAttribute("CHAR Office"))
           zoneList.Add(zone);
       }
-      Zone officeZone = zoneList[this.m_Rules.Roll(0, zoneList.Count)];
-      Map mapCharUnderground = this.m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
+      Zone officeZone = zoneList[m_Rules.Roll(0, zoneList.Count)];
+      Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       mapCharUnderground.District = district;
       mapCharUnderground.Name = string.Format("CHAR Underground Facility @{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       district.AddUniqueMap(mapCharUnderground);
@@ -13270,7 +13270,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int x = district.WorldPosition.X;
       int y = district.WorldPosition.Y;
-      int seed = this.m_Session.Seed + y * world.Size + x;
+      int seed = m_Session.Seed + y * world.Size + x;
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
       parameters.MapWidth = parameters.MapHeight = RogueGame.s_Options.DistrictSize;
       parameters.District = district;
@@ -13310,24 +13310,24 @@ namespace djack.RogueSurvivor.Engine
       }
       parameters.GeneratePoliceStation = district.WorldPosition == policeStationDistrictPos;
       parameters.GenerateHospital = district.WorldPosition == hospitalDistrictPos;
-      BaseTownGenerator.Parameters @params = this.m_TownGenerator.Params;
-      this.m_TownGenerator.Params = parameters;
-      Map map = this.m_TownGenerator.Generate(seed);
+      BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
+            m_TownGenerator.Params = parameters;
+      Map map = m_TownGenerator.Generate(seed);
       map.Name = string.Format("{0}@{1}", (object) str, (object) World.CoordToString(x, y));
-      this.m_TownGenerator.Params = @params;
+            m_TownGenerator.Params = @params;
       return map;
     }
 
     private Map GenerateDistrictSewersMap(District district)
     {
-      Map sewersMap = this.m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
+      Map sewersMap = m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
       sewersMap.Name = string.Format("Sewers@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       return sewersMap;
     }
 
     private Map GenerateDistrictSubwayMap(District district)
     {
-      Map subwayMap = this.m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
+      Map subwayMap = m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
       subwayMap.Name = string.Format("Subway@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       return subwayMap;
     }
@@ -13336,51 +13336,51 @@ namespace djack.RogueSurvivor.Engine
     {
       DiceRoller roller = new DiceRoller(map.Seed);
       Actor actor;
-      if (this.m_CharGen.IsUndead)
+      if (m_CharGen.IsUndead)
       {
-        switch (this.m_CharGen.UndeadModel)
+        switch (m_CharGen.UndeadModel)
         {
           case GameActors.IDs._FIRST:
-            actor = this.m_GameActors.Skeleton.CreateNumberedName(this.m_GameFactions.TheUndeads, 0);
+            actor = m_GameActors.Skeleton.CreateNumberedName(m_GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_ZOMBIE:
-            actor = this.m_GameActors.Zombie.CreateNumberedName(this.m_GameFactions.TheUndeads, 0);
+            actor = m_GameActors.Zombie.CreateNumberedName(m_GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
-            actor = this.m_GameActors.ZombieMaster.CreateNumberedName(this.m_GameFactions.TheUndeads, 0);
+            actor = m_GameActors.ZombieMaster.CreateNumberedName(m_GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
           case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
-            Actor anonymous = (this.m_CharGen.IsMale ? this.m_GameActors.MaleCivilian : this.m_GameActors.FemaleCivilian).CreateAnonymous(this.m_GameFactions.TheCivilians, 0);
+            Actor anonymous = (m_CharGen.IsMale ? m_GameActors.MaleCivilian : m_GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
             townGen.DressCivilian(roller, anonymous);
             townGen.GiveNameToActor(roller, anonymous);
-            actor = this.Zombify((Actor) null, anonymous, true);
+            actor = Zombify((Actor) null, anonymous, true);
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled undeadModel");
         }
-        this.PrepareActorForPlayerControl(actor);
+                PrepareActorForPlayerControl(actor);
       }
       else
       {
-        actor = (this.m_CharGen.IsMale ? this.m_GameActors.MaleCivilian : this.m_GameActors.FemaleCivilian).CreateAnonymous(this.m_GameFactions.TheCivilians, 0);
+        actor = (m_CharGen.IsMale ? m_GameActors.MaleCivilian : m_GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
         townGen.DressCivilian(roller, actor);
         townGen.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
         townGen.RecomputeActorStartingStats(actor);
         int max1 = (int) (0.25 * (double) actor.FoodPoints);
-        actor.FoodPoints = actor.FoodPoints - this.m_Rules.Roll(0, max1);
+        actor.FoodPoints = actor.FoodPoints - m_Rules.Roll(0, max1);
         int max2 = (int) (0.25 * (double) actor.SleepPoints);
-        actor.SleepPoints = actor.SleepPoints - this.m_Rules.Roll(0, max2);
+        actor.SleepPoints = actor.SleepPoints - m_Rules.Roll(0, max2);
       }
       actor.Controller = (ActorController) new PlayerController();
       if (townGen.ActorPlace(roller, 10 * map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
       {
         bool isInside = map.GetTileAt(pt.X, pt.Y).IsInside;
-        if (this.m_CharGen.IsUndead && isInside || !this.m_CharGen.IsUndead && !isInside || RogueGame.IsInCHAROffice(new Location(map, pt)))
+        if (m_CharGen.IsUndead && isInside || !m_CharGen.IsUndead && !isInside || RogueGame.IsInCHAROffice(new Location(map, pt)))
           return false;
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
-        if (this.m_CharGen.IsUndead)
+        if (m_CharGen.IsUndead)
           return mapObjectAt == null;
         if (mapObjectAt != null)
           return mapObjectAt.IsCouch;
@@ -13399,17 +13399,17 @@ namespace djack.RogueSurvivor.Engine
 
     private void RefreshPlayer()
     {
-      foreach (Actor actor in this.m_Session.CurrentMap.Actors)
+      foreach (Actor actor in m_Session.CurrentMap.Actors)
       {
         if (actor.IsPlayer)
         {
-          this.m_Player = actor;
+                    m_Player = actor;
           break;
         }
       }
-      if (this.m_Player == null)
+      if (m_Player == null)
         return;
-      this.ComputeViewRect(this.m_Player.Location.Position);
+            ComputeViewRect(m_Player.Location.Position);
     }
 
     private void PrepareActorForPlayerControl(Actor newPlayerAvatar)
@@ -13425,39 +13425,39 @@ namespace djack.RogueSurvivor.Engine
 
     private void SetCurrentMap(Map map)
     {
-      this.m_Session.CurrentMap = map;
+            m_Session.CurrentMap = map;
       if (map == map.District.SewersMap)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.PlayLooping(GameMusics.SEWERS);
+                m_MusicManager.StopAll();
+                m_MusicManager.PlayLooping(GameMusics.SEWERS);
       }
-      else if (this.m_MusicManager.IsPlaying(GameMusics.SEWERS))
-        this.m_MusicManager.Stop(GameMusics.SEWERS);
+      else if (m_MusicManager.IsPlaying(GameMusics.SEWERS))
+                m_MusicManager.Stop(GameMusics.SEWERS);
       if (map == map.District.SubwayMap)
       {
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.PlayLooping(GameMusics.SUBWAY);
+                m_MusicManager.StopAll();
+                m_MusicManager.PlayLooping(GameMusics.SUBWAY);
       }
-      else if (this.m_MusicManager.IsPlaying(GameMusics.SUBWAY))
-        this.m_MusicManager.Stop(GameMusics.SUBWAY);
-      if (map == this.m_Session.UniqueMaps.Hospital_Admissions.TheMap || map == this.m_Session.UniqueMaps.Hospital_Offices.TheMap || (map == this.m_Session.UniqueMaps.Hospital_Patients.TheMap || map == this.m_Session.UniqueMaps.Hospital_Power.TheMap) || map == this.m_Session.UniqueMaps.Hospital_Storage.TheMap)
+      else if (m_MusicManager.IsPlaying(GameMusics.SUBWAY))
+                m_MusicManager.Stop(GameMusics.SUBWAY);
+      if (map == m_Session.UniqueMaps.Hospital_Admissions.TheMap || map == m_Session.UniqueMaps.Hospital_Offices.TheMap || (map == m_Session.UniqueMaps.Hospital_Patients.TheMap || map == m_Session.UniqueMaps.Hospital_Power.TheMap) || map == m_Session.UniqueMaps.Hospital_Storage.TheMap)
       {
-        if (this.m_MusicManager.IsPlaying(GameMusics.HOSPITAL))
+        if (m_MusicManager.IsPlaying(GameMusics.HOSPITAL))
           return;
-        this.m_MusicManager.StopAll();
-        this.m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
+                m_MusicManager.StopAll();
+                m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
       }
       else
       {
-        if (!this.m_MusicManager.IsPlaying(GameMusics.HOSPITAL))
+        if (!m_MusicManager.IsPlaying(GameMusics.HOSPITAL))
           return;
-        this.m_MusicManager.Stop(GameMusics.HOSPITAL);
+                m_MusicManager.Stop(GameMusics.HOSPITAL);
       }
     }
 
     private void OnPlayerLeaveDistrict()
     {
-      this.m_Session.CurrentMap.LocalTime.TurnCounter = this.m_Session.WorldTime.TurnCounter;
+            m_Session.CurrentMap.LocalTime.TurnCounter = m_Session.WorldTime.TurnCounter;
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -13541,7 +13541,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnPlayerChangeMap()
     {
-      this.RefreshPlayer();
+            RefreshPlayer();
     }
 
     private RogueGame.SimFlags ComputeSimFlagsForTurn(int turn)
@@ -13578,7 +13578,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SimulateDistrict(District d)
     {
-      this.AdvancePlay(d, this.ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));
+            AdvancePlay(d, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));
     }
 
     private bool SimulateNearbyDistricts(District d)
@@ -13588,19 +13588,19 @@ namespace djack.RogueSurvivor.Engine
       int x2 = d.WorldPosition.X + 1;
       int y1 = d.WorldPosition.Y - 1;
       int y2 = d.WorldPosition.Y + 1;
-      this.m_Session.World.TrimToBounds(ref x1, ref y1);
-      this.m_Session.World.TrimToBounds(ref x2, ref y2);
+            m_Session.World.TrimToBounds(ref x1, ref y1);
+            m_Session.World.TrimToBounds(ref x2, ref y2);
       for (int index1 = x1; index1 <= x2; ++index1)
       {
         for (int index2 = y1; index2 <= y2; ++index2)
         {
           if (index1 != d.WorldPosition.X || index2 != d.WorldPosition.Y)
           {
-            District d1 = this.m_Session.World[index1, index2];
+            District d1 = m_Session.World[index1, index2];
             if (d.EntryMap.LocalTime.TurnCounter - d1.EntryMap.LocalTime.TurnCounter > 0)
             {
               flag = true;
-              this.SimulateDistrict(d1);
+                            SimulateDistrict(d1);
             }
           }
         }
@@ -13644,108 +13644,108 @@ namespace djack.RogueSurvivor.Engine
 
     private void ShowNewAchievement(Achievement.IDs id)
     {
-      ++this.m_Session.Scoring.CompletedAchievementsCount;
-      Achievement achievement = this.m_Session.Scoring.GetAchievement(id);
+      ++m_Session.Scoring.CompletedAchievementsCount;
+      Achievement achievement = m_Session.Scoring.GetAchievement(id);
       string musicId = achievement.MusicID;
       string name = achievement.Name;
       string[] text = achievement.Text;
-      this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", (object) name, (object) achievement.ScoreValue));
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.Play(musicId);
-      string str = new string('*', Math.Max(this.FindLongestLine(text), 50));
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("** Achievement : {0} for {1} points. **", (object) name, (object) achievement.ScoreValue));
+            m_MusicManager.StopAll();
+            m_MusicManager.Play(musicId);
+      string str = new string('*', Math.Max(FindLongestLine(text), 50));
       List<string> stringList = new List<string>(text.Length + 3 + 2);
       stringList.Add(str);
       stringList.Add(string.Format("ACHIEVEMENT : {0}", (object) name));
       stringList.Add("CONGRATULATIONS!");
       for (int index = 0; index < text.Length; ++index)
         stringList.Add(text[index]);
-      stringList.Add(string.Format("Achievements : {0}/{1}.", (object) this.m_Session.Scoring.CompletedAchievementsCount, (object) 8));
+      stringList.Add(string.Format("Achievements : {0}/{1}.", (object)m_Session.Scoring.CompletedAchievementsCount, (object) 8));
       stringList.Add(str);
       Point screenPos = new Point(0, 0);
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, screenPos));
-      this.ClearMessages();
-      this.AddMessagePressEnter();
-      this.ClearOverlays();
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, screenPos));
+            ClearMessages();
+            AddMessagePressEnter();
+            ClearOverlays();
     }
 
     private void ShowSpecialDialogue(Actor speaker, string[] text)
     {
-      this.m_MusicManager.StopAll();
-      this.m_MusicManager.Play(GameMusics.INTERLUDE);
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, new Point(0, 0)));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(speaker.Location.Position), new Size(32, 32))));
-      this.ClearMessages();
-      this.AddMessagePressEnter();
-      this.m_MusicManager.StopAll();
+            m_MusicManager.StopAll();
+            m_MusicManager.Play(GameMusics.INTERLUDE);
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, new Point(0, 0)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
+            ClearMessages();
+            AddMessagePressEnter();
+            m_MusicManager.StopAll();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     {
-      if (!player.Model.Abilities.IsUndead && player.Faction != this.GameFactions.TheCHARCorporation && (!this.m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
+      if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
       {
-        this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
-        this.ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
+                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
+                ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
       }
-      if (!this.m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap)
+      if (!m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap)
       {
-        lock (this.m_Session)
+        lock (m_Session)
         {
-          this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
-          this.ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
-          this.m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
-          this.m_Session.CHARUndergroundFacility_Activated = true;
-          this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.IsSecret = false;
-          Map surfaceMap = this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap;
+                    m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
+                    ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
+                    m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
+                    m_Session.CHARUndergroundFacility_Activated = true;
+                    m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.IsSecret = false;
+          Map surfaceMap = m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap;
           Point? local_0 = surfaceMap.FindFirstInMap((Predicate<Point>) (pt =>
           {
             Exit exitAt = surfaceMap.GetExitAt(pt);
             if (exitAt == null)
               return false;
-            return exitAt.ToMap == this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap;
+            return exitAt.ToMap == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap;
           }));
           if (!local_0.HasValue)
             throw new InvalidOperationException("could not find exit to CUF in surface map");
           surfaceMap.GetExitAt(local_0.Value).IsAnAIExit = true;
-          Point? local_2 = this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.FindFirstInMap((Predicate<Point>) (pt =>
+          Point? local_2 = m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.FindFirstInMap((Predicate<Point>) (pt =>
           {
-            Exit exitAt = this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(pt);
+            Exit exitAt = m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(pt);
             if (exitAt == null)
               return false;
             return exitAt.ToMap == surfaceMap;
           }));
           if (!local_2.HasValue)
             throw new InvalidOperationException("could not find exit to surface in CUF map");
-          this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(local_2.Value).IsAnAIExit = true;
+                    m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(local_2.Value).IsAnAIExit = true;
         }
       }
-      if (player != this.m_Session.UniqueActors.TheSewersThing.TheActor && !this.m_Session.PlayerKnows_TheSewersThingLocation && (player.Location.Map == this.m_Session.UniqueActors.TheSewersThing.TheActor.Location.Map && !this.m_Session.UniqueActors.TheSewersThing.TheActor.IsDead && this.IsVisibleToPlayer(this.m_Session.UniqueActors.TheSewersThing.TheActor)))
+      if (player != m_Session.UniqueActors.TheSewersThing.TheActor && !m_Session.PlayerKnows_TheSewersThingLocation && (player.Location.Map == m_Session.UniqueActors.TheSewersThing.TheActor.Location.Map && !m_Session.UniqueActors.TheSewersThing.TheActor.IsDead && IsVisibleToPlayer(m_Session.UniqueActors.TheSewersThing.TheActor)))
       {
-        lock (this.m_Session)
+        lock (m_Session)
         {
-          this.m_Session.PlayerKnows_TheSewersThingLocation = true;
-          this.m_MusicManager.StopAll();
-          this.m_MusicManager.Play(GameMusics.FIGHT);
-          this.ClearMessages();
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("Hey! What's that THING!?", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-          this.AddMessagePressEnter();
+                    m_Session.PlayerKnows_TheSewersThingLocation = true;
+                    m_MusicManager.StopAll();
+                    m_MusicManager.Play(GameMusics.FIGHT);
+                    ClearMessages();
+                    AddMessage(new djack.RogueSurvivor.Data.Message("Hey! What's that THING!?", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    AddMessagePressEnter();
         }
       }
-      if (player.Location.Map == this.m_Session.UniqueMaps.PoliceStation_JailsLevel.TheMap && !this.m_Session.UniqueActors.PoliceStationPrisonner.TheActor.IsDead)
+      if (player.Location.Map == m_Session.UniqueMaps.PoliceStation_JailsLevel.TheMap && !m_Session.UniqueActors.PoliceStationPrisonner.TheActor.IsDead)
       {
-        Actor theActor = this.m_Session.UniqueActors.PoliceStationPrisonner.TheActor;
+        Actor theActor = m_Session.UniqueActors.PoliceStationPrisonner.TheActor;
         Map map = player.Location.Map;
-        switch (this.m_Session.ScriptStage_PoliceStationPrisonner)
+        switch (m_Session.ScriptStage_PoliceStationPrisonner)
         {
           case ScriptStage.STAGE_0:
             if (map.HasAnyAdjacentInMap(player.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is PowerGenerator)) && !theActor.IsSleeping)
             {
-              lock (this.m_Session)
+              lock (m_Session)
               {
                 string[] local_6 = new string[13]
                 {
                   "\" Psssst! Hey! You over there! \"",
-                  string.Format("{0} is discretly calling you from {1} cell. You listen closely...", (object) theActor.Name, (object) this.HisOrHer(theActor)),
+                  string.Format("{0} is discretly calling you from {1} cell. You listen closely...", (object) theActor.Name, (object) HisOrHer(theActor)),
                   "\" Listen! I shouldn't be here! Just drived a bit too fast!",
                   "  Look, I know what's happening! I worked down there! At the CHAR facility!",
                   "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
@@ -13756,11 +13756,11 @@ namespace djack.RogueSurvivor.Engine
                   "  Then I'll tell you where is the underground facility and just get the hell out of here.",
                   "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
                   "  Do it PLEASE! I REALLY shoudn't be there! \"",
-                  string.Format("Looks like {0} wants you to turn the generator on to open the cells...", (object) this.HeOrShe(theActor))
+                  string.Format("Looks like {0} wants you to turn the generator on to open the cells...", (object) HeOrShe(theActor))
                 };
-                this.ShowSpecialDialogue(theActor, local_6);
-                this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} offered a deal.", (object) theActor.Name));
-                this.m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_1;
+                                ShowSpecialDialogue(theActor, local_6);
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} offered a deal.", (object) theActor.Name));
+                                m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_1;
                 break;
               }
             }
@@ -13769,30 +13769,30 @@ namespace djack.RogueSurvivor.Engine
           case ScriptStage.STAGE_1:
             if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && (Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping))
             {
-              lock (this.m_Session)
+              lock (m_Session)
               {
                 string[] local_7 = new string[8]
                 {
                   "\" Thank you! Thank you so much!",
                   "  As promised, I'll tell you the big secret!",
-                  string.Format("  The CHAR Underground Facility is in district {0}.", (object) World.CoordToString(this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.X, this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.Y)),
+                  string.Format("  The CHAR Underground Facility is in district {0}.", (object) World.CoordToString(m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.X, m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.WorldPosition.Y)),
                   "  Look for a CHAR Office, a room with an iron door.",
                   "  Now I must hurry! Thanks a lot for saving me!",
                   "  I don't want them to... UGGH...",
                   "  What's happening? NO!",
                   "  NO NOT ME! aAAAAAaaaa! NOT NOW! AAAGGGGGGGRRR \""
                 };
-                this.ShowSpecialDialogue(theActor, local_7);
-                this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("Freed {0}.", (object) theActor.Name));
-                this.m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
-                this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
-                this.KillActor((Actor) null, theActor, "transformation");
-                Actor local_8 = this.Zombify((Actor) null, theActor, false);
-                local_8.Model = this.m_GameActors.ZombiePrince;
+                                ShowSpecialDialogue(theActor, local_7);
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Freed {0}.", (object) theActor.Name));
+                                m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
+                                KillActor((Actor) null, theActor, "transformation");
+                Actor local_8 = Zombify((Actor) null, theActor, false);
+                local_8.Model = m_GameActors.ZombiePrince;
                 local_8.ActionPoints = 0;
-                this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", (object) theActor.Name, (object) local_8.Model.Name));
-                this.m_MusicManager.Play(GameMusics.FIGHT);
-                this.m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_2;
+                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", (object) theActor.Name, (object) local_8.Model.Name));
+                                m_MusicManager.Play(GameMusics.FIGHT);
+                                m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_2;
                 break;
               }
             }
@@ -13801,37 +13801,37 @@ namespace djack.RogueSurvivor.Engine
           case ScriptStage.STAGE_2:
             break;
           default:
-            throw new ArgumentOutOfRangeException("unhandled script stage " + (object) this.m_Session.ScriptStage_PoliceStationPrisonner);
+            throw new ArgumentOutOfRangeException("unhandled script stage " + (object)m_Session.ScriptStage_PoliceStationPrisonner);
         }
       }
-      if (player != this.m_Session.UniqueActors.JasonMyers.TheActor && !this.m_Session.UniqueActors.JasonMyers.TheActor.IsDead && this.IsVisibleToPlayer(this.m_Session.UniqueActors.JasonMyers.TheActor))
+      if (player != m_Session.UniqueActors.JasonMyers.TheActor && !m_Session.UniqueActors.JasonMyers.TheActor.IsDead && IsVisibleToPlayer(m_Session.UniqueActors.JasonMyers.TheActor))
       {
-        lock (this.m_Session)
+        lock (m_Session)
         {
-          if (!this.m_MusicManager.IsPlaying(GameMusics.INSANE))
+          if (!m_MusicManager.IsPlaying(GameMusics.INSANE))
           {
-            this.m_MusicManager.StopAll();
-            this.m_MusicManager.Play(GameMusics.INSANE);
+                        m_MusicManager.StopAll();
+                        m_MusicManager.Play(GameMusics.INSANE);
           }
-          if (!this.m_Session.Scoring.HasSighted(this.m_Session.UniqueActors.JasonMyers.TheActor.Model.ID))
+          if (!m_Session.Scoring.HasSighted(m_Session.UniqueActors.JasonMyers.TheActor.Model.ID))
           {
-            this.ClearMessages();
-            this.AddMessage(new djack.RogueSurvivor.Data.Message("Nice axe you have there!", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-            this.AddMessagePressEnter();
+                        ClearMessages();
+                        AddMessage(new djack.RogueSurvivor.Data.Message("Nice axe you have there!", m_Session.WorldTime.TurnCounter, Color.Yellow));
+                        AddMessagePressEnter();
           }
         }
       }
-      if (player != this.m_Session.UniqueActors.Duckman.TheActor)
+      if (player != m_Session.UniqueActors.Duckman.TheActor)
       {
-        if (!this.m_Session.UniqueActors.Duckman.TheActor.IsDead && this.IsVisibleToPlayer(this.m_Session.UniqueActors.Duckman.TheActor))
+        if (!m_Session.UniqueActors.Duckman.TheActor.IsDead && IsVisibleToPlayer(m_Session.UniqueActors.Duckman.TheActor))
         {
-          if (!this.m_MusicManager.IsPlaying(GameMusics.DUCKMAN_THEME_SONG))
-            this.m_MusicManager.Play(GameMusics.DUCKMAN_THEME_SONG);
+          if (!m_MusicManager.IsPlaying(GameMusics.DUCKMAN_THEME_SONG))
+                        m_MusicManager.Play(GameMusics.DUCKMAN_THEME_SONG);
         }
-        else if (this.m_MusicManager.IsPlaying(GameMusics.DUCKMAN_THEME_SONG))
-          this.m_MusicManager.Stop(GameMusics.DUCKMAN_THEME_SONG);
+        else if (m_MusicManager.IsPlaying(GameMusics.DUCKMAN_THEME_SONG))
+                    m_MusicManager.Stop(GameMusics.DUCKMAN_THEME_SONG);
       }
-      if (this.m_Session.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped && (player.Location.Map == player.Location.Map.District.SubwayMap && player.Inventory.Contains(this.m_Session.UniqueItems.TheSubwayWorkerBadge.TheItem)))
+      if (m_Session.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped && (player.Location.Map == player.Location.Map.District.SubwayMap && player.Inventory.Contains(m_Session.UniqueItems.TheSubwayWorkerBadge.TheItem)))
       {
         Map map = player.Location.Map;
         if (map.HasAnyAdjacentInMap(player.Location.Position, (Predicate<Point>) (pt =>
@@ -13842,20 +13842,20 @@ namespace djack.RogueSurvivor.Engine
           return mapObjectAt.ImageID == "MapObjects\\gate_closed";
         })))
         {
-          this.DoTurnAllGeneratorsOn(map);
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("The gate system scanned your badge and turned the power on!", this.m_Session.WorldTime.TurnCounter, Color.Green));
+                    DoTurnAllGeneratorsOn(map);
+                    AddMessage(new djack.RogueSurvivor.Data.Message("The gate system scanned your badge and turned the power on!", m_Session.WorldTime.TurnCounter, Color.Green));
         }
       }
-      if (!this.m_Session.Scoring.HasVisited(player.Location.Map))
+      if (!m_Session.Scoring.HasVisited(player.Location.Map))
       {
-        this.m_Session.Scoring.AddVisit(this.m_Session.WorldTime.TurnCounter, player.Location.Map);
-        this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("Visited {0}.", (object) player.Location.Map.Name));
+                m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, player.Location.Map);
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Visited {0}.", (object) player.Location.Map.Name));
       }
-      foreach (Point position in this.m_PlayerFOV)
+      foreach (Point position in m_PlayerFOV)
       {
         Actor actorAt = player.Location.Map.GetActorAt(position);
         if (actorAt != null && actorAt != player)
-          this.m_Session.Scoring.AddSighting(actorAt.Model.ID, this.m_Session.WorldTime.TurnCounter);
+                    m_Session.Scoring.AddSighting(actorAt.Model.ID, m_Session.WorldTime.TurnCounter);
       }
     }
 
@@ -13871,28 +13871,28 @@ namespace djack.RogueSurvivor.Engine
            }
        }
 
-      this.m_MusicManager.Play(GameMusics.LIMBO);
-      if (RogueGame.s_Options.MaxReincarnations <= 0 || !this.AskForReincarnation())
+            m_MusicManager.Play(GameMusics.LIMBO);
+      if (RogueGame.s_Options.MaxReincarnations <= 0 || !AskForReincarnation())
       {
-        this.m_MusicManager.StopAll();
+                m_MusicManager.StopAll();
       }
       else
       {
-        this.m_UI.UI_Clear(Color.Black);
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
-        this.m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
-        this.m_UI.UI_Repaint();
+                m_UI.UI_Clear(Color.Black);
+                m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
+                m_UI.UI_Repaint();
         int matchingActors1;
-        Actor reincarnationAvatar1 = this.FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out matchingActors1);
+        Actor reincarnationAvatar1 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out matchingActors1);
         int matchingActors2;
-        Actor reincarnationAvatar2 = this.FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out matchingActors2);
+        Actor reincarnationAvatar2 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out matchingActors2);
         int matchingActors3;
-        Actor reincarnationAvatar3 = this.FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out matchingActors3);
+        Actor reincarnationAvatar3 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out matchingActors3);
         int matchingActors4;
-        Actor reincarnationAvatar4 = this.FindReincarnationAvatar(GameOptions.ReincMode._FIRST, out matchingActors4);
-        Actor reincarnationAvatar5 = this.FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out matchingActors1);
-        Actor reincarnationAvatar6 = this.FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out matchingActors1);
-        string[] strArray = this.CompileDistrictFunFacts(this.m_Player.Location.Map.District);
+        Actor reincarnationAvatar4 = FindReincarnationAvatar(GameOptions.ReincMode._FIRST, out matchingActors4);
+        Actor reincarnationAvatar5 = FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out matchingActors1);
+        Actor reincarnationAvatar6 = FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out matchingActors1);
+        string[] strArray = CompileDistrictFunFacts(m_Player.Location.Map.District);
         bool flag = false;
         string[] entries = new string[6]
         {
@@ -13905,12 +13905,12 @@ namespace djack.RogueSurvivor.Engine
         };
         string[] values = new string[6]
         {
-          this.DescribeAvatar(reincarnationAvatar1),
-          string.Format("{0}   (out of {1} possibilities)", (object) this.DescribeAvatar(reincarnationAvatar2), (object) matchingActors2),
-          string.Format("{0}   (out of {1} possibilities)", (object) this.DescribeAvatar(reincarnationAvatar3), (object) matchingActors3),
-          string.Format("{0}   (out of {1} possibilities)", (object) this.DescribeAvatar(reincarnationAvatar4), (object) matchingActors4),
-          this.DescribeAvatar(reincarnationAvatar5),
-          this.DescribeAvatar(reincarnationAvatar6)
+          DescribeAvatar(reincarnationAvatar1),
+          string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar2), (object) matchingActors2),
+          string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar3), (object) matchingActors3),
+          string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar4), (object) matchingActors4),
+          DescribeAvatar(reincarnationAvatar5),
+          DescribeAvatar(reincarnationAvatar6)
         };
         int currentChoice = 0;
         Actor newPlayerAvatar = (Actor) null;
@@ -13918,23 +13918,23 @@ namespace djack.RogueSurvivor.Engine
         {
           int gy1;
           int gx = gy1 = 0;
-          this.m_UI.UI_Clear(Color.Black);
-          this.m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
+                    m_UI.UI_Clear(Color.Black);
+                    m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
           int gy2 = gy1 + 28;
-          this.DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy2, 256);
+                    DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy2, 256);
           gy2 += 28;
-          this.m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy2, new Color?());
+                    m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy2, new Color?());
           int gy3 = gy2 + 14;
-          this.m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", (object) new WorldTime(this.m_Session.WorldTime.TurnCounter).ToString()), gx, gy3, new Color?());
+                    m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", (object) new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy3, new Color?());
           int gy4 = gy3 + 28;
           for (int index = 0; index < strArray.Length; ++index)
           {
-            this.m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
+                        m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
             gy4 += 14;
           }
-          this.DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
-          this.m_UI.UI_Repaint();
-          switch (this.m_UI.UI_WaitKey().KeyCode)
+                    DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
+                    m_UI.UI_Repaint();
+          switch (m_UI.UI_WaitKey().KeyCode)
           {
             case Keys.Return:
               switch (currentChoice)
@@ -13980,39 +13980,39 @@ namespace djack.RogueSurvivor.Engine
         while (!flag);
         if (newPlayerAvatar == null)
         {
-          this.m_MusicManager.StopAll();
+                    m_MusicManager.StopAll();
         }
         else
         {
           newPlayerAvatar.Controller = (ActorController) new PlayerController();
           if (newPlayerAvatar.Activity != Activity.SLEEPING)
             newPlayerAvatar.Activity = Activity.IDLE;
-          this.PrepareActorForPlayerControl(newPlayerAvatar);
-          this.m_Player = newPlayerAvatar;
-          this.m_Session.CurrentMap = newPlayerAvatar.Location.Map;
-          this.m_Session.Scoring.StartNewLife(this.m_Session.WorldTime.TurnCounter);
-          this.m_Session.Scoring.AddEvent(this.m_Session.WorldTime.TurnCounter, string.Format("(reincarnation {0})", (object) this.m_Session.Scoring.ReincarnationNumber));
-          this.m_Session.Scoring.Side = this.m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-          this.m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, this.m_Session.Scoring.Side, this.m_Session.Scoring.ReincarnationNumber);
-          for (int index1 = 0; index1 < this.m_Session.World.Size; ++index1)
+                    PrepareActorForPlayerControl(newPlayerAvatar);
+                    m_Player = newPlayerAvatar;
+                    m_Session.CurrentMap = newPlayerAvatar.Location.Map;
+                    m_Session.Scoring.StartNewLife(m_Session.WorldTime.TurnCounter);
+                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("(reincarnation {0})", (object)m_Session.Scoring.ReincarnationNumber));
+                    m_Session.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
+                    m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
+          for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
           {
-            for (int index2 = 0; index2 < this.m_Session.World.Size; ++index2)
+            for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
             {
-              foreach (Map map in this.m_Session.World[index1, index2].Maps)
+              foreach (Map map in m_Session.World[index1, index2].Maps)
                 map.SetAllAsUnvisited();
             }
           }
-          this.m_MusicManager.StopAll();
-          this.UpdatePlayerFOV(this.m_Player);
-          this.ComputeViewRect(this.m_Player.Location.Position);
-          this.ClearMessages();
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} feels disoriented for a second...", (object) this.m_Player.Name), this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-          this.RedrawPlayScreen();
+                    m_MusicManager.StopAll();
+                    UpdatePlayerFOV(m_Player);
+                    ComputeViewRect(m_Player.Location.Position);
+                    ClearMessages();
+                    AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} feels disoriented for a second...", (object)m_Player.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+                    RedrawPlayScreen();
           string musicname = GameMusics.REINCARNATE;
-          if (this.m_Player == this.m_Session.UniqueActors.JasonMyers.TheActor)
+          if (m_Player == m_Session.UniqueActors.JasonMyers.TheActor)
             musicname = GameMusics.INSANE;
-          this.m_MusicManager.Play(musicname);
-          this.RestartSimThread();
+                    m_MusicManager.Play(musicname);
+                    RestartSimThread();
         }
       }
     }
@@ -14030,45 +14030,45 @@ namespace djack.RogueSurvivor.Engine
     {
       int gy1;
       int gx = gy1 = 0;
-      this.m_UI.UI_Clear(Color.Black);
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Limbo", gx, gy1, new Color?());
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.Yellow, "Limbo", gx, gy1, new Color?());
       int gy2 = gy1 + 28;
-      this.m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", (object) (1 + this.m_Session.Scoring.ReincarnationNumber), (object) (1 + RogueGame.s_Options.MaxReincarnations)), gx, gy2, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", (object) (1 + m_Session.Scoring.ReincarnationNumber), (object) (1 + RogueGame.s_Options.MaxReincarnations)), gx, gy2, new Color?());
       int gy3 = gy2 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "Remember lives.", gx, gy3, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Remember lives.", gx, gy3, new Color?());
       int gy4 = gy3 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "Remember purpose.", gx, gy4, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Remember purpose.", gx, gy4, new Color?());
       int gy5 = gy4 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "Clear again.", gx, gy5, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Clear again.", gx, gy5, new Color?());
       int gy6 = gy5 + 14;
-      if (this.m_Session.Scoring.ReincarnationNumber >= RogueGame.s_Options.MaxReincarnations)
+      if (m_Session.Scoring.ReincarnationNumber >= RogueGame.s_Options.MaxReincarnations)
       {
-        this.m_UI.UI_DrawStringBold(Color.LightGreen, "Humans interesting.", gx, gy6, new Color?());
+                m_UI.UI_DrawStringBold(Color.LightGreen, "Humans interesting.", gx, gy6, new Color?());
         int gy7 = gy6 + 14;
-        this.m_UI.UI_DrawStringBold(Color.LightGreen, "Time to leave.", gx, gy7, new Color?());
+                m_UI.UI_DrawStringBold(Color.LightGreen, "Time to leave.", gx, gy7, new Color?());
         int gy8 = gy7 + 14 + 28;
-        this.m_UI.UI_DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy8, new Color?());
-        this.DrawFootnote(Color.White, "press ENTER");
-        this.m_UI.UI_Repaint();
-        this.WaitEnter();
+                m_UI.UI_DrawStringBold(Color.Yellow, "No more reincarnations left.", gx, gy8, new Color?());
+                DrawFootnote(Color.White, "press ENTER");
+                m_UI.UI_Repaint();
+                WaitEnter();
         return false;
       }
-      this.m_UI.UI_DrawStringBold(Color.White, "Leave?", gx, gy6, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Leave?", gx, gy6, new Color?());
       int gy9 = gy6 + 14;
-      this.m_UI.UI_DrawStringBold(Color.White, "Live?", gx, gy9, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Live?", gx, gy9, new Color?());
       int gy10 = gy9 + 28;
-      this.m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy10, new Color?());
-      this.m_UI.UI_Repaint();
-      return this.WaitYesOrNo();
+            m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnate? Y to confirm, N to cancel.", gx, gy10, new Color?());
+            m_UI.UI_Repaint();
+      return WaitYesOrNo();
     }
 
     private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
-      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != this.m_Session.CurrentMap.District || (a.Location.Map == this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap || a == this.m_Session.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
+      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != m_Session.CurrentMap.District || (a.Location.Map == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap || a == m_Session.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
         return false;
       if (asLiving)
-        return !a.Model.Abilities.IsUndead && (!RogueGame.s_Options.IsLivingReincRestricted || a.Faction == this.GameFactions.TheCivilians);
-      return a.Model.Abilities.IsUndead && (RogueGame.s_Options.CanReincarnateAsRat || a.Model != this.GameActors.RatZombie);
+        return !a.Model.Abilities.IsUndead && (!RogueGame.s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);
+      return a.Model.Abilities.IsUndead && (RogueGame.s_Options.CanReincarnateAsRat || a.Model != GameActors.RatZombie);
     }
 
     private Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
@@ -14076,24 +14076,24 @@ namespace djack.RogueSurvivor.Engine
       switch (reincMode)
       {
         case GameOptions.ReincMode._FIRST:
-          if (this.m_Session.Scoring.FollowersWhendDied == null)
+          if (m_Session.Scoring.FollowersWhendDied == null)
           {
             matchingActors = 0;
             return (Actor) null;
           }
-          List<Actor> actorList1 = new List<Actor>(this.m_Session.Scoring.FollowersWhendDied.Count);
-          foreach (Actor a in this.m_Session.Scoring.FollowersWhendDied)
+          List<Actor> actorList1 = new List<Actor>(m_Session.Scoring.FollowersWhendDied.Count);
+          foreach (Actor a in m_Session.Scoring.FollowersWhendDied)
           {
-            if (this.IsSuitableReincarnation(a, true))
+            if (IsSuitableReincarnation(a, true))
               actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
           if (actorList1.Count == 0)
             return (Actor) null;
-          return actorList1[this.m_Rules.Roll(0, actorList1.Count)];
+          return actorList1[m_Rules.Roll(0, actorList1.Count)];
         case GameOptions.ReincMode.KILLER:
-          Actor killer = this.m_Session.Scoring.Killer;
-          if (this.IsSuitableReincarnation(killer, true) || this.IsSuitableReincarnation(killer, false))
+          Actor killer = m_Session.Scoring.Killer;
+          if (IsSuitableReincarnation(killer, true) || IsSuitableReincarnation(killer, false))
           {
             matchingActors = 1;
             return killer;
@@ -14101,8 +14101,8 @@ namespace djack.RogueSurvivor.Engine
           matchingActors = 0;
           return (Actor) null;
         case GameOptions.ReincMode.ZOMBIFIED:
-          Actor zombifiedPlayer = this.m_Session.Scoring.ZombifiedPlayer;
-          if (this.IsSuitableReincarnation(zombifiedPlayer, false))
+          Actor zombifiedPlayer = m_Session.Scoring.ZombifiedPlayer;
+          if (IsSuitableReincarnation(zombifiedPlayer, false))
           {
             matchingActors = 1;
             return zombifiedPlayer;
@@ -14112,17 +14112,17 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.ReincMode.RANDOM_LIVING:
         case GameOptions.ReincMode.RANDOM_UNDEAD:
         case GameOptions.ReincMode.RANDOM_ACTOR:
-          bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && this.m_Rules.RollChance(50);
+          bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50);
           List<Actor> actorList2 = new List<Actor>();
-          for (int index1 = 0; index1 < this.m_Session.World.Size; ++index1)
+          for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
           {
-            for (int index2 = 0; index2 < this.m_Session.World.Size; ++index2)
+            for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
             {
-              foreach (Map map in this.m_Session.World[index1, index2].Maps)
+              foreach (Map map in m_Session.World[index1, index2].Maps)
               {
                 foreach (Actor actor in map.Actors)
                 {
-                  if (this.IsSuitableReincarnation(actor, asLiving))
+                  if (IsSuitableReincarnation(actor, asLiving))
                     actorList2.Add(actor);
                 }
               }
@@ -14131,7 +14131,7 @@ namespace djack.RogueSurvivor.Engine
           matchingActors = actorList2.Count;
           if (actorList2.Count == 0)
             return (Actor) null;
-          return actorList2[this.m_Rules.Roll(0, actorList2.Count)];
+          return actorList2[m_Rules.Roll(0, actorList2.Count)];
         default:
           throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
       }
@@ -14139,14 +14139,14 @@ namespace djack.RogueSurvivor.Engine
 
     private ActorAction GenerateInsaneAction(Actor actor)
     {
-      switch (this.m_Rules.Roll(0, 5))
+      switch (m_Rules.Roll(0, 5))
       {
         case 0:
           return (ActorAction) new ActionShout(actor, this, "AAAAAAAAAAA!!!");
         case 1:
-          return (ActorAction) new ActionBump(actor, this, this.m_Rules.RollDirection());
+          return (ActorAction) new ActionBump(actor, this, m_Rules.RollDirection());
         case 2:
-          Direction direction = this.m_Rules.RollDirection();
+          Direction direction = m_Rules.RollDirection();
           MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
           if (mapObjectAt == null)
             return (ActorAction) null;
@@ -14155,7 +14155,7 @@ namespace djack.RogueSurvivor.Engine
           Inventory inventory = actor.Inventory;
           if (inventory == null || inventory.CountItems == 0)
             return (ActorAction) null;
-          Item it = inventory[this.m_Rules.Roll(0, inventory.CountItems)];
+          Item it = inventory[m_Rules.Roll(0, inventory.CountItems)];
           ActionUseItem actionUseItem = new ActionUseItem(actor, this, it);
           if (actionUseItem.IsLegal())
             return (ActorAction) actionUseItem;
@@ -14163,17 +14163,17 @@ namespace djack.RogueSurvivor.Engine
             return (ActorAction) new ActionUnequipItem(actor, this, it);
           return (ActorAction) new ActionDropItem(actor, this, it);
         case 4:
-          int maxRange = this.m_Rules.ActorFOV(actor, actor.Location.Map.LocalTime, this.m_Session.World.Weather);
+          int maxRange = m_Rules.ActorFOV(actor, actor.Location.Map.LocalTime, m_Session.World.Weather);
           foreach (Actor actor1 in actor.Location.Map.Actors)
           {
-            if (actor1 != actor && !this.m_Rules.IsEnemyOf(actor, actor1) && (LOS.CanTraceViewLine(actor.Location, actor1.Location.Position, maxRange) && this.m_Rules.RollChance(50)))
+            if (actor1 != actor && !m_Rules.IsEnemyOf(actor, actor1) && (LOS.CanTraceViewLine(actor.Location, actor1.Location.Position, maxRange) && m_Rules.RollChance(50)))
             {
               if (actor.HasLeader)
               {
                 actor.Leader.RemoveFollower(actor);
                 actor.TrustInLeader = 0;
               }
-              this.DoMakeAggression(actor, actor1);
+                            DoMakeAggression(actor, actor1);
               return (ActorAction) new ActionSay(actor, this, actor1, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);
             }
           }
@@ -14189,21 +14189,21 @@ namespace djack.RogueSurvivor.Engine
       {
         if (actor.Model.Abilities.HasSanity && !actor.IsSleeping)
         {
-          int maxRange = this.m_Rules.ActorFOV(actor, loc.Map.LocalTime, this.m_Session.World.Weather);
+          int maxRange = m_Rules.ActorFOV(actor, loc.Map.LocalTime, m_Session.World.Weather);
           if (LOS.CanTraceViewLine(loc, actor.Location.Position, maxRange))
           {
-            this.SpendActorSanity(actor, sanCost);
+                        SpendActorSanity(actor, sanCost);
             if (whoDoesTheAction == actor)
             {
               if (actor.IsPlayer)
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
-              else if (this.IsVisibleToPlayer(actor))
-                this.AddMessage(this.MakeMessage(actor, string.Format("{0} done something very disturbing...", (object) this.Conjugate(actor, this.VERB_HAVE))));
+                                AddMessage(new djack.RogueSurvivor.Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+              else if (IsVisibleToPlayer(actor))
+                                AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", (object)Conjugate(actor, VERB_HAVE))));
             }
             else if (actor.IsPlayer)
-              this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Seeing {0} is very disturbing...", (object) what), loc.Map.LocalTime.TurnCounter, Color.Orange));
-            else if (this.IsVisibleToPlayer(actor))
-              this.AddMessage(this.MakeMessage(actor, string.Format("{0} something very disturbing...", (object) this.Conjugate(actor, this.VERB_SEE))));
+                            AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("Seeing {0} is very disturbing...", (object) what), loc.Map.LocalTime.TurnCounter, Color.Orange));
+            else if (IsVisibleToPlayer(actor))
+                            AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", (object)Conjugate(actor, VERB_SEE))));
           }
         }
       }
@@ -14212,124 +14212,124 @@ namespace djack.RogueSurvivor.Engine
     private void OnMapPowerGeneratorSwitch(Location location, PowerGenerator powGen)
     {
       Map map = location.Map;
-      if (map == this.m_Session.UniqueMaps.CHARUndergroundFacility.TheMap)
+      if (map == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap)
       {
-        lock (this.m_Session)
+        lock (m_Session)
         {
-          if ((double) this.m_Rules.ComputeMapPowerRatio(map) >= 1.0)
+          if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0)
           {
             if (map.Lighting != Lighting.LIT)
             {
               map.Lighting = Lighting.LIT;
-              if (this.m_Player.Location.Map == map)
+              if (m_Player.Location.Map == map)
               {
-                this.ClearMessages();
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
-                this.RedrawPlayScreen();
+                                ClearMessages();
+                                AddMessage(new djack.RogueSurvivor.Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
+                                RedrawPlayScreen();
               }
-              if (!this.m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
+              if (!m_Session.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
               {
-                this.m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
-                this.ShowNewAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
+                                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
+                                ShowNewAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
               }
             }
           }
           else if (map.Lighting != Lighting.DARKNESS)
           {
             map.Lighting = Lighting.DARKNESS;
-            if (this.m_Player.Location.Map == map)
+            if (m_Player.Location.Map == map)
             {
-              this.ClearMessages();
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
-              this.RedrawPlayScreen();
+                            ClearMessages();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
+                            RedrawPlayScreen();
             }
           }
         }
       }
       if (map == map.District.SubwayMap)
       {
-        lock (this.m_Session)
+        lock (m_Session)
         {
-          if ((double) this.m_Rules.ComputeMapPowerRatio(map) >= 1.0)
+          if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0)
           {
             if (map.Lighting != Lighting.LIT)
             {
               map.Lighting = Lighting.LIT;
-              if (this.m_Player.Location.Map == map)
+              if (m_Player.Location.Map == map)
               {
-                this.ClearMessages();
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("The station power turns on!", map.LocalTime.TurnCounter, Color.Green));
-                this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
-                this.RedrawPlayScreen();
+                                ClearMessages();
+                                AddMessage(new djack.RogueSurvivor.Data.Message("The station power turns on!", map.LocalTime.TurnCounter, Color.Green));
+                                AddMessage(new djack.RogueSurvivor.Data.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
+                                RedrawPlayScreen();
               }
-              this.DoOpenSubwayGates(map);
+                            DoOpenSubwayGates(map);
             }
           }
           else if (map.Lighting != Lighting.DARKNESS)
           {
-            if (this.m_Player.Location.Map == map)
+            if (m_Player.Location.Map == map)
             {
-              this.ClearMessages();
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("The station power turns off!", map.LocalTime.TurnCounter, Color.Red));
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
-              this.RedrawPlayScreen();
+                            ClearMessages();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("The station power turns off!", map.LocalTime.TurnCounter, Color.Red));
+                            AddMessage(new djack.RogueSurvivor.Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
+                            RedrawPlayScreen();
             }
             map.Lighting = Lighting.DARKNESS;
-            this.DoCloseSubwayGates(map);
+                        DoCloseSubwayGates(map);
           }
         }
       }
-      if (map == this.m_Session.UniqueMaps.PoliceStation_JailsLevel.TheMap)
+      if (map == m_Session.UniqueMaps.PoliceStation_JailsLevel.TheMap)
       {
-        lock (this.m_Session)
+        lock (m_Session)
         {
-          if ((double) this.m_Rules.ComputeMapPowerRatio(map) >= 1.0)
+          if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0)
           {
-            if (this.m_Player.Location.Map == map)
+            if (m_Player.Location.Map == map)
             {
-              this.ClearMessages();
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
-              this.RedrawPlayScreen();
+                            ClearMessages();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
+                            RedrawPlayScreen();
             }
-            this.DoOpenPoliceJailCells(map);
+                        DoOpenPoliceJailCells(map);
           }
           else
           {
-            if (this.m_Player.Location.Map == map)
+            if (m_Player.Location.Map == map)
             {
-              this.ClearMessages();
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
-              this.RedrawPlayScreen();
+                            ClearMessages();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
+                            RedrawPlayScreen();
             }
-            this.DoClosePoliceJailCells(map);
+                        DoClosePoliceJailCells(map);
           }
         }
       }
-      if (map != this.m_Session.UniqueMaps.Hospital_Power.TheMap)
+      if (map != m_Session.UniqueMaps.Hospital_Power.TheMap)
         return;
-      lock (this.m_Session)
+      lock (m_Session)
       {
-        if ((double) this.m_Rules.ComputeMapPowerRatio(map) >= 1.0)
+        if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0)
         {
-          if (this.m_Player.Location.Map == map)
+          if (m_Player.Location.Map == map)
           {
-            this.ClearMessages();
-            this.AddMessage(new djack.RogueSurvivor.Data.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
-            this.RedrawPlayScreen();
+                        ClearMessages();
+                        AddMessage(new djack.RogueSurvivor.Data.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
+                        RedrawPlayScreen();
           }
-          this.DoHospitalPowerOn();
+                    DoHospitalPowerOn();
         }
         else
         {
           if (map.Lighting == Lighting.DARKNESS)
             return;
-          if (this.m_Player.Location.Map == map)
+          if (m_Player.Location.Map == map)
           {
-            this.ClearMessages();
-            this.AddMessage(new djack.RogueSurvivor.Data.Message("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
-            this.RedrawPlayScreen();
+                        ClearMessages();
+                        AddMessage(new djack.RogueSurvivor.Data.Message("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
+                        RedrawPlayScreen();
           }
-          this.DoHospitalPowerOff();
+                    DoHospitalPowerOff();
         }
       }
     }
@@ -14357,11 +14357,11 @@ namespace djack.RogueSurvivor.Engine
           Actor actorAt = map.GetActorAt(mapObject.Location.Position);
           if (actorAt != null)
           {
-            this.KillActor((Actor) null, actorAt, "crushed");
-            if (this.m_Player.Location.Map == map)
+                        KillActor((Actor) null, actorAt, "crushed");
+            if (m_Player.Location.Map == map)
             {
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("Someone got crushed between the closing gates!", map.LocalTime.TurnCounter, Color.Red));
-              this.RedrawPlayScreen();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("Someone got crushed between the closing gates!", map.LocalTime.TurnCounter, Color.Red));
+                            RedrawPlayScreen();
             }
           }
         }
@@ -14391,11 +14391,11 @@ namespace djack.RogueSurvivor.Engine
           Actor actorAt = map.GetActorAt(mapObject.Location.Position);
           if (actorAt != null)
           {
-            this.KillActor((Actor) null, actorAt, "crushed");
-            if (this.m_Player.Location.Map == map)
+                        KillActor((Actor) null, actorAt, "crushed");
+            if (m_Player.Location.Map == map)
             {
-              this.AddMessage(new djack.RogueSurvivor.Data.Message("Someone got crushed between the closing cells!", map.LocalTime.TurnCounter, Color.Red));
-              this.RedrawPlayScreen();
+                            AddMessage(new djack.RogueSurvivor.Data.Message("Someone got crushed between the closing cells!", map.LocalTime.TurnCounter, Color.Red));
+                            RedrawPlayScreen();
             }
           }
         }
@@ -14404,12 +14404,12 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoHospitalPowerOn()
     {
-      this.m_Session.UniqueMaps.Hospital_Admissions.TheMap.Lighting = Lighting.LIT;
-      this.m_Session.UniqueMaps.Hospital_Offices.TheMap.Lighting = Lighting.LIT;
-      this.m_Session.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting.LIT;
-      this.m_Session.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.LIT;
-      this.m_Session.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.LIT;
-      foreach (MapObject mapObject in this.m_Session.UniqueMaps.Hospital_Storage.TheMap.MapObjects)
+            m_Session.UniqueMaps.Hospital_Admissions.TheMap.Lighting = Lighting.LIT;
+            m_Session.UniqueMaps.Hospital_Offices.TheMap.Lighting = Lighting.LIT;
+            m_Session.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting.LIT;
+            m_Session.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.LIT;
+            m_Session.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.LIT;
+      foreach (MapObject mapObject in m_Session.UniqueMaps.Hospital_Storage.TheMap.MapObjects)
       {
         if (mapObject.ImageID == "MapObjects\\gate_closed")
         {
@@ -14451,7 +14451,7 @@ namespace djack.RogueSurvivor.Engine
         if (powGen != null && !powGen.IsOn)
         {
           powGen.TogglePower();
-          this.OnMapPowerGeneratorSwitch(powGen.Location, powGen);
+                    OnMapPowerGeneratorSwitch(powGen.Location, powGen);
         }
       }
     }
@@ -14471,7 +14471,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsInCHARProperty(Location location)
     {
-      if (location.Map != this.Session.UniqueMaps.CHARUndergroundFacility.TheMap)
+      if (location.Map != Session.UniqueMaps.CHARUndergroundFacility.TheMap)
         return RogueGame.IsInCHAROffice(location);
       return true;
     }
@@ -14490,10 +14490,10 @@ namespace djack.RogueSurvivor.Engine
     private List<Actor> ListWorldActors(Predicate<Actor> pred, RogueGame.MapListFlags flags)
     {
       List<Actor> actorList = new List<Actor>();
-      for (int index1 = 0; index1 < this.m_Session.World.Size; ++index1)
+      for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
       {
-        for (int index2 = 0; index2 < this.m_Session.World.Size; ++index2)
-          actorList.AddRange((IEnumerable<Actor>) this.ListDistrictActors(this.m_Session.World[index1, index2], flags, pred));
+        for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
+          actorList.AddRange((IEnumerable<Actor>)ListDistrictActors(m_Session.World[index1, index2], flags, pred));
       }
       return actorList;
     }
@@ -14525,24 +14525,24 @@ namespace djack.RogueSurvivor.Engine
     private string[] CompileDistrictFunFacts(District d)
     {
       List<string> stringList = new List<string>();
-      List<Actor> actorList1 = this.ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, (Predicate<Actor>) (a =>
+      List<Actor> actorList1 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, (Predicate<Actor>) (a =>
       {
         if (!a.IsDead)
           return !a.Model.Abilities.IsUndead;
         return false;
       }));
-      List<Actor> actorList2 = this.ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, (Predicate<Actor>) (a =>
+      List<Actor> actorList2 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, (Predicate<Actor>) (a =>
       {
         if (!a.IsDead)
           return a.Model.Abilities.IsUndead;
         return false;
       }));
-      List<Actor> actorList3 = this.ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, (Predicate<Actor>) null);
-      if (this.m_Player.Model.Abilities.IsUndead)
-        actorList2.Add(this.m_Player);
+      List<Actor> actorList3 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, (Predicate<Actor>) null);
+      if (m_Player.Model.Abilities.IsUndead)
+        actorList2.Add(m_Player);
       else
-        actorList1.Add(this.m_Player);
-      actorList3.Add(this.m_Player);
+        actorList1.Add(m_Player);
+      actorList3.Add(m_Player);
       if (actorList1.Count > 0)
       {
         actorList1.Sort((Comparison<Actor>) ((a, b) =>
@@ -14552,9 +14552,9 @@ namespace djack.RogueSurvivor.Engine
           return a.SpawnTime != b.SpawnTime ? 1 : 0;
         }));
         stringList.Add("- Oldest Livings Surviving");
-        stringList.Add(string.Format("    1st {0}.", (object) this.FunFactActorResume(actorList1[0], new WorldTime(actorList1[0].SpawnTime).ToString())));
+        stringList.Add(string.Format("    1st {0}.", (object)FunFactActorResume(actorList1[0], new WorldTime(actorList1[0].SpawnTime).ToString())));
         if (actorList1.Count > 1)
-          stringList.Add(string.Format("    2nd {0}.", (object) this.FunFactActorResume(actorList1[1], new WorldTime(actorList1[1].SpawnTime).ToString())));
+          stringList.Add(string.Format("    2nd {0}.", (object)FunFactActorResume(actorList1[1], new WorldTime(actorList1[1].SpawnTime).ToString())));
       }
       else
         stringList.Add("    No living actors alive!");
@@ -14567,9 +14567,9 @@ namespace djack.RogueSurvivor.Engine
           return a.SpawnTime != b.SpawnTime ? 1 : 0;
         }));
         stringList.Add("- Oldest Undeads Rotting Around");
-        stringList.Add(string.Format("    1st {0}.", (object) this.FunFactActorResume(actorList2[0], new WorldTime(actorList2[0].SpawnTime).ToString())));
+        stringList.Add(string.Format("    1st {0}.", (object)FunFactActorResume(actorList2[0], new WorldTime(actorList2[0].SpawnTime).ToString())));
         if (actorList2.Count > 1)
-          stringList.Add(string.Format("    2nd {0}.", (object) this.FunFactActorResume(actorList2[1], new WorldTime(actorList2[1].SpawnTime).ToString())));
+          stringList.Add(string.Format("    2nd {0}.", (object)FunFactActorResume(actorList2[1], new WorldTime(actorList2[1].SpawnTime).ToString())));
       }
       else
         stringList.Add("    No undeads shambling around!");
@@ -14584,9 +14584,9 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("- Deadliest Livings Kicking ass");
         if (actorList1[0].KillsCount > 0)
         {
-          stringList.Add(string.Format("    1st {0}.", (object) this.FunFactActorResume(actorList1[0], actorList1[0].KillsCount.ToString())));
+          stringList.Add(string.Format("    1st {0}.", (object)FunFactActorResume(actorList1[0], actorList1[0].KillsCount.ToString())));
           if (actorList1.Count > 1 && actorList1[1].KillsCount > 0)
-            stringList.Add(string.Format("    2nd {0}.", (object) this.FunFactActorResume(actorList1[1], actorList1[1].KillsCount.ToString())));
+            stringList.Add(string.Format("    2nd {0}.", (object)FunFactActorResume(actorList1[1], actorList1[1].KillsCount.ToString())));
         }
         else
           stringList.Add("    Livings can't fight for their lives apparently.");
@@ -14602,9 +14602,9 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("- Deadliest Undeads Chewing Brains");
         if (actorList2[0].KillsCount > 0)
         {
-          stringList.Add(string.Format("    1st {0}.", (object) this.FunFactActorResume(actorList2[0], actorList2[0].KillsCount.ToString())));
+          stringList.Add(string.Format("    1st {0}.", (object)FunFactActorResume(actorList2[0], actorList2[0].KillsCount.ToString())));
           if (actorList2.Count > 1 && actorList2[1].KillsCount > 0)
-            stringList.Add(string.Format("    2nd {0}.", (object) this.FunFactActorResume(actorList2[1], actorList2[1].KillsCount.ToString())));
+            stringList.Add(string.Format("    2nd {0}.", (object)FunFactActorResume(actorList2[1], actorList2[1].KillsCount.ToString())));
         }
         else
           stringList.Add("    Undeads don't care for brains apparently.");
@@ -14620,9 +14620,9 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("- Most Murderous Murderer Murdering");
         if (actorList1[0].MurdersCounter > 0)
         {
-          stringList.Add(string.Format("    1st {0}.", (object) this.FunFactActorResume(actorList1[0], actorList1[0].MurdersCounter.ToString())));
+          stringList.Add(string.Format("    1st {0}.", (object)FunFactActorResume(actorList1[0], actorList1[0].MurdersCounter.ToString())));
           if (actorList1.Count > 1 && actorList1[1].MurdersCounter > 0)
-            stringList.Add(string.Format("    2nd {0}.", (object) this.FunFactActorResume(actorList1[1], actorList1[1].MurdersCounter.ToString())));
+            stringList.Add(string.Format("    2nd {0}.", (object)FunFactActorResume(actorList1[1], actorList1[1].MurdersCounter.ToString())));
         }
         else
           stringList.Add("    No murders committed!");
@@ -14637,37 +14637,37 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadData()
     {
-      this.LoadDataSkills();
-      this.LoadDataItems();
-      this.LoadDataActors();
+            LoadDataSkills();
+            LoadDataItems();
+            LoadDataActors();
     }
 
     private void LoadDataActors()
     {
-      this.m_GameActors.LoadFromCSV(this.m_UI, "Resources\\Data\\Actors.csv");
+            m_GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
     }
 
     private void LoadDataItems()
     {
-      this.m_GameItems.LoadMedicineFromCSV(this.m_UI, "Resources\\Data\\Items_Medicine.csv");
-      this.m_GameItems.LoadFoodFromCSV(this.m_UI, "Resources\\Data\\Items_Food.csv");
-      this.m_GameItems.LoadMeleeWeaponsFromCSV(this.m_UI, "Resources\\Data\\Items_MeleeWeapons.csv");
-      this.m_GameItems.LoadRangedWeaponsFromCSV(this.m_UI, "Resources\\Data\\Items_RangedWeapons.csv");
-      this.m_GameItems.LoadExplosivesFromCSV(this.m_UI, "Resources\\Data\\Items_Explosives.csv");
-      this.m_GameItems.LoadBarricadingMaterialFromCSV(this.m_UI, "Resources\\Data\\Items_Barricading.csv");
-      this.m_GameItems.LoadArmorsFromCSV(this.m_UI, "Resources\\Data\\Items_Armors.csv");
-      this.m_GameItems.LoadTrackersFromCSV(this.m_UI, "Resources\\Data\\Items_Trackers.csv");
-      this.m_GameItems.LoadSpraypaintsFromCSV(this.m_UI, "Resources\\Data\\Items_Spraypaints.csv");
-      this.m_GameItems.LoadLightsFromCSV(this.m_UI, "Resources\\Data\\Items_Lights.csv");
-      this.m_GameItems.LoadScentspraysFromCSV(this.m_UI, "Resources\\Data\\Items_Scentsprays.csv");
-      this.m_GameItems.LoadTrapsFromCSV(this.m_UI, "Resources\\Data\\Items_Traps.csv");
-      this.m_GameItems.LoadEntertainmentFromCSV(this.m_UI, "Resources\\Data\\Items_Entertainment.csv");
-      this.m_GameItems.CreateModels();
+            m_GameItems.LoadMedicineFromCSV(m_UI, "Resources\\Data\\Items_Medicine.csv");
+            m_GameItems.LoadFoodFromCSV(m_UI, "Resources\\Data\\Items_Food.csv");
+            m_GameItems.LoadMeleeWeaponsFromCSV(m_UI, "Resources\\Data\\Items_MeleeWeapons.csv");
+            m_GameItems.LoadRangedWeaponsFromCSV(m_UI, "Resources\\Data\\Items_RangedWeapons.csv");
+            m_GameItems.LoadExplosivesFromCSV(m_UI, "Resources\\Data\\Items_Explosives.csv");
+            m_GameItems.LoadBarricadingMaterialFromCSV(m_UI, "Resources\\Data\\Items_Barricading.csv");
+            m_GameItems.LoadArmorsFromCSV(m_UI, "Resources\\Data\\Items_Armors.csv");
+            m_GameItems.LoadTrackersFromCSV(m_UI, "Resources\\Data\\Items_Trackers.csv");
+            m_GameItems.LoadSpraypaintsFromCSV(m_UI, "Resources\\Data\\Items_Spraypaints.csv");
+            m_GameItems.LoadLightsFromCSV(m_UI, "Resources\\Data\\Items_Lights.csv");
+            m_GameItems.LoadScentspraysFromCSV(m_UI, "Resources\\Data\\Items_Scentsprays.csv");
+            m_GameItems.LoadTrapsFromCSV(m_UI, "Resources\\Data\\Items_Traps.csv");
+            m_GameItems.LoadEntertainmentFromCSV(m_UI, "Resources\\Data\\Items_Entertainment.csv");
+            m_GameItems.CreateModels();
     }
 
     private void LoadDataSkills()
     {
-      Skills.LoadSkillsFromCSV(this.m_UI, "Resources\\Data\\Skills.csv");
+      Skills.LoadSkillsFromCSV(m_UI, "Resources\\Data\\Skills.csv");
     }
 
     private abstract class Overlay
@@ -14683,13 +14683,13 @@ namespace djack.RogueSurvivor.Engine
 
       public OverlayImage(Point screenPosition, string imageID)
       {
-        this.ScreenPosition = screenPosition;
-        this.ImageID = imageID;
+                ScreenPosition = screenPosition;
+                ImageID = imageID;
       }
 
       public override void Draw(IRogueUI ui)
       {
-        ui.UI_DrawImage(this.ImageID, this.ScreenPosition.X, this.ScreenPosition.Y);
+        ui.UI_DrawImage(ImageID, ScreenPosition.X, ScreenPosition.Y);
       }
     }
 
@@ -14703,14 +14703,14 @@ namespace djack.RogueSurvivor.Engine
 
       public OverlayTransparentImage(float alpha, Point screenPosition, string imageID)
       {
-        this.Alpha = alpha;
-        this.ScreenPosition = screenPosition;
-        this.ImageID = imageID;
+                Alpha = alpha;
+                ScreenPosition = screenPosition;
+                ImageID = imageID;
       }
 
       public override void Draw(IRogueUI ui)
       {
-        ui.UI_DrawTransparentImage(this.Alpha, this.ImageID, this.ScreenPosition.X, this.ScreenPosition.Y);
+        ui.UI_DrawTransparentImage(Alpha, ImageID, ScreenPosition.X, ScreenPosition.Y);
       }
     }
 
@@ -14731,17 +14731,17 @@ namespace djack.RogueSurvivor.Engine
 
       public OverlayText(Point screenPosition, Color color, string text, Color? shadowColor)
       {
-        this.ScreenPosition = screenPosition;
-        this.Color = color;
-        this.ShadowColor = shadowColor;
-        this.Text = text;
+                ScreenPosition = screenPosition;
+                Color = color;
+                ShadowColor = shadowColor;
+                Text = text;
       }
 
       public override void Draw(IRogueUI ui)
       {
-        if (this.ShadowColor.HasValue)
-          ui.UI_DrawString(this.ShadowColor.Value, this.Text, this.ScreenPosition.X + 1, this.ScreenPosition.Y + 1, new Color?());
-        ui.UI_DrawString(this.Color, this.Text, this.ScreenPosition.X, this.ScreenPosition.Y, new Color?());
+        if (ShadowColor.HasValue)
+          ui.UI_DrawString(ShadowColor.Value, Text, ScreenPosition.X + 1, ScreenPosition.Y + 1, new Color?());
+        ui.UI_DrawString(Color, Text, ScreenPosition.X, ScreenPosition.Y, new Color?());
       }
     }
 
@@ -14755,14 +14755,14 @@ namespace djack.RogueSurvivor.Engine
 
       public OverlayLine(Point screenFrom, Color color, Point screenTo)
       {
-        this.ScreenFrom = screenFrom;
-        this.ScreenTo = screenTo;
-        this.Color = color;
+                ScreenFrom = screenFrom;
+                ScreenTo = screenTo;
+                Color = color;
       }
 
       public override void Draw(IRogueUI ui)
       {
-        ui.UI_DrawLine(this.Color, this.ScreenFrom.X, this.ScreenFrom.Y, this.ScreenTo.X, this.ScreenTo.Y);
+        ui.UI_DrawLine(Color, ScreenFrom.X, ScreenFrom.Y, ScreenTo.X, ScreenTo.Y);
       }
     }
 
@@ -14774,13 +14774,13 @@ namespace djack.RogueSurvivor.Engine
 
       public OverlayRect(Color color, Rectangle rect)
       {
-        this.Rectangle = rect;
-        this.Color = color;
+                Rectangle = rect;
+                Color = color;
       }
 
       public override void Draw(IRogueUI ui)
       {
-        ui.UI_DrawRect(this.Color, this.Rectangle);
+        ui.UI_DrawRect(Color, Rectangle);
       }
     }
 
@@ -14798,16 +14798,16 @@ namespace djack.RogueSurvivor.Engine
 
       public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos)
       {
-        this.ScreenPosition = screenPos;
-        this.TextColor = textColor;
-        this.BoxBorderColor = boxBorderColor;
-        this.BoxFillColor = boxFillColor;
-        this.Lines = lines;
+                ScreenPosition = screenPos;
+                TextColor = textColor;
+                BoxBorderColor = boxBorderColor;
+                BoxFillColor = boxFillColor;
+                Lines = lines;
       }
 
       public override void Draw(IRogueUI ui)
       {
-        ui.UI_DrawPopup(this.Lines, this.TextColor, this.BoxBorderColor, this.BoxFillColor, this.ScreenPosition.X, this.ScreenPosition.Y);
+        ui.UI_DrawPopup(Lines, TextColor, BoxBorderColor, BoxFillColor, ScreenPosition.X, ScreenPosition.Y);
       }
     }
 

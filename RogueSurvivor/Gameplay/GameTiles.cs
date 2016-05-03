@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Gameplay
     {
       get
       {
-        return this.m_Models[id];
+        return m_Models[id];
       }
     }
 
@@ -36,8 +36,8 @@ namespace djack.RogueSurvivor.Gameplay
       }
       set
       {
-        this.m_Models[(int) id] = value;
-        this.m_Models[(int) id].ID = (int) id;
+                m_Models[(int) id] = value;
+                m_Models[(int) id].ID = (int) id;
       }
     }
 

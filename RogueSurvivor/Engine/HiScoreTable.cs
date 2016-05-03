@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Table.Count;
+        return m_Table.Count;
       }
     }
 
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.Get(index);
+        return Get(index);
       }
     }
 
@@ -39,14 +39,14 @@ namespace djack.RogueSurvivor.Engine
     {
       if (maxEntries < 1)
         throw new ArgumentOutOfRangeException("maxEntries < 1");
-      this.m_Table = new List<HiScore>(maxEntries);
-      this.m_MaxEntries = maxEntries;
+            m_Table = new List<HiScore>(maxEntries);
+            m_MaxEntries = maxEntries;
     }
 
     public void Clear()
     {
-      for (int index = 0; index < this.m_MaxEntries; ++index)
-        this.m_Table.Add(new HiScore()
+      for (int index = 0; index < m_MaxEntries; ++index)
+                m_Table.Add(new HiScore()
         {
           Death = "no death",
           DifficultyPercent = 0,
@@ -63,21 +63,21 @@ namespace djack.RogueSurvivor.Engine
     public bool Register(HiScore hi)
     {
       int index = 0;
-      while (index < this.m_Table.Count && this.m_Table[index].TotalPoints >= hi.TotalPoints)
+      while (index < m_Table.Count && m_Table[index].TotalPoints >= hi.TotalPoints)
         ++index;
-      if (index > this.m_MaxEntries)
+      if (index > m_MaxEntries)
         return false;
-      this.m_Table.Insert(index, hi);
-      while (this.m_Table.Count > this.m_MaxEntries)
-        this.m_Table.RemoveAt(this.m_Table.Count - 1);
+            m_Table.Insert(index, hi);
+      while (m_Table.Count > m_MaxEntries)
+                m_Table.RemoveAt(m_Table.Count - 1);
       return true;
     }
 
     public HiScore Get(int index)
     {
-      if (index < 0 || index >= this.m_Table.Count)
+      if (index < 0 || index >= m_Table.Count)
         throw new ArgumentOutOfRangeException("index");
-      return this.m_Table[index];
+      return m_Table[index];
     }
 
     public static void Save(HiScoreTable table, string filepath)

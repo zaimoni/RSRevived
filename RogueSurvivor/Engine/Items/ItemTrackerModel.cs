@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Tracking;
+        return m_Tracking;
       }
     }
 
@@ -25,16 +25,16 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_MaxBatteries;
+        return m_MaxBatteries;
       }
     }
 
     public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries)
       : base(aName, theNames, imageID)
     {
-      this.m_Tracking = tracking;
-      this.m_MaxBatteries = maxBatteries;
-      this.DontAutoEquip = true;
+            m_Tracking = tracking;
+            m_MaxBatteries = maxBatteries;
+            DontAutoEquip = true;
     }
 
     [System.Flags]

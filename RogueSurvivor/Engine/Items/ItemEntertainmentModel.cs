@@ -17,11 +17,11 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Value;
+        return m_Value;
       }
       set
       {
-        this.m_Value = value;
+                m_Value = value;
       }
     }
 
@@ -29,19 +29,19 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_BoreChance;
+        return m_BoreChance;
       }
       set
       {
-        this.m_BoreChance = value;
+                m_BoreChance = value;
       }
     }
 
     public ItemEntertainmentModel(string aName, string theNames, string imageID, int value, int boreChance)
       : base(aName, theNames, imageID)
     {
-      this.m_Value = value;
-      this.m_BoreChance = boreChance;
+            m_Value = value;
+            m_BoreChance = boreChance;
     }
   }
 }

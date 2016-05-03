@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       get
       {
-        return this.m_Direction;
+        return m_Direction;
       }
     }
 
@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       get
       {
-        return this.m_To;
+        return m_To;
       }
     }
 
@@ -37,21 +37,21 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (pushObj == null)
         throw new ArgumentNullException("pushObj");
-      this.m_Object = pushObj;
-      this.m_Direction = pushDir;
-      this.m_To = pushObj.Location.Position + pushDir;
+            m_Object = pushObj;
+            m_Direction = pushDir;
+            m_To = pushObj.Location.Position + pushDir;
     }
 
     public override bool IsLegal()
     {
-      if (this.m_Game.Rules.CanActorPush(this.m_Actor, this.m_Object))
-        return this.m_Game.Rules.CanPushObjectTo(this.m_Object, this.m_To, out this.m_FailReason);
+      if (m_Game.Rules.CanActorPush(m_Actor, m_Object))
+        return m_Game.Rules.CanPushObjectTo(m_Object, m_To, out m_FailReason);
       return false;
     }
 
     public override void Perform()
     {
-      this.m_Game.DoPush(this.m_Actor, this.m_Object, this.m_To);
+            m_Game.DoPush(m_Actor, m_Object, m_To);
     }
   }
 }

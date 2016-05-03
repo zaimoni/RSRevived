@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Messages.Count;
+        return m_Messages.Count;
       }
     }
 
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (IEnumerable<Message>) this.m_History;
+        return (IEnumerable<Message>)m_History;
       }
     }
 
@@ -41,51 +41,51 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentOutOfRangeException("linesSpacing < 0");
       if (fadeoutFactor < 0)
         throw new ArgumentOutOfRangeException("fadeoutFactor < 0");
-      this.m_LinesSpacing = linesSpacing;
-      this.m_FadeoutFactor = fadeoutFactor;
-      this.m_HistorySize = historySize;
-      this.m_History = new List<Message>(historySize);
+            m_LinesSpacing = linesSpacing;
+            m_FadeoutFactor = fadeoutFactor;
+            m_HistorySize = historySize;
+            m_History = new List<Message>(historySize);
     }
 
     public void Clear()
     {
-      this.m_Messages.Clear();
+            m_Messages.Clear();
     }
 
     public void ClearHistory()
     {
-      this.m_History.Clear();
+            m_History.Clear();
     }
 
     public void Add(Message msg)
     {
-      this.m_Messages.Add(msg);
-      this.m_History.Add(msg);
-      if (this.m_History.Count <= this.m_HistorySize)
+            m_Messages.Add(msg);
+            m_History.Add(msg);
+      if (m_History.Count <= m_HistorySize)
         return;
-      this.m_History.RemoveAt(0);
+            m_History.RemoveAt(0);
     }
 
     public void RemoveLastMessage()
     {
-      if (this.m_Messages.Count == 0)
+      if (m_Messages.Count == 0)
         return;
-      this.m_Messages.RemoveAt(this.m_Messages.Count - 1);
+            m_Messages.RemoveAt(m_Messages.Count - 1);
     }
 
     public void Draw(IRogueUI ui, int freshMessagesTurn, int gx, int gy)
     {
-      for (int index = 0; index < this.m_Messages.Count; ++index)
+      for (int index = 0; index < m_Messages.Count; ++index)
       {
-        Message message = this.m_Messages[index];
-        int alpha = Math.Max(64, (int) byte.MaxValue - this.m_FadeoutFactor * (this.m_Messages.Count - 1 - index));
-        bool flag = this.m_Messages[index].Turn >= freshMessagesTurn;
+        Message message = m_Messages[index];
+        int alpha = Math.Max(64, (int) byte.MaxValue - m_FadeoutFactor * (m_Messages.Count - 1 - index));
+        bool flag = m_Messages[index].Turn >= freshMessagesTurn;
         Color color = Color.FromArgb(alpha, message.Color);
         if (flag)
           ui.UI_DrawStringBold(color, message.Text, gx, gy, new Color?());
         else
           ui.UI_DrawString(color, message.Text, gx, gy, new Color?());
-        gy += this.m_LinesSpacing;
+        gy += m_LinesSpacing;
       }
     }
   }

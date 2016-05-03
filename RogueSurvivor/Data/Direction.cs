@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Index;
+        return m_Index;
       }
     }
 
@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Name;
+        return m_Name;
       }
     }
 
@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Vector;
+        return m_Vector;
       }
     }
 
@@ -87,20 +87,20 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_NormalizedVector;
+        return m_NormalizedVector;
       }
     }
 
     private Direction(int index, string name, Point vector)
     {
-      this.m_Index = index;
-      this.m_Name = name;
-      this.m_Vector = vector;
+            m_Index = index;
+            m_Name = name;
+            m_Vector = vector;
       float num = (float) Math.Sqrt((double) (vector.X * vector.X + vector.Y * vector.Y));
       if ((double) num != 0.0)
-        this.m_NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
+                m_NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
       else
-        this.m_NormalizedVector = PointF.Empty;
+                m_NormalizedVector = PointF.Empty;
     }
 
     public static Point operator +(Point lhs, Direction rhs)
@@ -295,7 +295,7 @@ diagonalExit:
 
     public override string ToString()
     {
-      return this.m_Name;
+      return m_Name;
     }
   }
 }

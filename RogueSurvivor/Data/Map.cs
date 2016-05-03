@@ -48,11 +48,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_District;
+        return m_District;
       }
       set
       {
-        this.m_District = value;
+                m_District = value;
       }
     }
 
@@ -62,11 +62,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Lighting;
+        return m_Lighting;
       }
       set
       {
-        this.m_Lighting = value;
+                m_Lighting = value;
       }
     }
 
@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Zone>) this.m_Zones;
+        return (IEnumerable<Zone>)m_Zones;
       }
     }
 
@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Exit>) this.m_Exits.Values;
+        return (IEnumerable<Exit>)m_Exits.Values;
       }
     }
 
@@ -90,8 +90,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Exits.Values != null)
-          return this.m_Exits.Values.Count;
+        if (m_Exits.Values != null)
+          return m_Exits.Values.Count;
         return 0;
       }
     }
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Actor>) this.m_ActorsList;
+        return (IEnumerable<Actor>)m_ActorsList;
       }
     }
 
@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_ActorsList.Count;
+        return m_ActorsList.Count;
       }
     }
 
@@ -116,11 +116,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_iCheckNextActorIndex;
+        return m_iCheckNextActorIndex;
       }
       set
       {
-        this.m_iCheckNextActorIndex = value;
+                m_iCheckNextActorIndex = value;
       }
     }
 
@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<MapObject>) this.m_MapObjectsList;
+        return (IEnumerable<MapObject>)m_MapObjectsList;
       }
     }
 
@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Inventory>) this.m_aux_GroundItemsList;
+        return (IEnumerable<Inventory>)m_aux_GroundItemsList;
       }
     }
 
@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Corpse>) this.m_CorpsesList;
+        return (IEnumerable<Corpse>)m_CorpsesList;
       }
     }
 
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_CorpsesList.Count;
+        return m_CorpsesList.Count;
       }
     }
 
@@ -160,7 +160,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<TimedTask>) this.m_Timers;
+        return (IEnumerable<TimedTask>)m_Timers;
       }
     }
 
@@ -168,8 +168,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Timers != null)
-          return this.m_Timers.Count;
+        if (m_Timers != null)
+          return m_Timers.Count;
         return 0;
       }
     }
@@ -178,7 +178,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<OdorScent>) this.m_Scents;
+        return (IEnumerable<OdorScent>)m_Scents;
       }
     }
 
@@ -328,39 +328,39 @@ namespace djack.RogueSurvivor.Data
 
     public Tile GetTileAt(Point p)
     {
-      return this.m_Tiles[p.X, p.Y];
+      return m_Tiles[p.X, p.Y];
     }
 
     public void SetTileModelAt(int x, int y, TileModel model)
     {
-      if (!this.IsInBounds(x, y))
+      if (!IsInBounds(x, y))
         throw new ArgumentOutOfRangeException("position out of map bounds");
       if (model == null)
         throw new ArgumentNullException("model");
-      this.m_Tiles[x, y].Model = model;
+            m_Tiles[x, y].Model = model;
     }
 
     public Exit GetExitAt(Point pos)
     {
       Exit exit;
-      if (this.m_Exits.TryGetValue(pos, out exit))
+      if (m_Exits.TryGetValue(pos, out exit))
         return exit;
       return (Exit) null;
     }
 
     public Exit GetExitAt(int x, int y)
     {
-      return this.GetExitAt(new Point(x, y));
+      return GetExitAt(new Point(x, y));
     }
 
     public void SetExitAt(Point pos, Exit exit)
     {
-      this.m_Exits.Add(pos, exit);
+            m_Exits.Add(pos, exit);
     }
 
     public void RemoveExitAt(Point pos)
     {
-      this.m_Exits.Remove(pos);
+            m_Exits.Remove(pos);
     }
 
     public bool HasAnExitIn(Rectangle rect)
@@ -369,7 +369,7 @@ namespace djack.RogueSurvivor.Data
       {
         for (int top = rect.Top; top < rect.Bottom; ++top)
         {
-          if (this.GetExitAt(left, top) != null)
+          if (GetExitAt(left, top) != null)
             return true;
         }
       }
@@ -380,7 +380,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (exit == null)
         return new Point?();
-      foreach (KeyValuePair<Point, Exit> mExit in this.m_Exits)
+      foreach (KeyValuePair<Point, Exit> mExit in m_Exits)
       {
         if (mExit.Value == exit)
           return new Point?(mExit.Key);
@@ -390,32 +390,32 @@ namespace djack.RogueSurvivor.Data
 
     public void AddZone(Zone zone)
     {
-      this.m_Zones.Add(zone);
+            m_Zones.Add(zone);
     }
 
     public void RemoveZone(Zone zone)
     {
-      this.m_Zones.Remove(zone);
+            m_Zones.Remove(zone);
     }
 
     public void RemoveAllZonesAt(int x, int y)
     {
-      List<Zone> zonesAt = this.GetZonesAt(x, y);
+      List<Zone> zonesAt = GetZonesAt(x, y);
       if (zonesAt == null)
         return;
       foreach (Zone zone in zonesAt)
-        this.RemoveZone(zone);
+                RemoveZone(zone);
     }
 
     public List<Zone> GetZonesAt(int x, int y)
     {
       List<Zone> zoneList = (List<Zone>) null;
-      foreach (Zone mZone in this.m_Zones)
+      foreach (Zone mZone in m_Zones)
       {
         if (mZone.Bounds.Contains(x, y))
         {
           if (zoneList == null)
-            zoneList = new List<Zone>(this.m_Zones.Count / 4);
+            zoneList = new List<Zone>(m_Zones.Count / 4);
           zoneList.Add(mZone);
         }
       }
@@ -424,7 +424,7 @@ namespace djack.RogueSurvivor.Data
 
     public Zone GetZoneByName(string name)
     {
-      foreach (Zone mZone in this.m_Zones)
+      foreach (Zone mZone in m_Zones)
       {
         if (mZone.Name == name)
           return mZone;
@@ -434,7 +434,7 @@ namespace djack.RogueSurvivor.Data
 
     public Zone GetZoneByPartialName(string partOfname)
     {
-      foreach (Zone mZone in this.m_Zones)
+      foreach (Zone mZone in m_Zones)
       {
         if (mZone.Name.Contains(partOfname))
           return mZone;
@@ -444,7 +444,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasZonePartiallyNamedAt(Point pos, string partOfName)
     {
-      List<Zone> zonesAt = this.GetZonesAt(pos.X, pos.Y);
+      List<Zone> zonesAt = GetZonesAt(pos.X, pos.Y);
       if (zonesAt == null)
         return false;
       foreach (Zone zone in zonesAt)
@@ -458,66 +458,66 @@ namespace djack.RogueSurvivor.Data
     // Actor manipulation functions
     public bool HasActor(Actor actor)
     {
-      return this.m_ActorsList.Contains(actor);
+      return m_ActorsList.Contains(actor);
     }
 
     public Actor GetActor(int index)
     {
-      return this.m_ActorsList[index];
+      return m_ActorsList[index];
     }
 
     public Actor GetActorAt(Point position)
     {
       Actor actor;
-      if (this.m_aux_ActorsByPosition.TryGetValue(position, out actor))
+      if (m_aux_ActorsByPosition.TryGetValue(position, out actor))
         return actor;
       return (Actor) null;
     }
 
     public Actor GetActorAt(int x, int y)
     {
-      return this.GetActorAt(new Point(x, y));
+      return GetActorAt(new Point(x, y));
     }
 
     public void PlaceActorAt(Actor actor, Point position)
     {
       if (actor == null)
         throw new ArgumentNullException("actor");
-      Actor actorAt = this.GetActorAt(position);
+      Actor actorAt = GetActorAt(position);
       if (actorAt == actor)
         throw new InvalidOperationException("actor already at position");
       if (actorAt != null)
         throw new InvalidOperationException("another actor already at position");
-      if (!this.IsInBounds(position.X, position.Y))
+      if (!IsInBounds(position.X, position.Y))
         throw new ArgumentOutOfRangeException("position out of map bounds");
-      if (this.HasActor(actor))
-        this.m_aux_ActorsByPosition.Remove(actor.Location.Position);
+      if (HasActor(actor))
+                m_aux_ActorsByPosition.Remove(actor.Location.Position);
       else
-        this.m_ActorsList.Add(actor);
-      this.m_aux_ActorsByPosition.Add(position, actor);
+                m_ActorsList.Add(actor);
+            m_aux_ActorsByPosition.Add(position, actor);
       actor.Location = new Location(this, position);
-      this.m_iCheckNextActorIndex = 0;
+            m_iCheckNextActorIndex = 0;
     }
 
     public void MoveActorToFirstPosition(Actor actor)
     {
-      if (!this.m_ActorsList.Contains(actor))
+      if (!m_ActorsList.Contains(actor))
         throw new ArgumentException("actor not in map");
-      this.m_ActorsList.Remove(actor);
-      if (this.m_ActorsList.Count == 0)
-        this.m_ActorsList.Add(actor);
+            m_ActorsList.Remove(actor);
+      if (m_ActorsList.Count == 0)
+                m_ActorsList.Add(actor);
       else
-        this.m_ActorsList.Insert(0, actor);
-      this.m_iCheckNextActorIndex = 0;
+                m_ActorsList.Insert(0, actor);
+            m_iCheckNextActorIndex = 0;
     }
 
     public void RemoveActor(Actor actor)
     {
-      if (!this.m_ActorsList.Contains(actor))
+      if (!m_ActorsList.Contains(actor))
         return;
-      this.m_ActorsList.Remove(actor);
-      this.m_aux_ActorsByPosition.Remove(actor.Location.Position);
-      this.m_iCheckNextActorIndex = 0;
+            m_ActorsList.Remove(actor);
+            m_aux_ActorsByPosition.Remove(actor.Location.Position);
+            m_iCheckNextActorIndex = 0;
     }
 
     public Actor NextActorToAct { 
@@ -538,67 +538,67 @@ namespace djack.RogueSurvivor.Data
     // map object manipulation functions
     public bool HasMapObject(MapObject mapObj)
     {
-      return this.m_MapObjectsList.Contains(mapObj);
+      return m_MapObjectsList.Contains(mapObj);
     }
 
     public MapObject GetMapObjectAt(Point position)
     {
       MapObject mapObject;
-      if (this.m_aux_MapObjectsByPosition.TryGetValue(position, out mapObject))
+      if (m_aux_MapObjectsByPosition.TryGetValue(position, out mapObject))
         return mapObject;
       return (MapObject) null;
     }
 
     public MapObject GetMapObjectAt(int x, int y)
     {
-      return this.GetMapObjectAt(new Point(x, y));
+      return GetMapObjectAt(new Point(x, y));
     }
 
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
       if (mapObj == null)
         throw new ArgumentNullException("actor");
-      MapObject mapObjectAt = this.GetMapObjectAt(position);
+      MapObject mapObjectAt = GetMapObjectAt(position);
       if (mapObjectAt == mapObj)
         return;
       if (mapObjectAt == mapObj)
         throw new InvalidOperationException("mapObject already at position");
       if (mapObjectAt != null)
         throw new InvalidOperationException("another mapObject already at position");
-      if (!this.IsInBounds(position.X, position.Y))
+      if (!IsInBounds(position.X, position.Y))
         throw new ArgumentOutOfRangeException("position out of map bounds");
-      if (!this.GetTileAt(position.X, position.Y).Model.IsWalkable)
+      if (!GetTileAt(position.X, position.Y).Model.IsWalkable)
         throw new InvalidOperationException("cannot place map objects on unwalkable tiles");
-      if (this.HasMapObject(mapObj))
-        this.m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
+      if (HasMapObject(mapObj))
+                m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
       else
-        this.m_MapObjectsList.Add(mapObj);
-      this.m_aux_MapObjectsByPosition.Add(position, mapObj);
+                m_MapObjectsList.Add(mapObj);
+            m_aux_MapObjectsByPosition.Add(position, mapObj);
       mapObj.Location = new Location(this, position);
     }
 
     public void RemoveMapObjectAt(int x, int y)
     {
-      MapObject mapObjectAt = this.GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt == null)
         return;
-      this.m_MapObjectsList.Remove(mapObjectAt);
-      this.m_aux_MapObjectsByPosition.Remove(new Point(x, y));
+            m_MapObjectsList.Remove(mapObjectAt);
+            m_aux_MapObjectsByPosition.Remove(new Point(x, y));
     }
 
     public Inventory GetItemsAt(Point position)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         return (Inventory) null;
       Inventory inventory;
-      if (this.m_GroundItemsByPosition.TryGetValue(position, out inventory))
+      if (m_GroundItemsByPosition.TryGetValue(position, out inventory))
         return inventory;
       return (Inventory) null;
     }
 
     public Inventory GetItemsAt(int x, int y)
     {
-      return this.GetItemsAt(new Point(x, y));
+      return GetItemsAt(new Point(x, y));
     }
 
     public djack.RogueSurvivor.Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
@@ -616,7 +616,7 @@ namespace djack.RogueSurvivor.Data
 
     public Point? GetGroundInventoryPosition(Inventory groundInv)
     {
-      foreach (KeyValuePair<Point, Inventory> keyValuePair in this.m_GroundItemsByPosition)
+      foreach (KeyValuePair<Point, Inventory> keyValuePair in m_GroundItemsByPosition)
       {
         if (keyValuePair.Value == groundInv)
           return new Point?(keyValuePair.Key);
@@ -628,14 +628,14 @@ namespace djack.RogueSurvivor.Data
     {
       if (it == null)
         throw new ArgumentNullException("item");
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         throw new ArgumentOutOfRangeException("position out of map bounds");
-      Inventory itemsAt = this.GetItemsAt(position);
+      Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null)
       {
         Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
-        this.m_aux_GroundItemsList.Add(inventory);
-        this.m_GroundItemsByPosition.Add(position, inventory);
+                m_aux_GroundItemsList.Add(inventory);
+                m_GroundItemsByPosition.Add(position, inventory);
         inventory.AddAll(it);
       }
       else if (itemsAt.IsFull)
@@ -654,16 +654,16 @@ namespace djack.RogueSurvivor.Data
 
     public void DropItemAt(Item it, int x, int y)
     {
-      this.DropItemAt(it, new Point(x, y));
+            DropItemAt(it, new Point(x, y));
     }
 
     public void RemoveItemAt(Item it, Point position)
     {
       if (it == null)
         throw new ArgumentNullException("item");
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         throw new ArgumentOutOfRangeException("position out of map bounds");
-      Inventory itemsAt = this.GetItemsAt(position);
+      Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null)
         throw new ArgumentException("no items at this position");
       if (!itemsAt.Contains(it))
@@ -671,77 +671,77 @@ namespace djack.RogueSurvivor.Data
       itemsAt.RemoveAllQuantity(it);
       if (!itemsAt.IsEmpty)
         return;
-      this.m_GroundItemsByPosition.Remove(position);
-      this.m_aux_GroundItemsList.Remove(itemsAt);
+            m_GroundItemsByPosition.Remove(position);
+            m_aux_GroundItemsList.Remove(itemsAt);
     }
 
     public void RemoveItemAt(Item it, int x, int y)
     {
-      this.RemoveItemAt(it, new Point(x, y));
+            RemoveItemAt(it, new Point(x, y));
     }
 
     public void RemoveAllItemsAt(Point position)
     {
-      Inventory itemsAt = this.GetItemsAt(position);
+      Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null)
         return;
-      this.m_GroundItemsByPosition.Remove(position);
-      this.m_aux_GroundItemsList.Remove(itemsAt);
+            m_GroundItemsByPosition.Remove(position);
+            m_aux_GroundItemsList.Remove(itemsAt);
     }
 
     public List<Corpse> GetCorpsesAt(Point p)
     {
       List<Corpse> corpseList;
-      if (this.m_aux_CorpsesByPosition.TryGetValue(p, out corpseList))
+      if (m_aux_CorpsesByPosition.TryGetValue(p, out corpseList))
         return corpseList;
       return (List<Corpse>) null;
     }
 
     public List<Corpse> GetCorpsesAt(int x, int y)
     {
-      return this.GetCorpsesAt(new Point(x, y));
+      return GetCorpsesAt(new Point(x, y));
     }
 
     public bool HasCorpse(Corpse c)
     {
-      return this.m_CorpsesList.Contains(c);
+      return m_CorpsesList.Contains(c);
     }
 
     public void AddCorpseAt(Corpse c, Point p)
     {
-      if (this.m_CorpsesList.Contains(c))
+      if (m_CorpsesList.Contains(c))
         throw new ArgumentException("corpse already in this map");
       c.Position = p;
-      this.m_CorpsesList.Add(c);
-      this.InsertCorpseAtPos(c);
+            m_CorpsesList.Add(c);
+            InsertCorpseAtPos(c);
       c.DeadGuy.Location = new Location(this, p);
     }
 
     public void MoveCorpseTo(Corpse c, Point newPos)
     {
-      if (!this.m_CorpsesList.Contains(c))
+      if (!m_CorpsesList.Contains(c))
         throw new ArgumentException("corpse not in this map");
-      this.RemoveCorpseFromPos(c);
+            RemoveCorpseFromPos(c);
       c.Position = newPos;
-      this.InsertCorpseAtPos(c);
+            InsertCorpseAtPos(c);
       c.DeadGuy.Location = new Location(this, newPos);
     }
 
     public void RemoveCorpse(Corpse c)
     {
-      if (!this.m_CorpsesList.Contains(c))
+      if (!m_CorpsesList.Contains(c))
         throw new ArgumentException("corpse not in this map");
-      this.m_CorpsesList.Remove(c);
-      this.RemoveCorpseFromPos(c);
+            m_CorpsesList.Remove(c);
+            RemoveCorpseFromPos(c);
     }
 
     public bool TryRemoveCorpseOf(Actor a)
     {
-      foreach (Corpse mCorpses in this.m_CorpsesList)
+      foreach (Corpse mCorpses in m_CorpsesList)
       {
         if (mCorpses.DeadGuy == a)
         {
-          this.RemoveCorpse(mCorpses);
+                    RemoveCorpse(mCorpses);
           return true;
         }
       }
@@ -751,40 +751,40 @@ namespace djack.RogueSurvivor.Data
     private void RemoveCorpseFromPos(Corpse c)
     {
       List<Corpse> corpseList;
-      if (!this.m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
+      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
         return;
       corpseList.Remove(c);
       if (corpseList.Count != 0)
         return;
-      this.m_aux_CorpsesByPosition.Remove(c.Position);
+            m_aux_CorpsesByPosition.Remove(c.Position);
     }
 
     private void InsertCorpseAtPos(Corpse c)
     {
       List<Corpse> corpseList;
-      if (this.m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
+      if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
         corpseList.Insert(0, c);
       else
-        this.m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
+                m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
     }
 
     public void AddTimer(TimedTask t)
     {
-      if (this.m_Timers == null)
-        this.m_Timers = new List<TimedTask>(5);
-      this.m_Timers.Add(t);
+      if (m_Timers == null)
+                m_Timers = new List<TimedTask>(5);
+            m_Timers.Add(t);
     }
 
     public void RemoveTimer(TimedTask t)
     {
-      this.m_Timers.Remove(t);
+            m_Timers.Remove(t);
     }
 
     public int GetScentByOdorAt(Odor odor, Point position)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         return 0;
-      OdorScent scentByOdor = this.GetScentByOdor(odor, position);
+      OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor != null)
         return scentByOdor.Strength;
       return 0;
@@ -793,7 +793,7 @@ namespace djack.RogueSurvivor.Data
     private OdorScent GetScentByOdor(Odor odor, Point p)
     {
       List<OdorScent> odorScentList;
-      if (!this.m_aux_ScentsByPosition.TryGetValue(p, out odorScentList))
+      if (!m_aux_ScentsByPosition.TryGetValue(p, out odorScentList))
         return (OdorScent) null;
       foreach (OdorScent odorScent in odorScentList)
       {
@@ -805,10 +805,10 @@ namespace djack.RogueSurvivor.Data
 
     private void AddNewScent(OdorScent scent)
     {
-      if (!this.m_Scents.Contains(scent))
-        this.m_Scents.Add(scent);
+      if (!m_Scents.Contains(scent))
+                m_Scents.Add(scent);
       List<OdorScent> odorScentList;
-      if (this.m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
+      if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
       {
         odorScentList.Add(scent);
       }
@@ -816,26 +816,26 @@ namespace djack.RogueSurvivor.Data
       {
         odorScentList = new List<OdorScent>(2);
         odorScentList.Add(scent);
-        this.m_aux_ScentsByPosition.Add(scent.Position, odorScentList);
+                m_aux_ScentsByPosition.Add(scent.Position, odorScentList);
       }
     }
 
     public void ModifyScentAt(Odor odor, int strengthChange, Point position)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         throw new ArgumentOutOfRangeException("position");
-      OdorScent scentByOdor = this.GetScentByOdor(odor, position);
+      OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null)
-        this.AddNewScent(new OdorScent(odor, strengthChange, position));
+                AddNewScent(new OdorScent(odor, strengthChange, position));
       else
         scentByOdor.Change(strengthChange);
     }
 
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         throw new ArgumentOutOfRangeException(string.Format("position; ({0},{1}) map {2} odor {3}", (object) position.X, (object) position.Y, (object) Name, (object) odor.ToString()));
-      OdorScent scentByOdor = this.GetScentByOdor(odor, position);
+      OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null)
       {
         AddNewScent(new OdorScent(odor, freshStrength, position));
@@ -849,14 +849,14 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveScent(OdorScent scent)
     {
-      this.m_Scents.Remove(scent);
+            m_Scents.Remove(scent);
       List<OdorScent> odorScentList;
-      if (!this.m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
+      if (!m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
         return;
       odorScentList.Remove(scent);
       if (odorScentList.Count != 0)
         return;
-      this.m_aux_ScentsByPosition.Remove(scent.Position);
+            m_aux_ScentsByPosition.Remove(scent.Position);
     }
 
     public void ClearView()
@@ -870,12 +870,12 @@ namespace djack.RogueSurvivor.Data
 
     public void SetView(IEnumerable<Point> visiblePositions)
     {
-      this.ClearView();
+            ClearView();
       foreach (Point visiblePosition in visiblePositions)
       {
-        if (!this.IsInBounds(visiblePosition.X, visiblePosition.Y))
+        if (!IsInBounds(visiblePosition.X, visiblePosition.Y))
           throw new ArgumentOutOfRangeException("point " + (object) visiblePosition + " not in map bounds");
-        this.m_Tiles[visiblePosition.X, visiblePosition.Y].IsInView = true;
+                m_Tiles[visiblePosition.X, visiblePosition.Y].IsInView = true;
       }
     }
 
@@ -883,21 +883,21 @@ namespace djack.RogueSurvivor.Data
     {
       foreach (Point position in positions)
       {
-        if (!this.IsInBounds(position.X, position.Y))
+        if (!IsInBounds(position.X, position.Y))
           throw new ArgumentOutOfRangeException("point " + (object) position + " not in map bounds");
-        this.m_Tiles[position.X, position.Y].IsVisited = true;
+                m_Tiles[position.X, position.Y].IsVisited = true;
       }
     }
 
     public void SetViewAndMarkVisited(IEnumerable<Point> visiblePositions)
     {
-      this.ClearView();
+            ClearView();
       foreach (Point visiblePosition in visiblePositions)
       {
-        if (!this.IsInBounds(visiblePosition.X, visiblePosition.Y))
+        if (!IsInBounds(visiblePosition.X, visiblePosition.Y))
           throw new ArgumentOutOfRangeException("point " + (object) visiblePosition + " not in map bounds");
-        this.m_Tiles[visiblePosition.X, visiblePosition.Y].IsInView = true;
-        this.m_Tiles[visiblePosition.X, visiblePosition.Y].IsVisited = true;
+                m_Tiles[visiblePosition.X, visiblePosition.Y].IsInView = true;
+                m_Tiles[visiblePosition.X, visiblePosition.Y].IsVisited = true;
       }
     }
 
@@ -921,9 +921,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsTransparent(int x, int y)
     {
-      if (!this.IsInBounds(x, y) || !this.m_Tiles[x, y].Model.IsTransparent)
+      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsTransparent)
         return false;
-      MapObject mapObjectAt = this.GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt == null)
         return true;
       return mapObjectAt.IsTransparent;
@@ -931,9 +931,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsWalkable(int x, int y)
     {
-      if (!this.IsInBounds(x, y) || !this.m_Tiles[x, y].Model.IsWalkable)
+      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsWalkable)
         return false;
-      MapObject mapObjectAt = this.GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt == null)
         return true;
       return mapObjectAt.IsWalkable;
@@ -941,34 +941,34 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsWalkable(Point p)
     {
-      return this.IsWalkable(p.X, p.Y);
+      return IsWalkable(p.X, p.Y);
     }
 
     public bool IsBlockingFire(int x, int y)
     {
-      if (!this.IsInBounds(x, y) || !this.m_Tiles[x, y].Model.IsTransparent)
+      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsTransparent)
         return true;
-      MapObject mapObjectAt = this.GetMapObjectAt(x, y);
-      return mapObjectAt != null && !mapObjectAt.IsTransparent || this.GetActorAt(x, y) != null;
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
+      return mapObjectAt != null && !mapObjectAt.IsTransparent || GetActorAt(x, y) != null;
     }
 
     public bool IsBlockingThrow(int x, int y)
     {
-      if (!this.IsInBounds(x, y) || !this.m_Tiles[x, y].Model.IsWalkable)
+      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsWalkable)
         return true;
-      MapObject mapObjectAt = this.GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
     }
 
     public List<Point> FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         return (List<Point>) null;
       List<Point> pointList = (List<Point>) null;
       foreach (Direction direction in Direction.COMPASS)
       {
         Point p = position + direction;
-        if (this.IsInBounds(p) && predicateFn(p))
+        if (IsInBounds(p) && predicateFn(p))
         {
           if (pointList == null)
             pointList = new List<Point>(8);
@@ -980,12 +980,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         return false;
       foreach (Direction direction in Direction.COMPASS)
       {
         Point p = position + direction;
-        if (this.IsInBounds(p) && predicateFn(p))
+        if (IsInBounds(p) && predicateFn(p))
           return true;
       }
       return false;
@@ -993,13 +993,13 @@ namespace djack.RogueSurvivor.Data
 
     public int CountAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         return 0;
       int num = 0;
       foreach (Direction direction in Direction.COMPASS)
       {
         Point p = position + direction;
-        if (this.IsInBounds(p) && predicateFn(p))
+        if (IsInBounds(p) && predicateFn(p))
           ++num;
       }
       return num;
@@ -1007,12 +1007,12 @@ namespace djack.RogueSurvivor.Data
 
     public void ForEachAdjacentInMap(Point position, Action<Point> fn)
     {
-      if (!this.IsInBounds(position))
+      if (!IsInBounds(position))
         return;
       foreach (Direction direction in Direction.COMPASS)
       {
         Point p = position + direction;
-        if (this.IsInBounds(p))
+        if (IsInBounds(p))
           fn(p);
       }
     }
@@ -1034,20 +1034,20 @@ namespace djack.RogueSurvivor.Data
 
     public void ReconstructAuxiliaryFields()
     {
-      this.m_aux_ActorsByPosition = new Dictionary<Point, Actor>();
-      foreach (Actor mActors in this.m_ActorsList)
-        this.m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
-      this.m_aux_GroundItemsList = new List<Inventory>();
-      foreach (Inventory inventory in this.m_GroundItemsByPosition.Values)
-        this.m_aux_GroundItemsList.Add(inventory);
-      this.m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>();
-      foreach (MapObject mMapObjects in this.m_MapObjectsList)
-        this.m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
-      this.m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>();
-      foreach (OdorScent mScent in this.m_Scents)
+            m_aux_ActorsByPosition = new Dictionary<Point, Actor>();
+      foreach (Actor mActors in m_ActorsList)
+                m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
+            m_aux_GroundItemsList = new List<Inventory>();
+      foreach (Inventory inventory in m_GroundItemsByPosition.Values)
+                m_aux_GroundItemsList.Add(inventory);
+            m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>();
+      foreach (MapObject mMapObjects in m_MapObjectsList)
+                m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
+            m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>();
+      foreach (OdorScent mScent in m_Scents)
       {
         List<OdorScent> odorScentList;
-        if (this.m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList))
+        if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList))
         {
           odorScentList.Add(mScent);
         }
@@ -1057,17 +1057,17 @@ namespace djack.RogueSurvivor.Data
           {
             mScent
           };
-          this.m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
+                    m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
         }
       }
-      this.m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>();
-      foreach (Corpse mCorpses in this.m_CorpsesList)
+            m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>();
+      foreach (Corpse mCorpses in m_CorpsesList)
       {
         List<Corpse> corpseList;
-        if (this.m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out corpseList))
+        if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out corpseList))
           corpseList.Add(mCorpses);
         else
-          this.m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1)
+                    m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1)
           {
             mCorpses
           });
@@ -1111,7 +1111,7 @@ namespace djack.RogueSurvivor.Data
 
     public override int GetHashCode()
     {
-      return this.Name.GetHashCode() ^ this.m_District.GetHashCode();
+      return Name.GetHashCode() ^ m_District.GetHashCode();
     }
   }
 }

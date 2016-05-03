@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (!(model is ItemExplosiveModel))
         throw new ArgumentException("model is not ItemExplosiveModel");
-      this.FuseTimeLeft = (model as ItemExplosiveModel).FuseDelay;
+            FuseTimeLeft = (model as ItemExplosiveModel).FuseDelay;
     }
   }
 }

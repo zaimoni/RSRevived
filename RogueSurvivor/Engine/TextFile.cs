@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (IEnumerable<string>) this.m_RawLines;
+        return (IEnumerable<string>)m_RawLines;
       }
     }
 
@@ -27,13 +27,13 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_FormatedLines;
+        return m_FormatedLines;
       }
     }
 
     public TextFile()
     {
-      this.m_RawLines = new List<string>();
+            m_RawLines = new List<string>();
     }
 
     public bool Load(string fileName)
@@ -42,9 +42,9 @@ namespace djack.RogueSurvivor.Engine
       {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading text file {0}...", (object) fileName));
         StreamReader streamReader = File.OpenText(fileName);
-        this.m_RawLines = new List<string>();
+                m_RawLines = new List<string>();
         while (!streamReader.EndOfStream)
-          this.m_RawLines.Add(streamReader.ReadLine());
+                    m_RawLines.Add(streamReader.ReadLine());
         streamReader.Close();
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Engine
       try
       {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Saving text file {0}...", (object) fileName));
-        File.WriteAllLines(fileName, this.m_RawLines.ToArray());
+        File.WriteAllLines(fileName, m_RawLines.ToArray());
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
       }
@@ -74,25 +74,25 @@ namespace djack.RogueSurvivor.Engine
 
     public void Append(string line)
     {
-      this.m_RawLines.Add(line);
+            m_RawLines.Add(line);
     }
 
     public void FormatLines(int charsPerLine)
     {
-      if (this.m_RawLines == null || this.m_RawLines.Count == 0)
+      if (m_RawLines == null || m_RawLines.Count == 0)
         return;
-      this.m_FormatedLines = new List<string>(this.m_RawLines.Count);
-      for (int index = 0; index < this.m_RawLines.Count; ++index)
+            m_FormatedLines = new List<string>(m_RawLines.Count);
+      for (int index = 0; index < m_RawLines.Count; ++index)
       {
         string str1;
         string str2;
-        for (str1 = this.m_RawLines[index]; str1.Length > charsPerLine; str1 = str2)
+        for (str1 = m_RawLines[index]; str1.Length > charsPerLine; str1 = str2)
         {
           string str3 = str1.Substring(0, charsPerLine);
           str2 = str1.Remove(0, charsPerLine);
-          this.m_FormatedLines.Add(str3);
+                    m_FormatedLines.Add(str3);
         }
-        this.m_FormatedLines.Add(str1);
+                m_FormatedLines.Add(str1);
       }
     }
   }

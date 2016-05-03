@@ -19,24 +19,24 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Body;
+        return m_Body;
       }
     }
 
     public Doll(DollBody body)
     {
-      this.m_Body = body;
-      this.m_Decorations = new List<string>[9];
+            m_Body = body;
+            m_Decorations = new List<string>[9];
     }
 
     public List<string> GetDecorations(DollPart part)
     {
-      return this.m_Decorations[(int) part];
+      return m_Decorations[(int) part];
     }
 
     public int CountDecorations(DollPart part)
     {
-      List<string> decorations = this.GetDecorations(part);
+      List<string> decorations = GetDecorations(part);
       if (decorations != null)
         return decorations.Count;
       return 0;
@@ -44,20 +44,20 @@ namespace djack.RogueSurvivor.Data
 
     public void AddDecoration(DollPart part, string imageID)
     {
-      (this.GetDecorations(part) ?? (this.m_Decorations[(int) part] = new List<string>(1))).Add(imageID);
+      (GetDecorations(part) ?? (m_Decorations[(int) part] = new List<string>(1))).Add(imageID);
     }
 
     public void RemoveDecoration(string imageID)
     {
       for (int index = 0; index < 9; ++index)
       {
-        List<string> stringList = this.m_Decorations[index];
+        List<string> stringList = m_Decorations[index];
         if (stringList != null && stringList.Contains(imageID))
         {
           stringList.Remove(imageID);
           if (stringList.Count != 0)
             break;
-          this.m_Decorations[index] = (List<string>) null;
+                    m_Decorations[index] = (List<string>) null;
           break;
         }
       }
@@ -65,13 +65,13 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveDecoration(DollPart part)
     {
-      this.m_Decorations[(int) part] = (List<string>) null;
+            m_Decorations[(int) part] = (List<string>) null;
     }
 
     public void RemoveAllDecorations()
     {
       for (int index = 0; index < 9; ++index)
-        this.m_Decorations[index] = (List<string>) null;
+                m_Decorations[index] = (List<string>) null;
     }
   }
 }

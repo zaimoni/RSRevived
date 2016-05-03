@@ -18,14 +18,14 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_BarricadingValue;
+        return m_BarricadingValue;
       }
     }
 
     public ItemBarricadeMaterialModel(string aName, string theNames, string imageID, int barricadingValue)
       : base(aName, theNames, imageID)
     {
-      this.m_BarricadingValue = barricadingValue;
+            m_BarricadingValue = barricadingValue;
     }
   }
 }

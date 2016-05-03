@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (this.IsAn ? "an " : (this.IsPlural ? "some " : "a ")) + this.m_Name;
+        return (IsAn ? "an " : (IsPlural ? "some " : "a ")) + m_Name;
       }
     }
 
@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return "the " + this.m_Name;
+        return "the " + m_Name;
       }
     }
 
@@ -43,11 +43,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_AN);
+        return GetFlag(MapObject.Flags.IS_AN);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_AN, value);
+                SetFlag(MapObject.Flags.IS_AN, value);
       }
     }
 
@@ -55,11 +55,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_PLURAL);
+        return GetFlag(MapObject.Flags.IS_PLURAL);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_PLURAL, value);
+                SetFlag(MapObject.Flags.IS_PLURAL, value);
       }
     }
 
@@ -67,11 +67,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_ImageID;
+        return m_ImageID;
       }
       set
       {
-        this.m_ImageID = value;
+                m_ImageID = value;
       }
     }
 
@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_HiddenImageID;
+        return m_HiddenImageID;
       }
     }
 
@@ -87,11 +87,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Location;
+        return m_Location;
       }
       set
       {
-        this.m_Location = value;
+                m_Location = value;
       }
     }
 
@@ -99,11 +99,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_FireState == MapObject.Fire.ONFIRE)
+        if (m_FireState == MapObject.Fire.ONFIRE)
           return false;
-        if (this.m_BreakState == MapObject.Break.BROKEN || this.m_FireState == MapObject.Fire.ASHES)
+        if (m_BreakState == MapObject.Break.BROKEN || m_FireState == MapObject.Fire.ASHES)
           return true;
-        return this.GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
+        return GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
       }
     }
 
@@ -111,11 +111,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
+        return GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT, value);
+                SetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT, value);
       }
     }
 
@@ -123,11 +123,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_WALKABLE);
+        return GetFlag(MapObject.Flags.IS_WALKABLE);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_WALKABLE, value);
+                SetFlag(MapObject.Flags.IS_WALKABLE, value);
       }
     }
 
@@ -135,11 +135,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_JumpLevel;
+        return m_JumpLevel;
       }
       set
       {
-        this.m_JumpLevel = value;
+                m_JumpLevel = value;
       }
     }
 
@@ -147,7 +147,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_JumpLevel > 0;
+        return m_JumpLevel > 0;
       }
     }
 
@@ -155,11 +155,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_CONTAINER);
+        return GetFlag(MapObject.Flags.IS_CONTAINER);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_CONTAINER, value);
+                SetFlag(MapObject.Flags.IS_CONTAINER, value);
       }
     }
 
@@ -167,11 +167,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_COUCH);
+        return GetFlag(MapObject.Flags.IS_COUCH);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_COUCH, value);
+                SetFlag(MapObject.Flags.IS_COUCH, value);
       }
     }
 
@@ -179,7 +179,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_BreakState == MapObject.Break.BREAKABLE;
+        return m_BreakState == MapObject.Break.BREAKABLE;
       }
     }
 
@@ -187,11 +187,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_BreakState;
+        return m_BreakState;
       }
       set
       {
-        this.m_BreakState = value;
+                m_BreakState = value;
       }
     }
 
@@ -199,13 +199,13 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.GetFlag(MapObject.Flags.GIVES_WOOD))
-          return this.m_BreakState != MapObject.Break.BROKEN;
+        if (GetFlag(MapObject.Flags.GIVES_WOOD))
+          return m_BreakState != MapObject.Break.BROKEN;
         return false;
       }
       set
       {
-        this.SetFlag(MapObject.Flags.GIVES_WOOD, value);
+                SetFlag(MapObject.Flags.GIVES_WOOD, value);
       }
     }
 
@@ -213,11 +213,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.IS_MOVABLE);
+        return GetFlag(MapObject.Flags.IS_MOVABLE);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.IS_MOVABLE, value);
+                SetFlag(MapObject.Flags.IS_MOVABLE, value);
       }
     }
 
@@ -225,11 +225,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH);
+        return GetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH, value);
+                SetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH, value);
       }
     }
 
@@ -237,11 +237,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(MapObject.Flags.STANDON_FOV_BONUS);
+        return GetFlag(MapObject.Flags.STANDON_FOV_BONUS);
       }
       set
       {
-        this.SetFlag(MapObject.Flags.STANDON_FOV_BONUS, value);
+                SetFlag(MapObject.Flags.STANDON_FOV_BONUS, value);
       }
     }
 
@@ -249,11 +249,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Weight;
+        return m_Weight;
       }
       set
       {
-        this.m_Weight = Math.Max(1, value);
+                m_Weight = Math.Max(1, value);
       }
     }
 
@@ -261,8 +261,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_FireState != MapObject.Fire.ONFIRE)
-          return this.m_FireState == MapObject.Fire.BURNABLE;
+        if (m_FireState != MapObject.Fire.ONFIRE)
+          return m_FireState == MapObject.Fire.BURNABLE;
         return true;
       }
     }
@@ -271,7 +271,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_FireState == MapObject.Fire.ONFIRE;
+        return m_FireState == MapObject.Fire.ONFIRE;
       }
     }
 
@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_FireState == MapObject.Fire.ASHES;
+        return m_FireState == MapObject.Fire.ASHES;
       }
     }
 
@@ -287,11 +287,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_FireState;
+        return m_FireState;
       }
       set
       {
-        this.m_FireState = value;
+                m_FireState = value;
       }
     }
 
@@ -299,11 +299,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_HitPoints;
+        return m_HitPoints;
       }
       set
       {
-        this.m_HitPoints = value;
+                m_HitPoints = value;
       }
     }
 
@@ -311,7 +311,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_MaxHitPoints;
+        return m_MaxHitPoints;
       }
     }
 
@@ -326,36 +326,36 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentNullException("aName");
       if (hiddenImageID == null)
         throw new ArgumentNullException("hiddenImageID");
-      this.m_Name = aName;
-      this.m_ImageID = this.m_HiddenImageID = hiddenImageID;
-      this.m_BreakState = breakable;
-      this.m_FireState = burnable;
+            m_Name = aName;
+            m_ImageID = m_HiddenImageID = hiddenImageID;
+            m_BreakState = breakable;
+            m_FireState = burnable;
       if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE)
         return;
-      this.m_HitPoints = this.m_MaxHitPoints = hitPoints;
+            m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
     private bool GetFlag(MapObject.Flags f)
     {
-      return (this.m_Flags & f) != MapObject.Flags.NONE;
+      return (m_Flags & f) != MapObject.Flags.NONE;
     }
 
     private void SetFlag(MapObject.Flags f, bool value)
     {
       if (value)
-        this.m_Flags |= f;
+                m_Flags |= f;
       else
-        this.m_Flags &= ~f;
+                m_Flags &= ~f;
     }
 
     private void OneFlag(MapObject.Flags f)
     {
-      this.m_Flags |= f;
+            m_Flags |= f;
     }
 
     private void ZeroFlag(MapObject.Flags f)
     {
-      this.m_Flags &= ~f;
+            m_Flags &= ~f;
     }
 
     [Serializable]

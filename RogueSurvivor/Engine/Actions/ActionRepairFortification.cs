@@ -19,17 +19,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (fort == null)
         throw new ArgumentNullException("fort");
-      this.m_Fort = fort;
+            m_Fort = fort;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorRepairFortification(this.m_Actor, this.m_Fort, out this.m_FailReason);
+      return m_Game.Rules.CanActorRepairFortification(m_Actor, m_Fort, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoRepairFortification(this.m_Actor, this.m_Fort);
+            m_Game.DoRepairFortification(m_Actor, m_Fort);
     }
   }
 }

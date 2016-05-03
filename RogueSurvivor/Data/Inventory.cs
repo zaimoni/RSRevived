@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (index < 0 || index >= this.m_Items.Count) return null;
+        if (index < 0 || index >= m_Items.Count) return null;
         return m_Items[index];
       }
     }
@@ -109,21 +109,21 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentNullException("it");
       int quantity = it.Quantity;
       int stackedQuantity;
-      List<Item> itemsStackableWith = this.GetItemsStackableWith(it, out stackedQuantity);
+      List<Item> itemsStackableWith = GetItemsStackableWith(it, out stackedQuantity);
       if (itemsStackableWith != null)
       {
         quantityAdded = 0;
         foreach (Item to in itemsStackableWith)
         {
-          int stack = this.AddToStack(it, it.Quantity - quantityAdded, to);
+          int stack = AddToStack(it, it.Quantity - quantityAdded, to);
           quantityAdded += stack;
         }
         if (quantityAdded < it.Quantity)
         {
           it.Quantity -= quantityAdded;
-          if (!this.IsFull)
+          if (!IsFull)
           {
-            this.m_Items.Add(it);
+                        m_Items.Add(it);
             quantityAdded = quantity;
           }
         }
@@ -131,13 +131,13 @@ namespace djack.RogueSurvivor.Data
           it.Quantity = 0;
         return true;
       }
-      if (this.IsFull)
+      if (IsFull)
       {
         quantityAdded = 0;
         return false;
       }
       quantityAdded = it.Quantity;
-      this.m_Items.Add(it);
+            m_Items.Add(it);
       return true;
     }
 
@@ -145,22 +145,22 @@ namespace djack.RogueSurvivor.Data
     {
       if (it == null)
         throw new ArgumentNullException("it");
-      if (!this.IsFull)
+      if (!IsFull)
         return true;
       int stackedQuantity;
-      return this.GetItemsStackableWith(it, out stackedQuantity) != null;
+      return GetItemsStackableWith(it, out stackedQuantity) != null;
     }
 
     public void RemoveAllQuantity(Item it)
     {
-      this.m_Items.Remove(it);
+            m_Items.Remove(it);
     }
 
     public void Consume(Item it)
     {
       if (--it.Quantity > 0)
         return;
-      this.m_Items.Remove(it);
+            m_Items.Remove(it);
     }
 
     private int AddToStack(Item from, int addThis, Item to)
@@ -180,12 +180,12 @@ namespace djack.RogueSurvivor.Data
       if (!it.Model.IsStackable)
         return (List<Item>) null;
       List<Item> objList = (List<Item>) null;
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped)
         {
           if (objList == null)
-            objList = new List<Item>(this.m_Items.Count);
+            objList = new List<Item>(m_Items.Count);
           objList.Add(mItem);
           int val2 = mItem.Model.StackingLimit - mItem.Quantity;
           int num = Math.Min(it.Quantity - stackedQuantity, val2);
@@ -202,7 +202,7 @@ namespace djack.RogueSurvivor.Data
       if (!it.Model.IsStackable)
         return (Item) null;
       Item obj = (Item) null;
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (mItem.Model == it.Model && (obj == null || mItem.Quantity < obj.Quantity))
           obj = mItem;
@@ -212,12 +212,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool Contains(Item it)
     {
-      return this.m_Items.Contains(it);
+      return m_Items.Contains(it);
     }
 
     public Item GetFirstByModel(ItemModel model)
     {
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (mItem.Model == model)
           return mItem;
@@ -227,12 +227,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasItemOfType(Type tt)
     {
-      return this.GetFirstByType(tt) != null;
+      return GetFirstByType(tt) != null;
     }
 
     public Item GetFirstByType(Type tt)
     {
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (mItem.GetType() == tt)
           return mItem;
@@ -244,12 +244,12 @@ namespace djack.RogueSurvivor.Data
     {
       List<_T_> tList = (List<_T_>) null;
       Type type = typeof (_T_);
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (mItem.GetType() == type)
         {
           if (tList == null)
-            tList = new List<_T_>(this.m_Items.Count);
+            tList = new List<_T_>(m_Items.Count);
           tList.Add(mItem as _T_);
         }
       }
@@ -258,7 +258,7 @@ namespace djack.RogueSurvivor.Data
 
     public Item GetFirstMatching(Predicate<Item> fn)
     {
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (fn(mItem))
           return mItem;
@@ -278,7 +278,7 @@ namespace djack.RogueSurvivor.Data
     public int CountItemsMatching(Predicate<Item> fn)
     {
       int num = 0;
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (fn(mItem))
           ++num;
@@ -288,7 +288,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasItemMatching(Predicate<Item> fn)
     {
-      foreach (Item mItem in this.m_Items)
+      foreach (Item mItem in m_Items)
       {
         if (fn(mItem))
           return true;

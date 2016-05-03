@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.Range / 2;
+        return Range / 2;
       }
     }
 

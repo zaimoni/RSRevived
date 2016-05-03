@@ -16,14 +16,14 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_MaxThrowDistance;
+        return m_MaxThrowDistance;
       }
     }
 
     public ItemGrenadeModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, int maxThrowDistance)
       : base(aName, theNames, imageID, fuseDelay, attack, blastImageID)
     {
-      this.m_MaxThrowDistance = maxThrowDistance;
+            m_MaxThrowDistance = maxThrowDistance;
     }
   }
 }

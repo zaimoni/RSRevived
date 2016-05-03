@@ -19,17 +19,17 @@ namespace djack.RogueSurvivor.Engine
     public void ResetAllHints()
     {
       for (int index = 0; index < 46; ++index)
-        this.m_AdvisorHints[index] = false;
+                m_AdvisorHints[index] = false;
     }
 
     public bool IsAdvisorHintGiven(AdvisorHint hint)
     {
-      return this.m_AdvisorHints[(int) hint];
+      return m_AdvisorHints[(int) hint];
     }
 
     public void SetAdvisorHintAsGiven(AdvisorHint hint)
     {
-      this.m_AdvisorHints[(int) hint] = true;
+            m_AdvisorHints[(int) hint] = true;
     }
 
     public int CountAdvisorHintsGiven()
@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Engine
       int num = 0;
       for (int index = 0; index < 46; ++index)
       {
-        if (this.m_AdvisorHints[index])
+        if (m_AdvisorHints[index])
           ++num;
       }
       return num;
@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool HasAdvisorGivenAllHints()
     {
-      return this.CountAdvisorHintsGiven() >= 46;
+      return CountAdvisorHintsGiven() >= 46;
     }
 
     public static void Save(GameHintsStatus hints, string filepath)

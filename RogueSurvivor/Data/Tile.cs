@@ -20,11 +20,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return Models.Tiles[this.m_ModelID];
+        return Models.Tiles[m_ModelID];
       }
       set
       {
-        this.m_ModelID = value.ID;
+                m_ModelID = value.ID;
       }
     }
 
@@ -32,14 +32,14 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (this.m_Flags & Tile.Flags.IS_INSIDE) != Tile.Flags.NONE;
+        return (m_Flags & Tile.Flags.IS_INSIDE) != Tile.Flags.NONE;
       }
       set
       {
         if (value)
-          this.m_Flags |= Tile.Flags.IS_INSIDE;
+                    m_Flags |= Tile.Flags.IS_INSIDE;
         else
-          this.m_Flags &= ~Tile.Flags.IS_INSIDE;
+                    m_Flags &= ~Tile.Flags.IS_INSIDE;
       }
     }
 
@@ -47,14 +47,14 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (this.m_Flags & Tile.Flags.IS_IN_VIEW) != Tile.Flags.NONE;
+        return (m_Flags & Tile.Flags.IS_IN_VIEW) != Tile.Flags.NONE;
       }
       set
       {
         if (value)
-          this.m_Flags |= Tile.Flags.IS_IN_VIEW;
+                    m_Flags |= Tile.Flags.IS_IN_VIEW;
         else
-          this.m_Flags &= ~Tile.Flags.IS_IN_VIEW;
+                    m_Flags &= ~Tile.Flags.IS_IN_VIEW;
       }
     }
 
@@ -62,14 +62,14 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (this.m_Flags & Tile.Flags.IS_VISITED) != Tile.Flags.NONE;
+        return (m_Flags & Tile.Flags.IS_VISITED) != Tile.Flags.NONE;
       }
       set
       {
         if (value)
-          this.m_Flags |= Tile.Flags.IS_VISITED;
+                    m_Flags |= Tile.Flags.IS_VISITED;
         else
-          this.m_Flags &= ~Tile.Flags.IS_VISITED;
+                    m_Flags &= ~Tile.Flags.IS_VISITED;
       }
     }
 
@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Decorations != null;
+        return m_Decorations != null;
       }
     }
 
@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<string>) this.m_Decorations;
+        return (IEnumerable<string>)m_Decorations;
       }
     }
 
@@ -93,44 +93,44 @@ namespace djack.RogueSurvivor.Data
     {
       if (model == null)
         throw new ArgumentNullException("model");
-      this.m_ModelID = model.ID;
+            m_ModelID = model.ID;
     }
 
     public void AddDecoration(string imageID)
     {
-      if (this.m_Decorations == null)
-        this.m_Decorations = new List<string>(1);
-      if (this.m_Decorations.Contains(imageID))
+      if (m_Decorations == null)
+                m_Decorations = new List<string>(1);
+      if (m_Decorations.Contains(imageID))
         return;
-      this.m_Decorations.Add(imageID);
+            m_Decorations.Add(imageID);
     }
 
     public bool HasDecoration(string imageID)
     {
-      if (this.m_Decorations == null)
+      if (m_Decorations == null)
         return false;
-      return this.m_Decorations.Contains(imageID);
+      return m_Decorations.Contains(imageID);
     }
 
     public void RemoveAllDecorations()
     {
-      if (this.m_Decorations != null)
-        this.m_Decorations.Clear();
-      this.m_Decorations = (List<string>) null;
+      if (m_Decorations != null)
+                m_Decorations.Clear();
+            m_Decorations = (List<string>) null;
     }
 
     public void RemoveDecoration(string imageID)
     {
-      if (this.m_Decorations == null || !this.m_Decorations.Remove(imageID) || this.m_Decorations.Count != 0)
+      if (m_Decorations == null || !m_Decorations.Remove(imageID) || m_Decorations.Count != 0)
         return;
-      this.m_Decorations = (List<string>) null;
+            m_Decorations = (List<string>) null;
     }
 
     public void OptimizeBeforeSaving()
     {
-      if (this.m_Decorations == null)
+      if (m_Decorations == null)
         return;
-      this.m_Decorations.TrimExcess();
+            m_Decorations.TrimExcess();
     }
 
     [System.Flags]

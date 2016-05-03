@@ -83,26 +83,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
+            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
     }
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      return this.m_LOSSensor.Sense(game, this.m_Actor);
+      return m_LOSSensor.Sense(game, m_Actor);
     }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(percepts);
-      ActorAction actorAction1 = this.BehaviorEquipWeapon(game);
+      List<Percept> percepts1 = FilterSameMap(percepts);
+      ActorAction actorAction1 = BehaviorEquipWeapon(game);
       if (actorAction1 != null)
       {
-        this.m_Actor.Activity = Activity.IDLE;
+                m_Actor.Activity = Activity.IDLE;
         return actorAction1;
       }
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
-        List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
+        List<Percept> percepts2 = FilterEnemies(game, percepts1);
         if (percepts2 != null)
         {
           List<Percept> perceptList1 = FilterCurrent(percepts2);
@@ -112,20 +112,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
             ActorAction actorAction2 = TargetGridMelee(game, perceptList1, out percept1);
             if (actorAction2 != null)
             {
-              this.m_Actor.Activity = Activity.CHASING;
-              this.m_Actor.TargetActor = percept1.Percepted as Actor;
+                            m_Actor.Activity = Activity.CHASING;
+                            m_Actor.TargetActor = percept1.Percepted as Actor;
               return actorAction2;
             }
           }
-          List<Percept> perceptList2 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != this.m_Actor.Location.Map.LocalTime.TurnCounter));
+          List<Percept> perceptList2 = Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
           if (perceptList2 != null)
           {
           Percept percept1;
           ActorAction actorAction2 = TargetGridMelee(game, perceptList2, out percept1);
           if (actorAction2 != null)
             {
-              this.m_Actor.Activity = Activity.CHASING;
-              this.m_Actor.TargetActor = percept1.Percepted as Actor;
+                            m_Actor.Activity = Activity.CHASING;
+                            m_Actor.TargetActor = percept1.Percepted as Actor;
               return actorAction2;
             }
           }
@@ -133,21 +133,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.Rules.RollChance(SHOUT_CHANCE))
       {
-        string text = this.INSANITIES[game.Rules.Roll(0, this.INSANITIES.Length)];
-        this.m_Actor.Activity = Activity.IDLE;
-        game.DoEmote(this.m_Actor, text);
+        string text = INSANITIES[game.Rules.Roll(0, INSANITIES.Length)];
+                m_Actor.Activity = Activity.IDLE;
+        game.DoEmote(m_Actor, text);
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE))
       {
-        ActorAction actorAction2 = this.BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        ActorAction actorAction2 = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
         if (actorAction2 != null)
         {
-          this.m_Actor.Activity = Activity.IDLE;
+                    m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
       }
-      this.m_Actor.Activity = Activity.IDLE;
-      return this.BehaviorWander(game);
+            m_Actor.Activity = Activity.IDLE;
+      return BehaviorWander(game);
     }
   }
 }

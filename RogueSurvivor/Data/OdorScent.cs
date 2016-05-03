@@ -23,19 +23,19 @@ namespace djack.RogueSurvivor.Data
 
     public OdorScent(Odor odor, int strength, Point position)
     {
-      this.Odor = odor;
-      this.Strength = Math.Min(270, strength);
-      this.Position = position;
+            Odor = odor;
+            Strength = Math.Min(270, strength);
+            Position = position;
     }
 
     public void Change(int amount)
     {
-      int num = this.Strength + amount;
+      int num = Strength + amount;
       if (num < 1)
         num = 0;
       else if (num > 270)
         num = 270;
-      this.Strength = num;
+            Strength = num;
     }
 
     public void Set(int value)
@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Data
         num = 0;
       else if (num > 270)
         num = 270;
-      this.Strength = num;
+            Strength = num;
     }
   }
 }

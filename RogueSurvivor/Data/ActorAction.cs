@@ -19,11 +19,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_FailReason;
+        return m_FailReason;
       }
       set
       {
-        this.m_FailReason = value;
+                m_FailReason = value;
       }
     }
 
@@ -33,8 +33,8 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentNullException("actor");
       if (game == null)
         throw new ArgumentNullException("game");
-      this.m_Actor = actor;
-      this.m_Game = game;
+            m_Actor = actor;
+            m_Game = game;
     }
 
     public abstract bool IsLegal();

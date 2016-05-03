@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.Model as ItemEntertainmentModel;
+        return Model as ItemEntertainmentModel;
       }
     }
 

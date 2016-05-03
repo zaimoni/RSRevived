@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Lines[line][field];
+        return m_Lines[line][field];
       }
     }
 
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return (IEnumerable<CSVLine>) this.m_Lines;
+        return (IEnumerable<CSVLine>)m_Lines;
       }
     }
 
@@ -34,21 +34,21 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Lines.Count;
+        return m_Lines.Count;
       }
     }
 
     public CSVTable(int nbFields)
     {
-      this.m_nbFields = nbFields;
-      this.m_Lines = new List<CSVLine>();
+            m_nbFields = nbFields;
+            m_Lines = new List<CSVLine>();
     }
 
     public void AddLine(CSVLine line)
     {
-      if (line.FieldsCount != this.m_nbFields)
-        throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", (object) line.FieldsCount, (object) this.m_nbFields));
-      this.m_Lines.Add(line);
+      if (line.FieldsCount != m_nbFields)
+        throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", (object) line.FieldsCount, (object)m_nbFields));
+            m_Lines.Add(line);
     }
   }
 }

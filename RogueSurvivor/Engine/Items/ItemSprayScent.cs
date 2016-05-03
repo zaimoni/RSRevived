@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (!(model is ItemSprayScentModel))
         throw new ArgumentException("model is not a ItemScentSprayModel");
-      this.SprayQuantity = (model as ItemSprayScentModel).MaxSprayQuantity;
+            SprayQuantity = (model as ItemSprayScentModel).MaxSprayQuantity;
     }
   }
 }

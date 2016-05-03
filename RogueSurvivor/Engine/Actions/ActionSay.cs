@@ -20,9 +20,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (target == null)
         throw new ArgumentNullException("target");
-      this.m_Target = target;
-      this.m_Text = text;
-      this.m_Flags = flags;
+            m_Target = target;
+            m_Text = text;
+            m_Flags = flags;
     }
 
     public override bool IsLegal()
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      this.m_Game.DoSay(this.m_Actor, this.m_Target, this.m_Text, this.m_Flags);
+            m_Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
     }
   }
 }

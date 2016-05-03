@@ -17,12 +17,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorSleep(this.m_Actor, out this.m_FailReason);
+      return m_Game.Rules.CanActorSleep(m_Actor, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoStartSleeping(this.m_Actor);
+            m_Game.DoStartSleeping(m_Actor);
     }
   }
 }

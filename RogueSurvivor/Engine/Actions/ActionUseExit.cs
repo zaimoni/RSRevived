@@ -16,17 +16,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionUseExit(Actor actor, Point exitPoint, RogueGame game)
       : base(actor, game)
     {
-      this.m_ExitPoint = exitPoint;
+            m_ExitPoint = exitPoint;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorUseExit(this.m_Actor, this.m_ExitPoint, out this.m_FailReason);
+      return m_Game.Rules.CanActorUseExit(m_Actor, m_ExitPoint, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoUseExit(this.m_Actor, this.m_ExitPoint);
+            m_Game.DoUseExit(m_Actor, m_ExitPoint);
     }
   }
 }

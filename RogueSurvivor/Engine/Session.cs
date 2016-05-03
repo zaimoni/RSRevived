@@ -40,11 +40,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_GameMode;
+        return m_GameMode;
       }
       set
       {
-        this.m_GameMode = value;
+                m_GameMode = value;
       }
     }
 
@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_WorldTime;
+        return m_WorldTime;
       }
     }
 
@@ -64,11 +64,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_World;
+        return m_World;
       }
       set
       {
-        this.m_World = value;
+                m_World = value;
       }
     }
 
@@ -76,11 +76,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_CurrentMap;
+        return m_CurrentMap;
       }
       set
       {
-        this.m_CurrentMap = value;
+                m_CurrentMap = value;
       }
     }
 
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Scoring;
+        return m_Scoring;
       }
     }
 
@@ -108,54 +108,54 @@ namespace djack.RogueSurvivor.Engine
 
     private Session()
     {
-      this.Reset();
+            Reset();
     }
 
     public void Reset()
     {
-      this.Seed = (int) DateTime.UtcNow.TimeOfDay.Ticks;
-      this.m_CurrentMap = (Map) null;
-      this.m_Scoring = new Scoring();
-      this.m_World = (World) null;
-      this.m_WorldTime = new WorldTime();
-      this.LastTurnPlayerActed = 0;
+            Seed = (int) DateTime.UtcNow.TimeOfDay.Ticks;
+            m_CurrentMap = (Map) null;
+            m_Scoring = new Scoring();
+            m_World = (World) null;
+            m_WorldTime = new WorldTime();
+            LastTurnPlayerActed = 0;
       m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
       for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1)
       {
         for (int index2 = 0; index2 < RogueGame.Options.CitySize; ++index2)
         {
           for (int index3 = 0; index3 < RogueGame.Options.CitySize; ++index3)
-            this.m_Event_Raids[index1, index2, index3] = -1;
+                        m_Event_Raids[index1, index2, index3] = -1;
         }
       }
-      this.CHARUndergroundFacility_Activated = false;
-      this.PlayerKnows_CHARUndergroundFacilityLocation = false;
-      this.PlayerKnows_TheSewersThingLocation = false;
-      this.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_0;
-      this.UniqueActors = new UniqueActors();
-      this.UniqueItems = new UniqueItems();
-      this.UniqueMaps = new UniqueMaps();
+            CHARUndergroundFacility_Activated = false;
+            PlayerKnows_CHARUndergroundFacilityLocation = false;
+            PlayerKnows_TheSewersThingLocation = false;
+            ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_0;
+            UniqueActors = new UniqueActors();
+            UniqueItems = new UniqueItems();
+            UniqueMaps = new UniqueMaps();
     }
 
     public bool HasRaidHappened(RaidType raid, District district)
     {
       if (district == null)
         throw new ArgumentNullException("district");
-      return this.m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] > -1;
+      return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] > -1;
     }
 
     public int LastRaidTime(RaidType raid, District district)
     {
       if (district == null)
         throw new ArgumentNullException("district");
-      return this.m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y];
+      return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y];
     }
 
     public void SetLastRaidTime(RaidType raid, District district, int turnCounter)
     {
       if (district == null)
         throw new ArgumentNullException("district");
-      this.m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
+            m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
     }
 
     public static void Save(Session session, string filepath, Session.SaveFormat format)
@@ -353,11 +353,11 @@ namespace djack.RogueSurvivor.Engine
 
     private void ReconstructAuxiliaryFields()
     {
-      for (int index1 = 0; index1 < this.m_World.Size; ++index1)
+      for (int index1 = 0; index1 < m_World.Size; ++index1)
       {
-        for (int index2 = 0; index2 < this.m_World.Size; ++index2)
+        for (int index2 = 0; index2 < m_World.Size; ++index2)
         {
-          foreach (Map map in this.m_World[index1, index2].Maps)
+          foreach (Map map in m_World[index1, index2].Maps)
             map.ReconstructAuxiliaryFields();
         }
       }

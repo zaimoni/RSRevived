@@ -22,11 +22,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Name;
+        return m_Name;
       }
       set
       {
-        this.m_Name = value;
+                m_Name = value;
       }
     }
 
@@ -34,11 +34,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Bounds;
+        return m_Bounds;
       }
       set
       {
-        this.m_Bounds = value;
+                m_Bounds = value;
       }
     }
 
@@ -46,33 +46,33 @@ namespace djack.RogueSurvivor.Data
     {
       if (name == null)
         throw new ArgumentNullException("name");
-      this.m_Name = name;
-      this.m_Bounds = bounds;
+            m_Name = name;
+            m_Bounds = bounds;
     }
 
     public bool HasGameAttribute(string key)
     {
-      if (this.m_Attributes == null)
+      if (m_Attributes == null)
         return false;
-      return this.m_Attributes.Keys.Contains<string>(key);
+      return m_Attributes.Keys.Contains<string>(key);
     }
 
     public void SetGameAttribute<_T_>(string key, _T_ value)
     {
-      if (this.m_Attributes == null)
-        this.m_Attributes = new Dictionary<string, object>(1);
-      if (this.m_Attributes.Keys.Contains<string>(key))
-        this.m_Attributes[key] = (object) value;
+      if (m_Attributes == null)
+                m_Attributes = new Dictionary<string, object>(1);
+      if (m_Attributes.Keys.Contains<string>(key))
+                m_Attributes[key] = (object) value;
       else
-        this.m_Attributes.Add(key, (object) value);
+                m_Attributes.Add(key, (object) value);
     }
 
     public _T_ GetGameAttribute<_T_>(string key)
     {
-      if (this.m_Attributes == null)
+      if (m_Attributes == null)
         return default (_T_);
       object obj;
-      if (!this.m_Attributes.TryGetValue(key, out obj))
+      if (!m_Attributes.TryGetValue(key, out obj))
         return default (_T_);
       if (!(obj is _T_))
         throw new InvalidOperationException("game attribute is not of requested type");

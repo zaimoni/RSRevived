@@ -45,8 +45,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-      this.m_MemLOSSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, LOS_MEMORY);
+            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
+            m_MemLOSSensor = new MemorizedSensor((Sensor)m_LOSSensor, LOS_MEMORY);
     }
 
     public override void OptimizeBeforeSaving()
@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      return this.m_MemLOSSensor.Sense(game, this.m_Actor);
+      return m_MemLOSSensor.Sense(game, m_Actor);
     }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // fleeing from explosives is done before the enemies check
-      ActorAction tmpAction = this.BehaviorFleeFromExplosives(game, this.FilterStacks(game, percepts1));
+      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // throwing a grenade overrides normal weapon equipping choices
       if (null != perceptList)
       {
-        tmpAction = BehaviorThrowGrenade(game, this.m_LOSSensor.FOV, perceptList);
+        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, perceptList);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // all free actions have to be before targeting enemies
       if (null != perceptList) {
         if (game.Rules.RollChance(50)) {
-          List<Percept> friends = this.FilterNonEnemies(game, percepts1);
+          List<Percept> friends = FilterNonEnemies(game, percepts1);
           if (friends != null) {
             tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(perceptList).Percepted as Actor);
             if (null != tmpAction) {
@@ -124,10 +124,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
-        List<Percept> percepts3 = this.FilterFireTargets(game, perceptList);
+        List<Percept> percepts3 = FilterFireTargets(game, perceptList);
         if (percepts3 != null) {
           Percept target = FilterNearest(percepts3);
-          tmpAction = this.BehaviorRangedAttack(game, target);
+          tmpAction = BehaviorRangedAttack(game, target);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FIGHTING;
             m_Actor.TargetActor = target.Percepted as Actor;
@@ -137,7 +137,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFightOrFlee(game, perceptList, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = this.BehaviorRestIfTired(game);
+      tmpAction = BehaviorRestIfTired(game);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -156,8 +156,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (!flag3 && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(this.m_Actor))) {
-        tmpAction = BehaviorSecurePerimeter(game, this.m_LOSSensor.FOV);
+      if (!flag3 && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
+        tmpAction = BehaviorSecurePerimeter(game, m_LOSSensor.FOV);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
@@ -172,9 +172,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> percepts4 = FilterCurrent(percepts2);
       if (percepts4 != null) {
         Percept target = FilterNearest(percepts4);
-        if (this.m_Actor.Location == target.Location) {
+        if (m_Actor.Location == target.Location) {
           Actor actor = target.Percepted as Actor;
-          target = new Percept((object) actor, this.m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
+          target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
         tmpAction = BehaviorChargeEnemy(game, target);
         if (null != tmpAction) {
@@ -199,21 +199,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (flag1) {
         Point position = m_Actor.Leader.Location.Position;
-        tmpAction = BehaviorHangAroundActor(game, this.m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);
+        tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
-          m_Actor.TargetActor = this.m_Actor.Leader;
+          m_Actor.TargetActor = m_Actor.Leader;
           return tmpAction;
         }
       }
-      if (this.m_Actor.CountFollowers > 0) {
+      if (m_Actor.CountFollowers > 0) {
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(game, 4, out target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
             if (target.IsSleeping)
               game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));
-            else if (this.m_LOSSensor.FOV.Contains(target.Location.Position))
+            else if (m_LOSSensor.FOV.Contains(target.Location.Position))
               game.DoEmote(m_Actor, string.Format("{0}! Don't lag behind!", (object) target.Name));
             else
               game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", (object) target.Name));
@@ -222,7 +222,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorExplore(game, this.m_Exploration);
+      tmpAction = BehaviorExplore(game, m_Exploration);
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.IDLE;

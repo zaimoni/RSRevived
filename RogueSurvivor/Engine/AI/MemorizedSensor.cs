@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       get
       {
-        return this.m_Sensor;
+        return m_Sensor;
       }
     }
 
@@ -29,13 +29,13 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       if (noMemorySensor == null)
         throw new ArgumentNullException("decoratedSensor");
-      this.m_Sensor = noMemorySensor;
-      this.m_Persistance = persistance;
+            m_Sensor = noMemorySensor;
+            m_Persistance = persistance;
     }
 
     public void Clear()
     {
-      this.m_Percepts.Clear();
+            m_Percepts.Clear();
     }
 
     public void Forget(Actor actor)

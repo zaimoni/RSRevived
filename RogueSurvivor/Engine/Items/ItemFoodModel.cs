@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Nutrition;
+        return m_Nutrition;
       }
     }
 
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_IsPerishable;
+        return m_IsPerishable;
       }
     }
 
@@ -34,22 +34,22 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_BestBeforeDays;
+        return m_BestBeforeDays;
       }
     }
 
     public ItemFoodModel(string aName, string theNames, string imageID, int nutrition, int bestBeforeDays)
       : base(aName, theNames, imageID)
     {
-      this.m_Nutrition = nutrition;
+            m_Nutrition = nutrition;
       if (bestBeforeDays < 0)
       {
-        this.m_IsPerishable = false;
+                m_IsPerishable = false;
       }
       else
       {
-        this.m_IsPerishable = true;
-        this.m_BestBeforeDays = bestBeforeDays;
+                m_IsPerishable = true;
+                m_BestBeforeDays = bestBeforeDays;
       }
     }
   }

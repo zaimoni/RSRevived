@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine
 
     public DiceRoller(int seed)
     {
-      this.m_Rng = new Random(seed);
+            m_Rng = new Random(seed);
     }
 
     public DiceRoller()

@@ -41,47 +41,47 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_SkillTable;
+        return m_SkillTable;
       }
       set
       {
-        this.m_SkillTable = value;
+                m_SkillTable = value;
       }
     }
 
     public ActorSheet(int baseHitPoints, int baseStaminaPoints, int baseFoodPoints, int baseSleepPoints, int baseSanity, Attack unarmedAttack, Defence baseDefence, int baseViewRange, int baseAudioRange, int smellRating, int inventoryCapacity)
     {
-      this.BaseHitPoints = baseHitPoints;
-      this.BaseStaminaPoints = baseStaminaPoints;
-      this.BaseFoodPoints = baseFoodPoints;
-      this.BaseSleepPoints = baseSleepPoints;
-      this.BaseSanity = baseSanity;
-      this.UnarmedAttack = unarmedAttack;
-      this.BaseDefence = baseDefence;
-      this.BaseViewRange = baseViewRange;
-      this.BaseAudioRange = baseAudioRange;
-      this.BaseSmellRating = (float) smellRating / 100f;
-      this.BaseInventoryCapacity = inventoryCapacity;
+            BaseHitPoints = baseHitPoints;
+            BaseStaminaPoints = baseStaminaPoints;
+            BaseFoodPoints = baseFoodPoints;
+            BaseSleepPoints = baseSleepPoints;
+            BaseSanity = baseSanity;
+            UnarmedAttack = unarmedAttack;
+            BaseDefence = baseDefence;
+            BaseViewRange = baseViewRange;
+            BaseAudioRange = baseAudioRange;
+            BaseSmellRating = (float) smellRating / 100f;
+            BaseInventoryCapacity = inventoryCapacity;
     }
 
     public ActorSheet(ActorSheet copyFrom)
     {
       if (copyFrom == null)
         throw new ArgumentNullException("copyFrom");
-      this.BaseHitPoints = copyFrom.BaseHitPoints;
-      this.BaseStaminaPoints = copyFrom.BaseStaminaPoints;
-      this.BaseFoodPoints = copyFrom.BaseFoodPoints;
-      this.BaseSleepPoints = copyFrom.BaseSleepPoints;
-      this.BaseSanity = copyFrom.BaseSanity;
-      this.UnarmedAttack = copyFrom.UnarmedAttack;
-      this.BaseDefence = copyFrom.BaseDefence;
-      this.BaseViewRange = copyFrom.BaseViewRange;
-      this.BaseAudioRange = copyFrom.BaseAudioRange;
-      this.BaseSmellRating = copyFrom.BaseSmellRating;
-      this.BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
+            BaseHitPoints = copyFrom.BaseHitPoints;
+            BaseStaminaPoints = copyFrom.BaseStaminaPoints;
+            BaseFoodPoints = copyFrom.BaseFoodPoints;
+            BaseSleepPoints = copyFrom.BaseSleepPoints;
+            BaseSanity = copyFrom.BaseSanity;
+            UnarmedAttack = copyFrom.UnarmedAttack;
+            BaseDefence = copyFrom.BaseDefence;
+            BaseViewRange = copyFrom.BaseViewRange;
+            BaseAudioRange = copyFrom.BaseAudioRange;
+            BaseSmellRating = copyFrom.BaseSmellRating;
+            BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
       if (copyFrom.SkillTable.Skills == null)
         return;
-      this.m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
+            m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
     }
   }
 }

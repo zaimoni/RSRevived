@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Day;
+        return m_Day;
       }
     }
 
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Hour;
+        return m_Hour;
       }
     }
 
@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_IsNight;
+        return m_IsNight;
       }
     }
 
@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Phase;
+        return m_Phase;
       }
     }
 
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_IsStrikeOfMidnight;
+        return m_IsStrikeOfMidnight;
       }
     }
 
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_IsStrikeOfMidday;
+        return m_IsStrikeOfMidday;
       }
     }
 
@@ -96,8 +96,8 @@ namespace djack.RogueSurvivor.Data
     {
       if (turnCounter < 0)
         throw new ArgumentOutOfRangeException("turnCounter < 0");
-      this.m_TurnCounter = turnCounter;
-      this.RecomputeDate();
+            m_TurnCounter = turnCounter;
+            RecomputeDate();
     }
 
     private void RecomputeDate()
@@ -107,55 +107,55 @@ namespace djack.RogueSurvivor.Data
       int num2 = num1 - m_Day * TURNS_PER_DAY;
       m_Hour = num2 / TURNS_PER_HOUR;
       int num3 = num2 - m_Hour * TURNS_PER_HOUR;
-      switch (this.m_Hour)
+      switch (m_Hour)
       {
         case 0:
-          this.m_Phase = DayPhase.MIDNIGHT;
-          this.m_IsNight = true;
+                    m_Phase = DayPhase.MIDNIGHT;
+                    m_IsNight = true;
           break;
         case 1:
         case 2:
         case 3:
         case 4:
         case 5:
-          this.m_Phase = DayPhase.DEEP_NIGHT;
-          this.m_IsNight = true;
+                    m_Phase = DayPhase.DEEP_NIGHT;
+                    m_IsNight = true;
           break;
         case 6:
-          this.m_Phase = DayPhase.SUNRISE;
-          this.m_IsNight = false;
+                    m_Phase = DayPhase.SUNRISE;
+                    m_IsNight = false;
           break;
         case 7:
         case 8:
         case 9:
         case 10:
         case 11:
-          this.m_Phase = DayPhase.MORNING;
-          this.m_IsNight = false;
+                    m_Phase = DayPhase.MORNING;
+                    m_IsNight = false;
           break;
         case 12:
-          this.m_Phase = DayPhase.MIDDAY;
-          this.m_IsNight = false;
+                    m_Phase = DayPhase.MIDDAY;
+                    m_IsNight = false;
           break;
         case 13:
         case 14:
         case 15:
         case 16:
         case 17:
-          this.m_Phase = DayPhase.AFTERNOON;
-          this.m_IsNight = false;
+                    m_Phase = DayPhase.AFTERNOON;
+                    m_IsNight = false;
           break;
         case 18:
-          this.m_Phase = DayPhase.SUNSET;
-          this.m_IsNight = true;
+                    m_Phase = DayPhase.SUNSET;
+                    m_IsNight = true;
           break;
         case 19:
         case 20:
         case 21:
         case 22:
         case 23:
-          this.m_Phase = DayPhase.EVENING;
-          this.m_IsNight = true;
+                    m_Phase = DayPhase.EVENING;
+                    m_IsNight = true;
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled hour");
@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor.Data
 
     public override string ToString()
     {
-      return string.Format("day {0} hour {1:D2}", (object) this.Day, (object) this.Hour);
+      return string.Format("day {0} hour {1:D2}", (object)Day, (object)Hour);
     }
 
     public static string MakeTimeDurationMessage(int turns)

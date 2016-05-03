@@ -77,11 +77,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_PlayMusic;
+        return m_PlayMusic;
       }
       set
       {
-        this.m_PlayMusic = value;
+                m_PlayMusic = value;
       }
     }
 
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_MusicVolume;
+        return m_MusicVolume;
       }
       set
       {
@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 100)
           value = 100;
-        this.m_MusicVolume = value;
+                m_MusicVolume = value;
       }
     }
 
@@ -105,11 +105,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ShowPlayerTagsOnMinimap;
+        return m_ShowPlayerTagsOnMinimap;
       }
       set
       {
-        this.m_ShowPlayerTagsOnMinimap = value;
+                m_ShowPlayerTagsOnMinimap = value;
       }
     }
 
@@ -117,11 +117,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_AnimDelay;
+        return m_AnimDelay;
       }
       set
       {
-        this.m_AnimDelay = value;
+                m_AnimDelay = value;
       }
     }
 
@@ -129,11 +129,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ShowMinimap;
+        return m_ShowMinimap;
       }
       set
       {
-        this.m_ShowMinimap = value;
+                m_ShowMinimap = value;
       }
     }
 
@@ -141,11 +141,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_EnabledAdvisor;
+        return m_EnabledAdvisor;
       }
       set
       {
-        this.m_EnabledAdvisor = value;
+                m_EnabledAdvisor = value;
       }
     }
 
@@ -153,11 +153,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_CombatAssistant;
+        return m_CombatAssistant;
       }
       set
       {
-        this.m_CombatAssistant = value;
+                m_CombatAssistant = value;
       }
     }
 
@@ -165,7 +165,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_CitySize;
+        return m_CitySize;
       }
       set
       {
@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Engine
           value = 3;
         if (value > 6)
           value = 6;
-        this.m_CitySize = value;
+                m_CitySize = value;
       }
     }
 
@@ -181,7 +181,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_MaxCivilians;
+        return m_MaxCivilians;
       }
       set
       {
@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Engine
           value = 10;
         if (value > 75)
           value = 75;
-        this.m_MaxCivilians = value;
+                m_MaxCivilians = value;
       }
     }
 
@@ -197,7 +197,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_MaxDogs;
+        return m_MaxDogs;
       }
       set
       {
@@ -205,7 +205,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 75)
           value = 75;
-        this.m_MaxDogs = value;
+                m_MaxDogs = value;
       }
     }
 
@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_MaxUndeads;
+        return m_MaxUndeads;
       }
       set
       {
@@ -221,7 +221,7 @@ namespace djack.RogueSurvivor.Engine
           value = 10;
         if (value > 200)
           value = 200;
-        this.m_MaxUndeads = value;
+                m_MaxUndeads = value;
       }
     }
 
@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SpawnSkeletonChance;
+        return m_SpawnSkeletonChance;
       }
       set
       {
@@ -237,7 +237,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 100)
           value = 100;
-        this.m_SpawnSkeletonChance = value;
+                m_SpawnSkeletonChance = value;
       }
     }
 
@@ -245,7 +245,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SpawnZombieChance;
+        return m_SpawnZombieChance;
       }
       set
       {
@@ -253,7 +253,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 100)
           value = 100;
-        this.m_SpawnZombieChance = value;
+                m_SpawnZombieChance = value;
       }
     }
 
@@ -261,7 +261,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SpawnZombieMasterChance;
+        return m_SpawnZombieMasterChance;
       }
       set
       {
@@ -269,7 +269,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 100)
           value = 100;
-        this.m_SpawnZombieMasterChance = value;
+                m_SpawnZombieMasterChance = value;
       }
     }
 
@@ -277,12 +277,12 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SimulateDistricts;
+        return m_SimulateDistricts;
       }
       set
       {
-        this.m_SimulateDistricts = value;
-        this.m_cachedSimRatioFloat = GameOptions.SimRatioToFloat(this.m_SimulateDistricts);
+                m_SimulateDistricts = value;
+                m_cachedSimRatioFloat = GameOptions.SimRatioToFloat(m_SimulateDistricts);
       }
     }
 
@@ -290,7 +290,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_cachedSimRatioFloat;
+        return m_cachedSimRatioFloat;
       }
     }
 
@@ -298,11 +298,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SimulateWhenSleeping;
+        return m_SimulateWhenSleeping;
       }
       set
       {
-        this.m_SimulateWhenSleeping = value;
+                m_SimulateWhenSleeping = value;
       }
     }
 
@@ -310,7 +310,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SimulateDistricts != GameOptions.SimRatio._FIRST;
+        return m_SimulateDistricts != GameOptions.SimRatio._FIRST;
       }
     }
 
@@ -318,11 +318,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SimThread;
+        return m_SimThread;
       }
       set
       {
-        this.m_SimThread = value;
+                m_SimThread = value;
       }
     }
 
@@ -330,7 +330,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_DistrictSize;
+        return m_DistrictSize;
       }
       set
       {
@@ -338,7 +338,7 @@ namespace djack.RogueSurvivor.Engine
           value = 30;
         if (value > RogueGame.MAP_MAX_HEIGHT || value > RogueGame.MAP_MAX_WIDTH)
           value = Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH);
-        this.m_DistrictSize = value;
+                m_DistrictSize = value;
       }
     }
 
@@ -346,11 +346,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_NPCCanStarveToDeath;
+        return m_NPCCanStarveToDeath;
       }
       set
       {
-        this.m_NPCCanStarveToDeath = value;
+                m_NPCCanStarveToDeath = value;
       }
     }
 
@@ -358,7 +358,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ZombificationChance;
+        return m_ZombificationChance;
       }
       set
       {
@@ -366,7 +366,7 @@ namespace djack.RogueSurvivor.Engine
           value = 10;
         if (value > 100)
           value = 100;
-        this.m_ZombificationChance = value;
+                m_ZombificationChance = value;
       }
     }
 
@@ -374,11 +374,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_RevealStartingDistrict;
+        return m_RevealStartingDistrict;
       }
       set
       {
-        this.m_RevealStartingDistrict = value;
+                m_RevealStartingDistrict = value;
       }
     }
 
@@ -386,11 +386,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_AllowUndeadsEvolution;
+        return m_AllowUndeadsEvolution;
       }
       set
       {
-        this.m_AllowUndeadsEvolution = value;
+                m_AllowUndeadsEvolution = value;
       }
     }
 
@@ -398,7 +398,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_DayZeroUndeadsPercent;
+        return m_DayZeroUndeadsPercent;
       }
       set
       {
@@ -406,7 +406,7 @@ namespace djack.RogueSurvivor.Engine
           value = 10;
         if (value > 100)
           value = 100;
-        this.m_DayZeroUndeadsPercent = value;
+                m_DayZeroUndeadsPercent = value;
       }
     }
 
@@ -414,7 +414,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ZombieInvasionDailyIncrease;
+        return m_ZombieInvasionDailyIncrease;
       }
       set
       {
@@ -422,7 +422,7 @@ namespace djack.RogueSurvivor.Engine
           value = 1;
         if (value > 20)
           value = 20;
-        this.m_ZombieInvasionDailyIncrease = value;
+                m_ZombieInvasionDailyIncrease = value;
       }
     }
 
@@ -430,7 +430,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_StarvedZombificationChance;
+        return m_StarvedZombificationChance;
       }
       set
       {
@@ -438,7 +438,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 100)
           value = 100;
-        this.m_StarvedZombificationChance = value;
+                m_StarvedZombificationChance = value;
       }
     }
 
@@ -446,7 +446,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_MaxReincarnations;
+        return m_MaxReincarnations;
       }
       set
       {
@@ -454,7 +454,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 7)
           value = 7;
-        this.m_MaxReincarnations = value;
+                m_MaxReincarnations = value;
       }
     }
 
@@ -462,11 +462,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_CanReincarnateAsRat;
+        return m_CanReincarnateAsRat;
       }
       set
       {
-        this.m_CanReincarnateAsRat = value;
+                m_CanReincarnateAsRat = value;
       }
     }
 
@@ -474,11 +474,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_CanReincarnateToSewers;
+        return m_CanReincarnateToSewers;
       }
       set
       {
-        this.m_CanReincarnateToSewers = value;
+                m_CanReincarnateToSewers = value;
       }
     }
 
@@ -486,11 +486,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_IsLivingReincRestricted;
+        return m_IsLivingReincRestricted;
       }
       set
       {
-        this.m_IsLivingReincRestricted = value;
+                m_IsLivingReincRestricted = value;
       }
     }
 
@@ -498,11 +498,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_Permadeath;
+        return m_Permadeath;
       }
       set
       {
-        this.m_Permadeath = value;
+                m_Permadeath = value;
       }
     }
 
@@ -510,11 +510,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_DeathScreenshot;
+        return m_DeathScreenshot;
       }
       set
       {
-        this.m_DeathScreenshot = value;
+                m_DeathScreenshot = value;
       }
     }
 
@@ -522,11 +522,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_AggressiveHungryCivilians;
+        return m_AggressiveHungryCivilians;
       }
       set
       {
-        this.m_AggressiveHungryCivilians = value;
+                m_AggressiveHungryCivilians = value;
       }
     }
 
@@ -534,7 +534,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_NatGuardFactor;
+        return m_NatGuardFactor;
       }
       set
       {
@@ -542,7 +542,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 200)
           value = 200;
-        this.m_NatGuardFactor = value;
+                m_NatGuardFactor = value;
       }
     }
 
@@ -550,7 +550,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SuppliesDropFactor;
+        return m_SuppliesDropFactor;
       }
       set
       {
@@ -558,7 +558,7 @@ namespace djack.RogueSurvivor.Engine
           value = 0;
         if (value > 200)
           value = 200;
-        this.m_SuppliesDropFactor = value;
+                m_SuppliesDropFactor = value;
       }
     }
 
@@ -566,11 +566,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ShowTargets;
+        return m_ShowTargets;
       }
       set
       {
-        this.m_ShowTargets = value;
+                m_ShowTargets = value;
       }
     }
 
@@ -578,11 +578,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ShowPlayerTargets;
+        return m_ShowPlayerTargets;
       }
       set
       {
-        this.m_ShowPlayerTargets = value;
+                m_ShowPlayerTargets = value;
       }
     }
 
@@ -590,11 +590,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ZupDays;
+        return m_ZupDays;
       }
       set
       {
-        this.m_ZupDays = value;
+                m_ZupDays = value;
       }
     }
 
@@ -602,11 +602,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_RatsUpgrade;
+        return m_RatsUpgrade;
       }
       set
       {
-        this.m_RatsUpgrade = value;
+                m_RatsUpgrade = value;
       }
     }
 
@@ -614,11 +614,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_SkeletonsUpgrade;
+        return m_SkeletonsUpgrade;
       }
       set
       {
-        this.m_SkeletonsUpgrade = value;
+                m_SkeletonsUpgrade = value;
       }
     }
 
@@ -626,11 +626,11 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return this.m_ShamblersUpgrade;
+        return m_ShamblersUpgrade;
       }
       set
       {
-        this.m_ShamblersUpgrade = value;
+                m_ShamblersUpgrade = value;
       }
     }
 
@@ -638,46 +638,46 @@ namespace djack.RogueSurvivor.Engine
 
     public void ResetToDefaultValues()
     {
-      this.m_DistrictSize = DEFAULT_DISTRICT_SIZE;
-      this.m_MaxCivilians = DEFAULT_MAX_CIVILIANS;
-      this.m_MaxUndeads = DEFAULT_MAX_UNDEADS;
-      this.m_MaxDogs = DEFAULT_MAX_DOGS;
-      this.m_PlayMusic = true;
-      this.m_MusicVolume = 100;
-      this.m_AnimDelay = true;
-      this.m_ShowMinimap = true;
-      this.m_ShowPlayerTagsOnMinimap = true;
-      this.m_EnabledAdvisor = true;
-      this.m_CombatAssistant = false;
-      this.SimulateDistricts = GameOptions.SimRatio.FULL;
-      this.m_SimulateWhenSleeping = false;
-      this.m_SimThread = true;
-      this.m_SpawnSkeletonChance = DEFAULT_SPAWN_SKELETON_CHANCE;
-      this.m_SpawnZombieChance = DEFAULT_SPAWN_ZOMBIE_CHANCE;
-      this.m_SpawnZombieMasterChance = DEFAULT_SPAWN_ZOMBIE_MASTER_CHANCE;
-      this.m_CitySize = DEFAULT_CITY_SIZE;
-      this.m_NPCCanStarveToDeath = true;
-      this.m_ZombificationChance = DEFAULT_ZOMBIFICATION_CHANCE;
-      this.m_RevealStartingDistrict = true;
-      this.m_AllowUndeadsEvolution = true;
-      this.m_DayZeroUndeadsPercent = DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
-      this.m_ZombieInvasionDailyIncrease = DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE;
-      this.m_StarvedZombificationChance = DEFAULT_STARVED_ZOMBIFICATION_CHANCE;
-      this.m_MaxReincarnations = DEFAULT_MAX_REINCARNATIONS;
-      this.m_CanReincarnateAsRat = false;
-      this.m_CanReincarnateToSewers = false;
-      this.m_IsLivingReincRestricted = false;
-      this.m_Permadeath = false;
-      this.m_DeathScreenshot = true;
-      this.m_AggressiveHungryCivilians = true;
-      this.m_NatGuardFactor = DEFAULT_NATGUARD_FACTOR;
-      this.m_SuppliesDropFactor = DEFAULT_SUPPLIESDROP_FACTOR;
-      this.m_ShowTargets = true;
-      this.m_ShowPlayerTargets = true;
-      this.m_ZupDays = GameOptions.ZupDays.THREE;
-      this.m_RatsUpgrade = false;
-      this.m_SkeletonsUpgrade = false;
-      this.m_ShamblersUpgrade = false;
+            m_DistrictSize = DEFAULT_DISTRICT_SIZE;
+            m_MaxCivilians = DEFAULT_MAX_CIVILIANS;
+            m_MaxUndeads = DEFAULT_MAX_UNDEADS;
+            m_MaxDogs = DEFAULT_MAX_DOGS;
+            m_PlayMusic = true;
+            m_MusicVolume = 100;
+            m_AnimDelay = true;
+            m_ShowMinimap = true;
+            m_ShowPlayerTagsOnMinimap = true;
+            m_EnabledAdvisor = true;
+            m_CombatAssistant = false;
+            SimulateDistricts = GameOptions.SimRatio.FULL;
+            m_SimulateWhenSleeping = false;
+            m_SimThread = true;
+            m_SpawnSkeletonChance = DEFAULT_SPAWN_SKELETON_CHANCE;
+            m_SpawnZombieChance = DEFAULT_SPAWN_ZOMBIE_CHANCE;
+            m_SpawnZombieMasterChance = DEFAULT_SPAWN_ZOMBIE_MASTER_CHANCE;
+            m_CitySize = DEFAULT_CITY_SIZE;
+            m_NPCCanStarveToDeath = true;
+            m_ZombificationChance = DEFAULT_ZOMBIFICATION_CHANCE;
+            m_RevealStartingDistrict = true;
+            m_AllowUndeadsEvolution = true;
+            m_DayZeroUndeadsPercent = DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
+            m_ZombieInvasionDailyIncrease = DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE;
+            m_StarvedZombificationChance = DEFAULT_STARVED_ZOMBIFICATION_CHANCE;
+            m_MaxReincarnations = DEFAULT_MAX_REINCARNATIONS;
+            m_CanReincarnateAsRat = false;
+            m_CanReincarnateToSewers = false;
+            m_IsLivingReincRestricted = false;
+            m_Permadeath = false;
+            m_DeathScreenshot = true;
+            m_AggressiveHungryCivilians = true;
+            m_NatGuardFactor = DEFAULT_NATGUARD_FACTOR;
+            m_SuppliesDropFactor = DEFAULT_SUPPLIESDROP_FACTOR;
+            m_ShowTargets = true;
+            m_ShowPlayerTargets = true;
+            m_ZupDays = GameOptions.ZupDays.THREE;
+            m_RatsUpgrade = false;
+            m_SkeletonsUpgrade = false;
+            m_ShamblersUpgrade = false;
     }
 
     public static string Name(GameOptions.IDs option)
@@ -889,87 +889,87 @@ namespace djack.RogueSurvivor.Engine
       switch (option)
       {
         case GameOptions.IDs.UI_MUSIC:
-          return !this.PlayMusic ? "OFF" : "ON ";
+          return !PlayMusic ? "OFF" : "ON ";
         case GameOptions.IDs.UI_MUSIC_VOLUME:
-          return this.MusicVolume.ToString() + "%";
+          return MusicVolume.ToString() + "%";
         case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
-          return !this.ShowPlayerTagsOnMinimap ? "NO " : "YES";
+          return !ShowPlayerTagsOnMinimap ? "NO " : "YES";
         case GameOptions.IDs.UI_ANIM_DELAY:
-          return !this.IsAnimDelayOn ? "OFF" : "ON ";
+          return !IsAnimDelayOn ? "OFF" : "ON ";
         case GameOptions.IDs.UI_SHOW_MINIMAP:
-          return !this.IsMinimapOn ? "OFF" : "ON ";
+          return !IsMinimapOn ? "OFF" : "ON ";
         case GameOptions.IDs.UI_ADVISOR:
-          return !this.IsAdvisorEnabled ? "NO " : "YES";
+          return !IsAdvisorEnabled ? "NO " : "YES";
         case GameOptions.IDs.UI_COMBAT_ASSISTANT:
-          return !this.IsCombatAssistantOn ? "OFF   (default OFF)" : "ON    (default OFF)";
+          return !IsCombatAssistantOn ? "OFF   (default OFF)" : "ON    (default OFF)";
         case GameOptions.IDs.UI_SHOW_TARGETS:
-          return !this.ShowTargets ? "OFF   (default ON)" : "ON    (default ON)";
+          return !ShowTargets ? "OFF   (default ON)" : "ON    (default ON)";
         case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
-          return !this.ShowPlayerTargets ? "OFF   (default ON)" : "ON    (default ON)";
+          return !ShowPlayerTargets ? "OFF   (default ON)" : "ON    (default ON)";
         case GameOptions.IDs.GAME_DISTRICT_SIZE:
-          return string.Format("{0:D2}*   (default {1:D2})", (object) this.DistrictSize, (object) DEFAULT_DISTRICT_SIZE);
+          return string.Format("{0:D2}*   (default {1:D2})", (object)DistrictSize, (object) DEFAULT_DISTRICT_SIZE);
         case GameOptions.IDs.GAME_MAX_CIVILIANS:
-          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxCivilians, (object) DEFAULT_MAX_CIVILIANS);
+          return string.Format("{0:D3}*  (default {1:D3})", (object)MaxCivilians, (object) DEFAULT_MAX_CIVILIANS);
         case GameOptions.IDs.GAME_MAX_DOGS:
-          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxDogs, (object) DEFAULT_MAX_DOGS);
+          return string.Format("{0:D3}*  (default {1:D3})", (object)MaxDogs, (object) DEFAULT_MAX_DOGS);
         case GameOptions.IDs.GAME_MAX_UNDEADS:
-          return string.Format("{0:D3}*  (default {1:D3})", (object) this.MaxUndeads, (object) DEFAULT_MAX_UNDEADS);
+          return string.Format("{0:D3}*  (default {1:D3})", (object)MaxUndeads, (object) DEFAULT_MAX_UNDEADS);
         case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-          return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(this.SimulateDistricts), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
+          return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(SimulateDistricts), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
         case GameOptions.IDs.GAME_SIMULATE_SLEEP:
-          return !this.SimulateWhenSleeping ? "NO*   (default NO)" : "YES*  (default NO)";
+          return !SimulateWhenSleeping ? "NO*   (default NO)" : "YES*  (default NO)";
         case GameOptions.IDs.GAME_SIM_THREAD:
-          return !this.SimThread ? "NO*   (default YES)" : "YES*  (default YES)";
+          return !SimThread ? "NO*   (default YES)" : "YES*  (default YES)";
         case GameOptions.IDs.GAME_CITY_SIZE:
-          return string.Format("{0:D2}*   (default {1:D2})", (object) this.CitySize, (object) DEFAULT_CITY_SIZE);
+          return string.Format("{0:D2}*   (default {1:D2})", (object)CitySize, (object) DEFAULT_CITY_SIZE);
         case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
-          return !this.NPCCanStarveToDeath ? "NO    (default YES)" : "YES   (default YES)";
+          return !NPCCanStarveToDeath ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.ZombificationChance, (object) 100);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object)ZombificationChance, (object) 100);
         case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
-          return !this.RevealStartingDistrict ? "NO    (default YES)" : "YES   (default YES)";
+          return !RevealStartingDistrict ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
           if (mode == GameMode.GM_VINTAGE)
             return "---";
-          return !this.AllowUndeadsEvolution ? "NO    (default YES)" : "YES   (default YES)";
+          return !AllowUndeadsEvolution ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.DayZeroUndeadsPercent, (object) DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object)DayZeroUndeadsPercent, (object) DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
         case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.ZombieInvasionDailyIncrease, (object) DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object)ZombieInvasionDailyIncrease, (object) DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE);
         case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.StarvedZombificationChance, (object) DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object)StarvedZombificationChance, (object) DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
         case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
-          return string.Format("{0:D3}   (default {1:D3})", (object) this.MaxReincarnations, (object) DEFAULT_MAX_REINCARNATIONS);
+          return string.Format("{0:D3}   (default {1:D3})", (object)MaxReincarnations, (object) DEFAULT_MAX_REINCARNATIONS);
         case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
-          return !this.CanReincarnateAsRat ? "NO    (default NO)" : "YES   (default NO)";
+          return !CanReincarnateAsRat ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
-          return !this.CanReincarnateToSewers ? "NO    (default NO)" : "YES   (default NO)";
+          return !CanReincarnateToSewers ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
-          return !this.IsLivingReincRestricted ? "NO    (default NO)" : "YES   (default NO)";
+          return !IsLivingReincRestricted ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_PERMADEATH:
-          return !this.IsPermadeathOn ? "NO    (default NO)" : "YES   (default NO)";
+          return !IsPermadeathOn ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
-          return !this.IsDeathScreenshotOn ? "NO    (default YES)" : "YES   (default YES)";
+          return !IsDeathScreenshotOn ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
-          return !this.IsAggressiveHungryCiviliansOn ? "OFF   (default ON)" : "ON    (default ON)";
+          return !IsAggressiveHungryCiviliansOn ? "OFF   (default ON)" : "ON    (default ON)";
         case GameOptions.IDs.GAME_NATGUARD_FACTOR:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.NatGuardFactor, (object) DEFAULT_NATGUARD_FACTOR);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object)NatGuardFactor, (object) DEFAULT_NATGUARD_FACTOR);
         case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
-          return string.Format("{0:D3}%  (default {1:D3}%)", (object) this.SuppliesDropFactor, (object) DEFAULT_SUPPLIESDROP_FACTOR);
+          return string.Format("{0:D3}%  (default {1:D3}%)", (object)SuppliesDropFactor, (object) DEFAULT_SUPPLIESDROP_FACTOR);
         case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-          return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(this.ZombifiedsUpgradeDays), (object) GameOptions.Name(GameOptions.ZupDays.THREE));
+          return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(ZombifiedsUpgradeDays), (object) GameOptions.Name(GameOptions.ZupDays.THREE));
         case GameOptions.IDs.GAME_RATS_UPGRADE:
           if (mode == GameMode.GM_VINTAGE)
             return "---";
-          return !this.RatsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
+          return !RatsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
           if (mode == GameMode.GM_VINTAGE)
             return "---";
-          return !this.SkeletonsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
+          return !SkeletonsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
           if (mode == GameMode.GM_VINTAGE)
             return "---";
-          return !this.ShamblersUpgrade ? "NO    (default NO)" : "YES   (default NO)";
+          return !ShamblersUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         default:
           return "???";
       }

@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Map;
+        return m_Map;
       }
     }
 
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Position;
+        return m_Position;
       }
     }
 
@@ -35,8 +35,8 @@ namespace djack.RogueSurvivor.Data
     {
       if (map == null)
         throw new ArgumentNullException("map");
-      this.m_Map = map;
-      this.m_Position = position;
+            m_Map = map;
+            m_Position = position;
     }
 
     public static bool operator ==(Location lhs, Location rhs)
@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Data
 
     public override int GetHashCode()
     {
-      return this.m_Map.GetHashCode() ^ this.m_Position.GetHashCode();
+      return m_Map.GetHashCode() ^ m_Position.GetHashCode();
     }
 
     public override bool Equals(object obj)

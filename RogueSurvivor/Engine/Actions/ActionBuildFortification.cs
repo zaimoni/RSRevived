@@ -17,18 +17,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionBuildFortification(Actor actor, RogueGame game, Point buildPos, bool isLarge)
       : base(actor, game)
     {
-      this.m_BuildPos = buildPos;
-      this.m_IsLarge = isLarge;
+            m_BuildPos = buildPos;
+            m_IsLarge = isLarge;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorBuildFortification(this.m_Actor, this.m_BuildPos, this.m_IsLarge);
+      return m_Game.Rules.CanActorBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoBuildFortification(this.m_Actor, this.m_BuildPos, this.m_IsLarge);
+            m_Game.DoBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
     }
   }
 }

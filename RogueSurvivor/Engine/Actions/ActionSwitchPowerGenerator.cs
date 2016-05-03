@@ -19,17 +19,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (powGen == null)
         throw new ArgumentNullException("powGen");
-      this.m_PowGen = powGen;
+            m_PowGen = powGen;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.IsSwitchableFor(this.m_Actor, this.m_PowGen, out this.m_FailReason);
+      return m_Game.Rules.IsSwitchableFor(m_Actor, m_PowGen, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoSwitchPowerGenerator(this.m_Actor, this.m_PowGen);
+            m_Game.DoSwitchPowerGenerator(m_Actor, m_PowGen);
     }
   }
 }

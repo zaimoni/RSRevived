@@ -12,27 +12,27 @@ namespace djack.RogueSurvivor.Engine
 
     public CSVField(string rawString)
     {
-      this.m_RawString = rawString;
+            m_RawString = rawString;
     }
 
     public int ParseInt()
     {
-      return int.Parse(this.m_RawString);
+      return int.Parse(m_RawString);
     }
 
     public float ParseFloat()
     {
-      return float.Parse(this.m_RawString);
+      return float.Parse(m_RawString);
     }
 
     public string ParseText()
     {
-      return this.m_RawString.Trim('"');
+      return m_RawString.Trim('"');
     }
 
     public bool ParseBool()
     {
-      return this.ParseInt() > 0;
+      return ParseInt() > 0;
     }
   }
 }

@@ -22,12 +22,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
+            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
     }
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      return this.m_LOSSensor.Sense(game, this.m_Actor);
+      return m_LOSSensor.Sense(game, m_Actor);
     }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (game.Rules.RollChance(IDLE_CHANCE))
       {
         m_Actor.Activity = Activity.IDLE;
-        return new ActionWait(this.m_Actor, game);
+        return new ActionWait(m_Actor, game);
       }
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander(game);

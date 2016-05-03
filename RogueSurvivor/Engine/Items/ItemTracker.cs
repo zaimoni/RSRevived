@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER) != ItemTrackerModel.TrackingFlags.NONE;
+        return (Tracking & ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.UNDEADS) != ItemTrackerModel.TrackingFlags.NONE;
+        return (Tracking & ItemTrackerModel.TrackingFlags.UNDEADS) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
+        return (Tracking & ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.Tracking & ItemTrackerModel.TrackingFlags.POLICE_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
+        return (Tracking & ItemTrackerModel.TrackingFlags.POLICE_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
@@ -52,13 +52,13 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Batteries;
+        return m_Batteries;
       }
       set
       {
         if (value < 0)
           value = 0;
-        this.m_Batteries = Math.Min(value, (this.Model as ItemTrackerModel).MaxBatteries);
+                m_Batteries = Math.Min(value, (Model as ItemTrackerModel).MaxBatteries);
       }
     }
 
@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Batteries >= (this.Model as ItemTrackerModel).MaxBatteries;
+        return m_Batteries >= (Model as ItemTrackerModel).MaxBatteries;
       }
     }
 
@@ -80,8 +80,8 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(model is ItemTrackerModel))
         throw new ArgumentException("model is not a TrackerModel");
       ItemTrackerModel itemTrackerModel = model as ItemTrackerModel;
-      this.Tracking = itemTrackerModel.Tracking;
-      this.Batteries = itemTrackerModel.MaxBatteries;
+            Tracking = itemTrackerModel.Tracking;
+            Batteries = itemTrackerModel.MaxBatteries;
     }
 
     public void Recharge()

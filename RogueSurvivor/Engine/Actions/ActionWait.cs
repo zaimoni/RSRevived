@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      this.m_Game.DoWait(this.m_Actor);
+            m_Game.DoWait(m_Actor);
     }
   }
 }

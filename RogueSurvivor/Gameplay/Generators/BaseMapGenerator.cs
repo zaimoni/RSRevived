@@ -462,23 +462,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected BaseMapGenerator(RogueGame game)
       : base(game.Rules)
     {
-      this.m_Game = game;
+            m_Game = game;
     }
 
     public void DressCivilian(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-        this.DressCivilian(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
+                DressCivilian(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
       else
-        this.DressCivilian(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS, BaseMapGenerator.FEMALE_TORSOS, BaseMapGenerator.FEMALE_LEGS, BaseMapGenerator.FEMALE_SHOES);
+                DressCivilian(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS, BaseMapGenerator.FEMALE_TORSOS, BaseMapGenerator.FEMALE_LEGS, BaseMapGenerator.FEMALE_SHOES);
     }
 
     public void SkinNakedHuman(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-        this.SkinNakedHuman(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS);
+                SkinNakedHuman(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS);
       else
-        this.SkinNakedHuman(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS);
+                SkinNakedHuman(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS);
     }
 
     public void DressCivilian(DiceRoller roller, Actor actor, string[] eyes, string[] skins, string[] heads, string[] torsos, string[] legs, string[] shoes)
@@ -576,9 +576,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void GiveNameToActor(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-        this.GiveNameToActor(roller, actor, BaseMapGenerator.MALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
+                GiveNameToActor(roller, actor, BaseMapGenerator.MALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
       else
-        this.GiveNameToActor(roller, actor, BaseMapGenerator.FEMALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
+                GiveNameToActor(roller, actor, BaseMapGenerator.FEMALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
     }
 
     public void GiveNameToActor(DiceRoller roller, Actor actor, string[] firstNames, string[] lastNames)
@@ -591,29 +591,29 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void GiveRandomSkillsToActor(DiceRoller roller, Actor actor, int count)
     {
       for (int index = 0; index < count; ++index)
-        this.GiveRandomSkillToActor(roller, actor);
+                GiveRandomSkillToActor(roller, actor);
     }
 
     public void GiveRandomSkillToActor(DiceRoller roller, Actor actor)
     {
       Skills.IDs skillID = !actor.Model.Abilities.IsUndead ? Skills.RollLiving(roller) : Skills.RollUndead(roller);
-      this.GiveStartingSkillToActor(actor, skillID);
+            GiveStartingSkillToActor(actor, skillID);
     }
 
     public void GiveStartingSkillToActor(Actor actor, Skills.IDs skillID)
     {
       if (actor.Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
       actor.Sheet.SkillTable.AddOrIncreaseSkill(skillID);
-      this.RecomputeActorStartingStats(actor);
+            RecomputeActorStartingStats(actor);
     }
 
     public void RecomputeActorStartingStats(Actor actor)
     {
-      actor.HitPoints = this.m_Rules.ActorMaxHPs(actor);
+      actor.HitPoints = m_Rules.ActorMaxHPs(actor);
       actor.StaminaPoints = actor.MaxSTA;
-      actor.FoodPoints = this.m_Rules.ActorMaxFood(actor);
-      actor.SleepPoints = this.m_Rules.ActorMaxSleep(actor);
-      actor.Sanity = this.m_Rules.ActorMaxSanity(actor);
+      actor.FoodPoints = m_Rules.ActorMaxFood(actor);
+      actor.SleepPoints = m_Rules.ActorMaxSleep(actor);
+      actor.Sanity = m_Rules.ActorMaxSanity(actor);
       if (actor.Inventory == null) return;
       actor.Inventory.MaxCapacity = Rules.ActorMaxInv(actor);
     }
@@ -719,7 +719,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjWreckedCar(DiceRoller roller)
     {
-      return this.MakeObjWreckedCar(BaseMapGenerator.CARS[roller.Roll(0, BaseMapGenerator.CARS.Length)]);
+      return MakeObjWreckedCar(BaseMapGenerator.CARS[roller.Roll(0, BaseMapGenerator.CARS.Length)]);
     }
 
     protected MapObject MakeObjWreckedCar(string carImageID)
@@ -904,41 +904,41 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemBandages()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel) this.m_Game.GameItems.BANDAGE);
-      itemMedicine.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.BANDAGE.StackingLimit);
+      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.BANDAGE);
+      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.BANDAGE.StackingLimit);
       return (Item) itemMedicine;
     }
 
     public Item MakeItemMedikit()
     {
-      return (Item) new ItemMedicine((ItemModel) this.m_Game.GameItems.MEDIKIT);
+      return (Item) new ItemMedicine((ItemModel)m_Game.GameItems.MEDIKIT);
     }
 
     public Item MakeItemPillsSTA()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel) this.m_Game.GameItems.PILLS_STA);
-      itemMedicine.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.PILLS_STA.StackingLimit);
+      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_STA);
+      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_STA.StackingLimit);
       return (Item) itemMedicine;
     }
 
     public Item MakeItemPillsSLP()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel) this.m_Game.GameItems.PILLS_SLP);
-      itemMedicine.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.PILLS_SLP.StackingLimit);
+      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_SLP);
+      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SLP.StackingLimit);
       return (Item) itemMedicine;
     }
 
     public Item MakeItemPillsSAN()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel) this.m_Game.GameItems.PILLS_SAN);
-      itemMedicine.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.PILLS_SAN.StackingLimit);
+      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_SAN);
+      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SAN.StackingLimit);
       return (Item) itemMedicine;
     }
 
     public Item MakeItemPillsAntiviral()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel) this.m_Game.GameItems.PILLS_ANTIVIRAL);
-      itemMedicine.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.PILLS_ANTIVIRAL.StackingLimit);
+      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_ANTIVIRAL);
+      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_ANTIVIRAL.StackingLimit);
       return (Item) itemMedicine;
     }
 
@@ -947,135 +947,135 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int turnCounter = m_Game.Session.WorldTime.TurnCounter;
       int max = WorldTime.TURNS_PER_DAY * m_Game.GameItems.GROCERIES.BestBeforeDays;
       int min = max / 2;
-      return (Item) new ItemFood((ItemModel) this.m_Game.GameItems.GROCERIES, turnCounter + this.m_Rules.Roll(min, max));
+      return (Item) new ItemFood((ItemModel)m_Game.GameItems.GROCERIES, turnCounter + m_Rules.Roll(min, max));
     }
 
     public Item MakeItemCannedFood()
     {
-      ItemFood itemFood = new ItemFood((ItemModel) this.m_Game.GameItems.CANNED_FOOD);
-      itemFood.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.CANNED_FOOD.StackingLimit);
+      ItemFood itemFood = new ItemFood((ItemModel)m_Game.GameItems.CANNED_FOOD);
+      itemFood.Quantity = m_Rules.Roll(1, m_Game.GameItems.CANNED_FOOD.StackingLimit);
       return (Item) itemFood;
     }
 
     public Item MakeItemCrowbar()
     {
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.CROWBAR);
-      itemMeleeWeapon.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.CROWBAR.StackingLimit);
+      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)m_Game.GameItems.CROWBAR);
+      itemMeleeWeapon.Quantity = m_Rules.Roll(1, m_Game.GameItems.CROWBAR.StackingLimit);
       return (Item) itemMeleeWeapon;
     }
 
     public Item MakeItemBaseballBat()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.BASEBALLBAT);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.BASEBALLBAT);
     }
 
     public Item MakeItemCombatKnife()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.COMBAT_KNIFE);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.COMBAT_KNIFE);
     }
 
     public Item MakeItemTruncheon()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.TRUNCHEON);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.TRUNCHEON);
     }
 
     public Item MakeItemGolfClub()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.GOLFCLUB);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.GOLFCLUB);
     }
 
     public Item MakeItemIronGolfClub()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.IRON_GOLFCLUB);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.IRON_GOLFCLUB);
     }
 
     public Item MakeItemHugeHammer()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.HUGE_HAMMER);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.HUGE_HAMMER);
     }
 
     public Item MakeItemSmallHammer()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.SMALL_HAMMER);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.SMALL_HAMMER);
     }
 
     public Item MakeItemJasonMyersAxe()
     {
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.UNIQUE_JASON_MYERS_AXE);
+      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)m_Game.GameItems.UNIQUE_JASON_MYERS_AXE);
       itemMeleeWeapon.IsUnique = true;
       return (Item) itemMeleeWeapon;
     }
 
     public Item MakeItemShovel()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.SHOVEL);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.SHOVEL);
     }
 
     public Item MakeItemShortShovel()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel) this.m_Game.GameItems.SHORT_SHOVEL);
+      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.SHORT_SHOVEL);
     }
 
     public ItemBarricadeMaterial MakeItemWoodenPlank()
     {
-      return new ItemBarricadeMaterial((ItemModel) this.m_Game.GameItems.WOODENPLANK);
+      return new ItemBarricadeMaterial((ItemModel)m_Game.GameItems.WOODENPLANK);
     }
 
     public Item MakeItemHuntingCrossbow()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.HUNTING_CROSSBOW);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.HUNTING_CROSSBOW);
     }
 
     public Item MakeItemBoltsAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel) this.m_Game.GameItems.AMMO_BOLTS);
+      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_BOLTS);
     }
 
     public Item MakeItemHuntingRifle()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.HUNTING_RIFLE);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.HUNTING_RIFLE);
     }
 
     public Item MakeItemLightRifleAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel) this.m_Game.GameItems.AMMO_LIGHT_RIFLE);
+      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_LIGHT_RIFLE);
     }
 
     public Item MakeItemPistol()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.PISTOL);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.PISTOL);
     }
 
     public Item MakeItemKoltRevolver()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.KOLT_REVOLVER);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.KOLT_REVOLVER);
     }
 
     public Item MakeItemRandomPistol()
     {
-      if (!this.m_Game.Rules.RollChance(50))
-        return this.MakeItemKoltRevolver();
-      return this.MakeItemPistol();
+      if (!m_Game.Rules.RollChance(50))
+        return MakeItemKoltRevolver();
+      return MakeItemPistol();
     }
 
     public Item MakeItemLightPistolAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel) this.m_Game.GameItems.AMMO_LIGHT_PISTOL);
+      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_LIGHT_PISTOL);
     }
 
     public Item MakeItemShotgun()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.SHOTGUN);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.SHOTGUN);
     }
 
     public Item MakeItemShotgunAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel) this.m_Game.GameItems.AMMO_SHOTGUN);
+      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_SHOTGUN);
     }
 
     public Item MakeItemCHARLightBodyArmor()
     {
-      return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.CHAR_LT_BODYARMOR);
+      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.CHAR_LT_BODYARMOR);
     }
 
     public Item MakeItemBikerGangJacket(GameGangs.IDs gangId)
@@ -1083,9 +1083,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       switch (gangId)
       {
         case GameGangs.IDs.BIKER_HELLS_SOULS:
-          return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.HELLS_SOULS_JACKET);
+          return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.HELLS_SOULS_JACKET);
         case GameGangs.IDs.BIKER_FREE_ANGELS:
-          return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.FREE_ANGELS_JACKET);
+          return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.FREE_ANGELS_JACKET);
         default:
           throw new ArgumentException("unhandled biker gang");
       }
@@ -1093,40 +1093,40 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemPoliceJacket()
     {
-      return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.POLICE_JACKET);
+      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.POLICE_JACKET);
     }
 
     public Item MakeItemPoliceRiotArmor()
     {
-      return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.POLICE_RIOT);
+      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.POLICE_RIOT);
     }
 
     public Item MakeItemHunterVest()
     {
-      return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.HUNTER_VEST);
+      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.HUNTER_VEST);
     }
 
     public Item MakeItemCellPhone()
     {
-      return (Item) new ItemTracker((ItemModel) this.m_Game.GameItems.CELL_PHONE);
+      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.CELL_PHONE);
     }
 
     public Item MakeItemSprayPaint()
     {
       ItemSprayPaintModel itemSprayPaintModel;
-      switch (this.m_Game.Rules.Roll(0, 4))
+      switch (m_Game.Rules.Roll(0, 4))
       {
         case 0:
-          itemSprayPaintModel = this.m_Game.GameItems.SPRAY_PAINT1;
+          itemSprayPaintModel = m_Game.GameItems.SPRAY_PAINT1;
           break;
         case 1:
-          itemSprayPaintModel = this.m_Game.GameItems.SPRAY_PAINT2;
+          itemSprayPaintModel = m_Game.GameItems.SPRAY_PAINT2;
           break;
         case 2:
-          itemSprayPaintModel = this.m_Game.GameItems.SPRAY_PAINT3;
+          itemSprayPaintModel = m_Game.GameItems.SPRAY_PAINT3;
           break;
         case 3:
-          itemSprayPaintModel = this.m_Game.GameItems.SPRAY_PAINT4;
+          itemSprayPaintModel = m_Game.GameItems.SPRAY_PAINT4;
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled roll");
@@ -1136,37 +1136,37 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemStenchKiller()
     {
-      return (Item) new ItemSprayScent(this.m_Game.GameItems.STENCH_KILLER);
+      return (Item) new ItemSprayScent(m_Game.GameItems.STENCH_KILLER);
     }
 
     public Item MakeItemArmyRifle()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.ARMY_RIFLE);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.ARMY_RIFLE);
     }
 
     public Item MakeItemPrecisionRifle()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.PRECISION_RIFLE);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.PRECISION_RIFLE);
     }
 
     public Item MakeItemHeavyRifleAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel) this.m_Game.GameItems.AMMO_HEAVY_RIFLE);
+      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_HEAVY_RIFLE);
     }
 
     public Item MakeItemArmyPistol()
     {
-      return (Item) new ItemRangedWeapon((ItemModel) this.m_Game.GameItems.ARMY_PISTOL);
+      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.ARMY_PISTOL);
     }
 
     public Item MakeItemHeavyPistolAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel) this.m_Game.GameItems.AMMO_HEAVY_PISTOL);
+      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_HEAVY_PISTOL);
     }
 
     public Item MakeItemArmyBodyArmor()
     {
-      return (Item) new ItemBodyArmor((ItemModel) this.m_Game.GameItems.ARMY_BODYARMOR);
+      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.ARMY_BODYARMOR);
     }
 
     public Item MakeItemArmyRation()
@@ -1176,64 +1176,64 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemFlashlight()
     {
-      return (Item) new ItemLight((ItemModel) this.m_Game.GameItems.FLASHLIGHT);
+      return (Item) new ItemLight((ItemModel)m_Game.GameItems.FLASHLIGHT);
     }
 
     public Item MakeItemBigFlashlight()
     {
-      return (Item) new ItemLight((ItemModel) this.m_Game.GameItems.BIG_FLASHLIGHT);
+      return (Item) new ItemLight((ItemModel)m_Game.GameItems.BIG_FLASHLIGHT);
     }
 
     public Item MakeItemZTracker()
     {
-      return (Item) new ItemTracker((ItemModel) this.m_Game.GameItems.ZTRACKER);
+      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.ZTRACKER);
     }
 
     public Item MakeItemBlackOpsGPS()
     {
-      return (Item) new ItemTracker((ItemModel) this.m_Game.GameItems.BLACKOPS_GPS);
+      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.BLACKOPS_GPS);
     }
 
     public Item MakeItemPoliceRadio()
     {
-      return (Item) new ItemTracker((ItemModel) this.m_Game.GameItems.POLICE_RADIO);
+      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.POLICE_RADIO);
     }
 
     public Item MakeItemGrenade()
     {
-      ItemGrenade itemGrenade = new ItemGrenade((ItemModel) this.m_Game.GameItems.GRENADE, (ItemModel) this.m_Game.GameItems.GRENADE_PRIMED);
-      itemGrenade.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.GRENADE.StackingLimit);
+      ItemGrenade itemGrenade = new ItemGrenade((ItemModel)m_Game.GameItems.GRENADE, (ItemModel)m_Game.GameItems.GRENADE_PRIMED);
+      itemGrenade.Quantity = m_Rules.Roll(1, m_Game.GameItems.GRENADE.StackingLimit);
       return (Item) itemGrenade;
     }
 
     public Item MakeItemBearTrap()
     {
-      return (Item) new ItemTrap(this.m_Game.GameItems.BEAR_TRAP);
+      return (Item) new ItemTrap(m_Game.GameItems.BEAR_TRAP);
     }
 
     public Item MakeItemSpikes()
     {
-      ItemTrap itemTrap = new ItemTrap(this.m_Game.GameItems.SPIKES);
-      itemTrap.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.BARBED_WIRE.StackingLimit);
+      ItemTrap itemTrap = new ItemTrap(m_Game.GameItems.SPIKES);
+      itemTrap.Quantity = m_Rules.Roll(1, m_Game.GameItems.BARBED_WIRE.StackingLimit);
       return (Item) itemTrap;
     }
 
     public Item MakeItemBarbedWire()
     {
-      ItemTrap itemTrap = new ItemTrap(this.m_Game.GameItems.BARBED_WIRE);
-      itemTrap.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.BARBED_WIRE.StackingLimit);
+      ItemTrap itemTrap = new ItemTrap(m_Game.GameItems.BARBED_WIRE);
+      itemTrap.Quantity = m_Rules.Roll(1, m_Game.GameItems.BARBED_WIRE.StackingLimit);
       return (Item) itemTrap;
     }
 
     public Item MakeItemBook()
     {
-      return (Item) new ItemEntertainment(this.m_Game.GameItems.BOOK);
+      return (Item) new ItemEntertainment(m_Game.GameItems.BOOK);
     }
 
     public Item MakeItemMagazines()
     {
-      ItemEntertainment itemEntertainment = new ItemEntertainment(this.m_Game.GameItems.MAGAZINE);
-      itemEntertainment.Quantity = this.m_Rules.Roll(1, this.m_Game.GameItems.MAGAZINE.StackingLimit);
+      ItemEntertainment itemEntertainment = new ItemEntertainment(m_Game.GameItems.MAGAZINE);
+      itemEntertainment.Quantity = m_Rules.Roll(1, m_Game.GameItems.MAGAZINE.StackingLimit);
       return (Item) itemEntertainment;
     }
 

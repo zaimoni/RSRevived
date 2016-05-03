@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Protection_Hit;
+        return m_Protection_Hit;
       }
     }
 
@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Protection_Shot;
+        return m_Protection_Shot;
       }
     }
 
@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Encumbrance;
+        return m_Encumbrance;
       }
     }
 
@@ -43,22 +43,22 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Weight;
+        return m_Weight;
       }
     }
 
     public ItemBodyArmorModel(string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight)
       : base(aName, theNames, imageID)
     {
-      this.m_Protection_Hit = protection_hit;
-      this.m_Protection_Shot = protection_shot;
-      this.m_Encumbrance = encumbrance;
-      this.m_Weight = weight;
+            m_Protection_Hit = protection_hit;
+            m_Protection_Shot = protection_shot;
+            m_Encumbrance = encumbrance;
+            m_Weight = weight;
     }
 
     public Defence ToDefence()
     {
-      return new Defence(-this.m_Encumbrance, this.m_Protection_Hit, this.m_Protection_Shot);
+      return new Defence(-m_Encumbrance, m_Protection_Hit, m_Protection_Shot);
     }
   }
 }

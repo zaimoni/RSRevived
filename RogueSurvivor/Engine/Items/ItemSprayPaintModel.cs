@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_MaxPaintQuantity;
+        return m_MaxPaintQuantity;
       }
     }
 
@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_TagImageID;
+        return m_TagImageID;
       }
     }
 
@@ -35,8 +35,8 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (tagImageID == null)
         throw new ArgumentNullException("tagImageID");
-      this.m_MaxPaintQuantity = paintQuantity;
-      this.m_TagImageID = tagImageID;
+            m_MaxPaintQuantity = paintQuantity;
+            m_TagImageID = tagImageID;
     }
   }
 }

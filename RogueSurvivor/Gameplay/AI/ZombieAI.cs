@@ -31,15 +31,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
-      if (!this.m_Actor.Model.Abilities.ZombieAI_Explore) return;
+      if (!m_Actor.Model.Abilities.ZombieAI_Explore) return;
       m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
     }
 
     protected override void CreateSensors()
     {
-      this.m_MemLOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES), LOS_MEMORY);
-      this.m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
-      this.m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
+            m_MemLOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES), LOS_MEMORY);
+            m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+            m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }
 
     public override void OptimizeBeforeSaving()
@@ -49,19 +49,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      List<Percept> perceptList = this.m_MemLOSSensor.Sense(game, this.m_Actor);
-      perceptList.AddRange((IEnumerable<Percept>) this.m_LivingSmellSensor.Sense(game, this.m_Actor));
-      perceptList.AddRange((IEnumerable<Percept>) this.m_MasterSmellSensor.Sense(game, this.m_Actor));
+      List<Percept> perceptList = m_MemLOSSensor.Sense(game, m_Actor);
+      perceptList.AddRange((IEnumerable<Percept>)m_LivingSmellSensor.Sense(game, m_Actor));
+      perceptList.AddRange((IEnumerable<Percept>)m_MasterSmellSensor.Sense(game, m_Actor));
       return perceptList;
     }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = this.FilterSameMap(percepts);
+      List<Percept> percepts1 = FilterSameMap(percepts);
 
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
+      List<Percept> percepts2 = FilterEnemies(game, percepts1);
       if (percepts2 != null)
       {
         List<Percept> perceptList1 = FilterCurrent(percepts2);
@@ -71,93 +71,93 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ActorAction actorAction1 = TargetGridMelee(game, perceptList1, out percept1);
           if (actorAction1 != null)
           {
-            this.m_Actor.Activity = Activity.CHASING;
-            this.m_Actor.TargetActor = percept1.Percepted as Actor;
+                        m_Actor.Activity = Activity.CHASING;
+                        m_Actor.TargetActor = percept1.Percepted as Actor;
             return actorAction1;
           }
         }
-        List<Percept> perceptList2 = this.Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != this.m_Actor.Location.Map.LocalTime.TurnCounter));
+        List<Percept> perceptList2 = Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
         if (perceptList2 != null)
         {
           Percept percept1;
           ActorAction actorAction1 = TargetGridMelee(game, perceptList2, out percept1);
           if (actorAction1 != null)
           {
-            this.m_Actor.Activity = Activity.CHASING;
-            this.m_Actor.TargetActor = percept1.Percepted as Actor;
+                        m_Actor.Activity = Activity.CHASING;
+                        m_Actor.TargetActor = percept1.Percepted as Actor;
             return actorAction1;
           }
         }
       }
-      List<Percept> corpsesPercepts = this.FilterCorpses(game, percepts1);
+      List<Percept> corpsesPercepts = FilterCorpses(game, percepts1);
       if (corpsesPercepts != null)
       {
-        ActorAction actorAction = this.BehaviorGoEatCorpse(game, corpsesPercepts);
+        ActorAction actorAction = BehaviorGoEatCorpse(game, corpsesPercepts);
         if (actorAction != null)
         {
-          this.m_Actor.Activity = Activity.IDLE;
+                    m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
       }
-      if (this.m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE))
+      if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE))
       {
-        ActorAction actorAction = this.BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
+        ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (actorAction != null)
         {
-          this.m_MemLOSSensor.Clear();
-          this.m_Actor.Activity = Activity.IDLE;
+                    m_MemLOSSensor.Clear();
+                    m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
       }
-      if (!this.m_Actor.Model.Abilities.IsUndeadMaster)
+      if (!m_Actor.Model.Abilities.IsUndeadMaster)
       {
         Percept percept = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
         if (percept != null)
         {
-          ActorAction actorAction = this.BehaviorStupidBumpToward(game, this.RandomPositionNear(game.Rules, this.m_Actor.Location.Map, percept.Location.Position, 3));
+          ActorAction actorAction = BehaviorStupidBumpToward(game, RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
           if (actorAction != null)
           {
-            this.m_Actor.Activity = Activity.FOLLOWING;
-            this.m_Actor.TargetActor = percept.Percepted as Actor;
+                        m_Actor.Activity = Activity.FOLLOWING;
+                        m_Actor.TargetActor = percept.Percepted as Actor;
             return actorAction;
           }
         }
       }
-      if (!this.m_Actor.Model.Abilities.IsUndeadMaster)
+      if (!m_Actor.Model.Abilities.IsUndeadMaster)
       {
-        ActorAction actorAction = this.BehaviorTrackScent(game, this.m_MasterSmellSensor.Scents);
+        ActorAction actorAction = BehaviorTrackScent(game, m_MasterSmellSensor.Scents);
         if (actorAction != null)
         {
-          this.m_Actor.Activity = Activity.TRACKING;
+                    m_Actor.Activity = Activity.TRACKING;
           return actorAction;
         }
       }
-      ActorAction actorAction3 = this.BehaviorTrackScent(game, this.m_LivingSmellSensor.Scents);
+      ActorAction actorAction3 = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
       if (actorAction3 != null)
       {
-        this.m_Actor.Activity = Activity.TRACKING;
+                m_Actor.Activity = Activity.TRACKING;
         return actorAction3;
       }
-      if (game.Rules.HasActorPushAbility(this.m_Actor) && game.Rules.RollChance(PUSH_OBJECT_CHANCE))
+      if (game.Rules.HasActorPushAbility(m_Actor) && game.Rules.RollChance(PUSH_OBJECT_CHANCE))
       {
-        ActorAction actorAction1 = this.BehaviorPushNonWalkableObject(game);
+        ActorAction actorAction1 = BehaviorPushNonWalkableObject(game);
         if (actorAction1 != null)
         {
-          this.m_Actor.Activity = Activity.IDLE;
+                    m_Actor.Activity = Activity.IDLE;
           return actorAction1;
         }
       }
-      if (this.m_Actor.Model.Abilities.ZombieAI_Explore)
+      if (m_Actor.Model.Abilities.ZombieAI_Explore)
       {
-        ActorAction actorAction1 = this.BehaviorExplore(game, this.m_Exploration);
+        ActorAction actorAction1 = BehaviorExplore(game, m_Exploration);
         if (actorAction1 != null)
         {
-          this.m_Actor.Activity = Activity.IDLE;
+                    m_Actor.Activity = Activity.IDLE;
           return actorAction1;
         }
       }
-      this.m_Actor.Activity = Activity.IDLE;
-      return this.BehaviorWander(game);
+            m_Actor.Activity = Activity.IDLE;
+      return BehaviorWander(game);
     }
   }
 }

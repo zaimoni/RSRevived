@@ -19,17 +19,17 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (door == null)
         throw new ArgumentNullException("door");
-      this.m_Door = door;
+            m_Door = door;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorBarricadeDoor(this.m_Actor, this.m_Door, out this.m_FailReason);
+      return m_Game.Rules.CanActorBarricadeDoor(m_Actor, m_Door, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoBarricadeDoor(this.m_Actor, this.m_Door);
+            m_Game.DoBarricadeDoor(m_Actor, m_Door);
     }
   }
 }

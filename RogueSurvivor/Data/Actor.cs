@@ -66,12 +66,12 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return Models.Actors[this.m_ModelID];
+        return Models.Actors[m_ModelID];
       }
       set
       {
-        this.m_ModelID = value.ID;
-        this.OnModelSet();
+                m_ModelID = value.ID;
+                OnModelSet();
       }
     }
 
@@ -79,11 +79,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(Actor.Flags.IS_UNIQUE);
+        return GetFlag(Actor.Flags.IS_UNIQUE);
       }
       set
       {
-        this.SetFlag(Actor.Flags.IS_UNIQUE, value);
+                SetFlag(Actor.Flags.IS_UNIQUE, value);
       }
     }
 
@@ -91,11 +91,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return Models.Factions[this.m_FactionID];
+        return Models.Factions[m_FactionID];
       }
       set
       {
-        this.m_FactionID = value.ID;
+                m_FactionID = value.ID;
       }
     }
 
@@ -103,16 +103,16 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (!this.IsPlayer)
-          return this.m_Name;
-        return "(YOU) " + this.m_Name;
+        if (!IsPlayer)
+          return m_Name;
+        return "(YOU) " + m_Name;
       }
       set
       {
-        this.m_Name = value;
+                m_Name = value;
         if (value == null)
           return;
-        this.m_Name.Replace("(YOU) ", "");
+                m_Name.Replace("(YOU) ", "");
       }
     }
 
@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Name;
+        return m_Name;
       }
     }
 
@@ -128,11 +128,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(Actor.Flags.IS_PROPER_NAME);
+        return GetFlag(Actor.Flags.IS_PROPER_NAME);
       }
       set
       {
-        this.SetFlag(Actor.Flags.IS_PROPER_NAME, value);
+                SetFlag(Actor.Flags.IS_PROPER_NAME, value);
       }
     }
 
@@ -140,11 +140,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(Actor.Flags.IS_PLURAL_NAME);
+        return GetFlag(Actor.Flags.IS_PLURAL_NAME);
       }
       set
       {
-        this.SetFlag(Actor.Flags.IS_PLURAL_NAME, value);
+                SetFlag(Actor.Flags.IS_PLURAL_NAME, value);
       }
     }
 
@@ -152,9 +152,9 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (!this.IsProperName && !this.IsPluralName)
-          return "the " + this.m_Name;
-        return this.Name;
+        if (!IsProperName && !IsPluralName)
+          return "the " + m_Name;
+        return Name;
       }
     }
 
@@ -162,16 +162,16 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Controller;
+        return m_Controller;
       }
       set
       {
-        if (this.m_Controller != null)
-          this.m_Controller.LeaveControl();
-        this.m_Controller = value;
-        if (this.m_Controller == null)
+        if (m_Controller != null)
+                    m_Controller.LeaveControl();
+                m_Controller = value;
+        if (m_Controller == null)
           return;
-        this.m_Controller.TakeControl(this);
+                m_Controller.TakeControl(this);
       }
     }
 
@@ -179,8 +179,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Controller != null)
-          return this.m_Controller is PlayerController;
+        if (m_Controller != null)
+          return m_Controller is PlayerController;
         return false;
       }
     }
@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_SpawnTime;
+        return m_SpawnTime;
       }
     }
 
@@ -197,11 +197,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_GangID;
+        return m_GangID;
       }
       set
       {
-        this.m_GangID = value;
+                m_GangID = value;
       }
     }
 
@@ -209,7 +209,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_GangID != 0;
+        return m_GangID != 0;
       }
     }
 
@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Doll;
+        return m_Doll;
       }
     }
 
@@ -225,11 +225,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(Actor.Flags.IS_DEAD);
+        return GetFlag(Actor.Flags.IS_DEAD);
       }
       set
       {
-        this.SetFlag(Actor.Flags.IS_DEAD, value);
+                SetFlag(Actor.Flags.IS_DEAD, value);
       }
     }
 
@@ -237,11 +237,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(Actor.Flags.IS_SLEEPING);
+        return GetFlag(Actor.Flags.IS_SLEEPING);
       }
       set
       {
-        this.SetFlag(Actor.Flags.IS_SLEEPING, value);
+                SetFlag(Actor.Flags.IS_SLEEPING, value);
       }
     }
 
@@ -249,11 +249,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.GetFlag(Actor.Flags.IS_RUNNING);
+        return GetFlag(Actor.Flags.IS_RUNNING);
       }
       set
       {
-        this.SetFlag(Actor.Flags.IS_RUNNING, value);
+                SetFlag(Actor.Flags.IS_RUNNING, value);
       }
     }
 
@@ -261,11 +261,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Inventory;
+        return m_Inventory;
       }
       set
       {
-        this.m_Inventory = value;
+                m_Inventory = value;
       }
     }
 
@@ -273,11 +273,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_HitPoints;
+        return m_HitPoints;
       }
       set
       {
-        this.m_HitPoints = value;
+                m_HitPoints = value;
       }
     }
 
@@ -285,11 +285,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_previousHitPoints;
+        return m_previousHitPoints;
       }
       set
       {
-        this.m_previousHitPoints = value;
+                m_previousHitPoints = value;
       }
     }
 
@@ -297,11 +297,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_StaminaPoints;
+        return m_StaminaPoints;
       }
       set
       {
-        this.m_StaminaPoints = value;
+                m_StaminaPoints = value;
       }
     }
 
@@ -309,11 +309,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_previousStamina;
+        return m_previousStamina;
       }
       set
       {
-        this.m_previousStamina = value;
+                m_previousStamina = value;
       }
     }
 
@@ -321,11 +321,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_FoodPoints;
+        return m_FoodPoints;
       }
       set
       {
-        this.m_FoodPoints = value;
+                m_FoodPoints = value;
       }
     }
 
@@ -333,11 +333,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_previousFoodPoints;
+        return m_previousFoodPoints;
       }
       set
       {
-        this.m_previousFoodPoints = value;
+                m_previousFoodPoints = value;
       }
     }
 
@@ -345,11 +345,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_SleepPoints;
+        return m_SleepPoints;
       }
       set
       {
-        this.m_SleepPoints = value;
+                m_SleepPoints = value;
       }
     }
 
@@ -357,11 +357,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_previousSleepPoints;
+        return m_previousSleepPoints;
       }
       set
       {
-        this.m_previousSleepPoints = value;
+                m_previousSleepPoints = value;
       }
     }
 
@@ -369,11 +369,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Sanity;
+        return m_Sanity;
       }
       set
       {
-        this.m_Sanity = value;
+                m_Sanity = value;
       }
     }
 
@@ -381,11 +381,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_previousSanity;
+        return m_previousSanity;
       }
       set
       {
-        this.m_previousSanity = value;
+                m_previousSanity = value;
       }
     }
 
@@ -393,7 +393,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Sheet;
+        return m_Sheet;
       }
     }
 
@@ -401,17 +401,17 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_ActionPoints;
+        return m_ActionPoints;
       }
       set
       {
-        this.m_ActionPoints = value;
+                m_ActionPoints = value;
       }
     }
 
     public int LastActionTurn {
       get {
-        return this.m_LastActionTurn;
+        return m_LastActionTurn;
       }
     }
 
@@ -419,11 +419,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Location;
+        return m_Location;
       }
       set
       {
-        this.m_Location = value;
+                m_Location = value;
       }
     }
 
@@ -431,11 +431,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Activity;
+        return m_Activity;
       }
       set
       {
-        this.m_Activity = value;
+                m_Activity = value;
       }
     }
 
@@ -443,11 +443,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_TargetActor;
+        return m_TargetActor;
       }
       set
       {
-        this.m_TargetActor = value;
+                m_TargetActor = value;
       }
     }
 
@@ -455,7 +455,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Sheet.BaseAudioRange + this.m_AudioRangeMod;
+        return m_Sheet.BaseAudioRange + m_AudioRangeMod;
       }
     }
 
@@ -463,11 +463,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_AudioRangeMod;
+        return m_AudioRangeMod;
       }
       set
       {
-        this.m_AudioRangeMod = value;
+                m_AudioRangeMod = value;
       }
     }
 
@@ -475,11 +475,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_CurrentMeleeAttack;
+        return m_CurrentMeleeAttack;
       }
       set
       {
-        this.m_CurrentMeleeAttack = value;
+                m_CurrentMeleeAttack = value;
       }
     }
 
@@ -487,11 +487,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_CurrentRangedAttack;
+        return m_CurrentRangedAttack;
       }
       set
       {
-        this.m_CurrentRangedAttack = value;
+                m_CurrentRangedAttack = value;
       }
     }
 
@@ -499,11 +499,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_CurrentDefence;
+        return m_CurrentDefence;
       }
       set
       {
-        this.m_CurrentDefence = value;
+                m_CurrentDefence = value;
       }
     }
 
@@ -511,7 +511,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Leader;
+        return m_Leader;
       }
     }
 
@@ -519,8 +519,8 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Leader != null)
-          return !this.m_Leader.IsDead;
+        if (m_Leader != null)
+          return !m_Leader.IsDead;
         return false;
       }
     }
@@ -529,11 +529,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_TrustInLeader;
+        return m_TrustInLeader;
       }
       set
       {
-        this.m_TrustInLeader = value;
+                m_TrustInLeader = value;
       }
     }
 
@@ -541,7 +541,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Actor>) this.m_Followers;
+        return (IEnumerable<Actor>)m_Followers;
       }
     }
 
@@ -549,9 +549,9 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_Followers == null)
+        if (m_Followers == null)
           return 0;
-        return this.m_Followers.Count;
+        return m_Followers.Count;
       }
     }
 
@@ -559,11 +559,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_KillsCount;
+        return m_KillsCount;
       }
       set
       {
-        this.m_KillsCount = value;
+                m_KillsCount = value;
       }
     }
 
@@ -571,7 +571,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Actor>) this.m_AggressorOf;
+        return (IEnumerable<Actor>)m_AggressorOf;
       }
     }
 
@@ -579,9 +579,9 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_AggressorOf == null)
+        if (m_AggressorOf == null)
           return 0;
-        return this.m_AggressorOf.Count;
+        return m_AggressorOf.Count;
       }
     }
 
@@ -589,7 +589,7 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return (IEnumerable<Actor>) this.m_SelfDefenceFrom;
+        return (IEnumerable<Actor>)m_SelfDefenceFrom;
       }
     }
 
@@ -597,9 +597,9 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        if (this.m_SelfDefenceFrom == null)
+        if (m_SelfDefenceFrom == null)
           return 0;
-        return this.m_SelfDefenceFrom.Count;
+        return m_SelfDefenceFrom.Count;
       }
     }
 
@@ -607,11 +607,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_MurdersCounter;
+        return m_MurdersCounter;
       }
       set
       {
-        this.m_MurdersCounter = value;
+                m_MurdersCounter = value;
       }
     }
 
@@ -619,11 +619,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_Infection;
+        return m_Infection;
       }
       set
       {
-        this.m_Infection = value;
+                m_Infection = value;
       }
     }
 
@@ -631,11 +631,11 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
-        return this.m_DraggedCorpse;
+        return m_DraggedCorpse;
       }
       set
       {
-        this.m_DraggedCorpse = value;
+                m_DraggedCorpse = value;
       }
     }
 
@@ -647,17 +647,17 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentNullException("faction");
       if (name == null)
         throw new ArgumentNullException("name");
-      this.m_ModelID = model.ID;
-      this.m_FactionID = faction.ID;
-      this.m_GangID = 0;
-      this.m_Name = name;
-      this.IsProperName = isProperName;
-      this.IsPluralName = isPluralName;
-      this.m_Location = new Location();
-      this.m_SpawnTime = spawnTime;
-      this.IsUnique = false;
-      this.IsDead = false;
-      this.OnModelSet();
+            m_ModelID = model.ID;
+            m_FactionID = faction.ID;
+            m_GangID = 0;
+            m_Name = name;
+            IsProperName = isProperName;
+            IsPluralName = isPluralName;
+            m_Location = new Location();
+            m_SpawnTime = spawnTime;
+            IsUnique = false;
+            IsDead = false;
+            OnModelSet();
     }
 
     public Actor(ActorModel model, Faction faction, int spawnTime)
@@ -667,31 +667,31 @@ namespace djack.RogueSurvivor.Data
 
     private void OnModelSet()
     {
-      ActorModel model = this.Model;
-      this.m_Doll = new Doll(model.DollBody);
-      this.m_Sheet = new ActorSheet(model.StartingSheet);
-      this.m_ActionPoints = this.m_Doll.Body.Speed;
-      this.m_HitPoints = this.m_previousHitPoints = this.m_Sheet.BaseHitPoints;
-      this.m_StaminaPoints = this.m_previousStamina = this.m_Sheet.BaseStaminaPoints;
-      this.m_FoodPoints = this.m_previousFoodPoints = this.m_Sheet.BaseFoodPoints;
-      this.m_SleepPoints = this.m_previousSleepPoints = this.m_Sheet.BaseSleepPoints;
-      this.m_Sanity = this.m_previousSanity = this.m_Sheet.BaseSanity;
+      ActorModel model = Model;
+            m_Doll = new Doll(model.DollBody);
+            m_Sheet = new ActorSheet(model.StartingSheet);
+            m_ActionPoints = m_Doll.Body.Speed;
+            m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;
+            m_StaminaPoints = m_previousStamina = m_Sheet.BaseStaminaPoints;
+            m_FoodPoints = m_previousFoodPoints = m_Sheet.BaseFoodPoints;
+            m_SleepPoints = m_previousSleepPoints = m_Sheet.BaseSleepPoints;
+            m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
       if (model.Abilities.HasInventory)
-        this.m_Inventory = new Inventory(model.StartingSheet.BaseInventoryCapacity);
-      this.m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
-      this.m_CurrentDefence = model.StartingSheet.BaseDefence;
-      this.m_CurrentRangedAttack = Attack.BLANK;
+                m_Inventory = new Inventory(model.StartingSheet.BaseInventoryCapacity);
+            m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
+            m_CurrentDefence = model.StartingSheet.BaseDefence;
+            m_CurrentRangedAttack = Attack.BLANK;
     }
 
     public void AddFollower(Actor other)
     {
       if (other == null)
         throw new ArgumentNullException("other");
-      if (this.m_Followers != null && this.m_Followers.Contains(other))
+      if (m_Followers != null && m_Followers.Contains(other))
         throw new ArgumentException("other is already a follower");
-      if (this.m_Followers == null)
-        this.m_Followers = new List<Actor>(1);
-      this.m_Followers.Add(other);
+      if (m_Followers == null)
+                m_Followers = new List<Actor>(1);
+            m_Followers.Add(other);
       if (other.Leader != null)
         other.Leader.RemoveFollower(other);
       other.m_Leader = this;
@@ -701,11 +701,11 @@ namespace djack.RogueSurvivor.Data
     {
       if (other == null)
         throw new ArgumentNullException("other");
-      if (this.m_Followers == null)
+      if (m_Followers == null)
         throw new InvalidOperationException("no followers");
-      this.m_Followers.Remove(other);
-      if (this.m_Followers.Count == 0)
-        this.m_Followers = (List<Actor>) null;
+            m_Followers.Remove(other);
+      if (m_Followers.Count == 0)
+                m_Followers = (List<Actor>) null;
       other.m_Leader = (Actor) null;
       AIController aiController = other.Controller as AIController;
       if (aiController == null)
@@ -716,15 +716,15 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveAllFollowers()
     {
-      while (this.m_Followers != null && this.m_Followers.Count > 0)
-        this.RemoveFollower(this.m_Followers[0]);
+      while (m_Followers != null && m_Followers.Count > 0)
+                RemoveFollower(m_Followers[0]);
     }
 
     public void SetTrustIn(Actor other, int trust)
     {
-      if (this.m_TrustList == null)
+      if (m_TrustList == null)
       {
-        this.m_TrustList = new List<TrustRecord>(1)
+                m_TrustList = new List<TrustRecord>(1)
         {
           new TrustRecord()
           {
@@ -735,7 +735,7 @@ namespace djack.RogueSurvivor.Data
       }
       else
       {
-        foreach (TrustRecord mTrust in this.m_TrustList)
+        foreach (TrustRecord mTrust in m_TrustList)
         {
           if (mTrust.Actor == other)
           {
@@ -743,7 +743,7 @@ namespace djack.RogueSurvivor.Data
             return;
           }
         }
-        this.m_TrustList.Add(new TrustRecord()
+                m_TrustList.Add(new TrustRecord()
         {
           Actor = other,
           Trust = trust
@@ -753,14 +753,14 @@ namespace djack.RogueSurvivor.Data
 
     public void AddTrustIn(Actor other, int amount)
     {
-      this.SetTrustIn(other, this.GetTrustIn(other) + amount);
+            SetTrustIn(other, GetTrustIn(other) + amount);
     }
 
     public int GetTrustIn(Actor other)
     {
-      if (this.m_TrustList == null)
+      if (m_TrustList == null)
         return 0;
-      foreach (TrustRecord mTrust in this.m_TrustList)
+      foreach (TrustRecord mTrust in m_TrustList)
       {
         if (mTrust.Actor == other)
           return mTrust.Trust;
@@ -772,77 +772,77 @@ namespace djack.RogueSurvivor.Data
     {
       if (other == null || other.IsDead)
         return;
-      if (this.m_AggressorOf == null)
-        this.m_AggressorOf = new List<Actor>(1);
-      else if (this.m_AggressorOf.Contains(other))
+      if (m_AggressorOf == null)
+                m_AggressorOf = new List<Actor>(1);
+      else if (m_AggressorOf.Contains(other))
         return;
-      this.m_AggressorOf.Add(other);
+            m_AggressorOf.Add(other);
     }
 
     public void MarkAsSelfDefenceFrom(Actor other)
     {
       if (other == null || other.IsDead)
         return;
-      if (this.m_SelfDefenceFrom == null)
-        this.m_SelfDefenceFrom = new List<Actor>(1);
-      else if (this.m_SelfDefenceFrom.Contains(other))
+      if (m_SelfDefenceFrom == null)
+                m_SelfDefenceFrom = new List<Actor>(1);
+      else if (m_SelfDefenceFrom.Contains(other))
         return;
-      this.m_SelfDefenceFrom.Add(other);
+            m_SelfDefenceFrom.Add(other);
     }
 
     public bool IsAggressorOf(Actor other)
     {
-      if (this.m_AggressorOf == null)
+      if (m_AggressorOf == null)
         return false;
-      return this.m_AggressorOf.Contains(other);
+      return m_AggressorOf.Contains(other);
     }
 
     public bool IsSelfDefenceFrom(Actor other)
     {
-      if (this.m_SelfDefenceFrom == null)
+      if (m_SelfDefenceFrom == null)
         return false;
-      return this.m_SelfDefenceFrom.Contains(other);
+      return m_SelfDefenceFrom.Contains(other);
     }
 
     public void RemoveAggressorOf(Actor other)
     {
-      if (this.m_AggressorOf == null)
+      if (m_AggressorOf == null)
         return;
-      this.m_AggressorOf.Remove(other);
-      if (this.m_AggressorOf.Count != 0)
+            m_AggressorOf.Remove(other);
+      if (m_AggressorOf.Count != 0)
         return;
-      this.m_AggressorOf = (List<Actor>) null;
+            m_AggressorOf = (List<Actor>) null;
     }
 
     public void RemoveSelfDefenceFrom(Actor other)
     {
-      if (this.m_SelfDefenceFrom == null)
+      if (m_SelfDefenceFrom == null)
         return;
-      this.m_SelfDefenceFrom.Remove(other);
-      if (this.m_SelfDefenceFrom.Count != 0)
+            m_SelfDefenceFrom.Remove(other);
+      if (m_SelfDefenceFrom.Count != 0)
         return;
-      this.m_SelfDefenceFrom = (List<Actor>) null;
+            m_SelfDefenceFrom = (List<Actor>) null;
     }
 
     public void RemoveAllAgressorSelfDefenceRelations()
     {
-      while (this.m_AggressorOf != null)
+      while (m_AggressorOf != null)
       {
-        Actor other = this.m_AggressorOf[0];
-        this.RemoveAggressorOf(other);
+        Actor other = m_AggressorOf[0];
+                RemoveAggressorOf(other);
         other.RemoveSelfDefenceFrom(this);
       }
-      while (this.m_SelfDefenceFrom != null)
+      while (m_SelfDefenceFrom != null)
       {
-        Actor other = this.m_SelfDefenceFrom[0];
-        this.RemoveSelfDefenceFrom(other);
+        Actor other = m_SelfDefenceFrom[0];
+                RemoveSelfDefenceFrom(other);
         other.RemoveAggressorOf(this);
       }
     }
 
     public bool AreDirectEnemies(Actor other)
     {
-      return other != null && !other.IsDead && (this.m_AggressorOf != null && this.m_AggressorOf.Contains(other) || this.m_SelfDefenceFrom != null && this.m_SelfDefenceFrom.Contains(other) || (other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this)));
+      return other != null && !other.IsDead && (m_AggressorOf != null && m_AggressorOf.Contains(other) || m_SelfDefenceFrom != null && m_SelfDefenceFrom.Contains(other) || (other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this)));
     }
 
     public bool AreIndirectEnemies(Actor other)
@@ -1116,25 +1116,25 @@ namespace djack.RogueSurvivor.Data
     // flag handling
     private bool GetFlag(Actor.Flags f)
     {
-      return (this.m_Flags & f) != Actor.Flags.NONE;
+      return (m_Flags & f) != Actor.Flags.NONE;
     }
 
     private void SetFlag(Actor.Flags f, bool value)
     {
       if (value)
-        this.m_Flags |= f;
+                m_Flags |= f;
       else
-        this.m_Flags &= ~f;
+                m_Flags &= ~f;
     }
 
     private void OneFlag(Actor.Flags f)
     {
-      this.m_Flags |= f;
+            m_Flags |= f;
     }
 
     private void ZeroFlag(Actor.Flags f)
     {
-      this.m_Flags &= ~f;
+            m_Flags &= ~f;
     }
 
     // This is a backstop for bugs elsewhere.

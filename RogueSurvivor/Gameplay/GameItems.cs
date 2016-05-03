@@ -83,7 +83,7 @@ namespace djack.RogueSurvivor.Gameplay
     {
       get
       {
-        return this.m_Models[id];
+        return m_Models[id];
       }
     }
 
@@ -95,8 +95,8 @@ namespace djack.RogueSurvivor.Gameplay
       }
       private set
       {
-        this.m_Models[(int) id] = value;
-        this.m_Models[(int) id].ID = id;
+                m_Models[(int) id] = value;
+                m_Models[(int) id].ID = id;
       }
     }
 
@@ -664,149 +664,149 @@ namespace djack.RogueSurvivor.Gameplay
 
     public void CreateModels()
     {
-      ItemMedicineModel tmpMedicineModel = new ItemMedicineModel(this.DATA_MEDICINE_BANDAGE.NAME, this.DATA_MEDICINE_BANDAGE.PLURAL, "Items\\item_bandages", this.DATA_MEDICINE_BANDAGE.HEALING, this.DATA_MEDICINE_BANDAGE.STAMINABOOST, this.DATA_MEDICINE_BANDAGE.SLEEPBOOST, this.DATA_MEDICINE_BANDAGE.INFECTIONCURE, this.DATA_MEDICINE_BANDAGE.SANITYCURE);
+      ItemMedicineModel tmpMedicineModel = new ItemMedicineModel(DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, "Items\\item_bandages", DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE);
       tmpMedicineModel.IsPlural = true;
-      tmpMedicineModel.StackingLimit = this.DATA_MEDICINE_BANDAGE.STACKINGLIMIT;
-      tmpMedicineModel.FlavorDescription = this.DATA_MEDICINE_BANDAGE.FLAVOR;
+      tmpMedicineModel.StackingLimit = DATA_MEDICINE_BANDAGE.STACKINGLIMIT;
+      tmpMedicineModel.FlavorDescription = DATA_MEDICINE_BANDAGE.FLAVOR;
       this[GameItems.IDs.MEDICINE_BANDAGES] = (ItemModel) tmpMedicineModel;
-      tmpMedicineModel = new ItemMedicineModel(this.DATA_MEDICINE_MEDIKIT.NAME, this.DATA_MEDICINE_MEDIKIT.PLURAL, "Items\\item_medikit", this.DATA_MEDICINE_MEDIKIT.HEALING, this.DATA_MEDICINE_MEDIKIT.STAMINABOOST, this.DATA_MEDICINE_MEDIKIT.SLEEPBOOST, this.DATA_MEDICINE_MEDIKIT.INFECTIONCURE, this.DATA_MEDICINE_MEDIKIT.SANITYCURE);
-      tmpMedicineModel.FlavorDescription = this.DATA_MEDICINE_MEDIKIT.FLAVOR;
+      tmpMedicineModel = new ItemMedicineModel(DATA_MEDICINE_MEDIKIT.NAME, DATA_MEDICINE_MEDIKIT.PLURAL, "Items\\item_medikit", DATA_MEDICINE_MEDIKIT.HEALING, DATA_MEDICINE_MEDIKIT.STAMINABOOST, DATA_MEDICINE_MEDIKIT.SLEEPBOOST, DATA_MEDICINE_MEDIKIT.INFECTIONCURE, DATA_MEDICINE_MEDIKIT.SANITYCURE);
+      tmpMedicineModel.FlavorDescription = DATA_MEDICINE_MEDIKIT.FLAVOR;
       this[GameItems.IDs.MEDICINE_MEDIKIT] = (ItemModel) tmpMedicineModel;
-      tmpMedicineModel = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_STA.NAME, this.DATA_MEDICINE_PILLS_STA.PLURAL, "Items\\item_pills_green", this.DATA_MEDICINE_PILLS_STA.HEALING, this.DATA_MEDICINE_PILLS_STA.STAMINABOOST, this.DATA_MEDICINE_PILLS_STA.SLEEPBOOST, this.DATA_MEDICINE_PILLS_STA.INFECTIONCURE, this.DATA_MEDICINE_PILLS_STA.SANITYCURE);
+      tmpMedicineModel = new ItemMedicineModel(DATA_MEDICINE_PILLS_STA.NAME, DATA_MEDICINE_PILLS_STA.PLURAL, "Items\\item_pills_green", DATA_MEDICINE_PILLS_STA.HEALING, DATA_MEDICINE_PILLS_STA.STAMINABOOST, DATA_MEDICINE_PILLS_STA.SLEEPBOOST, DATA_MEDICINE_PILLS_STA.INFECTIONCURE, DATA_MEDICINE_PILLS_STA.SANITYCURE);
       tmpMedicineModel.IsPlural = true;
-      tmpMedicineModel.StackingLimit = this.DATA_MEDICINE_PILLS_STA.STACKINGLIMIT;
-      tmpMedicineModel.FlavorDescription = this.DATA_MEDICINE_PILLS_STA.FLAVOR;
+      tmpMedicineModel.StackingLimit = DATA_MEDICINE_PILLS_STA.STACKINGLIMIT;
+      tmpMedicineModel.FlavorDescription = DATA_MEDICINE_PILLS_STA.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_STA] = (ItemModel) tmpMedicineModel;
-      tmpMedicineModel = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_SLP.NAME, this.DATA_MEDICINE_PILLS_SLP.PLURAL, "Items\\item_pills_blue", this.DATA_MEDICINE_PILLS_SLP.HEALING, this.DATA_MEDICINE_PILLS_SLP.STAMINABOOST, this.DATA_MEDICINE_PILLS_SLP.SLEEPBOOST, this.DATA_MEDICINE_PILLS_SLP.INFECTIONCURE, this.DATA_MEDICINE_PILLS_SLP.SANITYCURE);
+      tmpMedicineModel = new ItemMedicineModel(DATA_MEDICINE_PILLS_SLP.NAME, DATA_MEDICINE_PILLS_SLP.PLURAL, "Items\\item_pills_blue", DATA_MEDICINE_PILLS_SLP.HEALING, DATA_MEDICINE_PILLS_SLP.STAMINABOOST, DATA_MEDICINE_PILLS_SLP.SLEEPBOOST, DATA_MEDICINE_PILLS_SLP.INFECTIONCURE, DATA_MEDICINE_PILLS_SLP.SANITYCURE);
       tmpMedicineModel.IsPlural = true;
-      tmpMedicineModel.StackingLimit = this.DATA_MEDICINE_PILLS_SLP.STACKINGLIMIT;
-      tmpMedicineModel.FlavorDescription = this.DATA_MEDICINE_PILLS_SLP.FLAVOR;
+      tmpMedicineModel.StackingLimit = DATA_MEDICINE_PILLS_SLP.STACKINGLIMIT;
+      tmpMedicineModel.FlavorDescription = DATA_MEDICINE_PILLS_SLP.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_SLP] = (ItemModel) tmpMedicineModel;
-      tmpMedicineModel = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_SAN.NAME, this.DATA_MEDICINE_PILLS_SAN.PLURAL, "Items\\item_pills_san", this.DATA_MEDICINE_PILLS_SAN.HEALING, this.DATA_MEDICINE_PILLS_SAN.STAMINABOOST, this.DATA_MEDICINE_PILLS_SAN.SLEEPBOOST, this.DATA_MEDICINE_PILLS_SAN.INFECTIONCURE, this.DATA_MEDICINE_PILLS_SAN.SANITYCURE);
+      tmpMedicineModel = new ItemMedicineModel(DATA_MEDICINE_PILLS_SAN.NAME, DATA_MEDICINE_PILLS_SAN.PLURAL, "Items\\item_pills_san", DATA_MEDICINE_PILLS_SAN.HEALING, DATA_MEDICINE_PILLS_SAN.STAMINABOOST, DATA_MEDICINE_PILLS_SAN.SLEEPBOOST, DATA_MEDICINE_PILLS_SAN.INFECTIONCURE, DATA_MEDICINE_PILLS_SAN.SANITYCURE);
       tmpMedicineModel.IsPlural = true;
-      tmpMedicineModel.StackingLimit = this.DATA_MEDICINE_PILLS_SAN.STACKINGLIMIT;
-      tmpMedicineModel.FlavorDescription = this.DATA_MEDICINE_PILLS_SAN.FLAVOR;
+      tmpMedicineModel.StackingLimit = DATA_MEDICINE_PILLS_SAN.STACKINGLIMIT;
+      tmpMedicineModel.FlavorDescription = DATA_MEDICINE_PILLS_SAN.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_SAN] = (ItemModel) tmpMedicineModel;
-      tmpMedicineModel = new ItemMedicineModel(this.DATA_MEDICINE_PILLS_ANTIVIRAL.NAME, this.DATA_MEDICINE_PILLS_ANTIVIRAL.PLURAL, "Items\\item_pills_antiviral", this.DATA_MEDICINE_PILLS_ANTIVIRAL.HEALING, this.DATA_MEDICINE_PILLS_ANTIVIRAL.STAMINABOOST, this.DATA_MEDICINE_PILLS_ANTIVIRAL.SLEEPBOOST, this.DATA_MEDICINE_PILLS_ANTIVIRAL.INFECTIONCURE, this.DATA_MEDICINE_PILLS_ANTIVIRAL.SANITYCURE);
+      tmpMedicineModel = new ItemMedicineModel(DATA_MEDICINE_PILLS_ANTIVIRAL.NAME, DATA_MEDICINE_PILLS_ANTIVIRAL.PLURAL, "Items\\item_pills_antiviral", DATA_MEDICINE_PILLS_ANTIVIRAL.HEALING, DATA_MEDICINE_PILLS_ANTIVIRAL.STAMINABOOST, DATA_MEDICINE_PILLS_ANTIVIRAL.SLEEPBOOST, DATA_MEDICINE_PILLS_ANTIVIRAL.INFECTIONCURE, DATA_MEDICINE_PILLS_ANTIVIRAL.SANITYCURE);
       tmpMedicineModel.IsPlural = true;
-      tmpMedicineModel.StackingLimit = this.DATA_MEDICINE_PILLS_ANTIVIRAL.STACKINGLIMIT;
-      tmpMedicineModel.FlavorDescription = this.DATA_MEDICINE_PILLS_ANTIVIRAL.FLAVOR;
+      tmpMedicineModel.StackingLimit = DATA_MEDICINE_PILLS_ANTIVIRAL.STACKINGLIMIT;
+      tmpMedicineModel.FlavorDescription = DATA_MEDICINE_PILLS_ANTIVIRAL.FLAVOR;
       this[GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL] = (ItemModel) tmpMedicineModel;
 
       // Food
-      ItemFoodModel tmpFoodModel = new ItemFoodModel(this.DATA_FOOD_ARMY_RATION.NAME, this.DATA_FOOD_ARMY_RATION.PLURAL, "Items\\item_army_ration", this.DATA_FOOD_ARMY_RATION.NUTRITION, this.DATA_FOOD_ARMY_RATION.BESTBEFORE);
-      tmpFoodModel.IsPlural = this.CheckPlural(this.DATA_FOOD_ARMY_RATION.NAME, this.DATA_FOOD_ARMY_RATION.PLURAL);
-      tmpFoodModel.StackingLimit = this.DATA_FOOD_ARMY_RATION.STACKINGLIMIT;
-      tmpFoodModel.FlavorDescription = this.DATA_FOOD_ARMY_RATION.FLAVOR;
+      ItemFoodModel tmpFoodModel = new ItemFoodModel(DATA_FOOD_ARMY_RATION.NAME, DATA_FOOD_ARMY_RATION.PLURAL, "Items\\item_army_ration", DATA_FOOD_ARMY_RATION.NUTRITION, DATA_FOOD_ARMY_RATION.BESTBEFORE);
+      tmpFoodModel.IsPlural = CheckPlural(DATA_FOOD_ARMY_RATION.NAME, DATA_FOOD_ARMY_RATION.PLURAL);
+      tmpFoodModel.StackingLimit = DATA_FOOD_ARMY_RATION.STACKINGLIMIT;
+      tmpFoodModel.FlavorDescription = DATA_FOOD_ARMY_RATION.FLAVOR;
       this[GameItems.IDs.FOOD_ARMY_RATION] = (ItemModel) tmpFoodModel;
-      tmpFoodModel = new ItemFoodModel(this.DATA_FOOD_GROCERIES.NAME, this.DATA_FOOD_GROCERIES.PLURAL, "Items\\item_groceries", this.DATA_FOOD_GROCERIES.NUTRITION, this.DATA_FOOD_GROCERIES.BESTBEFORE);
-      tmpFoodModel.IsPlural = this.CheckPlural(this.DATA_FOOD_GROCERIES.NAME, this.DATA_FOOD_GROCERIES.PLURAL);
-      tmpFoodModel.StackingLimit = this.DATA_FOOD_GROCERIES.STACKINGLIMIT;
-      tmpFoodModel.FlavorDescription = this.DATA_FOOD_GROCERIES.FLAVOR;
+      tmpFoodModel = new ItemFoodModel(DATA_FOOD_GROCERIES.NAME, DATA_FOOD_GROCERIES.PLURAL, "Items\\item_groceries", DATA_FOOD_GROCERIES.NUTRITION, DATA_FOOD_GROCERIES.BESTBEFORE);
+      tmpFoodModel.IsPlural = CheckPlural(DATA_FOOD_GROCERIES.NAME, DATA_FOOD_GROCERIES.PLURAL);
+      tmpFoodModel.StackingLimit = DATA_FOOD_GROCERIES.STACKINGLIMIT;
+      tmpFoodModel.FlavorDescription = DATA_FOOD_GROCERIES.FLAVOR;
       this[GameItems.IDs.FOOD_GROCERIES] = (ItemModel) tmpFoodModel;
-      tmpFoodModel = new ItemFoodModel(this.DATA_FOOD_CANNED_FOOD.NAME, this.DATA_FOOD_CANNED_FOOD.PLURAL, "Items\\item_canned_food", this.DATA_FOOD_CANNED_FOOD.NUTRITION, this.DATA_FOOD_CANNED_FOOD.BESTBEFORE);
-      tmpFoodModel.IsPlural = this.CheckPlural(this.DATA_FOOD_CANNED_FOOD.NAME, this.DATA_FOOD_CANNED_FOOD.PLURAL);
-      tmpFoodModel.StackingLimit = this.DATA_FOOD_CANNED_FOOD.STACKINGLIMIT;
-      tmpFoodModel.FlavorDescription = this.DATA_FOOD_CANNED_FOOD.FLAVOR;
+      tmpFoodModel = new ItemFoodModel(DATA_FOOD_CANNED_FOOD.NAME, DATA_FOOD_CANNED_FOOD.PLURAL, "Items\\item_canned_food", DATA_FOOD_CANNED_FOOD.NUTRITION, DATA_FOOD_CANNED_FOOD.BESTBEFORE);
+      tmpFoodModel.IsPlural = CheckPlural(DATA_FOOD_CANNED_FOOD.NAME, DATA_FOOD_CANNED_FOOD.PLURAL);
+      tmpFoodModel.StackingLimit = DATA_FOOD_CANNED_FOOD.STACKINGLIMIT;
+      tmpFoodModel.FlavorDescription = DATA_FOOD_CANNED_FOOD.FLAVOR;
       this[GameItems.IDs.FOOD_CANNED_FOOD] = (ItemModel) tmpFoodModel;
 
       // melee weapons
-      ItemMeleeWeaponModel tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_BASEBALLBAT.NAME, this.DATA_MELEE_BASEBALLBAT.PLURAL, "Items\\item_baseballbat", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), this.DATA_MELEE_BASEBALLBAT.ATK, this.DATA_MELEE_BASEBALLBAT.DMG, this.DATA_MELEE_BASEBALLBAT.STA));
+      ItemMeleeWeaponModel tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_BASEBALLBAT.NAME, DATA_MELEE_BASEBALLBAT.PLURAL, "Items\\item_baseballbat", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), DATA_MELEE_BASEBALLBAT.ATK, DATA_MELEE_BASEBALLBAT.DMG, DATA_MELEE_BASEBALLBAT.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_BASEBALLBAT.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_BASEBALLBAT.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_BASEBALLBAT.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_BASEBALLBAT.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_BASEBALLBAT.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_BASEBALLBAT.ISFRAGILE;
       this[GameItems.IDs.MELEE_BASEBALLBAT] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_COMBAT_KNIFE.NAME, this.DATA_MELEE_COMBAT_KNIFE.PLURAL, "Items\\item_combat_knife", new Attack(AttackKind.PHYSICAL, new Verb("stab", "stabs"), this.DATA_MELEE_COMBAT_KNIFE.ATK, this.DATA_MELEE_COMBAT_KNIFE.DMG, this.DATA_MELEE_COMBAT_KNIFE.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_COMBAT_KNIFE.NAME, DATA_MELEE_COMBAT_KNIFE.PLURAL, "Items\\item_combat_knife", new Attack(AttackKind.PHYSICAL, new Verb("stab", "stabs"), DATA_MELEE_COMBAT_KNIFE.ATK, DATA_MELEE_COMBAT_KNIFE.DMG, DATA_MELEE_COMBAT_KNIFE.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_COMBAT_KNIFE.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_COMBAT_KNIFE.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_COMBAT_KNIFE.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_COMBAT_KNIFE.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_COMBAT_KNIFE.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_COMBAT_KNIFE.ISFRAGILE;
       this[GameItems.IDs.MELEE_COMBAT_KNIFE] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_CROWBAR.NAME, this.DATA_MELEE_CROWBAR.PLURAL, "Items\\item_crowbar", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_CROWBAR.ATK, this.DATA_MELEE_CROWBAR.DMG, this.DATA_MELEE_CROWBAR.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_CROWBAR.NAME, DATA_MELEE_CROWBAR.PLURAL, "Items\\item_crowbar", new Attack(AttackKind.PHYSICAL, new Verb("strike"), DATA_MELEE_CROWBAR.ATK, DATA_MELEE_CROWBAR.DMG, DATA_MELEE_CROWBAR.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_CROWBAR.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_CROWBAR.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_CROWBAR.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_CROWBAR.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_CROWBAR.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_CROWBAR.ISFRAGILE;
       this[GameItems.IDs.MELEE_CROWBAR] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE.NAME, this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE.PLURAL, "Items\\item_jason_myers_axe", new Attack(AttackKind.PHYSICAL, new Verb("slash", "slashes"), this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE.ATK, this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE.DMG, this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_UNIQUE_JASON_MYERS_AXE.NAME, DATA_MELEE_UNIQUE_JASON_MYERS_AXE.PLURAL, "Items\\item_jason_myers_axe", new Attack(AttackKind.PHYSICAL, new Verb("slash", "slashes"), DATA_MELEE_UNIQUE_JASON_MYERS_AXE.ATK, DATA_MELEE_UNIQUE_JASON_MYERS_AXE.DMG, DATA_MELEE_UNIQUE_JASON_MYERS_AXE.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.IsProper = true;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE.FLAVOR;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_UNIQUE_JASON_MYERS_AXE.FLAVOR;
       tmpMeleeWeaponModel.IsUnbreakable = true;
       this[GameItems.IDs.UNIQUE_JASON_MYERS_AXE] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_GOLFCLUB.NAME, this.DATA_MELEE_GOLFCLUB.PLURAL, "Items\\item_golfclub", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_GOLFCLUB.ATK, this.DATA_MELEE_GOLFCLUB.DMG, this.DATA_MELEE_GOLFCLUB.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_GOLFCLUB.NAME, DATA_MELEE_GOLFCLUB.PLURAL, "Items\\item_golfclub", new Attack(AttackKind.PHYSICAL, new Verb("strike"), DATA_MELEE_GOLFCLUB.ATK, DATA_MELEE_GOLFCLUB.DMG, DATA_MELEE_GOLFCLUB.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_GOLFCLUB.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_GOLFCLUB.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_GOLFCLUB.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_GOLFCLUB.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_GOLFCLUB.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_GOLFCLUB.ISFRAGILE;
       this[GameItems.IDs.MELEE_GOLFCLUB] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_IRON_GOLFCLUB.NAME, this.DATA_MELEE_IRON_GOLFCLUB.PLURAL, "Items\\item_iron_golfclub", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_IRON_GOLFCLUB.ATK, this.DATA_MELEE_IRON_GOLFCLUB.DMG, this.DATA_MELEE_IRON_GOLFCLUB.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_IRON_GOLFCLUB.NAME, DATA_MELEE_IRON_GOLFCLUB.PLURAL, "Items\\item_iron_golfclub", new Attack(AttackKind.PHYSICAL, new Verb("strike"), DATA_MELEE_IRON_GOLFCLUB.ATK, DATA_MELEE_IRON_GOLFCLUB.DMG, DATA_MELEE_IRON_GOLFCLUB.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_IRON_GOLFCLUB.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_IRON_GOLFCLUB.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_IRON_GOLFCLUB.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_IRON_GOLFCLUB.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_IRON_GOLFCLUB.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_IRON_GOLFCLUB.ISFRAGILE;
       this[GameItems.IDs.MELEE_IRON_GOLFCLUB] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_HUGE_HAMMER.NAME, this.DATA_MELEE_HUGE_HAMMER.PLURAL, "Items\\item_huge_hammer", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), this.DATA_MELEE_HUGE_HAMMER.ATK, this.DATA_MELEE_HUGE_HAMMER.DMG, this.DATA_MELEE_HUGE_HAMMER.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_HUGE_HAMMER.NAME, DATA_MELEE_HUGE_HAMMER.PLURAL, "Items\\item_huge_hammer", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), DATA_MELEE_HUGE_HAMMER.ATK, DATA_MELEE_HUGE_HAMMER.DMG, DATA_MELEE_HUGE_HAMMER.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_HUGE_HAMMER.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_HUGE_HAMMER.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_HUGE_HAMMER.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_HUGE_HAMMER.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_HUGE_HAMMER.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_HUGE_HAMMER.ISFRAGILE;
       this[GameItems.IDs.MELEE_HUGE_HAMMER] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_SHOVEL.NAME, this.DATA_MELEE_SHOVEL.PLURAL, "Items\\item_shovel", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_SHOVEL.ATK, this.DATA_MELEE_SHOVEL.DMG, this.DATA_MELEE_SHOVEL.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_SHOVEL.NAME, DATA_MELEE_SHOVEL.PLURAL, "Items\\item_shovel", new Attack(AttackKind.PHYSICAL, new Verb("strike"), DATA_MELEE_SHOVEL.ATK, DATA_MELEE_SHOVEL.DMG, DATA_MELEE_SHOVEL.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_SHOVEL.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_SHOVEL.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_SHOVEL.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_SHOVEL.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_SHOVEL.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_SHOVEL.ISFRAGILE;
       this[GameItems.IDs.MELEE_SHOVEL] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_SHORT_SHOVEL.NAME, this.DATA_MELEE_SHORT_SHOVEL.PLURAL, "Items\\item_short_shovel", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_SHORT_SHOVEL.ATK, this.DATA_MELEE_SHORT_SHOVEL.DMG, this.DATA_MELEE_SHORT_SHOVEL.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_SHORT_SHOVEL.NAME, DATA_MELEE_SHORT_SHOVEL.PLURAL, "Items\\item_short_shovel", new Attack(AttackKind.PHYSICAL, new Verb("strike"), DATA_MELEE_SHORT_SHOVEL.ATK, DATA_MELEE_SHORT_SHOVEL.DMG, DATA_MELEE_SHORT_SHOVEL.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_SHORT_SHOVEL.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_SHORT_SHOVEL.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_SHORT_SHOVEL.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_SHORT_SHOVEL.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_SHORT_SHOVEL.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_SHORT_SHOVEL.ISFRAGILE;
       this[GameItems.IDs.MELEE_SHORT_SHOVEL] = (ItemModel) tmpMeleeWeaponModel;
-      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(this.DATA_MELEE_TRUNCHEON.NAME, this.DATA_MELEE_TRUNCHEON.PLURAL, "Items\\item_truncheon", new Attack(AttackKind.PHYSICAL, new Verb("strike"), this.DATA_MELEE_TRUNCHEON.ATK, this.DATA_MELEE_TRUNCHEON.DMG, this.DATA_MELEE_TRUNCHEON.STA));
+      tmpMeleeWeaponModel = new ItemMeleeWeaponModel(DATA_MELEE_TRUNCHEON.NAME, DATA_MELEE_TRUNCHEON.PLURAL, "Items\\item_truncheon", new Attack(AttackKind.PHYSICAL, new Verb("strike"), DATA_MELEE_TRUNCHEON.ATK, DATA_MELEE_TRUNCHEON.DMG, DATA_MELEE_TRUNCHEON.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
-      tmpMeleeWeaponModel.StackingLimit = this.DATA_MELEE_TRUNCHEON.STACKINGLIMIT;
-      tmpMeleeWeaponModel.FlavorDescription = this.DATA_MELEE_TRUNCHEON.FLAVOR;
-      tmpMeleeWeaponModel.IsFragile = this.DATA_MELEE_TRUNCHEON.ISFRAGILE;
+      tmpMeleeWeaponModel.StackingLimit = DATA_MELEE_TRUNCHEON.STACKINGLIMIT;
+      tmpMeleeWeaponModel.FlavorDescription = DATA_MELEE_TRUNCHEON.FLAVOR;
+      tmpMeleeWeaponModel.IsFragile = DATA_MELEE_TRUNCHEON.ISFRAGILE;
       this[GameItems.IDs.MELEE_TRUNCHEON] = (ItemModel) tmpMeleeWeaponModel;
-      GameItems.MeleeWeaponData meleeWeaponData1 = this.DATA_MELEE_IMPROVISED_CLUB;
+      GameItems.MeleeWeaponData meleeWeaponData1 = DATA_MELEE_IMPROVISED_CLUB;
       tmpMeleeWeaponModel = new ItemMeleeWeaponModel(meleeWeaponData1.NAME, meleeWeaponData1.PLURAL, "Items\\item_improvised_club", new Attack(AttackKind.PHYSICAL, new Verb("strike"), meleeWeaponData1.ATK, meleeWeaponData1.DMG, meleeWeaponData1.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.StackingLimit = meleeWeaponData1.STACKINGLIMIT;
       tmpMeleeWeaponModel.FlavorDescription = meleeWeaponData1.FLAVOR;
       tmpMeleeWeaponModel.IsFragile = meleeWeaponData1.ISFRAGILE;
       this[GameItems.IDs.MELEE_IMPROVISED_CLUB] = (ItemModel) tmpMeleeWeaponModel;
-      GameItems.MeleeWeaponData meleeWeaponData2 = this.DATA_MELEE_IMPROVISED_SPEAR;
+      GameItems.MeleeWeaponData meleeWeaponData2 = DATA_MELEE_IMPROVISED_SPEAR;
       tmpMeleeWeaponModel = new ItemMeleeWeaponModel(meleeWeaponData2.NAME, meleeWeaponData2.PLURAL, "Items\\item_improvised_spear", new Attack(AttackKind.PHYSICAL, new Verb("pierce"), meleeWeaponData2.ATK, meleeWeaponData2.DMG, meleeWeaponData2.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.StackingLimit = meleeWeaponData2.STACKINGLIMIT;
       tmpMeleeWeaponModel.FlavorDescription = meleeWeaponData2.FLAVOR;
       tmpMeleeWeaponModel.IsFragile = meleeWeaponData2.ISFRAGILE;
       this[GameItems.IDs.MELEE_IMPROVISED_SPEAR] = (ItemModel) tmpMeleeWeaponModel;
-      GameItems.MeleeWeaponData meleeWeaponData3 = this.DATA_MELEE_SMALL_HAMMER;
+      GameItems.MeleeWeaponData meleeWeaponData3 = DATA_MELEE_SMALL_HAMMER;
       tmpMeleeWeaponModel = new ItemMeleeWeaponModel(meleeWeaponData3.NAME, meleeWeaponData3.PLURAL, "Items\\item_small_hammer", new Attack(AttackKind.PHYSICAL, new Verb("smash"), meleeWeaponData3.ATK, meleeWeaponData3.DMG, meleeWeaponData3.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.StackingLimit = meleeWeaponData3.STACKINGLIMIT;
       tmpMeleeWeaponModel.FlavorDescription = meleeWeaponData3.FLAVOR;
       tmpMeleeWeaponModel.IsFragile = meleeWeaponData3.ISFRAGILE;
       this[GameItems.IDs.MELEE_SMALL_HAMMER] = (ItemModel) tmpMeleeWeaponModel;
-      GameItems.MeleeWeaponData meleeWeaponData4 = this.DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
+      GameItems.MeleeWeaponData meleeWeaponData4 = DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
       tmpMeleeWeaponModel = new ItemMeleeWeaponModel(meleeWeaponData4.NAME, meleeWeaponData4.PLURAL, "Items\\item_famu_fataru_katana", new Attack(AttackKind.PHYSICAL, new Verb("slash", "slashes"), meleeWeaponData4.ATK, meleeWeaponData4.DMG, meleeWeaponData4.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.FlavorDescription = meleeWeaponData4.FLAVOR;
       tmpMeleeWeaponModel.IsProper = true;
       tmpMeleeWeaponModel.IsUnbreakable = true;
       this[GameItems.IDs.UNIQUE_FAMU_FATARU_KATANA] = (ItemModel) tmpMeleeWeaponModel;
-      GameItems.MeleeWeaponData meleeWeaponData5 = this.DATA_MELEE_UNIQUE_BIGBEAR_BAT;
+      GameItems.MeleeWeaponData meleeWeaponData5 = DATA_MELEE_UNIQUE_BIGBEAR_BAT;
       tmpMeleeWeaponModel = new ItemMeleeWeaponModel(meleeWeaponData5.NAME, meleeWeaponData5.PLURAL, "Items\\item_bigbear_bat", new Attack(AttackKind.PHYSICAL, new Verb("smash", "smashes"), meleeWeaponData5.ATK, meleeWeaponData5.DMG, meleeWeaponData5.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.FlavorDescription = meleeWeaponData5.FLAVOR;
       tmpMeleeWeaponModel.IsProper = true;
       tmpMeleeWeaponModel.IsUnbreakable = true;
       this[GameItems.IDs.UNIQUE_BIGBEAR_BAT] = (ItemModel) tmpMeleeWeaponModel;
-      GameItems.MeleeWeaponData meleeWeaponData6 = this.DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
+      GameItems.MeleeWeaponData meleeWeaponData6 = DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
       tmpMeleeWeaponModel = new ItemMeleeWeaponModel(meleeWeaponData6.NAME, meleeWeaponData6.PLURAL, "Items\\item_roguedjack_keyboard", new Attack(AttackKind.PHYSICAL, new Verb("bash", "bashes"), meleeWeaponData6.ATK, meleeWeaponData6.DMG, meleeWeaponData6.STA));
       tmpMeleeWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpMeleeWeaponModel.FlavorDescription = meleeWeaponData6.FLAVOR;
@@ -815,54 +815,54 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.UNIQUE_ROGUEDJACK_KEYBOARD] = (ItemModel) tmpMeleeWeaponModel;
 
       // ranged weapons
-      GameItems.RangedWeaponData rangedWeaponData1 = this.DATA_RANGED_ARMY_PISTOL;
+      GameItems.RangedWeaponData rangedWeaponData1 = DATA_RANGED_ARMY_PISTOL;
       ItemRangedWeaponModel tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData1.NAME, rangedWeaponData1.FLAVOR, "Items\\item_army_pistol", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData1.ATK, rangedWeaponData1.DMG, 0, rangedWeaponData1.RANGE), rangedWeaponData1.MAXAMMO, AmmoType.HEAVY_PISTOL);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData1.FLAVOR;
       this[GameItems.IDs.RANGED_ARMY_PISTOL] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData2 = this.DATA_RANGED_ARMY_RIFLE;
+      GameItems.RangedWeaponData rangedWeaponData2 = DATA_RANGED_ARMY_RIFLE;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData2.NAME, rangedWeaponData2.FLAVOR, "Items\\item_army_rifle", new Attack(AttackKind.FIREARM, new Verb("fire a salvo at", "fires a salvo at"), rangedWeaponData2.ATK, rangedWeaponData2.DMG, 0, rangedWeaponData2.RANGE), rangedWeaponData2.MAXAMMO, AmmoType.HEAVY_RIFLE);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData2.FLAVOR;
       this[GameItems.IDs.RANGED_ARMY_RIFLE] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData3 = this.DATA_RANGED_HUNTING_CROSSBOW;
+      GameItems.RangedWeaponData rangedWeaponData3 = DATA_RANGED_HUNTING_CROSSBOW;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData3.NAME, rangedWeaponData3.FLAVOR, "Items\\item_hunting_crossbow", new Attack(AttackKind.BOW, new Verb("shoot"), rangedWeaponData3.ATK, rangedWeaponData3.DMG, 0, rangedWeaponData3.RANGE), rangedWeaponData3.MAXAMMO, AmmoType.BOLT);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData3.FLAVOR;
       this[GameItems.IDs.RANGED_HUNTING_CROSSBOW] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData4 = this.DATA_RANGED_HUNTING_RIFLE;
+      GameItems.RangedWeaponData rangedWeaponData4 = DATA_RANGED_HUNTING_RIFLE;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData4.NAME, rangedWeaponData4.FLAVOR, "Items\\item_hunting_rifle", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData4.ATK, rangedWeaponData4.DMG, 0, rangedWeaponData4.RANGE), rangedWeaponData4.MAXAMMO, AmmoType.LIGHT_RIFLE);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData4.FLAVOR;
       this[GameItems.IDs.RANGED_HUNTING_RIFLE] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData5 = this.DATA_RANGED_PISTOL;
+      GameItems.RangedWeaponData rangedWeaponData5 = DATA_RANGED_PISTOL;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData5.NAME, rangedWeaponData5.FLAVOR, "Items\\item_pistol", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData5.ATK, rangedWeaponData5.DMG, 0, rangedWeaponData5.RANGE), rangedWeaponData5.MAXAMMO, AmmoType._FIRST);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData5.FLAVOR;
       this[GameItems.IDs.RANGED_PISTOL] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData6 = this.DATA_RANGED_KOLT_REVOLVER;
+      GameItems.RangedWeaponData rangedWeaponData6 = DATA_RANGED_KOLT_REVOLVER;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData6.NAME, rangedWeaponData6.FLAVOR, "Items\\item_kolt_revolver", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData6.ATK, rangedWeaponData6.DMG, 0, rangedWeaponData6.RANGE), rangedWeaponData6.MAXAMMO, AmmoType._FIRST);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData6.FLAVOR;
       this[GameItems.IDs.RANGED_KOLT_REVOLVER] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData7 = this.DATA_RANGED_PRECISION_RIFLE;
+      GameItems.RangedWeaponData rangedWeaponData7 = DATA_RANGED_PRECISION_RIFLE;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData7.NAME, rangedWeaponData7.FLAVOR, "Items\\item_precision_rifle", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData7.ATK, rangedWeaponData7.DMG, 0, rangedWeaponData7.RANGE), rangedWeaponData7.MAXAMMO, AmmoType.HEAVY_RIFLE);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData7.FLAVOR;
       this[GameItems.IDs.RANGED_PRECISION_RIFLE] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData8 = this.DATA_RANGED_SHOTGUN;
+      GameItems.RangedWeaponData rangedWeaponData8 = DATA_RANGED_SHOTGUN;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData8.NAME, rangedWeaponData8.FLAVOR, "Items\\item_shotgun", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData8.ATK, rangedWeaponData8.DMG, 0, rangedWeaponData8.RANGE), rangedWeaponData8.MAXAMMO, AmmoType.SHOTGUN);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData8.FLAVOR;
       this[GameItems.IDs.RANGED_SHOTGUN] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData9 = this.DATA_UNIQUE_SANTAMAN_SHOTGUN;
+      GameItems.RangedWeaponData rangedWeaponData9 = DATA_UNIQUE_SANTAMAN_SHOTGUN;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData9.NAME, rangedWeaponData9.FLAVOR, "Items\\item_santaman_shotgun", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData9.ATK, rangedWeaponData9.DMG, 0, rangedWeaponData9.RANGE), rangedWeaponData9.MAXAMMO, AmmoType.SHOTGUN);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData9.FLAVOR;
       tmpRangedWeaponModel.IsProper = true;
       tmpRangedWeaponModel.IsUnbreakable = true;
       this[GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN] = (ItemModel) tmpRangedWeaponModel;
-      GameItems.RangedWeaponData rangedWeaponData10 = this.DATA_UNIQUE_HANS_VON_HANZ_PISTOL;
+      GameItems.RangedWeaponData rangedWeaponData10 = DATA_UNIQUE_HANS_VON_HANZ_PISTOL;
       tmpRangedWeaponModel = new ItemRangedWeaponModel(rangedWeaponData10.NAME, rangedWeaponData10.FLAVOR, "Items\\item_hans_von_hanz_pistol", new Attack(AttackKind.FIREARM, new Verb("shoot"), rangedWeaponData10.ATK, rangedWeaponData10.DMG, 0, rangedWeaponData10.RANGE), rangedWeaponData10.MAXAMMO, AmmoType._FIRST);
       tmpRangedWeaponModel.EquipmentPart = DollPart._FIRST;
       tmpRangedWeaponModel.FlavorDescription = rangedWeaponData10.FLAVOR;
@@ -897,7 +897,7 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.AMMO_BOLTS] = (ItemModel) tmpAmmoModel;
       
       // grenade, in its various states
-      GameItems.ExplosiveData explosiveData = this.DATA_EXPLOSIVE_GRENADE;
+      GameItems.ExplosiveData explosiveData = DATA_EXPLOSIVE_GRENADE;
       int[] damage = new int[explosiveData.RADIUS + 1];
       for (int index = 0; index < explosiveData.RADIUS + 1; ++index)
         damage[index] = explosiveData.DMG[index];   // XXX explosiveData.DMG is returned with a mismatched length
@@ -912,137 +912,137 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED] = (ItemModel) grenadePrimedModel1;
 
       // carpentry
-      GameItems.BarricadingMaterialData barricadingMaterialData = this.DATA_BAR_WOODEN_PLANK;
+      GameItems.BarricadingMaterialData barricadingMaterialData = DATA_BAR_WOODEN_PLANK;
       ItemBarricadeMaterialModel barricadeMaterialModel1 = new ItemBarricadeMaterialModel(barricadingMaterialData.NAME, barricadingMaterialData.PLURAL, "Items\\item_wooden_plank", barricadingMaterialData.VALUE);
       barricadeMaterialModel1.StackingLimit = barricadingMaterialData.STACKINGLIMIT;
       barricadeMaterialModel1.FlavorDescription = barricadingMaterialData.FLAVOR;
       this[GameItems.IDs.BAR_WOODEN_PLANK] = (ItemModel) barricadeMaterialModel1;
 
       // body armor
-      GameItems.ArmorData armorData1 = this.DATA_ARMOR_ARMY;
+      GameItems.ArmorData armorData1 = DATA_ARMOR_ARMY;
       ItemBodyArmorModel tmpBodyArmorModel = new ItemBodyArmorModel(armorData1.NAME, armorData1.PLURAL, "Items\\item_army_bodyarmor", armorData1.PRO_HIT, armorData1.PRO_SHOT, armorData1.ENC, armorData1.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData1.FLAVOR;
       this[GameItems.IDs.ARMOR_ARMY_BODYARMOR] = (ItemModel) tmpBodyArmorModel;
-      GameItems.ArmorData armorData2 = this.DATA_ARMOR_CHAR;
+      GameItems.ArmorData armorData2 = DATA_ARMOR_CHAR;
       tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_CHAR_light_bodyarmor", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
       this[GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = this.DATA_ARMOR_HELLS_SOULS_JACKET;
+      armorData2 = DATA_ARMOR_HELLS_SOULS_JACKET;
       tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_hells_souls_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
       this[GameItems.IDs.ARMOR_HELLS_SOULS_JACKET] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = this.DATA_ARMOR_FREE_ANGELS_JACKET;
+      armorData2 = DATA_ARMOR_FREE_ANGELS_JACKET;
       tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_free_angels_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
       this[GameItems.IDs.ARMOR_FREE_ANGELS_JACKET] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = this.DATA_ARMOR_POLICE_JACKET;
+      armorData2 = DATA_ARMOR_POLICE_JACKET;
       tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_police_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
       this[GameItems.IDs.ARMOR_POLICE_JACKET] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = this.DATA_ARMOR_POLICE_RIOT;
+      armorData2 = DATA_ARMOR_POLICE_RIOT;
       tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_police_riot_armor", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
       this[GameItems.IDs.ARMOR_POLICE_RIOT] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = this.DATA_ARMOR_HUNTER_VEST;
+      armorData2 = DATA_ARMOR_HUNTER_VEST;
       tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_hunter_vest", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
       tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
       tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
       this[GameItems.IDs.ARMOR_HUNTER_VEST] = (ItemModel) tmpBodyArmorModel;
 
       // trackers
-      GameItems.TrackerData trackerData = this.DATA_TRACKER_CELL_PHONE;
+      GameItems.TrackerData trackerData = DATA_TRACKER_CELL_PHONE;
       ItemTrackerModel tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_cellphone", ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, trackerData.BATTERIES * 30);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_CELL_PHONE] = (ItemModel) tmpTrackerModel;
-      trackerData = this.DATA_TRACKER_ZTRACKER;
+      trackerData = DATA_TRACKER_ZTRACKER;
       tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_ztracker", ItemTrackerModel.TrackingFlags.UNDEADS, trackerData.BATTERIES * 30);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_ZTRACKER] = (ItemModel) tmpTrackerModel;
-      trackerData = this.DATA_TRACKER_BLACKOPS_GPS;
+      trackerData = DATA_TRACKER_BLACKOPS_GPS;
       tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_blackops_gps", ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, trackerData.BATTERIES * 30);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_BLACKOPS] = (ItemModel) tmpTrackerModel;
-      trackerData = this.DATA_TRACKER_POLICE_RADIO;
+      trackerData = DATA_TRACKER_POLICE_RADIO;
       tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_police_radio", ItemTrackerModel.TrackingFlags.POLICE_FACTION, trackerData.BATTERIES * 30);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_POLICE_RADIO] = (ItemModel) tmpTrackerModel;
 
       // spray paint
-      GameItems.SprayPaintData sprayPaintData = this.DATA_SPRAY_PAINT1;
+      GameItems.SprayPaintData sprayPaintData = DATA_SPRAY_PAINT1;
       ItemSprayPaintModel tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, "Items\\item_spraypaint", sprayPaintData.QUANTITY, "Tiles\\Decoration\\player_tag");
       tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
       this[GameItems.IDs.SPRAY_PAINT1] = (ItemModel) tmpSprayPaintModel;
-      sprayPaintData = this.DATA_SPRAY_PAINT2;
+      sprayPaintData = DATA_SPRAY_PAINT2;
       tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, "Items\\item_spraypaint2", sprayPaintData.QUANTITY, "Tiles\\Decoration\\player_tag2");
       tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
       this[GameItems.IDs.SPRAY_PAINT2] = (ItemModel) tmpSprayPaintModel;
-      sprayPaintData = this.DATA_SPRAY_PAINT3;
+      sprayPaintData = DATA_SPRAY_PAINT3;
       tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, "Items\\item_spraypaint3", sprayPaintData.QUANTITY, "Tiles\\Decoration\\player_tag3");
       tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
       this[GameItems.IDs.SPRAY_PAINT3] = (ItemModel) tmpSprayPaintModel;
-      sprayPaintData = this.DATA_SPRAY_PAINT4;
+      sprayPaintData = DATA_SPRAY_PAINT4;
       tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, "Items\\item_spraypaint4", sprayPaintData.QUANTITY, "Tiles\\Decoration\\player_tag4");
       tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
       this[GameItems.IDs.SPRAY_PAINT4] = (ItemModel)tmpSprayPaintModel;
 
       // Flashlights
-      GameItems.LightData lightData = this.DATA_LIGHT_FLASHLIGHT;
+      GameItems.LightData lightData = DATA_LIGHT_FLASHLIGHT;
       ItemLightModel tmpLightModel = new ItemLightModel(lightData.NAME, lightData.PLURAL, "Items\\item_flashlight", lightData.FOV, lightData.BATTERIES * 30, "Items\\item_flashlight_out");
       tmpLightModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpLightModel.FlavorDescription = lightData.FLAVOR;
       this[GameItems.IDs.LIGHT_FLASHLIGHT] = (ItemModel) tmpLightModel;
-      lightData = this.DATA_LIGHT_BIG_FLASHLIGHT;
+      lightData = DATA_LIGHT_BIG_FLASHLIGHT;
       tmpLightModel = new ItemLightModel(lightData.NAME, lightData.PLURAL, "Items\\item_big_flashlight", lightData.FOV, lightData.BATTERIES * 30, "Items\\item_big_flashlight_out");
       tmpLightModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpLightModel.FlavorDescription = lightData.FLAVOR;
       this[GameItems.IDs.LIGHT_BIG_FLASHLIGHT] = (ItemModel) tmpLightModel;
 
       // stench killer
-      GameItems.ScentSprayData scentSprayData = this.DATA_SCENT_SPRAY_STENCH_KILLER;
+      GameItems.ScentSprayData scentSprayData = DATA_SCENT_SPRAY_STENCH_KILLER;
       ItemSprayScentModel itemSprayScentModel1 = new ItemSprayScentModel(scentSprayData.NAME, scentSprayData.PLURAL, "Items\\item_stench_killer", scentSprayData.QUANTITY, Odor.PERFUME_LIVING_SUPRESSOR, scentSprayData.STRENGTH * 30);
       itemSprayScentModel1.EquipmentPart = DollPart.LEFT_HAND;
       itemSprayScentModel1.FlavorDescription = scentSprayData.FLAVOR;
       this[GameItems.IDs.SCENT_SPRAY_STENCH_KILLER] = (ItemModel)itemSprayScentModel1;
 
       // Traps
-      GameItems.TrapData trapData = this.DATA_TRAP_EMPTY_CAN;
+      GameItems.TrapData trapData = DATA_TRAP_EMPTY_CAN;
       ItemTrapModel tmpTrapModel = new ItemTrapModel(trapData.NAME, trapData.PLURAL, "Items\\item_empty_can", trapData.STACKING, trapData.CHANCE, trapData.DAMAGE, trapData.DROP_ACTIVATE, trapData.USE_ACTIVATE, trapData.IS_ONE_TIME, trapData.BREAK_CHANCE, trapData.BLOCK_CHANCE, trapData.BREAK_CHANCE_ESCAPE, trapData.IS_NOISY, trapData.NOISE_NAME, trapData.IS_FLAMMABLE);
       tmpTrapModel.FlavorDescription = trapData.FLAVOR;
       this[GameItems.IDs.TRAP_EMPTY_CAN] = (ItemModel) tmpTrapModel;
-      trapData = this.DATA_TRAP_BEAR_TRAP;
+      trapData = DATA_TRAP_BEAR_TRAP;
       tmpTrapModel = new ItemTrapModel(trapData.NAME, trapData.PLURAL, "Items\\item_bear_trap", trapData.STACKING, trapData.CHANCE, trapData.DAMAGE, trapData.DROP_ACTIVATE, trapData.USE_ACTIVATE, trapData.IS_ONE_TIME, trapData.BREAK_CHANCE, trapData.BLOCK_CHANCE, trapData.BREAK_CHANCE_ESCAPE, trapData.IS_NOISY, trapData.NOISE_NAME, trapData.IS_FLAMMABLE);
       tmpTrapModel.FlavorDescription = trapData.FLAVOR;
       this[GameItems.IDs.TRAP_BEAR_TRAP] = (ItemModel) tmpTrapModel;
-      trapData = this.DATA_TRAP_SPIKES;
+      trapData = DATA_TRAP_SPIKES;
       tmpTrapModel = new ItemTrapModel(trapData.NAME, trapData.PLURAL, "Items\\item_spikes", trapData.STACKING, trapData.CHANCE, trapData.DAMAGE, trapData.DROP_ACTIVATE, trapData.USE_ACTIVATE, trapData.IS_ONE_TIME, trapData.BREAK_CHANCE, trapData.BLOCK_CHANCE, trapData.BREAK_CHANCE_ESCAPE, trapData.IS_NOISY, trapData.NOISE_NAME, trapData.IS_FLAMMABLE);
       tmpTrapModel.FlavorDescription = trapData.FLAVOR;
       this[GameItems.IDs.TRAP_SPIKES] = (ItemModel) tmpTrapModel;
-      trapData = this.DATA_TRAP_BARBED_WIRE;
+      trapData = DATA_TRAP_BARBED_WIRE;
       tmpTrapModel = new ItemTrapModel(trapData.NAME, trapData.PLURAL, "Items\\item_barbed_wire", trapData.STACKING, trapData.CHANCE, trapData.DAMAGE, trapData.DROP_ACTIVATE, trapData.USE_ACTIVATE, trapData.IS_ONE_TIME, trapData.BREAK_CHANCE, trapData.BLOCK_CHANCE, trapData.BREAK_CHANCE_ESCAPE, trapData.IS_NOISY, trapData.NOISE_NAME, trapData.IS_FLAMMABLE);
       tmpTrapModel.FlavorDescription = trapData.FLAVOR;
       this[GameItems.IDs.TRAP_BARBED_WIRE] = (ItemModel) tmpTrapModel;
 
       // entertainment
-      GameItems.EntData entData1 = this.DATA_ENT_BOOK;
+      GameItems.EntData entData1 = DATA_ENT_BOOK;
       ItemEntertainmentModel tmpEntertainmentModel = new ItemEntertainmentModel(entData1.NAME, entData1.PLURAL, "Items\\item_book", entData1.VALUE, entData1.BORECHANCE);
       tmpEntertainmentModel.StackingLimit = entData1.STACKING;
       tmpEntertainmentModel.FlavorDescription = entData1.FLAVOR;
       this[GameItems.IDs.ENT_BOOK] = (ItemModel) tmpEntertainmentModel;
-      GameItems.EntData entData2 = this.DATA_ENT_MAGAZINE;
+      GameItems.EntData entData2 = DATA_ENT_MAGAZINE;
       tmpEntertainmentModel = new ItemEntertainmentModel(entData2.NAME, entData2.PLURAL, "Items\\item_magazine", entData2.VALUE, entData2.BORECHANCE);
       tmpEntertainmentModel.StackingLimit = entData2.STACKING;
       tmpEntertainmentModel.FlavorDescription = entData2.FLAVOR;
@@ -1075,7 +1075,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(IRogueUI ui, CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs modelID)
     {
-      CSVLine lineForModel = this.FindLineForModel(table, modelID);
+      CSVLine lineForModel = FindLineForModel(table, modelID);
       if (lineForModel == null)
         throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
       try
@@ -1090,7 +1090,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
-      this.Notify(ui, kind, "loading file...");
+            Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
       using (StreamReader streamReader = File.OpenText(path))
@@ -1105,20 +1105,20 @@ namespace djack.RogueSurvivor.Gameplay
         }
         streamReader.Close();
       }
-      this.Notify(ui, kind, "parsing CSV...");
+            Notify(ui, kind, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), fieldsCount);
-      this.Notify(ui, kind, "reading data...");
+            Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
-        data[index] = this.GetDataFromCSVTable<_DATA_TYPE_>(ui, toTable, fn, idsToRead[index]);
-      this.Notify(ui, kind, "done!");
+        data[index] = GetDataFromCSVTable(ui, toTable, fn, idsToRead[index]);
+            Notify(ui, kind, "done!");
       return true;
     }
 
     public bool LoadMedicineFromCSV(IRogueUI ui, string path)
     {
       GameItems.MedecineData[] data;
-      this.LoadDataFromCSV<GameItems.MedecineData>(ui, path, "medicine items", 10, new Func<CSVLine, GameItems.MedecineData>(GameItems.MedecineData.FromCSVLine), new GameItems.IDs[6]
+            LoadDataFromCSV(ui, path, "medicine items", 10, new Func<CSVLine, GameItems.MedecineData>(GameItems.MedecineData.FromCSVLine), new GameItems.IDs[6]
       {
         GameItems.IDs._FIRST,
         GameItems.IDs.MEDICINE_MEDIKIT,
@@ -1127,34 +1127,34 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.MEDICINE_PILLS_SAN,
         GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL
       }, out data);
-      this.DATA_MEDICINE_BANDAGE = data[0];
-      this.DATA_MEDICINE_MEDIKIT = data[1];
-      this.DATA_MEDICINE_PILLS_SLP = data[2];
-      this.DATA_MEDICINE_PILLS_STA = data[3];
-      this.DATA_MEDICINE_PILLS_SAN = data[4];
-      this.DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
+            DATA_MEDICINE_BANDAGE = data[0];
+            DATA_MEDICINE_MEDIKIT = data[1];
+            DATA_MEDICINE_PILLS_SLP = data[2];
+            DATA_MEDICINE_PILLS_STA = data[3];
+            DATA_MEDICINE_PILLS_SAN = data[4];
+            DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
       return true;
     }
 
     public bool LoadFoodFromCSV(IRogueUI ui, string path)
     {
       GameItems.FoodData[] data;
-      this.LoadDataFromCSV<GameItems.FoodData>(ui, path, "food items", 7, new Func<CSVLine, GameItems.FoodData>(GameItems.FoodData.FromCSVLine), new GameItems.IDs[3]
+            LoadDataFromCSV(ui, path, "food items", 7, new Func<CSVLine, GameItems.FoodData>(GameItems.FoodData.FromCSVLine), new GameItems.IDs[3]
       {
         GameItems.IDs.FOOD_ARMY_RATION,
         GameItems.IDs.FOOD_CANNED_FOOD,
         GameItems.IDs.FOOD_GROCERIES
       }, out data);
-      this.DATA_FOOD_ARMY_RATION = data[0];
-      this.DATA_FOOD_CANNED_FOOD = data[1];
-      this.DATA_FOOD_GROCERIES = data[2];
+            DATA_FOOD_ARMY_RATION = data[0];
+            DATA_FOOD_CANNED_FOOD = data[1];
+            DATA_FOOD_GROCERIES = data[2];
       return true;
     }
 
     public bool LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
     {
       GameItems.MeleeWeaponData[] data;
-      this.LoadDataFromCSV<GameItems.MeleeWeaponData>(ui, path, "melee weapons items", 9, new Func<CSVLine, GameItems.MeleeWeaponData>(GameItems.MeleeWeaponData.FromCSVLine), new GameItems.IDs[16]
+            LoadDataFromCSV(ui, path, "melee weapons items", 9, new Func<CSVLine, GameItems.MeleeWeaponData>(GameItems.MeleeWeaponData.FromCSVLine), new GameItems.IDs[16]
       {
         GameItems.IDs.MELEE_BASEBALLBAT,
         GameItems.IDs.MELEE_COMBAT_KNIFE,
@@ -1173,29 +1173,29 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.UNIQUE_BIGBEAR_BAT,
         GameItems.IDs.UNIQUE_ROGUEDJACK_KEYBOARD
       }, out data);
-      this.DATA_MELEE_BASEBALLBAT = data[0];
-      this.DATA_MELEE_COMBAT_KNIFE = data[1];
-      this.DATA_MELEE_CROWBAR = data[2];
-      this.DATA_MELEE_GOLFCLUB = data[3];
-      this.DATA_MELEE_HUGE_HAMMER = data[4];
-      this.DATA_MELEE_IRON_GOLFCLUB = data[5];
-      this.DATA_MELEE_SHOVEL = data[6];
-      this.DATA_MELEE_SHORT_SHOVEL = data[7];
-      this.DATA_MELEE_TRUNCHEON = data[8];
-      this.DATA_MELEE_UNIQUE_JASON_MYERS_AXE = data[9];
-      this.DATA_MELEE_IMPROVISED_CLUB = data[10];
-      this.DATA_MELEE_IMPROVISED_SPEAR = data[11];
-      this.DATA_MELEE_SMALL_HAMMER = data[12];
-      this.DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = data[13];
-      this.DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
-      this.DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
+            DATA_MELEE_BASEBALLBAT = data[0];
+            DATA_MELEE_COMBAT_KNIFE = data[1];
+            DATA_MELEE_CROWBAR = data[2];
+            DATA_MELEE_GOLFCLUB = data[3];
+            DATA_MELEE_HUGE_HAMMER = data[4];
+            DATA_MELEE_IRON_GOLFCLUB = data[5];
+            DATA_MELEE_SHOVEL = data[6];
+            DATA_MELEE_SHORT_SHOVEL = data[7];
+            DATA_MELEE_TRUNCHEON = data[8];
+            DATA_MELEE_UNIQUE_JASON_MYERS_AXE = data[9];
+            DATA_MELEE_IMPROVISED_CLUB = data[10];
+            DATA_MELEE_IMPROVISED_SPEAR = data[11];
+            DATA_MELEE_SMALL_HAMMER = data[12];
+            DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = data[13];
+            DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
+            DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
       return true;
     }
 
     public bool LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
     {
       GameItems.RangedWeaponData[] data;
-      this.LoadDataFromCSV<GameItems.RangedWeaponData>(ui, path, "ranged weapons items", 8, new Func<CSVLine, GameItems.RangedWeaponData>(GameItems.RangedWeaponData.FromCSVLine), new GameItems.IDs[10]
+            LoadDataFromCSV(ui, path, "ranged weapons items", 8, new Func<CSVLine, GameItems.RangedWeaponData>(GameItems.RangedWeaponData.FromCSVLine), new GameItems.IDs[10]
       {
         GameItems.IDs.RANGED_ARMY_PISTOL,
         GameItems.IDs.RANGED_ARMY_RIFLE,
@@ -1208,45 +1208,45 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN,
         GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL
       }, out data);
-      this.DATA_RANGED_ARMY_PISTOL = data[0];
-      this.DATA_RANGED_ARMY_RIFLE = data[1];
-      this.DATA_RANGED_HUNTING_CROSSBOW = data[2];
-      this.DATA_RANGED_HUNTING_RIFLE = data[3];
-      this.DATA_RANGED_KOLT_REVOLVER = data[4];
-      this.DATA_RANGED_PISTOL = data[5];
-      this.DATA_RANGED_PRECISION_RIFLE = data[6];
-      this.DATA_RANGED_SHOTGUN = data[7];
-      this.DATA_UNIQUE_SANTAMAN_SHOTGUN = data[8];
-      this.DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
+            DATA_RANGED_ARMY_PISTOL = data[0];
+            DATA_RANGED_ARMY_RIFLE = data[1];
+            DATA_RANGED_HUNTING_CROSSBOW = data[2];
+            DATA_RANGED_HUNTING_RIFLE = data[3];
+            DATA_RANGED_KOLT_REVOLVER = data[4];
+            DATA_RANGED_PISTOL = data[5];
+            DATA_RANGED_PRECISION_RIFLE = data[6];
+            DATA_RANGED_SHOTGUN = data[7];
+            DATA_UNIQUE_SANTAMAN_SHOTGUN = data[8];
+            DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
       return true;
     }
 
     public bool LoadExplosivesFromCSV(IRogueUI ui, string path)
     {
       GameItems.ExplosiveData[] data;
-      this.LoadDataFromCSV<GameItems.ExplosiveData>(ui, path, "explosives items", 14, new Func<CSVLine, GameItems.ExplosiveData>(GameItems.ExplosiveData.FromCSVLine), new GameItems.IDs[1]
+            LoadDataFromCSV(ui, path, "explosives items", 14, new Func<CSVLine, GameItems.ExplosiveData>(GameItems.ExplosiveData.FromCSVLine), new GameItems.IDs[1]
       {
         GameItems.IDs.EXPLOSIVE_GRENADE
       }, out data);
-      this.DATA_EXPLOSIVE_GRENADE = data[0];
+            DATA_EXPLOSIVE_GRENADE = data[0];
       return true;
     }
 
     public bool LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
     {
       GameItems.BarricadingMaterialData[] data;
-      this.LoadDataFromCSV<GameItems.BarricadingMaterialData>(ui, path, "barricading items", 6, new Func<CSVLine, GameItems.BarricadingMaterialData>(GameItems.BarricadingMaterialData.FromCSVLine), new GameItems.IDs[1]
+            LoadDataFromCSV(ui, path, "barricading items", 6, new Func<CSVLine, GameItems.BarricadingMaterialData>(GameItems.BarricadingMaterialData.FromCSVLine), new GameItems.IDs[1]
       {
         GameItems.IDs.BAR_WOODEN_PLANK
       }, out data);
-      this.DATA_BAR_WOODEN_PLANK = data[0];
+            DATA_BAR_WOODEN_PLANK = data[0];
       return true;
     }
 
     public bool LoadArmorsFromCSV(IRogueUI ui, string path)
     {
       GameItems.ArmorData[] data;
-      this.LoadDataFromCSV<GameItems.ArmorData>(ui, path, "armors items", 8, new Func<CSVLine, GameItems.ArmorData>(GameItems.ArmorData.FromCSVLine), new GameItems.IDs[7]
+            LoadDataFromCSV(ui, path, "armors items", 8, new Func<CSVLine, GameItems.ArmorData>(GameItems.ArmorData.FromCSVLine), new GameItems.IDs[7]
       {
         GameItems.IDs.ARMOR_ARMY_BODYARMOR,
         GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
@@ -1256,101 +1256,101 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.ARMOR_POLICE_RIOT,
         GameItems.IDs.ARMOR_HUNTER_VEST
       }, out data);
-      this.DATA_ARMOR_ARMY = data[0];
-      this.DATA_ARMOR_CHAR = data[1];
-      this.DATA_ARMOR_HELLS_SOULS_JACKET = data[2];
-      this.DATA_ARMOR_FREE_ANGELS_JACKET = data[3];
-      this.DATA_ARMOR_POLICE_JACKET = data[4];
-      this.DATA_ARMOR_POLICE_RIOT = data[5];
-      this.DATA_ARMOR_HUNTER_VEST = data[6];
+            DATA_ARMOR_ARMY = data[0];
+            DATA_ARMOR_CHAR = data[1];
+            DATA_ARMOR_HELLS_SOULS_JACKET = data[2];
+            DATA_ARMOR_FREE_ANGELS_JACKET = data[3];
+            DATA_ARMOR_POLICE_JACKET = data[4];
+            DATA_ARMOR_POLICE_RIOT = data[5];
+            DATA_ARMOR_HUNTER_VEST = data[6];
       return true;
     }
 
     public bool LoadTrackersFromCSV(IRogueUI ui, string path)
     {
       GameItems.TrackerData[] data;
-      this.LoadDataFromCSV<GameItems.TrackerData>(ui, path, "trackers items", 5, new Func<CSVLine, GameItems.TrackerData>(GameItems.TrackerData.FromCSVLine), new GameItems.IDs[4]
+            LoadDataFromCSV(ui, path, "trackers items", 5, new Func<CSVLine, GameItems.TrackerData>(GameItems.TrackerData.FromCSVLine), new GameItems.IDs[4]
       {
         GameItems.IDs.TRACKER_BLACKOPS,
         GameItems.IDs.TRACKER_CELL_PHONE,
         GameItems.IDs.TRACKER_ZTRACKER,
         GameItems.IDs.TRACKER_POLICE_RADIO
       }, out data);
-      this.DATA_TRACKER_BLACKOPS_GPS = data[0];
-      this.DATA_TRACKER_CELL_PHONE = data[1];
-      this.DATA_TRACKER_ZTRACKER = data[2];
-      this.DATA_TRACKER_POLICE_RADIO = data[3];
+            DATA_TRACKER_BLACKOPS_GPS = data[0];
+            DATA_TRACKER_CELL_PHONE = data[1];
+            DATA_TRACKER_ZTRACKER = data[2];
+            DATA_TRACKER_POLICE_RADIO = data[3];
       return true;
     }
 
     public bool LoadSpraypaintsFromCSV(IRogueUI ui, string path)
     {
       GameItems.SprayPaintData[] data;
-      this.LoadDataFromCSV<GameItems.SprayPaintData>(ui, path, "spraypaint items", 5, new Func<CSVLine, GameItems.SprayPaintData>(GameItems.SprayPaintData.FromCSVLine), new GameItems.IDs[4]
+            LoadDataFromCSV(ui, path, "spraypaint items", 5, new Func<CSVLine, GameItems.SprayPaintData>(GameItems.SprayPaintData.FromCSVLine), new GameItems.IDs[4]
       {
         GameItems.IDs.SPRAY_PAINT1,
         GameItems.IDs.SPRAY_PAINT2,
         GameItems.IDs.SPRAY_PAINT3,
         GameItems.IDs.SPRAY_PAINT4
       }, out data);
-      this.DATA_SPRAY_PAINT1 = data[0];
-      this.DATA_SPRAY_PAINT2 = data[1];
-      this.DATA_SPRAY_PAINT3 = data[2];
-      this.DATA_SPRAY_PAINT4 = data[3];
+            DATA_SPRAY_PAINT1 = data[0];
+            DATA_SPRAY_PAINT2 = data[1];
+            DATA_SPRAY_PAINT3 = data[2];
+            DATA_SPRAY_PAINT4 = data[3];
       return true;
     }
 
     public bool LoadLightsFromCSV(IRogueUI ui, string path)
     {
       GameItems.LightData[] data;
-      this.LoadDataFromCSV<GameItems.LightData>(ui, path, "lights items", 6, new Func<CSVLine, GameItems.LightData>(GameItems.LightData.FromCSVLine), new GameItems.IDs[2]
+            LoadDataFromCSV(ui, path, "lights items", 6, new Func<CSVLine, GameItems.LightData>(GameItems.LightData.FromCSVLine), new GameItems.IDs[2]
       {
         GameItems.IDs.LIGHT_FLASHLIGHT,
         GameItems.IDs.LIGHT_BIG_FLASHLIGHT
       }, out data);
-      this.DATA_LIGHT_FLASHLIGHT = data[0];
-      this.DATA_LIGHT_BIG_FLASHLIGHT = data[1];
+            DATA_LIGHT_FLASHLIGHT = data[0];
+            DATA_LIGHT_BIG_FLASHLIGHT = data[1];
       return true;
     }
 
     public bool LoadScentspraysFromCSV(IRogueUI ui, string path)
     {
       GameItems.ScentSprayData[] data;
-      this.LoadDataFromCSV<GameItems.ScentSprayData>(ui, path, "scentsprays items", 6, new Func<CSVLine, GameItems.ScentSprayData>(GameItems.ScentSprayData.FromCSVLine), new GameItems.IDs[1]
+            LoadDataFromCSV(ui, path, "scentsprays items", 6, new Func<CSVLine, GameItems.ScentSprayData>(GameItems.ScentSprayData.FromCSVLine), new GameItems.IDs[1]
       {
         GameItems.IDs.SCENT_SPRAY_STENCH_KILLER
       }, out data);
-      this.DATA_SCENT_SPRAY_STENCH_KILLER = data[0];
+            DATA_SCENT_SPRAY_STENCH_KILLER = data[0];
       return true;
     }
 
     public bool LoadTrapsFromCSV(IRogueUI ui, string path)
     {
       GameItems.TrapData[] data;
-      this.LoadDataFromCSV<GameItems.TrapData>(ui, path, "traps items", 16, new Func<CSVLine, GameItems.TrapData>(GameItems.TrapData.FromCSVLine), new GameItems.IDs[4]
+            LoadDataFromCSV(ui, path, "traps items", 16, new Func<CSVLine, GameItems.TrapData>(GameItems.TrapData.FromCSVLine), new GameItems.IDs[4]
       {
         GameItems.IDs.TRAP_EMPTY_CAN,
         GameItems.IDs.TRAP_BEAR_TRAP,
         GameItems.IDs.TRAP_SPIKES,
         GameItems.IDs.TRAP_BARBED_WIRE
       }, out data);
-      this.DATA_TRAP_EMPTY_CAN = data[0];
-      this.DATA_TRAP_BEAR_TRAP = data[1];
-      this.DATA_TRAP_SPIKES = data[2];
-      this.DATA_TRAP_BARBED_WIRE = data[3];
+            DATA_TRAP_EMPTY_CAN = data[0];
+            DATA_TRAP_BEAR_TRAP = data[1];
+            DATA_TRAP_SPIKES = data[2];
+            DATA_TRAP_BARBED_WIRE = data[3];
       return true;
     }
 
     public bool LoadEntertainmentFromCSV(IRogueUI ui, string path)
     {
       GameItems.EntData[] data;
-      this.LoadDataFromCSV<GameItems.EntData>(ui, path, "entertainment items", 7, new Func<CSVLine, GameItems.EntData>(GameItems.EntData.FromCSVLine), new GameItems.IDs[2]
+            LoadDataFromCSV(ui, path, "entertainment items", 7, new Func<CSVLine, GameItems.EntData>(GameItems.EntData.FromCSVLine), new GameItems.IDs[2]
       {
         GameItems.IDs.ENT_BOOK,
         GameItems.IDs.ENT_MAGAZINE
       }, out data);
-      this.DATA_ENT_BOOK = data[0];
-      this.DATA_ENT_MAGAZINE = data[1];
+            DATA_ENT_BOOK = data[0];
+            DATA_ENT_MAGAZINE = data[1];
       return true;
     }
 

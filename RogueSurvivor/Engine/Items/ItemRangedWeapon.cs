@@ -19,11 +19,11 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Ammo;
+        return m_Ammo;
       }
       set
       {
-        this.m_Ammo = value;
+                m_Ammo = value;
       }
     }
 
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_AmmoType;
+        return m_AmmoType;
       }
     }
 
@@ -41,8 +41,8 @@ namespace djack.RogueSurvivor.Engine.Items
       if (!(model is ItemRangedWeaponModel))
         throw new ArgumentException("model is not RangedWeaponModel");
       ItemRangedWeaponModel rangedWeaponModel = model as ItemRangedWeaponModel;
-      this.m_Ammo = rangedWeaponModel.MaxAmmo;
-      this.m_AmmoType = rangedWeaponModel.AmmoType;
+            m_Ammo = rangedWeaponModel.MaxAmmo;
+            m_AmmoType = rangedWeaponModel.AmmoType;
     }
   }
 }

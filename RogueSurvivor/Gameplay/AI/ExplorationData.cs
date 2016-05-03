@@ -24,33 +24,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
         throw new ArgumentOutOfRangeException("locationsQueueSize < 1");
       if (zonesToRemember < 1)
         throw new ArgumentOutOfRangeException("zonesQueueSize < 1");
-      this.m_LocationsQueueSize = locationsToRemember;
-      this.m_LocationsQueue = new Queue<Location>(locationsToRemember);
-      this.m_ZonesQueueSize = zonesToRemember;
-      this.m_ZonesQueue = new Queue<Zone>(zonesToRemember);
+            m_LocationsQueueSize = locationsToRemember;
+            m_LocationsQueue = new Queue<Location>(locationsToRemember);
+            m_ZonesQueueSize = zonesToRemember;
+            m_ZonesQueue = new Queue<Zone>(zonesToRemember);
     }
 
     public void Clear()
     {
-      this.m_LocationsQueue.Clear();
-      this.m_ZonesQueue.Clear();
+            m_LocationsQueue.Clear();
+            m_ZonesQueue.Clear();
     }
 
     public bool HasExplored(Location loc)
     {
-      return this.m_LocationsQueue.Contains(loc);
+      return m_LocationsQueue.Contains(loc);
     }
 
     public void AddExplored(Location loc)
     {
-      if (this.m_LocationsQueue.Count >= this.m_LocationsQueueSize)
-        this.m_LocationsQueue.Dequeue();
-      this.m_LocationsQueue.Enqueue(loc);
+      if (m_LocationsQueue.Count >= m_LocationsQueueSize)
+                m_LocationsQueue.Dequeue();
+            m_LocationsQueue.Enqueue(loc);
     }
 
     public bool HasExplored(Zone zone)
     {
-      return this.m_ZonesQueue.Contains(zone);
+      return m_ZonesQueue.Contains(zone);
     }
 
     public bool HasExplored(List<Zone> zones)
@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return true;
       foreach (Zone zone in zones)
       {
-        if (!this.m_ZonesQueue.Contains(zone))
+        if (!m_ZonesQueue.Contains(zone))
           return false;
       }
       return true;
@@ -67,21 +67,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public void AddExplored(Zone zone)
     {
-      if (this.m_ZonesQueue.Count >= this.m_ZonesQueueSize)
-        this.m_ZonesQueue.Dequeue();
-      this.m_ZonesQueue.Enqueue(zone);
+      if (m_ZonesQueue.Count >= m_ZonesQueueSize)
+                m_ZonesQueue.Dequeue();
+            m_ZonesQueue.Enqueue(zone);
     }
 
     public void Update(Location location)
     {
-      this.AddExplored(location);
+            AddExplored(location);
       List<Zone> zonesAt = location.Map.GetZonesAt(location.Position.X, location.Position.Y);
       if (zonesAt == null || zonesAt.Count <= 0)
         return;
       foreach (Zone zone in zonesAt)
       {
-        if (!this.HasExplored(zone))
-          this.AddExplored(zone);
+        if (!HasExplored(zone))
+                    AddExplored(zone);
       }
     }
   }

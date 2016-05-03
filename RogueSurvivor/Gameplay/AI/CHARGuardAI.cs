@@ -30,8 +30,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      this.m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-      this.m_MemorizedSensor = new MemorizedSensor((Sensor) this.m_LOSSensor, LOS_MEMORY);
+            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
+            m_MemorizedSensor = new MemorizedSensor((Sensor)m_LOSSensor, LOS_MEMORY);
     }
 
     public override void TakeControl(Actor actor)
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      return this.m_MemorizedSensor.Sense(game, this.m_Actor);
+      return m_MemorizedSensor.Sense(game, m_Actor);
     }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
@@ -83,13 +83,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // All free actions go above the check for enemies.
-      List<Percept> percepts2 = this.FilterEnemies(game, percepts1);
-      List<Percept> perceptList1 = this.FilterCurrent(percepts2);
-      bool flag1 = this.m_Actor.HasLeader && !this.DontFollowLeader;
+      List<Percept> percepts2 = FilterEnemies(game, percepts1);
+      List<Percept> perceptList1 = FilterCurrent(percepts2);
+      bool flag1 = m_Actor.HasLeader && !DontFollowLeader;
       bool flag2 = percepts2 != null;
       if (perceptList1 != null)
       {
-        List<Percept> percepts3 = this.FilterFireTargets(game, perceptList1);
+        List<Percept> percepts3 = FilterFireTargets(game, perceptList1);
         if (percepts3 != null)
         {
           Percept target = FilterNearest(percepts3);
@@ -110,10 +110,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (actorAction3 != null)
           return actorAction3;
       }
-      List<Percept> perceptList2 = this.FilterNonEnemies(game, percepts1);
+      List<Percept> perceptList2 = FilterNonEnemies(game, percepts1);
       if (perceptList2 != null)
       {
-        List<Percept> percepts3 = this.Filter(game, perceptList2, (Predicate<Percept>) (p =>
+        List<Percept> percepts3 = Filter(game, perceptList2, (Predicate<Percept>) (p =>
         {
           Actor actor = p.Percepted as Actor;
           if (actor.Faction == game.GameFactions.TheCHARCorporation)
@@ -123,25 +123,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (percepts3 != null)
         {
           Actor target = FilterNearest(percepts3).Percepted as Actor;
-          game.DoMakeAggression(this.m_Actor, target);
+          game.DoMakeAggression(m_Actor, target);
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target;
-          return new ActionSay(this.m_Actor, game, target, "Hey YOU!", RogueGame.Sayflags.IS_IMPORTANT);
+          return new ActionSay(m_Actor, game, target, "Hey YOU!", RogueGame.Sayflags.IS_IMPORTANT);
         }
       }
       if (flag2 && perceptList2 != null)
       {
-        ActorAction actorAction3 = this.BehaviorWarnFriends(game, perceptList2, FilterNearest(percepts2).Percepted as Actor);
+        ActorAction actorAction3 = BehaviorWarnFriends(game, perceptList2, FilterNearest(percepts2).Percepted as Actor);
         if (actorAction3 != null)
         {
-          this.m_Actor.Activity = Activity.IDLE;
+                    m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
       }
-      if (this.BehaviorRestIfTired(game) != null)
+      if (BehaviorRestIfTired(game) != null)
       {
-        this.m_Actor.Activity = Activity.IDLE;
-        return (ActorAction) new ActionWait(this.m_Actor, game);
+                m_Actor.Activity = Activity.IDLE;
+        return (ActorAction) new ActionWait(m_Actor, game);
       }
       if (percepts2 != null)
       {
@@ -149,46 +149,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Location == target.Location)
         {
           Actor actor = target.Percepted as Actor;
-          target = new Percept((object) actor, this.m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
+          target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
-        ActorAction actorAction3 = this.BehaviorChargeEnemy(game, target);
+        ActorAction actorAction3 = BehaviorChargeEnemy(game, target);
         if (actorAction3 != null)
         {
-          this.m_Actor.Activity = Activity.FIGHTING;
-          this.m_Actor.TargetActor = target.Percepted as Actor;
+                    m_Actor.Activity = Activity.FIGHTING;
+                    m_Actor.TargetActor = target.Percepted as Actor;
           return actorAction3;
         }
       }
       if (m_Actor.IsSleepy && !flag2)
       {
-        ActorAction actorAction3 = this.BehaviorSleep(game, this.m_LOSSensor.FOV);
+        ActorAction actorAction3 = BehaviorSleep(game, m_LOSSensor.FOV);
         if (actorAction3 != null)
         {
           if (actorAction3 is ActionSleep)
-            this.m_Actor.Activity = Activity.SLEEPING;
+                        m_Actor.Activity = Activity.SLEEPING;
           return actorAction3;
         }
       }
       if (flag1)
       {
-        Point position = this.m_Actor.Leader.Location.Position;
-        bool isVisible = this.m_LOSSensor.FOV.Contains(this.m_Actor.Leader.Location.Position);
-        ActorAction actorAction3 = this.BehaviorFollowActor(game, this.m_Actor.Leader, position, isVisible, 1);
+        Point position = m_Actor.Leader.Location.Position;
+        bool isVisible = m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+        ActorAction actorAction3 = BehaviorFollowActor(game, m_Actor.Leader, position, isVisible, 1);
         if (actorAction3 != null)
         {
-          this.m_Actor.Activity = Activity.FOLLOWING;
-          this.m_Actor.TargetActor = this.m_Actor.Leader;
+                    m_Actor.Activity = Activity.FOLLOWING;
+                    m_Actor.TargetActor = m_Actor.Leader;
           return actorAction3;
         }
       }
-      ActorAction actorAction4 = this.BehaviorWander(game, (Predicate<Location>) (loc => RogueGame.IsInCHAROffice(loc)));
+      ActorAction actorAction4 = BehaviorWander(game, (Predicate<Location>) (loc => RogueGame.IsInCHAROffice(loc)));
       if (actorAction4 != null)
       {
-        this.m_Actor.Activity = Activity.IDLE;
+                m_Actor.Activity = Activity.IDLE;
         return actorAction4;
       }
-      this.m_Actor.Activity = Activity.IDLE;
-      return this.BehaviorWander(game);
+            m_Actor.Activity = Activity.IDLE;
+      return BehaviorWander(game);
     }
   }
 }

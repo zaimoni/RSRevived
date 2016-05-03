@@ -19,11 +19,11 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_IsActivated;
+        return m_IsActivated;
       }
       set
       {
-        this.m_IsActivated = value;
+                m_IsActivated = value;
       }
     }
 
@@ -31,11 +31,11 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_IsTriggered;
+        return m_IsTriggered;
       }
       set
       {
-        this.m_IsTriggered = value;
+                m_IsTriggered = value;
       }
     }
 
@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.Model as ItemTrapModel;
+        return Model as ItemTrapModel;
       }
     }
 
@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemTrap Clone()
     {
-      return new ItemTrap((ItemModel) this.TrapModel);
+      return new ItemTrap((ItemModel)TrapModel);
     }
   }
 }

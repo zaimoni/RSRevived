@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_TriggerChance;
+        return m_TriggerChance;
       }
     }
 
@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_Damage;
+        return m_Damage;
       }
     }
 
@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.m_Flags & ItemTrapModel.Flags.USE_TO_ACTIVATE) != ItemTrapModel.Flags.NONE;
+        return (m_Flags & ItemTrapModel.Flags.USE_TO_ACTIVATE) != ItemTrapModel.Flags.NONE;
       }
     }
 
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.m_Flags & ItemTrapModel.Flags.IS_NOISY) != ItemTrapModel.Flags.NONE;
+        return (m_Flags & ItemTrapModel.Flags.IS_NOISY) != ItemTrapModel.Flags.NONE;
       }
     }
 
@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.m_Flags & ItemTrapModel.Flags.IS_ONE_TIME_USE) != ItemTrapModel.Flags.NONE;
+        return (m_Flags & ItemTrapModel.Flags.IS_ONE_TIME_USE) != ItemTrapModel.Flags.NONE;
       }
     }
 
@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.m_Flags & ItemTrapModel.Flags.IS_FLAMMABLE) != ItemTrapModel.Flags.NONE;
+        return (m_Flags & ItemTrapModel.Flags.IS_FLAMMABLE) != ItemTrapModel.Flags.NONE;
       }
     }
 
@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return (this.m_Flags & ItemTrapModel.Flags.DROP_ACTIVATE) != ItemTrapModel.Flags.NONE;
+        return (m_Flags & ItemTrapModel.Flags.DROP_ACTIVATE) != ItemTrapModel.Flags.NONE;
       }
     }
 
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_BreakChance;
+        return m_BreakChance;
       }
     }
 
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_BlockChance;
+        return m_BlockChance;
       }
     }
 
@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_BreakChanceWhenEscape;
+        return m_BreakChanceWhenEscape;
       }
     }
 
@@ -102,38 +102,38 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       get
       {
-        return this.m_NoiseName;
+        return m_NoiseName;
       }
     }
 
     public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable)
       : base(aName, theNames, imageID)
     {
-      this.DontAutoEquip = true;
+            DontAutoEquip = true;
       if (stackLimit > 1)
       {
-        this.StackingLimit = stackLimit;
+                StackingLimit = stackLimit;
       }
-      this.m_TriggerChance = triggerChance;
-      this.m_Damage = damage;
-      this.m_BreakChance = breakChance;
-      this.m_BlockChance = blockChance;
-      this.m_BreakChanceWhenEscape = breakChanceWhenEscape;
-      this.m_Flags = ItemTrapModel.Flags.NONE;
+            m_TriggerChance = triggerChance;
+            m_Damage = damage;
+            m_BreakChance = breakChance;
+            m_BlockChance = blockChance;
+            m_BreakChanceWhenEscape = breakChanceWhenEscape;
+            m_Flags = ItemTrapModel.Flags.NONE;
       if (dropActivate)
-        this.m_Flags |= ItemTrapModel.Flags.DROP_ACTIVATE;
+                m_Flags |= ItemTrapModel.Flags.DROP_ACTIVATE;
       if (useToActivate)
-        this.m_Flags |= ItemTrapModel.Flags.USE_TO_ACTIVATE;
+                m_Flags |= ItemTrapModel.Flags.USE_TO_ACTIVATE;
       if (IsNoisy)
       {
-        this.m_Flags |= ItemTrapModel.Flags.IS_NOISY;
-        this.m_NoiseName = noiseName;
+                m_Flags |= ItemTrapModel.Flags.IS_NOISY;
+                m_NoiseName = noiseName;
       }
       if (IsOneTimeUse)
-        this.m_Flags |= ItemTrapModel.Flags.IS_ONE_TIME_USE;
+                m_Flags |= ItemTrapModel.Flags.IS_ONE_TIME_USE;
       if (!IsFlammable)
         return;
-      this.m_Flags |= ItemTrapModel.Flags.IS_FLAMMABLE;
+            m_Flags |= ItemTrapModel.Flags.IS_FLAMMABLE;
     }
 
     [System.Flags]

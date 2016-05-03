@@ -17,24 +17,24 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       get
       {
-        return this.m_Actor.Location.Map.GetItemsAt(this.m_Position).TopItem;
+        return m_Actor.Location.Map.GetItemsAt(m_Position).TopItem;
       }
     }
 
     public ActionGetFromContainer(Actor actor, RogueGame game, Point position)
       : base(actor, game)
     {
-      this.m_Position = position;
+            m_Position = position;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorGetItemFromContainer(this.m_Actor, this.m_Position, out this.m_FailReason);
+      return m_Game.Rules.CanActorGetItemFromContainer(m_Actor, m_Position, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoTakeFromContainer(this.m_Actor, this.m_Position);
+            m_Game.DoTakeFromContainer(m_Actor, m_Position);
     }
   }
 }

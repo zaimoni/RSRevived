@@ -20,18 +20,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       if (it == null)
         throw new ArgumentNullException("item");
-      this.m_Position = position;
-      this.m_Item = it;
+            m_Position = position;
+            m_Item = it;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorGetItem(this.m_Actor, this.m_Item, out this.m_FailReason);
+      return m_Game.Rules.CanActorGetItem(m_Actor, m_Item, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoTakeItem(this.m_Actor, this.m_Position, this.m_Item);
+            m_Game.DoTakeItem(m_Actor, m_Position, m_Item);
     }
   }
 }

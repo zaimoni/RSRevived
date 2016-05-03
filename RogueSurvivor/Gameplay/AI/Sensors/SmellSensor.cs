@@ -23,19 +23,19 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
       get
       {
-        return this.m_List;
+        return m_List;
       }
     }
 
     public SmellSensor(Odor odorToSmell)
     {
-      this.m_OdorToSmell = odorToSmell;
-      this.m_List = new List<Percept>(9);
+            m_OdorToSmell = odorToSmell;
+            m_List = new List<Percept>(9);
     }
 
     public override List<Percept> Sense(RogueGame game, Actor actor)
     {
-      this.m_List.Clear();
+            m_List.Clear();
       int num = game.Rules.ActorSmellThreshold(actor);
       int x1 = actor.Location.Position.X - 1;
       int x2 = actor.Location.Position.X + 1;
@@ -51,12 +51,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         for (int index2 = y1; index2 <= y2; ++index2)
         {
           position.Y = index2;
-          int scentByOdorAt = actor.Location.Map.GetScentByOdorAt(this.m_OdorToSmell, position);
+          int scentByOdorAt = actor.Location.Map.GetScentByOdorAt(m_OdorToSmell, position);
           if (scentByOdorAt >= 0 && scentByOdorAt >= num)
-            this.m_List.Add(new Percept((object) new SmellSensor.AIScent(this.m_OdorToSmell, scentByOdorAt), turnCounter, new Location(actor.Location.Map, position)));
+                        m_List.Add(new Percept((object) new SmellSensor.AIScent(m_OdorToSmell, scentByOdorAt), turnCounter, new Location(actor.Location.Map, position)));
         }
       }
-      return this.m_List;
+      return m_List;
     }
 
     [Serializable]
@@ -68,8 +68,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
       public AIScent(Odor odor, int strength)
       {
-        this.Odor = odor;
-        this.Strength = strength;
+                Odor = odor;
+                Strength = strength;
       }
     }
   }
