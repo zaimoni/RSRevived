@@ -2368,19 +2368,6 @@ namespace djack.RogueSurvivor.Engine
       actor.SleepPoints = Math.Min(m_Rules.ActorMaxSleep(actor), actor.SleepPoints + sleepRegen);
     }
 
-    private void SpendActorSanity(Actor actor, int sanCost)
-    {
-      actor.Sanity -= sanCost;
-      if (actor.Sanity >= 0)
-        return;
-      actor.Sanity = 0;
-    }
-
-    private void RegenActorSanity(Actor actor, int sanRegen)
-    {
-      actor.Sanity = Math.Min(m_Rules.ActorMaxSanity(actor), actor.Sanity + sanRegen);
-    }
-
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
@@ -2601,35 +2588,28 @@ namespace djack.RogueSurvivor.Engine
             else if (actor.IsRotHungry && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
           }
-          if (actor.Model.Abilities.HasToSleep)
-          {
-            if (actor.IsSleeping)
-            {
-              if (m_Rules.IsActorDisturbed(actor) && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE))
-              {
+          if (actor.Model.Abilities.HasToSleep) {
+            if (actor.IsSleeping) {
+              if (m_Rules.IsActorDisturbed(actor) && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
                 DoWakeUp(actor);
                 DoShout(actor, "NO! LEAVE ME ALONE!");
                 actor.SleepPoints -= Rules.SANITY_NIGHTMARE_SLP_LOSS;
                 if (actor.SleepPoints < 0)
                   actor.SleepPoints = 0;
-                SpendActorSanity(actor, Rules.SANITY_NIGHTMARE_SAN_LOSS);
+                actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
                 if (IsVisibleToPlayer(actor))
-                                    AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object)Conjugate(actor, VERB_WAKE_UP))));
-                if (actor.IsPlayer)
-                {
-                                    m_MusicManager.StopAll();
-                                    m_MusicManager.Play(GameSounds.NIGHTMARE);
+                  AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object)Conjugate(actor, VERB_WAKE_UP))));
+                if (actor.IsPlayer) {
+                  m_MusicManager.StopAll();
+                  m_MusicManager.Play(GameSounds.NIGHTMARE);
                 }
               }
-            }
-            else
-            {
+            } else {
               --actor.SleepPoints;
               if (map.LocalTime.IsNight) --actor.SleepPoints;
               if (actor.SleepPoints < 0) actor.SleepPoints = 0;
             }
-            if (actor.IsSleeping)
-            {
+            if (actor.IsSleeping) {
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Activity.SLEEPING;
               int num = m_Rules.ActorSleepRegen(actor, isOnCouch);
@@ -2638,72 +2618,58 @@ namespace djack.RogueSurvivor.Engine
               if (actor.HitPoints < m_Rules.ActorMaxHPs(actor) && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + m_Rules.ActorHealChanceBonus(actor)))
                                 RegenActorHitPoints(actor, Rules.SLEEP_HEAL_HITPOINTS);
               if (actor.IsHungry || actor.SleepPoints >= m_Rules.ActorMaxSleep(actor))
-                                DoWakeUp(actor);
-              else if (actor.IsPlayer)
-              {
+                DoWakeUp(actor);
+              else if (actor.IsPlayer) {
                 if (m_MusicManager.IsPaused(GameMusics.SLEEP))
-                                    m_MusicManager.ResumeLooping(GameMusics.SLEEP);
-                                AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
-                                RedrawPlayScreen();
+                  m_MusicManager.ResumeLooping(GameMusics.SLEEP);
+                AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
+                RedrawPlayScreen();
                 if (RogueGame.s_Options.SimThread)
                   Thread.Sleep(10);
-              }
-              else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && IsVisibleToPlayer(actor))
-              {
-                                AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_SNORE))));
-                                RedrawPlayScreen();
+              } else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && IsVisibleToPlayer(actor)) {
+                AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_SNORE))));
+                RedrawPlayScreen();
               }
             }
-            if (actor.IsExhausted && m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE))
-            {
-                            DoStartSleeping(actor);
-              if (IsVisibleToPlayer(actor))
-              {
-                                AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", (object)Conjugate(actor, VERB_COLLAPSE))));
-                                RedrawPlayScreen();
+            if (actor.IsExhausted && m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
+              DoStartSleeping(actor);
+              if (IsVisibleToPlayer(actor)) {
+                AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", (object)Conjugate(actor, VERB_COLLAPSE))));
+                RedrawPlayScreen();
               }
-              if (actor == m_Player)
-              {
-                                UpdatePlayerFOV(m_Player);
-                                ComputeViewRect(m_Player.Location.Position);
-                                RedrawPlayScreen();
+              if (actor == m_Player) {
+                UpdatePlayerFOV(m_Player);
+                ComputeViewRect(m_Player.Location.Position);
+                RedrawPlayScreen();
               }
             }
           }
-          if (actor.Model.Abilities.HasSanity && --actor.Sanity <= 0)
-            actor.Sanity = 0;
-          if (actor.HasLeader)
-          {
-                        ModifyActorTrustInLeader(actor, m_Rules.ActorTrustIncrease(actor.Leader), false);
-            if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE))
-            {
-              RegenActorSanity(actor, m_Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
-              RegenActorSanity(actor.Leader, m_Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
+          actor.SpendSanity(1);
+          if (actor.HasLeader) {
+            ModifyActorTrustInLeader(actor, m_Rules.ActorTrustIncrease(actor.Leader), false);
+            if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
+              actor.RegenSanity(m_Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
+              actor.Leader.RegenSanity(m_Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
               if (IsVisibleToPlayer(actor))
-                                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor, VERB_FEEL), (object) actor.Leader.Name, (object)HimOrHer(actor))));
+                AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor, VERB_FEEL), (object) actor.Leader.Name, (object)HimOrHer(actor))));
               if (IsVisibleToPlayer(actor.Leader))
-                                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor.Leader, VERB_FEEL), (object) actor.Name, (object)HimOrHer(actor.Leader))));
+                AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor.Leader, VERB_FEEL), (object) actor.Name, (object)HimOrHer(actor.Leader))));
             }
           }
         }
-        if (actorList1 != null)
-        {
-          foreach (Actor actor in actorList1)
-          {
-            if (IsVisibleToPlayer(actor))
-            {
-                            AddMessage(MakeMessage(actor, string.Format("{0} !!", (object)Conjugate(actor, VERB_DIE_FROM_STARVATION))));
-                            RedrawPlayScreen();
+        if (actorList1 != null) {
+          foreach (Actor actor in actorList1) {
+            if (IsVisibleToPlayer(actor)) {
+              AddMessage(MakeMessage(actor, string.Format("{0} !!", (object)Conjugate(actor, VERB_DIE_FROM_STARVATION))));
+              RedrawPlayScreen();
             }
-                        KillActor((Actor) null, actor, "starvation");
-            if (!actor.Model.Abilities.IsUndead && m_Session.HasImmediateZombification && m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance))
-            {
+            KillActor((Actor) null, actor, "starvation");
+            if (!actor.Model.Abilities.IsUndead && m_Session.HasImmediateZombification && m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
-                            Zombify((Actor) null, actor, false);
-              if (IsVisibleToPlayer(actor))
-              {
-                                AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", (object)Conjugate(actor, "turn"))));
-                                RedrawPlayScreen();
+              Zombify(null, actor, false);
+              if (IsVisibleToPlayer(actor)) {
+                AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", (object)Conjugate(actor, "turn"))));
+                RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
             }
@@ -9723,7 +9689,7 @@ namespace djack.RogueSurvivor.Engine
         int num2 = actor.MaxSTA - actor.StaminaPoints;
         int num3 = m_Rules.ActorMaxSleep(actor) - 2 - actor.SleepPoints;
         int infection = actor.Infection;
-        int num4 = m_Rules.ActorMaxSanity(actor) - actor.Sanity;
+        int num4 = actor.MaxSanity - actor.Sanity;
         if ((num1 <= 0 || med.Healing <= 0) && (num2 <= 0 || med.StaminaBoost <= 0) && ((num3 <= 0 || med.SleepBoost <= 0) && (infection <= 0 || med.InfectionCure <= 0)) && (num4 <= 0 || med.SanityCure <= 0))
         {
           AddMessage(MakeErrorMessage("Don't waste medicine!"));
@@ -9735,7 +9701,7 @@ namespace djack.RogueSurvivor.Engine
       actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
       actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), m_Rules.ActorMaxSleep(actor));
       actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
-      actor.Sanity = Math.Min(actor.Sanity + m_Rules.ActorMedicineEffect(actor, med.SanityCure), m_Rules.ActorMaxSanity(actor));
+      actor.RegenSanity(m_Rules.ActorMedicineEffect(actor, med.SanityCure));
       actor.Inventory.Consume(med);
       if (!IsVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_HEAL_WITH), med));
@@ -9776,7 +9742,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool player = IsVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      RegenActorSanity(actor, Rules.ActorSanRegenValue(actor, ent.EntertainmentModel.Value));
+      actor.RegenSanity(Rules.ActorSanRegenValue(actor, ent.EntertainmentModel.Value));
       if (player)
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
       int boreChance = ent.EntertainmentModel.BoreChance;
@@ -10155,36 +10121,30 @@ namespace djack.RogueSurvivor.Engine
             DoStopDraggingCorpses(deadGuy);
             UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
-                RegenActorSanity(killer, m_Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
-      if (deadGuy.HasLeader)
-      {
-        if (m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy))
-        {
-                    SpendActorSanity(deadGuy.Leader, Rules.SANITY_HIT_BOND_DEATH);
-          if (IsVisibleToPlayer(deadGuy.Leader))
-          {
+        killer.RegenSanity(m_Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
+      if (deadGuy.HasLeader) {
+        if (m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy)) {
+          deadGuy.Leader.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
+          if (IsVisibleToPlayer(deadGuy.Leader)) {
             if (deadGuy.Leader.IsPlayer)
-                            ClearMessages();
-                        AddMessage(MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(deadGuy.Leader, VERB_BE), (object) deadGuy.Name)));
+              ClearMessages();
+            AddMessage(MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(deadGuy.Leader, VERB_BE), (object) deadGuy.Name)));
             if (deadGuy.Leader.IsPlayer)
-                            AddMessagePressEnter();
+              AddMessagePressEnter();
           }
         }
       }
       else if (deadGuy.CountFollowers > 0)
       {
-        foreach (Actor follower in deadGuy.Followers)
-        {
-          if (m_Rules.HasActorBondWith(follower, deadGuy))
-          {
-                        SpendActorSanity(follower, Rules.SANITY_HIT_BOND_DEATH);
-            if (IsVisibleToPlayer(follower))
-            {
+        foreach (Actor follower in deadGuy.Followers) {
+          if (m_Rules.HasActorBondWith(follower, deadGuy)) {
+            follower.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
+            if (IsVisibleToPlayer(follower)) {
               if (follower.IsPlayer)
-                                ClearMessages();
-                            AddMessage(MakeMessage(follower, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(follower, VERB_BE), (object) deadGuy.Name)));
+                ClearMessages();
+              AddMessage(MakeMessage(follower, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(follower, VERB_BE), (object) deadGuy.Name)));
               if (follower.IsPlayer)
-                                AddMessagePressEnter();
+                AddMessagePressEnter();
             }
           }
         }
@@ -12042,21 +12002,19 @@ namespace djack.RogueSurvivor.Engine
                     m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
-      if (actor.Model.Abilities.HasSanity)
-      {
-        int maxValue2 = m_Rules.ActorMaxSanity(actor);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", (object) actor.Sanity), gx, gy, new Color?());
-                DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, m_Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (m_Rules.IsActorDisturbed(actor))
-        {
+      if (actor.Model.Abilities.HasSanity) {
+        int maxValue2 = actor.MaxSanity;
+        m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", (object) actor.Sanity), gx, gy, new Color?());
+        DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, m_Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
+        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        if (m_Rules.IsActorDisturbed(actor)) {
           if (actor.IsInsane)
-                        m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
           else
-                        m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
         }
         else
-                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
       }
       if (m_Session.HasInfection && !actor.Model.Abilities.IsUndead)
       {
@@ -14152,9 +14110,8 @@ namespace djack.RogueSurvivor.Engine
         if (actor.Model.Abilities.HasSanity && !actor.IsSleeping) {
           int maxRange = m_Rules.ActorFOV(actor, loc.Map.LocalTime, m_Session.World.Weather);
           if (LOS.CanTraceViewLine(loc, actor.Location.Position, maxRange)) {
-            SpendActorSanity(actor, sanCost);
-            if (whoDoesTheAction == actor)
-            {
+            actor.SpendSanity(sanCost);
+            if (whoDoesTheAction == actor) {
               if (actor.IsPlayer)
                 AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
               else if (IsVisibleToPlayer(actor))

@@ -475,19 +475,16 @@ label_10:
       }
       if (m_Actor.Model.Abilities.HasSanity)
       {
-        if ((double)m_Actor.Sanity < 0.75 * (double) game.Rules.ActorMaxSanity(m_Actor))
-        {
+        if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
           ActorAction actorAction2 = BehaviorUseEntertainment(game);
-          if (actorAction2 != null)
-          {
-                        m_Actor.Activity = Activity.IDLE;
+          if (actorAction2 != null) {
+            m_Actor.Activity = Activity.IDLE;
             return actorAction2;
           }
         }
         ActorAction actorAction5 = BehaviorDropBoringEntertainment(game);
-        if (actorAction5 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
+        if (actorAction5 != null) {
+          m_Actor.Activity = Activity.IDLE;
           return actorAction5;
         }
       }

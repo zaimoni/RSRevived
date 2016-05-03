@@ -1956,11 +1956,6 @@ namespace djack.RogueSurvivor.Engine
       return num1 + num2;
     }
 
-    public int ActorMaxSanity(Actor actor)
-    {
-      return actor.Sheet.BaseSanity;
-    }
-
     public int ActorDisturbedLevel(Actor actor)
     {
       return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));

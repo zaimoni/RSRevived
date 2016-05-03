@@ -373,7 +373,7 @@ namespace djack.RogueSurvivor.Data
       }
       set
       {
-                m_Sanity = value;
+        m_Sanity = value;
       }
     }
 
@@ -944,9 +944,28 @@ namespace djack.RogueSurvivor.Data
     // sanity
     public bool IsInsane {
       get {
-        if (Model.Abilities.HasSanity) return Sanity <= 0;
+        if (Model.Abilities.HasSanity) return m_Sanity <= 0;
         return false;
       }
+    }
+
+    public int MaxSanity {
+      get {
+        return Sheet.BaseSanity;
+      }
+    }
+
+    public void SpendSanity(int sanCost)
+    {
+      if (!Model.Abilities.HasSanity) return;
+      m_Sanity -= sanCost;
+      if (m_Sanity < 0) m_Sanity = 0;
+    }
+
+    public void RegenSanity(int sanRegen)
+    {
+      if (!Model.Abilities.HasSanity) return;
+      m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }
 
     // hunger

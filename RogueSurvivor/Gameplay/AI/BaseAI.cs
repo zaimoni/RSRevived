@@ -728,12 +728,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool needSTA = game.Rules.IsActorTired(m_Actor);
       bool needSLP = m_Actor.WouldLikeToSleep;
       bool needCure = m_Actor.Infection > 0;
-      bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < (int) (0.75 * (double) game.Rules.ActorMaxSanity(m_Actor));
-      if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan)
-        return (ActorAction) null;
+      bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
+      if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
       List<ItemMedicine> itemsByType = inventory.GetItemsByType<ItemMedicine>();
-      if (itemsByType == null)
-        return (ActorAction) null;
+      if (itemsByType == null) return null;
       BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(game, itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
       {
         int num = 0;

@@ -613,7 +613,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.StaminaPoints = actor.MaxSTA;
       actor.FoodPoints = m_Rules.ActorMaxFood(actor);
       actor.SleepPoints = m_Rules.ActorMaxSleep(actor);
-      actor.Sanity = m_Rules.ActorMaxSanity(actor);
+      actor.Sanity = actor.MaxSanity;
       if (actor.Inventory == null) return;
       actor.Inventory.MaxCapacity = Rules.ActorMaxInv(actor);
     }
