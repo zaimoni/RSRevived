@@ -5,30 +5,30 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.Items;
 using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionEatFoodOnGround : ActorAction
   {
-    private Item m_Item;
+    private ItemFood m_Item;
 
-    public ActionEatFoodOnGround(Actor actor, RogueGame game, Item it)
+    public ActionEatFoodOnGround(Actor actor, RogueGame game, ItemFood it)
       : base(actor, game)
     {
-      if (it == null)
-        throw new ArgumentNullException("item");
-      this.m_Item = it;
+      if (it == null) throw new ArgumentNullException("item");
+      m_Item = it;
     }
 
     public override bool IsLegal()
     {
-      return this.m_Game.Rules.CanActorEatFoodOnGround(this.m_Actor, this.m_Item, out this.m_FailReason);
+      return m_Game.Rules.CanActorEatFoodOnGround(m_Actor, m_Item, out m_FailReason);
     }
 
     public override void Perform()
     {
-      this.m_Game.DoEatFoodFromGround(this.m_Actor, this.m_Item);
+      m_Game.DoEatFoodFromGround(m_Actor, m_Item);
     }
   }
 }

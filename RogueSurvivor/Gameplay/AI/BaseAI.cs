@@ -1175,17 +1175,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorGoEatFoodOnGround(RogueGame game, List<Percept> stacksPercepts)
     {
-      if (stacksPercepts == null)
-        return (ActorAction) null;
+      if (stacksPercepts == null) return null;
       List<Percept> percepts = this.Filter(game, stacksPercepts, (Predicate<Percept>) (p => (p.Percepted as Inventory).HasItemOfType(typeof (ItemFood))));
-      if (percepts == null)
-        return (ActorAction) null;
+      if (percepts == null) return null;
       Inventory itemsAt = this.m_Actor.Location.Map.GetItemsAt(this.m_Actor.Location.Position);
-      if (itemsAt != null && itemsAt.HasItemOfType(typeof (ItemFood)))
-      {
-        Item firstByType = itemsAt.GetFirstByType(typeof (ItemFood));
-        return (ActorAction) new ActionEatFoodOnGround(this.m_Actor, game, firstByType);
-      }
+      ItemFood firstByType = itemsAt?.GetFirstByType(typeof (ItemFood)) as ItemFood;
+      if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, game, firstByType);
       Percept percept = FilterNearest(percepts);
       return BehaviorStupidBumpToward(game, percept.Location.Position);
     }

@@ -404,15 +404,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int LastActionTurn
-    {
-      get
-      {
+    public int LastActionTurn {
+      get {
         return this.m_LastActionTurn;
-      }
-      set
-      {
-        this.m_LastActionTurn = value;
       }
     }
 
@@ -896,6 +890,12 @@ namespace djack.RogueSurvivor.Data
       get {
         return Location.Map.GetTileAt(Location.Position.X, Location.Position.Y).IsInside;
       }
+    }
+
+    public void SpendActionPoints(int actionCost)
+    {
+      m_ActionPoints -= actionCost;
+      m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
     }
 
     // sanity

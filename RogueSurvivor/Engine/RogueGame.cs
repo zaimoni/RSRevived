@@ -2333,43 +2333,29 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(Map map, RogueGame.SimFlags sim)
     {
-      if (map.IsSecret)
-      {
+      if (map.IsSecret) {
         ++map.LocalTime.TurnCounter;
-      }
-      else
-      {
+      } else {
         Actor nextActorToAct = map.NextActorToAct;
-        if (nextActorToAct == null)
-        {
-          this.NextMapTurn(map, sim);
-        }
-        else
-        {
+        if (nextActorToAct == null) {
+          NextMapTurn(map, sim);
+        } else {
           nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
           if (nextActorToAct.Controller == null)
-            this.SpendActorActionPoints(nextActorToAct, Rules.BASE_ACTION_COST);
-          else if (nextActorToAct.IsPlayer)
-          {
-            this.HandlePlayerActor(nextActorToAct);
-            if (!this.m_IsGameRunning || this.m_HasLoadedGame || this.m_Player.IsDead)
+            nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
+          else if (nextActorToAct.IsPlayer) {
+            HandlePlayerActor(nextActorToAct);
+            if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
               return;
-            this.CheckSpecialPlayerEventsAfterAction(nextActorToAct);
+            CheckSpecialPlayerEventsAfterAction(nextActorToAct);
           }
-          else
-            this.HandleAiActor(nextActorToAct);
+          else HandleAiActor(nextActorToAct);
           nextActorToAct.PreviousHitPoints = nextActorToAct.HitPoints;
           nextActorToAct.PreviousFoodPoints = nextActorToAct.FoodPoints;
           nextActorToAct.PreviousSleepPoints = nextActorToAct.SleepPoints;
           nextActorToAct.PreviousSanity = nextActorToAct.Sanity;
         }
       }
-    }
-
-    private void SpendActorActionPoints(Actor actor, int actionCost)
-    {
-      actor.ActionPoints -= actionCost;
-      actor.LastActionTurn = actor.Location.Map.LocalTime.TurnCounter;
     }
 
     private void SpendActorStaminaPoints(Actor actor, int staminaCost)
@@ -4604,98 +4590,80 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoStopDraggingCorpses(Actor a)
     {
-      if (a.DraggedCorpse == null)
-        return;
+      if (a.DraggedCorpse == null) return;
       this.DoStopDragCorpse(a, a.DraggedCorpse);
     }
 
     public void DoButcherCorpse(Actor a, Corpse c)
     {
       bool player = this.IsVisibleToPlayer(a);
-      SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
+      a.SpendActionPoints(Rules.BASE_ACTION_COST);
       SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", (object) a.Name, (object) c.DeadGuy.Name));
       int num = this.m_Rules.ActorDamageVsCorpses(a);
       if (player)
         this.AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", (object) this.Conjugate(a, this.VERB_BUTCHER), (object) c.DeadGuy.Name, (object) num)));
       this.InflictDamageToCorpse(c, (float) num);
-      if ((double) c.HitPoints > 0.0)
-        return;
+      if ((double) c.HitPoints > 0.0) return;
       this.DestroyCorpse(c, a.Location.Map);
-      if (!player)
-        return;
+      if (!player) return;
       this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} corpse is no more.", (object) c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
     }
 
     public void DoEatCorpse(Actor a, Corpse c)
     {
-      bool player = this.IsVisibleToPlayer(a);
-      SpendActorActionPoints(a, Rules.BASE_ACTION_COST);
-      int num = this.m_Rules.ActorDamageVsCorpses(a);
-      if (player)
-      {
-        this.AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse.", (object) this.Conjugate(a, this.VERB_FEAST_ON), (object) c.DeadGuy.Name)));
-        this.m_MusicManager.Play(GameSounds.UNDEAD_EAT);
+      bool player = IsVisibleToPlayer(a);
+      a.SpendActionPoints(Rules.BASE_ACTION_COST);
+      int num = m_Rules.ActorDamageVsCorpses(a);
+      if (player) {
+        AddMessage(this.MakeMessage(a, string.Format("{0} {1} corpse.", (object) Conjugate(a, VERB_FEAST_ON), (object) c.DeadGuy.Name)));
+        m_MusicManager.Play(GameSounds.UNDEAD_EAT);
       }
-      this.InflictDamageToCorpse(c, (float) num);
-      if ((double) c.HitPoints <= 0.0)
-      {
-        this.DestroyCorpse(c, a.Location.Map);
+      InflictDamageToCorpse(c, (float) num);
+      if (c.HitPoints <= 0.0f) {
+        DestroyCorpse(c, a.Location.Map);
         if (player)
-          this.AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} corpse is no more.", (object) c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
+          AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} corpse is no more.", (object) c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
       }
-      if (a.Model.Abilities.IsUndead)
-      {
-        this.RegenActorHitPoints(a, this.Rules.ActorBiteHpRegen(a, num));
-        a.FoodPoints = Math.Min(a.FoodPoints + this.m_Rules.ActorBiteNutritionValue(a, num), this.m_Rules.ActorMaxRot(a));
+      if (a.Model.Abilities.IsUndead) {
+        RegenActorHitPoints(a, Rules.ActorBiteHpRegen(a, num));
+        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxRot(a));
+      } else {
+        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxFood(a));
+        InfectActor(a, m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
       }
-      else
-      {
-        a.FoodPoints = Math.Min(a.FoodPoints + this.m_Rules.ActorBiteNutritionValue(a, num), this.m_Rules.ActorMaxFood(a));
-        this.InfectActor(a, this.m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
-      }
-      this.SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
+      SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
     }
 
     public void DoReviveCorpse(Actor actor, Corpse corpse)
     {
-      bool player = this.IsVisibleToPlayer(actor);
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      bool player = IsVisibleToPlayer(actor);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Map map = actor.Location.Map;
       List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt => map.GetActorAt(pt) == null && map.GetMapObjectAt(pt) == null));
-      if (pointList == null)
-      {
-        if (!player)
-          return;
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", (object) this.Conjugate(actor, this.VERB_HAVE), (object) corpse.DeadGuy.Name)));
-      }
-      else
-      {
+      if (pointList == null) {
+        if (!player) return;
+        AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", (object) Conjugate(actor, VERB_HAVE), (object) corpse.DeadGuy.Name)));
+      } else {
         Point position = pointList[this.m_Rules.Roll(0, pointList.Count)];
         int chance = this.m_Rules.CorpseReviveChance(actor, corpse);
         Item firstMatching = actor.Inventory.GetFirstMatching((Predicate<Item>) (it => it.Model == this.GameItems.MEDIKIT));
         actor.Inventory.Consume(firstMatching);
-        if (this.m_Rules.RollChance(chance))
-        {
+        if (m_Rules.RollChance(chance)) {
           corpse.DeadGuy.IsDead = false;
-          corpse.DeadGuy.HitPoints = this.m_Rules.CorpseReviveHPs(actor, corpse);
+          corpse.DeadGuy.HitPoints = m_Rules.CorpseReviveHPs(actor, corpse);
           corpse.DeadGuy.Doll.RemoveDecoration("Actors\\Decoration\\bloodied");
           corpse.DeadGuy.Activity = Activity.IDLE;
-          corpse.DeadGuy.TargetActor = (Actor) null;
+          corpse.DeadGuy.TargetActor = null;
           map.RemoveCorpse(corpse);
           map.PlaceActorAt(corpse.DeadGuy, position);
           if (player)
-            this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_REVIVE), corpse.DeadGuy));
-          if (!this.m_Rules.IsEnemyOf(actor, corpse.DeadGuy))
-            this.DoSay(corpse.DeadGuy, actor, "Thank you, you saved my life!", RogueGame.Sayflags.NONE);
-          if (this.m_Rules.IsEnemyOf(actor, corpse.DeadGuy))
-            return;
+            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
+          if (m_Rules.IsEnemyOf(actor, corpse.DeadGuy)) return;
+          DoSay(corpse.DeadGuy, actor, "Thank you, you saved my life!", RogueGame.Sayflags.NONE);
           corpse.DeadGuy.AddTrustIn(actor, Rules.TRUST_REVIVE_BONUS);
-        }
-        else
-        {
-          if (!player)
-            return;
-          this.AddMessage(this.MakeMessage(actor, string.Format("{0} to revive", (object) this.Conjugate(actor, this.VERB_FAIL)), corpse.DeadGuy));
+        } else {
+          if (!player) return;
+          AddMessage(MakeMessage(actor, string.Format("{0} to revive", (object) Conjugate(actor, this.VERB_FAIL)), corpse.DeadGuy));
         }
       }
     }
@@ -6478,21 +6446,18 @@ namespace djack.RogueSurvivor.Engine
     private void HandleAiActor(Actor aiActor)
     {
       ActorAction actorAction = aiActor.Controller.GetAction(this);
-      if (aiActor.IsInsane && this.m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
+      if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
       {
-        ActorAction insaneAction = this.GenerateInsaneAction(aiActor);
+        ActorAction insaneAction = GenerateInsaneAction(aiActor);
         if (insaneAction != null && insaneAction.IsLegal())
           actorAction = insaneAction;
       }
       if (actorAction == null)
         throw new InvalidOperationException("AI returned null action.");
-      if (actorAction.IsLegal())
-      {
+      if (actorAction.IsLegal()) {
         actorAction.Perform();
-      }
-      else
-      {
-        this.SpendActorActionPoints(aiActor, Rules.BASE_ACTION_COST);
+      } else {
+        aiActor.SpendActionPoints(Rules.BASE_ACTION_COST);
         throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", (object) actorAction.GetType().ToString(), (object) aiActor.Controller.GetType().ToString(), (object) actorAction.FailReason));
       }
     }
@@ -8304,12 +8269,9 @@ namespace djack.RogueSurvivor.Engine
     public void DoMoveActor(Actor actor, Location newLocation)
     {
       Location location = actor.Location;
-      if (!this.TryActorLeaveTile(actor))
-      {
-        this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      }
-      else
-      {
+      if (!this.TryActorLeaveTile(actor)) {
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      } else {
         if (location.Map != newLocation.Map)
           throw new NotImplementedException("DoMoveActor : illegal to change map.");
         newLocation.Map.PlaceActorAt(actor, newLocation.Position);
@@ -8317,14 +8279,13 @@ namespace djack.RogueSurvivor.Engine
         if (draggedCorpse != null)
         {
           location.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
-          if (this.IsVisibleToPlayer(newLocation) || this.IsVisibleToPlayer(location))
-            this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1} corpse.", (object) this.Conjugate(actor, this.VERB_DRAG), (object) draggedCorpse.DeadGuy.TheName)));
+          if (IsVisibleToPlayer(newLocation) || IsVisibleToPlayer(location))
+            AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", (object) Conjugate(actor, VERB_DRAG), (object) draggedCorpse.DeadGuy.TheName)));
         }
         int actionCost = Rules.BASE_ACTION_COST;
-        if (actor.IsRunning)
-        {
+        if (actor.IsRunning) {
           actionCost /= 2;
-          this.SpendActorStaminaPoints(actor, Rules.STAMINA_COST_RUNNING);
+          SpendActorStaminaPoints(actor, Rules.STAMINA_COST_RUNNING);
         }
         bool flag = false;
         MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position.X, newLocation.Position.Y);
@@ -8332,28 +8293,28 @@ namespace djack.RogueSurvivor.Engine
           flag = true;
         if (flag)
         {
-          this.SpendActorStaminaPoints(actor, Rules.STAMINA_COST_JUMP);
-          if (this.IsVisibleToPlayer(actor))
-            this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_JUMP_ON), mapObjectAt));
-          if (actor.Model.Abilities.CanJumpStumble && this.m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE))
+          SpendActorStaminaPoints(actor, Rules.STAMINA_COST_JUMP);
+          if (IsVisibleToPlayer(actor))
+            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
+          if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE))
           {
             actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
-            if (this.IsVisibleToPlayer(actor))
-              this.AddMessage(this.MakeMessage(actor, string.Format("{0}!", (object) this.Conjugate(actor, this.VERB_STUMBLE))));
+            if (IsVisibleToPlayer(actor))
+              AddMessage(MakeMessage(actor, string.Format("{0}!", (object) Conjugate(actor, VERB_STUMBLE))));
           }
         }
         if (draggedCorpse != null)
-          this.SpendActorStaminaPoints(actor, Rules.STAMINA_COST_JUMP);
-        this.SpendActorActionPoints(actor, actionCost);
+          SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
+        actor.SpendActionPoints(actionCost);
         if (actor.ActionPoints >= Rules.BASE_ACTION_COST)
-          this.DropActorScent(actor);
+          DropActorScent(actor);
         if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
         {
-          this.OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
-          if (this.m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE) && !this.IsVisibleToPlayer(actor))
-            this.AddMessageIfAudibleForPlayer(actor.Location, this.MakePlayerCentricMessage("You hear screams of terror", actor.Location.Position));
+          OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
+          if (!IsVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
+            AddMessageIfAudibleForPlayer(actor.Location, MakePlayerCentricMessage("You hear screams of terror", actor.Location.Position));
         }
-        this.OnActorEnterTile(actor);
+        OnActorEnterTile(actor);
       }
     }
 
@@ -8571,54 +8532,48 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
       Exit exitAt = map.GetExitAt(exitPoint);
-      if (exitAt == null)
-      {
+      if (exitAt == null) {
         if (isPlayer)
-          this.AddMessage(this.MakeErrorMessage("There is nowhere to go there."));
+          AddMessage(MakeErrorMessage("There is nowhere to go there."));
         return true;
       }
-      if (isPlayer && askForConfirmation)
-      {
-        this.ClearMessages();
-        this.AddMessage(this.MakeYesNoMessage(string.Format("REALLY LEAVE {0}", (object) map.Name)));
-        this.RedrawPlayScreen();
-        if (!this.WaitYesOrNo())
-        {
-          this.AddMessage(new djack.RogueSurvivor.Data.Message("Let's stay here a bit longer...", this.m_Session.WorldTime.TurnCounter, Color.Yellow));
-          this.RedrawPlayScreen();
+      if (isPlayer && askForConfirmation) {
+        ClearMessages();
+        AddMessage(this.MakeYesNoMessage(string.Format("REALLY LEAVE {0}", (object) map.Name)));
+        RedrawPlayScreen();
+        if (!WaitYesOrNo()) {
+          AddMessage(new djack.RogueSurvivor.Data.Message("Let's stay here a bit longer...", m_Session.WorldTime.TurnCounter, Color.Yellow));
+          RedrawPlayScreen();
           return false;
         }
       }
-      if (!this.TryActorLeaveTile(actor))
-      {
-        this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      if (!TryActorLeaveTile(actor)) {
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         return false;
       }
-      if (!actor.IsPlayer)
-        this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (isPlayer && exitAt.ToMap.District != map.District)
-        this.BeforePlayerEnterDistrict(exitAt.ToMap.District);
+        BeforePlayerEnterDistrict(exitAt.ToMap.District);
       Actor actorAt = exitAt.ToMap.GetActorAt(exitAt.ToPosition);
-      if (actorAt != null)
-      {
+      if (actorAt != null) {
         if (isPlayer)
-          this.AddMessage(this.MakeErrorMessage(string.Format("{0} is blocking your way.", (object) actorAt.Name)));
+          AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) actorAt.Name)));
         return true;
       }
       MapObject mapObjectAt = exitAt.ToMap.GetMapObjectAt(exitAt.ToPosition);
-      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !this.m_Rules.HasActorJumpAbility(actor)) && !mapObjectAt.IsCouch))
+      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !m_Rules.HasActorJumpAbility(actor)) && !mapObjectAt.IsCouch))
       {
         if (isPlayer)
-          this.AddMessage(this.MakeErrorMessage(string.Format("{0} is blocking your way.", (object) mapObjectAt.AName)));
+          AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) mapObjectAt.AName)));
         return true;
       }
-      if (this.IsVisibleToPlayer(actor))
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1}.", (object) this.Conjugate(actor, this.VERB_LEAVE), (object) map.Name)));
+      if (IsVisibleToPlayer(actor))
+        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object) Conjugate(actor, VERB_LEAVE), (object) map.Name)));
       map.RemoveActor(actor);
       if (actor.DraggedCorpse != null)
         map.RemoveCorpse(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District)
-        this.OnPlayerLeaveDistrict();
+        OnPlayerLeaveDistrict();
       exitAt.ToMap.PlaceActorAt(actor, exitAt.ToPosition);
       exitAt.ToMap.MoveActorToFirstPosition(actor);
       if (actor.DraggedCorpse != null)
@@ -8693,57 +8648,50 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoSwitchPlace(Actor actor, Actor other)
     {
-      this.SpendActorActionPoints(actor, 200);
+      actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
       Map map = other.Location.Map;
       Point position = actor.Location.Position;
       map.RemoveActor(other);
       map.PlaceActorAt(actor, other.Location.Position);
       map.PlaceActorAt(other, position);
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(other))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_SWITCH_PLACE_WITH), other));
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
     }
 
     public void DoTakeLead(Actor actor, Actor other)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.AddFollower(other);
       int trustIn = other.GetTrustIn(actor);
       other.TrustInLeader = trustIn;
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(other))
-        return;
-      if (actor == this.m_Player)
-        this.ClearMessages();
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_PERSUADE), other, " to join."));
-      if (trustIn == 0)
-        return;
-      this.DoSay(other, actor, "Ah yes I remember you.", RogueGame.Sayflags.IS_FREE_ACTION);
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
+      if (actor == m_Player) ClearMessages();
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, " to join."));
+      if (trustIn == 0) return;
+      DoSay(other, actor, "Ah yes I remember you.", RogueGame.Sayflags.IS_FREE_ACTION);
     }
 
     public void DoCancelLead(Actor actor, Actor follower)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.RemoveFollower(follower);
       follower.SetTrustIn(actor, follower.TrustInLeader);
       follower.TrustInLeader = 0;
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(follower))
-        return;
-      if (actor == this.m_Player)
-        this.ClearMessages();
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_PERSUADE), follower, " to leave."));
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(follower)) return;
+      if (actor == m_Player) ClearMessages();
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), follower, " to leave."));
     }
 
     public void DoWait(Actor actor)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      if (this.IsVisibleToPlayer(actor))
-      {
-        if (actor.StaminaPoints < this.m_Rules.ActorMaxSTA(actor))
-          this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1} breath.", (object) this.Conjugate(actor, this.VERB_CATCH), (object) this.HisOrHer(actor))));
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (IsVisibleToPlayer(actor)) {
+        if (actor.StaminaPoints < m_Rules.ActorMaxSTA(actor))
+          AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", (object) Conjugate(actor, VERB_CATCH), (object) HisOrHer(actor))));
         else
-          this.AddMessage(this.MakeMessage(actor, string.Format("{0}.", (object) this.Conjugate(actor, this.VERB_WAIT))));
+          AddMessage(MakeMessage(actor, string.Format("{0}.", (object) Conjugate(actor, VERB_WAIT))));
       }
-      this.RegenActorStaminaPoints(actor, 2);
+      RegenActorStaminaPoints(actor, 2);
     }
 
     public bool DoPlayerBump(Actor player, Direction direction)
@@ -8861,27 +8809,26 @@ namespace djack.RogueSurvivor.Engine
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
-      if (!this.m_Rules.IsEnemyOf(attacker, defender))
-        this.DoMakeAggression(attacker, defender);
+      if (!m_Rules.IsEnemyOf(attacker, defender))
+        DoMakeAggression(attacker, defender);
       Attack attack = this.m_Rules.ActorMeleeAttack(attacker, attacker.CurrentMeleeAttack, defender);
       Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
-      SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
-      this.SpendActorStaminaPoints(attacker, Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
-      int num1 = this.m_Rules.RollSkill(attack.HitValue);
-      int num2 = this.m_Rules.RollSkill(defence.Value);
-      this.OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
-      if (this.m_IsPlayerLongWait && defender.IsPlayer)
-        this.m_IsPlayerLongWaitForcedStop = true;
-      bool player1 = this.IsVisibleToPlayer(defender);
-      bool player2 = this.IsVisibleToPlayer(attacker);
+      attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      SpendActorStaminaPoints(attacker, Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
+      int num1 = m_Rules.RollSkill(attack.HitValue);
+      int num2 = m_Rules.RollSkill(defence.Value);
+      OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
+      if (m_IsPlayerLongWait && defender.IsPlayer)
+        m_IsPlayerLongWaitForcedStop = true;
+      bool player1 = IsVisibleToPlayer(defender);
+      bool player2 = IsVisibleToPlayer(attacker);
       bool flag = attacker.IsPlayer || defender.IsPlayer;
-      if (!player1 && !player2 && (!flag && this.m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
-        this.AddMessageIfAudibleForPlayer(attacker.Location, this.MakePlayerCentricMessage("You hear fighting", attacker.Location.Position));
-      if (player2)
-      {
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(attacker.Location.Position), new Size(32, 32))));
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(defender.Location.Position), new Size(32, 32))));
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(this.MapToScreen(attacker.Location.Position), "Icons\\melee_attack"));
+      if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
+        AddMessageIfAudibleForPlayer(attacker.Location, MakePlayerCentricMessage("You hear fighting", attacker.Location.Position));
+      if (player2) {
+        AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
+        AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location.Position), new Size(32, 32))));
+        AddOverlay(new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\melee_attack"));
       }
       if (num1 > num2)
       {
@@ -8977,28 +8924,27 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
-      if (!this.m_Rules.IsEnemyOf(attacker, defender))
-        this.DoMakeAggression(attacker, defender);
+      if (!m_Rules.IsEnemyOf(attacker, defender))
+        DoMakeAggression(attacker, defender);
       switch (mode)
       {
         case FireMode.DEFAULT:
-          SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
+          attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
           DoSingleRangedAttack(attacker, defender, LoF, 1f);
           break;
         case FireMode.RAPID:
-          SpendActorActionPoints(attacker, Rules.BASE_ACTION_COST);
-          this.DoSingleRangedAttack(attacker, defender, LoF, Rules.RAPID_FIRE_FIRST_SHOT_ACCURACY);
+          attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
+          DoSingleRangedAttack(attacker, defender, LoF, Rules.RAPID_FIRE_FIRST_SHOT_ACCURACY);
           ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
           if (defender.IsDead)
           {
             --itemRangedWeapon.Ammo;
             Attack currentRangedAttack = attacker.CurrentRangedAttack;
-            this.AddMessage(this.MakeMessage(attacker, string.Format("{0} at nothing.", (object) this.Conjugate(attacker, currentRangedAttack.Verb))));
+            AddMessage(MakeMessage(attacker, string.Format("{0} at nothing.", (object) Conjugate(attacker, currentRangedAttack.Verb))));
             break;
           }
-          if (itemRangedWeapon.Ammo <= 0)
-            break;
-          this.DoSingleRangedAttack(attacker, defender, LoF, Rules.RAPID_FIRE_SECOND_SHOT_ACCURACY);
+          if (itemRangedWeapon.Ammo <= 0) break;
+          DoSingleRangedAttack(attacker, defender, LoF, Rules.RAPID_FIRE_SECOND_SHOT_ACCURACY);
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled mode");
@@ -9117,18 +9063,17 @@ namespace djack.RogueSurvivor.Engine
       ItemGrenade itemGrenade = actor.GetEquippedWeapon() as ItemGrenade;
       if (itemGrenade == null)
         throw new InvalidOperationException("throwing grenade but no grenade equiped ");
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      actor.Inventory.Consume((Item) itemGrenade);
-      actor.Location.Map.DropItemAt((Item) new ItemGrenadePrimed(this.m_GameItems[itemGrenade.PrimedModelID]), targetPos);
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(actor.Location.Map, targetPos))
-        return;
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(actor.Location.Position), new Size(32, 32))));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(targetPos), new Size(32, 32))));
-      this.AddMessage(this.MakeMessage(actor, string.Format("{0} a {1}!", (object) this.Conjugate(actor, this.VERB_THROW), (object) itemGrenade.Model.SingleName)));
-      this.RedrawPlayScreen();
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.Inventory.Consume(itemGrenade);
+      actor.Location.Map.DropItemAt(new ItemGrenadePrimed(this.m_GameItems[itemGrenade.PrimedModelID]), targetPos);
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(actor.Location.Map, targetPos)) return;
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
+      AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(32, 32))));
+      AddMessage(MakeMessage(actor, string.Format("{0} a {1}!", (object) Conjugate(actor, VERB_THROW), (object) itemGrenade.Model.SingleName)));
+      RedrawPlayScreen();
       AnimDelay(DELAY_LONG);
-      this.ClearOverlays();
-      this.RedrawPlayScreen();
+      ClearOverlays();
+      RedrawPlayScreen();
     }
 
     public void DoThrowGrenadePrimed(Actor actor, Point targetPos)
@@ -9136,18 +9081,17 @@ namespace djack.RogueSurvivor.Engine
       ItemGrenadePrimed itemGrenadePrimed = actor.GetEquippedWeapon() as ItemGrenadePrimed;
       if (itemGrenadePrimed == null)
         throw new InvalidOperationException("throwing primed grenade but no primed grenade equiped ");
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      actor.Inventory.RemoveAllQuantity((Item) itemGrenadePrimed);
-      actor.Location.Map.DropItemAt((Item) itemGrenadePrimed, targetPos);
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(actor.Location.Map, targetPos))
-        return;
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(actor.Location.Position), new Size(32, 32))));
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(this.MapToScreen(targetPos), new Size(32, 32))));
-      this.AddMessage(this.MakeMessage(actor, string.Format("{0} back a {1}!", (object) this.Conjugate(actor, this.VERB_THROW), (object) itemGrenadePrimed.Model.SingleName)));
-      this.RedrawPlayScreen();
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
+      actor.Location.Map.DropItemAt(itemGrenadePrimed, targetPos);
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(actor.Location.Map, targetPos)) return;
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
+      AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(32, 32))));
+      AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", (object) Conjugate(actor, VERB_THROW), (object) itemGrenadePrimed.Model.SingleName)));
+      RedrawPlayScreen();
       AnimDelay(DELAY_LONG);
-      this.ClearOverlays();
-      this.RedrawPlayScreen();
+      ClearOverlays();
+      RedrawPlayScreen();
     }
 
     private void ShowBlastImage(Point screenPos, BlastAttack attack, int damage)
@@ -9361,12 +9305,11 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoChat(Actor speaker, Actor target)
     {
-      SpendActorActionPoints(speaker, Rules.BASE_ACTION_COST);
-      if (this.IsVisibleToPlayer(speaker) || this.IsVisibleToPlayer(target))
-        this.AddMessage(this.MakeMessage(speaker, this.Conjugate(speaker, this.VERB_CHAT_WITH), target));
-      if (!this.m_Rules.CanActorInitiateTradeWith(speaker, target))
-        return;
-      this.DoTrade(speaker, target);
+      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (IsVisibleToPlayer(speaker) || IsVisibleToPlayer(target))
+        AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
+      if (!m_Rules.CanActorInitiateTradeWith(speaker, target)) return;
+      DoTrade(speaker, target);
     }
 
     private bool IsInterestingTradeItem(Actor speaker, Item offeredItem, Actor target)
@@ -9498,45 +9441,41 @@ namespace djack.RogueSurvivor.Engine
     public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
     {
       if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE)
-        SpendActorActionPoints(speaker, Rules.BASE_ACTION_COST);
-      if (!this.IsVisibleToPlayer(speaker) && (!this.IsVisibleToPlayer(target) || this.m_Player.IsSleeping && target == this.m_Player))
+        speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (!IsVisibleToPlayer(speaker) && (!IsVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
         return;
       bool isPlayer = target.IsPlayer;
       bool flag = (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE;
       if (isPlayer && flag)
-        this.ClearMessages();
-      this.AddMessage(this.MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName), this.SAYOREMOTE_COLOR));
-      this.AddMessage(this.MakeMessage(speaker, string.Format("\"{0}\"", (object) text), this.SAYOREMOTE_COLOR));
-      if (!isPlayer || !flag)
-        return;
-      this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(speaker.Location.Position), new Size(32, 32))));
-      this.AddMessagePressEnter();
-      this.ClearOverlays();
-      this.RemoveLastMessage();
-      this.RedrawPlayScreen();
+        ClearMessages();
+      AddMessage(MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName), SAYOREMOTE_COLOR));
+      AddMessage(MakeMessage(speaker, string.Format("\"{0}\"", (object) text), SAYOREMOTE_COLOR));
+      if (!isPlayer || !flag) return;
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
+      AddMessagePressEnter();
+      ClearOverlays();
+      RemoveLastMessage();
+      RedrawPlayScreen();
     }
 
     public void DoShout(Actor speaker, string text)
     {
-      SpendActorActionPoints(speaker, Rules.BASE_ACTION_COST);
-      this.OnLoudNoise(speaker.Location.Map, speaker.Location.Position, "A SHOUT");
-      if (!this.IsVisibleToPlayer(speaker) && !this.AreLinkedByPhone(speaker, this.m_Player))
-        return;
-      if (speaker.Leader == this.m_Player)
-      {
-        this.ClearMessages();
-        this.AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(this.MapToScreen(speaker.Location.Position), new Size(32, 32))));
-        this.AddMessage(this.MakeMessage(speaker, string.Format("{0}!!", (object) this.Conjugate(speaker, this.VERB_RAISE_ALARM))));
-        if (text != null)
-          this.DoEmote(speaker, text);
-        this.AddMessagePressEnter();
-        this.ClearOverlays();
-        this.RemoveLastMessage();
+      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      OnLoudNoise(speaker.Location.Map, speaker.Location.Position, "A SHOUT");
+      if (!IsVisibleToPlayer(speaker) && !AreLinkedByPhone(speaker, m_Player)) return;
+      if (speaker.Leader == m_Player) {
+        ClearMessages();
+        AddOverlay((new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32)))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}!!", (object) Conjugate(speaker, VERB_RAISE_ALARM))));
+        if (text != null) DoEmote(speaker, text);
+        AddMessagePressEnter();
+        ClearOverlays();
+        RemoveLastMessage();
       }
       else if (text == null)
-        this.AddMessage(this.MakeMessage(speaker, string.Format("{0}!", (object) this.Conjugate(speaker, this.VERB_SHOUT))));
+        AddMessage(MakeMessage(speaker, string.Format("{0}!", (object) Conjugate(speaker, VERB_SHOUT))));
       else
-        this.DoEmote(speaker, string.Format("{0} \"{1}\"", (object) this.Conjugate(speaker, this.VERB_SHOUT), (object) text));
+        DoEmote(speaker, string.Format("{0} \"{1}\"", (object) Conjugate(speaker, VERB_SHOUT), (object) text));
     }
 
     public void DoEmote(Actor actor, string text)
@@ -9555,9 +9494,8 @@ namespace djack.RogueSurvivor.Engine
     public void DoTakeItem(Actor actor, Point position, Item it)
     {
       Map map = actor.Location.Map;
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      if (it is ItemTrap)
-        (it as ItemTrap).IsActivated = false;
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
       int quantity = it.Quantity;
       int quantityAdded;
       actor.Inventory.AddAsMuchAsPossible(it, out quantityAdded);
@@ -9567,28 +9505,24 @@ namespace djack.RogueSurvivor.Engine
         if (itemsAt != null && itemsAt.Contains(it))
           map.RemoveItemAt(it, position);
       }
-      if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer(new Location(map, position)))
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_TAKE), it));
-      if (it.Model.DontAutoEquip || !this.m_Rules.CanActorEquipItem(actor, it) || actor.GetEquippedItem(it.Model.EquipmentPart) != null)
-        return;
-      this.DoEquipItem(actor, it);
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(new Location(map, position)))
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
+      if (!it.Model.DontAutoEquip && m_Rules.CanActorEquipItem(actor, it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
+        DoEquipItem(actor, it);
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      if (target.Leader == actor)
-      {
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (target.Leader == actor) {
         BaseAI baseAi = target.Controller as BaseAI;
         bool flag = baseAi != null && baseAi.IsInterestingItem(gift);
         if (flag)
-          this.DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
+          DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
         else
-          this.DoSay(target, actor, "Thanks I guess...", RogueGame.Sayflags.IS_FREE_ACTION);
+          DoSay(target, actor, "Thanks I guess...", RogueGame.Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(target, flag ? Rules.TRUST_GOOD_GIFT_INCREASE : Rules.TRUST_MISC_GIFT_INCREASE, true);
-      }
-      else if (actor.Leader == target)
-      {
+      } else if (actor.Leader == target) {
         DoSay(target, actor, "Well, here it is...", RogueGame.Sayflags.IS_FREE_ACTION);
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
@@ -9596,13 +9530,12 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.RemoveAllQuantity(gift);
       if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
       target.Inventory.AddAll(gift);    // does do item merge, but not other DoTakeItem processing
-      SpendActorActionPoints(target, Rules.BASE_ACTION_COST);
+      target.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (!gift.Model.DontAutoEquip && m_Rules.CanActorEquipItem(target, gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
         DoEquipItem(target, gift);
 
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer(target))
-        return;
-      this.AddMessage(this.MakeMessage(actor, string.Format("{0} {1} to", (object) this.Conjugate(actor, this.VERB_GIVE), (object) gift.TheName), target));
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(target)) return;
+      AddMessage(MakeMessage(actor, string.Format("{0} {1} to", (object) Conjugate(actor,VERB_GIVE), (object) gift.TheName), target));
     }
 
     public void DoEquipItem(Actor actor, Item it)
@@ -9688,43 +9621,27 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoDropItem(Actor actor, Item it)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Item obj = it;
       bool flag = false;
-      if (it is ItemTrap)
-      {
+      if (it is ItemTrap) {
         ItemTrap itemTrap1 = it as ItemTrap;
         ItemTrap itemTrap2 = itemTrap1.Clone();
         itemTrap2.IsActivated = itemTrap1.IsActivated;
-        obj = (Item) itemTrap2;
-        if (itemTrap2.TrapModel.ActivatesWhenDropped)
-          itemTrap2.IsActivated = true;
+        obj = itemTrap2;
+        if (itemTrap2.TrapModel.ActivatesWhenDropped) itemTrap2.IsActivated = true;
         itemTrap1.IsActivated = false;
       }
-      else if (it is ItemTracker)
-        flag = (it as ItemTracker).Batteries <= 0;
-      else if (it is ItemLight)
-        flag = (it as ItemLight).Batteries <= 0;
-      else if (it is ItemSprayPaint)
-        flag = (it as ItemSprayPaint).PaintQuantity <= 0;
-      else if (it is ItemSprayScent)
-        flag = (it as ItemSprayScent).SprayQuantity <= 0;
-      if (flag)
-      {
-        this.DiscardItem(actor, it);
-        if (!this.IsVisibleToPlayer(actor))
-          return;
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_DISCARD), it));
-      }
-      else
-      {
-        if (obj == it)
-          this.DropItem(actor, it);
-        else
-          this.DropCloneItem(actor, it, obj);
-        if (!this.IsVisibleToPlayer(actor))
-          return;
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_DROP), obj));
+      else flag = it.IsUseless;
+      if (flag) {
+        DiscardItem(actor, it);
+        if (!IsVisibleToPlayer(actor)) return;
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), it));
+      } else {
+        if (obj == it) DropItem(actor, it);
+        else DropCloneItem(actor, it, obj);
+        if (!IsVisibleToPlayer(actor)) return;
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DROP), obj));
       }
     }
 
@@ -9771,12 +9688,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DoEatFoodFromGround(Actor actor, Item it)
+    public void DoEatFoodFromGround(Actor actor, ItemFood food)
     {
-      ItemFood food = it as ItemFood;
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-      actor.FoodPoints = Math.Min(actor.FoodPoints + this.m_Rules.ActorItemNutritionValue(actor, baseValue), this.m_Rules.ActorMaxFood(actor));
+      actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), m_Rules.ActorMaxFood(actor));
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
       bool player = IsVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -9789,27 +9705,22 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
-      if (actor == this.m_Player && actor.FoodPoints >= this.m_Rules.ActorMaxFood(actor) - 1)
-      {
-        this.AddMessage(this.MakeErrorMessage("Don't waste food!"));
-      }
-      else
-      {
-        SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      if (actor == m_Player && actor.FoodPoints >= m_Rules.ActorMaxFood(actor) - 1) {
+        AddMessage(MakeErrorMessage("Don't waste food!"));
+      } else {
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-        actor.FoodPoints = Math.Min(actor.FoodPoints + this.m_Rules.ActorItemNutritionValue(actor, baseValue), this.m_Rules.ActorMaxFood(actor));
-        actor.Inventory.Consume((Item) food);
-        if (food.Model == this.GameItems.CANNED_FOOD)
-        {
+        actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), m_Rules.ActorMaxFood(actor));
+        actor.Inventory.Consume(food);
+        if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap itemTrap = new ItemTrap(this.GameItems.EMPTY_CAN)
           {
             IsActivated = true
           };
-          actor.Location.Map.DropItemAt((Item) itemTrap, actor.Location.Position);
+          actor.Location.Map.DropItemAt(itemTrap, actor.Location.Position);
         }
         bool player = IsVisibleToPlayer(actor);
-        if (player)
-          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
+        if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
         if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
           return;
         DoVomit(actor);
@@ -9831,171 +9742,156 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == this.m_Player)
       {
-        int num1 = this.m_Rules.ActorMaxHPs(actor) - actor.HitPoints;
-        int num2 = this.m_Rules.ActorMaxSTA(actor) - actor.StaminaPoints;
-        int num3 = this.m_Rules.ActorMaxSleep(actor) - 2 - actor.SleepPoints;
+        int num1 = m_Rules.ActorMaxHPs(actor) - actor.HitPoints;
+        int num2 = m_Rules.ActorMaxSTA(actor) - actor.StaminaPoints;
+        int num3 = m_Rules.ActorMaxSleep(actor) - 2 - actor.SleepPoints;
         int infection = actor.Infection;
-        int num4 = this.m_Rules.ActorMaxSanity(actor) - actor.Sanity;
+        int num4 = m_Rules.ActorMaxSanity(actor) - actor.Sanity;
         if ((num1 <= 0 || med.Healing <= 0) && (num2 <= 0 || med.StaminaBoost <= 0) && ((num3 <= 0 || med.SleepBoost <= 0) && (infection <= 0 || med.InfectionCure <= 0)) && (num4 <= 0 || med.SanityCure <= 0))
         {
-          this.AddMessage(this.MakeErrorMessage("Don't waste medicine!"));
+          AddMessage(this.MakeErrorMessage("Don't waste medicine!"));
           return;
         }
       }
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      actor.HitPoints = Math.Min(actor.HitPoints + this.m_Rules.ActorMedicineEffect(actor, med.Healing), this.m_Rules.ActorMaxHPs(actor));
-      actor.StaminaPoints = Math.Min(actor.StaminaPoints + this.m_Rules.ActorMedicineEffect(actor, med.StaminaBoost), this.m_Rules.ActorMaxSTA(actor));
-      actor.SleepPoints = Math.Min(actor.SleepPoints + this.m_Rules.ActorMedicineEffect(actor, med.SleepBoost), this.m_Rules.ActorMaxSleep(actor));
-      actor.Infection = Math.Max(0, actor.Infection - this.m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
-      actor.Sanity = Math.Min(actor.Sanity + this.m_Rules.ActorMedicineEffect(actor, med.SanityCure), this.m_Rules.ActorMaxSanity(actor));
-      actor.Inventory.Consume((Item) med);
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_HEAL_WITH), (Item) med));
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.HitPoints = Math.Min(actor.HitPoints + m_Rules.ActorMedicineEffect(actor, med.Healing), m_Rules.ActorMaxHPs(actor));
+      actor.StaminaPoints = Math.Min(actor.StaminaPoints + m_Rules.ActorMedicineEffect(actor, med.StaminaBoost), m_Rules.ActorMaxSTA(actor));
+      actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), m_Rules.ActorMaxSleep(actor));
+      actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
+      actor.Sanity = Math.Min(actor.Sanity + m_Rules.ActorMedicineEffect(actor, med.SanityCure), m_Rules.ActorMaxSanity(actor));
+      actor.Inventory.Consume(med);
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_HEAL_WITH), med));
     }
 
     private void DoUseAmmoItem(Actor actor, ItemAmmo ammoItem)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
       int num = Math.Min((itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo - itemRangedWeapon.Ammo, ammoItem.Quantity);
       itemRangedWeapon.Ammo += num;
       ammoItem.Quantity -= num;
-      if (ammoItem.Quantity <= 0)
-        actor.Inventory.RemoveAllQuantity((Item) ammoItem);
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_RELOAD), (Item) itemRangedWeapon));
+      if (ammoItem.Quantity <= 0) actor.Inventory.RemoveAllQuantity(ammoItem);
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
     }
 
     private void DoUseSprayScentItem(Actor actor, ItemSprayScent spray)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       --spray.SprayQuantity;
       Map map = actor.Location.Map;
       ItemSprayScentModel itemSprayScentModel = spray.Model as ItemSprayScentModel;
       map.ModifyScentAt(itemSprayScentModel.Odor, itemSprayScentModel.Strength, actor.Location.Position);
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_SPRAY), (Item) spray));
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SPRAY), spray));
     }
 
     private void DoUseTrapItem(Actor actor, ItemTrap trap)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       trap.IsActivated = !trap.IsActivated;
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, trap.IsActivated ? this.VERB_ACTIVATE : this.VERB_DESACTIVATE), (Item) trap));
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE), trap));
     }
 
     private void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
     {
-      bool player = this.IsVisibleToPlayer(actor);
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      this.RegenActorSanity(actor, this.Rules.ActorSanRegenValue(actor, ent.EntertainmentModel.Value));
+      bool player = IsVisibleToPlayer(actor);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      RegenActorSanity(actor, Rules.ActorSanRegenValue(actor, ent.EntertainmentModel.Value));
       if (player)
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_ENJOY), (Item) ent));
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
       int boreChance = ent.EntertainmentModel.BoreChance;
       bool flag1 = false;
       bool flag2 = false;
-      if (boreChance == 100)
-      {
-        actor.Inventory.Consume((Item) ent);
+      if (boreChance == 100) {
+        actor.Inventory.Consume(ent);
         flag2 = true;
       }
-      else if (boreChance > 0 && this.m_Rules.RollChance(boreChance))
-        flag1 = true;
+      else if (m_Rules.RollChance(boreChance)) flag1 = true;
+      if (flag1) actor.AddBoringItem(ent);
+      if (!player) return;
       if (flag1)
-        actor.AddBoringItem((Item) ent);
-      if (!player)
-        return;
-      if (flag1)
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0} now bored of {1}.", (object) this.Conjugate(actor, this.VERB_BE), (object) ent.TheName)));
-      if (!flag2)
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_DISCARD), (Item) ent));
+        AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", (object) Conjugate(actor, VERB_BE), (object) ent.TheName)));
+      if (!flag2) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
     }
 
     public void DoRechargeItemBattery(Actor actor, Item it)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      if (it is ItemLight) (it as ItemLight).Recharge();
-      else if (it is ItemTracker) (it as ItemTracker).Recharge();
-      if (!this.IsVisibleToPlayer(actor)) return;
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      (it as ItemLight)?.Recharge();
+      (it as ItemTracker)?.Recharge();
+      if (!IsVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
     {
-      door.SetState(2);
-      if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer((MapObject) door))
-      {
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_OPEN), (MapObject) door));
-        this.RedrawPlayScreen();
+      door.SetState(DoorWindow.STATE_OPEN);
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door)) {
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_OPEN), door));
+        RedrawPlayScreen();
       }
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoCloseDoor(Actor actor, DoorWindow door)
     {
-      door.SetState(1);
-      if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer((MapObject) door))
-      {
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_CLOSE), (MapObject) door));
-        this.RedrawPlayScreen();
+      door.SetState(DoorWindow.STATE_CLOSED);
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door)) {
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_CLOSE), door));
+        RedrawPlayScreen();
       }
-      this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
     {
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
-      actor.Inventory.Consume((Item) barricadeMaterial);
+      actor.Inventory.Consume(barricadeMaterial);
       door.BarricadePoints = Math.Min(door.BarricadePoints + this.m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), 80);
-      if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer((MapObject) door))
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_BARRICADE), (MapObject) door));
-      this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door))
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
     public void DoBuildFortification(Actor actor, Point buildPos, bool isLarge)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      int num = this.m_Rules.ActorBarricadingMaterialNeedForFortification(actor, isLarge);
-      for (int index = 0; index < num; ++index)
-      {
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      int num = m_Rules.ActorBarricadingMaterialNeedForFortification(actor, isLarge);
+      for (int index = 0; index < num; ++index) {
         Item firstByType = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial));
         actor.Inventory.Consume(firstByType);
       }
-      Fortification fortification = isLarge ? this.m_TownGenerator.MakeObjLargeFortification("MapObjects\\wooden_large_fortification") : this.m_TownGenerator.MakeObjSmallFortification("MapObjects\\wooden_small_fortification");
-      actor.Location.Map.PlaceMapObjectAt((MapObject) fortification, buildPos);
-      if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
-        this.AddMessage(this.MakeMessage(actor, string.Format("{0} a {1} fortification.", (object) this.Conjugate(actor, this.VERB_BUILD), isLarge ? (object) "large" : (object) "small")));
-      this.CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
+      Fortification fortification = isLarge ? m_TownGenerator.MakeObjLargeFortification("MapObjects\\wooden_large_fortification") : m_TownGenerator.MakeObjSmallFortification("MapObjects\\wooden_small_fortification");
+      actor.Location.Map.PlaceMapObjectAt(fortification, buildPos);
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
+        AddMessage(MakeMessage(actor, string.Format("{0} a {1} fortification.", (object) Conjugate(actor, VERB_BUILD), isLarge ? (object) "large" : (object) "small")));
+      CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
     }
 
     public void DoRepairFortification(Actor actor, Fortification fort)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
-      if (barricadeMaterial == null)
-        throw new InvalidOperationException("no material");
-      actor.Inventory.Consume((Item) barricadeMaterial);
+      if (barricadeMaterial == null) throw new InvalidOperationException("no material");
+      actor.Inventory.Consume(barricadeMaterial);
       fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + this.m_Rules.ActorBarricadingPoints(actor, (barricadeMaterial.Model as ItemBarricadeMaterialModel).BarricadingValue));
-      if (!this.IsVisibleToPlayer(actor) && !this.IsVisibleToPlayer((MapObject) fort))
-        return;
-      this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_REPAIR), (MapObject) fort));
+      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer((MapObject) fort)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), (MapObject) fort));
     }
 
     public void DoSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       powGen.TogglePower();
-      if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer((MapObject) powGen))
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_SWITCH), (MapObject) powGen, powGen.IsOn ? " on." : " off."));
-      this.OnMapPowerGeneratorSwitch(actor.Location, powGen);
+      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(powGen))
+        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
+      OnMapPowerGeneratorSwitch(actor.Location, powGen);
     }
 
     private void DoDestroyObject(MapObject mapObj)
@@ -10032,29 +9928,24 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoBreak(Actor actor, MapObject mapObj)
     {
-      Attack attack = this.m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
+      Attack attack = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, null);
       DoorWindow doorWindow = mapObj as DoorWindow;
-      if (doorWindow != null && doorWindow.IsBarricaded)
-      {
-        this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-        this.SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
+      if (doorWindow != null && doorWindow.IsBarricaded) {
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+        SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.BarricadePoints -= attack.DamageValue;
-        this.OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
-        if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer((MapObject) doorWindow))
-        {
-          this.AddMessage(this.MakeMessage(actor, string.Format("{0} the barricade.", (object) this.Conjugate(actor, this.VERB_BASH))));
-        }
-        else
-        {
-          if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
-            return;
-          this.AddMessageIfAudibleForPlayer(doorWindow.Location, this.MakePlayerCentricMessage("You hear someone bashing barricades", doorWindow.Location.Position));
+        OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
+        if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(doorWindow)) {
+          AddMessage(this.MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
+        } else {
+          if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;
+          AddMessageIfAudibleForPlayer(doorWindow.Location, MakePlayerCentricMessage("You hear someone bashing barricades", doorWindow.Location.Position));
         }
       }
       else
       {
         mapObj.HitPoints -= attack.DamageValue;
-        this.SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+        actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         this.SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
         bool flag = false;
         if (mapObj.HitPoints <= 0)
@@ -10106,91 +9997,77 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPush(Actor actor, MapObject mapObj, Point toPos)
     {
-      bool flag = this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer(mapObj);
+      bool flag = IsVisibleToPlayer(actor) || IsVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
-      if (actor.CountFollowers > 0)
-      {
+      if (actor.CountFollowers > 0) {
         Location location = new Location(actor.Location.Map, mapObj.Location.Position);
-        List<Actor> actorList = (List<Actor>) null;
-        foreach (Actor follower in actor.Followers)
-        {
-          if (!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location))
-          {
+        List<Actor> actorList = null;
+        foreach (Actor follower in actor.Followers) {
+          if (!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location)) {
             if (actorList == null)
               actorList = new List<Actor>(actor.CountFollowers);
             actorList.Add(follower);
           }
         }
-        if (actorList != null)
-        {
+        if (actorList != null) {
           staminaCost = mapObj.Weight / (1 + actorList.Count);
-          foreach (Actor actor1 in actorList)
-          {
-            SpendActorActionPoints(actor1, Rules.BASE_ACTION_COST);
-            this.SpendActorStaminaPoints(actor1, staminaCost);
+          foreach (Actor actor1 in actorList) {
+            actor1.SpendActionPoints(Rules.BASE_ACTION_COST);
+            SpendActorStaminaPoints(actor1, staminaCost);
             if (flag)
-              this.AddMessage(this.MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", (object) this.Conjugate(actor1, this.VERB_HELP), (object) actor.Name, (object) mapObj.TheName)));
+              AddMessage(this.MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", (object) this.Conjugate(actor1, this.VERB_HELP), (object) actor.Name, (object) mapObj.TheName)));
           }
         }
       }
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      this.SpendActorStaminaPoints(actor, staminaCost);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      SpendActorStaminaPoints(actor, staminaCost);
       Map map = mapObj.Location.Map;
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
-      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y))
-      {
+      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
         map.RemoveActor(actor);
         map.PlaceActorAt(actor, position);
       }
-      if (flag)
-      {
-        this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_PUSH), mapObj));
-        this.RedrawPlayScreen();
-      }
-      else
-      {
-        this.OnLoudNoise(map, toPos, "Something being pushed");
+      if (flag) {
+        AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_PUSH), mapObj));
+        RedrawPlayScreen();
+      } else {
+        OnLoudNoise(map, toPos, "Something being pushed");
         if (m_Rules.RollChance(PLAYER_HEAR_PUSH_CHANCE))
-          this.AddMessageIfAudibleForPlayer(mapObj.Location, this.MakePlayerCentricMessage("You hear something being pushed", toPos));
+          AddMessageIfAudibleForPlayer(mapObj.Location, this.MakePlayerCentricMessage("You hear something being pushed", toPos));
       }
-      this.CheckMapObjectTriggersTraps(map, toPos);
+      CheckMapObjectTriggersTraps(map, toPos);
     }
 
     public void DoShove(Actor actor, Actor target, Point toPos)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      if (this.TryActorLeaveTile(target))
-      {
-        this.SpendActorStaminaPoints(actor, 10);
-        this.DoStopDraggingCorpses(target);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (TryActorLeaveTile(target)) {
+        SpendActorStaminaPoints(actor, Rules.DEFAULT_ACTOR_WEIGHT);
+        DoStopDraggingCorpses(target);
         Map map = target.Location.Map;
         Point position = target.Location.Position;
         map.PlaceActorAt(target, toPos);
-        if (!Rules.IsAdjacent(toPos, actor.Location.Position) && this.m_Rules.IsWalkableFor(actor, map, position.X, position.Y))
-        {
-          if (!this.TryActorLeaveTile(actor))
-            return;
+        if (!Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
+          if (!TryActorLeaveTile(actor)) return;
           map.RemoveActor(actor);
           map.PlaceActorAt(actor, position);
-          this.OnActorEnterTile(actor);
+          OnActorEnterTile(actor);
         }
-        if (this.IsVisibleToPlayer(actor) || this.IsVisibleToPlayer(target) || this.IsVisibleToPlayer(map, toPos))
-        {
-          this.AddMessage(this.MakeMessage(actor, this.Conjugate(actor, this.VERB_SHOVE), target));
-          this.RedrawPlayScreen();
+        if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(target) || IsVisibleToPlayer(map, toPos)) {
+          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SHOVE), target));
+          RedrawPlayScreen();
         }
-        if (target.IsSleeping)
-          this.DoWakeUp(target);
-        this.OnActorEnterTile(target);
+        if (target.IsSleeping) DoWakeUp(target);
+        OnActorEnterTile(target);
       }
     }
 
     public void DoStartSleeping(Actor actor)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
-      this.DoStopDraggingCorpses(actor);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      DoStopDraggingCorpses(actor);
       actor.Activity = Activity.SLEEPING;
       actor.IsSleeping = true;
     }
@@ -10208,45 +10085,37 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTag(Actor actor, ItemSprayPaint spray, Point pos)
     {
-      SpendActorActionPoints(actor, Rules.BASE_ACTION_COST);
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       --spray.PaintQuantity;
       actor.Location.Map.GetTileAt(pos.X, pos.Y).AddDecoration((spray.Model as ItemSprayPaintModel).TagImageID);
-      if (!this.IsVisibleToPlayer(actor))
-        return;
-      this.AddMessage(this.MakeMessage(actor, string.Format("{0} a tag.", (object) this.Conjugate(actor, this.VERB_SPRAY))));
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, string.Format("{0} a tag.", (object) Conjugate(actor, VERB_SPRAY))));
     }
 
     private void DoGiveOrderTo(Actor master, Actor slave, ActorOrder order)
     {
-      SpendActorActionPoints(master, Rules.BASE_ACTION_COST);
+      master.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (master != slave.Leader)
-        this.DoSay(slave, master, "Who are you to give me orders?", RogueGame.Sayflags.IS_FREE_ACTION);
-      else if (!this.m_Rules.IsActorTrustingLeader(slave))
-      {
+        DoSay(slave, master, "Who are you to give me orders?", RogueGame.Sayflags.IS_FREE_ACTION);
+      else if (!this.m_Rules.IsActorTrustingLeader(slave)) {
         this.DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
-      }
-      else
-      {
+      } else {
         AIController aiController = slave.Controller as AIController;
-        if (aiController == null)
-          return;
+        if (aiController == null) return;
         aiController.SetOrder(order);
-        if (!this.IsVisibleToPlayer(master) && !this.IsVisibleToPlayer(slave))
-          return;
-        this.AddMessage(this.MakeMessage(master, this.Conjugate(master, this.VERB_ORDER), slave, string.Format(" to {0}.", (object) order.ToString())));
+        if (!IsVisibleToPlayer(master) && !IsVisibleToPlayer(slave)) return;
+        AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, string.Format(" to {0}.", (object) order.ToString())));
       }
     }
 
     private void DoCancelOrder(Actor master, Actor slave)
     {
-      SpendActorActionPoints(master, Rules.BASE_ACTION_COST);
+      master.SpendActionPoints(Rules.BASE_ACTION_COST);
       AIController aiController = slave.Controller as AIController;
-      if (aiController == null)
-        return;
-      aiController.SetOrder((ActorOrder) null);
-      if (!this.IsVisibleToPlayer(master) && !this.IsVisibleToPlayer(slave))
-        return;
-      this.AddMessage(this.MakeMessage(master, this.Conjugate(master, this.VERB_ORDER), slave, " to forget its orders."));
+      if (aiController == null) return;
+      aiController.SetOrder(null);
+      if (!IsVisibleToPlayer(master) && !IsVisibleToPlayer(slave)) return;
+      AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
     }
 
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
