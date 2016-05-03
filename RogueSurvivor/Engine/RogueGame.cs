@@ -2368,7 +2368,7 @@ namespace djack.RogueSurvivor.Engine
         actor.StaminaPoints -= staminaCost;
       }
       else
-        actor.StaminaPoints = 99;
+        actor.StaminaPoints = Rules.STAMINA_INFINITE;
     }
 
     private void RegenActorStaminaPoints(Actor actor, int staminaRegen)
@@ -2376,7 +2376,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.CanTire)
         actor.StaminaPoints = Math.Min(this.m_Rules.ActorMaxSTA(actor), actor.StaminaPoints + staminaRegen);
       else
-        actor.StaminaPoints = 99;
+        actor.StaminaPoints = Rules.STAMINA_INFINITE;
     }
 
     private void RegenActorHitPoints(Actor actor, int hpRegen)
