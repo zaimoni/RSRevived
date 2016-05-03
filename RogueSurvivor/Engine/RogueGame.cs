@@ -9589,12 +9589,14 @@ namespace djack.RogueSurvivor.Engine
       else if (it.Model is ItemTrackerModel)
       {
         --(it as ItemTracker).Batteries;
+        RedrawPlayScreen();
       }
       else
       {
         if (!(it.Model is ItemLightModel))
           return;
         --(it as ItemLight).Batteries;
+        RedrawPlayScreen();
       }
     }
 
