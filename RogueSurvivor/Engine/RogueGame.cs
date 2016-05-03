@@ -4162,7 +4162,7 @@ namespace djack.RogueSurvivor.Engine
             string str;
             switch (district.Kind)
             {
-              case DistrictKind._FIRST:
+              case DistrictKind.GENERAL:
                 color = Color.Gray;
                 str = "Gen";
                 break;
@@ -13305,7 +13305,7 @@ namespace djack.RogueSurvivor.Engine
       string str;
       switch (district.Kind)
       {
-        case DistrictKind._FIRST:
+        case DistrictKind.GENERAL:
           str = "District";
           break;
         case DistrictKind.RESIDENTIAL:

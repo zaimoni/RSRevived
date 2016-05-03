@@ -12,7 +12,6 @@ namespace djack.RogueSurvivor.Data
   internal enum DistrictKind
   {
     GENERAL = 0,
-    _FIRST = 0,
     RESIDENTIAL = 1,
     SHOPPING = 2,
     GREEN = 3,
