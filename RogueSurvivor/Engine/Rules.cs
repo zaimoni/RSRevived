@@ -61,14 +61,12 @@ namespace djack.RogueSurvivor.Engine
     public static float SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15f;
     public static int SKILL_STRONG_DMG_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
-    public static int SKILL_TOUGH_HP_BONUS = 3;
     public static int SKILL_UNSUSPICIOUS_BONUS = 25;
     public static int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
     public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
     public static int SKILL_ZAGILE_ATK_BONUS = 1;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
-    public static int SKILL_ZTOUGH_HP_BONUS = 4;
     public static float SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static float SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
@@ -1913,12 +1911,6 @@ namespace djack.RogueSurvivor.Engine
       return Math.Max((int) num, 0);
     }
 
-    public int ActorMaxHPs(Actor actor)
-    {
-      int num = Rules.SKILL_TOUGH_HP_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.TOUGH) + Rules.SKILL_ZTOUGH_HP_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TOUGH);
-      return actor.Sheet.BaseHitPoints + num;
-    }
-
     public int ActorItemNutritionValue(Actor actor, int baseValue)
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
@@ -2272,7 +2264,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorInfectionHPs(Actor a)
     {
-      return ActorMaxHPs(a) + a.MaxSTA;
+      return a.MaxHPs + a.MaxSTA;
     }
 
     public static int InfectionForDamage(Actor infector, int dmg)
@@ -2292,7 +2284,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseFreshnessPercent(Corpse c)
     {
-      return (int) (100.0 * (double) c.HitPoints / (double)ActorMaxHPs(c.DeadGuy));
+      return (int) (100.0 * (double) c.HitPoints / (double)c.DeadGuy.MaxHPs);
     }
 
     public int CorpseRotLevel(Corpse c)

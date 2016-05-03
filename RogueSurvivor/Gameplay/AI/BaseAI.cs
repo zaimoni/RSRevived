@@ -724,7 +724,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Inventory inventory = m_Actor.Inventory;
       if (inventory == null || inventory.IsEmpty)
         return (ActorAction) null;
-      bool needHP = m_Actor.HitPoints < game.Rules.ActorMaxHPs(m_Actor);
+      bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
       bool needSTA = game.Rules.IsActorTired(m_Actor);
       bool needSLP = m_Actor.WouldLikeToSleep;
       bool needCure = m_Actor.Infection > 0;
@@ -1185,10 +1185,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorGoEatCorpse(RogueGame game, List<Percept> corpsesPercepts)
     {
-      if (corpsesPercepts == null)
-        return (ActorAction) null;
-      if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= game.Rules.ActorMaxHPs(m_Actor))
-        return (ActorAction) null;
+      if (corpsesPercepts == null) return null;
+      if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
       List<Corpse> corpsesAt = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
       if (corpsesAt != null)
       {

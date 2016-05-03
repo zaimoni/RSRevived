@@ -20,6 +20,8 @@ namespace djack.RogueSurvivor.Data
     private const int NIGHT_STA_PENALTY = 2;
 
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
+    public static int SKILL_TOUGH_HP_BONUS = 3;
+    public static int SKILL_ZTOUGH_HP_BONUS = 4;
 
     private Actor.Flags m_Flags;
     private int m_ModelID;
@@ -901,6 +903,19 @@ namespace djack.RogueSurvivor.Data
     {
       m_ActionPoints -= actionCost;
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
+    }
+
+    // health
+    public int MaxHPs {
+      get {
+        int num = SKILL_TOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_TOUGH);
+        return Sheet.BaseHitPoints + num;
+      }
+    }
+
+    public void RegenHitPoints(int hpRegen)
+    {
+      m_HitPoints = Math.Min(MaxHPs, m_HitPoints + hpRegen);
     }
 
     // stamina

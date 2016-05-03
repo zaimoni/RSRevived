@@ -203,7 +203,7 @@ namespace djack.RogueSurvivor.Gameplay
       Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS = skillData2.VALUE1;
       Rules.SKILL_STRONG_PSYCHE_ENT_BONUS = skillData2.VALUE2;
       skillData2 = data[18];
-      Rules.SKILL_TOUGH_HP_BONUS = (int) skillData2.VALUE1;
+      Data.Actor.SKILL_TOUGH_HP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[19];
       Rules.SKILL_UNSUSPICIOUS_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[20];
@@ -223,7 +223,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[26];
       Rules.SKILL_ZSTRONG_DMG_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[27];
-      Rules.SKILL_ZTOUGH_HP_BONUS = (int) skillData2.VALUE1;
+      Data.Actor.SKILL_ZTOUGH_HP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[28];
       Rules.SKILL_ZTRACKER_SMELL_BONUS = skillData2.VALUE1;
       return true;

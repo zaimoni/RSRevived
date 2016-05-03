@@ -513,7 +513,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   int distance = Rules.GridDistance(point, actorAt.Location.Position);
                   if (distance <= itemGrenadeModel.BlastAttack.Radius) {
                     if (game.Rules.IsEnemyOf(m_Actor, actorAt)) {
-                      int num3 = game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * game.Rules.ActorMaxHPs(actorAt);
+                      int num3 = game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs;
                       num2 += num3;
                     } else {
                       num2 = -1;

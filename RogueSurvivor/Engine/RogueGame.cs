@@ -2358,11 +2358,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void RegenActorHitPoints(Actor actor, int hpRegen)
-    {
-      actor.HitPoints = Math.Min(m_Rules.ActorMaxHPs(actor), actor.HitPoints + hpRegen);
-    }
-
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
@@ -2382,7 +2377,6 @@ namespace djack.RogueSurvivor.Engine
             foreach (Corpse corpse in corpseList1) {
               if (map.GetActorAt(corpse.Position) == null) {
                 float num = corpse.HitPoints / (float) corpse.MaxHitPoints;
-                m_Rules.ActorMaxHPs(corpse.DeadGuy);
                 corpseList3.Add(corpse);
                 Zombify((Actor) null, corpse.DeadGuy, false);
                 if (IsVisibleToPlayer(map, corpse.Position)) {
@@ -2610,8 +2604,8 @@ namespace djack.RogueSurvivor.Engine
               int num = m_Rules.ActorSleepRegen(actor, isOnCouch);
               actor.SleepPoints += num;
               actor.SleepPoints = Math.Min(actor.SleepPoints, m_Rules.ActorMaxSleep(actor));
-              if (actor.HitPoints < m_Rules.ActorMaxHPs(actor) && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + m_Rules.ActorHealChanceBonus(actor)))
-                                RegenActorHitPoints(actor, Rules.SLEEP_HEAL_HITPOINTS);
+              if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + m_Rules.ActorHealChanceBonus(actor)))
+                actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
               if (actor.IsHungry || actor.SleepPoints >= m_Rules.ActorMaxSleep(actor))
                 DoWakeUp(actor);
               else if (actor.IsPlayer) {
@@ -4565,7 +4559,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message(string.Format("{0} corpse is no more.", (object) c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
       }
       if (a.Model.Abilities.IsUndead) {
-        RegenActorHitPoints(a, Rules.ActorBiteHpRegen(a, num));
+        a.RegenHitPoints(Rules.ActorBiteHpRegen(a, num));
         a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxRot(a));
       } else {
         a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxFood(a));
@@ -7379,7 +7373,7 @@ namespace djack.RogueSurvivor.Engine
       }
       stringList.Add(string.Format("Spd : {0:F2}", (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0)));
       StringBuilder stringBuilder = new StringBuilder();
-      int num1 = m_Rules.ActorMaxHPs(actor);
+      int num1 = actor.MaxHPs;
       if (actor.HitPoints != num1)
         stringBuilder.Append(string.Format("HP  : {0:D2}/{1:D2}", (object) actor.HitPoints, (object) num1));
       else
@@ -8059,7 +8053,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.STRONG_PSYCHE:
           return string.Format("+{0}% SAN threshold, +{1}% regen", (object) (int) (100.0 * (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS));
         case Skills.IDs.TOUGH:
-          return string.Format("+{0} HP", (object) Rules.SKILL_TOUGH_HP_BONUS);
+          return string.Format("+{0} HP", (object) Actor.SKILL_TOUGH_HP_BONUS);
         case Skills.IDs.UNSUSPICIOUS:
           return string.Format("+{0}% unnoticed by law enforcers and gangs", (object) Rules.SKILL_UNSUSPICIOUS_BONUS);
         case Skills.IDs._FIRST_UNDEAD:
@@ -8077,7 +8071,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_STRONG:
           return string.Format("+{0} melee DMG, can push", (object) Rules.SKILL_ZSTRONG_DMG_BONUS);
         case Skills.IDs.Z_TOUGH:
-          return string.Format("+{0} HP", (object) Rules.SKILL_ZTOUGH_HP_BONUS);
+          return string.Format("+{0} HP", (object) Actor.SKILL_ZTOUGH_HP_BONUS);
         case Skills.IDs.Z_TRACKER:
           return string.Format("+{0}% smell", (object) (int) (100.0 * (double) Rules.SKILL_ZTRACKER_SMELL_BONUS));
         default:
@@ -8768,14 +8762,14 @@ namespace djack.RogueSurvivor.Engine
         int num3 = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit;
         if (num3 > 0)
         {
-                    InflictDamage(defender, num3);
+          InflictDamage(defender, num3);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead)
           {
-                        RegenActorHitPoints(attacker, Rules.ActorBiteHpRegen(attacker, num3));
+            attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, num3));
             attacker.FoodPoints = Math.Min(attacker.FoodPoints + m_Rules.ActorBiteNutritionValue(attacker, num3), m_Rules.ActorMaxRot(attacker));
             if (player2)
-                            AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
-                        InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
+              AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
+            InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
           }
           if (defender.HitPoints <= 0)
           {
@@ -9680,7 +9674,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == m_Player)
       {
-        int num1 = m_Rules.ActorMaxHPs(actor) - actor.HitPoints;
+        int num1 = actor.MaxHPs - actor.HitPoints;
         int num2 = actor.MaxSTA - actor.StaminaPoints;
         int num3 = m_Rules.ActorMaxSleep(actor) - 2 - actor.SleepPoints;
         int infection = actor.Infection;
@@ -9692,7 +9686,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.HitPoints = Math.Min(actor.HitPoints + m_Rules.ActorMedicineEffect(actor, med.Healing), m_Rules.ActorMaxHPs(actor));
+      actor.HitPoints = Math.Min(actor.HitPoints + m_Rules.ActorMedicineEffect(actor, med.Healing), actor.MaxHPs);
       actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
       actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), m_Rules.ActorMaxSleep(actor));
       actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
@@ -10366,7 +10360,7 @@ namespace djack.RogueSurvivor.Engine
     public void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\bloodied");
-      int num = m_Rules.ActorMaxHPs(deadGuy);
+      int num = deadGuy.MaxHPs;
       float rotation = (float)m_Rules.Roll(30, 60);
       if (m_Rules.RollChance(50))
         rotation = -rotation;
@@ -11475,13 +11469,13 @@ namespace djack.RogueSurvivor.Engine
       switch (actor.Activity)
       {
         case Activity.IDLE:
-          int maxHitPoints = m_Rules.ActorMaxHPs(actor);
+          int maxHitPoints = actor.MaxHPs;
           if (actor.HitPoints < maxHitPoints)
-                        DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
+            DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
           if (actor.IsRunning)
-                        m_UI.UI_DrawImage("Icons\\running", gx2, gy2, tint);
+            m_UI.UI_DrawImage("Icons\\running", gx2, gy2, tint);
           else if (actor.Model.Abilities.CanRun && !m_Rules.CanActorRun(actor))
-                        m_UI.UI_DrawImage("Icons\\cant_run", gx2, gy2, tint);
+            m_UI.UI_DrawImage("Icons\\cant_run", gx2, gy2, tint);
           if (actor.Model.Abilities.HasToSleep)
           {
             if (actor.IsExhausted)
@@ -11926,21 +11920,21 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
-            m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
       gy += 14;
-      int maxValue1 = m_Rules.ActorMaxHPs(actor);
-            m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", (object) actor.HitPoints), gx, gy, new Color?());
-            DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
-            m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue1), gx + 84 + 100, gy, new Color?());
+      int maxValue1 = actor.MaxHPs;
+      m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", (object) actor.HitPoints), gx, gy, new Color?());
+      DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
+      m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue1), gx + 84 + 100, gy, new Color?());
       gy += 14;
       if (actor.Model.Abilities.CanTire)
       {
         int maxValue2 = actor.MaxSTA;
-                m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", (object) actor.StaminaPoints), gx, gy, new Color?());
-                DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", (object) actor.StaminaPoints), gx, gy, new Color?());
+        DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
+        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (actor.IsRunning)
-                    m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
         else if (m_Rules.CanActorRun(actor))
                     m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
         else if (m_Rules.IsActorTired(actor))

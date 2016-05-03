@@ -609,7 +609,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public void RecomputeActorStartingStats(Actor actor)
     {
-      actor.HitPoints = m_Rules.ActorMaxHPs(actor);
+      actor.HitPoints = actor.MaxHPs;
       actor.StaminaPoints = actor.MaxSTA;
       actor.FoodPoints = m_Rules.ActorMaxFood(actor);
       actor.SleepPoints = m_Rules.ActorMaxSleep(actor);
