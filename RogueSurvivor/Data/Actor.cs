@@ -1026,6 +1026,12 @@ namespace djack.RogueSurvivor.Data
       return num;
     }    
 
+    public bool HasItemOfType(Type tt)
+    {
+      if (Inventory == null || Inventory.IsEmpty) return false;
+      return Inventory.HasItemOfType(tt);
+    }
+
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;

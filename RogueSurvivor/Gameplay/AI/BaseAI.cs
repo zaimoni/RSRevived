@@ -335,7 +335,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }), (Func<Direction, float>) (dir =>
       {
         int num = game.Rules.Roll(0, 666);
-        if (this.m_Actor.Model.Abilities.IsIntelligent && BaseAI.IsAnyActivatedTrapThere(this.m_Actor.Location.Map, (this.m_Actor.Location + dir).Position))
+        if (m_Actor.Model.Abilities.IsIntelligent && null != m_Actor.Location.Map.GetActivatedTrapAt((m_Actor.Location + dir).Position))
           num -= 1000;
         return (float) num;
       }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
@@ -1012,7 +1012,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow))
           num += 100;
-        if (BaseAI.IsAnyActivatedTrapThere(map, position))
+        if (null != map.GetActivatedTrapAt(position))
           num += -50;
         if (map.GetTileAt(position.X, position.Y).IsInside)
         {
@@ -1077,8 +1077,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ActorAction) null;
       if (this.m_Actor.Inventory.CountItems < Rules.ActorMaxInv(this.m_Actor))
         return (ActorAction) null;
-      if (this.HasItemOfType(typeof (ItemFood)))
-        return (ActorAction) null;
+      if (m_Actor.HasItemOfType(typeof (ItemFood))) return null;
       bool flag = false;
       foreach (Percept stack in stacks)
       {
@@ -1391,12 +1390,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected bool HasItemOfType(Type tt)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
-      return m_Actor.Inventory.HasItemOfType(tt);
-    }
-
     protected void RunIfPossible(Rules rules)
     {
       if (!rules.CanActorRun(this.m_Actor))
@@ -1534,14 +1527,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a != null && !(a is ActionChat) && (!(a is ActionGetFromContainer) && !(a is ActionSwitchPowerGenerator)))
         return !(a is ActionRechargeItemBattery);
       return false;
-    }
-
-    protected bool HasNoFoodItems(Actor actor)
-    {
-      Inventory inventory = actor.Inventory;
-      if (inventory == null || inventory.IsEmpty)
-        return true;
-      return !inventory.HasItemOfType(typeof (ItemFood));
     }
 
     protected bool IsSoldier(Actor actor)
@@ -1707,20 +1692,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (exitList == null)
         return (Exit) null;
       return exitList[game.Rules.Roll(0, exitList.Count)];
-    }
-
-    public static bool IsAnyActivatedTrapThere(Map map, Point pos)
-    {
-      Inventory itemsAt = map.GetItemsAt(pos);
-      if (itemsAt == null || itemsAt.IsEmpty)
-        return false;
-      return itemsAt.GetFirstMatching((Predicate<Item>) (it =>
-      {
-        ItemTrap itemTrap = it as ItemTrap;
-        if (itemTrap != null)
-          return itemTrap.IsActivated;
-        return false;
-      })) != null;
     }
 
     public static bool IsZoneChange(Map map, Point pos)

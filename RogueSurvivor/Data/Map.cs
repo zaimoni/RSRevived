@@ -263,7 +263,7 @@ namespace djack.RogueSurvivor.Data
     }
 
 
-        public bool IsInBounds(int x, int y)
+    public bool IsInBounds(int x, int y)
     {
       if (x >= 0 && x < Width && y >= 0)
         return y < Height;
@@ -599,6 +599,19 @@ namespace djack.RogueSurvivor.Data
     public Inventory GetItemsAt(int x, int y)
     {
       return this.GetItemsAt(new Point(x, y));
+    }
+
+    public djack.RogueSurvivor.Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
+    {
+      Inventory itemsAt = GetItemsAt(pos);
+      if (itemsAt == null || itemsAt.IsEmpty) return null;
+      Item tmp = itemsAt.GetFirstMatching((Predicate<Item>) (it =>
+      {
+        djack.RogueSurvivor.Engine.Items.ItemTrap itemTrap = it as djack.RogueSurvivor.Engine.Items.ItemTrap;
+        if (itemTrap != null) return itemTrap.IsActivated;
+        return false;
+      }));
+      return tmp as djack.RogueSurvivor.Engine.Items.ItemTrap;
     }
 
     public Point? GetGroundInventoryPosition(Inventory groundInv)

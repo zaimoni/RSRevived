@@ -432,7 +432,7 @@ label_10:
           }
         }
       }
-      if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!this.m_Actor.HasLeader && !this.m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && this.HasNoFoodItems(this.m_Actor)))
+      if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!this.m_Actor.HasLeader && !this.m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.HasItemOfType(typeof(ItemFood))))
       {
         Percept target = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a =>
         {

@@ -6668,10 +6668,7 @@ namespace djack.RogueSurvivor.Engine
           }
           return false;
         case AdvisorHint.GRENADE:
-          Inventory inventory7 = this.m_Player.Inventory;
-          if (inventory7 == null || inventory7.IsEmpty)
-            return false;
-          return inventory7.HasItemOfType(typeof (ItemGrenade));
+          return m_Player.HasItemOfType(typeof(ItemGrenade));
         case AdvisorHint.DOORWINDOW_OPEN:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
