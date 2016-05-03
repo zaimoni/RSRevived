@@ -785,7 +785,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorRestIfTired(RogueGame game)
     {
-      if (m_Actor.StaminaPoints >= Rules.STAMINA_MIN_FOR_ACTIVITY) return null;
+      if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
       return new ActionWait(m_Actor, game);
     }
 

@@ -15,6 +15,11 @@ namespace djack.RogueSurvivor.Data
     public const int FOOD_HUNGRY_LEVEL = WorldTime.TURNS_PER_DAY;
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
+    private const int STAMINA_INFINITE = 99;
+    public const int STAMINA_MIN_FOR_ACTIVITY = 10;
+    private const int NIGHT_STA_PENALTY = 2;
+
+    public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
 
     private Actor.Flags m_Flags;
     private int m_ModelID;
@@ -896,6 +901,44 @@ namespace djack.RogueSurvivor.Data
     {
       m_ActionPoints -= actionCost;
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
+    }
+
+    // stamina
+    public bool WillTireAfter(int staminaCost)
+    {
+      if (!Model.Abilities.CanTire) return false;
+      if (Location.Map.LocalTime.IsNight && staminaCost > 0)
+        staminaCost += Model.Abilities.IsUndead ? 0 : NIGHT_STA_PENALTY;
+      if (IsExhausted) staminaCost *= 2;
+      return m_StaminaPoints + STAMINA_MIN_FOR_ACTIVITY < staminaCost;
+    }
+
+    public int MaxSTA {
+      get {
+        int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HIGH_STAMINA);
+        return Sheet.BaseStaminaPoints + num;
+      }
+    }
+
+    // we do not roll these into a setter as no change requires both sets of checks
+    public void SpendStaminaPoints(int staminaCost)
+    {
+      if (Model.Abilities.CanTire) {
+        if (Location.Map.LocalTime.IsNight && staminaCost > 0)
+          staminaCost += Model.Abilities.IsUndead ? 0 : NIGHT_STA_PENALTY;
+        if (IsExhausted) staminaCost *= 2;
+        m_StaminaPoints -= staminaCost;
+      }
+      else
+        m_StaminaPoints = STAMINA_INFINITE;
+    }
+
+    public void RegenStaminaPoints(int staminaRegen)
+    {
+      if (Model.Abilities.CanTire)
+        m_StaminaPoints = Math.Min(MaxSTA, m_StaminaPoints + staminaRegen);
+      else
+        m_StaminaPoints = STAMINA_INFINITE;
     }
 
     // sanity

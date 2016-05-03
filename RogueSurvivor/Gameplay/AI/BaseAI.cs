@@ -1586,8 +1586,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool WantToEvadeMelee(RogueGame game, Actor actor, ActorCourage courage, Actor target)
     {
-      if (this.WillTireAfterAttack(game, actor))
-        return true;
+      if (this.WillTireAfterAttack(actor)) return true;
       if (game.Rules.ActorSpeed(actor) > game.Rules.ActorSpeed(target))
       {
         if (game.Rules.WillActorActAgainBefore(actor, target))
@@ -1610,26 +1609,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return b;
     }
 
-    protected bool WillTireAfterAttack(RogueGame game, Actor actor)
+    protected bool WillTireAfterAttack(Actor actor)
     {
-      if (!actor.Model.Abilities.CanTire) return false;
-      int night_stamina = (actor.Location.Map.LocalTime.IsNight ? Rules.NIGHT_STA_PENALTY : 0);
-      return actor.StaminaPoints - Rules.STAMINA_COST_MELEE_ATTACK - night_stamina - actor.CurrentMeleeAttack.StaminaPenalty < Rules.STAMINA_MIN_FOR_ACTIVITY;
+      return actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK+ actor.CurrentMeleeAttack.StaminaPenalty);
     }
 
     // XXX doesn't work in the presence of jumping
-    protected bool WillTireAfterRunning(RogueGame game, Actor actor)
+    protected bool WillTireAfterRunning(Actor actor)
     {
-      if (!actor.Model.Abilities.CanTire) return false;
-      int night_stamina = (actor.Location.Map.LocalTime.IsNight ? Rules.NIGHT_STA_PENALTY : 0);
-      return actor.StaminaPoints - Rules.STAMINA_COST_RUNNING - night_stamina < Rules.STAMINA_MIN_FOR_ACTIVITY;
+      return actor.WillTireAfter(Rules.STAMINA_COST_RUNNING);
     }
 
     protected bool HasSpeedAdvantage(RogueGame game, Actor actor, Actor target)
     {
       int num1 = game.Rules.ActorSpeed(actor);
       int num2 = game.Rules.ActorSpeed(target);
-      return num1 > num2 || game.Rules.CanActorRun(actor) && !game.Rules.CanActorRun(target) && (!this.WillTireAfterRunning(game, actor) && num1 * 2 > num2);
+      return num1 > num2 || game.Rules.CanActorRun(actor) && !game.Rules.CanActorRun(target) && (!WillTireAfterRunning(actor) && num1 * 2 > num2);
     }
 
     protected bool IsBetween(Point A, Point between, Point B)

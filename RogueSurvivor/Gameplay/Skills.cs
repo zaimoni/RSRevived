@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData1 = data[7];
       Rules.SKILL_HAULER_INV_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[8];
-      Rules.SKILL_HIGH_STAMINA_STA_BONUS = (int) skillData1.VALUE1;
+      Data.Actor.SKILL_HIGH_STAMINA_STA_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[9];
       Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[10];

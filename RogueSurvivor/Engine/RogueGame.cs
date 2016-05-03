@@ -2358,27 +2358,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void SpendActorStaminaPoints(Actor actor, int staminaCost)
-    {
-      if (actor.Model.Abilities.CanTire)
-      {
-        if (actor.Location.Map.LocalTime.IsNight && staminaCost > 0)
-          staminaCost += this.m_Rules.NightStaminaPenalty(actor);
-        if (actor.IsExhausted) staminaCost *= 2;
-        actor.StaminaPoints -= staminaCost;
-      }
-      else
-        actor.StaminaPoints = Rules.STAMINA_INFINITE;
-    }
-
-    private void RegenActorStaminaPoints(Actor actor, int staminaRegen)
-    {
-      if (actor.Model.Abilities.CanTire)
-        actor.StaminaPoints = Math.Min(this.m_Rules.ActorMaxSTA(actor), actor.StaminaPoints + staminaRegen);
-      else
-        actor.StaminaPoints = Rules.STAMINA_INFINITE;
-    }
-
     private void RegenActorHitPoints(Actor actor, int hpRegen)
     {
       actor.HitPoints = Math.Min(this.m_Rules.ActorMaxHPs(actor), actor.HitPoints + hpRegen);
@@ -2474,7 +2453,7 @@ namespace djack.RogueSurvivor.Engine
                     }
                   }
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
-                  SpendActorStaminaPoints(actor, Rules.INFECTION_LEVEL_2_TIRED_STA);
+                  actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
                   actor.SleepPoints -= Rules.INFECTION_LEVEL_2_TIRED_SLP;
                   if (actor.SleepPoints < 0) actor.SleepPoints = 0;
                   if (player) {
@@ -2486,7 +2465,7 @@ namespace djack.RogueSurvivor.Engine
                     }
                   }
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_1_WEAK) {
-                  SpendActorStaminaPoints(actor, Rules.INFECTION_LEVEL_1_WEAK_STA);
+                  actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_1_WEAK_STA);
                   if (player) {
                     if (flag3) ClearMessages();
                     AddMessage(this.MakeMessage(actor, string.Format("{0} sick and weak.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
@@ -2578,13 +2557,13 @@ namespace djack.RogueSurvivor.Engine
         {
           if (!actor.IsSleeping)
             actor.ActionPoints += this.m_Rules.ActorSpeed(actor);
-          if (actor.StaminaPoints < this.m_Rules.ActorMaxSTA(actor))
-            this.RegenActorStaminaPoints(actor, 2);
+          if (actor.StaminaPoints < actor.MaxSTA)
+            actor.RegenStaminaPoints(Rules.STAMINA_REGEN_WAIT);
         }
         map.CheckNextActorIndex = 0;
         foreach (Actor actor in map.Actors)
         {
-          if (actor.IsRunning && actor.StaminaPoints < Rules.STAMINA_MIN_FOR_ACTIVITY)
+          if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
           {
             actor.IsRunning = false;
             if (actor == this.m_Player)
@@ -7446,7 +7425,7 @@ namespace djack.RogueSurvivor.Engine
         stringBuilder.Append(string.Format("HP  : {0:D2} MAX", (object) actor.HitPoints));
       if (actor.Model.Abilities.CanTire)
       {
-        int num2 = this.m_Rules.ActorMaxSTA(actor);
+        int num2 = actor.MaxSTA;
         if (actor.StaminaPoints != num2)
           stringBuilder.Append(string.Format("   STA : {0}/{1}", (object) actor.StaminaPoints, (object) num2));
         else
@@ -8099,7 +8078,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.HAULER:
           return string.Format("+{0} inventory capacity", (object) Rules.SKILL_HAULER_INV_BONUS);
         case Skills.IDs.HIGH_STAMINA:
-          return string.Format("+{0} STA", (object) Rules.SKILL_HIGH_STAMINA_STA_BONUS);
+          return string.Format("+{0} STA", (object) Actor.SKILL_HIGH_STAMINA_STA_BONUS);
         case Skills.IDs.LEADERSHIP:
           return string.Format("+{0} max Followers", (object) Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS);
         case Skills.IDs.LIGHT_EATER:
@@ -8285,26 +8264,24 @@ namespace djack.RogueSurvivor.Engine
         int actionCost = Rules.BASE_ACTION_COST;
         if (actor.IsRunning) {
           actionCost /= 2;
-          SpendActorStaminaPoints(actor, Rules.STAMINA_COST_RUNNING);
+          actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
         }
         bool flag = false;
         MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position.X, newLocation.Position.Y);
         if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable)
           flag = true;
-        if (flag)
-        {
-          SpendActorStaminaPoints(actor, Rules.STAMINA_COST_JUMP);
+        if (flag) {
+          actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
           if (IsVisibleToPlayer(actor))
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
-          if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE))
-          {
+          if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
             actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
             if (IsVisibleToPlayer(actor))
               AddMessage(MakeMessage(actor, string.Format("{0}!", (object) Conjugate(actor, VERB_STUMBLE))));
           }
         }
         if (draggedCorpse != null)
-          SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
+          actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
         actor.SpendActionPoints(actionCost);
         if (actor.ActionPoints >= Rules.BASE_ACTION_COST)
           DropActorScent(actor);
@@ -8686,33 +8663,28 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (IsVisibleToPlayer(actor)) {
-        if (actor.StaminaPoints < m_Rules.ActorMaxSTA(actor))
+        if (actor.StaminaPoints < actor.MaxSTA)
           AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", (object) Conjugate(actor, VERB_CATCH), (object) HisOrHer(actor))));
         else
           AddMessage(MakeMessage(actor, string.Format("{0}.", (object) Conjugate(actor, VERB_WAIT))));
       }
-      RegenActorStaminaPoints(actor, 2);
+      actor.RegenStaminaPoints(Rules.STAMINA_REGEN_WAIT);
     }
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
       ActionBump actionBump = new ActionBump(player, this, direction);
-      if (actionBump == null)
-        return false;
-      if (actionBump.IsLegal())
-      {
+      if (actionBump == null) return false;
+      if (actionBump.IsLegal()) {
         actionBump.Perform();
         return true;
       }
       DoorWindow doorWindow = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
-      if (doorWindow != null && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead)
-      {
-        if (!this.m_Rules.IsActorTired(player))
-        {
+      if (doorWindow != null && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead) {
+        if (!this.m_Rules.IsActorTired(player)) {
           this.AddMessage(this.MakeYesNoMessage("Really tear down the barricade"));
           this.RedrawPlayScreen();
-          if (this.WaitYesOrNo())
-          {
+          if (this.WaitYesOrNo()) {
             this.DoBreak(player, (MapObject) doorWindow);
             return true;
           }
@@ -8814,7 +8786,7 @@ namespace djack.RogueSurvivor.Engine
       Attack attack = this.m_Rules.ActorMeleeAttack(attacker, attacker.CurrentMeleeAttack, defender);
       Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
-      SpendActorStaminaPoints(attacker, Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
+      attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       int num1 = m_Rules.RollSkill(attack.HitValue);
       int num2 = m_Rules.RollSkill(defence.Value);
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
@@ -8958,7 +8930,7 @@ namespace djack.RogueSurvivor.Engine
       int distance = Rules.GridDistance(attacker.Location.Position, defender.Location.Position);
       Attack attack = this.m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
       Defence defence = this.m_Rules.ActorDefence(defender, defender.CurrentDefence);
-      this.SpendActorStaminaPoints(attacker, attack.StaminaPenalty);
+      attacker.SpendStaminaPoints(attack.StaminaPenalty);
       if (attack.Kind == AttackKind.FIREARM && (this.m_Rules.RollChance(this.m_Rules.IsWeatherRain(this.m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && this.IsVisibleToPlayer(attacker)))
       {
         this.AddMessage(this.MakeMessage(attacker, " : weapon jam!"));
@@ -9748,7 +9720,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == this.m_Player)
       {
         int num1 = m_Rules.ActorMaxHPs(actor) - actor.HitPoints;
-        int num2 = m_Rules.ActorMaxSTA(actor) - actor.StaminaPoints;
+        int num2 = actor.MaxSTA - actor.StaminaPoints;
         int num3 = m_Rules.ActorMaxSleep(actor) - 2 - actor.SleepPoints;
         int infection = actor.Infection;
         int num4 = m_Rules.ActorMaxSanity(actor) - actor.Sanity;
@@ -9760,7 +9732,7 @@ namespace djack.RogueSurvivor.Engine
       }
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.HitPoints = Math.Min(actor.HitPoints + m_Rules.ActorMedicineEffect(actor, med.Healing), m_Rules.ActorMaxHPs(actor));
-      actor.StaminaPoints = Math.Min(actor.StaminaPoints + m_Rules.ActorMedicineEffect(actor, med.StaminaBoost), m_Rules.ActorMaxSTA(actor));
+      actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
       actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), m_Rules.ActorMaxSleep(actor));
       actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
       actor.Sanity = Math.Min(actor.Sanity + m_Rules.ActorMedicineEffect(actor, med.SanityCure), m_Rules.ActorMaxSanity(actor));
@@ -9937,7 +9909,7 @@ namespace djack.RogueSurvivor.Engine
       DoorWindow doorWindow = mapObj as DoorWindow;
       if (doorWindow != null && doorWindow.IsBarricaded) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-        SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
+        actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.BarricadePoints -= attack.DamageValue;
         OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
         if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(doorWindow)) {
@@ -9951,11 +9923,10 @@ namespace djack.RogueSurvivor.Engine
       {
         mapObj.HitPoints -= attack.DamageValue;
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-        this.SpendActorStaminaPoints(actor, Rules.STAMINA_COST_MELEE_ATTACK);
+        actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         bool flag = false;
-        if (mapObj.HitPoints <= 0)
-        {
-          this.DoDestroyObject(mapObj);
+        if (mapObj.HitPoints <= 0) {
+          DoDestroyObject(mapObj);
           flag = true;
         }
         this.OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
@@ -10018,14 +9989,14 @@ namespace djack.RogueSurvivor.Engine
           staminaCost = mapObj.Weight / (1 + actorList.Count);
           foreach (Actor actor1 in actorList) {
             actor1.SpendActionPoints(Rules.BASE_ACTION_COST);
-            SpendActorStaminaPoints(actor1, staminaCost);
+            actor1.SpendStaminaPoints(staminaCost);
             if (flag)
-              AddMessage(this.MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", (object) this.Conjugate(actor1, this.VERB_HELP), (object) actor.Name, (object) mapObj.TheName)));
+              AddMessage(MakeMessage(actor1, string.Format("{0} {1} pushing {2}.", (object) this.Conjugate(actor1, this.VERB_HELP), (object) actor.Name, (object) mapObj.TheName)));
           }
         }
       }
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      SpendActorStaminaPoints(actor, staminaCost);
+      actor.SpendStaminaPoints(staminaCost);
       Map map = mapObj.Location.Map;
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
@@ -10049,7 +10020,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (TryActorLeaveTile(target)) {
-        SpendActorStaminaPoints(actor, Rules.DEFAULT_ACTOR_WEIGHT);
+        actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
         DoStopDraggingCorpses(target);
         Map map = target.Location.Map;
         Point position = target.Location.Position;
@@ -12026,7 +11997,7 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       if (actor.Model.Abilities.CanTire)
       {
-        int maxValue2 = this.m_Rules.ActorMaxSTA(actor);
+        int maxValue2 = actor.MaxSTA;
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", (object) actor.StaminaPoints), gx, gy, new Color?());
         this.DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
         this.m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());

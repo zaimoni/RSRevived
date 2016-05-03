@@ -43,7 +43,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_FIREARMS_DMG_BONUS = 2;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
-    public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
@@ -79,8 +78,6 @@ namespace djack.RogueSurvivor.Engine
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public const int BASE_ACTION_COST = 100;
     public const int BASE_SPEED = 100;
-    public const int STAMINA_INFINITE = 99;
-    public const int STAMINA_MIN_FOR_ACTIVITY = 10;
     public const int STAMINA_COST_RUNNING = 4;
     public const int STAMINA_REGEN_WAIT = 2;
     public const int STAMINA_REGEN_PER_TURN = 2;
@@ -98,7 +95,6 @@ namespace djack.RogueSurvivor.Engine
     private const int FOV_PENALTY_MIDNIGHT = 3;
     private const int FOV_PENALTY_DEEP_NIGHT = 4;
     private const int FOV_PENALTY_SUNRISE = 2;
-    public const int NIGHT_STA_PENALTY = 2;
     private const int FOV_PENALTY_RAIN = 1;
     private const int FOV_PENALTY_HEAVY_RAIN = 2;
     public const int MELEE_WEAPON_BREAK_CHANCE = 1;
@@ -583,7 +579,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "no ability to run";
         return false;
       }
-      if (actor.StaminaPoints < STAMINA_MIN_FOR_ACTIVITY)
+      if (actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
       {
         reason = "not enough stamina to run";
         return false;
@@ -597,7 +593,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == null)
         throw new ArgumentNullException("actor");
       if (actor.Model.Abilities.CanTire)
-        return actor.StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
+        return actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY;
       return false;
     }
 
@@ -640,7 +636,7 @@ namespace djack.RogueSurvivor.Engine
           return false;
         }
       }
-      if (actor.StaminaPoints < STAMINA_MIN_FOR_ACTIVITY)
+      if (actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
       {
         reason = "not enough stamina to attack";
         return false;
@@ -1923,12 +1919,6 @@ namespace djack.RogueSurvivor.Engine
       return actor.Sheet.BaseHitPoints + num;
     }
 
-    public int ActorMaxSTA(Actor actor)
-    {
-      int num = Rules.SKILL_HIGH_STAMINA_STA_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
-      return actor.Sheet.BaseStaminaPoints + num;
-    }
-
     public int ActorItemNutritionValue(Actor actor, int baseValue)
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
@@ -2033,7 +2023,7 @@ namespace djack.RogueSurvivor.Engine
       else if (actor.IsSleepy) num4 *= 0.75f;
       if (this.IsActorTired(actor))
         num4 *= FIRING_WHEN_STA_TIRED;
-      else if (actor.StaminaPoints < this.ActorMaxSTA(actor))
+      else if (actor.StaminaPoints < actor.MaxSTA)
         num4 *= FIRING_WHEN_STA_NOT_FULL;
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
     }
@@ -2208,11 +2198,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public int NightStaminaPenalty(Actor actor)
-    {
-      return actor.Model.Abilities.IsUndead ? 0 : NIGHT_STA_PENALTY;
-    }
-
     private int WeatherFovPenalty(Actor actor, Weather weather)
     {
       if (actor.Model.Abilities.IsUndead) return 0;
@@ -2292,7 +2277,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorInfectionHPs(Actor a)
     {
-      return this.ActorMaxHPs(a) + this.ActorMaxSTA(a);
+      return this.ActorMaxHPs(a) + a.MaxSTA;
     }
 
     public static int InfectionForDamage(Actor infector, int dmg)
