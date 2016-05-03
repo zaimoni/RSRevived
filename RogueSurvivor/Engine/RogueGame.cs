@@ -10123,10 +10123,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
     {
-      int x1 = noisePosition.X - 5;
-      int x2 = noisePosition.X + 5;
-      int y1 = noisePosition.Y - 5;
-      int y2 = noisePosition.Y + 5;
+      int x1 = noisePosition.X - Rules.LOUD_NOISE_RADIUS;
+      int x2 = noisePosition.X + Rules.LOUD_NOISE_RADIUS;
+      int y1 = noisePosition.Y - Rules.LOUD_NOISE_RADIUS;
+      int y2 = noisePosition.Y + Rules.LOUD_NOISE_RADIUS;
       map.TrimToBounds(ref x1, ref y1);
       map.TrimToBounds(ref x2, ref y2);
       for (int index1 = x1; index1 <= x2; ++index1)
