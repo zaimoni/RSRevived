@@ -1061,6 +1061,15 @@ namespace djack.RogueSurvivor.Data
       return GetEquippedItem(DollPart._FIRST);
     }
 
+    public Skill SkillUpgrade(djack.RogueSurvivor.Gameplay.Skills.IDs id)
+    {
+      Sheet.SkillTable.AddOrIncreaseSkill(id);
+      Skill skill = Sheet.SkillTable.GetSkill(id);
+      if (id == djack.RogueSurvivor.Gameplay.Skills.IDs.HAULER && Inventory != null)
+          Inventory.MaxCapacity = djack.RogueSurvivor.Engine.Rules.ActorMaxInv(this);
+      return skill;
+    }
+
     // flag handling
     private bool GetFlag(Actor.Flags f)
     {

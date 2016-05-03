@@ -3348,7 +3348,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           {
             Skills.IDs? nullable = this.m_Game.ZombifySkill((Skills.IDs) this.m_Rules.Roll(0, (int)Skills.IDs._COUNT));
             if (nullable.HasValue)
-              this.m_Game.SkillUpgrade(actor, nullable.Value);
+              actor.SkillUpgrade(nullable.Value);
           }
           this.RecomputeActorStartingStats(actor);
         }

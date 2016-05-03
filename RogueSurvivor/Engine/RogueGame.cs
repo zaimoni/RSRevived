@@ -10393,18 +10393,14 @@ namespace djack.RogueSurvivor.Engine
             skillTable = new SkillTable(killer.Sheet.SkillTable.Skills);
           killer.Model = actorModel;
           if (killer.IsPlayer)
-            this.PrepareActorForPlayerControl(killer);
-          if (skillTable != null)
-          {
-            foreach (Skill skill in skillTable.Skills)
-            {
-              for (int index = 0; index < skill.Level; ++index)
-              {
-                killer.Sheet.SkillTable.AddOrIncreaseSkill((Skills.IDs) skill.ID);
-                this.OnSkillUpgrade(killer, (Skills.IDs) skill.ID);
+            PrepareActorForPlayerControl(killer);
+          if (skillTable != null) {
+            foreach (Skill skill in skillTable.Skills) {
+              for (int index = 0; index < skill.Level; ++index) {
+                killer.SkillUpgrade((Skills.IDs) skill.ID);
               }
             }
-            this.m_TownGenerator.RecomputeActorStartingStats(killer);
+            m_TownGenerator.RecomputeActorStartingStats(killer);
           }
           if (this.IsVisibleToPlayer(killer))
           {
@@ -10991,8 +10987,7 @@ namespace djack.RogueSurvivor.Engine
         int choiceNumber = KeyToChoiceNumber(key.KeyCode);
         if (choiceNumber >= 1 && choiceNumber <= upgrade.Count)
         {
-          Skills.IDs id = upgrade[choiceNumber - 1];
-          Skill skill = SkillUpgrade(upgradeActor, id);
+          Skill skill = upgradeActor.SkillUpgrade(upgrade[choiceNumber - 1]);
           if (skill.Level == 1)
           {
             AddMessage(new djack.RogueSurvivor.Data.Message(string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
@@ -11030,7 +11025,7 @@ namespace djack.RogueSurvivor.Engine
           List<Skills.IDs> upgrade1 = this.RollSkillsToUpgrade(actor, 300);
           Skills.IDs? upgrade2 = this.NPCPickSkillToUpgrade(actor, upgrade1);
           if (upgrade2.HasValue)
-            this.SkillUpgrade(actor, upgrade2.Value);
+            actor.SkillUpgrade(upgrade2.Value);
         }
       }
     }
@@ -11044,7 +11039,7 @@ namespace djack.RogueSurvivor.Engine
           List<Skills.IDs> upgrade1 = this.RollSkillsToUpgrade(actor, 300);
           Skills.IDs? upgrade2 = this.NPCPickSkillToUpgrade(actor, upgrade1);
           if (upgrade2.HasValue)
-            this.SkillUpgrade(actor, upgrade2.Value);
+            actor.SkillUpgrade(upgrade2.Value);
         }
       }
     }
@@ -11215,21 +11210,6 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(this.MakeMessage(actor, string.Format("regressed in {0}!", (object) Skills.Name(id))));
     }
 
-    public Skill SkillUpgrade(Actor actor, Skills.IDs id)
-    {
-      actor.Sheet.SkillTable.AddOrIncreaseSkill(id);
-      Skill skill = actor.Sheet.SkillTable.GetSkill(id);
-      OnSkillUpgrade(actor, id);
-      return skill;
-    }
-
-    public void OnSkillUpgrade(Actor actor, Skills.IDs id)
-    {
-      if (id != Skills.IDs.HAULER || actor.Inventory == null)
-        return;
-      actor.Inventory.MaxCapacity = Rules.ActorMaxInv(actor);
-    }
-
     private void CheckWeatherChange()
     {
       if (this.m_Rules.RollChance(33))
@@ -11306,7 +11286,7 @@ namespace djack.RogueSurvivor.Engine
         {
           Skills.IDs? nullable = this.ZombifySkill((Skills.IDs) skillTable.SkillsList[this.m_Rules.Roll(0, countSkills)]);
           if (nullable.HasValue)
-            this.SkillUpgrade(actor, nullable.Value);
+            actor.SkillUpgrade(nullable.Value);
         }
         this.m_TownGenerator.RecomputeActorStartingStats(actor);
       }
@@ -13541,9 +13521,8 @@ namespace djack.RogueSurvivor.Engine
         actor = (this.m_CharGen.IsMale ? this.m_GameActors.MaleCivilian : this.m_GameActors.FemaleCivilian).CreateAnonymous(this.m_GameFactions.TheCivilians, 0);
         townGen.DressCivilian(roller, actor);
         townGen.GiveNameToActor(roller, actor);
-        actor.Sheet.SkillTable.AddOrIncreaseSkill(m_CharGen.StartingSkill);
+        actor.SkillUpgrade(m_CharGen.StartingSkill);
         townGen.RecomputeActorStartingStats(actor);
-        this.OnSkillUpgrade(actor, this.m_CharGen.StartingSkill);
         int max1 = (int) (0.25 * (double) actor.FoodPoints);
         actor.FoodPoints = actor.FoodPoints - this.m_Rules.Roll(0, max1);
         int max2 = (int) (0.25 * (double) actor.SleepPoints);
