@@ -9527,9 +9527,12 @@ namespace djack.RogueSurvivor.Engine
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
 
-      actor.Inventory.RemoveAllQuantity(gift);
       if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
-      target.Inventory.AddAll(gift);    // does do item merge, but not other DoTakeItem processing
+      int quantity = gift.Quantity;
+      int quantityAdded;
+      if (target.Inventory.AddAsMuchAsPossible(gift, out quantityAdded) && quantityAdded==quantity)
+        actor.Inventory.RemoveAllQuantity(gift);
+      
       target.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (!gift.Model.DontAutoEquip && m_Rules.CanActorEquipItem(target, gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
         DoEquipItem(target, gift);
