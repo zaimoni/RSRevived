@@ -250,12 +250,12 @@ namespace djack.RogueSurvivor.Engine
     private const float ARMY_SUPPLIES_FACTOR = 288f;
     private const int ARMY_SUPPLIES_CHANCE = 2;
     private const int ARMY_SUPPLIES_SCATTER = 1;
-    private const int BIKERS_RAID_DAY = 2;
+    public const int BIKERS_RAID_DAY = 2;
     private const int BIKERS_END_DAY = 14;
     private const int BIKERS_RAID_SIZE = 6;
     private const int BIKERS_RAID_CHANCE_PER_TURN = 1;
     private const int BIKERS_RAID_DAYS_GAP = 2;
-    private const int GANGSTAS_RAID_DAY = 7;
+    public const int GANGSTAS_RAID_DAY = 7;
     private const int GANGSTAS_END_DAY = 21;
     private const int GANGSTAS_RAID_SIZE = 6;
     private const int GANGSTAS_RAID_CHANCE_PER_TURN = 1;
@@ -9686,7 +9686,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      actor.HitPoints = Math.Min(actor.HitPoints + m_Rules.ActorMedicineEffect(actor, med.Healing), actor.MaxHPs);
+      actor.RegenHitPoints(m_Rules.ActorMedicineEffect(actor, med.Healing));
       actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
       actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), m_Rules.ActorMaxSleep(actor));
       actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
@@ -10090,18 +10090,17 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(DollPart.TORSO);
       if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE))
       {
-                OnUnequipItem(actor, equippedItem);
+        OnUnequipItem(actor, equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
         if (IsVisibleToPlayer(actor))
         {
-                    AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
-                    RedrawPlayScreen();
-                    AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
+          AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
+          RedrawPlayScreen();
+          AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      if (!actor.IsSleeping)
-        return;
-            DoWakeUp(actor);
+      if (!actor.IsSleeping) return;
+      DoWakeUp(actor);
     }
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)

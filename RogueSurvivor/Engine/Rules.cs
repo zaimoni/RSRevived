@@ -2123,7 +2123,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)
     {
-      return 10 + Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (5 - noiseDistance) * 10);
+      return 10 + Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (LOUD_NOISE_RADIUS - noiseDistance) * 10);
     }
 
     public int ActorBarricadingMaterialNeedForFortification(Actor builder, bool isLarge)

@@ -3422,14 +3422,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = m_Game.GameActors.BikerMan.CreateNumberedName(m_Game.GameFactions.TheBikers, spawnTime);
       numberedName.GangID = (int) gangId;
-            DressBiker(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressBiker(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Controller = (ActorController) new GangAI();
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : MakeItemBaseballBat());
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
-      int count = new WorldTime(spawnTime).Day - 2;
+      int count = new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY;
       if (count > 0)
-                GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+        GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
       return numberedName;
     }
 
@@ -3437,21 +3437,21 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = m_Game.GameActors.GangstaMan.CreateNumberedName(m_Game.GameFactions.TheGangstas, spawnTime);
       numberedName.GangID = (int) gangId;
-            DressGangsta(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressGangsta(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Controller = (ActorController) new GangAI();
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemRandomPistol() : MakeItemBaseballBat());
-      int count = new WorldTime(spawnTime).Day - 7;
+      int count = new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY;
       if (count > 0)
-                GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+        GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
       return numberedName;
     }
 
     public Actor CreateNewBlackOps(int spawnTime, string rankName)
     {
       Actor numberedName = m_Game.GameActors.BlackOps.CreateNumberedName(m_Game.GameFactions.TheBlackOps, spawnTime);
-            DressBlackOps(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressBlackOps(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = rankName + " " + numberedName.Name;
       numberedName.Inventory.AddAll(MakeItemPrecisionRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());

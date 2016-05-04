@@ -66,94 +66,78 @@ namespace djack.RogueSurvivor.Data
 
     public ActorModel Model
     {
-      get
-      {
+      get {
         return Models.Actors[m_ModelID];
       }
-      set
-      {
-                m_ModelID = value.ID;
-                OnModelSet();
+      set {
+        m_ModelID = value.ID;
+        OnModelSet();
       }
     }
 
     public bool IsUnique
     {
-      get
-      {
+      get {
         return GetFlag(Actor.Flags.IS_UNIQUE);
       }
-      set
-      {
-                SetFlag(Actor.Flags.IS_UNIQUE, value);
+      set {
+        SetFlag(Actor.Flags.IS_UNIQUE, value);
       }
     }
 
     public Faction Faction
     {
-      get
-      {
+      get {
         return Models.Factions[m_FactionID];
       }
-      set
-      {
-                m_FactionID = value.ID;
+      set {
+        m_FactionID = value.ID;
       }
     }
 
     public string Name
     {
-      get
-      {
-        if (!IsPlayer)
-          return m_Name;
+      get {
+        if (!IsPlayer) return m_Name;
         return "(YOU) " + m_Name;
       }
-      set
-      {
-                m_Name = value;
-        if (value == null)
-          return;
-                m_Name.Replace("(YOU) ", "");
+      set {
+        m_Name = value;
+        if (value == null) return;
+        m_Name.Replace("(YOU) ", "");
       }
     }
 
     public string UnmodifiedName
     {
-      get
-      {
+      get {
         return m_Name;
       }
     }
 
     public bool IsProperName
     {
-      get
-      {
+      get {
         return GetFlag(Actor.Flags.IS_PROPER_NAME);
       }
-      set
-      {
-                SetFlag(Actor.Flags.IS_PROPER_NAME, value);
+      set {
+        SetFlag(Actor.Flags.IS_PROPER_NAME, value);
       }
     }
 
     public bool IsPluralName
     {
-      get
-      {
+      get {
         return GetFlag(Actor.Flags.IS_PLURAL_NAME);
       }
-      set
-      {
-                SetFlag(Actor.Flags.IS_PLURAL_NAME, value);
+      set {
+        SetFlag(Actor.Flags.IS_PLURAL_NAME, value);
       }
     }
 
     public string TheName
     {
-      get
-      {
+      get {
         if (!IsProperName && !IsPluralName)
           return "the " + m_Name;
         return Name;
@@ -162,25 +146,21 @@ namespace djack.RogueSurvivor.Data
 
     public ActorController Controller
     {
-      get
-      {
+      get {
         return m_Controller;
       }
-      set
-      {
+      set {
         if (m_Controller != null)
-                    m_Controller.LeaveControl();
-                m_Controller = value;
-        if (m_Controller == null)
-          return;
-                m_Controller.TakeControl(this);
+          m_Controller.LeaveControl();
+        m_Controller = value;
+        if (m_Controller != null)
+          m_Controller.TakeControl(this);
       }
     }
 
     public bool IsPlayer
     {
-      get
-      {
+      get {
         if (m_Controller != null)
           return m_Controller is PlayerController;
         return false;
@@ -189,28 +169,24 @@ namespace djack.RogueSurvivor.Data
 
     public int SpawnTime
     {
-      get
-      {
+      get {
         return m_SpawnTime;
       }
     }
 
     public int GangID
     {
-      get
-      {
+      get {
         return m_GangID;
       }
-      set
-      {
-                m_GangID = value;
+      set {
+        m_GangID = value;
       }
     }
 
     public bool IsInAGang
     {
-      get
-      {
+      get {
         return m_GangID != 0;
       }
     }
@@ -273,13 +249,11 @@ namespace djack.RogueSurvivor.Data
 
     public int HitPoints
     {
-      get
-      {
+      get {
         return m_HitPoints;
       }
-      set
-      {
-                m_HitPoints = value;
+      set {
+        m_HitPoints = value;
       }
     }
 
