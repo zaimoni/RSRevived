@@ -2551,7 +2551,7 @@ namespace djack.RogueSurvivor.Engine
         {
           if (actor.Model.Abilities.HasToEat)
           {
-            if (--actor.FoodPoints < 0) actor.FoodPoints = 0;
+            actor.Appetite(1);
             if (actor.IsStarving && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
             {
               if (actorList1 == null)
@@ -2561,7 +2561,7 @@ namespace djack.RogueSurvivor.Engine
           }
           else if (actor.Model.Abilities.IsRotting)
           {
-            if (--actor.FoodPoints < 0) actor.FoodPoints = 0;
+            actor.Appetite(1);
             if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
             {
               if (IsVisibleToPlayer(actor))
@@ -9661,7 +9661,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
       actor.SleepPoints = Math.Max(0, actor.SleepPoints - WorldTime.TURNS_PER_HOUR);
-      actor.FoodPoints = Math.Max(0, actor.FoodPoints - WorldTime.TURNS_PER_HOUR);
+      actor.Appetite(WorldTime.TURNS_PER_HOUR);
       Location location = actor.Location;
       location.Map.GetTileAt(location.Position.X, location.Position.Y).AddDecoration("Tiles\\Decoration\\vomit");
     }
@@ -13284,10 +13284,7 @@ namespace djack.RogueSurvivor.Engine
         townGen.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
         actor.RecomputeStartingStats();
-        int max1 = (int) (0.25 * (double) actor.FoodPoints);
-        actor.FoodPoints = actor.FoodPoints - m_Rules.Roll(0, max1);
-        int max2 = (int) (0.25 * (double) actor.SleepPoints);
-        actor.SleepPoints = actor.SleepPoints - m_Rules.Roll(0, max2);
+        actor.CreateCivilianDeductFoodSleep(m_Rules);
       }
       actor.Controller = (ActorController) new PlayerController();
       if (townGen.ActorPlace(roller, 10 * map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>

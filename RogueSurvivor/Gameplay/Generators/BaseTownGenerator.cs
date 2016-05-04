@@ -3270,11 +3270,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       numberedName.Inventory.AddAll(MakeItemArmyBodyArmor());
       int count = 3 + new WorldTime(spawnTime).Day;
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
-      int max1 = (int) (0.25 * (double) numberedName.FoodPoints);
-      numberedName.FoodPoints = numberedName.FoodPoints - m_Rules.Roll(0, max1);
-      int max2 = (int) (0.25 * (double) numberedName.SleepPoints);
-      numberedName.SleepPoints = numberedName.SleepPoints - m_Rules.Roll(0, max2);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+      numberedName.CreateCivilianDeductFoodSleep(m_Rules);
       return numberedName;
     }
 
@@ -3286,15 +3283,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
     {
       Actor numberedName = (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
-            DressCivilian(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressCivilian(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       for (int index = 0; index < itemsToCarry; ++index)
-                GiveRandomItemToActor(m_DiceRoller, numberedName, spawnTime);
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, skills);
-      int max1 = (int) (0.25 * (double) numberedName.FoodPoints);
-      numberedName.FoodPoints = numberedName.FoodPoints - m_Rules.Roll(0, max1);
-      int max2 = (int) (0.25 * (double) numberedName.SleepPoints);
-      numberedName.SleepPoints = numberedName.SleepPoints - m_Rules.Roll(0, max2);
+        GiveRandomItemToActor(m_DiceRoller, numberedName, spawnTime);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, skills);
+      numberedName.CreateCivilianDeductFoodSleep(m_Rules);
       return numberedName;
     }
 

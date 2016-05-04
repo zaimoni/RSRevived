@@ -959,6 +959,10 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void Appetite(int f) {
+      m_FoodPoints = Math.Max(0, m_FoodPoints - f);
+    }
+
     // sleep
     public int SleepToHoursUntilSleepy {
       get {
@@ -1146,6 +1150,11 @@ namespace djack.RogueSurvivor.Data
       m_Sanity = MaxSanity;
       if (m_Inventory == null) return;
       m_Inventory.MaxCapacity = MaxInv;
+    }
+
+    public void CreateCivilianDeductFoodSleep(Engine.Rules r) { 
+      m_FoodPoints -= r.Roll(0, m_FoodPoints / 4);
+      m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
     }
 
     public void AfterAction()
