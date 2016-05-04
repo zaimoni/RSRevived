@@ -582,15 +582,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsActorTired(Actor actor)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (actor.Model.Abilities.CanTire)
-        return actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY;
-      return false;
-    }
-
     public bool CanActorMeleeAttack(Actor actor, Actor target)
     {
       string reason;
@@ -659,58 +650,43 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (!map.IsInBounds(x, y))
-      {
+      if (map == null) throw new ArgumentNullException("map");
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (!map.IsInBounds(x, y)) {
         reason = "out of map";
         return false;
       }
-      if (!map.GetTileAt(x, y).Model.IsWalkable)
-      {
+      if (!map.GetTileAt(x, y).Model.IsWalkable) {
         reason = "blocked";
         return false;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(x, y);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable)
-      {
-        if (mapObjectAt.IsJumpable)
-        {
-          if (!HasActorJumpAbility(actor))
-          {
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
+        if (mapObjectAt.IsJumpable) {
+          if (!HasActorJumpAbility(actor)) {
             reason = "cannot jump";
             return false;
           }
-          if (actor.StaminaPoints < 8)
-          {
+          if (actor.StaminaPoints < STAMINA_COST_JUMP) {
             reason = "not enough stamina to jump";
             return false;
           }
-        }
-        else if (actor.Model.Abilities.IsSmall)
-        {
+        } else if (actor.Model.Abilities.IsSmall) {
           DoorWindow doorWindow = mapObjectAt as DoorWindow;
-          if (doorWindow != null && doorWindow.IsClosed)
-          {
+          if (doorWindow != null && doorWindow.IsClosed) {
             reason = "cannot slip through closed door";
             return false;
           }
-        }
-        else
-        {
+        } else {
           reason = "blocked by object";
           return false;
         }
       }
-      if (map.GetActorAt(x, y) != null)
-      {
+      if (map.GetActorAt(x, y) != null) {
         reason = "someone is there";
         return false;
       }
-      if (actor.DraggedCorpse != null && IsActorTired(actor))
-      {
+      if (actor.DraggedCorpse != null && actor.IsTired) {
         reason = "dragging a corpse when tired";
         return false;
       }
@@ -1101,22 +1077,17 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsBashableFor(Actor actor, DoorWindow door, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (door == null)
-        throw new ArgumentNullException("door");
-      if (!actor.Model.Abilities.CanBashDoors)
-      {
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (door == null) throw new ArgumentNullException("door");
+      if (!actor.Model.Abilities.CanBashDoors) {
         reason = "can't bash doors";
         return false;
       }
-      if (IsActorTired(actor))
-      {
+      if (actor.IsTired) {
         reason = "tired";
         return false;
       }
-      if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded)
-      {
+      if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) {
         reason = "can't break this object";
         return false;
       }
@@ -1132,29 +1103,23 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsBreakableFor(Actor actor, MapObject mapObj, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (mapObj == null)
-        throw new ArgumentNullException("mapObj");
-      if (!actor.Model.Abilities.CanBreakObjects)
-      {
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (mapObj == null) throw new ArgumentNullException("mapObj");
+      if (!actor.Model.Abilities.CanBreakObjects) {
         reason = "cannot break objects";
         return false;
       }
-      if (IsActorTired(actor))
-      {
+      if (actor.IsTired) {
         reason = "tired";
         return false;
       }
       DoorWindow doorWindow = mapObj as DoorWindow;
       bool flag = doorWindow != null && doorWindow.IsBarricaded;
-      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag)
-      {
+      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) {
         reason = "can't break this object";
         return false;
       }
-      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null)
-      {
+      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) {
         reason = "someone is there";
         return false;
       }
@@ -1177,32 +1142,25 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorPush(Actor actor, MapObject mapObj, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (mapObj == null)
-        throw new ArgumentNullException("mapObj");
-      if (!HasActorPushAbility(actor))
-      {
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (mapObj == null) throw new ArgumentNullException("mapObj");
+      if (!HasActorPushAbility(actor)) {
         reason = "cannot push objects";
         return false;
       }
-      if (IsActorTired(actor))
-      {
+      if (actor.IsTired) {
         reason = "tired";
         return false;
       }
-      if (!mapObj.IsMovable)
-      {
+      if (!mapObj.IsMovable) {
         reason = "cannot be moved";
         return false;
       }
-      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null)
-      {
+      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) {
         reason = "someone is there";
         return false;
       }
-      if (mapObj.IsOnFire)
-      {
+      if (mapObj.IsOnFire) {
         reason = "on fire";
         return false;
       }
@@ -1246,17 +1204,13 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorShove(Actor actor, Actor other, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (other == null)
-        throw new ArgumentNullException("other");
-      if (!HasActorPushAbility(actor))
-      {
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (other == null) throw new ArgumentNullException("other");
+      if (!HasActorPushAbility(actor)) {
         reason = "cannot shove people";
         return false;
       }
-      if (IsActorTired(actor))
-      {
+      if (actor.IsTired) {
         reason = "tired";
         return false;
       }
@@ -1689,17 +1643,13 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorButcherCorpse(Actor actor, Corpse corpse, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (corpse == null)
-        throw new ArgumentNullException("corpse");
-      if (IsActorTired(actor))
-      {
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (corpse == null) throw new ArgumentNullException("corpse");
+      if (actor.IsTired) {
         reason = "tired";
         return false;
       }
-      if (corpse.Position != actor.Location.Position || !actor.Location.Map.HasCorpse(corpse))
-      {
+      if (corpse.Position != actor.Location.Position || !actor.Location.Map.HasCorpse(corpse)) {
         reason = "not in same location";
         return false;
       }
@@ -1724,7 +1674,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "corpse is already being dragged";
         return false;
       }
-      if (IsActorTired(actor))
+      if (actor.IsTired)
       {
         reason = "tired";
         return false;
@@ -1852,27 +1802,25 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorActThisTurn(Actor actor)
     {
-      if (actor == null)
-        return false;
+      if (actor == null) return false;
       return actor.ActionPoints > 0;
     }
 
     public bool CanActorActNextTurn(Actor actor)
     {
-      if (actor == null)
-        return false;
-      return actor.ActionPoints + ActorSpeed(actor) > 0;
+      if (actor == null) return false;
+      return actor.ActionPoints + actor.Speed > 0;
     }
 
     public bool WillActorActAgainBefore(Actor actor, Actor other)
     {
-      return other.ActionPoints <= 0 && (other.ActionPoints + ActorSpeed(other) <= 0 || actor.IsBefore(other));
+      return other.ActionPoints <= 0 && (other.ActionPoints + other.Speed <= 0 || actor.IsBefore(other));
     }
 
     public bool WillOtherActTwiceBefore(Actor actor, Actor other)
     {
       if (actor.IsBefore(other)) return other.ActionPoints > BASE_ACTION_COST;
-      return other.ActionPoints + ActorSpeed(other) > BASE_ACTION_COST;
+      return other.ActionPoints + other.Speed > BASE_ACTION_COST;
     }
 
     public bool IsEnemyOf(Actor actor, Actor target)
@@ -1893,18 +1841,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       return true;
-    }
-
-    public int ActorSpeed(Actor actor)
-    {
-      float num = (float) actor.Doll.Body.Speed;
-      if (IsActorTired(actor)) num *= 2f/3f;
-      if (actor.IsExhausted) num /= 2f;
-      else if (actor.IsSleepy) num *= 2f/3f;
-      ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
-      if (itemBodyArmor != null) num -= (float) itemBodyArmor.Weight;
-      if (actor.DraggedCorpse != null) num /= 2f;
-      return Math.Max((int) num, 0);
     }
 
     public int ActorItemNutritionValue(Actor actor, int baseValue)
@@ -1977,7 +1913,7 @@ namespace djack.RogueSurvivor.Engine
       float num4 = (float) (baseAttack.HitValue + num1);
       if (actor.IsExhausted) num4 /= 2f;
       else if (actor.IsSleepy) num4 *= 0.75f;
-      if (IsActorTired(actor))
+      if (actor.IsTired)
         num4 *= FIRING_WHEN_STA_TIRED;
       else if (actor.StaminaPoints < actor.MaxSTA)
         num4 *= FIRING_WHEN_STA_NOT_FULL;

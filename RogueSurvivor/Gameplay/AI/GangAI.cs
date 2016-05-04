@@ -128,7 +128,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool flag2 = percepts2 != null;
       bool hasVisibleLeader = flag3 && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag3 && IsAdjacentToEnemy(game, m_Actor.Leader);
-      bool flag4 = !game.Rules.IsActorTired(m_Actor);
+      bool flag4 = !m_Actor.IsTired;
 
       // all free actions must be above the enemies check
       if (flag1 && (flag3 || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {

@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool flag2 = m_Actor.HasLeader && !DontFollowLeader;
       bool hasVisibleLeader = flag2 && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag2 && IsAdjacentToEnemy(game, m_Actor.Leader);
-      bool flag3 = flag2 && hasVisibleLeader && isLeaderFighting && !game.Rules.IsActorTired(m_Actor);
+      bool flag3 = flag2 && hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
       // civilians track how long since they've seen trouble
       if (flag1)

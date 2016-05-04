@@ -803,10 +803,24 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // event timing
     public void SpendActionPoints(int actionCost)
     {
       m_ActionPoints -= actionCost;
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
+    }
+
+    public int Speed { 
+      get {
+        float num = Doll.Body.Speed;    // an exhausted, sleepy living dragging a corpse in heavy armor, below 36 here, will have a speed of zero
+        if (IsTired) { num *= 2f; num /= 3f; }
+        if (IsExhausted) num /= 2f;
+        else if (IsSleepy) { num *= 2f; num /= 3f; }
+        Engine.Items.ItemBodyArmor itemBodyArmor = GetEquippedItem(DollPart.TORSO) as Engine.Items.ItemBodyArmor;
+        if (itemBodyArmor != null) num -= (float) itemBodyArmor.Weight;
+        if (DraggedCorpse != null) num /= 2f;
+        return Math.Max((int) num, 0);
+      }
     }
 
     // health
@@ -836,6 +850,13 @@ namespace djack.RogueSurvivor.Data
       get {
         int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HIGH_STAMINA);
         return Sheet.BaseStaminaPoints + num;
+      }
+    }
+
+    public bool IsTired {
+      get {
+        if (!Model.Abilities.CanTire) return false;
+        return m_StaminaPoints < STAMINA_MIN_FOR_ACTIVITY;
       }
     }
 

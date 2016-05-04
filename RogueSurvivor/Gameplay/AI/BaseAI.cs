@@ -725,7 +725,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (inventory == null || inventory.IsEmpty)
         return (ActorAction) null;
       bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
-      bool needSTA = game.Rules.IsActorTired(m_Actor);
+      bool needSTA = m_Actor.IsTired;
       bool needSLP = m_Actor.WouldLikeToSleep;
       bool needCure = m_Actor.Infection > 0;
       bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
@@ -735,21 +735,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(game, itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
       {
         int num = 0;
-        if (needHP)
-          num += factorHealing * it.Healing;
-        if (needSTA)
-          num += factorStamina * it.StaminaBoost;
-        if (needSLP)
-          num += factorSleep * it.SleepBoost;
-        if (needCure)
-          num += factorCure * it.InfectionCure;
-        if (needSan)
-          num += factorSan * it.SanityCure;
+        if (needHP) num += factorHealing * it.Healing;
+        if (needSTA) num += factorStamina * it.StaminaBoost;
+        if (needSLP) num += factorSleep * it.SleepBoost;
+        if (needCure) num += factorCure * it.InfectionCure;
+        if (needSan) num += factorSan * it.SanityCure;
         return (float) num;
       }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      if (choiceEval == null || (double) choiceEval.Value <= 0.0)
-        return (ActorAction) null;
-      return (ActorAction) new ActionUseItem(m_Actor, game, (Item) choiceEval.Choice);
+      if (choiceEval == null || (double) choiceEval.Value <= 0.0) return null;
+      return new ActionUseItem(m_Actor, game, choiceEval.Choice);
     }
 
     protected ActorAction BehaviorUseEntertainment(RogueGame game)
@@ -839,7 +833,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorMeleeAttack(game, target);
       if (null != tmpAction) return tmpAction;
       Actor actor = target.Percepted as Actor;
-      if (game.Rules.IsActorTired(m_Actor) && Rules.IsAdjacent(m_Actor.Location, target.Location))
+      if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
         return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor, game);
       tmpAction = BehaviorIntelligentBumpToward(game, target.Location.Position);
       if (null == tmpAction) return null;
@@ -857,7 +851,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         flag2 = false;
       else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
         flag2 = false;
-      else if (game.Rules.IsActorTired(m_Actor) && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
         flag2 = true;
       else if (m_Actor.Leader != null)
       {
@@ -1581,12 +1575,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool WantToEvadeMelee(RogueGame game, Actor actor, ActorCourage courage, Actor target)
     {
       if (WillTireAfterAttack(actor)) return true;
-      if (game.Rules.ActorSpeed(actor) > game.Rules.ActorSpeed(target))
-      {
-        if (game.Rules.WillActorActAgainBefore(actor, target))
-          return false;
-        if (target.TargetActor == actor)
-          return true;
+      if (actor.Speed > target.Speed) {
+        if (game.Rules.WillActorActAgainBefore(actor, target)) return false;
+        if (target.TargetActor == actor) return true;
       }
       Actor weakerInMelee = FindWeakerInMelee(game, m_Actor, target);
       return weakerInMelee != target && (weakerInMelee == m_Actor || courage != ActorCourage.COURAGEOUS);
@@ -1616,8 +1607,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool HasSpeedAdvantage(RogueGame game, Actor actor, Actor target)
     {
-      int num1 = game.Rules.ActorSpeed(actor);
-      int num2 = game.Rules.ActorSpeed(target);
+      int num1 = actor.Speed;
+      int num2 = target.Speed;
       return num1 > num2 || game.Rules.CanActorRun(actor) && !game.Rules.CanActorRun(target) && (!WillTireAfterRunning(actor) && num1 * 2 > num2);
     }
 

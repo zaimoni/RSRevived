@@ -2537,7 +2537,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor actor in map.Actors)
         {
           if (!actor.IsSleeping)
-            actor.ActionPoints += m_Rules.ActorSpeed(actor);
+            actor.ActionPoints += actor.Speed;
           if (actor.StaminaPoints < actor.MaxSTA)
             actor.RegenStaminaPoints(Rules.STAMINA_REGEN_WAIT);
         }
@@ -5410,26 +5410,23 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPush(Actor player)
     {
-      if (!m_Rules.HasActorPushAbility(player))
-      {
-                AddMessage(MakeErrorMessage("Cannot push objects."));
+      if (!m_Rules.HasActorPushAbility(player)) {
+        AddMessage(MakeErrorMessage("Cannot push objects."));
         return false;
       }
-      if (m_Rules.IsActorTired(player))
-      {
-                AddMessage(MakeErrorMessage("Too tired to push."));
+      if (player.IsTired) {
+        AddMessage(MakeErrorMessage("Too tired to push."));
         return false;
       }
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
+      ClearOverlays();
       do
       {
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-                RedrawPlayScreen();
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
+        if (direction == null) flag1 = false;
         else if (direction != Direction.NEUTRAL)
         {
           Point point = player.Location.Position + direction;
@@ -6476,9 +6473,9 @@ namespace djack.RogueSurvivor.Engine
             return m_Rules.CanActorRun(m_Player);
           return false;
         case AdvisorHint.MOVE_RESTING:
-          return m_Rules.IsActorTired(m_Player);
+          return m_Player.IsTired;
         case AdvisorHint.MOVE_JUMP:
-          if (!m_Rules.IsActorTired(m_Player))
+          if (!m_Player.IsTired)
             return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
             {
               MapObject mapObjectAt = map.GetMapObjectAt(pt);
@@ -7373,7 +7370,7 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsInsane) stringList.Add("Insane!");
         else if (m_Rules.IsActorDisturbed(actor)) stringList.Add("Disturbed.");
       }
-      stringList.Add(string.Format("Spd : {0:F2}", (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0)));
+      stringList.Add(string.Format("Spd : {0:F2}", (object) ((double)actor.Speed / Rules.BASE_SPEED)));
       StringBuilder stringBuilder = new StringBuilder();
       int num1 = actor.MaxHPs;
       if (actor.HitPoints != num1)
@@ -8637,18 +8634,18 @@ namespace djack.RogueSurvivor.Engine
       }
       DoorWindow doorWindow = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
       if (doorWindow != null && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead) {
-        if (!m_Rules.IsActorTired(player)) {
-                    AddMessage(MakeYesNoMessage("Really tear down the barricade"));
-                    RedrawPlayScreen();
+        if (!player.IsTired) {
+          AddMessage(MakeYesNoMessage("Really tear down the barricade"));
+          RedrawPlayScreen();
           if (WaitYesOrNo()) {
-                        DoBreak(player, (MapObject) doorWindow);
+            DoBreak(player, (MapObject) doorWindow);
             return true;
           }
-                    AddMessage(new Data.Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+          AddMessage(new Data.Message("Good, keep everything secure.", m_Session.WorldTime.TurnCounter, Color.Yellow));
           return false;
         }
-                AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
-                RedrawPlayScreen();
+        AddMessage(MakeErrorMessage("Too tired to tear down the barricade."));
+        RedrawPlayScreen();
         return false;
       }
             AddMessage(MakeErrorMessage(string.Format("Cannot do that : {0}.", (object) actionBump.FailReason)));
@@ -11935,9 +11932,9 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsRunning)
           m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
         else if (m_Rules.CanActorRun(actor))
-                    m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
-        else if (m_Rules.IsActorTired(actor))
-                    m_UI.UI_DrawStringBold(Color.Gray, "TIRED", gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
+        else if (actor.IsTired)
+          m_UI.UI_DrawStringBold(Color.Gray, "TIRED", gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasToEat)
@@ -12026,9 +12023,9 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
       if (actor.Model.Abilities.IsUndead)
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0), (object) actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object)m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object)m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
       else
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) (float) ((double)m_Rules.ActorSpeed(actor) / 100.0), (object)actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object) actor.CountFollowers, (object)m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object) actor.CountFollowers, (object)m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
     }
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
