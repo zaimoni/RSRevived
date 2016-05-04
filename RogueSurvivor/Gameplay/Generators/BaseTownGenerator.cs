@@ -3354,11 +3354,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
       Actor named = (deadVictim.Doll.Body.IsMale ? m_Game.GameActors.MaleZombified : m_Game.GameActors.FemaleZombified).CreateNamed(zombifier == null ? m_Game.GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
-      for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part)
-      {
+      named.ActionPoints = 0;
+      for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         List<string> decorations = deadVictim.Doll.GetDecorations(part);
-        if (decorations != null)
-        {
+        if (decorations != null) {
           foreach (string imageID in decorations)
             named.Doll.AddDecoration(part, imageID);
         }

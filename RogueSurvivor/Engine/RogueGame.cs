@@ -11024,7 +11024,6 @@ namespace djack.RogueSurvivor.Engine
       Actor actor = m_TownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
       if (!isStartingGame)
         deadVictim.Location.Map.PlaceActorAt(actor, deadVictim.Location.Position);
-      actor.ActionPoints = 0;
       if (deadVictim == m_Player || deadVictim.IsPlayer)
         m_Session.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
@@ -13657,17 +13656,16 @@ namespace djack.RogueSurvivor.Engine
                   "  What's happening? NO!",
                   "  NO NOT ME! aAAAAAaaaa! NOT NOW! AAAGGGGGGGRRR \""
                 };
-                                ShowSpecialDialogue(theActor, local_7);
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Freed {0}.", (object) theActor.Name));
-                                m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
-                                KillActor((Actor) null, theActor, "transformation");
-                Actor local_8 = Zombify((Actor) null, theActor, false);
+                ShowSpecialDialogue(theActor, local_7);
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Freed {0}.", (object) theActor.Name));
+                m_Session.PlayerKnows_CHARUndergroundFacilityLocation = true;
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
+                KillActor(null, theActor, "transformation");
+                Actor local_8 = Zombify(null, theActor, false);
                 local_8.Model = m_GameActors.ZombiePrince;
-                local_8.ActionPoints = 0;
-                                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", (object) theActor.Name, (object) local_8.Model.Name));
-                                m_MusicManager.Play(GameMusics.FIGHT);
-                                m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_2;
+                m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", (object) theActor.Name, (object) local_8.Model.Name));
+                m_MusicManager.Play(GameMusics.FIGHT);
+                m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_2;
                 break;
               }
             }
