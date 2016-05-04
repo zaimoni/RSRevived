@@ -19,9 +19,10 @@ namespace djack.RogueSurvivor.Data
     public const int STAMINA_MIN_FOR_ACTIVITY = 10;
     private const int NIGHT_STA_PENALTY = 2;
 
-    public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;
+    public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
+    public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
 
@@ -953,6 +954,13 @@ namespace djack.RogueSurvivor.Data
       get {
         if (Model.Abilities.IsRotting) return 0 >= m_FoodPoints;
         return false;
+      }
+    }
+
+    public int MaxFood {
+      get {
+        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_EATER));
+        return Sheet.BaseFoodPoints + num;
       }
     }
 

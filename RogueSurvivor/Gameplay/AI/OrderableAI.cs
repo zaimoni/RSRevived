@@ -373,7 +373,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
+      int need = m_Actor.MaxFood - m_Actor.FoodPoints;
       ItemFood obj1 = null;
       int rating = int.MinValue;
       foreach (Item obj2 in m_Actor.Inventory.Items) {
@@ -398,7 +398,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      int need = game.Rules.ActorMaxFood(m_Actor) - m_Actor.FoodPoints;
+      int need = m_Actor.MaxFood - m_Actor.FoodPoints;
       ItemFood obj1 = null;
       int rating = int.MinValue;
       foreach (Item obj2 in m_Actor.Inventory.Items) {

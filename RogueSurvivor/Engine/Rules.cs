@@ -43,7 +43,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
-    public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
     public static int SKILL_MARTIAL_ARTS_ATK_BONUS = 3;
@@ -1919,12 +1918,6 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE));
       return baseValue + num;
-    }
-
-    public int ActorMaxFood(Actor actor)
-    {
-      int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
-      return actor.Sheet.BaseFoodPoints + num;
     }
 
     public int ActorMaxRot(Actor actor)

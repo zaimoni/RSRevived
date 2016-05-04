@@ -4559,7 +4559,7 @@ namespace djack.RogueSurvivor.Engine
         a.RegenHitPoints(Rules.ActorBiteHpRegen(a, num));
         a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxRot(a));
       } else {
-        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxFood(a));
+        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), a.MaxFood);
         InfectActor(a, m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
       }
       SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
@@ -8033,7 +8033,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.LEADERSHIP:
           return string.Format("+{0} max Followers", (object) Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS);
         case Skills.IDs.LIGHT_EATER:
-          return string.Format("+{0}% max FOO, +{1}% item food points", (object) (int) (100.0 * (double) Rules.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
+          return string.Format("+{0}% max FOO, +{1}% item food points", (object) (int) (100.0 * (double) Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.LIGHT_FEET:
           return string.Format("+{0}% to avoid and escape traps", (object) Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.LIGHT_SLEEPER:
@@ -9620,7 +9620,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-      actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), m_Rules.ActorMaxFood(actor));
+      actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), actor.MaxFood);
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
       bool player = IsVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -9633,12 +9633,12 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoUseFoodItem(Actor actor, ItemFood food)
     {
-      if (actor == m_Player && actor.FoodPoints >= m_Rules.ActorMaxFood(actor) - 1) {
+      if (actor == m_Player && actor.FoodPoints >= actor.MaxFood - 1) {
         AddMessage(MakeErrorMessage("Don't waste food!"));
       } else {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-        actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), m_Rules.ActorMaxFood(actor));
+        actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), actor.MaxFood);
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)
@@ -11938,19 +11938,18 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       if (actor.Model.Abilities.HasToEat)
       {
-        int maxValue2 = m_Rules.ActorMaxFood(actor);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsHungry)
-        {
+        int maxValue2 = actor.MaxFood;
+        m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
+        DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        if (actor.IsHungry) {
           if (actor.IsStarving)
-                        m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
           else
-                        m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
         }
         else
-                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
       }
       else if (actor.Model.Abilities.IsRotting)
       {
