@@ -2826,10 +2826,10 @@ namespace djack.RogueSurvivor.Engine
       {
         if (!actor.Model.Abilities.IsUndeadMaster)
           return;
-        actor.Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, 270, actor.Location.Position);
+        actor.Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, Rules.UNDEAD_MASTER_SCENT_DROP, actor.Location.Position);
       }
       else
-        actor.Location.Map.RefreshScentAt(Odor.LIVING, 270, actor.Location.Position);
+        actor.Location.Map.RefreshScentAt(Odor.LIVING, Rules.LIVING_SCENT_DROP, actor.Location.Position);
     }
 
     private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
@@ -11279,13 +11279,13 @@ namespace djack.RogueSurvivor.Engine
                 int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, point);
                 if (scentByOdorAt1 >= num5)
                 {
-                  float num6 = (float) (0.899999976158142 * (double) scentByOdorAt1 / 270.0);
+                  float num6 = (float) (0.9 * (double) scentByOdorAt1 / (double)(OdorScent.MAX_STRENGTH));
                                     m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_living", screen.X, screen.Y);
                 }
                 int scentByOdorAt2 = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, point);
                 if (scentByOdorAt2 >= num5)
                 {
-                  float num6 = (float) (0.899999976158142 * (double) scentByOdorAt2 / 270.0);
+                  float num6 = (float) (0.9 * (double) scentByOdorAt2 / (double)(OdorScent.MAX_STRENGTH));
                                     m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_zm", screen.X, screen.Y);
                 }
               }
@@ -11294,7 +11294,7 @@ namespace djack.RogueSurvivor.Engine
             {
               int scentByOdorAt = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, point);
               if (scentByOdorAt > 0)
-                                m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / 270.0), "Icons\\scent_living_supressor", screen.X, screen.Y);
+                                m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / (double)(OdorScent.MAX_STRENGTH)), "Icons\\scent_living_supressor", screen.X, screen.Y);
             }
           }
           if (player)

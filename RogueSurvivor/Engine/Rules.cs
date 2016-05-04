@@ -80,8 +80,8 @@ namespace djack.RogueSurvivor.Engine
     public const int STAMINA_COST_MOVE_DRAGGED_CORPSE = 8;
     public const int JUMP_STUMBLE_CHANCE = 25;
     public const int JUMP_STUMBLE_ACTION_COST = 100;
-    public const int LIVING_SCENT_DROP = 270;
-    public const int UNDEAD_MASTER_SCENT_DROP = 270;
+    public const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
+    public const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
     public const int BARRICADING_MAX = 80;
     private const int MINIMAL_FOV = 2;
     private const int FOV_PENALTY_SUNSET = 1;
@@ -2069,9 +2069,8 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorSmellThreshold(Actor actor)
     {
-      if (actor.IsSleeping)
-        return -1;
-      return 271 - (int) ((double)ActorSmell(actor) * 270.0);
+      if (actor.IsSleeping) return -1;
+      return (OdorScent.MAX_STRENGTH+1) - (int) ((double)ActorSmell(actor) * OdorScent.MAX_STRENGTH);
     }
 
     private bool HasLightOnEquipped(Actor actor)

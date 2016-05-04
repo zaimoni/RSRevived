@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   internal class OdorScent
   {
     public const int MIN_STRENGTH = 1;
-    public const int MAX_STRENGTH = 270;
+    public const int MAX_STRENGTH = 9*WorldTime.TURNS_PER_HOUR;
 
     public Odor Odor { get; private set; }
 
@@ -23,29 +23,25 @@ namespace djack.RogueSurvivor.Data
 
     public OdorScent(Odor odor, int strength, Point position)
     {
-            Odor = odor;
-            Strength = Math.Min(270, strength);
-            Position = position;
+      Odor = odor;
+      Strength = Math.Min(MAX_STRENGTH, strength);
+      Position = position;
     }
 
     public void Change(int amount)
     {
       int num = Strength + amount;
-      if (num < 1)
-        num = 0;
-      else if (num > 270)
-        num = 270;
-            Strength = num;
+      if (num < 1) num = 0;
+      else if (num > MAX_STRENGTH) num = MAX_STRENGTH;
+      Strength = num;
     }
 
     public void Set(int value)
     {
       int num = value;
-      if (num < 1)
-        num = 0;
-      else if (num > 270)
-        num = 270;
-            Strength = num;
+      if (num < 1) num = 0;
+      else if (num > MAX_STRENGTH) num = MAX_STRENGTH;
+      Strength = num;
     }
   }
 }
