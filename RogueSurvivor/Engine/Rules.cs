@@ -31,7 +31,6 @@ namespace djack.RogueSurvivor.Engine
     public static int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
     public static int SKILL_AGILE_ATK_BONUS = 2;
     public static int SKILL_AGILE_DEF_BONUS = 2;
-    public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;
     public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.2f;
     public static int SKILL_BOWS_ATK_BONUS = 5;
     public static int SKILL_BOWS_DMG_BONUS = 2;
@@ -1441,7 +1440,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "hungry";
         return false;
       }
-      if (actor.SleepPoints >= ActorMaxSleep(actor) - WorldTime.TURNS_PER_HOUR)
+      if (actor.SleepPoints >= actor.MaxSleep - WorldTime.TURNS_PER_HOUR)
       {
         reason = "not sleepy at all";
         return false;
@@ -1932,12 +1931,6 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER));
       return actor.Sheet.BaseFoodPoints + num;
-    }
-
-    public int ActorMaxSleep(Actor actor)
-    {
-      int num = (int) ((double) actor.Sheet.BaseSleepPoints * (double) Rules.SKILL_AWAKE_SLEEP_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
-      return actor.Sheet.BaseSleepPoints + num;
     }
 
     public int ActorSleepRegen(Actor actor, bool isOnCouch)

@@ -2600,10 +2600,10 @@ namespace djack.RogueSurvivor.Engine
               actor.Activity = Activity.SLEEPING;
               int num = m_Rules.ActorSleepRegen(actor, isOnCouch);
               actor.SleepPoints += num;
-              actor.SleepPoints = Math.Min(actor.SleepPoints, m_Rules.ActorMaxSleep(actor));
+              actor.SleepPoints = Math.Min(actor.SleepPoints, actor.MaxSleep);
               if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + m_Rules.ActorHealChanceBonus(actor)))
                 actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
-              if (actor.IsHungry || actor.SleepPoints >= m_Rules.ActorMaxSleep(actor))
+              if (actor.IsHungry || actor.SleepPoints >= actor.MaxSleep)
                 DoWakeUp(actor);
               else if (actor.IsPlayer) {
                 if (m_MusicManager.IsPaused(GameMusics.SLEEP))
@@ -7408,8 +7408,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string DescribeActorActivity(Actor actor)
     {
-      if (actor.IsPlayer)
-        return (string) null;
+      if (actor.IsPlayer) return null;
       switch (actor.Activity)
       {
         case Activity.IDLE:
@@ -8016,7 +8015,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs._FIRST:
           return string.Format("+{0} melee ATK, +{1} DEF", (object) Rules.SKILL_AGILE_ATK_BONUS, (object) Rules.SKILL_AGILE_DEF_BONUS);
         case Skills.IDs.AWAKE:
-          return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (object) (int) (100.0 * (double) Rules.SKILL_AWAKE_SLEEP_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
+          return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (object) (int) (100.0 * (double) Actor.SKILL_AWAKE_SLEEP_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
         case Skills.IDs.BOWS:
           return string.Format("bows +{0} Atk, +{1} Dmg", (object) Rules.SKILL_BOWS_ATK_BONUS, (object) Rules.SKILL_BOWS_DMG_BONUS);
         case Skills.IDs.CARPENTRY:
@@ -9673,7 +9672,7 @@ namespace djack.RogueSurvivor.Engine
       {
         int num1 = actor.MaxHPs - actor.HitPoints;
         int num2 = actor.MaxSTA - actor.StaminaPoints;
-        int num3 = m_Rules.ActorMaxSleep(actor) - 2 - actor.SleepPoints;
+        int num3 = actor.MaxSleep - 2 - actor.SleepPoints;
         int infection = actor.Infection;
         int num4 = actor.MaxSanity - actor.Sanity;
         if ((num1 <= 0 || med.Healing <= 0) && (num2 <= 0 || med.StaminaBoost <= 0) && ((num3 <= 0 || med.SleepBoost <= 0) && (infection <= 0 || med.InfectionCure <= 0)) && (num4 <= 0 || med.SanityCure <= 0))
@@ -9685,7 +9684,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.RegenHitPoints(m_Rules.ActorMedicineEffect(actor, med.Healing));
       actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
-      actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), m_Rules.ActorMaxSleep(actor));
+      actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), actor.MaxSleep);
       actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
       actor.RegenSanity(m_Rules.ActorMedicineEffect(actor, med.SanityCure));
       actor.Inventory.Consume(med);
@@ -11972,19 +11971,18 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       if (actor.Model.Abilities.HasToSleep)
       {
-        int maxValue2 = m_Rules.ActorMaxSleep(actor);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
+        int maxValue2 = actor.MaxSleep;
+        m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
         DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Actor.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsSleepy)
-        {
+        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        if (actor.IsSleepy) {
           if (actor.IsExhausted)
-                        m_UI.UI_DrawStringBold(Color.Red, "EXHAUSTED!", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Red, "EXHAUSTED!", gx + 126 + 100, gy, new Color?());
           else
-                        m_UI.UI_DrawStringBold(Color.Yellow, "Sleepy", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Sleepy", gx + 126 + 100, gy, new Color?());
         }
         else
-                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasSanity) {

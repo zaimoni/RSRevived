@@ -19,6 +19,7 @@ namespace djack.RogueSurvivor.Data
     public const int STAMINA_MIN_FOR_ACTIVITY = 10;
     private const int NIGHT_STA_PENALTY = 2;
 
+    public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static int SKILL_TOUGH_HP_BONUS = 3;
@@ -989,6 +990,13 @@ namespace djack.RogueSurvivor.Data
     public bool WouldLikeToSleep {
       get {
         return IsAlmostSleepy /* || IsSleepy */;    // cf above partial ordering
+      }
+    }
+
+    public int MaxSleep {
+      get {
+        int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AWAKE));
+        return Sheet.BaseSleepPoints + num;
       }
     }
 
