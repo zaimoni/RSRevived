@@ -3508,17 +3508,17 @@ namespace djack.RogueSurvivor.Engine
     {
       if (player == null)
         return;
-            m_PlayerFOV = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
+      m_PlayerFOV = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
       player.Location.Map.SetViewAndMarkVisited((IEnumerable<Point>)m_PlayerFOV);
     }
 
     private void HandlePlayerActor(Actor player)
     {
-            UpdatePlayerFOV(player);
-            m_Player = player;
-            m_Session.CurrentMap = player.Location.Map;  // multi-PC support
-            ComputeViewRect(player.Location.Position);
-            m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
+      UpdatePlayerFOV(player);
+      m_Player = player;
+      m_Session.CurrentMap = player.Location.Map;  // multi-PC support
+      ComputeViewRect(player.Location.Position);
+      m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
       if (m_IsPlayerLongWait)
       {
         if (CheckPlayerWaitLong(player))
@@ -9522,14 +9522,16 @@ namespace djack.RogueSurvivor.Engine
       else if (it.Model is ItemTrackerModel)
       {
         --(it as ItemTracker).Batteries;
-        RedrawPlayScreen();
+        if (actor.IsPlayer) RedrawPlayScreen();
       }
-      else
+      else if (it.Model is ItemLightModel)
       {
-        if (!(it.Model is ItemLightModel))
-          return;
         --(it as ItemLight).Batteries;
-        RedrawPlayScreen();
+        if (actor.IsPlayer)
+          {
+          UpdatePlayerFOV(actor);
+          RedrawPlayScreen();
+          }
       }
     }
 
