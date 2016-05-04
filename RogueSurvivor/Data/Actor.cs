@@ -282,37 +282,26 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int PreviousSleepPoints
-    {
-      get
-      {
+    public int PreviousSleepPoints {
+      get {
         return m_previousSleepPoints;
       }
     }
 
-    public int Sanity
-    {
+    public int Sanity {
       get {
         return m_Sanity;
       }
     }
 
-    public int PreviousSanity
-    {
-      get
-      {
+    public int PreviousSanity {
+      get {
         return m_previousSanity;
-      }
-      set
-      {
-                m_previousSanity = value;
       }
     }
 
-    public ActorSheet Sheet
-    {
-      get
-      {
+    public ActorSheet Sheet {
+      get {
         return m_Sheet;
       }
     }
