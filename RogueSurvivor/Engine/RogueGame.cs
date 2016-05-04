@@ -2501,39 +2501,34 @@ namespace djack.RogueSurvivor.Engine
         }
         foreach (OdorScent odorScent in odorScentList1)
           map.ModifyScentAt(odorScent.Odor, odorScent.Strength, odorScent.Position);
-        List<OdorScent> odorScentList2 = (List<OdorScent>) null;
-        foreach (OdorScent scent in map.Scents)
-        {
-          int num = 1;
-          if (map == map.District.SewersMap)
-            num += 2;
-          else if (map.Lighting == Lighting.OUTSIDE)
+
+        int odorDecayRate = 1;
+        if (map == map.District.SewersMap)
+          odorDecayRate += 2;
+        else if (map.Lighting == Lighting.OUTSIDE) {
+          switch (m_Session.World.Weather)
           {
-            switch (m_Session.World.Weather)
-            {
-              case Weather._FIRST:
-              case Weather.CLOUDY:
-                break;
-              case Weather.RAIN:
-                ++num;
-                break;
-              case Weather.HEAVY_RAIN:
-                num += 2;
-                break;
-              default:
-                throw new ArgumentOutOfRangeException("unhandled weather");
-            }
+          case Weather._FIRST:
+          case Weather.CLOUDY: break;
+          case Weather.RAIN:
+            ++odorDecayRate;
+            break;
+          case Weather.HEAVY_RAIN:
+            odorDecayRate += 2;
+            break;
+          default: throw new ArgumentOutOfRangeException("unhandled weather");
           }
-          map.ModifyScentAt(scent.Odor, -num, scent.Position);
-          if (scent.Strength < 1)
-          {
-            if (odorScentList2 == null)
-              odorScentList2 = new List<OdorScent>(1);
+        }
+
+        List<OdorScent> odorScentList2 = null;
+        foreach (OdorScent scent in map.Scents) {
+          map.ModifyScentAt(scent.Odor, -odorDecayRate, scent.Position);
+          if (scent.Strength < 1) {
+            if (odorScentList2 == null) odorScentList2 = new List<OdorScent>(1);
             odorScentList2.Add(scent);
           }
         }
-        if (odorScentList2 != null)
-        {
+        if (odorScentList2 != null) {
           foreach (OdorScent scent in odorScentList2)
             map.RemoveScent(scent);
         }
