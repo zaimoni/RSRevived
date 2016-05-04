@@ -4557,9 +4557,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (a.Model.Abilities.IsUndead) {
         a.RegenHitPoints(Rules.ActorBiteHpRegen(a, num));
-        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), a.MaxRot);
+        a.RottingEat(m_Rules.ActorBiteNutritionValue(a, num));
       } else {
-        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), a.MaxFood);
+        a.LivingEat(m_Rules.ActorBiteNutritionValue(a, num));
         InfectActor(a, m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
       }
       SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
@@ -8762,7 +8762,7 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead)
           {
             attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, num3));
-            attacker.FoodPoints = Math.Min(attacker.FoodPoints + m_Rules.ActorBiteNutritionValue(attacker, num3), attacker.MaxRot);
+            attacker.RottingEat(m_Rules.ActorBiteNutritionValue(attacker, num3));
             if (player2)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
             InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
@@ -9620,7 +9620,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-      actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), actor.MaxFood);
+      actor.LivingEat(m_Rules.ActorItemNutritionValue(actor, baseValue));
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
       bool player = IsVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -9638,7 +9638,7 @@ namespace djack.RogueSurvivor.Engine
       } else {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-        actor.FoodPoints = Math.Min(actor.FoodPoints + m_Rules.ActorItemNutritionValue(actor, baseValue), actor.MaxFood);
+        actor.LivingEat(m_Rules.ActorItemNutritionValue(actor, baseValue));
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)

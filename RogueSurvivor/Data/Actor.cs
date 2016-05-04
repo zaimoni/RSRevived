@@ -171,15 +171,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int SpawnTime
-    {
+    public int SpawnTime {
       get {
         return m_SpawnTime;
       }
     }
 
-    public int GangID
-    {
+    public int GangID {
       get {
         return m_GangID;
       }
@@ -188,22 +186,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsInAGang
-    {
+    public bool IsInAGang {
       get {
         return m_GangID != 0;
       }
     }
 
-    public Doll Doll
-    {
+    public Doll Doll {
       get {
         return m_Doll;
       }
     }
 
-    public bool IsDead
-    {
+    public bool IsDead {
       get {
         return GetFlag(Actor.Flags.IS_DEAD);
       }
@@ -212,8 +207,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsSleeping
-    {
+    public bool IsSleeping {
       get {
         return GetFlag(Actor.Flags.IS_SLEEPING);
       }
@@ -222,8 +216,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsRunning
-    {
+    public bool IsRunning {
       get {
         return GetFlag(Actor.Flags.IS_RUNNING);
       }
@@ -232,15 +225,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Inventory Inventory
-    {
+    public Inventory Inventory {
       get {
         return m_Inventory;
       }
     }
 
-    public int HitPoints
-    {
+    public int HitPoints {
       get {
         return m_HitPoints;
       }
@@ -249,15 +240,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int PreviousHitPoints
-    {
+    public int PreviousHitPoints {
       get {
         return m_previousHitPoints;
       }
     }
 
-    public int StaminaPoints
-    {
+    public int StaminaPoints {
       get {
         return m_StaminaPoints;
       }
@@ -266,8 +255,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int PreviousStaminaPoints
-    {
+    public int PreviousStaminaPoints {
       get {
         return m_previousStamina;
       }
@@ -276,18 +264,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int FoodPoints
-    {
+    public int FoodPoints {
       get {
         return m_FoodPoints;
       }
-      set {
-        m_FoodPoints = value;
-      }
     }
 
-    public int PreviousFoodPoints
-    {
+    public int PreviousFoodPoints {
       get {
         return m_previousFoodPoints;
       }
@@ -969,6 +952,14 @@ namespace djack.RogueSurvivor.Data
 
     public void Appetite(int f) {
       m_FoodPoints = Math.Max(0, m_FoodPoints - f);
+    }
+
+    public void LivingEat(int f) { 
+      m_FoodPoints = Math.Min(m_FoodPoints + f, MaxFood);
+    }
+
+    public void RottingEat(int f) { 
+      m_FoodPoints = Math.Min(m_FoodPoints + f, MaxRot);
     }
 
     // sleep
