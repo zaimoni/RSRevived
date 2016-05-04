@@ -70,7 +70,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_ZGRAB_CHANCE = 2;
     public static float SKILL_ZINFECTOR_BONUS = 0.1f;
     public static float SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1f;
-    public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public const int BASE_ACTION_COST = 100;
     public const int BASE_SPEED = 100;
     public const int STAMINA_COST_RUNNING = 4;
@@ -1918,12 +1917,6 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE));
       return baseValue + num;
-    }
-
-    public int ActorMaxRot(Actor actor)
-    {
-      int num = (int) ((double) actor.Sheet.BaseFoodPoints * (double) Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER));
-      return actor.Sheet.BaseFoodPoints + num;
     }
 
     public int ActorSleepRegen(Actor actor, bool isOnCouch)

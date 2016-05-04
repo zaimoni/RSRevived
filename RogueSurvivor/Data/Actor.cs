@@ -24,6 +24,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_TOUGH_HP_BONUS = 3;
+    public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
 
     private Actor.Flags m_Flags;
@@ -955,6 +956,13 @@ namespace djack.RogueSurvivor.Data
     public int MaxFood {
       get {
         int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_EATER));
+        return Sheet.BaseFoodPoints + num;
+      }
+    }
+
+    public int MaxRot {
+      get {
+        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_EATER));
         return Sheet.BaseFoodPoints + num;
       }
     }

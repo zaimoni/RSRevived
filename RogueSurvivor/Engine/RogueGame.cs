@@ -4557,7 +4557,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (a.Model.Abilities.IsUndead) {
         a.RegenHitPoints(Rules.ActorBiteHpRegen(a, num));
-        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), m_Rules.ActorMaxRot(a));
+        a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), a.MaxRot);
       } else {
         a.FoodPoints = Math.Min(a.FoodPoints + m_Rules.ActorBiteNutritionValue(a, num), a.MaxFood);
         InfectActor(a, m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
@@ -8061,7 +8061,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_INFECTOR:
           return string.Format("+{0}% infection damage", (object) (int) (100.0 * (double) Rules.SKILL_ZINFECTOR_BONUS));
         case Skills.IDs.Z_LIGHT_EATER:
-          return string.Format("+{0}% max ROT, +{1}% from eating", (object) (int) (100.0 * (double) Rules.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
+          return string.Format("+{0}% max ROT, +{1}% from eating", (object) (int) (100.0 * (double) Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.Z_LIGHT_FEET:
           return string.Format("+{0}% to avoid traps", (object) Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.Z_STRONG:
@@ -8762,7 +8762,7 @@ namespace djack.RogueSurvivor.Engine
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead)
           {
             attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, num3));
-            attacker.FoodPoints = Math.Min(attacker.FoodPoints + m_Rules.ActorBiteNutritionValue(attacker, num3), m_Rules.ActorMaxRot(attacker));
+            attacker.FoodPoints = Math.Min(attacker.FoodPoints + m_Rules.ActorBiteNutritionValue(attacker, num3), attacker.MaxRot);
             if (player2)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
             InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
@@ -11950,19 +11950,18 @@ namespace djack.RogueSurvivor.Engine
       }
       else if (actor.Model.Abilities.IsRotting)
       {
-        int maxValue2 = m_Rules.ActorMaxRot(actor);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
-                DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
-                m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsRotHungry)
-        {
+        int maxValue2 = actor.MaxRot;
+        m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
+        DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
+        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
+        if (actor.IsRotHungry) {
           if (actor.IsRotStarving)
-                        m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
           else
-                        m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
         }
         else
-                    m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
       }
       gy += 14;
       if (actor.Model.Abilities.HasToSleep)
