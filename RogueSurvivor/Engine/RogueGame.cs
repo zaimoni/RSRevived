@@ -10186,7 +10186,7 @@ namespace djack.RogueSurvivor.Engine
             skillTable = new SkillTable(killer.Sheet.SkillTable.Skills);
           killer.Model = actorModel;
           if (killer.IsPlayer)
-            PrepareActorForPlayerControl(killer);
+            killer.PrepareForPlayerControl();
           if (skillTable != null) {
             foreach (Skill skill in skillTable.Skills) {
               for (int index = 0; index < skill.Level; ++index) {
@@ -13284,7 +13284,7 @@ namespace djack.RogueSurvivor.Engine
           default:
             throw new ArgumentOutOfRangeException("unhandled undeadModel");
         }
-                PrepareActorForPlayerControl(actor);
+        actor.PrepareForPlayerControl();
       }
       else
       {
@@ -13332,20 +13332,8 @@ namespace djack.RogueSurvivor.Engine
           break;
         }
       }
-      if (m_Player == null)
-        return;
-            ComputeViewRect(m_Player.Location.Position);
-    }
-
-    private void PrepareActorForPlayerControl(Actor newPlayerAvatar)
-    {
-      if (newPlayerAvatar.Inventory == null)
-        newPlayerAvatar.Inventory = new Inventory(1);
-      if (newPlayerAvatar.Sheet.SkillTable == null)
-        newPlayerAvatar.Sheet.SkillTable = new SkillTable();
-      if (newPlayerAvatar.Leader == null)
-        return;
-      newPlayerAvatar.Leader.RemoveFollower(newPlayerAvatar);
+      if (m_Player == null) return;
+      ComputeViewRect(m_Player.Location.Position);
     }
 
     private void SetCurrentMap(Map map)
@@ -13895,10 +13883,10 @@ namespace djack.RogueSurvivor.Engine
         if (newPlayerAvatar == null) {
           m_MusicManager.StopAll();
         } else {
-          newPlayerAvatar.Controller = (ActorController) new PlayerController();
+          newPlayerAvatar.Controller = new PlayerController();
           if (newPlayerAvatar.Activity != Activity.SLEEPING)
             newPlayerAvatar.Activity = Activity.IDLE;
-          PrepareActorForPlayerControl(newPlayerAvatar);
+          newPlayerAvatar.PrepareForPlayerControl();
           m_Player = newPlayerAvatar;
           m_Session.CurrentMap = newPlayerAvatar.Location.Map;
           m_Session.Scoring.StartNewLife(m_Session.WorldTime.TurnCounter);

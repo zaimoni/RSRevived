@@ -193,57 +193,45 @@ namespace djack.RogueSurvivor.Data
 
     public Doll Doll
     {
-      get
-      {
+      get {
         return m_Doll;
       }
     }
 
     public bool IsDead
     {
-      get
-      {
+      get {
         return GetFlag(Actor.Flags.IS_DEAD);
       }
-      set
-      {
-                SetFlag(Actor.Flags.IS_DEAD, value);
+      set {
+        SetFlag(Actor.Flags.IS_DEAD, value);
       }
     }
 
     public bool IsSleeping
     {
-      get
-      {
+      get {
         return GetFlag(Actor.Flags.IS_SLEEPING);
       }
-      set
-      {
-                SetFlag(Actor.Flags.IS_SLEEPING, value);
+      set {
+        SetFlag(Actor.Flags.IS_SLEEPING, value);
       }
     }
 
     public bool IsRunning
     {
-      get
-      {
+      get {
         return GetFlag(Actor.Flags.IS_RUNNING);
       }
-      set
-      {
-                SetFlag(Actor.Flags.IS_RUNNING, value);
+      set {
+        SetFlag(Actor.Flags.IS_RUNNING, value);
       }
     }
 
     public Inventory Inventory
     {
-      get
-      {
+      get {
         return m_Inventory;
-      }
-      set
-      {
-                m_Inventory = value;
       }
     }
 
@@ -1130,19 +1118,29 @@ namespace djack.RogueSurvivor.Data
     private void SetFlag(Actor.Flags f, bool value)
     {
       if (value)
-                m_Flags |= f;
+        m_Flags |= f;
       else
-                m_Flags &= ~f;
+        m_Flags &= ~f;
     }
 
     private void OneFlag(Actor.Flags f)
     {
-            m_Flags |= f;
+      m_Flags |= f;
     }
 
     private void ZeroFlag(Actor.Flags f)
     {
-            m_Flags &= ~f;
+      m_Flags &= ~f;
+    }
+
+    // This prepares an actor for being a PC.  Note that hacking the player controller in
+    // by hex-editing does work flawlessly at the Actor, level, so whether any of this 
+    // is needed is a good question.
+    public void PrepareForPlayerControl()
+    {
+      if (m_Inventory == null) m_Inventory = new Inventory(1);  // but the GUI still won't display it for undead
+      if (Sheet.SkillTable == null) Sheet.SkillTable = new SkillTable(); 
+      if (Leader != null) Leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
     // This is a backstop for bugs elsewhere.
