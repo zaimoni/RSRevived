@@ -306,15 +306,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int ActionPoints
-    {
-      get
-      {
+    public int ActionPoints {
+      get {
         return m_ActionPoints;
       }
-      set
-      {
-                m_ActionPoints = value;
+      set {
+        m_ActionPoints = value;
       }
     }
 

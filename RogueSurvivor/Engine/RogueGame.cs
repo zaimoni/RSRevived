@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define DATAFLOW_TRACE
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
@@ -730,15 +732,15 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void GameLoop()
     {
-            HandleMainMenu();
+      HandleMainMenu();
       while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
         DateTime now = DateTime.Now;
-                m_HasLoadedGame = false;
-                AdvancePlay(m_Session.CurrentMap.District, RogueGame.SimFlags.NOT_SIMULATING);
+        m_HasLoadedGame = false;
+        AdvancePlay(m_Session.CurrentMap.District, RogueGame.SimFlags.NOT_SIMULATING);
         if (!m_IsGameRunning)
           break;
-                m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
+        m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
       }
     }
 
@@ -2276,8 +2278,11 @@ namespace djack.RogueSurvivor.Engine
       DayPhase phase1 = m_Session.WorldTime.Phase;
 
       lock(district) {
+#if DATAFLOW_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
+#endif
       foreach(Map current in district.Maps) {
-        int turnCounter = current.LocalTime.TurnCounter;
+      int turnCounter = current.LocalTime.TurnCounter;
         do {
           AdvancePlay(current, sim);
           if (m_Player.IsDead) HandleReincarnation();
@@ -2317,7 +2322,7 @@ namespace djack.RogueSurvivor.Engine
 
       if (!RogueGame.s_Options.IsSimON || m_Player == null || (!m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) || m_Player.Location.Map.District != district)
         return;
-            SimulateNearbyDistricts(district);
+      SimulateNearbyDistricts(district);
     }
 
     private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
@@ -2333,13 +2338,22 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(Map map, RogueGame.SimFlags sim)
     {
+#if DATAFLOW_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
+#endif
       if (map.IsSecret) {
         ++map.LocalTime.TurnCounter;
       } else {
         Actor nextActorToAct = map.NextActorToAct;
         if (nextActorToAct == null) {
+#if DATAFLOW_TRACE
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "Next turn, Map: "+map.Name);
+#endif
           NextMapTurn(map, sim);
         } else {
+#if DATAFLOW_TRACE
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
+#endif
           nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
           if (nextActorToAct.Controller == null)
             nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -6378,6 +6392,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actorAction == null)
         throw new InvalidOperationException("AI returned null action.");
+#if DATAFLOW_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
+#endif
       if (actorAction.IsLegal()) {
         actorAction.Perform();
       } else {

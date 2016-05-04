@@ -28,7 +28,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-            m_Game.DoEquipItem(m_Actor, m_Item);
+      m_Game.DoEquipItem(m_Actor, m_Item);
+    }
+
+    public override string ToString()
+    {
+      return m_Actor.Name+" equips "+m_Item;
     }
   }
 }

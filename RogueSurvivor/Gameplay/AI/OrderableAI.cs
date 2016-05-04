@@ -437,7 +437,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped) return obj as ItemLight;
+        if (obj.IsEquipped && obj is ItemLight) return obj as ItemLight;
       }
       return null;
     }
