@@ -276,15 +276,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int SleepPoints
-    {
-      get
-      {
+    public int SleepPoints {
+      get {
         return m_SleepPoints;
-      }
-      set
-      {
-        m_SleepPoints = value;
       }
     }
 
@@ -1004,6 +998,14 @@ namespace djack.RogueSurvivor.Data
         int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AWAKE));
         return Sheet.BaseSleepPoints + num;
       }
+    }
+
+    public void Rest(int s) {
+      m_SleepPoints = Math.Min(m_SleepPoints + s, MaxSleep);
+    }
+
+    public void Drowse(int s) {
+      m_SleepPoints = Math.Max(0, m_SleepPoints - s);      
     }
 
     // boring items

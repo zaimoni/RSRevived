@@ -2427,8 +2427,7 @@ namespace djack.RogueSurvivor.Engine
                   }
                 } else if (infectionPercent >= Rules.INFECTION_LEVEL_2_TIRED) {
                   actor.SpendStaminaPoints(Rules.INFECTION_LEVEL_2_TIRED_STA);
-                  actor.SleepPoints -= Rules.INFECTION_LEVEL_2_TIRED_SLP;
-                  if (actor.SleepPoints < 0) actor.SleepPoints = 0;
+                  actor.Drowse(Rules.INFECTION_LEVEL_2_TIRED_SLP);
                   if (player) {
                     if (flag3) ClearMessages();
                     AddMessage(MakeMessage(actor, string.Format("{0} sick and tired.", (object) Conjugate(actor, VERB_FEEL)), Color.Purple));
@@ -2579,9 +2578,7 @@ namespace djack.RogueSurvivor.Engine
               if (m_Rules.IsActorDisturbed(actor) && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
                 DoWakeUp(actor);
                 DoShout(actor, "NO! LEAVE ME ALONE!");
-                actor.SleepPoints -= Rules.SANITY_NIGHTMARE_SLP_LOSS;
-                if (actor.SleepPoints < 0)
-                  actor.SleepPoints = 0;
+                actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
                 actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
                 if (IsVisibleToPlayer(actor))
                   AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object)Conjugate(actor, VERB_WAKE_UP))));
@@ -2591,16 +2588,12 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              --actor.SleepPoints;
-              if (map.LocalTime.IsNight) --actor.SleepPoints;
-              if (actor.SleepPoints < 0) actor.SleepPoints = 0;
+              actor.Drowse(map.LocalTime.IsNight ? 2 : 1);
             }
             if (actor.IsSleeping) {
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Activity.SLEEPING;
-              int num = m_Rules.ActorSleepRegen(actor, isOnCouch);
-              actor.SleepPoints += num;
-              actor.SleepPoints = Math.Min(actor.SleepPoints, actor.MaxSleep);
+              actor.Rest(m_Rules.ActorSleepRegen(actor, isOnCouch));
               if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + m_Rules.ActorHealChanceBonus(actor)))
                 actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
               if (actor.IsHungry || actor.SleepPoints >= actor.MaxSleep)
@@ -9660,7 +9653,7 @@ namespace djack.RogueSurvivor.Engine
     private void DoVomit(Actor actor)
     {
       actor.StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
-      actor.SleepPoints = Math.Max(0, actor.SleepPoints - WorldTime.TURNS_PER_HOUR);
+      actor.Drowse(WorldTime.TURNS_PER_HOUR);
       actor.Appetite(WorldTime.TURNS_PER_HOUR);
       Location location = actor.Location;
       location.Map.GetTileAt(location.Position.X, location.Position.Y).AddDecoration("Tiles\\Decoration\\vomit");
@@ -9684,7 +9677,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.RegenHitPoints(m_Rules.ActorMedicineEffect(actor, med.Healing));
       actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
-      actor.SleepPoints = Math.Min(actor.SleepPoints + m_Rules.ActorMedicineEffect(actor, med.SleepBoost), actor.MaxSleep);
+      actor.Rest(m_Rules.ActorMedicineEffect(actor, med.SleepBoost));
       actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
       actor.RegenSanity(m_Rules.ActorMedicineEffect(actor, med.SanityCure));
       actor.Inventory.Consume(med);
