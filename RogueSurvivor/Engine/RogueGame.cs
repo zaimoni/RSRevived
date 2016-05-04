@@ -9460,10 +9460,9 @@ namespace djack.RogueSurvivor.Engine
     public void DoUnequipItem(Actor actor, Item it)
     {
       it.EquippedPart = DollPart.NONE;
-            OnUnequipItem(actor, it);
-      if (!IsVisibleToPlayer(actor))
-        return;
-            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
+        OnUnequipItem(actor, it);
+      if (!IsVisibleToPlayer(actor)) return;
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
 
     private void OnEquipItem(Actor actor, Item it)
@@ -9491,16 +9490,11 @@ namespace djack.RogueSurvivor.Engine
       else if (it.Model is ItemTrackerModel)
       {
         --(it as ItemTracker).Batteries;
-        if (actor.IsPlayer) RedrawPlayScreen();
       }
       else if (it.Model is ItemLightModel)
       {
         --(it as ItemLight).Batteries;
-        if (actor.IsPlayer)
-          {
-          UpdatePlayerFOV(actor);
-          RedrawPlayScreen();
-          }
+        if (actor.IsPlayer) UpdatePlayerFOV(actor);
       }
     }
 

@@ -372,15 +372,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Attack CurrentRangedAttack
-    {
-      get
-      {
+    public Attack CurrentRangedAttack {
+      get {
         return m_CurrentRangedAttack;
       }
-      set
-      {
-                m_CurrentRangedAttack = value;
+      set {
+        m_CurrentRangedAttack = value;
       }
     }
 
