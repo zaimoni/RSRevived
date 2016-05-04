@@ -2532,25 +2532,14 @@ namespace djack.RogueSurvivor.Engine
           foreach (OdorScent scent in odorScentList2)
             map.RemoveScent(scent);
         }
-        foreach (Actor actor in map.Actors)
-                    DropActorScent(actor);
-        foreach (Actor actor in map.Actors)
-        {
-          if (!actor.IsSleeping)
-            actor.ActionPoints += actor.Speed;
-          if (actor.StaminaPoints < actor.MaxSTA)
-            actor.RegenStaminaPoints(Rules.STAMINA_REGEN_WAIT);
-        }
+        foreach (Actor actor in map.Actors) actor.PreTurnStart();
         map.CheckNextActorIndex = 0;
-        foreach (Actor actor in map.Actors)
-        {
-          if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
-          {
+        foreach (Actor actor in map.Actors) {
+          if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
             actor.IsRunning = false;
-            if (actor == m_Player)
-            {
-                            AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", (object)Conjugate(actor, VERB_BE))));
-                            RedrawPlayScreen();
+            if (actor == m_Player) {
+              AddMessage(MakeMessage(actor, string.Format("{0} too tired to continue running!", (object)Conjugate(actor, VERB_BE))));
+              RedrawPlayScreen();
             }
           }
         }
@@ -2818,18 +2807,6 @@ namespace djack.RogueSurvivor.Engine
           return;
                 HandleUndeadNPCsUpgrade(map);
       }
-    }
-
-    private void DropActorScent(Actor actor)
-    {
-      if (actor.Model.Abilities.IsUndead)
-      {
-        if (!actor.Model.Abilities.IsUndeadMaster)
-          return;
-        actor.Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, Rules.UNDEAD_MASTER_SCENT_DROP, actor.Location.Position);
-      }
-      else
-        actor.Location.Map.RefreshScentAt(Odor.LIVING, Rules.LIVING_SCENT_DROP, actor.Location.Position);
     }
 
     private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
@@ -8237,7 +8214,7 @@ namespace djack.RogueSurvivor.Engine
           actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
         actor.SpendActionPoints(actionCost);
         if (actor.ActionPoints >= Rules.BASE_ACTION_COST)
-          DropActorScent(actor);
+          actor.DropScent();
         if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
         {
           OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
@@ -8621,7 +8598,7 @@ namespace djack.RogueSurvivor.Engine
         else
           AddMessage(MakeMessage(actor, string.Format("{0}.", (object) Conjugate(actor, VERB_WAIT))));
       }
-      actor.RegenStaminaPoints(Rules.STAMINA_REGEN_WAIT);
+      actor.RegenStaminaPoints(Actor.STAMINA_REGEN_WAIT);
     }
 
     public bool DoPlayerBump(Actor player, Direction direction)

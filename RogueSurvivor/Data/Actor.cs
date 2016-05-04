@@ -18,6 +18,9 @@ namespace djack.RogueSurvivor.Data
     private const int STAMINA_INFINITE = 99;
     public const int STAMINA_MIN_FOR_ACTIVITY = 10;
     private const int NIGHT_STA_PENALTY = 2;
+    public const int STAMINA_REGEN_WAIT = 2;
+    private const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
+    private const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
 
     public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_HAULER_INV_BONUS = 1;
@@ -1171,6 +1174,24 @@ namespace djack.RogueSurvivor.Data
       m_previousFoodPoints = m_FoodPoints;
       m_previousSleepPoints = m_SleepPoints;
       m_previousSanity = m_Sanity;
+    }
+
+    public void DropScent()
+    {
+      if (Model.Abilities.IsUndead)
+      {
+        if (!Model.Abilities.IsUndeadMaster) return;
+        Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, UNDEAD_MASTER_SCENT_DROP, Location.Position);
+      }
+      else
+        Location.Map.RefreshScentAt(Odor.LIVING, LIVING_SCENT_DROP, Location.Position);
+    }
+
+    public void PreTurnStart()
+    {
+       DropScent();
+       if (!IsSleeping) m_ActionPoints += Speed;
+       if (m_StaminaPoints < MaxSTA) RegenStaminaPoints(STAMINA_REGEN_WAIT);
     }
 
     // This prepares an actor for being a PC.  Note that hacking the player controller in
