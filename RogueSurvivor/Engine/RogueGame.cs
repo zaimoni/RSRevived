@@ -2350,10 +2350,7 @@ namespace djack.RogueSurvivor.Engine
             CheckSpecialPlayerEventsAfterAction(nextActorToAct);
           }
           else HandleAiActor(nextActorToAct);
-          nextActorToAct.PreviousHitPoints = nextActorToAct.HitPoints;
-          nextActorToAct.PreviousFoodPoints = nextActorToAct.FoodPoints;
-          nextActorToAct.PreviousSleepPoints = nextActorToAct.SleepPoints;
-          nextActorToAct.PreviousSanity = nextActorToAct.Sanity;
+          nextActorToAct.AfterAction();
         }
       }
     }

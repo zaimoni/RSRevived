@@ -247,25 +247,18 @@ namespace djack.RogueSurvivor.Data
 
     public int PreviousHitPoints
     {
-      get
-      {
+      get {
         return m_previousHitPoints;
-      }
-      set
-      {
-                m_previousHitPoints = value;
       }
     }
 
     public int StaminaPoints
     {
-      get
-      {
+      get {
         return m_StaminaPoints;
       }
-      set
-      {
-                m_StaminaPoints = value;
+      set {
+        m_StaminaPoints = value;
       }
     }
 
@@ -277,7 +270,7 @@ namespace djack.RogueSurvivor.Data
       }
       set
       {
-                m_previousStamina = value;
+        m_previousStamina = value;
       }
     }
 
@@ -299,10 +292,6 @@ namespace djack.RogueSurvivor.Data
       {
         return m_previousFoodPoints;
       }
-      set
-      {
-                m_previousFoodPoints = value;
-      }
     }
 
     public int SleepPoints
@@ -322,10 +311,6 @@ namespace djack.RogueSurvivor.Data
       get
       {
         return m_previousSleepPoints;
-      }
-      set
-      {
-                m_previousSleepPoints = value;
       }
     }
 
@@ -1131,6 +1116,14 @@ namespace djack.RogueSurvivor.Data
     private void ZeroFlag(Actor.Flags f)
     {
       m_Flags &= ~f;
+    }
+
+    public void AfterAction()
+    {
+      m_previousHitPoints = m_HitPoints;
+      m_previousFoodPoints = m_FoodPoints;
+      m_previousSleepPoints = m_SleepPoints;
+      m_previousSanity = m_Sanity;
     }
 
     // This prepares an actor for being a PC.  Note that hacking the player controller in
