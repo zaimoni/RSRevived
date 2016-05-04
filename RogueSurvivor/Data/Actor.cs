@@ -324,71 +324,51 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Location Location
-    {
-      get
-      {
+    public Location Location {
+      get {
         return m_Location;
       }
-      set
-      {
-                m_Location = value;
+      set {
+        m_Location = value;
       }
     }
 
-    public Activity Activity
-    {
-      get
-      {
+    public Activity Activity {
+      get {
         return m_Activity;
       }
-      set
-      {
-                m_Activity = value;
+      set {
+        m_Activity = value;
       }
     }
 
-    public Actor TargetActor
-    {
-      get
-      {
+    public Actor TargetActor {
+      get {
         return m_TargetActor;
       }
-      set
-      {
-                m_TargetActor = value;
+      set {
+        m_TargetActor = value;
       }
     }
 
-    public int AudioRange
-    {
-      get
-      {
+    public int AudioRange {
+      get {
         return m_Sheet.BaseAudioRange + m_AudioRangeMod;
       }
     }
 
-    public int AudioRangeMod
-    {
-      get
-      {
+    public int AudioRangeMod {
+      get {
         return m_AudioRangeMod;
-      }
-      set
-      {
-                m_AudioRangeMod = value;
       }
     }
 
-    public Attack CurrentMeleeAttack
-    {
-      get
-      {
+    public Attack CurrentMeleeAttack {
+      get {
         return m_CurrentMeleeAttack;
       }
-      set
-      {
-                m_CurrentMeleeAttack = value;
+      set {
+        m_CurrentMeleeAttack = value;
       }
     }
 
