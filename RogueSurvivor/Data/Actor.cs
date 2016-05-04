@@ -19,6 +19,7 @@ namespace djack.RogueSurvivor.Data
     public const int STAMINA_MIN_FOR_ACTIVITY = 10;
     private const int NIGHT_STA_PENALTY = 2;
 
+    public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
@@ -264,32 +265,27 @@ namespace djack.RogueSurvivor.Data
 
     public int PreviousStaminaPoints
     {
-      get
-      {
+      get {
         return m_previousStamina;
       }
-      set
-      {
+      set {
         m_previousStamina = value;
       }
     }
 
     public int FoodPoints
     {
-      get
-      {
+      get {
         return m_FoodPoints;
       }
-      set
-      {
-                m_FoodPoints = value;
+      set {
+        m_FoodPoints = value;
       }
     }
 
     public int PreviousFoodPoints
     {
-      get
-      {
+      get {
         return m_previousFoodPoints;
       }
     }
@@ -302,7 +298,7 @@ namespace djack.RogueSurvivor.Data
       }
       set
       {
-                m_SleepPoints = value;
+        m_SleepPoints = value;
       }
     }
 
@@ -1011,6 +1007,17 @@ namespace djack.RogueSurvivor.Data
     }
 
     // inventory stats
+
+    // This is the authoritative source for a living actor's maximum inventory.
+    // As C# has no analog to a C++ const method or const local variables, 
+    // use this to prevent accidental overwriting of MaxCapacity by bugs.
+    public int MaxInv {
+      get {
+        int num = SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HAULER);
+        return Sheet.BaseInventoryCapacity + num;
+      }
+    }
+
     public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return null;
@@ -1090,7 +1097,7 @@ namespace djack.RogueSurvivor.Data
       Sheet.SkillTable.AddOrIncreaseSkill(id);
       Skill skill = Sheet.SkillTable.GetSkill(id);
       if (id == djack.RogueSurvivor.Gameplay.Skills.IDs.HAULER && Inventory != null)
-          Inventory.MaxCapacity = djack.RogueSurvivor.Engine.Rules.ActorMaxInv(this);
+        Inventory.MaxCapacity = MaxInv;
       return skill;
     }
 

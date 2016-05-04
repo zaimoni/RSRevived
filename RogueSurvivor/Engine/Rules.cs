@@ -42,7 +42,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_FIREARMS_ATK_BONUS = 5;
     public static int SKILL_FIREARMS_DMG_BONUS = 2;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
-    public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
@@ -1951,15 +1950,6 @@ namespace djack.RogueSurvivor.Engine
     public int ActorDisturbedLevel(Actor actor)
     {
       return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
-    }
-
-    // This is the authoritative source for a living actor's maximum inventory.
-    // As C# has no analog to a C++ const method or const local variables, 
-    // use this to prevent accidental overwriting of MaxCapacity by bugs.
-    public static int ActorMaxInv(Actor actor)
-    {
-      int num = Rules.SKILL_HAULER_INV_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
-      return actor.Sheet.BaseInventoryCapacity + num;
     }
 
     public int ActorDamageBonusVsUndeads(Actor actor)

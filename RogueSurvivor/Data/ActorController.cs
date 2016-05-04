@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Data
         return false;
       }
       // don't lose last inventory slot to non-food unless we have enough
-      if (m_Actor.Inventory.CountItems >= Rules.ActorMaxInv(m_Actor)-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
+      if (m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
 
       if (it is ItemRangedWeapon)
       {

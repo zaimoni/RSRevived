@@ -7400,7 +7400,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor.Inventory != null && !actor.Inventory.IsEmpty)
       {
-        stringList.Add(string.Format("Items {0}/{1} : ", (object) actor.Inventory.CountItems, (object) Rules.ActorMaxInv(actor)));
+        stringList.Add(string.Format("Items {0}/{1} : ", (object) actor.Inventory.CountItems, (object) actor.MaxInv));
         stringList.AddRange((IEnumerable<string>)DescribeInventory(actor.Inventory));
       }
       return stringList.ToArray();
@@ -8028,7 +8028,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.HARDY:
           return string.Format("sleep heals anywhere, +{0}% chance to heal", (object) Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
         case Skills.IDs.HAULER:
-          return string.Format("+{0} inventory capacity", (object) Rules.SKILL_HAULER_INV_BONUS);
+          return string.Format("+{0} inventory capacity", (object) Actor.SKILL_HAULER_INV_BONUS);
         case Skills.IDs.HIGH_STAMINA:
           return string.Format("+{0} STA", (object) Actor.SKILL_HIGH_STAMINA_STA_BONUS);
         case Skills.IDs.LEADERSHIP:

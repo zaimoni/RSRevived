@@ -1071,10 +1071,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
     {
-      if (stacks == null || stacks.Count == 0)
-        return (ActorAction) null;
-      if (m_Actor.Inventory.CountItems < Rules.ActorMaxInv(m_Actor))
-        return (ActorAction) null;
+      if (stacks == null || stacks.Count == 0) return null;
+      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
       if (m_Actor.HasItemOfType(typeof (ItemFood))) return null;
       bool flag = false;
       foreach (Percept stack in stacks)
