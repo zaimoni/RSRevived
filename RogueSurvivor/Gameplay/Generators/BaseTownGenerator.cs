@@ -3350,7 +3350,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             if (nullable.HasValue)
               actor.SkillUpgrade(nullable.Value);
           }
-                    RecomputeActorStartingStats(actor);
+          actor.RecomputeStartingStats();
         }
       }
       return actor;

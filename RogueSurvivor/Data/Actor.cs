@@ -314,13 +314,8 @@ namespace djack.RogueSurvivor.Data
 
     public int Sanity
     {
-      get
-      {
+      get {
         return m_Sanity;
-      }
-      set
-      {
-        m_Sanity = value;
       }
     }
 
@@ -1139,6 +1134,18 @@ namespace djack.RogueSurvivor.Data
     private void ZeroFlag(Actor.Flags f)
     {
       m_Flags &= ~f;
+    }
+
+    // administrative functions whose presence here is not clearly advisable but they improve the access situation here
+    public void RecomputeStartingStats()
+    {
+      m_HitPoints = MaxHPs;
+      m_StaminaPoints = MaxSTA;
+      m_FoodPoints = MaxFood;
+      m_SleepPoints = MaxSleep;
+      m_Sanity = MaxSanity;
+      if (m_Inventory == null) return;
+      m_Inventory.MaxCapacity = MaxInv;
     }
 
     public void AfterAction()

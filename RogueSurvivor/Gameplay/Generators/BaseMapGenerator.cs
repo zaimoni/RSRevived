@@ -604,18 +604,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       if (actor.Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
       actor.Sheet.SkillTable.AddOrIncreaseSkill(skillID);
-            RecomputeActorStartingStats(actor);
-    }
-
-    public void RecomputeActorStartingStats(Actor actor)
-    {
-      actor.HitPoints = actor.MaxHPs;
-      actor.StaminaPoints = actor.MaxSTA;
-      actor.FoodPoints = actor.MaxFood;
-      actor.SleepPoints = actor.MaxSleep;
-      actor.Sanity = actor.MaxSanity;
-      if (actor.Inventory == null) return;
-      actor.Inventory.MaxCapacity = actor.MaxInv;
+      actor.RecomputeStartingStats();
     }
 
     protected DoorWindow MakeObjWoodenDoor()

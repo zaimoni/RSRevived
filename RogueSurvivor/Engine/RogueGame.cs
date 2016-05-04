@@ -10189,15 +10189,14 @@ namespace djack.RogueSurvivor.Engine
                 killer.SkillUpgrade((Skills.IDs) skill.ID);
               }
             }
-            m_TownGenerator.RecomputeActorStartingStats(killer);
+            killer.RecomputeStartingStats();
           }
-          if (IsVisibleToPlayer(killer))
-          {
-                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location.Position), new Size(32, 32))));
-                        AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", (object)Conjugate(killer, VERB_TRANSFORM_INTO), (object) actorModel.Name)));
-                        RedrawPlayScreen();
+          if (IsVisibleToPlayer(killer)) {
+            AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location.Position), new Size(32, 32))));
+            AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", (object)Conjugate(killer, VERB_TRANSFORM_INTO), (object) actorModel.Name)));
+            RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
-                        ClearOverlays();
+            ClearOverlays();
           }
         }
       }
@@ -11048,22 +11047,20 @@ namespace djack.RogueSurvivor.Engine
       if (deadVictim == m_Player || deadVictim.IsPlayer)
         m_Session.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
-      if (skillTable != null && skillTable.CountSkills > 0)
-      {
+      if (skillTable != null && skillTable.CountSkills > 0) {
         if (actor.Sheet.SkillTable == null)
           actor.Sheet.SkillTable = new SkillTable();
         int countSkills = skillTable.CountSkills;
         int num = skillTable.CountTotalSkillLevels / 2;
-        for (int index = 0; index < num; ++index)
-        {
+        for (int index = 0; index < num; ++index) {
           Skills.IDs? nullable = ZombifySkill((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]);
           if (nullable.HasValue)
             actor.SkillUpgrade(nullable.Value);
         }
-                m_TownGenerator.RecomputeActorStartingStats(actor);
+        actor.RecomputeStartingStats();
       }
       if (!isStartingGame)
-                SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", (object) deadVictim.Name));
+        SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", (object) deadVictim.Name));
       return actor;
     }
 
@@ -13286,7 +13283,7 @@ namespace djack.RogueSurvivor.Engine
         townGen.DressCivilian(roller, actor);
         townGen.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
-        townGen.RecomputeActorStartingStats(actor);
+        actor.RecomputeStartingStats();
         int max1 = (int) (0.25 * (double) actor.FoodPoints);
         actor.FoodPoints = actor.FoodPoints - m_Rules.Roll(0, max1);
         int max2 = (int) (0.25 * (double) actor.SleepPoints);
