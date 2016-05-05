@@ -46,13 +46,11 @@ namespace djack.RogueSurvivor.Data
 
     public District District
     {
-      get
-      {
+      get {
         return m_District;
       }
-      set
-      {
-                m_District = value;
+      set {
+        m_District = value;
       }
     }
 
@@ -60,136 +58,105 @@ namespace djack.RogueSurvivor.Data
 
     public Lighting Lighting
     {
-      get
-      {
+      get {
         return m_Lighting;
       }
-      set
-      {
-                m_Lighting = value;
+      set {
+        m_Lighting = value;
       }
     }
 
-    public IEnumerable<Zone> Zones
-    {
-      get
-      {
+    public IEnumerable<Zone> Zones {
+      get {
         return (IEnumerable<Zone>)m_Zones;
       }
     }
 
-    public IEnumerable<Exit> Exits
-    {
-      get
-      {
+    public IEnumerable<Exit> Exits {
+      get {
         return (IEnumerable<Exit>)m_Exits.Values;
       }
     }
 
-    public int CountExits
-    {
-      get
-      {
+    public int CountExits {
+      get {
         if (m_Exits.Values != null)
           return m_Exits.Values.Count;
         return 0;
       }
     }
 
-    public IEnumerable<Actor> Actors
-    {
-      get
-      {
+    public IEnumerable<Actor> Actors {
+      get {
         return (IEnumerable<Actor>)m_ActorsList;
       }
     }
 
-    public int CountActors
-    {
-      get
-      {
+    public int CountActors {
+      get {
         return m_ActorsList.Count;
       }
     }
 
     public int CheckNextActorIndex
     {
-      get
-      {
+      get {
         return m_iCheckNextActorIndex;
       }
-      set
-      {
-                m_iCheckNextActorIndex = value;
+      set { // nominates RogueGame::NextMapTurn for conversion to Map member function
+        m_iCheckNextActorIndex = value;
       }
     }
 
-    public IEnumerable<MapObject> MapObjects
-    {
-      get
-      {
+    public IEnumerable<MapObject> MapObjects {
+      get {
         return (IEnumerable<MapObject>)m_MapObjectsList;
       }
     }
 
-    public IEnumerable<Inventory> GroundInventories
-    {
-      get
-      {
+    public IEnumerable<Inventory> GroundInventories {
+      get {
         return (IEnumerable<Inventory>)m_aux_GroundItemsList;
       }
     }
 
-    public IEnumerable<Corpse> Corpses
-    {
-      get
-      {
+    public IEnumerable<Corpse> Corpses {
+      get {
         return (IEnumerable<Corpse>)m_CorpsesList;
       }
     }
 
-    public int CountCorpses
-    {
-      get
-      {
+    public int CountCorpses {
+      get {
         return m_CorpsesList.Count;
       }
     }
 
-    public IEnumerable<TimedTask> Timers
-    {
-      get
-      {
+    public IEnumerable<TimedTask> Timers {
+      get {
         return (IEnumerable<TimedTask>)m_Timers;
       }
     }
 
-    public int CountTimers
-    {
-      get
-      {
+    public int CountTimers {
+      get {
         if (m_Timers != null)
           return m_Timers.Count;
         return 0;
       }
     }
 
-    public IEnumerable<OdorScent> Scents
-    {
-      get
-      {
+    public IEnumerable<OdorScent> Scents {
+      get {
         return (IEnumerable<OdorScent>)m_Scents;
       }
     }
 
     public Map(int seed, string name, int width, int height)
     {
-      if (name == null)
-        throw new ArgumentNullException("name");
-      if (width <= 0)
-        throw new ArgumentOutOfRangeException("width <=0");
-      if (height <= 0)
-        throw new ArgumentOutOfRangeException("height <=0");
+      if (name == null) throw new ArgumentNullException("name");
+      if (width <= 0) throw new ArgumentOutOfRangeException("width <=0");
+      if (height <= 0) throw new ArgumentOutOfRangeException("height <=0");
       Seed = seed;
       Name = name;
       Width = width;
@@ -199,8 +166,7 @@ namespace djack.RogueSurvivor.Data
       Lighting = Lighting.OUTSIDE;
       IsSecret = false;
       m_Tiles = new Tile[width, height];
-      for (int index1 = 0; index1 < width; ++index1)
-      {
+      for (int index1 = 0; index1 < width; ++index1) {
         for (int index2 = 0; index2 < height; ++index2)
           m_Tiles[index1, index2] = new Tile(TileModel.UNDEF);
       }
@@ -333,11 +299,9 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTileModelAt(int x, int y, TileModel model)
     {
-      if (!IsInBounds(x, y))
-        throw new ArgumentOutOfRangeException("position out of map bounds");
-      if (model == null)
-        throw new ArgumentNullException("model");
-            m_Tiles[x, y].Model = model;
+      if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("position out of map bounds");
+      if (model == null) throw new ArgumentNullException("model");
+      m_Tiles[x, y].Model = model;
     }
 
     public Exit GetExitAt(Point pos)
@@ -345,7 +309,7 @@ namespace djack.RogueSurvivor.Data
       Exit exit;
       if (m_Exits.TryGetValue(pos, out exit))
         return exit;
-      return (Exit) null;
+      return null;
     }
 
     public Exit GetExitAt(int x, int y)
@@ -355,22 +319,19 @@ namespace djack.RogueSurvivor.Data
 
     public void SetExitAt(Point pos, Exit exit)
     {
-            m_Exits.Add(pos, exit);
+      m_Exits.Add(pos, exit);
     }
 
     public void RemoveExitAt(Point pos)
     {
-            m_Exits.Remove(pos);
+      m_Exits.Remove(pos);
     }
 
     public bool HasAnExitIn(Rectangle rect)
     {
-      for (int left = rect.Left; left < rect.Right; ++left)
-      {
-        for (int top = rect.Top; top < rect.Bottom; ++top)
-        {
-          if (GetExitAt(left, top) != null)
-            return true;
+      for (int left = rect.Left; left < rect.Right; ++left) {
+        for (int top = rect.Top; top < rect.Bottom; ++top) {
+          if (GetExitAt(left, top) != null) return true;
         }
       }
       return false;
@@ -378,42 +339,36 @@ namespace djack.RogueSurvivor.Data
 
     public Point? GetExitPos(Exit exit)
     {
-      if (exit == null)
-        return new Point?();
-      foreach (KeyValuePair<Point, Exit> mExit in m_Exits)
-      {
-        if (mExit.Value == exit)
-          return new Point?(mExit.Key);
+      if (exit == null) return new Point?();
+      foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
+        if (mExit.Value == exit) return new Point?(mExit.Key);
       }
       return new Point?();
     }
 
     public void AddZone(Zone zone)
     {
-            m_Zones.Add(zone);
+      m_Zones.Add(zone);
     }
 
     public void RemoveZone(Zone zone)
     {
-            m_Zones.Remove(zone);
+      m_Zones.Remove(zone);
     }
 
     public void RemoveAllZonesAt(int x, int y)
     {
       List<Zone> zonesAt = GetZonesAt(x, y);
-      if (zonesAt == null)
-        return;
+      if (zonesAt == null) return;
       foreach (Zone zone in zonesAt)
-                RemoveZone(zone);
+        RemoveZone(zone);
     }
 
     public List<Zone> GetZonesAt(int x, int y)
     {
       List<Zone> zoneList = (List<Zone>) null;
-      foreach (Zone mZone in m_Zones)
-      {
-        if (mZone.Bounds.Contains(x, y))
-        {
+      foreach (Zone mZone in m_Zones) {
+        if (mZone.Bounds.Contains(x, y)) {
           if (zoneList == null)
             zoneList = new List<Zone>(m_Zones.Count / 4);
           zoneList.Add(mZone);
@@ -424,33 +379,26 @@ namespace djack.RogueSurvivor.Data
 
     public Zone GetZoneByName(string name)
     {
-      foreach (Zone mZone in m_Zones)
-      {
-        if (mZone.Name == name)
-          return mZone;
+      foreach (Zone mZone in m_Zones) {
+        if (mZone.Name == name) return mZone;
       }
-      return (Zone) null;
+      return null;
     }
 
     public Zone GetZoneByPartialName(string partOfname)
     {
-      foreach (Zone mZone in m_Zones)
-      {
-        if (mZone.Name.Contains(partOfname))
-          return mZone;
+      foreach (Zone mZone in m_Zones) {
+        if (mZone.Name.Contains(partOfname)) return mZone;
       }
-      return (Zone) null;
+      return null;
     }
 
     public bool HasZonePartiallyNamedAt(Point pos, string partOfName)
     {
       List<Zone> zonesAt = GetZonesAt(pos.X, pos.Y);
-      if (zonesAt == null)
-        return false;
-      foreach (Zone zone in zonesAt)
-      {
-        if (zone.Name.Contains(partOfName))
-          return true;
+      if (zonesAt == null) return false;
+      foreach (Zone zone in zonesAt) {
+        if (zone.Name.Contains(partOfName)) return true;
       }
       return false;
     }
@@ -469,9 +417,8 @@ namespace djack.RogueSurvivor.Data
     public Actor GetActorAt(Point position)
     {
       Actor actor;
-      if (m_aux_ActorsByPosition.TryGetValue(position, out actor))
-        return actor;
-      return (Actor) null;
+      if (m_aux_ActorsByPosition.TryGetValue(position, out actor)) return actor;
+      return null;
     }
 
     public Actor GetActorAt(int x, int y)
