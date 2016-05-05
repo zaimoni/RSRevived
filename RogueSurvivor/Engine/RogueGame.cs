@@ -4484,18 +4484,16 @@ namespace djack.RogueSurvivor.Engine
     {
       c.DraggedBy = a;
       a.DraggedCorpse = c;
-      if (!IsVisibleToPlayer(a))
-        return;
-            AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_START), (object) c.DeadGuy.Name)));
+      if (!IsVisibleToPlayer(a)) return;
+      AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_START), (object) c.DeadGuy.Name)));
     }
 
     public void DoStopDragCorpse(Actor a, Corpse c)
     {
       c.DraggedBy = (Actor) null;
       a.DraggedCorpse = (Corpse) null;
-      if (!IsVisibleToPlayer(a))
-        return;
-            AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_STOP), (object) c.DeadGuy.Name)));
+      if (!IsVisibleToPlayer(a)) return;
+      AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_STOP), (object) c.DeadGuy.Name)));
     }
 
     public void DoStopDraggingCorpses(Actor a)

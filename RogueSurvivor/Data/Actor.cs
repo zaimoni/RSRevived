@@ -472,35 +472,30 @@ namespace djack.RogueSurvivor.Data
 
     public Corpse DraggedCorpse
     {
-      get
-      {
+      get {
         return m_DraggedCorpse;
       }
-      set
-      {
-                m_DraggedCorpse = value;
+      set {
+        m_DraggedCorpse = value;
       }
     }
 
     public Actor(ActorModel model, Faction faction, string name, bool isProperName, bool isPluralName, int spawnTime)
     {
-      if (model == null)
-        throw new ArgumentNullException("model");
-      if (faction == null)
-        throw new ArgumentNullException("faction");
-      if (name == null)
-        throw new ArgumentNullException("name");
-            m_ModelID = model.ID;
-            m_FactionID = faction.ID;
-            m_GangID = 0;
-            m_Name = name;
-            IsProperName = isProperName;
-            IsPluralName = isPluralName;
-            m_Location = new Location();
-            m_SpawnTime = spawnTime;
-            IsUnique = false;
-            IsDead = false;
-            OnModelSet();
+      if (model == null) throw new ArgumentNullException("model");
+      if (faction == null) throw new ArgumentNullException("faction");
+      if (name == null) throw new ArgumentNullException("name");
+      m_ModelID = model.ID;
+      m_FactionID = faction.ID;
+      m_GangID = 0;
+      m_Name = name;
+      IsProperName = isProperName;
+      IsPluralName = isPluralName;
+      m_Location = new Location();
+      m_SpawnTime = spawnTime;
+      IsUnique = false;
+      IsDead = false;
+      OnModelSet();
     }
 
     public Actor(ActorModel model, Faction faction, int spawnTime)
@@ -511,63 +506,54 @@ namespace djack.RogueSurvivor.Data
     private void OnModelSet()
     {
       ActorModel model = Model;
-            m_Doll = new Doll(model.DollBody);
-            m_Sheet = new ActorSheet(model.StartingSheet);
-            m_ActionPoints = m_Doll.Body.Speed;
-            m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;
-            m_StaminaPoints = m_previousStamina = m_Sheet.BaseStaminaPoints;
-            m_FoodPoints = m_previousFoodPoints = m_Sheet.BaseFoodPoints;
-            m_SleepPoints = m_previousSleepPoints = m_Sheet.BaseSleepPoints;
-            m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
+      m_Doll = new Doll(model.DollBody);
+      m_Sheet = new ActorSheet(model.StartingSheet);
+      m_ActionPoints = m_Doll.Body.Speed;
+      m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;
+      m_StaminaPoints = m_previousStamina = m_Sheet.BaseStaminaPoints;
+      m_FoodPoints = m_previousFoodPoints = m_Sheet.BaseFoodPoints;
+      m_SleepPoints = m_previousSleepPoints = m_Sheet.BaseSleepPoints;
+      m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
       if (model.Abilities.HasInventory)
-                m_Inventory = new Inventory(model.StartingSheet.BaseInventoryCapacity);
-            m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
-            m_CurrentDefence = model.StartingSheet.BaseDefence;
-            m_CurrentRangedAttack = Attack.BLANK;
+        m_Inventory = new Inventory(model.StartingSheet.BaseInventoryCapacity);
+      m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
+      m_CurrentDefence = model.StartingSheet.BaseDefence;
+      m_CurrentRangedAttack = Attack.BLANK;
     }
 
     public void AddFollower(Actor other)
     {
-      if (other == null)
-        throw new ArgumentNullException("other");
-      if (m_Followers != null && m_Followers.Contains(other))
-        throw new ArgumentException("other is already a follower");
-      if (m_Followers == null)
-                m_Followers = new List<Actor>(1);
-            m_Followers.Add(other);
-      if (other.Leader != null)
-        other.Leader.RemoveFollower(other);
+      if (other == null) throw new ArgumentNullException("other");
+      if (m_Followers != null && m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
+      if (m_Followers == null) m_Followers = new List<Actor>(1);
+      m_Followers.Add(other);
+      if (other.Leader != null) other.Leader.RemoveFollower(other);
       other.m_Leader = this;
     }
 
     public void RemoveFollower(Actor other)
     {
-      if (other == null)
-        throw new ArgumentNullException("other");
-      if (m_Followers == null)
-        throw new InvalidOperationException("no followers");
-            m_Followers.Remove(other);
-      if (m_Followers.Count == 0)
-                m_Followers = (List<Actor>) null;
-      other.m_Leader = (Actor) null;
+      if (other == null) throw new ArgumentNullException("other");
+      if (m_Followers == null) throw new InvalidOperationException("no followers");
+      m_Followers.Remove(other);
+      if (m_Followers.Count == 0) m_Followers = null;
+      other.m_Leader = null;
       AIController aiController = other.Controller as AIController;
-      if (aiController == null)
-        return;
+      if (aiController == null) return;
       aiController.Directives.Reset();
-      aiController.SetOrder((ActorOrder) null);
+      aiController.SetOrder(null);
     }
 
     public void RemoveAllFollowers()
     {
       while (m_Followers != null && m_Followers.Count > 0)
-                RemoveFollower(m_Followers[0]);
+        RemoveFollower(m_Followers[0]);
     }
 
     public void SetTrustIn(Actor other, int trust)
     {
-      if (m_TrustList == null)
-      {
-                m_TrustList = new List<TrustRecord>(1)
+      if (m_TrustList == null) {
+        m_TrustList = new List<TrustRecord>(1)
         {
           new TrustRecord()
           {
@@ -575,18 +561,14 @@ namespace djack.RogueSurvivor.Data
             Trust = trust
           }
         };
-      }
-      else
-      {
-        foreach (TrustRecord mTrust in m_TrustList)
-        {
-          if (mTrust.Actor == other)
-          {
+      } else {
+        foreach (TrustRecord mTrust in m_TrustList) {
+          if (mTrust.Actor == other) {
             mTrust.Trust = trust;
             return;
           }
         }
-                m_TrustList.Add(new TrustRecord()
+        m_TrustList.Add(new TrustRecord()
         {
           Actor = other,
           Trust = trust
@@ -596,89 +578,72 @@ namespace djack.RogueSurvivor.Data
 
     public void AddTrustIn(Actor other, int amount)
     {
-            SetTrustIn(other, GetTrustIn(other) + amount);
+      SetTrustIn(other, GetTrustIn(other) + amount);
     }
 
     public int GetTrustIn(Actor other)
     {
-      if (m_TrustList == null)
-        return 0;
-      foreach (TrustRecord mTrust in m_TrustList)
-      {
-        if (mTrust.Actor == other)
-          return mTrust.Trust;
+      if (m_TrustList == null) return 0;
+      foreach (TrustRecord mTrust in m_TrustList) {
+        if (mTrust.Actor == other) return mTrust.Trust;
       }
       return 0;
     }
 
     public void MarkAsAgressorOf(Actor other)
     {
-      if (other == null || other.IsDead)
-        return;
-      if (m_AggressorOf == null)
-                m_AggressorOf = new List<Actor>(1);
-      else if (m_AggressorOf.Contains(other))
-        return;
-            m_AggressorOf.Add(other);
+      if (other == null || other.IsDead) return;
+      if (m_AggressorOf == null) m_AggressorOf = new List<Actor>(1);
+      else if (m_AggressorOf.Contains(other)) return;
+      m_AggressorOf.Add(other);
     }
 
     public void MarkAsSelfDefenceFrom(Actor other)
     {
-      if (other == null || other.IsDead)
-        return;
-      if (m_SelfDefenceFrom == null)
-                m_SelfDefenceFrom = new List<Actor>(1);
-      else if (m_SelfDefenceFrom.Contains(other))
-        return;
-            m_SelfDefenceFrom.Add(other);
+      if (other == null || other.IsDead) return;
+      if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>(1);
+      else if (m_SelfDefenceFrom.Contains(other)) return;
+      m_SelfDefenceFrom.Add(other);
     }
 
     public bool IsAggressorOf(Actor other)
     {
-      if (m_AggressorOf == null)
-        return false;
+      if (m_AggressorOf == null) return false;
       return m_AggressorOf.Contains(other);
     }
 
     public bool IsSelfDefenceFrom(Actor other)
     {
-      if (m_SelfDefenceFrom == null)
-        return false;
+      if (m_SelfDefenceFrom == null) return false;
       return m_SelfDefenceFrom.Contains(other);
     }
 
     public void RemoveAggressorOf(Actor other)
     {
-      if (m_AggressorOf == null)
-        return;
-            m_AggressorOf.Remove(other);
-      if (m_AggressorOf.Count != 0)
-        return;
-            m_AggressorOf = (List<Actor>) null;
+      if (m_AggressorOf == null) return;
+      m_AggressorOf.Remove(other);
+      if (m_AggressorOf.Count != 0) return;
+      m_AggressorOf = null;
     }
 
     public void RemoveSelfDefenceFrom(Actor other)
     {
-      if (m_SelfDefenceFrom == null)
-        return;
-            m_SelfDefenceFrom.Remove(other);
-      if (m_SelfDefenceFrom.Count != 0)
-        return;
-            m_SelfDefenceFrom = (List<Actor>) null;
+      if (m_SelfDefenceFrom == null) return;
+      m_SelfDefenceFrom.Remove(other);
+      if (m_SelfDefenceFrom.Count != 0) return;
+      m_SelfDefenceFrom = null;
     }
 
     public void RemoveAllAgressorSelfDefenceRelations()
     {
-      while (m_AggressorOf != null)
-      {
+      while (m_AggressorOf != null) {
         Actor other = m_AggressorOf[0];
-                RemoveAggressorOf(other);
+        RemoveAggressorOf(other);
         other.RemoveSelfDefenceFrom(this);
       }
-      while (m_SelfDefenceFrom != null)
-      {
+      while (m_SelfDefenceFrom != null) {
         Actor other = m_SelfDefenceFrom[0];
-                RemoveSelfDefenceFrom(other);
+        RemoveSelfDefenceFrom(other);
         other.RemoveAggressorOf(this);
       }
     }
