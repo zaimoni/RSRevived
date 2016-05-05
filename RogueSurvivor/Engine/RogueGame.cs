@@ -3476,7 +3476,7 @@ namespace djack.RogueSurvivor.Engine
       return newBlackOps;
     }
 
-    private void UpdatePlayerFOV(Actor player)
+    public void UpdatePlayerFOV(Actor player)
     {
       if (player == null)
         return;
@@ -8809,7 +8809,7 @@ namespace djack.RogueSurvivor.Engine
       ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
       if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
-                OnUnequipItem(attacker, (Item) itemMeleeWeapon);
+        attacker.OnUnequipItem(this, itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
           --itemMeleeWeapon.Quantity;
         else
@@ -9448,78 +9448,21 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
       it.EquippedPart = it.Model.EquipmentPart;
-      OnEquipItem(actor, it);
+      actor.OnEquipItem(this, it);
 #if DEBUG
       // postcondition: item is unequippable
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
 #endif
       if (!IsVisibleToPlayer(actor)) return;
-            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
+      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
     }
 
     public void DoUnequipItem(Actor actor, Item it)
     {
       it.EquippedPart = DollPart.NONE;
-        OnUnequipItem(actor, it);
+        actor.OnUnequipItem(this, it);
       if (!IsVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
-    }
-
-    private void OnEquipItem(Actor actor, Item it)
-    {
-      if (it.Model is ItemWeaponModel)
-      {
-        if (it.Model is ItemMeleeWeaponModel)
-        {
-          ItemMeleeWeaponModel meleeWeaponModel = it.Model as ItemMeleeWeaponModel;
-          actor.CurrentMeleeAttack = new Attack(meleeWeaponModel.Attack.Kind, meleeWeaponModel.Attack.Verb, meleeWeaponModel.Attack.HitValue + actor.Sheet.UnarmedAttack.HitValue, meleeWeaponModel.Attack.DamageValue + actor.Sheet.UnarmedAttack.DamageValue, meleeWeaponModel.Attack.StaminaPenalty);
-        }
-        else
-        {
-          if (!(it.Model is ItemRangedWeaponModel))
-            return;
-          ItemRangedWeaponModel rangedWeaponModel = it.Model as ItemRangedWeaponModel;
-          actor.CurrentRangedAttack = new Attack(rangedWeaponModel.Attack.Kind, rangedWeaponModel.Attack.Verb, rangedWeaponModel.Attack.HitValue, rangedWeaponModel.Attack.DamageValue, rangedWeaponModel.Attack.StaminaPenalty, rangedWeaponModel.Attack.Range);
-        }
-      }
-      else if (it.Model is ItemBodyArmorModel)
-      {
-        ItemBodyArmorModel itemBodyArmorModel = it.Model as ItemBodyArmorModel;
-        actor.CurrentDefence += itemBodyArmorModel.ToDefence();
-      }
-      else if (it.Model is ItemTrackerModel)
-      {
-        --(it as ItemTracker).Batteries;
-      }
-      else if (it.Model is ItemLightModel)
-      {
-        --(it as ItemLight).Batteries;
-        if (actor.IsPlayer) UpdatePlayerFOV(actor);
-      }
-    }
-
-    private void OnUnequipItem(Actor actor, Item it)
-    {
-      if (it.Model is ItemWeaponModel)
-      {
-        if (it.Model is ItemMeleeWeaponModel)
-        {
-          actor.CurrentMeleeAttack = actor.Sheet.UnarmedAttack;
-        }
-        else
-        {
-          if (!(it.Model is ItemRangedWeaponModel))
-            return;
-          actor.CurrentRangedAttack = Attack.BLANK;
-        }
-      }
-      else
-      {
-        if (!(it.Model is ItemBodyArmorModel))
-          return;
-        ItemBodyArmorModel itemBodyArmorModel = it.Model as ItemBodyArmorModel;
-        actor.CurrentDefence -= itemBodyArmorModel.ToDefence();
-      }
     }
 
     public void DoDropItem(Actor actor, Item it)
@@ -10061,7 +10004,7 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(DollPart.TORSO);
       if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE))
       {
-        OnUnequipItem(actor, equippedItem);
+        actor.OnUnequipItem(this, equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
         if (IsVisibleToPlayer(actor))
         {

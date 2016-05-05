@@ -4,6 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
 
@@ -367,66 +368,46 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_CurrentMeleeAttack;
       }
-      set {
-        m_CurrentMeleeAttack = value;
-      }
     }
 
     public Attack CurrentRangedAttack {
       get {
         return m_CurrentRangedAttack;
       }
-      set {
-        m_CurrentRangedAttack = value;
-      }
     }
 
-    public Defence CurrentDefence
-    {
-      get
-      {
+    public Defence CurrentDefence {
+      get {
         return m_CurrentDefence;
       }
-      set
-      {
-                m_CurrentDefence = value;
-      }
     }
 
-    public Actor Leader
-    {
-      get
-      {
+    // Leadership
+    public Actor Leader {
+      get {
         return m_Leader;
       }
     }
 
-    public bool HasLeader
-    {
-      get
-      {
-        if (m_Leader != null)
-          return !m_Leader.IsDead;
+    public bool HasLeader {
+      get {
+        if (m_Leader != null) return !m_Leader.IsDead;
         return false;
       }
     }
 
-    public int TrustInLeader
-    {
-      get
-      {
+    public int TrustInLeader {
+      get {
         return m_TrustInLeader;
       }
-      set
-      {
-                m_TrustInLeader = value;
+      set {
+        m_TrustInLeader = value;
       }
     }
 
     public IEnumerable<Actor> Followers
     {
-      get
-      {
+      get {
         return (IEnumerable<Actor>)m_Followers;
       }
     }
@@ -1126,6 +1107,50 @@ namespace djack.RogueSurvivor.Data
     private void ZeroFlag(Actor.Flags f)
     {
       m_Flags &= ~f;
+    }
+
+    // event handlers
+    public void OnEquipItem(Engine.RogueGame game, Item it)
+    {
+      if (it.Model is ItemMeleeWeaponModel) {
+        ItemMeleeWeaponModel meleeWeaponModel = it.Model as ItemMeleeWeaponModel;
+        m_CurrentMeleeAttack = new Attack(meleeWeaponModel.Attack.Kind, meleeWeaponModel.Attack.Verb, meleeWeaponModel.Attack.HitValue + Sheet.UnarmedAttack.HitValue, meleeWeaponModel.Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, meleeWeaponModel.Attack.StaminaPenalty);
+        return;
+      }
+      if (it.Model is ItemRangedWeaponModel) {
+        ItemRangedWeaponModel rangedWeaponModel = it.Model as ItemRangedWeaponModel;
+        m_CurrentRangedAttack = new Attack(rangedWeaponModel.Attack.Kind, rangedWeaponModel.Attack.Verb, rangedWeaponModel.Attack.HitValue, rangedWeaponModel.Attack.DamageValue, rangedWeaponModel.Attack.StaminaPenalty, rangedWeaponModel.Attack.Range);
+        return;
+      }
+      if (it.Model is ItemBodyArmorModel) {
+        m_CurrentDefence += (it.Model as ItemBodyArmorModel).ToDefence();
+        return;
+      }
+      if (it.Model is ItemTrackerModel) {
+        --(it as ItemTracker).Batteries;
+        return;
+      }
+      if (it.Model is ItemLightModel) {
+        --(it as ItemLight).Batteries;
+        if (IsPlayer) game.UpdatePlayerFOV(this);
+        return;
+      }
+    }
+
+    public void OnUnequipItem(Engine.RogueGame game, Item it)
+    {
+      if (it.Model is ItemMeleeWeaponModel) {
+        m_CurrentMeleeAttack = Sheet.UnarmedAttack;
+        return;
+      }
+      if (it.Model is ItemRangedWeaponModel) {
+        m_CurrentRangedAttack = Attack.BLANK;
+        return;
+      }
+      if (it.Model is ItemBodyArmorModel) {
+        m_CurrentDefence -= (it.Model as ItemBodyArmorModel).ToDefence();
+        return;
+      }
     }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
