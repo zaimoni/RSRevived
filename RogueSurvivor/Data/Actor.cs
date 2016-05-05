@@ -412,85 +412,61 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int CountFollowers
-    {
-      get
-      {
-        if (m_Followers == null)
-          return 0;
+    public int CountFollowers {
+      get {
+        if (m_Followers == null) return 0;
         return m_Followers.Count;
       }
     }
 
-    public int KillsCount
-    {
-      get
-      {
+    public int KillsCount {
+      get {
         return m_KillsCount;
       }
-      set
-      {
-                m_KillsCount = value;
+      set {
+        m_KillsCount = value;
       }
     }
 
-    public IEnumerable<Actor> AggressorOf
-    {
-      get
-      {
+    public IEnumerable<Actor> AggressorOf {
+      get {
         return (IEnumerable<Actor>)m_AggressorOf;
       }
     }
 
-    public int CountAggressorOf
-    {
-      get
-      {
-        if (m_AggressorOf == null)
-          return 0;
+    public int CountAggressorOf {
+      get {
+        if (m_AggressorOf == null) return 0;
         return m_AggressorOf.Count;
       }
     }
 
-    public IEnumerable<Actor> SelfDefenceFrom
-    {
-      get
-      {
+    public IEnumerable<Actor> SelfDefenceFrom {
+      get {
         return (IEnumerable<Actor>)m_SelfDefenceFrom;
       }
     }
 
-    public int CountSelfDefenceFrom
-    {
-      get
-      {
-        if (m_SelfDefenceFrom == null)
-          return 0;
+    public int CountSelfDefenceFrom {
+      get {
+        if (m_SelfDefenceFrom == null) return 0;
         return m_SelfDefenceFrom.Count;
       }
     }
 
-    public int MurdersCounter
-    {
-      get
-      {
+    public int MurdersCounter {
+      get {
         return m_MurdersCounter;
       }
-      set
-      {
-                m_MurdersCounter = value;
+      set {
+        m_MurdersCounter = value;
       }
     }
 
     public int Infection
     {
-      get
-      {
+      get {
         return m_Infection;
-      }
-      set
-      {
-                m_Infection = value;
       }
     }
 
@@ -782,6 +758,20 @@ namespace djack.RogueSurvivor.Data
         if (DraggedCorpse != null) num /= 2f;
         return Math.Max((int) num, 0);
       }
+    }
+
+    // infection
+    public int InfectionHPs {
+      get {
+        return MaxHPs + MaxSTA;
+      }
+    }
+    public void Infect(int i) { 
+      m_Infection = Math.Min(InfectionHPs, m_Infection + i);
+    }
+
+    public void Cure(int i) { 
+      m_Infection = Math.Max(0, m_Infection - i);
     }
 
     // health

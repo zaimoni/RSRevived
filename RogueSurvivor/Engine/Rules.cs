@@ -2163,11 +2163,6 @@ namespace djack.RogueSurvivor.Engine
       return (int) (0.1 * (double) infection);
     }
 
-    public int ActorInfectionHPs(Actor a)
-    {
-      return a.MaxHPs + a.MaxSTA;
-    }
-
     public static int InfectionForDamage(Actor infector, int dmg)
     {
       return (int) ((1.0 + (double) infector.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * (double) Rules.SKILL_ZINFECTOR_BONUS) * (double) dmg);
@@ -2175,7 +2170,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int ActorInfectionPercent(Actor a)
     {
-      return 100 * a.Infection / ActorInfectionHPs(a);
+      return 100 * a.Infection / a.InfectionHPs;
     }
 
     public int InfectionEffectTriggerChance1000(int infectionPercent)

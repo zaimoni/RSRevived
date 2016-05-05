@@ -4539,7 +4539,7 @@ namespace djack.RogueSurvivor.Engine
         a.RottingEat(m_Rules.ActorBiteNutritionValue(a, num));
       } else {
         a.LivingEat(m_Rules.ActorBiteNutritionValue(a, num));
-        InfectActor(a, m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
+        a.Infect(m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
       }
       SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
     }
@@ -8744,7 +8744,7 @@ namespace djack.RogueSurvivor.Engine
             attacker.RottingEat(m_Rules.ActorBiteNutritionValue(attacker, num3));
             if (player2)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
-            InfectActor(defender, Rules.InfectionForDamage(attacker, num3));
+            defender.Infect(Rules.InfectionForDamage(attacker, num3));
           }
           if (defender.HitPoints <= 0)
           {
@@ -9603,7 +9603,7 @@ namespace djack.RogueSurvivor.Engine
       actor.RegenHitPoints(m_Rules.ActorMedicineEffect(actor, med.Healing));
       actor.RegenStaminaPoints(m_Rules.ActorMedicineEffect(actor, med.StaminaBoost));
       actor.Rest(m_Rules.ActorMedicineEffect(actor, med.SleepBoost));
-      actor.Infection = Math.Max(0, actor.Infection - m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
+      actor.Cure(m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
       actor.RegenSanity(m_Rules.ActorMedicineEffect(actor, med.SanityCure));
       actor.Inventory.Consume(med);
       if (!IsVisibleToPlayer(actor)) return;
@@ -10951,11 +10951,6 @@ namespace djack.RogueSurvivor.Engine
       m_Session.Scoring.AddKill(m_Player, victim, m_Session.WorldTime.TurnCounter);
     }
 
-    private void InfectActor(Actor actor, int addInfection)
-    {
-      actor.Infection = Math.Min(m_Rules.ActorInfectionHPs(actor), actor.Infection + addInfection);
-    }
-
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
       Actor actor = m_TownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
@@ -11913,7 +11908,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (m_Session.HasInfection && !actor.Model.Abilities.IsUndead)
       {
-        int maxValue2 = m_Rules.ActorInfectionHPs(actor);
+        int maxValue2 = actor.InfectionHPs;
         int refValue = Rules.INFECTION_LEVEL_1_WEAK * maxValue2 / 100;
         gy += 14;
                 m_UI.UI_DrawStringBold(Color.White, string.Format("INF {0}", (object) actor.Infection), gx, gy, new Color?());
