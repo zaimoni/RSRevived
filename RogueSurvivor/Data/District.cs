@@ -21,31 +21,24 @@ namespace djack.RogueSurvivor.Data
     private Map m_SewersMap;
     private Map m_SubwayMap;
 
-    public Point WorldPosition
-    {
-      get
-      {
+    public Point WorldPosition {
+      get {
         return m_WorldPosition;
       }
     }
 
-    public DistrictKind Kind
-    {
-      get
-      {
+    public DistrictKind Kind {
+      get {
         return m_Kind;
       }
     }
 
-    public string Name
-    {
-      get
-      {
+    public string Name {
+      get {
         return m_Name;
       }
-      set
-      {
-                m_Name = value;
+      set { // nominates RogueGame::GenerateDistrictEntryMap as member function
+        m_Name = value;
       }
     }
 

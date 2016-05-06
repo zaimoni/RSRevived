@@ -3143,7 +3143,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
     {
       Item it;
-      if (new WorldTime(spawnTime).Day > 7 && roller.RollChance(5))
+      if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE))
       {
         switch (roller.Roll(0, 6))
         {
@@ -3499,31 +3499,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
       public bool GenerateHospital { get; set; }
 
-      public int MapWidth
-      {
-        get
-        {
+      public int MapWidth {
+        get {
           return m_MapWidth;
         }
-        set
-        {
-          if (value <= 0 || value > 100)
+        set {
+          if (value <= 0 || value > RogueGame.MAP_MAX_WIDTH)
             throw new ArgumentOutOfRangeException("MapWidth");
-                    m_MapWidth = value;
+          m_MapWidth = value;
         }
       }
 
-      public int MapHeight
-      {
-        get
-        {
+      public int MapHeight {
+        get {
           return m_MapHeight;
         }
-        set
-        {
-          if (value <= 0 || value > 100)
+        set {
+          if (value <= 0 || value > RogueGame.MAP_MAX_HEIGHT)
             throw new ArgumentOutOfRangeException("MapHeight");
-                    m_MapHeight = value;
+          m_MapHeight = value;
         }
       }
 
