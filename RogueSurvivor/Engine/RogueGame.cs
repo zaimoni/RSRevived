@@ -12218,7 +12218,9 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("SAVING GAME, PLEASE WAIT...", m_Session.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
-      Session.Save(m_Session, saveName, Session.SaveFormat.FORMAT_BIN);
+      lock (m_SimMutex) { 
+        Session.Save(m_Session, saveName, Session.SaveFormat.FORMAT_BIN);
+      }
       AddMessage(new Data.Message("SAVING DONE.", m_Session.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
@@ -12230,8 +12232,9 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("LOADING GAME, PLEASE WAIT...", m_Session.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
-      if (LoadGame(saveName))
-        return;
+      lock (m_SimMutex) {
+        if (LoadGame(saveName)) return;
+      }
       AddMessage(new Data.Message("LOADING FAILED, NO GAME SAVED OR VERSION NOT COMPATIBLE.", m_Session.WorldTime.TurnCounter, Color.Red));
     }
 
