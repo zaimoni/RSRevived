@@ -62,6 +62,7 @@
     <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\WAVSoundManager.cs" />
     <Compile Include="RogueForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -48,15 +48,15 @@ namespace djack.RogueSurvivor
             InitializeComponent();
       Text = SetupConfig.GAME_NAME+" - " + SetupConfig.GAME_VERSION;
       if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_GDI_PLUS)
-                Text += " (GDI+)";
+        Text += " (GDI+)";
       switch (SetupConfig.Sound)
       {
-//        case SetupConfig.eSound.SOUND_SFML:
-//          this.Text += " (sndSFML)";
-//          break;
-        case SetupConfig.eSound.SOUND_NOSOUND:
-                    Text += " (nosound)";
-          break;
+      case SetupConfig.eSound.SOUND_WAV:
+        Text += " (sndWAV)";
+        break;
+      case SetupConfig.eSound.SOUND_NOSOUND:
+        Text += " (nosound)";
+        break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetClientSizeCore...");
             SetClientSizeCore(1024, 768);

@@ -24,7 +24,7 @@ namespace Setup
 //  private RadioButton rb_Sound_MDX;
     private Panel panel1;
     private Label l_GameVersion;
-//  private RadioButton rb_Sound_SFML;
+    private RadioButton rb_Sound_WAV;
     private RadioButton rb_Sound_NoSound;
 
     public ConfigForm()
@@ -49,7 +49,7 @@ namespace Setup
       this.b_Exit = new Button();
       this.gb_Sound = new GroupBox();
       this.rb_Sound_NoSound = new RadioButton();
-//    this.rb_Sound_SFML = new RadioButton();
+      this.rb_Sound_WAV = new RadioButton();
 //    this.rb_Sound_MDX = new RadioButton();
       this.panel1 = new Panel();
       this.l_GameVersion = new Label();
@@ -105,7 +105,7 @@ namespace Setup
       this.gb_Sound.AutoSize = true;
       this.gb_Sound.AutoSizeMode = AutoSizeMode.GrowAndShrink;
       this.gb_Sound.Controls.Add((Control) this.rb_Sound_NoSound);
-//    this.gb_Sound.Controls.Add((Control) this.rb_Sound_SFML);
+      this.gb_Sound.Controls.Add((Control) this.rb_Sound_WAV);
 //    this.gb_Sound.Controls.Add((Control) this.rb_Sound_MDX);
       this.gb_Sound.Location = new Point(134, 3);
       this.gb_Sound.Name = "gb_Sound";
@@ -122,16 +122,16 @@ namespace Setup
       this.rb_Sound_NoSound.Text = "No sound";
       this.rb_Sound_NoSound.UseVisualStyleBackColor = true;
       this.rb_Sound_NoSound.CheckedChanged += new EventHandler(this.rb_Sound_NoSound_CheckedChanged);
+      this.rb_Sound_WAV.AutoSize = true;
+      this.rb_Sound_WAV.Location = new Point(7, 43);
+      this.rb_Sound_WAV.Name = "rb_Sound_WAV";
+      this.rb_Sound_WAV.Size = new Size(71, 17);
+      this.rb_Sound_WAV.TabIndex = 1;
+      this.rb_Sound_WAV.TabStop = true;
+      this.rb_Sound_WAV.Text = "C# native WAV";
+      this.rb_Sound_WAV.UseVisualStyleBackColor = true;
+      this.rb_Sound_WAV.CheckedChanged += new EventHandler(this.rb_Audio_WAV_CheckedChanged);
 /*
-      this.rb_Sound_SFML.AutoSize = true;
-      this.rb_Sound_SFML.Location = new Point(7, 43);
-      this.rb_Sound_SFML.Name = "rb_Sound_SFML";
-      this.rb_Sound_SFML.Size = new Size(71, 17);
-      this.rb_Sound_SFML.TabIndex = 1;
-      this.rb_Sound_SFML.TabStop = true;
-      this.rb_Sound_SFML.Text = "SFML 1.6";
-      this.rb_Sound_SFML.UseVisualStyleBackColor = true;
-      this.rb_Sound_SFML.CheckedChanged += new EventHandler(this.rb_Audio_SFML_CheckedChanged);
       this.rb_Sound_MDX.AutoSize = true;
       this.rb_Sound_MDX.Checked = true;
       this.rb_Sound_MDX.Location = new Point(7, 20);
@@ -211,10 +211,10 @@ namespace Setup
       case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
         this.rb_Sound_MDX.Checked = true;
         break;
-      case SetupConfig.eSound.SOUND_SFML:
-        this.rb_Sound_SFML.Checked = true;
-        break;
 */
+      case SetupConfig.eSound.SOUND_WAV:
+        this.rb_Sound_WAV.Checked = true;
+        break;
       case SetupConfig.eSound.SOUND_NOSOUND:
           this.rb_Sound_NoSound.Checked = true;
           break;
@@ -244,16 +244,16 @@ namespace Setup
                 return;
               SetupConfig.Sound = SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
             }
-
-            private void rb_Audio_SFML_CheckedChanged(object sender, EventArgs e)
-            {
-              if (!this.rb_Sound_SFML.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_SFML)
-                return;
-              SetupConfig.Sound = SetupConfig.eSound.SOUND_SFML;
-            }
         */
 
-        private void rb_Sound_NoSound_CheckedChanged(object sender, EventArgs e)
+    private void rb_Audio_WAV_CheckedChanged(object sender, EventArgs e)
+    {
+      if (!this.rb_Sound_WAV.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_WAV)
+        return;
+      SetupConfig.Sound = SetupConfig.eSound.SOUND_WAV;
+    }
+
+    private void rb_Sound_NoSound_CheckedChanged(object sender, EventArgs e)
     {
       if (!this.rb_Sound_NoSound.Checked || SetupConfig.Sound == SetupConfig.eSound.SOUND_NOSOUND)
         return;

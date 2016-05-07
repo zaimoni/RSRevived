@@ -85,8 +85,8 @@ namespace djack.RogueSurvivor
     {
 //      if (s == SetupConfig.eSound.SOUND_MANAGED_DIRECTX.ToString())
 //        return SetupConfig.eSound.SOUND_MANAGED_DIRECTX;
-//      if (s == SetupConfig.eSound.SOUND_SFML.ToString())
-//        return SetupConfig.eSound.SOUND_SFML;
+      if (s == SetupConfig.eSound.SOUND_WAV.ToString())
+        return SetupConfig.eSound.SOUND_WAV;
       return s == SetupConfig.eSound.SOUND_NOSOUND.ToString() ? SetupConfig.eSound.SOUND_NOSOUND : SetupConfig.eSound.SOUND_INVALID;
     }
 
@@ -102,7 +102,7 @@ namespace djack.RogueSurvivor
     {
       SOUND_INVALID,
       SOUND_MANAGED_DIRECTX_XXX, // highest version of DirectX supported in .NET is DirectX 9
-      SOUND_SFML_XXX,    // breaking this as the DLLs aren't compatible with the MSIL architecture
+      SOUND_WAV,    // formerly SOUND_SFML
       SOUND_NOSOUND,
       _COUNT,
     }
