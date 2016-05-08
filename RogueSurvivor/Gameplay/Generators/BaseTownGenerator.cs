@@ -2521,12 +2521,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakeCHARPowerRoom(Map map, Rectangle wallsRect, Rectangle roomRect)
     {
-            TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, roomRect);
-            DoForEachTile(map, wallsRect, (Action<Point>) (pt =>
+      TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, roomRect);
+      DoForEachTile(map, wallsRect, (Action<Point>) (pt =>
       {
         if (!(map.GetMapObjectAt(pt) is DoorWindow))
           return;
-          DoForEachAdjacentInMap(map, pt, (Action<Point>) (ptAdj =>
+          map.ForEachAdjacentInMap(pt, (Action<Point>) (ptAdj =>
         {
           Tile tileAt = map.GetTileAt(ptAdj);
           if (tileAt.Model.IsWalkable)

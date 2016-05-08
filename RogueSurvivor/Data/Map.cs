@@ -954,13 +954,13 @@ namespace djack.RogueSurvivor.Data
 
     public void ForEachAdjacentInMap(Point position, Action<Point> fn)
     {
-      if (!IsInBounds(position))
-        return;
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      if (!IsInBounds(position)) return;
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException("fn");
+#endif
+      foreach (Direction direction in Direction.COMPASS) {
         Point p = position + direction;
-        if (IsInBounds(p))
-          fn(p);
+        if (IsInBounds(p)) fn(p);
       }
     }
 

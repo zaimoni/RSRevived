@@ -175,18 +175,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public void DoForEachAdjacentInMap(Map map, Point pt, Action<Point> doFn)
-    {
-      if (doFn == null)
-        throw new ArgumentNullException("doFn");
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        Point p = pt + direction;
-        if (map.IsInBounds(p))
-          doFn(p);
-      }
-    }
-
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor)
     {
       return ActorPlace(roller, maxTries, map, actor, (Predicate<Point>) null);
