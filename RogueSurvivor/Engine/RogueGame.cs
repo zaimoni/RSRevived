@@ -13237,55 +13237,20 @@ namespace djack.RogueSurvivor.Engine
     private void SetCurrentMap(Map map)
     {
       m_Session.CurrentMap = map;
-#if FAIL
       if (map == map.District.SewersMap) {
         m_MusicManager.StopAll();
         m_MusicManager.PlayLooping(GameMusics.SEWERS);
-      }
-      else if (m_MusicManager.IsPlaying(GameMusics.SEWERS))
-        m_MusicManager.Stop(GameMusics.SEWERS);
-      if (map == map.District.SubwayMap)
-      {
+      } else if (map == map.District.SubwayMap) {
         m_MusicManager.StopAll();
         m_MusicManager.PlayLooping(GameMusics.SUBWAY);
-      }
-      else if (m_MusicManager.IsPlaying(GameMusics.SUBWAY))
-        m_MusicManager.Stop(GameMusics.SUBWAY);
-      if (map == m_Session.UniqueMaps.Hospital_Admissions.TheMap || map == m_Session.UniqueMaps.Hospital_Offices.TheMap || (map == m_Session.UniqueMaps.Hospital_Patients.TheMap || map == m_Session.UniqueMaps.Hospital_Power.TheMap) || map == m_Session.UniqueMaps.Hospital_Storage.TheMap)
-      {
-        if (m_MusicManager.IsPlaying(GameMusics.HOSPITAL))
-          return;
+      } else if (map == m_Session.UniqueMaps.Hospital_Admissions.TheMap || map == m_Session.UniqueMaps.Hospital_Offices.TheMap || (map == m_Session.UniqueMaps.Hospital_Patients.TheMap || map == m_Session.UniqueMaps.Hospital_Power.TheMap) || map == m_Session.UniqueMaps.Hospital_Storage.TheMap) {
         m_MusicManager.StopAll();
         m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
-      }
-      else
-      {
-        if (!m_MusicManager.IsPlaying(GameMusics.HOSPITAL))
-          return;
-        m_MusicManager.Stop(GameMusics.HOSPITAL);
-      }
-#else
-      if (map == map.District.SewersMap) {
-        m_MusicManager.StopAll();
-        m_MusicManager.PlayLooping(GameMusics.SEWERS);
-      }
-      else if (map == map.District.SubwayMap)
-      {
-        m_MusicManager.StopAll();
-        m_MusicManager.PlayLooping(GameMusics.SUBWAY);
-      }
-      else if (map == m_Session.UniqueMaps.Hospital_Admissions.TheMap || map == m_Session.UniqueMaps.Hospital_Offices.TheMap || (map == m_Session.UniqueMaps.Hospital_Patients.TheMap || map == m_Session.UniqueMaps.Hospital_Power.TheMap) || map == m_Session.UniqueMaps.Hospital_Storage.TheMap)
-      {
-        m_MusicManager.StopAll();
-        m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
-      }
-      else
-      {
+      } else {
         m_MusicManager.Stop(GameMusics.SEWERS);
         m_MusicManager.Stop(GameMusics.SUBWAY);
         m_MusicManager.Stop(GameMusics.HOSPITAL);
       }
-#endif
     }
 
     private void OnPlayerLeaveDistrict()
