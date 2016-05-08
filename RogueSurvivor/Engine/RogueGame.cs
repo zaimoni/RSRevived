@@ -8500,8 +8500,6 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DoFollowersEnterMap(Actor leader, Map fromMap, Point fromPos, Map toMap, Point toPos)
     {
-      bool flag1 = toMap.District != fromMap.District;
-      bool flag2 = m_Player == leader;
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
@@ -8522,26 +8520,27 @@ namespace djack.RogueSurvivor.Engine
         }      
       }
       if (actorList == null) return;
-      foreach (Actor other in actorList)
-      {
-        if (flag1)
-        {
+
+      bool flag2 = m_Player == leader;
+      if (toMap.District != fromMap.District) {
+        foreach (Actor other in actorList) {
           leader.RemoveFollower(other);
-          if (flag2)
-          {
-                        m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} was left behind.", (object) other.TheName));
-                        ClearMessages();
-                        AddMessage(new Data.Message(string.Format("{0} could not follow you out of the district and left you!", (object) other.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
-                        AddMessagePressEnter();
-                        ClearMessages();
+          if (flag2) {
+            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} was left behind.", other.TheName));
+            ClearMessages();
+            AddMessage(new Data.Message(string.Format("{0} could not follow you out of the district and left you!", other.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
+            AddMessagePressEnter();
+            ClearMessages();
           }
         }
-        else if (other.Location.Map == fromMap && flag2)
-        {
-                    ClearMessages();
-                    AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", (object) other.TheName, (object) fromMap.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                    AddMessagePressEnter();
-                    ClearMessages();
+      } else if (flag2) {
+        foreach (Actor other in actorList) {
+          if (other.Location.Map == fromMap) {
+            ClearMessages();
+            AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, fromMap.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+            AddMessagePressEnter();
+            ClearMessages();
+          }
         }
       }
     }
@@ -10635,20 +10634,18 @@ namespace djack.RogueSurvivor.Engine
       }
       else if (m_Session.WorldTime.Day == 14)
       {
-                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_14);
-                ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
+        m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_14);
+        ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
       }
       else if (m_Session.WorldTime.Day == 21)
       {
-                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_21);
-                ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
+        m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_21);
+        ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
       }
-      else
+      else if (m_Session.WorldTime.Day == 28)
       {
-        if (m_Session.WorldTime.Day != 28)
-          return;
-                m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_28);
-                ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
+        m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_28);
+        ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
       }
     }
 
