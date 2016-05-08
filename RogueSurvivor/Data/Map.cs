@@ -482,6 +482,17 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // possible micro-optimization target
+    public int PlayerCount { 
+      get {
+        int ret = 0;
+        foreach(Actor tmp in m_ActorsList) { 
+          if (tmp.IsPlayer) ret++;
+        }
+        return ret;
+      }
+    }
+
     // map object manipulation functions
     public bool HasMapObject(MapObject mapObj)
     {

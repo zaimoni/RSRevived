@@ -17,64 +17,62 @@ namespace djack.RogueSurvivor.Data
 
     public int Size
     {
-      get
-      {
+      get {
         return m_Size;
       }
     }
 
     public District this[int x, int y]
     {
-      get
-      {
-        if (x < 0 || x >= m_Size)
-          throw new ArgumentOutOfRangeException("x");
-        if (y < 0 || y >= m_Size)
-          throw new ArgumentOutOfRangeException("y");
+      get {
+        if (x < 0 || x >= m_Size) throw new ArgumentOutOfRangeException("x");
+        if (y < 0 || y >= m_Size) throw new ArgumentOutOfRangeException("y");
         return m_DistrictsGrid[x, y];
       }
       set
       {
-        if (x < 0 || x >= m_Size)
-          throw new ArgumentOutOfRangeException("x");
-        if (y < 0 || y >= m_Size)
-          throw new ArgumentOutOfRangeException("y");
-                m_DistrictsGrid[x, y] = value;
+        if (x < 0 || x >= m_Size) throw new ArgumentOutOfRangeException("x");
+        if (y < 0 || y >= m_Size) throw new ArgumentOutOfRangeException("y");
+        m_DistrictsGrid[x, y] = value;
       }
     }
 
     public Weather Weather
     {
-      get
-      {
+      get {
         return m_Weather;
       }
-      set
-      {
-                m_Weather = value;
+      set {
+        m_Weather = value;
       }
     }
 
     public World(int size)
     {
-      if (size <= 0)
-        throw new ArgumentOutOfRangeException("size <=0");
-            m_DistrictsGrid = new District[size, size];
-            m_Size = size;
-            m_Weather = Weather._FIRST;
+      if (size <= 0) throw new ArgumentOutOfRangeException("size <=0");
+      m_DistrictsGrid = new District[size, size];
+      m_Size = size;
+      m_Weather = Weather._FIRST;
+    }
+
+    // possible micro-optimization target
+    public int PlayerCount { 
+      get {
+        int ret = 0;
+        for (int index1 = 0; index1 < m_Size; ++index1) {
+          for (int index2 = 0; index2 < m_Size; ++index2)
+            ret += m_DistrictsGrid[index1, index2].PlayerCount;
+        }
+        return ret;
+      }
     }
 
     public void TrimToBounds(ref int x, ref int y)
     {
-      if (x < 0)
-        x = 0;
-      if (x >= m_Size)
-        x = m_Size - 1;
-      if (y < 0)
-        y = 0;
-      if (y < m_Size)
-        return;
-      y = m_Size - 1;
+      if (x < 0) x = 0;
+      else if (x >= m_Size) x = m_Size - 1;
+      if (y < 0) y = 0;
+      else if (y >= m_Size) y = m_Size - 1;
     }
 
     public static string CoordToString(int x, int y)
@@ -84,10 +82,9 @@ namespace djack.RogueSurvivor.Data
 
     public void OptimizeBeforeSaving()
     {
-      for (int index1 = 0; index1 < m_Size; ++index1)
-      {
+      for (int index1 = 0; index1 < m_Size; ++index1) {
         for (int index2 = 0; index2 < m_Size; ++index2)
-                    m_DistrictsGrid[index1, index2].OptimizeBeforeSaving();
+          m_DistrictsGrid[index1, index2].OptimizeBeforeSaving();
       }
     }
   }

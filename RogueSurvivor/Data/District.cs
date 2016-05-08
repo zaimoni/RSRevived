@@ -44,98 +44,82 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<Map> Maps
     {
-      get
-      {
+      get {
         return (IEnumerable<Map>)m_Maps;
       }
     }
 
     public int CountMaps
     {
-      get
-      {
+      get {
         return m_Maps.Count;
       }
     }
 
     public Map EntryMap
     {
-      get
-      {
+      get {
         return m_EntryMap;
       }
-      set
-      {
-        if (m_EntryMap != null)
-                    RemoveMap(m_EntryMap);
-                m_EntryMap = value;
-        if (value == null)
-          return;
-                AddMap(value);
+      set {
+        if (m_EntryMap != null) RemoveMap(m_EntryMap);
+        m_EntryMap = value;
+        if (value == null) return;
+        AddMap(value);
       }
     }
 
     public Map SewersMap
     {
-      get
-      {
+      get {
         return m_SewersMap;
       }
-      set
-      {
-        if (m_SewersMap != null)
-                    RemoveMap(m_SewersMap);
-                m_SewersMap = value;
-        if (value == null)
-          return;
-                AddMap(value);
+      set {
+        if (m_SewersMap != null) RemoveMap(m_SewersMap);
+        m_SewersMap = value;
+        if (value == null) return;
+        AddMap(value);
       }
     }
 
     public Map SubwayMap
     {
-      get
-      {
+      get {
         return m_SubwayMap;
       }
-      set
-      {
-        if (m_SubwayMap != null)
-                    RemoveMap(m_SubwayMap);
-                m_SubwayMap = value;
-        if (value == null)
-          return;
-                AddMap(value);
+      set {
+        if (m_SubwayMap != null) RemoveMap(m_SubwayMap);
+        m_SubwayMap = value;
+        if (value == null) return;
+        AddMap(value);
       }
     }
 
     public bool HasSubway
     {
-      get
-      {
+      get {
         return m_SubwayMap != null;
       }
     }
 
     public District(Point worldPos, DistrictKind kind)
     {
-            m_WorldPosition = worldPos;
-            m_Kind = kind;
+      m_WorldPosition = worldPos;
+      m_Kind = kind;
     }
 
+    // map manipulation
     protected void AddMap(Map map)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (m_Maps.Contains(map))
-        return;
+      if (map == null) throw new ArgumentNullException("map");
+      if (m_Maps.Contains(map)) return;
       map.District = this;
-            m_Maps.Add(map);
+      m_Maps.Add(map);
     }
 
     public void AddUniqueMap(Map map)
     {
-            AddMap(map);
+      AddMap(map);
     }
 
     public Map GetMap(int index)
@@ -145,15 +129,26 @@ namespace djack.RogueSurvivor.Data
 
     protected void RemoveMap(Map map)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-            m_Maps.Remove(map);
-      map.District = (District) null;
+      if (map == null) throw new ArgumentNullException("map");
+      m_Maps.Remove(map);
+      map.District = null;
     }
 
+    // possible micro-optimization target
+    public int PlayerCount { 
+      get {
+        int ret = 0;
+        foreach(Map tmp in Maps) {
+          ret += tmp.PlayerCount;
+        }
+        return ret;
+      }
+    }
+
+    // low-level support
     public void OptimizeBeforeSaving()
     {
-            m_Maps.TrimExcess();
+      m_Maps.TrimExcess();
       foreach (Map mMap in m_Maps)
         mMap.OptimizeBeforeSaving();
     }
