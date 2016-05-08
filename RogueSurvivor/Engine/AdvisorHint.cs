@@ -12,7 +12,6 @@ namespace djack.RogueSurvivor.Engine
   internal enum AdvisorHint
   {
     MOVE_BASIC = 0,
-    _FIRST = 0,
     MOUSE_LOOK = 1,
     KEYS_OPTIONS = 2,
     NIGHT = 3,

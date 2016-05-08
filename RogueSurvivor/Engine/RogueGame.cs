@@ -6408,7 +6408,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HasAdvisorAnyHintToGive()
     {
-      for (int index = 0; index < 46; ++index)
+      for (int index = 0; index < (int) AdvisorHint._COUNT; ++index)
       {
         if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
           return true;
@@ -6429,7 +6429,7 @@ namespace djack.RogueSurvivor.Engine
       Point position = m_Player.Location.Position;
       switch (hint)
       {
-        case AdvisorHint._FIRST:
+        case AdvisorHint.MOVE_BASIC:
           return true;
         case AdvisorHint.MOUSE_LOOK:
           return map.LocalTime.TurnCounter >= 2;
@@ -6669,7 +6669,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (hint)
       {
-        case AdvisorHint._FIRST:
+        case AdvisorHint.MOVE_BASIC:
           title = "MOVEMENT - DIRECTIONS";
           body = new string[12]
           {
