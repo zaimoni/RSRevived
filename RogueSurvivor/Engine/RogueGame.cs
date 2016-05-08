@@ -11294,35 +11294,28 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawMapObject(MapObject mapObj, Point screen, Color tint)
     {
-      if (mapObj.IsMovable && mapObj.Location.Map.GetTileAt(mapObj.Location.Position.X, mapObj.Location.Position.Y).Model.IsWater)
-      {
+      if (mapObj.IsMovable && mapObj.Location.Map.GetTileAt(mapObj.Location.Position.X, mapObj.Location.Position.Y).Model.IsWater) {
         int num = (mapObj.Location.Position.X + m_Session.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
         screen.Y -= num;
       }
-      if (IsVisibleToPlayer(mapObj))
-      {
-                DrawMapObject(mapObj, screen, mapObj.ImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint)));
+      if (IsVisibleToPlayer(mapObj)) {
+        DrawMapObject(mapObj, screen, mapObj.ImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint)));
         if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
-                    DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
+          DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
         DoorWindow doorWindow = mapObj as DoorWindow;
-        if (doorWindow == null || doorWindow.BarricadePoints <= 0)
-          return;
-                DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
-                m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
-      }
-      else
-      {
-        if (!IsKnownToPlayer(mapObj) || IsPlayerSleeping())
-          return;
-                DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
+        if (doorWindow == null || doorWindow.BarricadePoints <= 0) return;
+        DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
+        m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
+      } else {
+        if (!IsKnownToPlayer(mapObj) || IsPlayerSleeping()) return;
+        DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
       }
     }
 
     private void DrawMapObject(MapObject mapObj, Point screen, string imageID, Action<string, int, int> drawFn)
     {
       drawFn(imageID, screen.X, screen.Y);
-      if (!mapObj.IsOnFire)
-        return;
+      if (!mapObj.IsOnFire) return;
       drawFn("Effects\\onFire", screen.X, screen.Y);
     }
 
@@ -11358,15 +11351,12 @@ namespace djack.RogueSurvivor.Engine
       int gy2 = gy1;
       if (m_Player != null)
       {
-        bool flag1 = m_Player.IsSelfDefenceFrom(actor);
-        bool flag2 = m_Player.IsAggressorOf(actor);
-        bool flag3 = m_Player.AreIndirectEnemies(actor);
-        if (flag1)
-                    m_UI.UI_DrawImage("Icons\\enemy_you_self_defence", gx2, gy2, tint);
-        else if (flag2)
-                    m_UI.UI_DrawImage("Icons\\enemy_you_aggressor", gx2, gy2, tint);
-        else if (flag3)
-                    m_UI.UI_DrawImage("Icons\\enemy_indirect", gx2, gy2, tint);
+        if (m_Player.IsSelfDefenceFrom(actor))
+          m_UI.UI_DrawImage("Icons\\enemy_you_self_defence", gx2, gy2, tint);
+        else if (m_Player.IsAggressorOf(actor))
+          m_UI.UI_DrawImage("Icons\\enemy_you_aggressor", gx2, gy2, tint);
+        else if (m_Player.AreIndirectEnemies(actor))
+          m_UI.UI_DrawImage("Icons\\enemy_indirect", gx2, gy2, tint);
       }
       switch (actor.Activity)
       {
@@ -12271,16 +12261,14 @@ namespace djack.RogueSurvivor.Engine
 
     private void ApplyOptions(bool ingame)
     {
-            m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
-            m_MusicManager.Volume = RogueGame.Options.MusicVolume;
-      if (m_Session != null && m_Session.Scoring != null)
-      {
-                m_Session.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
-                m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
+      m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
+      m_MusicManager.Volume = RogueGame.Options.MusicVolume;
+      if (m_Session != null && m_Session.Scoring != null) {
+        m_Session.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
+        m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
       }
-      if (m_MusicManager.IsMusicEnabled)
-        return;
-            m_MusicManager.StopAll();
+      if (m_MusicManager.IsMusicEnabled) return;
+      m_MusicManager.StopAll();
     }
 
     private void LoadKeybindings()
@@ -12491,24 +12479,21 @@ namespace djack.RogueSurvivor.Engine
 
     private void GenerateWorld(bool isVerbose, int size)
     {
-      if (isVerbose)
-      {
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.White, "Generating game world...", 0, 0, new Color?());
-                m_UI.UI_Repaint();
+      if (isVerbose) {
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.White, "Generating game world...", 0, 0, new Color?());
+        m_UI.UI_Repaint();
       }
-      if (isVerbose)
-      {
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
-                m_UI.UI_Repaint();
+      if (isVerbose) {
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
+        m_UI.UI_Repaint();
       }
-            m_Session.World = new World(size);
+      m_Session.World = new World(size);
       World world = m_Session.World;
       world.Weather = (Weather)m_Rules.Roll(0, 4);
       List<Point> pointList = new List<Point>();
-      for (int x = 0; x < world.Size; ++x)
-      {
+      for (int x = 0; x < world.Size; ++x) {
         for (int y = 0; y < world.Size; ++y)
           pointList.Add(new Point(x, y));
       }
@@ -12516,15 +12501,12 @@ namespace djack.RogueSurvivor.Engine
       pointList.Remove(policeStationDistrictPos);
       Point hospitalDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
       pointList.Remove(hospitalDistrictPos);
-      for (int index1 = 0; index1 < world.Size; ++index1)
-      {
-        for (int index2 = 0; index2 < world.Size; ++index2)
-        {
-          if (isVerbose)
-          {
-                        m_UI.UI_Clear(Color.Black);
-                        m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", (object) World.CoordToString(index1, index2)), 0, 0, new Color?());
-                        m_UI.UI_Repaint();
+      for (int index1 = 0; index1 < world.Size; ++index1) {
+        for (int index2 = 0; index2 < world.Size; ++index2) {
+          if (isVerbose) {
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", (object) World.CoordToString(index1, index2)), 0, 0, new Color?());
+            m_UI.UI_Repaint();
           }
           District district = new District(new Point(index1, index2), GenerateDistrictKind(world, index1, index2));
           world[index1, index2] = district;
@@ -12532,132 +12514,108 @@ namespace djack.RogueSurvivor.Engine
           district.Name = district.EntryMap.Name;
           Map districtSewersMap = GenerateDistrictSewersMap(district);
           district.SewersMap = districtSewersMap;
-          if (index2 == world.Size / 2)
-          {
+          if (index2 == world.Size / 2) {
             Map districtSubwayMap = GenerateDistrictSubwayMap(district);
             district.SubwayMap = districtSubwayMap;
           }
         }
       }
-      if (isVerbose)
-      {
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.White, "Generating unique maps...", 0, 0, new Color?());
-                m_UI.UI_Repaint();
+      if (isVerbose) {
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.White, "Generating unique maps...", 0, 0, new Color?());
+        m_UI.UI_Repaint();
       }
-            m_Session.UniqueMaps.CHARUndergroundFacility = CreateUniqueMap_CHARUndegroundFacility(world);
-      if (isVerbose)
-      {
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
-                m_UI.UI_Repaint();
+      m_Session.UniqueMaps.CHARUndergroundFacility = CreateUniqueMap_CHARUndegroundFacility(world);
+      if (isVerbose) {
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
+        m_UI.UI_Repaint();
       }
-            m_Session.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
-            m_Session.UniqueActors.BigBear = CreateUniqueBigBear(world);
-            m_Session.UniqueActors.FamuFataru = CreateUniqueFamuFataru(world);
-            m_Session.UniqueActors.Santaman = CreateUniqueSantaman(world);
-            m_Session.UniqueActors.Roguedjack = CreateUniqueRoguedjack(world);
-            m_Session.UniqueActors.Duckman = CreateUniqueDuckman(world);
-            m_Session.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz(world);
-            m_Session.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
-      for (int x1 = 0; x1 < world.Size; ++x1)
-      {
-        for (int y1 = 0; y1 < world.Size; ++y1)
-        {
-          if (isVerbose)
-          {
-                        m_UI.UI_Clear(Color.Black);
-                        m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", (object) World.CoordToString(x1, y1)), 0, 0, new Color?());
-                        m_UI.UI_Repaint();
+      m_Session.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
+      m_Session.UniqueActors.BigBear = CreateUniqueBigBear(world);
+      m_Session.UniqueActors.FamuFataru = CreateUniqueFamuFataru(world);
+      m_Session.UniqueActors.Santaman = CreateUniqueSantaman(world);
+      m_Session.UniqueActors.Roguedjack = CreateUniqueRoguedjack(world);
+      m_Session.UniqueActors.Duckman = CreateUniqueDuckman(world);
+      m_Session.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz(world);
+      m_Session.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
+      for (int x1 = 0; x1 < world.Size; ++x1) {
+        for (int y1 = 0; y1 < world.Size; ++y1) {
+          if (isVerbose) {
+            m_UI.UI_Clear(Color.Black);
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", (object) World.CoordToString(x1, y1)), 0, 0, new Color?());
+            m_UI.UI_Repaint();
           }
           Map entryMap1 = world[x1, y1].EntryMap;
-          if (y1 > 0)
-          {
+          if (y1 > 0) {
             Map entryMap2 = world[x1, y1 - 1].EntryMap;
-            for (int x2 = 0; x2 < entryMap1.Width; ++x2)
-            {
-              if (x2 < entryMap2.Width && m_Rules.RollChance(15))
-              {
+            for (int x2 = 0; x2 < entryMap1.Width; ++x2) {
+              if (x2 < entryMap2.Width && m_Rules.RollChance(DISTRICT_EXIT_CHANCE_PER_TILE)) {
                 Point from1 = new Point(x2, -1);
                 Point to1 = new Point(x2, entryMap2.Height - 1);
                 Point from2 = new Point(x2, entryMap2.Height);
                 Point to2 = new Point(x2, 0);
-                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2))
-                {
-                                    GenerateExit(entryMap1, from1, entryMap2, to1);
-                                    GenerateExit(entryMap2, from2, entryMap1, to2);
+                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2)) {
+                  GenerateExit(entryMap1, from1, entryMap2, to1);
+                  GenerateExit(entryMap2, from2, entryMap1, to2);
                 }
               }
             }
           }
-          if (x1 > 0)
-          {
+          if (x1 > 0) {
             Map entryMap2 = world[x1 - 1, y1].EntryMap;
-            for (int y2 = 0; y2 < entryMap1.Height; ++y2)
-            {
-              if (y2 < entryMap2.Height && m_Rules.RollChance(15))
-              {
+            for (int y2 = 0; y2 < entryMap1.Height; ++y2) {
+              if (y2 < entryMap2.Height && m_Rules.RollChance(DISTRICT_EXIT_CHANCE_PER_TILE)) {
                 Point from1 = new Point(-1, y2);
                 Point to1 = new Point(entryMap2.Width - 1, y2);
                 Point from2 = new Point(entryMap2.Width, y2);
                 Point to2 = new Point(0, y2);
-                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2))
-                {
-                                    GenerateExit(entryMap1, from1, entryMap2, to1);
-                                    GenerateExit(entryMap2, from2, entryMap1, to2);
+                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2)) {
+                  GenerateExit(entryMap1, from1, entryMap2, to1);
+                  GenerateExit(entryMap2, from2, entryMap1, to2);
                 }
               }
             }
           }
           Map sewersMap1 = world[x1, y1].SewersMap;
-          if (y1 > 0)
-          {
+          if (y1 > 0) {
             Map sewersMap2 = world[x1, y1 - 1].SewersMap;
-            for (int x2 = 0; x2 < sewersMap1.Width; ++x2)
-            {
-              if (x2 < sewersMap2.Width)
-              {
+            for (int x2 = 0; x2 < sewersMap1.Width; ++x2) {
+              if (x2 < sewersMap2.Width) {
                 Point from1 = new Point(x2, -1);
                 Point to1 = new Point(x2, sewersMap2.Height - 1);
                 Point from2 = new Point(x2, sewersMap2.Height);
                 Point to2 = new Point(x2, 0);
-                                GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                                GenerateExit(sewersMap2, from2, sewersMap1, to2);
+                GenerateExit(sewersMap1, from1, sewersMap2, to1);
+                GenerateExit(sewersMap2, from2, sewersMap1, to2);
               }
             }
           }
-          if (x1 > 0)
-          {
+          if (x1 > 0) {
             Map sewersMap2 = world[x1 - 1, y1].SewersMap;
-            for (int y2 = 0; y2 < sewersMap1.Height; ++y2)
-            {
-              if (y2 < sewersMap2.Height)
-              {
+            for (int y2 = 0; y2 < sewersMap1.Height; ++y2) {
+              if (y2 < sewersMap2.Height) {
                 Point from1 = new Point(-1, y2);
                 Point to1 = new Point(sewersMap2.Width - 1, y2);
                 Point from2 = new Point(sewersMap2.Width, y2);
                 Point to2 = new Point(0, y2);
-                                GenerateExit(sewersMap1, from1, sewersMap2, to1);
-                                GenerateExit(sewersMap2, from2, sewersMap1, to2);
+                GenerateExit(sewersMap1, from1, sewersMap2, to1);
+                GenerateExit(sewersMap2, from2, sewersMap1, to2);
               }
             }
           }
           Map subwayMap1 = world[x1, y1].SubwayMap;
-          if (subwayMap1 != null && x1 > 0)
-          {
+          if (subwayMap1 != null && x1 > 0) {
             Map subwayMap2 = world[x1 - 1, y1].SubwayMap;
-            for (int y2 = 0; y2 < subwayMap1.Height; ++y2)
-            {
-              if (y2 < subwayMap2.Height)
-              {
+            for (int y2 = 0; y2 < subwayMap1.Height; ++y2) {
+              if (y2 < subwayMap2.Height) {
                 Point from1 = new Point(-1, y2);
                 Point to1 = new Point(subwayMap2.Width - 1, y2);
                 Point from2 = new Point(subwayMap2.Width, y2);
                 Point to2 = new Point(0, y2);
-                if (subwayMap1.IsWalkable(subwayMap1.Width - 1, y2) && subwayMap2.IsWalkable(0, y2))
-                {
-                                    GenerateExit(subwayMap1, from1, subwayMap2, to1);
-                                    GenerateExit(subwayMap2, from2, subwayMap1, to2);
+                if (subwayMap1.IsWalkable(subwayMap1.Width - 1, y2) && subwayMap2.IsWalkable(0, y2)) {
+                  GenerateExit(subwayMap1, from1, subwayMap2, to1);
+                  GenerateExit(subwayMap2, from2, subwayMap1, to2);
                 }
               }
             }
@@ -12668,33 +12626,25 @@ namespace djack.RogueSurvivor.Engine
       sewersMap.RemoveMapObjectAt(1, 1);
       sewersMap.GetTileAt(1, 1).RemoveAllDecorations();
       sewersMap.GetTileAt(1, 1).AddDecoration("Tiles\\Decoration\\roguedjack");
-      if (isVerbose)
-      {
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
-                m_UI.UI_Repaint();
+      if (isVerbose) {
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
+        m_UI.UI_Repaint();
       }
       int index = world.Size / 2;
       Map entryMap = world[index, index].EntryMap;
-            GeneratePlayerOnMap(entryMap, m_TownGenerator);
-            SetCurrentMap(entryMap);
-            RefreshPlayer();
-            UpdatePlayerFOV(m_Player);
-      if (RogueGame.s_Options.RevealStartingDistrict)
-      {
+      GeneratePlayerOnMap(entryMap, m_TownGenerator);
+      SetCurrentMap(entryMap);
+      RefreshPlayer();
+      UpdatePlayerFOV(m_Player);
+      if (RogueGame.s_Options.RevealStartingDistrict) {
         Map map = entryMap;
-        Location location = m_Player.Location;
-        int x1 = location.Position.X;
-        location = m_Player.Location;
-        int y1 = location.Position.Y;
-        List<Zone> zonesAt1 = map.GetZonesAt(x1, y1);
-        if (zonesAt1 != null)
-        {
+        Point pos = m_Player.Location.Position;
+        List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
+        if (zonesAt1 != null) {
           Zone zone = zonesAt1[0];
-          for (int x2 = 0; x2 < entryMap.Width; ++x2)
-          {
-            for (int y2 = 0; y2 < entryMap.Height; ++y2)
-            {
+          for (int x2 = 0; x2 < entryMap.Width; ++x2) {
+            for (int y2 = 0; y2 < entryMap.Height; ++y2) {
               bool flag = false;
               List<Zone> zonesAt2 = entryMap.GetZonesAt(x2, y2);
               if (zonesAt2 != null && zonesAt2[0] == zone)
@@ -12707,11 +12657,10 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (!isVerbose)
-        return;
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Generating game world... done!", 0, 0, new Color?());
-            m_UI.UI_Repaint();
+      if (!isVerbose) return;
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Generating game world... done!", 0, 0, new Color?());
+      m_UI.UI_Repaint();
     }
 
     private bool CheckIfExitIsGood(Map fromMap, Point from, Map toMap, Point to)
