@@ -2282,13 +2282,17 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
 #endif
       foreach(Map current in district.Maps) {
-      int turnCounter = current.LocalTime.TurnCounter;
-        do {
+        while(null != current.NextActorToAct) {
           AdvancePlay(current, sim);
           if (m_Player.IsDead) HandleReincarnation();
           if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         }
-        while (current.LocalTime.TurnCounter == turnCounter);
+      }
+
+      if (district.ReadyForNextTurn) {
+        foreach(Map current in district.Maps) {
+          NextMapTurn(current, sim);
+        }
       }
 
       if (district == m_Session.CurrentMap.District) {
@@ -2345,32 +2349,29 @@ namespace djack.RogueSurvivor.Engine
         ++map.LocalTime.TurnCounter;
       } else {
         Actor nextActorToAct = map.NextActorToAct;
-        if (nextActorToAct == null) {
+        if (nextActorToAct == null) return;
 #if DATAFLOW_TRACE
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, "Next turn, Map: "+map.Name);
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
 #endif
-          NextMapTurn(map, sim);
-        } else {
-#if DATAFLOW_TRACE
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
-#endif
-          nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
-          if (nextActorToAct.Controller == null)
-            nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
-          else if (nextActorToAct.IsPlayer) {
-            HandlePlayerActor(nextActorToAct);
-            if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
-              return;
-            CheckSpecialPlayerEventsAfterAction(nextActorToAct);
-          }
-          else HandleAiActor(nextActorToAct);
-          nextActorToAct.AfterAction();
+        nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
+        if (nextActorToAct.Controller == null)
+          nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
+        else if (nextActorToAct.IsPlayer) {
+          HandlePlayerActor(nextActorToAct);
+          if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
+            return;
+          CheckSpecialPlayerEventsAfterAction(nextActorToAct);
         }
+        else HandleAiActor(nextActorToAct);
+        nextActorToAct.AfterAction();
       }
     }
 
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
     {
+#if DATAFLOW_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Next turn, Map: "+map.Name);
+#endif
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
         if (m_Session.HasCorpses && map.CountCorpses > 0) {
           List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
