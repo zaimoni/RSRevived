@@ -1146,7 +1146,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
         ItemMedicine stim = inv.GetBestDestackable(it) as ItemMedicine;
         if (null != stim) {
-          // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
           int num4 = game.Rules.ActorMedicineEffect(actor, stim.SleepBoost);
           if (num4 <= need) {
@@ -1154,6 +1153,51 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+
+      // see if we can eat our way to a free slot
+      if (m_Actor.Model.Abilities.HasToEat)
+        {
+        ItemFood food = inv.GetBestDestackable(GameItems.IDs.FOOD_CANNED_FOOD) as ItemFood;
+        if (null != food) {
+          // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
+          int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
+          if (num4*food.Quantity <= need) {
+            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, game, bestEdibleItem);
+          }
+        }
+      }
+
+      // finisbing off stimulants to get a free slot is ok
+      ItemMedicine stim = inv.GetBestDestackable(GameItems.IDs.MEDICINE_PILLS_SLP) as ItemMedicine;
+      if (null != stim) {
+        int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
+        int num4 = game.Rules.ActorMedicineEffect(actor, stim.SleepBoost);
+        if (num4*stim.Quantity <= need) {
+          if (game.Rules.CanActorUseItem(m_Actor, stim)) return new ActionUseItem(m_Actor, game, stim);
+        }
+      }
+
+      // priority classes of incoming items are:
+      // food
+      // ranged weapon
+      // ammo for a ranged weapon in inventory
+      // melee weapon
+      // body armor
+      // grenades (soldiers and civilians, screened at the interesting item check)
+      // light
+      // traps, barricading, medical/entertainment, stench killer (civilians, screened at the interesting item check)
+
+      // trackers (mainly because AI can't use properly), but cell phones are trackers
+      bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
+      if (it.Model is ItemTrackerModel) {
+        bool tracker_ok = false;
+        if (wantCellPhone && GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID) tracker_ok = true;
+        if (!tracker_ok) return null;   // tracker normally not worth clearing a slot for
+      }
+      // ditch an unwanted tracker if possible
+      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(Predicate<ItemTracker> (it => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it.Model.ID));
+      if (null != tmpTracker) return BehaviorDropItem(game, tmpTracker);
 
       // following is a prioritized version of ActorController::IsTradeable
 
