@@ -732,6 +732,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
     public void Infect(int i) { 
+      if (!Engine.Session.Get.HasInfection) return;    // no-op if mode doesn't have infection
       m_Infection = Math.Min(InfectionHPs, m_Infection + i);
     }
 
