@@ -1185,12 +1185,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee weapon
       // body armor
       // grenades (soldiers and civilians, screened at the interesting item check)
-      // light
-      // traps, barricading, medical/entertainment, stench killer (civilians, screened at the interesting item check)
+      // light, traps, barricading, medical/entertainment, stench killer (civilians, screened at the interesting item check)
+      // trackers (mainly because AI can't use properly), but cell phones are trackers
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
-      if (it.Model is ItemTrackerModel) {
+      if (it is ItemTracker) {
         bool tracker_ok = false;
         if (wantCellPhone && GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID) tracker_ok = true;
         if (!tracker_ok) return null;   // tracker normally not worth clearing a slot for
@@ -1199,49 +1199,63 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(Predicate<ItemTracker> (it => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it.Model.ID));
       if (null != tmpTracker) return BehaviorDropItem(game, tmpTracker);
 
-      // following is a prioritized version of ActorController::IsTradeable
+      // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
+      if (it is ItemLight) return null;
+      if (it is ItemTrap) return null;
+      if (it is ItemMedicine) return null;
+      if (it is ItemEntertainment) return null;
+      if (it is ItemBarricadeMaterial) return null;
 
-      if (m_Actor.HasItemOfType(typeof (ItemFood))) return null;
-      bool flag = false;
-      foreach (Percept stack in stacks)
+      // ditch unimportant items
+      ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>(null);
+      if (null != tmpBarricade) return BehaviorDropItem(game, tmpBarricade);
+      ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>(null);
+      if (null != tmpTrap) return BehaviorDropItem(game, tmpTrap);
+      ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>(null);
+      if (null != tmpEntertainment) return BehaviorDropItem(game, tmpEntertainment);
+      ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>(null);
+      if (null != tmpMedicine) return BehaviorDropItem(game, tmpMedicine);
+      ItemLight tmpLight = inv.GetFirstMatching<ItemLight>(null);
+      if (null != tmpLight) return BehaviorDropItem(game, tmpLight);
+
+      // uninteresting ammo
+      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(Predicate<ItemAmmo> (ammo => !IsInterestingItem(ammo)));
+      if (null != tmpAmmo)
       {
-        Inventory inventory = stack.Percepted as Inventory;
-        if (inventory != null && inventory.HasItemOfType(typeof (ItemFood)))
+        ItemRangedWeapon tmpRw = GetCompatibleRangedWeapon(tmpAmmo);
+        if (null != tmpRw)
         {
-          flag = true;
-          break;
+          tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
+          if (game.Rules.CanActorUseItem(m_Actor, tmpAmmo)) return new ActionUseItem(m_Actor, game, tmpAmmo);
         }
+        return BehaviorDropItem(game, tmpAmmo);
       }
-      if (!flag)
-        return (ActorAction) null;
-      Inventory inventory1 = m_Actor.Inventory;
-      Item firstMatching1 = inventory1.GetFirstMatching((Predicate<Item>) (it => !IsInterestingItem(it)));
-      if (firstMatching1 != null)
-        return BehaviorDropItem(game, firstMatching1);
-      Item firstMatching2 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemBarricadeMaterial));
-      if (firstMatching2 != null)
-        return BehaviorDropItem(game, firstMatching2);
-      Item firstMatching3 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemLight));
-      if (firstMatching3 != null)
-        return BehaviorDropItem(game, firstMatching3);
-      Item firstMatching4 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemSprayPaint));
-      if (firstMatching4 != null)
-        return BehaviorDropItem(game, firstMatching4);
-      Item firstMatching5 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemSprayScent));
-      if (firstMatching5 != null)
-        return BehaviorDropItem(game, firstMatching5);
-      Item firstMatching6 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemAmmo));
-      if (firstMatching6 != null)
-        return BehaviorDropItem(game, firstMatching6);
-      Item firstMatching7 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemMedicine));
-      if (firstMatching7 != null)
-        return BehaviorDropItem(game, firstMatching7);
-      Item it1 = inventory1[game.Rules.Roll(0, inventory1.CountItems)];
-      return BehaviorDropItem(game, it1);
+
+      // ranged weapon with zero ammo is ok to drop for something other than its own ammo
+      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(Predicate<ItemRangedWeapon> (rw => 0 >= rw.Ammo));
+      if (null != tmpRw2)
+      {
+         bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==rw.AmmoType : false);
+         if (!reloadable) return BehaviorDropItem(game, tmpRw2);
+      }
+
+      // grenades next
+      if (it is ItemGrenade) return null;
+      ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>(null);
+      if (null != tmpGrenade) return BehaviorDropItem(game, tmpGrenade);
+
+      // body armor
+      // XXX dropping body armor to get a better one should be ok
+      if (it is ItemBodyArmor) return null;
+      ItemBodyArmor tmpBodyArmor = inv.GetFirstMatching<ItemBodyArmor>(null);
+      if (null != tmpBodyArmor) return BehaviorDropItem(game, tmpBodyArmor);
+
+      // give up
+      return null;
     }
 #endif
 
-        protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
+    protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
     {
       if (stacks == null || stacks.Count == 0) return null;
       if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
