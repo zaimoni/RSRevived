@@ -522,7 +522,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ranged weapon non-option for some reason
-      ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon(game, (Predicate<Item>) (it => !IsItemTaboo(it)));
+      ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon((Predicate<Item>) (it => !IsItemTaboo(it)));
       if (bestMeleeWeapon == null) return null;
       if (equippedWeapon == bestMeleeWeapon) return null;
       return (ActorAction) new ActionEquipItem(m_Actor, game, (Item) bestMeleeWeapon);
@@ -1063,6 +1063,42 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
     }
 
+    private ItemBodyArmor GetWorstBodyArmor()
+    {
+      if (m_Actor.Inventory == null) return null;
+      int num1 = int.MaxValue;
+      ItemBodyArmor ret = null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        ItemBodyArmor tmp = obj as ItemBodyArmor;
+        if (null == tmp) continue;
+        if (DollPart.NONE != tmp.EquippedPart) continue;
+        int num2 = tmp.Protection_Hit + tmp.Protection_Shot;
+        if (num2 < num1) {
+          num1 = num2;
+          ret = tmp;
+        }
+      }
+      return ret;
+    }
+
+    protected ItemMeleeWeapon GetWorstMeleeWeapon()
+    {
+      if (m_Actor.Inventory == null) return null;
+      int num1 = int.MaxValue;
+      ItemMeleeWeapon ret = null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        ItemMeleeWeapon tmp = obj as ItemMeleeWeapon;
+        if (null == tmp) continue;
+        Attack tmpAttack = (tmp.Model as ItemMeleeWeaponModel).Attack;
+        int num2 = 10000 * tmpAttack.DamageValue + 100 * tmpAttack.HitValue + -tmpAttack.StaminaPenalty;
+        if (num2 < num1) {
+          num1 = num2;
+          ret = tmp;
+        }
+      }
+      return ret;
+    }
+
 #if DEBUG
 #else
     protected ActorAction BehaviorMakeRoomFor(RogueGame game, Item it)
@@ -1080,11 +1116,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
          if (qty>=it.Quantity) return null;
          }
 
+      // not-best body armor can be dropped
+      if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
+        ItemBodyArmor armor = GetWorstBodyArmor();
+        if (null != armor) return BehaviorDropItem(game, armor);  
+      }
+
+      // not-best melee weapon can be dropped
+      if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon))) {
+        ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
+        if (null != weapon) return BehaviorDropItem(game, weapon);  
+      }
+
       // another behavior is responsible for pre-emptively eating perishable food
       // canned food is normally eaten at the last minute
       if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Model.Abilities.HasToEat)
         {
-        ItemFood food = GetBestDestackable(it) as ItemFood;
+        ItemFood food = inv.GetBestDestackable(it) as ItemFood;
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
@@ -1096,7 +1144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // it should be ok to devour stimulants in a glut
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
-        ItemMedicine stim = GetBestDestackable(it) as ItemMedicine;
+        ItemMedicine stim = inv.GetBestDestackable(it) as ItemMedicine;
         if (null != stim) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
@@ -1632,7 +1680,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor.GetEquippedWeapon() is ItemRangedWeapon;
     }
 
-    protected ItemMeleeWeapon GetBestMeleeWeapon(RogueGame game, Predicate<Item> fn)
+    protected ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn)
     {
       if (m_Actor.Inventory == null)
         return (ItemMeleeWeapon) null;

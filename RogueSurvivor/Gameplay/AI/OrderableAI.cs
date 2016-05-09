@@ -331,7 +331,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Behaviors and support functions
-    private ItemBodyArmor GetBestBodyArmor(RogueGame game, Predicate<Item> fn)
+    private ItemBodyArmor GetBestBodyArmor(Predicate<Item> fn)
     {
       if (m_Actor.Inventory == null) return null;
       int num1 = 0;
@@ -361,7 +361,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorEquipBodyArmor(RogueGame game)
     {
-      ItemBodyArmor bestBodyArmor = GetBestBodyArmor(game, (Predicate<Item>) (it => !IsItemTaboo(it)));
+      ItemBodyArmor bestBodyArmor = GetBestBodyArmor((Predicate<Item>) (it => !IsItemTaboo(it)));
       if (bestBodyArmor == null) return null;
       ItemBodyArmor equippedBodyArmor = GetEquippedBodyArmor();
       if (equippedBodyArmor == bestBodyArmor) return null;
