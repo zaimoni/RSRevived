@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal class GameItems : ItemModelDB
   {
-    private ItemModel[] m_Models = new ItemModel[69];
+    private ItemModel[] m_Models = new ItemModel[(int) GameItems.IDs._COUNT];
     private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
     private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
     private GameItems.MedecineData DATA_MEDICINE_PILLS_STA;

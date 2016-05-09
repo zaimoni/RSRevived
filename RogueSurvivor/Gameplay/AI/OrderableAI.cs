@@ -368,8 +368,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionEquipItem(m_Actor, game, bestBodyArmor);
     }
 
-    // This is only called when the actor is hungry.
-    protected ItemFood GetBestEdibleItem(RogueGame game)
+    // This is only called when the actor is hungry.  It doesn't need to do food value corrections
+    protected ItemFood GetBestEdibleItem()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
@@ -419,7 +419,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorEat(RogueGame game)
     {
-      Item bestEdibleItem = GetBestEdibleItem(game);
+      ItemFood bestEdibleItem = GetBestEdibleItem();
       if (null == bestEdibleItem) return null;
       if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
       return new ActionUseItem(m_Actor, game, bestEdibleItem);
