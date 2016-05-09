@@ -33,6 +33,7 @@ namespace djack.RogueSurvivor.Data
     // trading support
     protected bool HasEnoughFoodFor(int nutritionNeed)
     {
+      if (!m_Actor.Model.Abilities.HasToEat) return true;
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int num = 0;
@@ -71,6 +72,7 @@ namespace djack.RogueSurvivor.Data
     {
         if (it is ItemFood)
             {
+            if (!m_Actor.Model.Abilities.HasToEat) return true;
             if (m_Actor.IsHungry) return false; 
             if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
               return (it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
@@ -112,13 +114,14 @@ namespace djack.RogueSurvivor.Data
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
       if (it is ItemFood)
       {
+        if (!m_Actor.Model.Abilities.HasToEat) return false;
         if (m_Actor.IsHungry) return true;
         if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
       // don't lose last inventory slot to non-food unless we have enough
-      if (m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
+      if (m_Actor.Model.Abilities.HasToEat && m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
 
       if (it is ItemRangedWeapon)
       {
