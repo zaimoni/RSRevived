@@ -2295,7 +2295,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      if (district == m_Session.CurrentMap.District) {
+      if (district == m_Session.CurrentMap.District && m_Session.CurrentMap.LocalTime.TurnCounter > m_Session.WorldTime.TurnCounter) {
         ++m_Session.WorldTime.TurnCounter;
         bool isNight2 = m_Session.WorldTime.IsNight;
         DayPhase phase2 = m_Session.WorldTime.Phase;
