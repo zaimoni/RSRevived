@@ -145,6 +145,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool ReadyForNextTurn
+    {
+      get {
+        foreach(Map tmp in Maps) {
+          if (null != tmp.NextActorToAct) return false;
+        }
+        return true;
+      }
+    }
+
     // low-level support
     public void OptimizeBeforeSaving()
     {
