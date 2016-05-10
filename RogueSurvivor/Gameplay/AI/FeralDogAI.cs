@@ -65,11 +65,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       List<Percept> enemies = FilterEnemies(game, percepts1);
-      bool flag = m_Actor.HasLeader && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+      // dogs cannot order their followers to stay behind
+      bool hasVisibleLeader = m_Actor.HasLeader && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = m_Actor.HasLeader && IsAdjacentToEnemy(game, m_Actor.Leader);
       if (enemies != null)
       {
-        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, flag, isLeaderFighting, Directives.Courage, FeralDogAI.FIGHT_EMOTES);
+        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, FeralDogAI.FIGHT_EMOTES);
         if (actorAction != null)
         {
                     m_Actor.IsRunning = true;
@@ -113,7 +114,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Point position = m_Actor.Leader.Location.Position;
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        ActorAction actorAction = BehaviorFollowActor(game, m_Actor.Leader, position, flag, maxDist);
+        ActorAction actorAction = BehaviorFollowActor(game, m_Actor.Leader, position, hasVisibleLeader, maxDist);
         if (actorAction != null)
         {
                     m_Actor.IsRunning = true;

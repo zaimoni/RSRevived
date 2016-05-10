@@ -140,10 +140,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       List<Percept> enemies = FilterEnemies(game, percepts1);
-      bool flag2 = m_Actor.HasLeader && !DontFollowLeader;
-      bool hasVisibleLeader = flag2 && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = flag2 && IsAdjacentToEnemy(game, m_Actor.Leader);
-      bool flag3 = flag2 && hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
       // civilians track how long since they've seen trouble
       if (null != enemies)
@@ -296,7 +295,7 @@ label_10:
                 m_Actor.Activity = Activity.IDLE;
         return (ActorAction) new ActionWait(m_Actor, game);
       }
-      if (null != enemies && flag3)
+      if (null != enemies && assistLeader)
       {
         Percept target = FilterNearest(enemies);
         ActorAction actorAction2 = BehaviorChargeEnemy(game, target);
@@ -486,7 +485,7 @@ label_10:
           return actorAction5;
         }
       }
-      if (flag2)
+      if (m_Actor.HasLeader && !DontFollowLeader)
       {
         Point position1 = m_Actor.Leader.Location.Position;
         bool isVisible = m_LOSSensor.FOV.Contains(position1);
@@ -499,7 +498,7 @@ label_10:
           return actorAction2;
         }
       }
-      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!flag2 && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)))
+      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)))
       {
         Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
         if (target != null) {
