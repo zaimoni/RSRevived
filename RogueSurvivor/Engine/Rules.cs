@@ -1827,12 +1827,20 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsMurder(Actor killer, Actor victim)
     {
-      if (killer == null || victim == null || victim.Model.Abilities.IsUndead || (killer.Model.Abilities.IsLawEnforcer && victim.MurdersCounter > 0 || (killer.Faction.IsEnemyOf(victim.Faction) || killer.IsSelfDefenceFrom(victim))) || killer.HasLeader && killer.Leader.IsSelfDefenceFrom(victim))
-        return false;
-      if (killer.CountFollowers > 0)
-      {
-        foreach (Actor follower in killer.Followers)
-        {
+      if (null == killer) return false;
+      if (null == victim) return false;
+      if (victim.Model.Abilities.IsUndead) return false;
+      if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersCounter > 0) return false;
+      if (killer.Faction.IsEnemyOf(victim.Faction)) return false;
+      if (killer.IsSelfDefenceFrom(victim)) return false;
+
+      // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
+      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && IsEnemyOf(killer.Leader,victim)) return false;
+
+      // resume old definition
+      if (killer.HasLeader && killer.Leader.IsSelfDefenceFrom(victim)) return false;
+      if (killer.CountFollowers > 0) {
+        foreach (Actor follower in killer.Followers) {
           if (follower.IsSelfDefenceFrom(victim))
             return false;
         }
