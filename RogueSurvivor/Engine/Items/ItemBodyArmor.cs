@@ -52,5 +52,9 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       return Array.IndexOf<GameItems.IDs>(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], (GameItems.IDs)Model.ID) >= 0;
     }
+
+    public int Rating { 
+      get { return Protection_Hit + Protection_Shot; }
+    }
   }
 }

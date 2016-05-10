@@ -365,20 +365,18 @@ label_10:
         if (perceptList2 != null)
         {
           Percept percept = FilterNearest(perceptList2);
-                    m_LastItemsSaw = percept;
+          m_LastItemsSaw = percept;
           ActorAction actorAction2 = BehaviorMakeRoomForFood(game, perceptList2);
           if (actorAction2 != null)
           {
-                        m_Actor.Activity = Activity.IDLE;
+            m_Actor.Activity = Activity.IDLE;
             return actorAction2;
           }
-          RogueGame game2 = game;
-          Point position1 = percept.Location.Position;
           Inventory stack = percept.Percepted as Inventory;
-          ActorAction actorAction5 = BehaviorGrabFromStack(game2, position1, stack);
+          ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
           if (actorAction5 != null)
           {
-                        m_Actor.Activity = Activity.IDLE;
+            m_Actor.Activity = Activity.IDLE;
             return actorAction5;
           }
           MarkTileAsTaboo(percept.Location.Position);

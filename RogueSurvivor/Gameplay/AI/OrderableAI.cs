@@ -315,7 +315,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != fn && !fn(obj)) continue;
         ItemBodyArmor itemBodyArmor2 = obj as ItemBodyArmor;
         if (null == itemBodyArmor2) continue;
-        int num2 = itemBodyArmor2.Protection_Hit + itemBodyArmor2.Protection_Shot;
+        int num2 = itemBodyArmor2.Rating;
         if (num2 > num1) {
           num1 = num2;
           itemBodyArmor1 = itemBodyArmor2;

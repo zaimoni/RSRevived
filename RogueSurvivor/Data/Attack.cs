@@ -21,10 +21,8 @@ namespace djack.RogueSurvivor.Data
     public int StaminaPenalty { get; private set; }
     public int Range { get; private set; }
 
-    public int EfficientRange
-    {
-      get
-      {
+    public int EfficientRange {
+      get {
         return Range / 2;
       }
     }
@@ -38,6 +36,12 @@ namespace djack.RogueSurvivor.Data
       DamageValue = damageValue;
       StaminaPenalty = staminaPenalty;
       Range = range;
+    }
+
+    public int Rating { 
+      get {
+        return 10000 * DamageValue + 100 * HitValue + -StaminaPenalty;
+      }
     }
   }
 }

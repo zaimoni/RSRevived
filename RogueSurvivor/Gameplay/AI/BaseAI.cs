@@ -1061,7 +1061,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemBodyArmor tmp = obj as ItemBodyArmor;
         if (null == tmp) continue;
         if (DollPart.NONE != tmp.EquippedPart) continue;
-        int num2 = tmp.Protection_Hit + tmp.Protection_Shot;
+        int num2 = tmp.Rating;
         if (num2 < num1) {
           num1 = num2;
           ret = tmp;
@@ -1078,8 +1078,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Item obj in m_Actor.Inventory.Items) {
         ItemMeleeWeapon tmp = obj as ItemMeleeWeapon;
         if (null == tmp) continue;
-        Attack tmpAttack = (tmp.Model as ItemMeleeWeaponModel).Attack;
-        int num2 = 10000 * tmpAttack.DamageValue + 100 * tmpAttack.HitValue + -tmpAttack.StaminaPenalty;
+        int num2 = (tmp.Model as ItemMeleeWeaponModel).Attack.Rating;
         if (num2 < num1) {
           num1 = num2;
           ret = tmp;
@@ -1090,9 +1089,77 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #if DEBUG
 #else
+    protected bool RHSMoreInteresting(RogueGame game, Item lhs, Item rhs)
+    {
+#if DEBUG
+      if (null == lhs) throw new ArgumentNullException("lhs"); 
+      if (null == rhs) throw new ArgumentNullException("rhs"); 
+      if (!IsInterestingItem(lhs)) throw new ArgumentOutOfRangeException("lhs","!IsInterestingItem");
+      if (!IsInterestingItem(rhs)) throw new ArgumentOutOfRangeException("rhs","!IsInterestingItem");
+#endif
+      if (lhs.ID == rhs.ID) {
+        if (lhs.Quantity < rhs.Quantity) return true;
+        if (lhs.Quantity > rhs.Quantity) return false;
+        if (lhs is ItemLight)
+          {
+          return ((lhs as ItemLight).Batteries < (rhs as ItemLight).Batteries);
+          }
+        else if (lhs is ItemTracker)
+          {
+          return ((lhs as ItemTracker).Batteries < (rhs as ItemTracker).Batteries);
+          }
+        else if (lhs is ItemFood && lhs.IsPerishable)
+          { // complicated
+          int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+          int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_actor.Location.Map.LocalTime.TurnCounter);
+          int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_actor.Location.Map.LocalTime.TurnCounter);
+          if (lhs_nutrition==rhs_nutrition) return false;
+          if (need < lhs_nutrition && need >= rhs_nutition) return true; 
+          if (need < rhs_nutrition && need >= lhs_nutition) return false;
+          return lhs_nutrition < rhs_nutrition;
+          }
+        return false;
+      }
+        
+      // if food is interesting, it will dominate non-food
+      if (lhs is ItemFood) return !(rhs is ItemFood)
+      else if (rhs is ItemFood) return true;
+
+      // ranged weapons
+      if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon)
+      else if (rhs is ItemRangedWeapon) return true;
+
+      if (lhs is ItemAmmo) return !(rhs is ItemAmmo)
+      else if (rhs is ItemAmmo) return true;
+
+      if (lhs is ItemMeleeWeapon)
+        {
+        if (!(rhs is ItemMeleeWeapon)) return false;
+        return (lhs.Model as ItemMeleeWeaponModel).Attack.Rating < (rhs.Model as ItemMeleeWeaponModel).Attack.Rating;
+        }
+      else if (rhs is ItemMeleeWeapon) return true;
+
+      if (lhs is ItemBodyArmor) return !(rhs is ItemBodyArmor)
+      else if (rhs is ItemBodyArmor) return true;
+
+      if (lhs is ItemGrenade) return !(rhs is ItemGrenade)
+      else if (rhs is ItemGrenade) return true;
+
+      bool rhs_low_priority = (rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial);
+      if ((lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial)) return !rhs_low_priority;
+      else if (rhs_low_priority) return true;
+
+      if (lhs is ItemTracker) return !(rhs is ItemTracker)
+      else if (rhs is ItemTracker) return true;
+
+      return false;
+    }
+
     protected ActorAction BehaviorMakeRoomFor(RogueGame game, Item it)
     {
-      if (null == it) return null;  // make this an error?
+#if DEBUG
+      if (null == it) throw new ArgumentNullException("it"); 
+#endif
       if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
 
       if (!isInterestingItem(it) return null;  // default ok, but there are special cases that warrant exceptions
@@ -1244,7 +1311,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
+        protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
     {
       if (stacks == null || stacks.Count == 0) return null;
       if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
@@ -1729,21 +1796,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn)
     {
-      if (m_Actor.Inventory == null)
-        return (ItemMeleeWeapon) null;
+      if (m_Actor.Inventory == null) return null;
       int num1 = 0;
-      ItemMeleeWeapon itemMeleeWeapon1 = (ItemMeleeWeapon) null;
-      foreach (Item obj in m_Actor.Inventory.Items)
-      {
-        if (fn == null || fn(obj))
-        {
+      ItemMeleeWeapon itemMeleeWeapon1 = null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (fn == null || fn(obj)) {
           ItemMeleeWeapon itemMeleeWeapon2 = obj as ItemMeleeWeapon;
-          if (itemMeleeWeapon2 != null)
-          {
-            ItemMeleeWeaponModel meleeWeaponModel = itemMeleeWeapon2.Model as ItemMeleeWeaponModel;
-            int num2 = 10000 * meleeWeaponModel.Attack.DamageValue + 100 * meleeWeaponModel.Attack.HitValue + -meleeWeaponModel.Attack.StaminaPenalty;
-            if (num2 > num1)
-            {
+          if (itemMeleeWeapon2 != null) {
+            int num2 = (itemMeleeWeapon2.Model as ItemMeleeWeaponModel).Attack.Rating;
+            if (num2 > num1) {
               num1 = num2;
               itemMeleeWeapon1 = itemMeleeWeapon2;
             }
