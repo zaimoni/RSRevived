@@ -122,77 +122,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
-      
-      // OrderableAI specific: respond to orders
-      if (null != Order)
-      {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
-        if (null != actorAction)
-          {
-          m_Actor.Activity = Activity.FOLLOWING_ORDER;
-          return actorAction;
-          }
 
-        SetOrder(null);
-      }
-      m_Actor.IsRunning = false;
-
-      m_Exploration.Update(m_Actor.Location);
-
-      List<Percept> enemies = FilterEnemies(game, percepts1);
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
-      bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
-
-      // civilians track how long since they've seen trouble
-      if (null != enemies)
-        m_SafeTurns = 0;
-      else
-        ++m_SafeTurns;
-
-      Location location;
-      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
-      {
-        if (PrevLocation.Map == m_Actor.Location.Map)
-          goto label_10;
-      }
-      ClearTabooTiles();
-label_10:
-      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
-                ClearTabooTrades();
-
-      if (null != enemies)
-        m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
-
-      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-        return tmpAction;
-      }
-
-      if (!Directives.CanThrowGrenades)
-      {
-        ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
-        if (itemGrenade != null)
-        {
-          m_Actor.Activity = Activity.IDLE;
-          return (ActorAction) new ActionUnequipItem(m_Actor, game, (Item)itemGrenade);
-        }
-      }
-      else if (null != enemies)
-      {
-        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, enemies);
-        if (null != tmpAction) return tmpAction;
-      }
-
-      tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
-      tmpAction = BehaviorEquipBodyArmor(game);
+      ActorAction tmpAction = BehaviorEquipBodyArmor(game);
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.IDLE;
@@ -237,6 +168,70 @@ label_10:
         }
       }
       // end item juggling check
+      
+      // OrderableAI specific: respond to orders
+      if (null != Order)
+      {
+        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
+        if (null != actorAction)
+          {
+          m_Actor.Activity = Activity.FOLLOWING_ORDER;
+          return actorAction;
+          }
+
+        SetOrder(null);
+      }
+      m_Actor.IsRunning = false;
+
+      m_Exploration.Update(m_Actor.Location);
+
+      List<Percept> enemies = FilterEnemies(game, percepts1);
+      // civilians track how long since they've seen trouble
+      if (null != enemies) m_SafeTurns = 0;
+      else ++m_SafeTurns;
+
+      Location location;
+      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
+      {
+        if (PrevLocation.Map == m_Actor.Location.Map)
+          goto label_10;
+      }
+      ClearTabooTiles();
+label_10:
+      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
+                ClearTabooTrades();
+
+      if (null != enemies)
+        m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
+
+      tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+        return tmpAction;
+      }
+
+      if (!Directives.CanThrowGrenades)
+      {
+        ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
+        if (itemGrenade != null)
+        {
+          m_Actor.Activity = Activity.IDLE;
+          return (ActorAction) new ActionUnequipItem(m_Actor, game, (Item)itemGrenade);
+        }
+      }
+      else if (null != enemies)
+      {
+        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, enemies);
+        if (null != tmpAction) return tmpAction;
+      }
+
+      tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
 
       // all free actions must be above the enemies check
       if (null != enemies && Directives.CanFireWeapons && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
@@ -265,6 +260,11 @@ label_10:
           }
         }
       }
+
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
+
       if (null != enemies)
       {
         if (game.Rules.RollChance(50))

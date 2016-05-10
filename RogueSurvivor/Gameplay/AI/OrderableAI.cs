@@ -33,8 +33,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void SetOrder(ActorOrder newOrder)
     {
       base.SetOrder(newOrder);
-            m_ReachedPatrolPoint = false;
-            m_ReportStage = 0;
+      m_ReachedPatrolPoint = false;
+      m_ReportStage = 0;
     }
 
     protected ActorAction ExecuteOrder(RogueGame game, ActorOrder order, List<Percept> percepts)

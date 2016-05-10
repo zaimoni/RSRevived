@@ -60,30 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
       
-      // OrderableAI specific: respond to orders
-      if (null != Order)
-      {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
-        if (null != actorAction)
-          {
-          m_Actor.Activity = Activity.FOLLOWING_ORDER;
-          return actorAction;
-          }
-
-        SetOrder(null);
-      }
-      m_Actor.IsRunning = false;
-
-      m_Exploration.Update(m_Actor.Location);
-
-      // Bikers and gangsters don't throw grenades
-      ActorAction tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
-      tmpAction = BehaviorEquipBodyArmor(game);
+      ActorAction tmpAction = BehaviorEquipBodyArmor(game);
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.IDLE;
@@ -120,6 +97,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end item juggling check
 
+      // OrderableAI specific: respond to orders
+      if (null != Order)
+      {
+        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
+        if (null != actorAction)
+          {
+          m_Actor.Activity = Activity.FOLLOWING_ORDER;
+          return actorAction;
+          }
+
+        SetOrder(null);
+      }
+      m_Actor.IsRunning = false;
+
+      m_Exploration.Update(m_Actor.Location);
+
+      // Bikers and gangsters don't throw grenades
+      tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction)
+      {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
       List<Percept> enemies = FilterEnemies(game, percepts1);
       List<Percept> perceptList = FilterCurrent(enemies);
       bool flag1 = perceptList != null;
