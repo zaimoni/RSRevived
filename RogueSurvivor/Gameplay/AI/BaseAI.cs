@@ -1087,8 +1087,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-#if DEBUG
-#else
     protected bool RHSMoreInteresting(RogueGame game, Item lhs, Item rhs)
     {
 #if DEBUG
@@ -1097,7 +1095,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!IsInterestingItem(lhs)) throw new ArgumentOutOfRangeException("lhs","!IsInterestingItem");
       if (!IsInterestingItem(rhs)) throw new ArgumentOutOfRangeException("rhs","!IsInterestingItem");
 #endif
-      if (lhs.ID == rhs.ID) {
+      if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
         if (lhs.Quantity > rhs.Quantity) return false;
         if (lhs is ItemLight)
@@ -1108,29 +1106,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
           {
           return ((lhs as ItemTracker).Batteries < (rhs as ItemTracker).Batteries);
           }
-        else if (lhs is ItemFood && lhs.IsPerishable)
+        else if (lhs is ItemFood && (lhs as ItemFood).IsPerishable)
           { // complicated
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_actor.Location.Map.LocalTime.TurnCounter);
-          int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_actor.Location.Map.LocalTime.TurnCounter);
+          int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+          int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
           if (lhs_nutrition==rhs_nutrition) return false;
-          if (need < lhs_nutrition && need >= rhs_nutition) return true; 
-          if (need < rhs_nutrition && need >= lhs_nutition) return false;
+          if (need < lhs_nutrition && need >= rhs_nutrition) return true; 
+          if (need < rhs_nutrition && need >= lhs_nutrition) return false;
           return lhs_nutrition < rhs_nutrition;
+          }
+        else if (lhs is ItemRangedWeapon)
+          {
+          return ((lhs as ItemRangedWeapon).Ammo < (rhs as ItemRangedWeapon).Ammo);
           }
         return false;
       }
-        
-      // if food is interesting, it will dominate non-food
-      if (lhs is ItemFood) return !(rhs is ItemFood)
-      else if (rhs is ItemFood) return true;
 
-      // ranged weapons
-      if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon)
-      else if (rhs is ItemRangedWeapon) return true;
+            // if food is interesting, it will dominate non-food
+            if (lhs is ItemFood) return !(rhs is ItemFood);
+            else if (rhs is ItemFood) return true;
 
-      if (lhs is ItemAmmo) return !(rhs is ItemAmmo)
-      else if (rhs is ItemAmmo) return true;
+            // ranged weapons
+            if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon);
+            else if (rhs is ItemRangedWeapon) return true;
+
+            if (lhs is ItemAmmo) return !(rhs is ItemAmmo);
+            else if (rhs is ItemAmmo) return true;
 
       if (lhs is ItemMeleeWeapon)
         {
@@ -1139,22 +1141,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       else if (rhs is ItemMeleeWeapon) return true;
 
-      if (lhs is ItemBodyArmor) return !(rhs is ItemBodyArmor)
+      if (lhs is ItemBodyArmor)
+        {
+        if (!(rhs is ItemBodyArmor)) return false;
+        return (lhs as ItemBodyArmor).Rating < (rhs as ItemBodyArmor).Rating;
+        }
       else if (rhs is ItemBodyArmor) return true;
 
-      if (lhs is ItemGrenade) return !(rhs is ItemGrenade)
+      if (lhs is ItemGrenade) return !(rhs is ItemGrenade);
       else if (rhs is ItemGrenade) return true;
 
       bool rhs_low_priority = (rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial);
       if ((lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial)) return !rhs_low_priority;
       else if (rhs_low_priority) return true;
 
-      if (lhs is ItemTracker) return !(rhs is ItemTracker)
+      bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
+      if (lhs is ItemTracker)
+        {
+        if (!(rhs is ItemTracker)) return false;
+        if (wantCellPhone && (rhs as ItemTracker).CanTrackFollowersOrLeader) return true;
+        return false;
+        }
       else if (rhs is ItemTracker) return true;
 
       return false;
     }
 
+#if DEBUG
+#else
     protected ActorAction BehaviorMakeRoomFor(RogueGame game, Item it)
     {
 #if DEBUG
@@ -1311,7 +1325,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-        protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
+    protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
     {
       if (stacks == null || stacks.Count == 0) return null;
       if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
