@@ -358,9 +358,19 @@ label_10:
         Map map = m_Actor.Location.Map;
         List<Percept> perceptList2 = FilterOut(game, FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
         {
-          if (p.Turn == map.LocalTime.TurnCounter && !IsOccupiedByOther(map, p.Location.Position) && !IsTileTaboo(p.Location.Position))
-            return !HasAnyInterestingItem(p.Percepted as Inventory);
-          return true;
+          if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
+          if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
+          if (IsTileTaboo(p.Location.Position)) return true;    // already ruled out
+          Inventory tmp = p.Percepted as Inventory;
+          if (!HasAnyInterestingItem(tmp)) return true; // nothing interesting
+          if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return false;  // obviously have space, ok
+          foreach (Item it in tmp.Items) {
+            if (!IsInterestingItem(it)) continue;
+            foreach (Item it2 in m_Actor.Inventory.Items) {
+              if (RHSMoreInteresting(it2, it)) return false;    // clearly more interesting than what we have
+            }
+          }
+          return true;  // no, not really interesting after all
         }));
         if (perceptList2 != null)
         {

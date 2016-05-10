@@ -1087,12 +1087,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected bool RHSMoreInteresting(RogueGame game, Item lhs, Item rhs)
+    protected bool RHSMoreInteresting(Item lhs, Item rhs)
     {
 #if DEBUG
       if (null == lhs) throw new ArgumentNullException("lhs"); 
       if (null == rhs) throw new ArgumentNullException("rhs"); 
-      if (!IsInterestingItem(lhs)) throw new ArgumentOutOfRangeException("lhs","!IsInterestingItem");
+//    if (!IsInterestingItem(lhs)) throw new ArgumentOutOfRangeException("lhs","!IsInterestingItem");   // LHS may be from own inventory
       if (!IsInterestingItem(rhs)) throw new ArgumentOutOfRangeException("rhs","!IsInterestingItem");
 #endif
       if (lhs.Model.ID == rhs.Model.ID) {
@@ -1123,16 +1123,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-            // if food is interesting, it will dominate non-food
-            if (lhs is ItemFood) return !(rhs is ItemFood);
-            else if (rhs is ItemFood) return true;
+      // if food is interesting, it will dominate non-food
+      if (lhs is ItemFood) return !(rhs is ItemFood);
+      else if (rhs is ItemFood) return true;
 
-            // ranged weapons
-            if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon);
-            else if (rhs is ItemRangedWeapon) return true;
+      // ranged weapons
+      if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon);
+      else if (rhs is ItemRangedWeapon) return true;
 
-            if (lhs is ItemAmmo) return !(rhs is ItemAmmo);
-            else if (rhs is ItemAmmo) return true;
+      if (lhs is ItemAmmo) return !(rhs is ItemAmmo);
+      else if (rhs is ItemAmmo) return true;
 
       if (lhs is ItemMeleeWeapon)
         {
