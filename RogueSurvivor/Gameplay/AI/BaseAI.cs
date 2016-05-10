@@ -1167,8 +1167,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-#if DEBUG
-#else
     protected ActorAction BehaviorMakeRoomFor(RogueGame game, Item it)
     {
 #if DEBUG
@@ -1176,13 +1174,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
 
-      if (!isInterestingItem(it) return null;  // default ok, but there are special cases that warrant exceptions
+      if (!IsInterestingItem(it)) return null;  // default ok, but there are special cases that warrant exceptions
 
       Inventory inv = m_Actor.Inventory;
       if (it.Model.IsStackable && it.CanStackMore)
          {
          int qty;
-         List<Item> tmp = inv.GetItemsStackableWith(it,qty)
+         List<Item> tmp = inv.GetItemsStackableWith(it, out qty);
          if (qty>=it.Quantity) return null;
          }
 
@@ -1206,20 +1204,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
+          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4 <= need) {
-            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, game, bestEdibleItem);
+            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, game, food);
           }
         }
       }
       // it should be ok to devour stimulants in a glut
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
-        ItemMedicine stim = inv.GetBestDestackable(it) as ItemMedicine;
-        if (null != stim) {
+        ItemMedicine stim2 = inv.GetBestDestackable(it) as ItemMedicine;
+        if (null != stim2) {
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = game.Rules.ActorMedicineEffect(actor, stim.SleepBoost);
+          int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
           if (num4 <= need) {
-            if (game.Rules.CanActorUseItem(m_Actor, stim)) return new ActionUseItem(m_Actor, game, stim);
+            if (game.Rules.CanActorUseItem(m_Actor, stim2)) return new ActionUseItem(m_Actor, game, stim2);
           }
         }
       }
@@ -1227,22 +1225,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // see if we can eat our way to a free slot
       if (m_Actor.Model.Abilities.HasToEat)
         {
-        ItemFood food = inv.GetBestDestackable(GameItems.IDs.FOOD_CANNED_FOOD) as ItemFood;
+        ItemFood food = inv.GetBestDestackable(game.GameItems[GameItems.IDs.FOOD_CANNED_FOOD]) as ItemFood;
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
+          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4*food.Quantity <= need) {
-            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, game, bestEdibleItem);
+            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, game, food);
           }
         }
       }
 
       // finisbing off stimulants to get a free slot is ok
-      ItemMedicine stim = inv.GetBestDestackable(GameItems.IDs.MEDICINE_PILLS_SLP) as ItemMedicine;
+      ItemMedicine stim = inv.GetBestDestackable(game.GameItems[GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine;
       if (null != stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = game.Rules.ActorMedicineEffect(actor, stim.SleepBoost);
+        int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
         if (num4*stim.Quantity <= need) {
           if (game.Rules.CanActorUseItem(m_Actor, stim)) return new ActionUseItem(m_Actor, game, stim);
         }
@@ -1266,7 +1264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tracker_ok) return null;   // tracker normally not worth clearing a slot for
       }
       // ditch an unwanted tracker if possible
-      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(Predicate<ItemTracker> (it => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it.Model.ID));
+      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it2 => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it2.Model.ID));
       if (null != tmpTracker) return BehaviorDropItem(game, tmpTracker);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
@@ -1289,7 +1287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpLight) return BehaviorDropItem(game, tmpLight);
 
       // uninteresting ammo
-      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(Predicate<ItemAmmo> (ammo => !IsInterestingItem(ammo)));
+      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>((Predicate<ItemAmmo>) (ammo => !IsInterestingItem(ammo)));
       if (null != tmpAmmo)
       {
         ItemRangedWeapon tmpRw = GetCompatibleRangedWeapon(tmpAmmo);
@@ -1302,10 +1300,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
-      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(Predicate<ItemRangedWeapon> (rw => 0 >= rw.Ammo));
+      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>((Predicate<ItemRangedWeapon>) (rw => 0 >= rw.Ammo));
       if (null != tmpRw2)
       {
-         bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==rw.AmmoType : false);
+         bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
          if (!reloadable) return BehaviorDropItem(game, tmpRw2);
       }
 
@@ -1323,13 +1321,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // give up
       return null;
     }
-
-    protected ActorAction BehaviorMakeRoomFor(RogueGame game, List<Percept> stacks)
-    {
-      if (stacks == null || stacks.Count == 0) return null;
-      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
-    }
-#endif
 
     protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
     {

@@ -785,11 +785,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       Item obj = null;
       foreach (Item it in stack.Items) {
-        if (!game.Rules.CanActorGetItem(m_Actor, it)) continue;
         if (!IsInterestingItem(it)) continue;
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
+      if (!game.Rules.CanActorGetItem(m_Actor, obj));
+        {
+        ActorAction tmp = BehaviorMakeRoomFor(game,obj);
+        if (null == tmp) return null;
+        if (!tmp.IsLegal()) return null;
+        // XXX : stack full, and on it: item destruction bug if anything is dropped
+        if (stack.IsFull) return tmp;
+        if (position == m_Actor.Location.Position) return tmp;
+        }
       Item it1 = obj;
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) it1.AName));

@@ -174,7 +174,7 @@ namespace djack.RogueSurvivor.Data
       return num;
     }
 
-    private List<Item> GetItemsStackableWith(Item it, out int stackedQuantity)
+    public List<Item> GetItemsStackableWith(Item it, out int stackedQuantity)
     {
       stackedQuantity = 0;
       if (!it.Model.IsStackable)
@@ -197,17 +197,21 @@ namespace djack.RogueSurvivor.Data
       return objList;
     }
 
-    private Item GetBestDestackable(Item it)
+    public Item GetBestDestackable(ItemModel it)
     {
-      if (!it.Model.IsStackable)
-        return (Item) null;
-      Item obj = (Item) null;
-      foreach (Item mItem in m_Items)
-      {
-        if (mItem.Model == it.Model && (obj == null || mItem.Quantity < obj.Quantity))
+      if (!it.IsStackable) return null;
+      Item obj = null;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == it && (obj == null || mItem.Quantity < obj.Quantity))
           obj = mItem;
       }
       return obj;
+    }
+
+    // XXX thin forwarder
+    public Item GetBestDestackable(Item it)
+    {
+      return GetBestDestackable(it.Model);
     }
 
     public bool Contains(Item it)
