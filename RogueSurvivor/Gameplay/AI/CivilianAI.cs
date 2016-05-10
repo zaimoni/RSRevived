@@ -376,12 +376,14 @@ label_10:
         {
           Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
+#if FAIL
           ActorAction actorAction2 = BehaviorMakeRoomForFood(game, perceptList2);
           if (actorAction2 != null)
           {
             m_Actor.Activity = Activity.IDLE;
             return actorAction2;
           }
+#endif
           Inventory stack = percept.Percepted as Inventory;
           ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
           if (actorAction5 != null)
