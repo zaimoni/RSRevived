@@ -528,17 +528,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionEquipItem(m_Actor, game, (Item) bestMeleeWeapon);
     }
 
-    protected ActorAction BehaviorUnequipCellPhoneIfLeaderHasNot(RogueGame game)
-    {
-      ItemTracker itemTracker1 = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      if (itemTracker1 == null) return null;
-      if (!itemTracker1.CanTrackFollowersOrLeader) return null;
-      ItemTracker itemTracker2 = m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      if ((itemTracker2 == null || !itemTracker2.CanTrackFollowersOrLeader))
-        return (ActorAction) new ActionUnequipItem(m_Actor, game, (Item) itemTracker1);
-      return null;
-    }
-
     protected ActorAction BehaviorEquipStenchKiller(RogueGame game)
     {
       if ((Item)GetEquippedStenchKiller() != null)

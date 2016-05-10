@@ -119,12 +119,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 m_Actor.Activity = Activity.IDLE;
         return actorAction1;
       }
-      ActorAction actorAction2 = BehaviorUnequipCellPhoneIfLeaderHasNot(game);
-      if (actorAction2 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction2;
-      }
       if (m_Actor.Location.Position != location.Position)
       {
         ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
@@ -168,12 +162,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
                 m_Actor.Activity = Activity.IDLE;
         return actorAction1;
-      }
-      ActorAction actorAction2 = BehaviorUnequipCellPhoneIfLeaderHasNot(game);
-      if (actorAction2 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction2;
       }
       if (!m_ReachedPatrolPoint)
       {
