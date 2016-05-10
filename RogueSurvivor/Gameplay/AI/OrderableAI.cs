@@ -39,8 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction ExecuteOrder(RogueGame game, ActorOrder order, List<Percept> percepts)
     {
-      if (m_Actor.Leader == null || m_Actor.Leader.IsDead)
-        return (ActorAction) null;
+      if (!m_Actor.HasLeader) return null;
       switch (order.Task)
       {
         case ActorTasks.BARRICADE_ONE:
@@ -260,8 +259,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           actorAction = (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
           break;
       }
-      if (flag)
-                SetOrder((ActorOrder) null);
+      if (flag) SetOrder(null);
       return actorAction ?? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "Let me think...", RogueGame.Sayflags.NONE);
     }
 
@@ -286,23 +284,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteToggleFollow(RogueGame game)
     {
-            SetOrder((ActorOrder) null);
-            DontFollowLeader = !DontFollowLeader;
+      SetOrder(null);
+      DontFollowLeader = !DontFollowLeader;
       game.DoEmote(m_Actor, DontFollowLeader ? "OK I'll do my stuff, see you soon!" : "I'm ready!");
       return (ActorAction) new ActionWait(m_Actor, game);
     }
 
     private ActorAction ExecuteReportPosition(RogueGame game)
     {
-            SetOrder((ActorOrder) null);
+      SetOrder(null);
       string text = string.Format("I'm in {0} at {1},{2}.", (object)m_Actor.Location.Map.Name, (object)m_Actor.Location.Position.X, (object)m_Actor.Location.Position.Y);
       return (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
     }
 
     public void OnRaid(RaidType raid, Location location, int turn)
     {
-      if (m_Actor.IsSleeping)
-        return;
+      if (m_Actor.IsSleeping) return;
       string str;
       switch (raid)
       {
@@ -327,7 +324,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         default:
           throw new ArgumentOutOfRangeException(string.Format("unhandled raidtype {0}", (object) raid.ToString()));
       }
-            m_LastRaidHeard = new Percept((object) str, turn, location);
+      m_LastRaidHeard = new Percept((object) str, turn, location);
     }
 
     // Behaviors and support functions
