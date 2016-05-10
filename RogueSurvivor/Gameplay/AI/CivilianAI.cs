@@ -139,15 +139,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> perceptList1 = FilterEnemies(game, percepts1);
-      bool flag1 = perceptList1 != null;
+      List<Percept> enemies = FilterEnemies(game, percepts1);
       bool flag2 = m_Actor.HasLeader && !DontFollowLeader;
       bool hasVisibleLeader = flag2 && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag2 && IsAdjacentToEnemy(game, m_Actor.Leader);
       bool flag3 = flag2 && hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
       // civilians track how long since they've seen trouble
-      if (flag1)
+      if (null != enemies)
         m_SafeTurns = 0;
       else
         ++m_SafeTurns;
@@ -163,8 +162,8 @@ label_10:
       if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
                 ClearTabooTrades();
 
-      if (null != perceptList1)
-        m_LastEnemySaw = perceptList1[game.Rules.Roll(0, perceptList1.Count)];
+      if (null != enemies)
+        m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
       ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
       if (null != tmpAction)
@@ -182,9 +181,9 @@ label_10:
           return (ActorAction) new ActionUnequipItem(m_Actor, game, (Item)itemGrenade);
         }
       }
-      else if (null != perceptList1)
+      else if (null != enemies)
       {
-        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, perceptList1);
+        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, enemies);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -242,9 +241,9 @@ label_10:
       // end item juggling check
 
       // all free actions must be above the enemies check
-      if (flag1 && Directives.CanFireWeapons && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
+      if (null != enemies && Directives.CanFireWeapons && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
       {
-        List<Percept> percepts2 = FilterFireTargets(game, perceptList1);
+        List<Percept> percepts2 = FilterFireTargets(game, enemies);
         if (percepts2 != null)
         {
           Percept percept = FilterNearest(percepts2);
@@ -268,14 +267,14 @@ label_10:
           }
         }
       }
-      if (flag1)
+      if (null != enemies)
       {
         if (game.Rules.RollChance(50))
         {
           List<Percept> friends = FilterNonEnemies(game, percepts1);
           if (friends != null)
           {
-            ActorAction actorAction2 = BehaviorWarnFriends(game, friends, FilterNearest(perceptList1).Percepted as Actor);
+            ActorAction actorAction2 = BehaviorWarnFriends(game, friends, FilterNearest(enemies).Percepted as Actor);
             if (actorAction2 != null)
             {
               m_Actor.Activity = Activity.IDLE;
@@ -283,7 +282,7 @@ label_10:
             }
           }
         }
-        ActorAction actorAction5 = BehaviorFightOrFlee(game, perceptList1, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
+        ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
         if (actorAction5 != null)
           return actorAction5;
       }
@@ -298,9 +297,9 @@ label_10:
                 m_Actor.Activity = Activity.IDLE;
         return (ActorAction) new ActionWait(m_Actor, game);
       }
-      if (flag1 && flag3)
+      if (null != enemies && flag3)
       {
-        Percept target = FilterNearest(perceptList1);
+        Percept target = FilterNearest(enemies);
         ActorAction actorAction2 = BehaviorChargeEnemy(game, target);
         if (actorAction2 != null)
         {
@@ -355,7 +354,7 @@ label_10:
         return actorAction7;
       }
 
-      if (!flag1 && Directives.CanTakeItems)
+      if (null == enemies && Directives.CanTakeItems)
       {
         location = m_Actor.Location;
         Map map = location.Map;

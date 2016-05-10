@@ -87,10 +87,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
-      List<Percept> percepts2 = FilterEnemies(game, percepts1);
-      List<Percept> perceptList = FilterCurrent(percepts2);
+      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> perceptList = FilterCurrent(enemies);
       bool flag1 = m_Actor.HasLeader && !DontFollowLeader;
-      bool flag3 = percepts2 != null;
 
       // throwing a grenade overrides normal weapon equipping choices
       if (null != perceptList)
@@ -142,8 +141,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (flag3) {
-        Percept target = FilterNearest(percepts2);
+      if (null != enemies) {
+        Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(game, target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
@@ -156,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (!flag3 && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
+      if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
         tmpAction = BehaviorSecurePerimeter(game, m_LOSSensor.FOV);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
@@ -169,7 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      List<Percept> percepts4 = FilterCurrent(percepts2);
+      List<Percept> percepts4 = FilterCurrent(enemies);
       if (percepts4 != null) {
         Percept target = FilterNearest(percepts4);
         if (m_Actor.Location == target.Location) {

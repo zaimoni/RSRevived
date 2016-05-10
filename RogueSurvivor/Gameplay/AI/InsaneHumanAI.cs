@@ -102,10 +102,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
-        List<Percept> percepts2 = FilterEnemies(game, percepts1);
-        if (percepts2 != null)
+        List<Percept> enemies = FilterEnemies(game, percepts1);
+        if (enemies != null)
         {
-          List<Percept> perceptList1 = FilterCurrent(percepts2);
+          List<Percept> perceptList1 = FilterCurrent(enemies);
           if (perceptList1 != null)
           {
             Percept percept1;
@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return actorAction2;
             }
           }
-          List<Percept> perceptList2 = Filter(game, percepts2, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
+          List<Percept> perceptList2 = Filter(game, enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
           if (perceptList2 != null)
           {
           Percept percept1;

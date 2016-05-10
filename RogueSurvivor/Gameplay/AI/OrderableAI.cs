@@ -108,10 +108,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteGuard(RogueGame game, Location location, List<Percept> percepts)
     {
-      List<Percept> percepts1 = FilterEnemies(game, percepts);
-      if (percepts1 != null) {
-                SetOrder(null);
-        Actor actor = FilterNearest(percepts1).Percepted as Actor;
+      List<Percept> enemies = FilterEnemies(game, percepts);
+      if (enemies != null) {
+        SetOrder(null);
+        Actor actor = FilterNearest(enemies).Percepted as Actor;
         return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
       }
       ActorAction actorAction1 = BehaviorEquipCellPhone(game);
@@ -156,10 +156,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecutePatrol(RogueGame game, Location location, List<Percept> percepts)
     {
-      List<Percept> percepts1 = FilterEnemies(game, percepts);
-      if (percepts1 != null) {
-                SetOrder(null);
-        Actor actor = FilterNearest(percepts1).Percepted as Actor;
+      List<Percept> enemies = FilterEnemies(game, percepts);
+      if (enemies != null) {
+        SetOrder(null);
+        Actor actor = FilterNearest(enemies).Percepted as Actor;
         return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
       }
       if (!m_ReachedPatrolPoint)
@@ -229,10 +229,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = FilterEnemies(game, percepts);
-      if (percepts1 != null) {
-                SetOrder(null);
-        Actor actor = FilterNearest(percepts1).Percepted as Actor;
+      List<Percept> enemies = FilterEnemies(game, percepts);
+      if (enemies != null) {
+        SetOrder(null);
+        Actor actor = FilterNearest(enemies).Percepted as Actor;
         return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
       }
       ActorAction actorAction = null;
@@ -267,10 +267,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteSleepNow(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> percepts1 = FilterEnemies(game, percepts);
-      if (percepts1 != null) {
-                SetOrder(null);
-        Actor actor = FilterNearest(percepts1).Percepted as Actor;
+      List<Percept> enemies = FilterEnemies(game, percepts);
+      if (enemies != null) {
+        SetOrder(null);
+        Actor actor = FilterNearest(enemies).Percepted as Actor;
         return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
       }
       string reason;
@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionSleep(m_Actor, game);
         return new ActionWait(m_Actor, game);
       }
-            SetOrder(null);
+      SetOrder(null);
       game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", (object) reason));
       return new ActionWait(m_Actor, game);
     }

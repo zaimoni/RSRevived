@@ -122,10 +122,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end item juggling check
 
-      List<Percept> percepts2 = FilterEnemies(game, percepts1);
-      List<Percept> perceptList = FilterCurrent(percepts2);
+      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> perceptList = FilterCurrent(enemies);
       bool flag1 = perceptList != null;
-      bool flag2 = percepts2 != null;
       bool hasVisibleLeader = flag3 && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = flag3 && IsAdjacentToEnemy(game, m_Actor.Leader);
       bool flag4 = !m_Actor.IsTired;
@@ -203,7 +202,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (!flag2 && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor)))
+      if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor)))
       {
         ActorAction actorAction3 = BehaviorSecurePerimeter(game, m_LOSSensor.FOV);
         if (actorAction3 != null)
