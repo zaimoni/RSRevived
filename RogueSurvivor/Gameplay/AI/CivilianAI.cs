@@ -201,8 +201,7 @@ label_10:
       }
 
       // start item juggling
-      bool flag4 = m_Actor.HasLeader || m_Actor.CountFollowers > 0;
-      if (flag4)
+      if (m_Actor.HasLeader || m_Actor.CountFollowers > 0)
       {
         tmpAction = BehaviorEquipCellPhone(game);
         if (null != tmpAction)

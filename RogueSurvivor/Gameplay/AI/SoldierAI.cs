@@ -89,7 +89,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> enemies = FilterEnemies(game, percepts1);
       List<Percept> perceptList = FilterCurrent(enemies);
-      bool flag1 = m_Actor.HasLeader && !DontFollowLeader;
 
       // throwing a grenade overrides normal weapon equipping choices
       if (null != perceptList)
@@ -196,7 +195,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (flag1) {
+      if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position = m_Actor.Leader.Location.Position;
         tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);
         if (null != tmpAction) {

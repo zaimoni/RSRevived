@@ -91,9 +91,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // start item juggling
-      bool flag3 = m_Actor.HasLeader && !DontFollowLeader;
-      bool flag5 = flag3 || m_Actor.CountFollowers > 0;
-      if (flag5)
+      if ((m_Actor.HasLeader && !DontFollowLeader) || m_Actor.CountFollowers > 0)
       {
         tmpAction = BehaviorEquipCellPhone(game);
         if (null != tmpAction)
@@ -125,12 +123,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> enemies = FilterEnemies(game, percepts1);
       List<Percept> perceptList = FilterCurrent(enemies);
       bool flag1 = perceptList != null;
-      bool hasVisibleLeader = flag3 && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = flag3 && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
       bool flag4 = !m_Actor.IsTired;
 
       // all free actions must be above the enemies check
-      if (flag1 && (flag3 || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
+      if (flag1 && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
         List<Percept> percepts3 = FilterFireTargets(game, perceptList);
         if (percepts3 != null) {
           Percept target = FilterNearest(percepts3);
@@ -270,7 +268,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 m_Actor.Activity = Activity.IDLE;
         return actorAction7;
       }
-      if (flag3)
+      if (m_Actor.HasLeader && !DontFollowLeader)
       {
         Point position = m_Actor.Leader.Location.Position;
         bool isVisible = m_LOSSensor.FOV.Contains(position);
@@ -284,7 +282,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       bool flag7 = m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1;
-      if (!flag3 && flag7 && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
+      if (!(m_Actor.HasLeader && !DontFollowLeader) && flag7 && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
         Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
         if (target != null) {
           ActorAction actorAction3 = BehaviorLeadActor(game, target);
