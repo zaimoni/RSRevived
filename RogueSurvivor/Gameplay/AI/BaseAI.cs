@@ -1323,6 +1323,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // give up
       return null;
     }
+
+    protected ActorAction BehaviorMakeRoomFor(RogueGame game, List<Percept> stacks)
+    {
+      if (stacks == null || stacks.Count == 0) return null;
+      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
+    }
 #endif
 
     protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)

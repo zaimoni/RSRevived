@@ -785,10 +785,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       Item obj = null;
       foreach (Item it in stack.Items) {
-        if (game.Rules.CanActorGetItem(m_Actor, it) && IsInterestingItem(it)) {
-          obj = it;
-          break;
-        }
+        if (!game.Rules.CanActorGetItem(m_Actor, it)) continue;
+        if (!IsInterestingItem(it)) continue;
+        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
       Item it1 = obj;
