@@ -113,12 +113,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor actor = FilterNearest(enemies).Percepted as Actor;
         return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
       }
-      ActorAction actorAction1 = BehaviorEquipCellPhone(game);
-      if (actorAction1 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction1;
-      }
+
       if (m_Actor.Location.Position != location.Position)
       {
         ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
@@ -157,12 +152,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!m_ReachedPatrolPoint)
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
-      ActorAction actorAction1 = BehaviorEquipCellPhone(game);
-      if (actorAction1 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction1;
-      }
+
       if (!m_ReachedPatrolPoint)
       {
         ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
