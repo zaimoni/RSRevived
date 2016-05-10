@@ -47,9 +47,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.BARRICADE_MAX:
           return ExecuteBarricading(game, order.Location, true);
         case ActorTasks.GUARD:
-          return ExecuteGuard(game, order.Location, percepts);
+          return ExecuteGuard(game, order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.PATROL:
-          return ExecutePatrol(game, order.Location, percepts);
+          return ExecutePatrol(game, order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.DROP_ALL_ITEMS:
           return ExecuteDropAllItems(game);
         case ActorTasks.BUILD_SMALL_FORTIFICATION:
@@ -57,9 +57,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.BUILD_LARGE_FORTIFICATION:
           return ExecuteBuildFortification(game, order.Location, true);
         case ActorTasks.REPORT_EVENTS:
-          return ExecuteReport(game, percepts);
+          return ExecuteReport(game, percepts);  // cancelled by enamies sighted
         case ActorTasks.SLEEP_NOW:
-          return ExecuteSleepNow(game, percepts);
+          return ExecuteSleepNow(game, percepts);  // cancelled by enamies sighted
         case ActorTasks.FOLLOW_TOGGLE:
           return ExecuteToggleFollow(game);
         case ActorTasks.WHERE_ARE_YOU:

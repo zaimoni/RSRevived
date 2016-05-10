@@ -161,10 +161,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 m_Actor.Activity = Activity.IDLE;
         return actorAction5;
       }
-      if (BehaviorRestIfTired(game) != null)
+      tmpAction = BehaviorRestIfTired(game);
+      if (null != tmpAction)
       {
-                m_Actor.Activity = Activity.IDLE;
-        return (ActorAction) new ActionWait(m_Actor, game);
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
       if (flag1 && flag4)
       {

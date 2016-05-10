@@ -185,12 +185,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> enemies = FilterEnemies(game, percepts1);
-      // civilians track how long since they've seen trouble
-      if (null != enemies) m_SafeTurns = 0;
-      else ++m_SafeTurns;
-
-      Location location;
+      // maintain taboo tile/trade information
       if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
       {
         if (PrevLocation.Map == m_Actor.Location.Map)
@@ -199,7 +194,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ClearTabooTiles();
 label_10:
       if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
-                ClearTabooTrades();
+        ClearTabooTrades();
+
+      List<Percept> enemies = FilterEnemies(game, percepts1);
+      // civilians track how long since they've seen trouble
+      if (null != enemies) m_SafeTurns = 0;
+      else ++m_SafeTurns;
 
       if (null != enemies)
         m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
@@ -287,13 +287,14 @@ label_10:
       ActorAction actorAction6 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
       if (actorAction6 != null)
       {
-                m_Actor.Activity = Activity.IDLE;
+        m_Actor.Activity = Activity.IDLE;
         return actorAction6;
       }
-      if (BehaviorRestIfTired(game) != null)
+      tmpAction = BehaviorRestIfTired(game);
+      if (null != tmpAction)
       {
-                m_Actor.Activity = Activity.IDLE;
-        return (ActorAction) new ActionWait(m_Actor, game);
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
       if (null != enemies && assistLeader)
       {
@@ -354,8 +355,7 @@ label_10:
 
       if (null == enemies && Directives.CanTakeItems)
       {
-        location = m_Actor.Location;
-        Map map = location.Map;
+        Map map = m_Actor.Location.Map;
         List<Percept> perceptList2 = FilterOut(game, FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn == map.LocalTime.TurnCounter && !IsOccupiedByOther(map, p.Location.Position) && !IsTileTaboo(p.Location.Position))
@@ -373,8 +373,7 @@ label_10:
             return actorAction2;
           }
           RogueGame game2 = game;
-          location = percept.Location;
-          Point position1 = location.Position;
+          Point position1 = percept.Location.Position;
           Inventory stack = percept.Percepted as Inventory;
           ActorAction actorAction5 = BehaviorGrabFromStack(game2, position1, stack);
           if (actorAction5 != null)
@@ -382,8 +381,7 @@ label_10:
                         m_Actor.Activity = Activity.IDLE;
             return actorAction5;
           }
-          location = percept.Location;
-                    MarkTileAsTaboo(location.Position);
+          MarkTileAsTaboo(percept.Location.Position);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory))
@@ -415,14 +413,12 @@ label_10:
             }
             else
             {
-              RogueGame game2 = game;
-              location = actor.Location;
-              Point position1 = location.Position;
-              ActorAction actorAction2 = BehaviorIntelligentBumpToward(game2, position1);
+              Point position1 = actor.Location.Position;
+              ActorAction actorAction2 = BehaviorIntelligentBumpToward(game, position1);
               if (actorAction2 != null)
               {
-                                m_Actor.Activity = Activity.FOLLOWING;
-                                m_Actor.TargetActor = actor;
+                m_Actor.Activity = Activity.FOLLOWING;
+                m_Actor.TargetActor = actor;
                 return actorAction2;
               }
             }
