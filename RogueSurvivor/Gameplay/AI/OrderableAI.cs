@@ -795,7 +795,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmp) return null;
         if (!tmp.IsLegal()) return null;
         // XXX : stack full, and on it: item destruction bug if anything is dropped
-        if (stack.IsFull) return tmp;
+        if (stack.IsFull || game.Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, position.X, position.Y)) return tmp;
         if (position == m_Actor.Location.Position) return tmp;
         }
       Item it1 = obj;
