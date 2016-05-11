@@ -404,14 +404,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
       return BehaviorBumpToward(game, goal, (Func<Point, Point, float>) ((ptA, ptB) =>
       {
+        string oReason;
         if (ptA == ptB) return 0.0f;
         float num = Rules.StdDistance(ptA, ptB);
         if ((double) num >= (double) currentDistance) return float.NaN;
-        if (!imStarvingOrCourageous)
-        {
+        if (!game.Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, ptA.X, ptA.Y)) {
+          ActorAction tmpAction = game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location.Map, ptA.X, ptA.Y, out oReason);
+          if (null == tmpAction) return float.NaN;
+          num += 0.42f;
+        }
+        if (!imStarvingOrCourageous) {
           int trapsMaxDamage = ComputeTrapsMaxDamage(m_Actor.Location.Map, ptA);
-          if (trapsMaxDamage > 0)
-          {
+          if (trapsMaxDamage > 0) {
             if (trapsMaxDamage >= m_Actor.HitPoints) return float.NaN;
             num += 0.42f;
           }
