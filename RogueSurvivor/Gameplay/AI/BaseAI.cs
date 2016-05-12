@@ -408,11 +408,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (ptA == ptB) return 0.0f;
         float num = Rules.StdDistance(ptA, ptB);
         if ((double) num >= (double) currentDistance) return float.NaN;
-        if (!game.Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, ptA.X, ptA.Y)) {
-          ActorAction tmpAction = game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location.Map, ptA.X, ptA.Y, out oReason);
-          if (null == tmpAction) return float.NaN;
-          num += 0.42f;
-        }
+#if DEBUG
+        // invariant testing
+        if (1!=Rules.GridDistance(m_Actor.Location.Position,ptA.X,ptA.Y)) throw new ArgumentOutOfRangeException("ptA not adjacent to actor");
+        ActorAction tmpAction2 = game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location.Map, ptA.X, ptA.Y, out oReason);
+        if (null == tmpAction2) throw new ArgumentOutOfRangeException("ptA not bumpable by actor");
+        if (!IsValidMoveTowardGoalAction(tmpAction2)) throw new ArgumentOutOfRangeException("not a valid action");
+        if (!tmpAction2.IsLegal()) throw new ArgumentOutOfRangeException("not a legal action");
+#endif
         if (!imStarvingOrCourageous) {
           int trapsMaxDamage = ComputeTrapsMaxDamage(m_Actor.Location.Map, ptA);
           if (trapsMaxDamage > 0) {
