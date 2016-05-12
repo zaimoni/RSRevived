@@ -381,7 +381,7 @@ label_10:
           m_LastItemsSaw = percept;
           Inventory stack = percept.Percepted as Inventory;
           ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
-          if (actorAction5 != null)
+          if (actorAction5 != null && actorAction5.IsLegal())
           {
             m_Actor.Activity = Activity.IDLE;
             return actorAction5;

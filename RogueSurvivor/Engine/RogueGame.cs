@@ -735,12 +735,32 @@ namespace djack.RogueSurvivor.Engine
       HandleMainMenu();
       while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
+#if FAIL
         DateTime now = DateTime.Now;
         m_HasLoadedGame = false;
         AdvancePlay(m_Session.CurrentMap.District, RogueGame.SimFlags.NOT_SIMULATING);
         if (!m_IsGameRunning)
           break;
         m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
+#else
+        int x1 = 0;
+        int x2 = m_Session.World.Size - 1;
+        int y1 = 0;
+        int y2 = m_Session.World.Size - 1;
+        m_Session.World.TrimToBounds(ref x1, ref y1);
+        m_Session.World.TrimToBounds(ref x2, ref y2);
+        for (int index1 = x1; index1 <= x2; ++index1) {
+          for (int index2 = y1; index2 <= y2; ++index2) {
+            District d1 = m_Session.World[index1, index2];
+            if (0 >= d1.PlayerCount) continue;
+            DateTime now = DateTime.Now;
+            m_HasLoadedGame = false;
+            AdvancePlay(d1, RogueGame.SimFlags.NOT_SIMULATING);
+            if (!m_IsGameRunning) break;
+            m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
+          }
+        }
+#endif
       }
     }
 
