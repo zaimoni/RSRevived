@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define DATAFLOW_TRACE
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -296,7 +298,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(game, percepts, (Predicate<Percept>) (p => !rejectPredicateFn(p)));
     }
 
-    protected List<Percept> SortByDistance(List<Percept> percepts)  // dead function?
+    protected List<Percept> SortByDistance(List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       Point from = m_Actor.Location.Position;
@@ -404,18 +406,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
       return BehaviorBumpToward(game, goal, (Func<Point, Point, float>) ((ptA, ptB) =>
       {
-        string oReason;
         if (ptA == ptB) return 0.0f;
         float num = Rules.StdDistance(ptA, ptB);
         if ((double) num >= (double) currentDistance) return float.NaN;
-#if DEBUG
-        // invariant testing
-        if (1!=Rules.GridDistance(m_Actor.Location.Position,ptA.X,ptA.Y)) throw new ArgumentOutOfRangeException("ptA not adjacent to actor");
-        ActorAction tmpAction2 = game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location.Map, ptA.X, ptA.Y, out oReason);
-        if (null == tmpAction2) throw new ArgumentOutOfRangeException("ptA not bumpable by actor");
-        if (!IsValidMoveTowardGoalAction(tmpAction2)) throw new ArgumentOutOfRangeException("not a valid action");
-        if (!tmpAction2.IsLegal()) throw new ArgumentOutOfRangeException("not a legal action");
-#endif
         if (!imStarvingOrCourageous) {
           int trapsMaxDamage = ComputeTrapsMaxDamage(m_Actor.Location.Map, ptA);
           if (trapsMaxDamage > 0) {
@@ -559,14 +552,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
     {
       if (it == null) return null;
-      if (Rules.CanActorUnequipItem(m_Actor, it))
-      {
-        MarkItemAsTaboo(it);
-        return (ActorAction) new ActionUnequipItem(m_Actor, game, it);
+      if (Rules.CanActorUnequipItem(m_Actor, it)) {
+        game.DoUnequipItem(m_Actor,it);
       }
+      MarkItemAsTaboo(it);
       if (!game.Rules.CanActorDropItem(m_Actor, it)) return null;
-      UnmarkItemAsTaboo(it);
-      return (ActorAction) new ActionDropItem(m_Actor, game, it);
+//    UnmarkItemAsTaboo(it);
+      return new ActionDropItem(m_Actor, game, it);
     }
 
     protected int ComputeTrapsMaxDamage(Map map, Point pos)
@@ -1178,10 +1170,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException("it"); 
+      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) throw new ArgumentOutOfRangeException("inventory not full");
+      if (!IsInterestingItem(it)) throw new ArgumentOutOfRangeException("do not need to make room for uninteresting items");
 #endif
-      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
-
-      if (!IsInterestingItem(it)) return null;  // default ok, but there are special cases that warrant exceptions
 
       Inventory inv = m_Actor.Inventory;
       if (it.Model.IsStackable && it.CanStackMore)
@@ -1327,49 +1318,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // give up
       return null;
-    }
-
-    protected ActorAction BehaviorMakeRoomForFood(RogueGame game, List<Percept> stacks)
-    {
-      if (stacks == null || stacks.Count == 0) return null;
-      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return null;
-      if (m_Actor.HasItemOfType(typeof (ItemFood))) return null;
-      bool flag = false;
-      foreach (Percept stack in stacks)
-      {
-        Inventory inventory = stack.Percepted as Inventory;
-        if (inventory != null && inventory.HasItemOfType(typeof (ItemFood)))
-        {
-          flag = true;
-          break;
-        }
-      }
-      if (!flag)
-        return (ActorAction) null;
-      Inventory inventory1 = m_Actor.Inventory;
-      Item firstMatching1 = inventory1.GetFirstMatching((Predicate<Item>) (it => !IsInterestingItem(it)));
-      if (firstMatching1 != null)
-        return BehaviorDropItem(game, firstMatching1);
-      Item firstMatching2 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemBarricadeMaterial));
-      if (firstMatching2 != null)
-        return BehaviorDropItem(game, firstMatching2);
-      Item firstMatching3 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemLight));
-      if (firstMatching3 != null)
-        return BehaviorDropItem(game, firstMatching3);
-      Item firstMatching4 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemSprayPaint));
-      if (firstMatching4 != null)
-        return BehaviorDropItem(game, firstMatching4);
-      Item firstMatching5 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemSprayScent));
-      if (firstMatching5 != null)
-        return BehaviorDropItem(game, firstMatching5);
-      Item firstMatching6 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemAmmo));
-      if (firstMatching6 != null)
-        return BehaviorDropItem(game, firstMatching6);
-      Item firstMatching7 = inventory1.GetFirstMatching((Predicate<Item>) (it => it is ItemMedicine));
-      if (firstMatching7 != null)
-        return BehaviorDropItem(game, firstMatching7);
-      Item it1 = inventory1[game.Rules.Roll(0, inventory1.CountItems)];
-      return BehaviorDropItem(game, it1);
     }
 
     protected ActorAction BehaviorUseStenchKiller(RogueGame game)
@@ -1616,6 +1564,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return false;
       foreach (Item it in inv.Items) {
+        if (IsItemTaboo(it)) continue;
         if (IsInterestingItem(it)) return true;
       }
       return false;
@@ -1625,6 +1574,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (Items == null) return false;
       foreach (Item it in Items) {
+        if (IsItemTaboo(it)) continue;
         if (IsInterestingItem(it)) return true;
       }
       return false;

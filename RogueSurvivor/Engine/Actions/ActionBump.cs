@@ -14,18 +14,14 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Location m_NewLocation;
     private readonly ActorAction m_ConcreteAction;
 
-    public Direction Direction
-    {
-      get
-      {
+    public Direction Direction {
+      get {
         return m_Direction;
       }
     }
 
-    public ActorAction ConcreteAction
-    {
-      get
-      {
+    public ActorAction ConcreteAction {
+      get {
         return m_ConcreteAction;
       }
     }
@@ -33,23 +29,26 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionBump(Actor actor, RogueGame game, Direction direction)
       : base(actor, game)
     {
-            m_Direction = direction;
-            m_NewLocation = actor.Location + direction;
-            m_ConcreteAction = game.Rules.IsBumpableFor(m_Actor, game, m_NewLocation, out m_FailReason);
+      m_Direction = direction;
+      m_NewLocation = actor.Location + direction;
+      m_ConcreteAction = game.Rules.IsBumpableFor(m_Actor, game, m_NewLocation, out m_FailReason);
     }
 
     public override bool IsLegal()
     {
-      if (m_ConcreteAction == null)
-        return false;
+      if (m_ConcreteAction == null) return false;
       return m_ConcreteAction.IsLegal();
     }
 
     public override void Perform()
     {
-      if (m_ConcreteAction == null)
-        return;
-            m_ConcreteAction.Perform();
+      if (m_ConcreteAction == null) return;
+      m_ConcreteAction.Perform();
+    }
+
+    public override string ToString()
+    {
+      return m_ConcreteAction.ToString();
     }
   }
 }

@@ -789,7 +789,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
-      if (!game.Rules.CanActorGetItem(m_Actor, obj));
+      if (!game.Rules.CanActorGetItem(m_Actor, obj) && m_Actor.Inventory.CountItems >= m_Actor.MaxInv)
         {
         ActorAction tmp = BehaviorMakeRoomFor(game,obj);
         if (null == tmp) return null;

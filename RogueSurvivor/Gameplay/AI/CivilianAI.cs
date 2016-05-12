@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define DATAFLOW_TRACE
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -349,14 +351,14 @@ label_10:
       ActorAction actorAction7 = BehaviorDropUselessItem(game);
       if (actorAction7 != null)
       {
-                m_Actor.Activity = Activity.IDLE;
+        m_Actor.Activity = Activity.IDLE;
         return actorAction7;
       }
 
       if (null == enemies && Directives.CanTakeItems)
       {
         Map map = m_Actor.Location.Map;
-        List<Percept> perceptList2 = FilterOut(game, FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
+        List<Percept> perceptList2 = SortByDistance(FilterOut(game, FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
@@ -366,24 +368,17 @@ label_10:
           if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return false;  // obviously have space, ok
           foreach (Item it in tmp.Items) {
             if (!IsInterestingItem(it)) continue;
+            if (IsItemTaboo(it)) continue;
             foreach (Item it2 in m_Actor.Inventory.Items) {
               if (RHSMoreInteresting(it2, it)) return false;    // clearly more interesting than what we have
             }
           }
           return true;  // no, not really interesting after all
-        }));
+        })));
         if (perceptList2 != null)
         {
           Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
-#if FAIL
-          ActorAction actorAction2 = BehaviorMakeRoomForFood(game, perceptList2);
-          if (actorAction2 != null)
-          {
-            m_Actor.Activity = Activity.IDLE;
-            return actorAction2;
-          }
-#endif
           Inventory stack = percept.Percepted as Inventory;
           ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
           if (actorAction5 != null)
@@ -391,6 +386,9 @@ label_10:
             m_Actor.Activity = Activity.IDLE;
             return actorAction5;
           }
+#if DATAFLOW_TRACE
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
+#endif
           MarkTileAsTaboo(percept.Location.Position);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
