@@ -13324,25 +13324,20 @@ namespace djack.RogueSurvivor.Engine
     private bool SimulateNearbyDistricts(District d)
     {
       bool flag = false;
-      int x1 = d.WorldPosition.X - 1;
-      int x2 = d.WorldPosition.X + 1;
-      int y1 = d.WorldPosition.Y - 1;
-      int y2 = d.WorldPosition.Y + 1;
-            m_Session.World.TrimToBounds(ref x1, ref y1);
-            m_Session.World.TrimToBounds(ref x2, ref y2);
-      for (int index1 = x1; index1 <= x2; ++index1)
-      {
-        for (int index2 = y1; index2 <= y2; ++index2)
-        {
-          if (index1 != d.WorldPosition.X || index2 != d.WorldPosition.Y)
-          {
-            District d1 = m_Session.World[index1, index2];
-            if (d.EntryMap.LocalTime.TurnCounter - d1.EntryMap.LocalTime.TurnCounter > 0)
-            {
-              flag = true;
-                            SimulateDistrict(d1);
-            }
-          }
+      int x1 = 0;
+      int x2 = m_Session.World.Size - 1;
+      int y1 = 0;
+      int y2 = m_Session.World.Size - 1;
+      m_Session.World.TrimToBounds(ref x1, ref y1);
+      m_Session.World.TrimToBounds(ref x2, ref y2);
+      for (int index1 = x1; index1 <= x2; ++index1) {
+        for (int index2 = y1; index2 <= y2; ++index2) {
+          if (index1 == d.WorldPosition.X && index2 == d.WorldPosition.Y) continue;
+          District d1 = m_Session.World[index1, index2];
+          if (0 < d1.PlayerCount) continue;
+          if (d.EntryMap.LocalTime.TurnCounter <= d1.EntryMap.LocalTime.TurnCounter) continue;
+          flag = true;
+          SimulateDistrict(d1);
         }
       }
       return flag;

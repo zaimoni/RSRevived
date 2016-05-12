@@ -557,7 +557,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       MarkItemAsTaboo(it);
       if (!game.Rules.CanActorDropItem(m_Actor, it)) return null;
-//    UnmarkItemAsTaboo(it);
       return new ActionDropItem(m_Actor, game, it);
     }
 
