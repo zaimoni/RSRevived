@@ -13381,12 +13381,20 @@ namespace djack.RogueSurvivor.Engine
 
     private void SimThreadProc()
     {
-      while (m_SimThread.IsAlive) {
-        Thread.Sleep(10);
-        lock (m_SimMutex) {
-          if (m_Player != null)
-            SimulateNearbyDistricts(m_Player.Location.Map.District);
+      try {
+        while (m_SimThread.IsAlive) {
+          Thread.Sleep(10);
+          lock (m_SimMutex) {
+            if (m_Player != null)
+              SimulateNearbyDistricts(m_Player.Location.Map.District);
+          }
         }
+      } catch (Exception ex) {
+        if (ex is ThreadAbortException) return; // this is from the Abort() call
+        using (Bugreport bugreport = new Bugreport(ex)) {
+          int num = (int) bugreport.ShowDialog();
+        }
+        Application.Exit();
       }
     }
 
