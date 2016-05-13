@@ -244,7 +244,7 @@ namespace djack.RogueSurvivor.Engine
     private const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
     private const int NATGUARD_DAY = 3;
     private const int NATGUARD_END_DAY = 10;
-    private const int NATGUARD_ZTRACKER_DAY = 6;
+    private const int NATGUARD_ZTRACKER_DAY = NATGUARD_DAY + 3;
     private const int NATGUARD_SQUAD_SIZE = 5;
     private const double NATGUARD_INTERVENTION_FACTOR = 5.0;
     private const int NATGUARD_INTERVENTION_CHANCE = 1;

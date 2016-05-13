@@ -30,17 +30,7 @@ namespace djack.RogueSurvivor
 
     internal RogueGame Game { get; private set; }
 
-    protected override CreateParams CreateParams
-    {
-      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-      get
-      {
-        CreateParams createParams = base.CreateParams;
-        createParams.ClassStyle |= 512;
-        return createParams;
-      }
-    }
-
+#region Init
     public RogueForm()
     {
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form...");
@@ -80,6 +70,57 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_GFX, "loading images done");
     }
 
+    private void InitializeComponent()
+    {
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "new ComponentResourceManager...");
+      ComponentResourceManager componentResourceManager = new ComponentResourceManager(typeof (RogueForm));
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating GameCanvas...");
+//      if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX)
+//      {
+//        Logger.WriteLine(Logger.Stage.INIT_MAIN, "DXGameCanvas implementation...");
+//        this.m_GameCanvas = (IGameCanvas) new DXGameCanvas();
+//      }
+//      else
+//     {
+        Logger.WriteLine(Logger.Stage.INIT_MAIN, "GDIPlusGameCanvas implementation...");
+            m_GameCanvas = (IGameCanvas) new GDIPlusGameCanvas();
+//      }
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "SuspendLayout...");
+            SuspendLayout();
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup GameCanvas...");
+            m_GameCanvas.NeedRedraw = true;
+      UserControl userControl = m_GameCanvas as UserControl;
+      userControl.Location = new Point(279, 83);
+      userControl.Name = "canvasCtrl";
+      userControl.Size = new Size(150, 150);
+      userControl.TabIndex = 0;
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup RogueForm");
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(800, 600);
+            Controls.Add((Control) userControl);
+            Icon = (Icon) componentResourceManager.GetObject("$this.Icon");
+            Name = "RogueForm";
+            StartPosition = FormStartPosition.CenterScreen;
+      Text = SetupConfig.GAME_NAME;
+            WindowState = FormWindowState.Maximized;
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "ResumeLayout");
+            ResumeLayout(false);
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "InitializeComponent() done.");
+    }
+#endregion
+
+#region Form overloads
+    protected override CreateParams CreateParams
+    {
+      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+      get
+      {
+        CreateParams createParams = base.CreateParams;
+        createParams.ClassStyle |= CP_NOCLOSE_BUTTON;
+        return createParams;
+      }
+    }
+
     protected override void OnShown(EventArgs e)
     {
       base.OnShown(e);
@@ -99,11 +140,13 @@ namespace djack.RogueSurvivor
       if (!Game.IsGameRunning) return;
       e.Cancel = true;
       int num = (int) MessageBox.Show("The game is still running. Please quit inside the game.");
-    }
+        }
+#endregion
 
+#region IRogueUI implementation
     public KeyEventArgs UI_WaitKey()
     {
-            m_HasKey = false;
+      m_HasKey = false;
       while (true)
       {
         Application.DoEvents();
@@ -330,6 +373,7 @@ namespace djack.RogueSurvivor
     {
             Close();
     }
+#endregion
 
     protected override void Dispose(bool disposing)
     {
@@ -354,44 +398,6 @@ namespace djack.RogueSurvivor
       if (disposing && m_GameCanvas != null)
                 m_GameCanvas.DisposeUnmanagedResources();
       base.Dispose(disposing);
-    }
-
-    private void InitializeComponent()
-    {
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "new ComponentResourceManager...");
-      ComponentResourceManager componentResourceManager = new ComponentResourceManager(typeof (RogueForm));
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating GameCanvas...");
-//      if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_MANAGED_DIRECTX)
-//      {
-//        Logger.WriteLine(Logger.Stage.INIT_MAIN, "DXGameCanvas implementation...");
-//        this.m_GameCanvas = (IGameCanvas) new DXGameCanvas();
-//      }
-//      else
-//     {
-        Logger.WriteLine(Logger.Stage.INIT_MAIN, "GDIPlusGameCanvas implementation...");
-            m_GameCanvas = (IGameCanvas) new GDIPlusGameCanvas();
-//      }
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "SuspendLayout...");
-            SuspendLayout();
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup GameCanvas...");
-            m_GameCanvas.NeedRedraw = true;
-      UserControl userControl = m_GameCanvas as UserControl;
-      userControl.Location = new Point(279, 83);
-      userControl.Name = "canvasCtrl";
-      userControl.Size = new Size(150, 150);
-      userControl.TabIndex = 0;
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup RogueForm");
-            AutoScaleMode = AutoScaleMode.None;
-            ClientSize = new Size(800, 600);
-            Controls.Add((Control) userControl);
-            Icon = (Icon) componentResourceManager.GetObject("$this.Icon");
-            Name = "RogueForm";
-            StartPosition = FormStartPosition.CenterScreen;
-      Text = SetupConfig.GAME_NAME;
-            WindowState = FormWindowState.Maximized;
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "ResumeLayout");
-            ResumeLayout(false);
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "InitializeComponent() done.");
     }
   }
 }
