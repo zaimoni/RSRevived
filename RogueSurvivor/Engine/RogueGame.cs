@@ -4040,19 +4040,19 @@ namespace djack.RogueSurvivor.Engine
     {
       int num1;
       int gx = num1 = 0;
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION", num1, num1, new Color?());
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Get.Seed.ToString(), num1, num1, new Color?());
       int gy1 = num1 + 28;
       if (m_Player.Model.Abilities.IsUndead)
       {
-                m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy1, new Color?());
+        m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy1, new Color?());
         int gy2 = gy1 + 14;
-                m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy2, new Color?());
+        m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy2, new Color?());
         int num2 = gy2 + 28;
       }
       else
       {
-                m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy1, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy1, new Color?());
         int num2 = gy1 + 14 + 14;
         for (int index = 0; index < m_Session.World.Size; ++index)
         {
