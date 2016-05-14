@@ -16,8 +16,18 @@ namespace djack.RogueSurvivor
     /// The main entry point for the application.
     /// </summary>
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
+      if (null!=args) {
+        // help option is impractical: C stdout is inaccessible in a GUI C# program
+        foreach(string tmp in args) { 
+          if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) { 
+            int tmp2;
+            if (int.TryParse(tmp.Substring(7), out tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
+          }
+        }
+      }
+
       Logger.CreateFile();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "starting program...");
       Logger.WriteLine(Logger.Stage.INIT_MAIN, string.Format("date : {0}.", (object) DateTime.Now.ToString()));

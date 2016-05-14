@@ -17,6 +17,8 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Session
   {
+    public static int COMMAND_LINE_SEED = 0;
+
     private GameMode m_GameMode;
     private WorldTime m_WorldTime;
     private World m_World;
@@ -113,12 +115,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void Reset()
     {
-            Seed = (int) DateTime.UtcNow.TimeOfDay.Ticks;
-            m_CurrentMap = (Map) null;
-            m_Scoring = new Scoring();
-            m_World = (World) null;
-            m_WorldTime = new WorldTime();
-            LastTurnPlayerActed = 0;
+      Seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
+      m_CurrentMap = null;
+      m_Scoring = new Scoring();
+      m_World = null;
+      m_WorldTime = new WorldTime();
+      LastTurnPlayerActed = 0;
       m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
       for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1)
       {
