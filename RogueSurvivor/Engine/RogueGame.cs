@@ -735,14 +735,6 @@ namespace djack.RogueSurvivor.Engine
       HandleMainMenu();
       while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
-#if FAIL
-        DateTime now = DateTime.Now;
-        m_HasLoadedGame = false;
-        AdvancePlay(m_Session.CurrentMap.District, RogueGame.SimFlags.NOT_SIMULATING);
-        if (!m_IsGameRunning)
-          break;
-        m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
-#else
         List<District> tmp = m_Session.World.PlayerDistricts;
         int lastDistrictTurn = tmp[tmp.Count-1].EntryMap.LocalTime.TurnCounter;
         foreach (District d1 in tmp) { 
@@ -753,7 +745,6 @@ namespace djack.RogueSurvivor.Engine
           if (!m_IsGameRunning) break;
           m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
         }
-#endif
       }
     }
 
@@ -8471,7 +8462,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (isPlayer && exitAt.ToMap.District != map.District)
+      if (isPlayer && exitAt.ToMap.District != map.District) 
         BeforePlayerEnterDistrict(exitAt.ToMap.District);
       Actor actorAt = exitAt.ToMap.GetActorAt(exitAt.ToPosition);
       if (actorAt != null) {
@@ -8498,16 +8489,18 @@ namespace djack.RogueSurvivor.Engine
       if (actor.DraggedCorpse != null)
         exitAt.ToMap.AddCorpseAt(actor.DraggedCorpse, exitAt.ToPosition);
       if (IsVisibleToPlayer(actor) || isPlayer)
-                AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
+      AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
       if (isPlayer)
       {
-        if (map.District != exitAt.ToMap.District)
-                    m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Entered district {0}.", (object) exitAt.ToMap.District.Name));
-                SetCurrentMap(exitAt.ToMap);
+        if (map.District != exitAt.ToMap.District) {
+          m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Entered district {0}.", (object) exitAt.ToMap.District.Name));
+          actor.ActionPoints += actor.Speed;
+        }
+        SetCurrentMap(exitAt.ToMap);
       }
-            OnActorEnterTile(actor);
+      OnActorEnterTile(actor);
       if (actor.CountFollowers > 0)
-                DoFollowersEnterMap(actor, map, position, exitAt.ToMap, exitAt.ToPosition);
+        DoFollowersEnterMap(actor, map, position, exitAt.ToMap, exitAt.ToPosition);
       return true;
     }
 
@@ -8531,6 +8524,9 @@ namespace djack.RogueSurvivor.Engine
           toMap.PlaceActorAt(fo, position);
           toMap.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
+          if (fromMap.District != toMap.District) {
+            fo.ActionPoints += fo.Speed;
+          }
         }      
       }
       if (actorList == null) return;
@@ -13277,12 +13273,14 @@ namespace djack.RogueSurvivor.Engine
                 }
         RestartSimThread();
         RemoveLastMessage();
+#if FAIL
         foreach (Map map in district.Maps) {
           foreach (Actor actor in map.Actors) {
             if (!actor.IsSleeping)
               actor.ActionPoints = 0;
           }
         }
+#endif
         m_MusicManager.StopAll();
       }
       else
