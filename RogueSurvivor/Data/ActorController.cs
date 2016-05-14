@@ -127,8 +127,10 @@ namespace djack.RogueSurvivor.Data
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
+
+      // XXX new dropping code should cope with food vs. full inventory
       // don't lose last inventory slot to non-food unless we have enough
-      if (m_Actor.Model.Abilities.HasToEat && m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
+//    if (m_Actor.Model.Abilities.HasToEat && m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
 
       if (it is ItemRangedWeapon)
       {
