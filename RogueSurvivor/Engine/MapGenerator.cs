@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor.Engine
 
     public abstract Map Generate(int seed);
 
+#region Tile filling
     public void TileFill(Map map, TileModel model)
     {
             TileFill(map, model, (Action<Tile, TileModel, int, int>) null);
@@ -174,7 +175,9 @@ namespace djack.RogueSurvivor.Engine
       }
       return true;
     }
+#endregion
 
+#region Placing actors
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor)
     {
       return ActorPlace(roller, maxTries, map, actor, (Predicate<Point>) null);
@@ -190,12 +193,11 @@ namespace djack.RogueSurvivor.Engine
       return ActorPlace(roller, maxTries, map, actor, 0, 0, map.Width, map.Height, goodPositionFn);
     }
 
+    // Las Vegas algorithm for efficiency reasons.  A temporary array of 10,000 int is unreasonable.
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, int left, int top, int width, int height, Predicate<Point> goodPositionFn)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (actor == null)
-        throw new ArgumentNullException("actor");
+      if (map == null) throw new ArgumentNullException("map");
+      if (actor == null) throw new ArgumentNullException("actor");
       Point position = new Point();
       for (int index = 0; index < maxTries; ++index)
       {
@@ -209,7 +211,9 @@ namespace djack.RogueSurvivor.Engine
       }
       return false;
     }
+#endregion
 
+#region Map Objects
     public void MapObjectPlace(Map map, int x, int y, MapObject mapObj)
     {
       if (map.GetMapObjectAt(x, y) != null)
@@ -269,6 +273,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       map.PlaceMapObjectAt(mapObj, pointList[index]);
     }
+#endregion
 
     public void ItemsDrop(Map map, Rectangle rect, Func<Point, bool> isGoodPositionFn, Func<Point, Item> createFn)
     {
@@ -311,6 +316,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#region Predicates and Actions
     public void ForEachAdjacent(Map map, int x, int y, Action<Point> doFn)
     {
       Point point = new Point(x, y);
@@ -402,5 +408,6 @@ namespace djack.RogueSurvivor.Engine
       }
       return false;
     }
+#endregion
   }
 }
