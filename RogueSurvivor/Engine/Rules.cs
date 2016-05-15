@@ -2110,7 +2110,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (weather)
       {
-        case Weather._FIRST:
+        case Weather.CLEAR:
         case Weather.CLOUDY:
           return false;
         case Weather.RAIN:

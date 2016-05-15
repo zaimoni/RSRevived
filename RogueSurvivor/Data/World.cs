@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Data
       if (size <= 0) throw new ArgumentOutOfRangeException("size <=0");
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
-      m_Weather = Weather._FIRST;
+      m_Weather = Weather.CLEAR;
     }
 
     // possible micro-optimization target

@@ -12,7 +12,6 @@ namespace djack.RogueSurvivor.Data
   internal enum Weather
   {
     CLEAR = 0,
-    _FIRST = 0,
     CLOUDY = 1,
     RAIN = 2,
     HEAVY_RAIN = 3,

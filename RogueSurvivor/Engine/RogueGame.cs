@@ -2546,7 +2546,7 @@ namespace djack.RogueSurvivor.Engine
         else if (map.Lighting == Lighting.OUTSIDE) {
           switch (m_Session.World.Weather)
           {
-          case Weather._FIRST:
+          case Weather.CLEAR:
           case Weather.CLOUDY: break;
           case Weather.RAIN:
             ++odorDecayRate;
@@ -8119,7 +8119,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (weather)
       {
-        case Weather._FIRST:
+        case Weather.CLEAR:
           return "Clear";
         case Weather.CLOUDY:
           return "Cloudy";
@@ -8136,7 +8136,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (weather)
       {
-        case Weather._FIRST:
+        case Weather.CLEAR:
           return Color.Yellow;
         case Weather.CLOUDY:
           return Color.Gray;
@@ -10939,14 +10939,14 @@ namespace djack.RogueSurvivor.Engine
         string text;
         switch (m_Session.World.Weather)
         {
-          case Weather._FIRST:
+          case Weather.CLEAR:
             weather = Weather.CLOUDY;
             text = "Clouds are hiding the sky.";
             break;
           case Weather.CLOUDY:
             if (m_Rules.RollChance(50))
             {
-              weather = Weather._FIRST;
+              weather = Weather.CLEAR;
               text = "The sky is clear again.";
               break;
             }
