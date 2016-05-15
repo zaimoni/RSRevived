@@ -206,7 +206,6 @@ namespace djack.RogueSurvivor.Engine
           Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
           stream.Close();
         }
-        Session.s_TheSession.ReconstructAuxiliaryFields();
       }
       catch (Exception ex)
       {
@@ -247,7 +246,6 @@ namespace djack.RogueSurvivor.Engine
           Session.s_TheSession = (Session) Session.CreateSoapFormatter().Deserialize(stream);
           stream.Close();
         }
-        Session.s_TheSession.ReconstructAuxiliaryFields();
       }
       catch (Exception ex)
       {
@@ -289,7 +287,6 @@ namespace djack.RogueSurvivor.Engine
           stream.Flush();
           stream.Close();
         }
-        Session.s_TheSession.ReconstructAuxiliaryFields();
       }
       catch (Exception ex)
       {
@@ -337,16 +334,6 @@ namespace djack.RogueSurvivor.Engine
     private static Stream CreateStream(string saveFileName, bool save)
     {
       return (Stream) new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
-    }
-
-    private void ReconstructAuxiliaryFields()
-    {
-      for (int index1 = 0; index1 < World.Size; ++index1) {
-        for (int index2 = 0; index2 < World.Size; ++index2) {
-          foreach (Map map in World[index1, index2].Maps)
-            map.ReconstructAuxiliaryFields();
-        }
-      }
     }
 
     // game mode support

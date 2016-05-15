@@ -205,6 +205,8 @@ namespace djack.RogueSurvivor.Data
       m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
       m_Scents = (List<OdorScent>) info.GetValue("m_Scents", typeof (List<OdorScent>));
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
+
+      ReconstructAuxiliaryFields();
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -969,42 +971,37 @@ namespace djack.RogueSurvivor.Data
       return new Point?();
     }
 
-    public void ReconstructAuxiliaryFields()
+    private void ReconstructAuxiliaryFields()
     {
-            m_aux_ActorsByPosition = new Dictionary<Point, Actor>();
+      m_aux_ActorsByPosition = new Dictionary<Point, Actor>();
       foreach (Actor mActors in m_ActorsList)
-                m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
-            m_aux_GroundItemsList = new List<Inventory>();
+        m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
+      m_aux_GroundItemsList = new List<Inventory>();
       foreach (Inventory inventory in m_GroundItemsByPosition.Values)
-                m_aux_GroundItemsList.Add(inventory);
-            m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>();
+        m_aux_GroundItemsList.Add(inventory);
+      m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>();
       foreach (MapObject mMapObjects in m_MapObjectsList)
-                m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
-            m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>();
-      foreach (OdorScent mScent in m_Scents)
-      {
+        m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
+      m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>();
+      foreach (OdorScent mScent in m_Scents) {
         List<OdorScent> odorScentList;
-        if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList))
-        {
+        if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList)) {
           odorScentList.Add(mScent);
-        }
-        else
-        {
+        } else {
           odorScentList = new List<OdorScent>()
           {
             mScent
           };
-                    m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
+          m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
         }
       }
-            m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>();
-      foreach (Corpse mCorpses in m_CorpsesList)
-      {
+      m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>();
+      foreach (Corpse mCorpses in m_CorpsesList) {
         List<Corpse> corpseList;
         if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out corpseList))
           corpseList.Add(mCorpses);
         else
-                    m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1)
+          m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1)
           {
             mCorpses
           });
