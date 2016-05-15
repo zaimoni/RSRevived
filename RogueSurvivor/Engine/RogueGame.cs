@@ -426,7 +426,7 @@ namespace djack.RogueSurvivor.Engine
       parameters.MapWidth = MAP_MAX_WIDTH;
       parameters.MapHeight = RogueGame.MAP_MAX_HEIGHT;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
-      m_TownGenerator = (BaseTownGenerator) new StdTownGenerator(this, parameters);
+      m_TownGenerator = new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
       RogueGame.s_Options = new GameOptions();
       RogueGame.s_Options.ResetToDefaultValues();
@@ -13123,11 +13123,13 @@ namespace djack.RogueSurvivor.Engine
       }
       parameters.GeneratePoliceStation = district.WorldPosition == policeStationDistrictPos;
       parameters.GenerateHospital = district.WorldPosition == hospitalDistrictPos;
+      // working around an abstract function declaration that *cannot* have the parameters as an argument.
+      // different types of maps may have incompatible parameter structs/classes
       BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
-            m_TownGenerator.Params = parameters;
+      m_TownGenerator.Params = parameters;
       Map map = m_TownGenerator.Generate(seed);
       map.Name = string.Format("{0}@{1}", (object) str, (object) World.CoordToString(x, y));
-            m_TownGenerator.Params = @params;
+      m_TownGenerator.Params = @params;
       return map;
     }
 
