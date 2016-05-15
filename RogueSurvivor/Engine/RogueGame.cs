@@ -770,6 +770,26 @@ namespace djack.RogueSurvivor.Engine
             WaitEnter();
     }
 
+    private void LogSaveScumStats() {
+      DiceRoller tmp = new DiceRoller(Session.Get.Seed);
+      string msg = "first seven RNG d100 values:";
+      List<int> tmp2 = new List<int>(7);
+      int i = 7;
+      do {
+         int res = tmp.Roll(0, 100);
+         tmp2.Add(res);
+         msg += " " + res.ToString();   // remove when retargeting to .NET 4.0
+         }
+      while(0 < --i);
+//    msg += String.Join<int>(", ",tmp2);   // requires .NET 4.0 and we target .NET 3.5
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, msg);
+      // report on particularly noxious consequences
+      if (Rules.FIREARM_JAM_CHANCE_RAIN > tmp2[0]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "firearms jam in rain on save-load");
+      else if (Rules.FIREARM_JAM_CHANCE_NO_RAIN > tmp2[0]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "firearms jam on save-load");
+      if (Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE > tmp2[6]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fragile melee weapons break on save-load");
+      else if (Rules.MELEE_WEAPON_BREAK_CHANCE > tmp2[6]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "melee weapons break on save-load");
+    }
+
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void HandleMainMenu()
     {
@@ -790,21 +810,20 @@ namespace djack.RogueSurvivor.Engine
       int currentChoice = 0;
       do
       {
-        if (!m_MusicManager.IsPlaying(GameMusics.INTRO) && !m_PlayedIntro)
-        {
-                    m_MusicManager.StopAll();
-                    m_MusicManager.Play(GameMusics.INTRO);
-                    m_PlayedIntro = true;
+        if (!m_MusicManager.IsPlaying(GameMusics.INTRO) && !m_PlayedIntro) {
+          m_MusicManager.StopAll();
+          m_MusicManager.Play(GameMusics.INTRO);
+          m_PlayedIntro = true;
         }
         int gy1;
         int gx1 = gy1 = 0;
-                m_UI.UI_Clear(Color.Black);
-                DrawHeader();
+        m_UI.UI_Clear(Color.Black);
+        DrawHeader();
         gy1 += 14;
-                m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
         gy1 += 28;
-                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.White, (string[]) null, gx1, ref gy1, 256);
-                DrawFootnote(Color.White, "cursor to move, ENTER to select");
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.White, (string[]) null, gx1, ref gy1, 256);
+        DrawFootnote(Color.White, "cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26)
         {
@@ -812,20 +831,20 @@ namespace djack.RogueSurvivor.Engine
           {
             int gx2 = m_Rules.Roll(0, 1024);
             int gy2 = m_Rules.Roll(0, 768);
-                        m_UI.UI_DrawImage("Actors\\santaman", gx2, gy2);
-                        m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
+            m_UI.UI_DrawImage("Actors\\santaman", gx2, gy2);
+            m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
         }
-                m_UI.UI_Repaint();
+        m_UI.UI_Repaint();
         switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
             switch (currentChoice)
             {
               case 0:
-                if (HandleNewCharacter())
-                {
-                                    StartNewGame();
+                if (HandleNewCharacter()) {
+                  StartNewGame();
+                  LogSaveScumStats();
                   flag1 = false;
                   break;
                 }
@@ -834,34 +853,35 @@ namespace djack.RogueSurvivor.Engine
                 if (flag2)
                 {
                   gy1 += 28;
-                                    m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
-                                    m_UI.UI_Repaint();
-                                    LoadGame(RogueGame.GetUserSave());
+                  m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
+                  m_UI.UI_Repaint();
+                  LoadGame(RogueGame.GetUserSave());
+                  LogSaveScumStats();
                   flag1 = false;
                   break;
                 }
                 break;
               case 2:
-                                HandleRedefineKeys();
+                HandleRedefineKeys();
                 break;
               case 3:
-                                HandleOptions(false);
-                                ApplyOptions(false);
+                HandleOptions(false);
+                ApplyOptions(false);
                 break;
               case 4:
-                                HandleHelpMode();
+                HandleHelpMode();
                 break;
               case 5:
-                                HandleHintsScreen();
+                HandleHintsScreen();
                 break;
               case 6:
-                                HandleHiScores(true);
+                HandleHiScores(true);
                 break;
               case 7:
-                                HandleCredits();
+                HandleCredits();
                 break;
               case 8:
-                                m_IsGameRunning = false;
+                m_IsGameRunning = false;
                 flag1 = false;
                 break;
             }
