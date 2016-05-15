@@ -8725,6 +8725,9 @@ namespace djack.RogueSurvivor.Engine
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       int num1 = m_Rules.RollSkill(attack.HitValue);
       int num2 = m_Rules.RollSkill(defence.Value);
+      // weird to have the presence of sleeping livings influence damage inflicted
+      int num3 = (num1 > num2 ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
+
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
       if (m_IsPlayerLongWait && defender.IsPlayer)
         m_IsPlayerLongWaitForcedStop = true;
@@ -8740,12 +8743,10 @@ namespace djack.RogueSurvivor.Engine
       }
       if (num1 > num2)
       {
-        int num3 = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit;
         if (num3 > 0)
         {
           InflictDamage(defender, num3);
-          if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead)
-          {
+          if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, num3));
             attacker.RottingEat(m_Rules.ActorBiteNutritionValue(attacker, num3));
             if (player2)
@@ -8754,54 +8755,47 @@ namespace djack.RogueSurvivor.Engine
           }
           if (defender.HitPoints <= 0)
           {
-            if (player2 || player1)
-            {
-                            AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\killed"));
-                            RedrawPlayScreen();
+            if (player2 || player1) {
+              AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
+              AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\killed"));
+              RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
             }
-                        KillActor(attacker, defender, "hit");
+            KillActor(attacker, defender, "hit");
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", (object) defender.Name));
-            if (m_Session.HasImmediateZombification || defender == m_Player)
-            {
-              if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(RogueGame.s_Options.ZombificationChance))
-              {
+            if (m_Session.HasImmediateZombification || defender == m_Player) {
+              if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(RogueGame.s_Options.ZombificationChance)) {
                 if (defender.IsPlayer)
                   defender.Location.Map.TryRemoveCorpseOf(defender);
-                                Zombify(attacker, defender, false);
-                if (player1)
-                {
-                                    AddMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"));
-                                    RedrawPlayScreen();
+                Zombify(attacker, defender, false);
+                if (player1) {
+                  AddMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"));
+                  RedrawPlayScreen();
                   AnimDelay(DELAY_LONG);
                 }
-              }
-              else if (defender == m_Player && !defender.Model.Abilities.IsUndead && defender.Infection > 0)
-              {
+              } else if (defender == m_Player && !defender.Model.Abilities.IsUndead && defender.Infection > 0) {
                 defender.Location.Map.TryRemoveCorpseOf(defender);
-                                Zombify((Actor) null, defender, false);
-                                AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
-                                RedrawPlayScreen();
+                Zombify(null, defender, false);
+                AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
+                RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
             }
           }
           else if (player2 || player1)
           {
-                        AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) num3)));
-                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
-                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
-                        RedrawPlayScreen();
+            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) num3)));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
+            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
+            RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         }
-        else if (player2 || player1)
-        {
-                    AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
-                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
-                    RedrawPlayScreen();
+        else if (player2 || player1) {
+          AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
+          AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+          RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
