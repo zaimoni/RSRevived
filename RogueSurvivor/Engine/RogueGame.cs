@@ -403,7 +403,7 @@ namespace djack.RogueSurvivor.Engine
     public RogueGame(IRogueUI UI)
     {
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame()");
-            m_UI = UI;
+      m_UI = UI;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
       switch (SetupConfig.Sound)
       {
@@ -418,15 +418,15 @@ namespace djack.RogueSurvivor.Engine
           break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
-            m_MessageManager = new MessageManager(12, 25, 59);
-            m_Session = Session.Get;
+      m_MessageManager = new MessageManager(12, 25, 59);
+      m_Session = Session.Get;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules");
-            m_Rules = new Rules(new DiceRoller(m_Session.Seed));
+      m_Rules = new Rules(new DiceRoller(m_Session.Seed));  // possibly no-op
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
       parameters.MapWidth = MAP_MAX_WIDTH;
       parameters.MapHeight = RogueGame.MAP_MAX_HEIGHT;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
-            m_TownGenerator = (BaseTownGenerator) new StdTownGenerator(this, parameters);
+      m_TownGenerator = (BaseTownGenerator) new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
       RogueGame.s_Options = new GameOptions();
       RogueGame.s_Options.ResetToDefaultValues();
@@ -885,7 +885,6 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleNewCharacter()
     {
       DiceRoller roller = new DiceRoller();
-            m_Session.Reset();
       bool isUndead;
       if (!HandleNewGameMode() || !HandleNewCharacterRace(roller, out isUndead))
         return false;
@@ -895,7 +894,7 @@ namespace djack.RogueSurvivor.Engine
         GameActors.IDs modelID;
         if (!HandleNewCharacterUndeadType(roller, out modelID))
           return false;
-                m_CharGen.UndeadModel = modelID;
+        m_CharGen.UndeadModel = modelID;
       }
       else
       {
@@ -1515,10 +1514,10 @@ namespace djack.RogueSurvivor.Engine
     private void StartNewGame()
     {
       bool isUndead = m_CharGen.IsUndead;
-            GenerateWorld(true, RogueGame.s_Options.CitySize);
-            m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", (object)m_Player.Location.Map.Name));
-            m_Session.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
+      GenerateWorld(true, RogueGame.s_Options.CitySize);
+      m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, m_Player.Location.Map);
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", (object)m_Player.Location.Map.Name));
+      m_Session.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       if (RogueGame.s_Options.IsAdvisorEnabled)
       {
                 ClearMessages();
@@ -12496,6 +12495,8 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
+      m_Session.Reset();
+      m_Rules = new Rules(new DiceRoller(m_Session.Seed));
       m_Session.World = new World(size);
       World world = m_Session.World;
       world.Weather = (Weather)m_Rules.Roll(0, 4);
