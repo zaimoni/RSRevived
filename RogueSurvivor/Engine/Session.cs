@@ -18,146 +18,89 @@ namespace djack.RogueSurvivor.Engine
   internal class Session
   {
     public static int COMMAND_LINE_SEED = 0;
-
-    private GameMode m_GameMode;
-    private WorldTime m_WorldTime;
-    private World m_World;
-    private Map m_CurrentMap;
-    private Scoring m_Scoring;
-    private int[,,] m_Event_Raids;
-    [NonSerialized]
     private static Session s_TheSession;
 
-    public static Session Get
-    {
-      get
-      {
-        if (Session.s_TheSession == null)
-          Session.s_TheSession = new Session();
+    private WorldTime m_WorldTime;
+    private Scoring m_Scoring;
+    private int[,,] m_Event_Raids;
+
+    public GameMode GameMode { get; set; }
+    public int Seed { get; set; }
+    public int LastTurnPlayerActed { get; set; }
+    public World World { get; set; }
+    public Map CurrentMap { get; set; }
+    public UniqueActors UniqueActors { get; set; }
+    public UniqueItems UniqueItems { get; set; }
+    public UniqueMaps UniqueMaps { get; set; }
+    public bool PlayerKnows_CHARUndergroundFacilityLocation { get; set; }
+    public bool PlayerKnows_TheSewersThingLocation { get; set; }
+    public bool CHARUndergroundFacility_Activated { get; set; }
+    public ScriptStage ScriptStage_PoliceStationPrisonner { get; set; }
+
+    public static Session Get {
+      get {
+        if (Session.s_TheSession == null) Session.s_TheSession = new Session();
         return Session.s_TheSession;
       }
     }
 
-    public GameMode GameMode
-    {
-      get
-      {
-        return m_GameMode;
-      }
-      set
-      {
-                m_GameMode = value;
-      }
-    }
-
-    public int Seed { get; set; }
-
-    public WorldTime WorldTime
-    {
-      get
-      {
+    public WorldTime WorldTime {
+      get {
         return m_WorldTime;
       }
     }
 
-    public int LastTurnPlayerActed { get; set; }
-
-    public World World
-    {
-      get
-      {
-        return m_World;
-      }
-      set
-      {
-                m_World = value;
-      }
-    }
-
-    public Map CurrentMap
-    {
-      get
-      {
-        return m_CurrentMap;
-      }
-      set
-      {
-                m_CurrentMap = value;
-      }
-    }
-
-    public Scoring Scoring
-    {
-      get
-      {
+    public Scoring Scoring {
+      get {
         return m_Scoring;
       }
     }
 
-    public UniqueActors UniqueActors { get; set; }
-
-    public UniqueItems UniqueItems { get; set; }
-
-    public UniqueMaps UniqueMaps { get; set; }
-
-    public bool PlayerKnows_CHARUndergroundFacilityLocation { get; set; }
-
-    public bool PlayerKnows_TheSewersThingLocation { get; set; }
-
-    public bool CHARUndergroundFacility_Activated { get; set; }
-
-    public ScriptStage ScriptStage_PoliceStationPrisonner { get; set; }
-
     private Session()
     {
-            Reset();
+      Reset();
     }
 
     public void Reset()
     {
       Seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
-      m_CurrentMap = null;
+      CurrentMap = null;
       m_Scoring = new Scoring();
-      m_World = null;
+      World = null;
       m_WorldTime = new WorldTime();
       LastTurnPlayerActed = 0;
       m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
-      for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1)
-      {
-        for (int index2 = 0; index2 < RogueGame.Options.CitySize; ++index2)
-        {
+      for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1) {
+        for (int index2 = 0; index2 < RogueGame.Options.CitySize; ++index2) {
           for (int index3 = 0; index3 < RogueGame.Options.CitySize; ++index3)
-                        m_Event_Raids[index1, index2, index3] = -1;
+            m_Event_Raids[index1, index2, index3] = -1;
         }
       }
-            CHARUndergroundFacility_Activated = false;
-            PlayerKnows_CHARUndergroundFacilityLocation = false;
-            PlayerKnows_TheSewersThingLocation = false;
-            ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_0;
-            UniqueActors = new UniqueActors();
-            UniqueItems = new UniqueItems();
-            UniqueMaps = new UniqueMaps();
+      CHARUndergroundFacility_Activated = false;
+      PlayerKnows_CHARUndergroundFacilityLocation = false;
+      PlayerKnows_TheSewersThingLocation = false;
+      ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_0;
+      UniqueActors = new UniqueActors();
+      UniqueItems = new UniqueItems();
+      UniqueMaps = new UniqueMaps();
     }
 
     public bool HasRaidHappened(RaidType raid, District district)
     {
-      if (district == null)
-        throw new ArgumentNullException("district");
+      if (district == null) throw new ArgumentNullException("district");
       return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] > -1;
     }
 
     public int LastRaidTime(RaidType raid, District district)
     {
-      if (district == null)
-        throw new ArgumentNullException("district");
+      if (district == null) throw new ArgumentNullException("district");
       return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y];
     }
 
     public void SetLastRaidTime(RaidType raid, District district, int turnCounter)
     {
-      if (district == null)
-        throw new ArgumentNullException("district");
-            m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
+      if (district == null) throw new ArgumentNullException("district");
+      m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
     }
 
     public static void Save(Session session, string filepath, Session.SaveFormat format)
@@ -355,11 +298,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void ReconstructAuxiliaryFields()
     {
-      for (int index1 = 0; index1 < m_World.Size; ++index1)
-      {
-        for (int index2 = 0; index2 < m_World.Size; ++index2)
-        {
-          foreach (Map map in m_World[index1, index2].Maps)
+      for (int index1 = 0; index1 < World.Size; ++index1) {
+        for (int index2 = 0; index2 < World.Size; ++index2) {
+          foreach (Map map in World[index1, index2].Maps)
             map.ReconstructAuxiliaryFields();
         }
       }
@@ -397,31 +338,31 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public bool HasImmediateZombification {
-      get { return GameMode.GM_STANDARD == m_GameMode; }
+      get { return GameMode.GM_STANDARD == GameMode; }
     }
 
     public bool HasInfection {
-      get { return GameMode.GM_STANDARD != m_GameMode; }
+      get { return GameMode.GM_STANDARD != GameMode; }
     }
 
     public bool HasCorpses {
-      get { return GameMode.GM_STANDARD != m_GameMode; }
+      get { return GameMode.GM_STANDARD != GameMode; }
     }
 
     public bool HasEvolution {
-      get { return GameMode.GM_VINTAGE != m_GameMode; }
+      get { return GameMode.GM_VINTAGE != GameMode; }
     }
 
     public bool HasAllZombies {
-      get { return GameMode.GM_VINTAGE != m_GameMode; }
+      get { return GameMode.GM_VINTAGE != GameMode; }
     }
 
     public bool HasZombiesInBasements {
-      get { return GameMode.GM_VINTAGE != m_GameMode; }
+      get { return GameMode.GM_VINTAGE != GameMode; }
     }
 
     public bool HasZombiesInSewers {
-      get { return GameMode.GM_VINTAGE != m_GameMode; }
+      get { return GameMode.GM_VINTAGE != GameMode; }
     }
 
     public enum SaveFormat
