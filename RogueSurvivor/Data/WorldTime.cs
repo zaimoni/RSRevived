@@ -5,14 +5,16 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class WorldTime
-  {
+  internal class WorldTime : ISerializable
+    {
     public const int TURNS_PER_HOUR = 30;
     public const int TURNS_PER_DAY = 24*TURNS_PER_HOUR;
+
     private int m_TurnCounter;
     private int m_Day;
     private int m_Hour;
@@ -94,11 +96,22 @@ namespace djack.RogueSurvivor.Data
 
     public WorldTime(int turnCounter)
     {
-      if (turnCounter < 0)
-        throw new ArgumentOutOfRangeException("turnCounter < 0");
-            m_TurnCounter = turnCounter;
-            RecomputeDate();
+      if (turnCounter < 0) throw new ArgumentOutOfRangeException("turnCounter < 0");
+      TurnCounter = turnCounter;
     }
+
+#region Implement ISerializable
+    // general idea is Plain Old Data before objects.
+    protected WorldTime(SerializationInfo info, StreamingContext context)
+    {
+      TurnCounter = info.GetInt32("TurnCounter");
+    }
+
+    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("TurnCounter", m_TurnCounter);
+    }
+#endregion
 
     private void RecomputeDate()
     {
