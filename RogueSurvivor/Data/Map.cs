@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Data
       m_Timers = new List<TimedTask>(5);
     }
 
-    // next constructor, and function after, implement ISerializable
+#region Implement ISerializable
     protected Map(SerializationInfo info, StreamingContext context)
     {
       Seed = (int) info.GetValue("m_Seed", typeof (int));
@@ -227,13 +227,11 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_Scents", (object)m_Scents);
       info.AddValue("m_Timers", (object)m_Timers);
     }
-
+#endregion
 
     public bool IsInBounds(int x, int y)
     {
-      if (x >= 0 && x < Width && y >= 0)
-        return y < Height;
-      return false;
+      return 0 <= x && x < Width && 0 <= y && y < Height;
     }
 
     public bool IsInBounds(Point p)
@@ -243,48 +241,29 @@ namespace djack.RogueSurvivor.Data
 
     public void TrimToBounds(ref int x, ref int y)
     {
-      if (x < 0)
-        x = 0;
-      else if (x > Width - 1)
-        x = Width - 1;
-      if (y < 0)
-        y = 0;
-      else
-      {
-        if (y <= Height - 1)
-          return;
-        y = Height - 1;
-      }
+      if (x < 0) x = 0;
+      else if (x > Width - 1) x = Width - 1;
+      if (y < 0) y = 0;
+      else if (y > Height - 1) y = Height - 1;
     }
 
     public void TrimToBounds(ref Point p)
     {
-      if (p.X < 0)
-        p.X = 0;
-      else if (p.X > Width - 1)
-        p.X = Width - 1;
-      if (p.Y < 0)
-        p.Y = 0;
-      else
-      {
-        if (p.Y <= Height - 1)
-          return;
-        p.Y = Height - 1;
-      }
+      if (p.X < 0) p.X = 0;
+      else if (p.X > Width - 1) p.X = Width - 1;
+      if (p.Y < 0) p.Y = 0;
+      else if (p.Y > Height - 1) p.Y = Height - 1;
     }
 
+    // these two look wrong, may need fixing later
     public bool IsMapBoundary(int x, int y)
     {
-      if (x != -1 && x != Width && y != -1)
-        return y == Height;
-      return true;
+      return -1 == x || x == Width || -1 == y || y == Height;
     }
 
     public bool IsOnMapBorder(int x, int y)
     {
-      if (x != 0 && x != Width - 1 && y != 0)
-        return y == Height - 1;
-      return true;
+      return 0 == x || x == Width-1 || 0 == y || y == Height-1;
     }
 
     public Tile GetTileAt(int x, int y)
