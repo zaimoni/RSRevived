@@ -2023,7 +2023,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeHospitalItem()
     {
-      switch (m_DiceRoller.Roll(0, 7))
+      switch (m_DiceRoller.Roll(0, (Session.Get.HasInfection ? 7 : 6)))
       {
         case 0:
           return MakeItemBandages();
@@ -3145,7 +3145,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Item it;
       if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE))
       {
-        switch (roller.Roll(0, 6))
+        switch (roller.Roll(0, (Session.Get.HasInfection ? 6 : 5)))
         {
           case 0:
             it = MakeItemGrenade();
@@ -3160,10 +3160,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             it = MakeItemHeavyRifleAmmo();
             break;
           case 4:
-            it = MakeItemPillsAntiviral();
+            it = MakeItemCombatKnife();
             break;
           case 5:
-            it = MakeItemCombatKnife();
+            it = MakeItemPillsAntiviral();
             break;
           default:
             it = (Item) null;
