@@ -1532,10 +1532,24 @@ namespace djack.RogueSurvivor.Engine
       }
             ClearMessages();
             ClearMessagesHistory();
-            AddMessage(new Data.Message("*****************************", 0, Color.LightGreen));
-            AddMessage(new Data.Message("* Welcome to "+SetupConfig.GAME_NAME+" *", 0, Color.LightGreen));
-            AddMessage(new Data.Message("* We hope you like Zombies  *", 0, Color.LightGreen));
-            AddMessage(new Data.Message("*****************************", 0, Color.LightGreen));
+            string msg1 = "Welcome to " + SetupConfig.GAME_NAME;
+            string msg2 = "We hope you like Zombies";
+            int len = (msg1.Length < msg2.Length ? msg2.Length : msg1.Length);
+            int delta = msg2.Length-msg1.Length;
+            string header = "".PadRight(len+4, '*');
+            if (0<delta) {  // msg2 longer
+              int half_delta = delta / 2;
+              msg1 = msg1.PadLeft(msg1.Length+half_delta).PadRight(len);
+            }
+            else if (0>delta) { // msg1 longer
+              delta = -delta;
+              int half_delta = delta / 2;
+              msg2 = msg2.PadLeft(msg2.Length + half_delta).PadRight(len);
+            }
+            AddMessage(new Data.Message(header, 0, Color.LightGreen));
+            AddMessage(new Data.Message("* " + msg1 + " *", 0, Color.LightGreen));
+            AddMessage(new Data.Message("* " + msg2 + " *", 0, Color.LightGreen));
+            AddMessage(new Data.Message(header, 0, Color.LightGreen));
             AddMessage(new Data.Message(string.Format("Press {0} for help", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
             AddMessage(new Data.Message(string.Format("Press {0} to redefine keys", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
             AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
