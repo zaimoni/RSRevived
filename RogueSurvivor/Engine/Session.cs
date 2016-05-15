@@ -15,7 +15,7 @@ using System.Xml.Serialization;
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
-  internal class Session
+  internal class Session : ISerializable
   {
     public static int COMMAND_LINE_SEED = 0;
     private static Session s_TheSession;
@@ -60,6 +60,49 @@ namespace djack.RogueSurvivor.Engine
     {
       Reset();
     }
+
+#region Implement ISerializable
+    // general idea is Plain Old Data before objects.
+    protected Session(SerializationInfo info, StreamingContext context)
+    {
+      m_WorldTime = (WorldTime) info.GetValue("WorldTime",typeof(WorldTime));
+      m_Scoring = (Scoring) info.GetValue("Scoring",typeof(Scoring));
+      m_Event_Raids = (int[,,]) info.GetValue("Event_Raids",typeof(int[,,]));
+
+      GameMode = (GameMode) info.GetSByte("GameMode");
+      ScriptStage_PoliceStationPrisonner = (ScriptStage) info.GetSByte("ScriptStage_PoliceStationPrisoner");
+      Seed = info.GetInt32("Seed");
+      LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
+      PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
+      PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
+      CHARUndergroundFacility_Activated = info.GetBoolean("CHARUndergroundFacility_Activated");
+      World = (World) info.GetValue("World",typeof(World));
+      CurrentMap = (Map) info.GetValue("CurrentMap",typeof(Map));
+      UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
+      UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
+      UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
+    }
+
+    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("WorldTime",m_WorldTime,typeof(WorldTime));
+      info.AddValue("Scoring",m_Scoring,typeof(Scoring));
+      info.AddValue("Event_Raids",m_Event_Raids,typeof(int[,,]));
+
+      info.AddValue("GameMode",(SByte)GameMode);
+      info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisonner);
+      info.AddValue("Seed",Seed);
+      info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
+      info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
+      info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
+      info.AddValue("CHARUndergroundFacility_Activated",CHARUndergroundFacility_Activated);
+      info.AddValue("World",World,typeof(World));
+      info.AddValue("CurrentMap",CurrentMap,typeof(Map));
+      info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
+      info.AddValue("UniqueItems",UniqueItems,typeof(UniqueItems));
+      info.AddValue("UniqueMaps",UniqueMaps,typeof(UniqueMaps));
+    }
+#endregion
 
     public void Reset()
     {
