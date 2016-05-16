@@ -12590,7 +12590,7 @@ namespace djack.RogueSurvivor.Engine
                 Point to1 = new Point(x2, entryMap2.Height - 1);
                 Point from2 = new Point(x2, entryMap2.Height);
                 Point to2 = new Point(x2, 0);
-                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2)) {
+                if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
                   GenerateExit(entryMap1, from1, entryMap2, to1);
                   GenerateExit(entryMap2, from2, entryMap1, to2);
                 }
@@ -12605,7 +12605,7 @@ namespace djack.RogueSurvivor.Engine
                 Point to1 = new Point(entryMap2.Width - 1, y2);
                 Point from2 = new Point(entryMap2.Width, y2);
                 Point to2 = new Point(0, y2);
-                if (CheckIfExitIsGood(entryMap1, from1, entryMap2, to1) && CheckIfExitIsGood(entryMap2, from2, entryMap1, to2)) {
+                if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
                   GenerateExit(entryMap1, from1, entryMap2, to1);
                   GenerateExit(entryMap2, from2, entryMap1, to2);
                 }
@@ -12698,7 +12698,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
     }
 
-    private bool CheckIfExitIsGood(Map fromMap, Point from, Map toMap, Point to)
+    private bool CheckIfExitIsGood(Map toMap, Point to)
     {
       return toMap.GetTileAt(to.X, to.Y).Model.IsWalkable && toMap.GetMapObjectAt(to.X, to.Y) == null;
     }
