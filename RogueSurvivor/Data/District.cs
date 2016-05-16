@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_Name;
       }
-      set { // nominates RogueGame::GenerateDistrictEntryMap as member function
+      private set {
         m_Name = value;
       }
     }
@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_EntryMap;
       }
-      set {
+      private set {
         if (m_EntryMap != null) RemoveMap(m_EntryMap);
         m_EntryMap = value;
         if (value == null) return;
@@ -156,6 +156,80 @@ namespace djack.RogueSurvivor.Data
     }
 
     // low-level support
+    public void GenerateEntryMap(World world, Point policeStationDistrictPos, Point hospitalDistrictPos, int districtSize, Gameplay.Generators.BaseTownGenerator m_TownGenerator)
+    {
+      int x = WorldPosition.X;
+      int y = WorldPosition.Y;
+
+      ///////////////////////////
+      // 1. Compute unique seed.
+      // 2. Set params for kind.
+      // 3. Generate map.
+      ///////////////////////////
+
+      // 1. Compute unique seed.
+      int seed = Engine.Session.Get.Seed + y * world.Size + x;
+
+#region 2. Set gen params.
+      // this must be a value copy or else: BaseTownGenerator.Parameters must be a struct, not a class
+      Gameplay.Generators.BaseTownGenerator.Parameters parameters = Gameplay.Generators.BaseTownGenerator.DEFAULT_PARAMS;
+
+      parameters.MapWidth = parameters.MapHeight = districtSize;
+      parameters.District = this;
+      const int num = 8;
+      string str;
+      switch (Kind)
+      {
+        case DistrictKind.GENERAL:
+          str = "District";
+          break;
+        case DistrictKind.RESIDENTIAL:
+          str = "Residential District";
+          parameters.CHARBuildingChance /= num;
+          parameters.ParkBuildingChance /= num;
+          parameters.ShopBuildingChance /= num;
+          break;
+        case DistrictKind.SHOPPING:
+          str = "Shopping District";
+          parameters.CHARBuildingChance /= num;
+          parameters.ShopBuildingChance *= num;
+          parameters.ParkBuildingChance /= num;
+          break;
+        case DistrictKind.GREEN:
+          str = "Green District";
+          parameters.CHARBuildingChance /= num;
+          parameters.ParkBuildingChance *= num;
+          parameters.ShopBuildingChance /= num;
+          break;
+        case DistrictKind.BUSINESS:
+          str = "Business District";
+          parameters.CHARBuildingChance *= num;
+          parameters.ParkBuildingChance /= num;
+          parameters.ShopBuildingChance /= num;
+          break;
+        default:
+          throw new ArgumentOutOfRangeException("unhandled district kind");
+      }
+
+      // Special params.
+      parameters.GeneratePoliceStation = WorldPosition == policeStationDistrictPos;
+      parameters.GenerateHospital = WorldPosition == hospitalDistrictPos;
+#endregion
+
+      // working around an abstract function declaration that *cannot* have the parameters as an argument.
+      // different types of maps may have incompatible parameter structs/classes
+      // 3. Generate map.
+      Gameplay.Generators.BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
+      m_TownGenerator.Params = parameters;
+      Map map = m_TownGenerator.Generate(seed);
+      map.Name = string.Format("{0}@{1}", (object) str, (object) World.CoordToString(x, y));
+      m_TownGenerator.Params = @params;
+
+      // done.
+      EntryMap = map;
+      Name = EntryMap.Name;
+    }
+
     public void OptimizeBeforeSaving()
     {
       m_Maps.TrimExcess();

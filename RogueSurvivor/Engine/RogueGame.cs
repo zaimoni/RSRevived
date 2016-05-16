@@ -12546,8 +12546,7 @@ namespace djack.RogueSurvivor.Engine
           }
           District district = new District(new Point(index1, index2), GenerateDistrictKind(world, index1, index2));
           world[index1, index2] = district;
-          district.EntryMap = GenerateDistrictEntryMap(world, district, policeStationDistrictPos, hospitalDistrictPos);
-          district.Name = district.EntryMap.Name;
+          district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, RogueGame.s_Options.DistrictSize, m_TownGenerator);
           Map districtSewersMap = GenerateDistrictSewersMap(district);
           district.SewersMap = districtSewersMap;
           if (index2 == world.Size / 2) {
@@ -13077,60 +13076,6 @@ namespace djack.RogueSurvivor.Engine
     {
       if (gridX == 0 && gridY == 0) return DistrictKind.BUSINESS;
       return (DistrictKind) m_Rules.Roll(0, (int) DistrictKind._COUNT);
-    }
-
-    private Map GenerateDistrictEntryMap(World world, District district, Point policeStationDistrictPos, Point hospitalDistrictPos)
-    {
-      int x = district.WorldPosition.X;
-      int y = district.WorldPosition.Y;
-      int seed = m_Session.Seed + y * world.Size + x;
-      BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
-      parameters.MapWidth = parameters.MapHeight = RogueGame.s_Options.DistrictSize;
-      parameters.District = district;
-      int num = 8;
-      string str;
-      switch (district.Kind)
-      {
-        case DistrictKind.GENERAL:
-          str = "District";
-          break;
-        case DistrictKind.RESIDENTIAL:
-          str = "Residential District";
-          parameters.CHARBuildingChance /= num;
-          parameters.ParkBuildingChance /= num;
-          parameters.ShopBuildingChance /= num;
-          break;
-        case DistrictKind.SHOPPING:
-          str = "Shopping District";
-          parameters.CHARBuildingChance /= num;
-          parameters.ShopBuildingChance *= num;
-          parameters.ParkBuildingChance /= num;
-          break;
-        case DistrictKind.GREEN:
-          str = "Green District";
-          parameters.CHARBuildingChance /= num;
-          parameters.ParkBuildingChance *= num;
-          parameters.ShopBuildingChance /= num;
-          break;
-        case DistrictKind.BUSINESS:
-          str = "Business District";
-          parameters.CHARBuildingChance *= num;
-          parameters.ParkBuildingChance /= num;
-          parameters.ShopBuildingChance /= num;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled district kind");
-      }
-      parameters.GeneratePoliceStation = district.WorldPosition == policeStationDistrictPos;
-      parameters.GenerateHospital = district.WorldPosition == hospitalDistrictPos;
-      // working around an abstract function declaration that *cannot* have the parameters as an argument.
-      // different types of maps may have incompatible parameter structs/classes
-      BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
-      m_TownGenerator.Params = parameters;
-      Map map = m_TownGenerator.Generate(seed);
-      map.Name = string.Format("{0}@{1}", (object) str, (object) World.CoordToString(x, y));
-      m_TownGenerator.Params = @params;
-      return map;
     }
 
     private Map GenerateDistrictSewersMap(District district)
