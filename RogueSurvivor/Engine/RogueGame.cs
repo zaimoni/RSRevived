@@ -775,13 +775,9 @@ namespace djack.RogueSurvivor.Engine
       string msg = "first seven RNG d100 values:";
       List<int> tmp2 = new List<int>(7);
       int i = 7;
-      do {
-         int res = tmp.Roll(0, 100);
-         tmp2.Add(res);
-         msg += " " + res.ToString();   // remove when retargeting to .NET 4.0
-         }
+      do tmp2.Add(tmp.Roll(0, 100));
       while(0 < --i);
-//    msg += String.Join<int>(", ",tmp2);   // requires .NET 4.0 and we target .NET 3.5
+      msg += String.Join<int>(" ",tmp2);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, msg);
       // report on particularly noxious consequences
       if (Rules.FIREARM_JAM_CHANCE_RAIN > tmp2[0]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "firearms jam in rain on save-load");
