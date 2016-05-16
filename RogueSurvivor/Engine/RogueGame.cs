@@ -10053,9 +10053,14 @@ namespace djack.RogueSurvivor.Engine
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
     {
+#if DEBUG
+      // for some reason, this can happen with starved actors (cf. alpha 8)
+      if (deadGuy.IsDead)
+        throw new InvalidOperationException(String.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (killer == null ? "N/A" : killer.TheName), deadGuy.TheName, reason));
+#endif
       deadGuy.IsDead = true;
-            DoStopDraggingCorpses(deadGuy);
-            UntriggerAllTrapsHere(deadGuy.Location);
+      DoStopDraggingCorpses(deadGuy);
+      UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
         killer.RegenSanity(m_Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
       if (deadGuy.HasLeader) {
@@ -10069,9 +10074,7 @@ namespace djack.RogueSurvivor.Engine
               AddMessagePressEnter();
           }
         }
-      }
-      else if (deadGuy.CountFollowers > 0)
-      {
+      } else if (deadGuy.CountFollowers > 0) {
         foreach (Actor follower in deadGuy.Followers) {
           if (m_Rules.HasActorBondWith(follower, deadGuy)) {
             follower.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
@@ -10085,22 +10088,21 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (deadGuy.IsUnique)
-      {
+      if (deadGuy.IsUnique) {
         if (killer != null)
-                    m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} was killed by {1} {2}! *", (object) deadGuy.TheName, (object) killer.Model.Name, (object) killer.TheName));
+          m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} was killed by {1} {2}! *", (object) deadGuy.TheName, (object) killer.Model.Name, (object) killer.TheName));
         else
-                    m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} died by {1}! *", (object) deadGuy.TheName, (object) reason));
+          m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} died by {1}! *", (object) deadGuy.TheName, (object) reason));
       }
-      if (deadGuy == m_Player)
-                PlayerDied(killer, reason);
+      if (deadGuy == m_Player && 0 >= m_Session.World.PlayerCount)
+        PlayerDied(killer, reason);
       deadGuy.RemoveAllFollowers();
       if (deadGuy.Leader != null)
       {
         if (deadGuy.Leader.IsPlayer)
         {
           string text = killer == null ? string.Format("Follower {0} died by {1}!", (object) deadGuy.TheName, (object) reason) : string.Format("Follower {0} was killed by {1} {2}!", (object) deadGuy.TheName, (object) killer.Model.Name, (object) killer.TheName);
-                    m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
+          m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, text);
         }
         deadGuy.Leader.RemoveFollower(deadGuy);
       }
@@ -10109,18 +10111,25 @@ namespace djack.RogueSurvivor.Engine
       deadGuy.Location.Map.RemoveActor(deadGuy);
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty)
       {
+        // the implicit police radio goes explicit on death, as a generic item
+        if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID && m_Rules.RollChance(Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE)) {
+          deadGuy.Location.Map.DropItemAt(m_TownGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
+        }
         Item[] objArray = new Item[deadGuy.Inventory.CountItems];
         for (int index = 0; index < objArray.Length; ++index)
           objArray[index] = deadGuy.Inventory[index];
-        for (int index = 0; index < objArray.Length; ++index)
-        {
+        for (int index = 0; index < objArray.Length; ++index) {
           Item it = objArray[index];
           int chance = it is ItemAmmo || it is ItemFood ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
           if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(chance))
-                        DropItem(deadGuy, it);
+            DropItem(deadGuy, it);
         }
       }
+
       if (!deadGuy.Model.Abilities.IsUndead) SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
+#if FAIL
+      else UndeadRemains(deadGuy.Location.Map, deadGuy.Location.Position);
+#endif
       if (m_Session.HasCorpses && !deadGuy.Model.Abilities.IsUndead) DropCorpse(deadGuy);
       if (killer != null) ++killer.KillsCount;
       if (killer == m_Player) PlayerKill(deadGuy);
@@ -10298,9 +10307,9 @@ namespace djack.RogueSurvivor.Engine
     public void UndeadRemains(Map map, Point position)
     {
       Tile tileAt = map.GetTileAt(position.X, position.Y);
-      if (!map.IsWalkable(position.X, position.Y) || tileAt.HasDecoration("Tiles\\Decoration\\zombie_remains"))
-        return;
+//    if (!map.IsWalkable(position.X, position.Y) || tileAt.HasDecoration("Tiles\\Decoration\\zombie_remains")) return;
       tileAt.AddDecoration("Tiles\\Decoration\\zombie_remains");
+      map.AddTimer((TimedTask) new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, "Tiles\\Decoration\\zombie_remains"));
     }
 
     public void DropCorpse(Actor deadGuy)
@@ -10316,51 +10325,49 @@ namespace djack.RogueSurvivor.Engine
 
     private void PlayerDied(Actor killer, string reason)
     {
-            StopSimThread();
-            m_UI.UI_SetCursor((Cursor) null);
-            m_MusicManager.StopAll();
-            m_MusicManager.Play(GameMusics.PLAYER_DEATH);
-            m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
-            m_Session.Scoring.SetKiller(killer);
-      if (m_Player.CountFollowers > 0)
-      {
+      StopSimThread();
+      m_UI.UI_SetCursor(null);
+      m_MusicManager.StopAll();
+      m_MusicManager.Play(GameMusics.PLAYER_DEATH);
+      m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
+      m_Session.Scoring.SetKiller(killer);
+      if (m_Player.CountFollowers > 0) {
         foreach (Actor follower in m_Player.Followers)
-                    m_Session.Scoring.AddFollowerWhenDied(follower);
+          m_Session.Scoring.AddFollowerWhenDied(follower);
       }
       List<Zone> zonesAt = m_Player.Location.Map.GetZonesAt(m_Player.Location.Position.X, m_Player.Location.Position.Y);
-            m_Session.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", (object)m_Player.Location.Map.Name, (object) zonesAt[0].Name) : m_Player.Location.Map.Name;
-            m_Session.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", (object) reason) : string.Format("{0} by {1} {2}", m_Rules.IsMurder(killer, m_Player) ? (object) "Murdered" : (object) "Killed", (object) killer.Model.Name, (object) killer.TheName);
-            m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Died.");
+      m_Session.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", (object)m_Player.Location.Map.Name, (object) zonesAt[0].Name) : m_Player.Location.Map.Name;
+      m_Session.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", (object) reason) : string.Format("{0} by {1} {2}", m_Rules.IsMurder(killer, m_Player) ? (object) "Murdered" : (object) "Killed", (object) killer.Model.Name, (object) killer.TheName);
+      m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, "Died.");
       int index = m_Rules.Roll(0, GameTips.TIPS.Length);
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[3]
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[3]
       {
         "TIP OF THE DEAD",
         "Did you know that...",
         GameTips.TIPS[index]
       }, Color.White, Color.White, POPUP_FILLCOLOR, new Point(0, 0)));
-            ClearMessages();
-            AddMessage(new Data.Message("**** YOU DIED! ****", m_Session.WorldTime.TurnCounter, Color.Red));
+      ClearMessages();
+      AddMessage(new Data.Message("**** YOU DIED! ****", m_Session.WorldTime.TurnCounter, Color.Red));
       if (killer != null)
-                AddMessage(new Data.Message(string.Format("Killer : {0}.", (object) killer.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
-            AddMessage(new Data.Message(string.Format("Reason : {0}.", (object) reason), m_Session.WorldTime.TurnCounter, Color.Red));
+        AddMessage(new Data.Message(string.Format("Killer : {0}.", (object) killer.TheName), m_Session.WorldTime.TurnCounter, Color.Red));
+      AddMessage(new Data.Message(string.Format("Reason : {0}.", (object) reason), m_Session.WorldTime.TurnCounter, Color.Red));
       if (m_Player.Model.Abilities.IsUndead)
-                AddMessage(new Data.Message("You die one last time... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
+        AddMessage(new Data.Message("You die one last time... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
       else
-                AddMessage(new Data.Message("You join the realm of the undeads... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
+        AddMessage(new Data.Message("You join the realm of the undeads... Game over!", m_Session.WorldTime.TurnCounter, Color.Red));
       if (RogueGame.s_Options.IsPermadeathOn)
-                DeleteSavedGame(RogueGame.GetUserSave());
-      if (RogueGame.s_Options.IsDeathScreenshotOn)
-      {
-                RedrawPlayScreen();
+        DeleteSavedGame(RogueGame.GetUserSave());
+      if (RogueGame.s_Options.IsDeathScreenshotOn) {
+        RedrawPlayScreen();
         string screenshot = DoTakeScreenshot();
         if (screenshot == null)
-                    AddMessage(MakeErrorMessage("could not save death screenshot."));
+          AddMessage(MakeErrorMessage("could not save death screenshot."));
         else
-                    AddMessage(new Data.Message(string.Format("Death screenshot saved : {0}.", (object) screenshot), m_Session.WorldTime.TurnCounter, Color.Red));
+          AddMessage(new Data.Message(string.Format("Death screenshot saved : {0}.", (object) screenshot), m_Session.WorldTime.TurnCounter, Color.Red));
       }
-            AddMessagePressEnter();
-            HandlePostMortem();
-            m_MusicManager.StopAll();
+      AddMessagePressEnter();
+      HandlePostMortem();
+      m_MusicManager.StopAll();
     }
 
     private string TimeSpanToString(TimeSpan rt)

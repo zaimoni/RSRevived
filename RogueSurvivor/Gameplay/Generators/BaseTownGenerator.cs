@@ -3295,27 +3295,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewPoliceman(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.Policeman.CreateNumberedName(m_Game.GameFactions.ThePolice, spawnTime);
-            DressPolice(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressPolice(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Cop " + numberedName.Name;
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
-      if (m_DiceRoller.RollChance(50))
-      {
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
+      GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
+      if (m_DiceRoller.RollChance(50)) {
         numberedName.Inventory.AddAll(MakeItemPistol());
         numberedName.Inventory.AddAll(MakeItemLightPistolAmmo());
-      }
-      else
-      {
+      } else {
         numberedName.Inventory.AddAll(MakeItemShotgun());
         numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
       }
       numberedName.Inventory.AddAll(MakeItemTruncheon());
       numberedName.Inventory.AddAll(MakeItemFlashlight());
-      numberedName.Inventory.AddAll(MakeItemPoliceRadio());
-      if (m_DiceRoller.RollChance(50))
-      {
+//    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
+      if (m_DiceRoller.RollChance(50)) {
         if (m_DiceRoller.RollChance(80))
           numberedName.Inventory.AddAll(MakeItemPoliceJacket());
         else

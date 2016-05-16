@@ -468,7 +468,7 @@ namespace djack.RogueSurvivor.Data
       get {
         int ret = 0;
         foreach(Actor tmp in m_ActorsList) { 
-          if (tmp.IsPlayer) ret++;
+          if (tmp.IsPlayer && !tmp.IsDead) ret++;
         }
         return ret;
       }
