@@ -18,11 +18,13 @@ namespace djack.RogueSurvivor.Engine
   internal class Session : ISerializable
   {
     public static int COMMAND_LINE_SEED = 0;
+    public static System.Collections.Generic.Dictionary<string, string> CommandLineOptions = null;
     private static Session s_TheSession;
 
     private WorldTime m_WorldTime;
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
+    private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
 
     public GameMode GameMode { get; set; }
     public int Seed { get; set; }
@@ -58,6 +60,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Session()
     {
+      m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new System.Collections.Generic.Dictionary<string, string>(Session.CommandLineOptions)));
       Reset();
     }
 
@@ -76,6 +79,7 @@ namespace djack.RogueSurvivor.Engine
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
       CHARUndergroundFacility_Activated = info.GetBoolean("CHARUndergroundFacility_Activated");
+      m_CommandLineOptions = (System.Collections.ObjectModel.ReadOnlyDictionary<string, string>) info.GetValue("CommandLineOptions", typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       World = (World) info.GetValue("World",typeof(World));
       CurrentMap = (Map) info.GetValue("CurrentMap",typeof(Map));
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
@@ -96,6 +100,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
       info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
       info.AddValue("CHARUndergroundFacility_Activated",CHARUndergroundFacility_Activated);
+      info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       info.AddValue("World",World,typeof(World));
       info.AddValue("CurrentMap",CurrentMap,typeof(Map));
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
