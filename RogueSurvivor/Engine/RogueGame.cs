@@ -11050,11 +11050,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void ComputeViewRect(Point mapCenter)
     {
-      int x = mapCenter.X - 10;
-      int num1 = mapCenter.X + 10;
-      int y = mapCenter.Y - 10;
-      int num2 = mapCenter.Y + 10;
-            m_MapViewRect = new Rectangle(x, y, 1 + num1 - x, 1 + num2 - y);
+      int x = mapCenter.X - HALF_VIEW_WIDTH;
+      int y = mapCenter.Y - HALF_VIEW_HEIGHT;
+      m_MapViewRect = new Rectangle(x, y, 1+2* HALF_VIEW_WIDTH, 1 + 2 * HALF_VIEW_HEIGHT);
     }
 
     public bool IsInViewRect(Point mapPosition)
@@ -11713,134 +11711,100 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
     }
 
+    private void DrawDetected(Actor actor, string minimap_img, string map_img)
+    {
+      Point point = new Point(MINIMAP_X + actor.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + actor.Location.Position.Y * MINITILE_SIZE);
+      m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
+      if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor)) {
+        Point screen = MapToScreen(actor.Location.Position);
+        m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
+      }
+    }
+
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DrawMiniMap(Map map)
     {
-      if (RogueGame.s_Options.IsMinimapOn)
-                m_UI.UI_ClearMinimap(Color.Black);
-      if (RogueGame.s_Options.IsMinimapOn)
-      {
+      if (RogueGame.s_Options.IsMinimapOn) {
+        m_UI.UI_ClearMinimap(Color.Black);
+#region set visited tiles color.
         Point pos = new Point();
-        for (int x = 0; x < map.Width; ++x)
-        {
+        for (int x = 0; x < map.Width; ++x) {
           pos.X = x;
-          for (int y = 0; y < map.Height; ++y)
-          {
+          for (int y = 0; y < map.Height; ++y) {
             pos.Y = y;
             Tile tileAt = map.GetTileAt(x, y);
             if (tileAt.IsVisited)
             {
               if (map.GetExitAt(pos) != null)
-                                m_UI.UI_SetMinimapColor(x, y, Color.HotPink);
+                m_UI.UI_SetMinimapColor(x, y, Color.HotPink);
               else
-                                m_UI.UI_SetMinimapColor(x, y, tileAt.Model.MinimapColor);
+                m_UI.UI_SetMinimapColor(x, y, tileAt.Model.MinimapColor);
             }
           }
         }
-      }
-      if (RogueGame.s_Options.IsMinimapOn)
+#endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
-      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * 2, MINIMAP_Y + m_MapViewRect.Top * 2, m_MapViewRect.Width * 2, m_MapViewRect.Height * 2));
-      if (RogueGame.s_Options.ShowPlayerTagsOnMinimap)
-      {
-        for (int x = 0; x < map.Width; ++x)
-        {
-          for (int y = 0; y < map.Height; ++y)
-          {
+      }
+      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * MINITILE_SIZE, MINIMAP_Y + m_MapViewRect.Top * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
+      if (RogueGame.s_Options.ShowPlayerTagsOnMinimap) {
+        for (int x = 0; x < map.Width; ++x) {
+          for (int y = 0; y < map.Height; ++y) {
             Tile tileAt = map.GetTileAt(x, y);
-            if (tileAt.IsVisited)
-            {
-              string imageID = (string) null;
-              if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag"))
-                imageID = "mini_player_tag";
-              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag2"))
-                imageID = "mini_player_tag2";
-              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag3"))
-                imageID = "mini_player_tag3";
-              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag4"))
-                imageID = "mini_player_tag4";
-              if (imageID != null)
-              {
-                Point point = new Point(MINIMAP_X + x * 2, MINIMAP_Y + y * 2);
-                                m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
+            if (tileAt.IsVisited) {
+              string imageID = null;
+              if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag")) imageID = "mini_player_tag";
+              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag2")) imageID = "mini_player_tag2";
+              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag3")) imageID = "mini_player_tag3";
+              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag4")) imageID = "mini_player_tag4";
+              if (imageID != null) {
+                Point point = new Point(MINIMAP_X + x * MINITILE_SIZE, MINIMAP_Y + y * MINITILE_SIZE);
+                m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
               }
             }
           }
         }
       }
-      if (m_Player == null)
-        return;
+      if (m_Player == null) return;
       if (!m_Player.IsSleeping)
       {
         ItemTracker itemTracker1 = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-        if (itemTracker1 != null && itemTracker1.Batteries > 0)
-        {
-          if (m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader)
-          {
-            foreach (Actor follower in m_Player.Followers)
-            {
-              if (follower.Location.Map == m_Player.Location.Map)
-              {
-                ItemTracker itemTracker2 = follower.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-                if (itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader)
-                {
-                  Point point = new Point(MINIMAP_X + follower.Location.Position.X * 2, MINIMAP_Y + follower.Location.Position.Y * 2);
-                                    m_UI.UI_DrawImage("mini_follower_position", point.X - 1, point.Y - 1);
-                  if (IsInViewRect(follower.Location.Position) && !IsVisibleToPlayer(follower))
-                  {
-                    Point screen = MapToScreen(follower.Location.Position);
-                                        m_UI.UI_DrawImage("track_follower_position", screen.X, screen.Y);
-                  }
-                }
+        if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
+        bool find_followers = (null != itemTracker1 && m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
+//      bool find_leader = (null != itemTracker1 && m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
+        bool find_undead = (null != itemTracker1 && itemTracker1.CanTrackUndeads);
+        bool find_blackops = (null != itemTracker1 && itemTracker1.CanTrackBlackOps);
+        bool find_police = (null != itemTracker1 && itemTracker1.CanTrackPolice) || GameFactions.ThePolice == m_Player.Faction;
+
+        // do not assume tracker capabilities are mutually exclusive.
+        if (find_followers) { 
+          foreach (Actor follower in m_Player.Followers) {
+            if (follower.Location.Map == m_Player.Location.Map) {
+              ItemTracker itemTracker2 = follower.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
+              if (itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader) {
+                DrawDetected(follower, "mini_follower_position", "track_follower_position");
               }
             }
           }
-          if (itemTracker1.CanTrackUndeads)
-          {
-            foreach (Actor actor in map.Actors)
+        }
+        if (find_undead) { 
+          foreach (Actor actor in map.Actors) {
+            if (actor != m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == m_Player.Location.Map && Rules.GridDistance(actor.Location.Position, m_Player.Location.Position) <= Rules.ZTRACKINGRADIUS)
             {
-              if (actor != m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == m_Player.Location.Map && Rules.GridDistance(actor.Location.Position, m_Player.Location.Position) <= Rules.ZTRACKINGRADIUS)
-              {
-                Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
-                                m_UI.UI_DrawImage("mini_undead_position", point.X - 1, point.Y - 1);
-                if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor))
-                {
-                  Point screen = MapToScreen(actor.Location.Position);
-                                    m_UI.UI_DrawImage("track_undead_position", screen.X, screen.Y);
-                }
-              }
+              DrawDetected(actor, "mini_undead_position", "track_undead_position");
             }
           }
-          if (itemTracker1.CanTrackBlackOps)
-          {
-            foreach (Actor actor in map.Actors)
-            {
-              if (actor != m_Player && actor.Faction == GameFactions.TheBlackOps && actor.Location.Map == m_Player.Location.Map)
-              {
-                Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
-                                m_UI.UI_DrawImage("mini_blackops_position", point.X - 1, point.Y - 1);
-                if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor))
-                {
-                  Point screen = MapToScreen(actor.Location.Position);
-                                    m_UI.UI_DrawImage("track_blackops_position", screen.X, screen.Y);
-                }
-              }
+        }
+        if (find_blackops) { 
+          foreach (Actor actor in map.Actors) {
+            if (actor != m_Player && actor.Faction == GameFactions.TheBlackOps && actor.Location.Map == m_Player.Location.Map) {
+              DrawDetected(actor, "mini_blackops_position", "track_blackops_position");
             }
           }
-          if (itemTracker1.CanTrackPolice)
-          {
-            foreach (Actor actor in map.Actors)
-            {
-              if (actor != m_Player && actor.Faction == GameFactions.ThePolice && actor.Location.Map == m_Player.Location.Map)
-              {
-                Point point = new Point(MINIMAP_X + actor.Location.Position.X * 2, MINIMAP_Y + actor.Location.Position.Y * 2);
-                                m_UI.UI_DrawImage("mini_police_position", point.X - 1, point.Y - 1);
-                if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor))
-                {
-                  Point screen = MapToScreen(actor.Location.Position);
-                                    m_UI.UI_DrawImage("track_police_position", screen.X, screen.Y);
-                }
-              }
+        }
+        if (find_police) { 
+          foreach (Actor actor in map.Actors) {
+            if (actor != m_Player && actor.Faction == GameFactions.ThePolice && actor.Location.Map == m_Player.Location.Map) {
+              DrawDetected(actor, "mini_police_position", "track_police_position");
             }
           }
         }
