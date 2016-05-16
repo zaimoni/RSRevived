@@ -117,7 +117,10 @@ namespace djack.RogueSurvivor.Data
 
       // only civilians use stench killer
       if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
-      
+
+      // police have implicit police trackers
+      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && (int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return false;
+
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
       if (it is ItemFood)
       {
