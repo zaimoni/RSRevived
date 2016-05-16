@@ -2058,14 +2058,14 @@ namespace djack.RogueSurvivor.Engine
       ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
       if (itemBodyArmor != null)
       {
-        if (observer.Faction.ID == 6)
+        if (observer.Faction.ID == (int) GameFactions.IDs.ThePolice)
         {
           if (itemBodyArmor.IsHostileForCops())
             num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
           else if (itemBodyArmor.IsFriendlyForCops())
             num2 += Rules.UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
         }
-        else if (observer.Faction.ID == 4)
+        else if (observer.Faction.ID == (int) GameFactions.IDs.TheBikers)
         {
           if (itemBodyArmor.IsHostileForBiker((GameGangs.IDs) observer.GangID))
             num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;

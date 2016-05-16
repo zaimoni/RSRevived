@@ -13460,7 +13460,11 @@ namespace djack.RogueSurvivor.Engine
           AddMessagePressEnter();
         }
       }
-      if (player.Location.Map == m_Session.UniqueMaps.PoliceStation_JailsLevel.TheMap && !m_Session.UniqueActors.PoliceStationPrisonner.TheActor.IsDead)
+      // The Prisoner Who Should Not Be should only respond to civilian players; other factions should either be hostile, or colluding on
+      // the fake charges used to frame him (CHAR, possibly police), or conned (possibly police)
+      // Acceptable factions are civilians and survivors.
+      if (player.Location.Map == m_Session.UniqueMaps.PoliceStation_JailsLevel.TheMap && !m_Session.UniqueActors.PoliceStationPrisonner.TheActor.IsDead 
+          && ((int) GameFactions.IDs.TheCivilians == player.Faction.ID || (int) GameFactions.IDs.TheSurvivors == player.Faction.ID))
       {
         Actor theActor = m_Session.UniqueActors.PoliceStationPrisonner.TheActor;
         Map map = player.Location.Map;
