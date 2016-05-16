@@ -1565,7 +1565,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (isSurface)
       {
         Actor newPoliceman = CreateNewPoliceman(0);
-                ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newPoliceman, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+        if (Session.Get.CMDoptionExists("subway-cop")) {
+          int home_district_xy = Session.Get.World.Size/2;
+          if (map.District.WorldPosition == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController();
+        }
+        ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newPoliceman, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       }
       map.AddZone(MakeUniqueZone("Subway Station", b.BuildingRect));
     }

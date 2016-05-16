@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine
   internal class Session : ISerializable
   {
     public static int COMMAND_LINE_SEED = 0;
-    public static System.Collections.Generic.Dictionary<string, string> CommandLineOptions = null;
+    public static System.Collections.Generic.Dictionary<string, string> CommandLineOptions = new System.Collections.Generic.Dictionary<string, string>();
     private static Session s_TheSession;
 
     private WorldTime m_WorldTime;
@@ -131,6 +131,11 @@ namespace djack.RogueSurvivor.Engine
       UniqueActors = new UniqueActors();
       UniqueItems = new UniqueItems();
       UniqueMaps = new UniqueMaps();
+    }
+
+    public bool CMDoptionExists(string x) {
+      if (null == m_CommandLineOptions) return false;
+      return m_CommandLineOptions.ContainsKey(x);
     }
 
     public bool HasRaidHappened(RaidType raid, District district)

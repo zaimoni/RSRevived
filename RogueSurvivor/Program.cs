@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor
             int tmp2;
             if (int.TryParse(tmp.Substring(7), out tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
           }
+          if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist
         }
       }
 
