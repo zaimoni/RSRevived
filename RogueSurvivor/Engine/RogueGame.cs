@@ -2379,6 +2379,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
 #endif
       if (map.IsSecret) return; // undiscovered CHAR base is in stasis
+//    if (map.IsSecret) { map.LocalTime.TurnCounter++; return; } // use turn overflow crash to test multi-threading error handling
 
       Actor nextActorToAct = map.NextActorToAct;
       if (nextActorToAct == null) return;
@@ -13336,7 +13337,11 @@ namespace djack.RogueSurvivor.Engine
         using (Bugreport bugreport = new Bugreport(ex)) {
           int num = (int) bugreport.ShowDialog();
         }
+        // It is exceptionally difficult to completely shut down Rogue Survivor Revived at this point.
+        // RogueSurvivor.vshost.exe doesn't completely go away.
         Application.Exit();
+        // Thread.CurrentThread.Abort();    // makes RogueSurvivor.exe also stay around
+        // return;  // no-op for not-so-obvious reasons
       }
     }
 
