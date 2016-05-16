@@ -2378,26 +2378,23 @@ namespace djack.RogueSurvivor.Engine
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
 #endif
-      if (map.IsSecret) {
-        ++map.LocalTime.TurnCounter;
-      } else {
-        Actor nextActorToAct = map.NextActorToAct;
-        if (nextActorToAct == null) return;
+      if (map.IsSecret) return; // undiscovered CHAR base is in stasis
+
+      Actor nextActorToAct = map.NextActorToAct;
+      if (nextActorToAct == null) return;
 #if DATAFLOW_TRACE
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
 #endif
-        nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
-        if (nextActorToAct.Controller == null)
-          nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
-        else if (nextActorToAct.IsPlayer) {
-          HandlePlayerActor(nextActorToAct);
-          if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead)
-            return;
-          CheckSpecialPlayerEventsAfterAction(nextActorToAct);
-        }
-        else HandleAiActor(nextActorToAct);
-        nextActorToAct.AfterAction();
+      nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
+      if (nextActorToAct.Controller == null)
+        nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
+      else if (nextActorToAct.IsPlayer) {
+        HandlePlayerActor(nextActorToAct);
+        if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
+        CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       }
+      else HandleAiActor(nextActorToAct);
+      nextActorToAct.AfterAction();
     }
 
     private void NextMapTurn(Map map, RogueGame.SimFlags sim)
@@ -2405,6 +2402,10 @@ namespace djack.RogueSurvivor.Engine
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Next turn, Map: "+map.Name);
 #endif
+      if (map.IsSecret) {   // undiscovered CHAR base is in stasis
+        ++map.LocalTime.TurnCounter;
+        return;
+      }
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
         if (m_Session.HasCorpses && map.CountCorpses > 0) {
           List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);

@@ -171,7 +171,7 @@ namespace djack.RogueSurvivor.Data
                     m_IsNight = true;
           break;
         default:
-          throw new ArgumentOutOfRangeException("unhandled hour");
+          throw new ArgumentOutOfRangeException("unhandled hour",m_Hour.ToString()+"; "+m_TurnCounter.ToString());
       }
        // the only updates happening to TurnCounter are from operator++
        // that is, the old value used for strike of midnight/midday is always
