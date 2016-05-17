@@ -33,7 +33,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int BUILD_LARGE_FORT_CHANCE = 50;
     private const int START_FORT_LINE_CHANCE = 1;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
-    private LOSSensor m_LOSSensor;
     private MemorizedSensor m_MemLOSSensor;
     private ExplorationData m_Exploration;
 
@@ -45,8 +44,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-            m_MemLOSSensor = new MemorizedSensor((Sensor)m_LOSSensor, LOS_MEMORY);
+      m_MemLOSSensor = new MemorizedSensor(new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS), LOS_MEMORY);
     }
 
     public override void OptimizeBeforeSaving()
@@ -102,7 +100,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // throwing a grenade overrides normal weapon equipping choices
       if (null != perceptList)
       {
-        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, perceptList);
+        tmpAction = BehaviorThrowGrenade(game, perceptList);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -214,7 +212,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
             if (target.IsSleeping)
               game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));
-            else if (m_LOSSensor.FOV.Contains(target.Location.Position))
+            else if (FOV.Contains(target.Location.Position))
               game.DoEmote(m_Actor, string.Format("{0}! Don't lag behind!", (object) target.Name));
             else
               game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", (object) target.Name));

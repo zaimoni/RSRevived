@@ -467,7 +467,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorThrowGrenade(RogueGame game, HashSet<Point> fov, List<Percept> enemies)
+    protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies)
     {
       if (enemies == null || enemies.Count == 0) return null;
       if (enemies.Count < 3) return null;
@@ -477,7 +477,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int maxRange = game.Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
       Point? nullable = new Point?();
       int num1 = 0;
-      foreach (Point point in fov) {
+      foreach (Point point in m_Actor.Controller.FOV) {
         if (Rules.GridDistance(m_Actor.Location.Position, point) > itemGrenadeModel.BlastAttack.Radius && (Rules.GridDistance(m_Actor.Location.Position, point) <= maxRange && LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange, (List<Point>) null))) {
           int num2 = 0;
           for (int x = point.X - itemGrenadeModel.BlastAttack.Radius; x <= point.X + itemGrenadeModel.BlastAttack.Radius; ++x) {

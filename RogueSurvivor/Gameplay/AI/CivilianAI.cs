@@ -226,7 +226,7 @@ label_10:
       }
       else if (null != enemies)
       {
-        tmpAction = BehaviorThrowGrenade(game, m_LOSSensor.FOV, enemies);
+        tmpAction = BehaviorThrowGrenade(game, enemies);
         if (null != tmpAction) return tmpAction;
       }
 
