@@ -548,7 +548,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (inventory.IsEmpty) return null;
         Item it = inventory[game.Rules.Roll(0, inventory.CountItems)];
         if (!IsItemWorthTellingAbout(it)) return null;
-        int num = game.Rules.ActorFOV(actorAt1, map.LocalTime, game.Session.World.Weather);
+        int num = actorAt1.FOVrange(map.LocalTime, game.Session.World.Weather);
         if (percept.Location.Map == actorAt1.Location.Map && (double) Rules.StdDistance(percept.Location.Position, actorAt1.Location.Position) <= (double) (2 + num))
           return null;
         text = string.Format("I saw {0} {1} {2}.", (object) it.AName, (object) str1, (object) str2);

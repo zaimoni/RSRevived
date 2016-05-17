@@ -22,6 +22,14 @@ namespace djack.RogueSurvivor.Data
     public const int STAMINA_REGEN_WAIT = 2;
     private const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
     private const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
+    private const int MINIMAL_FOV = 2;
+    private const int FOV_PENALTY_SUNSET = 1;
+    private const int FOV_PENALTY_EVENING = 2;
+    private const int FOV_PENALTY_MIDNIGHT = 3;
+    private const int FOV_PENALTY_DEEP_NIGHT = 4;
+    private const int FOV_PENALTY_SUNRISE = 2;
+    private const int FOV_PENALTY_RAIN = 1;
+    private const int FOV_PENALTY_HEAVY_RAIN = 2;
 
     public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_HAULER_INV_BONUS = 1;
@@ -1063,6 +1071,87 @@ namespace djack.RogueSurvivor.Data
     private void ZeroFlag(Actor.Flags f)
     {
       m_Flags &= ~f;
+    }
+
+    // vision
+    public int DarknessFOV { 
+      get {
+        if (Model.Abilities.IsUndead) return Sheet.BaseViewRange;
+        return MINIMAL_FOV;
+      }
+    }
+
+    public int NightFovPenalty(WorldTime time)
+    {
+      if (Model.Abilities.IsUndead) return 0;
+      switch (time.Phase)
+      {
+        case DayPhase.SUNSET: return FOV_PENALTY_SUNSET;
+        case DayPhase.EVENING: return FOV_PENALTY_EVENING;
+        case DayPhase.MIDNIGHT: return FOV_PENALTY_MIDNIGHT;
+        case DayPhase.DEEP_NIGHT: return FOV_PENALTY_DEEP_NIGHT;
+        case DayPhase.SUNRISE: return FOV_PENALTY_SUNRISE;
+        default: return 0;
+      }
+    }
+
+    public int WeatherFovPenalty(Weather weather)
+    {
+      if (Model.Abilities.IsUndead) return 0;
+      switch (weather)
+      {
+        case Weather.RAIN: return FOV_PENALTY_RAIN;
+        case Weather.HEAVY_RAIN: return FOV_PENALTY_HEAVY_RAIN;
+        default: return 0;
+      }
+    }
+
+    int LightBonus { 
+      get {
+        ItemLight itemLight = GetEquippedItem(DollPart.LEFT_HAND) as ItemLight;
+        if (itemLight != null && itemLight.Batteries > 0) return itemLight.FovBonus;
+        return 0;
+      }
+    }
+
+    public int FOVrange(WorldTime time, Weather weather)
+    {
+      if (IsSleeping) return 0;
+      int val2 = Sheet.BaseViewRange;
+      Lighting lighting = Location.Map.Lighting;
+      switch (lighting)
+      {
+        case Lighting.DARKNESS:
+          val2 = DarknessFOV;
+          goto case Lighting.LIT;
+        case Lighting.OUTSIDE:
+          val2 -= NightFovPenalty(time) + WeatherFovPenalty(weather);
+          goto case Lighting.LIT;
+        case Lighting.LIT:
+          if (IsExhausted) val2 -= 2;
+          else if (IsSleepy) --val2;
+          if (lighting == Lighting.DARKNESS || (lighting == Lighting.OUTSIDE && time.IsNight))
+          {
+            int num = LightBonus;
+            if (num == 0)
+            {
+              Map map = Location.Map;
+              if (map.HasAnyAdjacentInMap(Location.Position, (Predicate<System.Drawing.Point>) (pt =>
+              {
+                Actor actorAt = map.GetActorAt(pt);
+                if (actorAt == null) return false;
+                return 0 < actorAt.LightBonus;
+              })))
+                num = 1;
+            }
+            val2 += num;
+          }
+          MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
+          if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) ++val2;
+          return Math.Max(MINIMAL_FOV, val2);
+        default:
+          throw new ArgumentOutOfRangeException("unhandled lighting");
+      }
     }
 
     // event handlers

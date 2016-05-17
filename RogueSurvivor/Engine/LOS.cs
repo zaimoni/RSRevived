@@ -256,13 +256,13 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
 
-    public static HashSet<Point> ComputeFOVFor(Rules rules, Actor actor, WorldTime time, Weather weather)
+    public static HashSet<Point> ComputeFOVFor(Actor actor, WorldTime time, Weather weather)
     {
       Location location = actor.Location;
       HashSet<Point> visibleSet = new HashSet<Point>();
       Point position = location.Position;
       Map map = location.Map;
-      int maxRange = rules.ActorFOV(actor, time, weather);
+      int maxRange = actor.FOVrange(time, weather);
       int x1 = position.X - maxRange;
       int x2 = position.X + maxRange;
       int y1 = position.Y - maxRange;

@@ -3553,9 +3553,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void UpdatePlayerFOV(Actor player)
     {
-      if (player == null)
-        return;
-      m_PlayerFOV = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
+      if (player == null) return;
+      m_PlayerFOV = LOS.ComputeFOVFor(player, m_Session.WorldTime, m_Session.World.Weather);
       player.Location.Map.SetViewAndMarkVisited((IEnumerable<Point>)m_PlayerFOV);
     }
 
@@ -5132,7 +5131,7 @@ namespace djack.RogueSurvivor.Engine
                 RedrawPlayScreen();
         return false;
       }
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(m_Rules, player, m_Session.WorldTime, m_Session.World.Weather);
+      HashSet<Point> fovFor = LOS.ComputeFOVFor(player, m_Session.WorldTime, m_Session.World.Weather);
       List<Actor> enemiesInFov = m_Rules.GetEnemiesInFov(player, fovFor);
       if (enemiesInFov == null || enemiesInFov.Count == 0)
       {
@@ -5734,7 +5733,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Actor follower in player.Followers)
       {
         actorArray[index1] = follower;
-        pointSetArray[index1] = LOS.ComputeFOVFor(m_Rules, follower, m_Session.WorldTime, m_Session.World.Weather);
+        pointSetArray[index1] = LOS.ComputeFOVFor(follower, m_Session.WorldTime, m_Session.World.Weather);
         bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_PlayerFOV.Contains(follower.Location.Position);
         bool flag2 = AreLinkedByPhone(player, follower);
         flagArray[index1] = flag1 || flag2;
@@ -5879,7 +5878,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       string str1 = DescribePlayerFollowerStatus(follower);
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(m_Rules, follower, m_Session.WorldTime, m_Session.World.Weather);
+      HashSet<Point> fovFor = LOS.ComputeFOVFor(follower, m_Session.WorldTime, m_Session.World.Weather);
       bool flag1 = true;
       bool flag2 = false;
       do
@@ -10223,7 +10222,7 @@ namespace djack.RogueSurvivor.Engine
         Point position = killer.Location.Position;
         foreach (Actor actor in map.Actors)
         {
-          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (Rules.GridDistance(actor.Location.Position, position) <= m_Rules.ActorFOV(actor, map.LocalTime, m_Session.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
+          if (actor.Model.Abilities.IsLawEnforcer && !actor.IsDead && (!actor.IsSleeping && !actor.IsPlayer) && (actor != killer && actor != deadGuy && (actor.Leader != killer && killer.Leader != actor)) && (Rules.GridDistance(actor.Location.Position, position) <= actor.FOVrange(map.LocalTime, m_Session.World.Weather) && LOS.CanTraceViewLine(actor.Location, position)))
           {
                         DoSay(actor, killer, string.Format("MURDER! {0} HAS KILLED {1}!", (object) killer.TheName, (object) deadGuy.TheName), RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
                         DoMakeAggression(actor, killer);
@@ -11961,9 +11960,9 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
       if (actor.Model.Abilities.IsUndead)
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object)m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)actor.FOVrange(m_Session.WorldTime, m_Session.World.Weather), (object)m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
       else
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)m_Rules.ActorFOV(actor, m_Session.WorldTime, m_Session.World.Weather), (object) actor.CountFollowers, (object)m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)actor.FOVrange(m_Session.WorldTime, m_Session.World.Weather), (object) actor.CountFollowers, (object)m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
     }
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
@@ -13897,7 +13896,7 @@ namespace djack.RogueSurvivor.Engine
             return (ActorAction) new ActionUnequipItem(actor, this, it);
           return (ActorAction) new ActionDropItem(actor, this, it);
         case 4:
-          int maxRange = m_Rules.ActorFOV(actor, actor.Location.Map.LocalTime, m_Session.World.Weather);
+          int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, m_Session.World.Weather);
           foreach (Actor actor1 in actor.Location.Map.Actors)
           {
             if (actor1 != actor && !m_Rules.IsEnemyOf(actor, actor1) && (LOS.CanTraceViewLine(actor.Location, actor1.Location.Position, maxRange) && m_Rules.RollChance(50)))
@@ -13921,7 +13920,7 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Actor actor in loc.Map.Actors) {
         if (actor.Model.Abilities.HasSanity && !actor.IsSleeping) {
-          int maxRange = m_Rules.ActorFOV(actor, loc.Map.LocalTime, m_Session.World.Weather);
+          int maxRange = actor.FOVrange(loc.Map.LocalTime, m_Session.World.Weather);
           if (LOS.CanTraceViewLine(loc, actor.Location.Position, maxRange)) {
             actor.SpendSanity(sanCost);
             if (whoDoesTheAction == actor) {

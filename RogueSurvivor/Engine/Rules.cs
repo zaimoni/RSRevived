@@ -80,14 +80,6 @@ namespace djack.RogueSurvivor.Engine
     public const int JUMP_STUMBLE_CHANCE = 25;
     public const int JUMP_STUMBLE_ACTION_COST = 100;
     public const int BARRICADING_MAX = 80;
-    private const int MINIMAL_FOV = 2;
-    private const int FOV_PENALTY_SUNSET = 1;
-    private const int FOV_PENALTY_EVENING = 2;
-    private const int FOV_PENALTY_MIDNIGHT = 3;
-    private const int FOV_PENALTY_DEEP_NIGHT = 4;
-    private const int FOV_PENALTY_SUNRISE = 2;
-    private const int FOV_PENALTY_RAIN = 1;
-    private const int FOV_PENALTY_HEAVY_RAIN = 2;
     public const int MELEE_WEAPON_BREAK_CHANCE = 1;
     public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;
     public const int FIREARM_JAM_CHANCE_NO_RAIN = 1;
@@ -1964,46 +1956,6 @@ namespace djack.RogueSurvivor.Engine
       return Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
     }
 
-    public int ActorFOV(Actor actor, WorldTime time, Weather weather)
-    {
-      if (actor.IsSleeping) return 0;
-      int val2 = actor.Sheet.BaseViewRange;
-      Lighting lighting = actor.Location.Map.Lighting;
-      switch (lighting)
-      {
-        case Lighting.DARKNESS:
-          val2 = DarknessFov(actor);
-          goto case Lighting.LIT;
-        case Lighting.OUTSIDE:
-          val2 = val2 - NightFovPenalty(actor, time) - WeatherFovPenalty(actor, weather);
-          goto case Lighting.LIT;
-        case Lighting.LIT:
-          if (actor.IsExhausted) val2 -= 2;
-          else if (actor.IsSleepy) --val2;
-          if (lighting == Lighting.DARKNESS || lighting == Lighting.OUTSIDE && time.IsNight)
-          {
-            int num = GetLightBonusEquipped(actor);
-            if (num == 0)
-            {
-              Map map = actor.Location.Map;
-              if (map.HasAnyAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt =>
-              {
-                Actor actorAt = map.GetActorAt(pt);
-                if (actorAt == null) return false;
-                return HasLightOnEquipped(actorAt);
-              })))
-                num = 1;
-            }
-            val2 += num;
-          }
-          MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position);
-          if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) ++val2;
-          return Math.Max(MINIMAL_FOV, val2);
-        default:
-          throw new ArgumentOutOfRangeException("unhandled lighting");
-      }
-    }
-
     public float ActorSmell(Actor actor)
     {
       return (float) (1.0 + (double) Rules.SKILL_ZTRACKER_SMELL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * actor.Model.StartingSheet.BaseSmellRating;
@@ -2013,22 +1965,6 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsSleeping) return -1;
       return (OdorScent.MAX_STRENGTH+1) - (int) ((double)ActorSmell(actor) * OdorScent.MAX_STRENGTH);
-    }
-
-    private bool HasLightOnEquipped(Actor actor)
-    {
-      ItemLight itemLight = actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemLight;
-      if (itemLight != null)
-        return itemLight.Batteries > 0;
-      return false;
-    }
-
-    private int GetLightBonusEquipped(Actor actor)
-    {
-      ItemLight itemLight = actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemLight;
-      if (itemLight != null && itemLight.Batteries > 0)
-        return itemLight.FovBonus;
-      return 0;
     }
 
     public int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)
@@ -2081,31 +2017,6 @@ namespace djack.RogueSurvivor.Engine
       return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location.Position, murderer.Location.Position);
     }
 
-    private int NightFovPenalty(Actor actor, WorldTime time)
-    {
-      if (actor.Model.Abilities.IsUndead) return 0;
-      switch (time.Phase)
-      {
-        case DayPhase.SUNSET: return FOV_PENALTY_SUNSET;
-        case DayPhase.EVENING: return FOV_PENALTY_EVENING;
-        case DayPhase.MIDNIGHT: return FOV_PENALTY_MIDNIGHT;
-        case DayPhase.DEEP_NIGHT: return FOV_PENALTY_DEEP_NIGHT;
-        case DayPhase.SUNRISE: return FOV_PENALTY_SUNRISE;
-        default: return 0;
-      }
-    }
-
-    private int WeatherFovPenalty(Actor actor, Weather weather)
-    {
-      if (actor.Model.Abilities.IsUndead) return 0;
-      switch (weather)
-      {
-        case Weather.RAIN: return FOV_PENALTY_RAIN;
-        case Weather.HEAVY_RAIN: return FOV_PENALTY_HEAVY_RAIN;
-        default: return 0;
-      }
-    }
-
     public bool IsWeatherRain(Weather weather)
     {
       switch (weather)
@@ -2119,13 +2030,6 @@ namespace djack.RogueSurvivor.Engine
         default:
           throw new ArgumentOutOfRangeException("unhandled weather");
       }
-    }
-
-    private int DarknessFov(Actor actor)
-    {
-      if (actor.Model.Abilities.IsUndead)
-        return actor.Sheet.BaseViewRange;
-      return 2;
     }
 
     public float ComputeMapPowerRatio(Map map)
