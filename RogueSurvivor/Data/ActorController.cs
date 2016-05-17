@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -17,13 +19,15 @@ namespace djack.RogueSurvivor.Data
 
     public virtual void TakeControl(Actor actor)
     {
-            m_Actor = actor;
+      m_Actor = actor;
     }
 
     public virtual void LeaveControl()
     {
-            m_Actor = (Actor) null;
+      m_Actor = null;
     }
+
+    public abstract HashSet<Point> FOV { get; }
 
     public abstract ActorAction GetAction(RogueGame game);
 

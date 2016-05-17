@@ -11,6 +11,7 @@ using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -22,13 +23,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
+      m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
     }
 
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
       return m_LOSSensor.Sense(game, m_Actor);
     }
+
+    public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {

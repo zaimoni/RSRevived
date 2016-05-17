@@ -6,12 +6,27 @@
 
 using djack.RogueSurvivor.Engine;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class PlayerController : ActorController
   {
+    private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
+
+    public PlayerController() { 
+      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES);
+    }
+
+    public List<Engine.AI.Percept> UpdateSensors(RogueGame game)
+    {
+      return m_LOSSensor.Sense(game, m_Actor);
+    }
+
+    public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
+
     public override ActorAction GetAction(RogueGame game)
     {
       throw new InvalidOperationException("do not call PlayerController.GetAction()");

@@ -91,6 +91,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_LOSSensor.Sense(game, m_Actor);
     }
 
+    public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
+
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
