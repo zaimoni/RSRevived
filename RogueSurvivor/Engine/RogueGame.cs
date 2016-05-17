@@ -12181,7 +12181,7 @@ namespace djack.RogueSurvivor.Engine
     private bool IsVisibleToPlayer(Map map, Point position)
     {
       if (m_Player != null && (map == m_Player.Location.Map && map.IsInBounds(position.X, position.Y)))
-        return map.GetTileAt(position.X, position.Y).IsInView;
+        return m_Player.Controller.FOV.Contains(position);
       return false;
     }
 
