@@ -332,15 +332,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public bool IsGameRunning
-    {
-      get
-      {
+    public bool IsGameRunning {
+      get {
         return m_IsGameRunning;
-      }
-      set
-      {
-                m_IsGameRunning = value;
       }
     }
 
@@ -2304,6 +2298,35 @@ namespace djack.RogueSurvivor.Engine
             SaveKeybindings();
     }
 
+    private void FindPlayer()
+    {
+       Actor tmp = m_Session.CurrentMap.FindPlayer;
+       if (null != tmp) {
+         m_Player = tmp;
+         UpdatePlayerFOV(m_Player);
+         ComputeViewRect(m_Player.Location.Position);
+         RedrawPlayScreen();
+         return;
+       }
+       // check all maps in current district
+       tmp = m_Session.CurrentMap.District.FindPlayer(m_Session.CurrentMap);
+       if (null != tmp)
+         {
+         m_Player = tmp;
+         return;
+         }
+
+       // check all other districts
+       foreach(District tmp2 in m_Session.World.PlayerDistricts) {
+         tmp = tmp2.FindPlayer(null);
+         if (null != tmp)
+           {
+           m_Player = tmp;
+           return;
+           }
+       }
+    }
+
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(District district, RogueGame.SimFlags sim)
     {
@@ -2317,6 +2340,7 @@ namespace djack.RogueSurvivor.Engine
       foreach(Map current in district.Maps) {
         while(null != current.NextActorToAct) {
           AdvancePlay(current, sim);
+          if (m_Player.IsDead) FindPlayer();
           if (m_Player.IsDead) HandleReincarnation();
           if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         }
@@ -2383,6 +2407,20 @@ namespace djack.RogueSurvivor.Engine
 
       Actor nextActorToAct = map.NextActorToAct;
       if (nextActorToAct == null) return;
+
+      // We actually may do something.  Do a partial solution to dropped messages here in the multi-PC case
+      if (map != m_Player.Location.Map && 0 < map.PlayerCount && !nextActorToAct.IsPlayer) {
+        Actor tmp = map.FindPlayer;
+        if (null != tmp)
+          {
+          m_Player = tmp;
+          m_Session.CurrentMap = map;  // multi-PC support
+          UpdatePlayerFOV(m_Player);
+          ComputeViewRect(m_Player.Location.Position);
+          RedrawPlayScreen();
+          }
+      }
+
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
 #endif
@@ -2391,6 +2429,7 @@ namespace djack.RogueSurvivor.Engine
         nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
       else if (nextActorToAct.IsPlayer) {
         HandlePlayerActor(nextActorToAct);
+        if (m_Player.IsDead) FindPlayer();
         if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       }

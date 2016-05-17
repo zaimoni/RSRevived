@@ -474,6 +474,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public Actor FindPlayer { 
+      get {
+        foreach(Actor tmp in m_ActorsList) { 
+          if (tmp.IsPlayer && !tmp.IsDead) return tmp;
+        }
+        return null;
+      }
+    }
+
     // map object manipulation functions
     public bool HasMapObject(MapObject mapObj)
     {

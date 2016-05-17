@@ -145,6 +145,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public Actor FindPlayer(Map already_failed) { 
+       foreach(Map tmp in Maps) {
+         if (tmp == already_failed) continue;
+         Actor tmp2 = tmp.FindPlayer;
+         if (null != tmp2) return tmp2;
+       }
+       return null;
+    }
+
     public bool ReadyForNextTurn
     {
       get {
