@@ -163,7 +163,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
-        tmpAction = BehaviorSleep(game, m_LOSSensor.FOV);
+        tmpAction = BehaviorSleep(game);
         if (null != tmpAction) {
           if (tmpAction is ActionSleep)
             m_Actor.Activity = Activity.SLEEPING;

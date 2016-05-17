@@ -342,7 +342,7 @@ label_10:
                     m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
-        ActorAction actorAction5 = BehaviorSleep(game, m_LOSSensor.FOV);
+        ActorAction actorAction5 = BehaviorSleep(game);
         if (actorAction5 != null)
         {
           if (actorAction5 is ActionSleep)

@@ -721,7 +721,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, game, point1, false);
     }
 
-    protected ActorAction BehaviorSleep(RogueGame game, HashSet<Point> FOV)
+    protected ActorAction BehaviorSleep(RogueGame game)
     {
       if (!game.Rules.CanActorSleep(m_Actor)) return null;
       Map map = m_Actor.Location.Map;
@@ -738,7 +738,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor, game);
       Point? nullable = new Point?();
       float num1 = float.MaxValue;
-      foreach (Point point in FOV) {
+      foreach (Point point in m_Actor.Controller.FOV) {
         MapObject mapObjectAt = map.GetMapObjectAt(point);
         if (mapObjectAt != null && mapObjectAt.IsCouch && map.GetActorAt(point) == null) {
           float num2 = Rules.StdDistance(m_Actor.Location.Position, point);

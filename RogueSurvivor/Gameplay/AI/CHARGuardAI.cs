@@ -25,13 +25,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "Hey"
     };
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
-    private LOSSensor m_LOSSensor;
     private MemorizedSensor m_MemorizedSensor;
 
     protected override void CreateSensors()
     {
-            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-            m_MemorizedSensor = new MemorizedSensor((Sensor)m_LOSSensor, LOS_MEMORY);
+      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS), LOS_MEMORY);
     }
 
     public override void TakeControl(Actor actor)
@@ -148,7 +146,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsSleepy && null == enemies) {
-        tmpAction = BehaviorSleep(game, m_LOSSensor.FOV);
+        tmpAction = BehaviorSleep(game);
         if (null != tmpAction) {
           if (tmpAction is ActionSleep)
             m_Actor.Activity = Activity.SLEEPING;
@@ -157,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position = m_Actor.Leader.Location.Position;
-        bool isVisible = m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+        bool isVisible = FOV.Contains(m_Actor.Leader.Location.Position);
         tmpAction = BehaviorFollowActor(game, m_Actor.Leader, position, isVisible, 1);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
