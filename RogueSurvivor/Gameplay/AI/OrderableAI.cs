@@ -581,10 +581,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    protected ActorAction BehaviorSecurePerimeter(RogueGame game, HashSet<Point> fov)
+    protected ActorAction BehaviorSecurePerimeter(RogueGame game)
     {
       Map map = m_Actor.Location.Map;
-      foreach (Point position in fov) {
+      foreach (Point position in m_Actor.Controller.FOV) {
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null) {
           DoorWindow door = mapObjectAt as DoorWindow;

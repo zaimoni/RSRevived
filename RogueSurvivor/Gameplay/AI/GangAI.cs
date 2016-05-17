@@ -30,7 +30,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
-    private LOSSensor m_LOSSensor;
     private MemorizedSensor m_MemorizedSensor;
     private ExplorationData m_Exploration;
 
@@ -42,8 +41,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS);
-            m_MemorizedSensor = new MemorizedSensor((Sensor)m_LOSSensor, LOS_MEMORY);
+      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS), LOS_MEMORY);
     }
 
     public override void OptimizeBeforeSaving()
@@ -125,7 +123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> enemies = FilterEnemies(game, percepts1);
       List<Percept> perceptList = FilterCurrent(enemies);
       bool flag1 = perceptList != null;
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
       bool flag4 = !m_Actor.IsTired;
 
@@ -190,7 +188,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction3 = BehaviorEat(game);
         if (actorAction3 != null)
         {
-                    m_Actor.Activity = Activity.IDLE;
+          m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
         if (m_Actor.IsStarving || m_Actor.IsInsane)
@@ -198,24 +196,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ActorAction actorAction4 = BehaviorGoEatCorpse(game, FilterCorpses(game, percepts1));
           if (actorAction4 != null)
           {
-                        m_Actor.Activity = Activity.IDLE;
+            m_Actor.Activity = Activity.IDLE;
             return actorAction4;
           }
         }
       }
       if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor)))
       {
-        ActorAction actorAction3 = BehaviorSecurePerimeter(game, m_LOSSensor.FOV);
+        ActorAction actorAction3 = BehaviorSecurePerimeter(game);
         if (actorAction3 != null)
         {
-                    m_Actor.Activity = Activity.IDLE;
+          m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
         ActorAction actorAction4 = BehaviorSleep(game);
         if (actorAction4 != null)
         {
           if (actorAction4 is ActionSleep)
-                        m_Actor.Activity = Activity.SLEEPING;
+          m_Actor.Activity = Activity.SLEEPING;
           return actorAction4;
         }
       }
@@ -274,13 +272,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader && !DontFollowLeader)
       {
         Point position = m_Actor.Leader.Location.Position;
-        bool isVisible = m_LOSSensor.FOV.Contains(position);
+        bool isVisible = FOV.Contains(position);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         ActorAction actorAction3 = BehaviorFollowActor(game, m_Actor.Leader, position, isVisible, maxDist);
         if (actorAction3 != null)
         {
-                    m_Actor.Activity = Activity.FOLLOWING;
-                    m_Actor.TargetActor = m_Actor.Leader;
+          m_Actor.Activity = Activity.FOLLOWING;
+          m_Actor.TargetActor = m_Actor.Leader;
           return actorAction3;
         }
       }
@@ -306,7 +304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           {
             if (target.IsSleeping)
               game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));
-            else if (m_LOSSensor.FOV.Contains(target.Location.Position))
+            else if (FOV.Contains(target.Location.Position))
               game.DoEmote(m_Actor, string.Format("Hey {0}! Fucking move!", (object) target.Name));
             else
               game.DoEmote(m_Actor, string.Format("Where is that {0} retard?", (object) target.Name));

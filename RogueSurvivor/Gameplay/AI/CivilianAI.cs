@@ -336,10 +336,10 @@ label_10:
       }
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(m_Actor))
       {
-        ActorAction actorAction2 = BehaviorSecurePerimeter(game, m_LOSSensor.FOV);
+        ActorAction actorAction2 = BehaviorSecurePerimeter(game);
         if (actorAction2 != null)
         {
-                    m_Actor.Activity = Activity.IDLE;
+          m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
         ActorAction actorAction5 = BehaviorSleep(game);
