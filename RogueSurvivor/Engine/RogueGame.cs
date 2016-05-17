@@ -182,7 +182,6 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_WAKE_UP = new Verb("wake up", "wakes up");
     private bool m_IsGameRunning = true;
     private List<RogueGame.Overlay> m_Overlays = new List<RogueGame.Overlay>();
-    private HashSet<Point> m_PlayerFOV = new HashSet<Point>();
     private object m_SimMutex = new object();
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
@@ -3554,8 +3553,8 @@ namespace djack.RogueSurvivor.Engine
     public void UpdatePlayerFOV(Actor player)
     {
       if (player == null) return;
-      m_PlayerFOV = LOS.ComputeFOVFor(player, m_Session.WorldTime, m_Session.World.Weather);
-      player.Location.Map.SetViewAndMarkVisited((IEnumerable<Point>)m_PlayerFOV);
+      (player.Controller as PlayerController)?.UpdateSensors(this);
+      player.Location.Map.SetViewAndMarkVisited(player.Controller.FOV);
     }
 
     private void HandlePlayerActor(Actor player)
@@ -5196,7 +5195,7 @@ namespace djack.RogueSurvivor.Engine
       {
         Map map = player.Location.Map;
         List<Actor> actorList = new List<Actor>();
-        foreach (Point position in m_PlayerFOV)
+        foreach (Point position in m_Player.Controller.FOV)
         {
           Actor actorAt = map.GetActorAt(position);
           if (actorAt != null && actorAt!=player)
@@ -5710,7 +5709,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (m_IsPlayerLongWaitForcedStop || m_Session.WorldTime.TurnCounter >= m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (player.IsSleepy || player.IsExhausted))
         return false;
-      foreach (Point position in m_PlayerFOV)
+      foreach (Point position in m_Player.Controller.FOV)
       {
         Actor actorAt = player.Location.Map.GetActorAt(position);
         if (actorAt != null && m_Rules.IsEnemyOf(player, actorAt))
@@ -5734,7 +5733,7 @@ namespace djack.RogueSurvivor.Engine
       {
         actorArray[index1] = follower;
         pointSetArray[index1] = LOS.ComputeFOVFor(follower, m_Session.WorldTime, m_Session.World.Weather);
-        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_PlayerFOV.Contains(follower.Location.Position);
+        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_Player.Controller.FOV.Contains(follower.Location.Position);
         bool flag2 = AreLinkedByPhone(player, follower);
         flagArray[index1] = flag1 || flag2;
         ++index1;
@@ -13590,7 +13589,7 @@ namespace djack.RogueSurvivor.Engine
         m_Session.Scoring.AddVisit(m_Session.WorldTime.TurnCounter, player.Location.Map);
         m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Visited {0}.", (object) player.Location.Map.Name));
       }
-      foreach (Point position in m_PlayerFOV) {
+      foreach (Point position in m_Player.Controller.FOV) {
         Actor actorAt = player.Location.Map.GetActorAt(position);
         if (actorAt != null && actorAt != player)
           m_Session.Scoring.AddSighting(actorAt.Model.ID, m_Session.WorldTime.TurnCounter);
