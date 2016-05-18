@@ -268,11 +268,19 @@ namespace djack.RogueSurvivor.Data
       return 0 == x || x == Width-1 || 0 == y || y == Height-1;
     }
 
+    /// <summary>
+    /// GetTileAt does not bounds-check for efficiency reasons; 
+    /// the typical use case is known to be in bounds by construction.
+    /// </summary>
     public Tile GetTileAt(int x, int y)
     {
       return m_Tiles[x, y];
     }
 
+    /// <summary>
+    /// GetTileAt does not bounds-check for efficiency reasons; 
+    /// the typical use case is known to be in bounds by construction.
+    /// </summary>
     public Tile GetTileAt(Point p)
     {
       return m_Tiles[p.X, p.Y];
@@ -807,26 +815,6 @@ namespace djack.RogueSurvivor.Data
             m_aux_ScentsByPosition.Remove(scent.Position);
     }
 
-    public void ClearView()
-    {
-      for (int index1 = 0; index1 < Width; ++index1)
-      {
-        for (int index2 = 0; index2 < Height; ++index2)
-          m_Tiles[index1, index2].IsInView = false;
-      }
-    }
-
-    public void SetView(IEnumerable<Point> visiblePositions)
-    {
-            ClearView();
-      foreach (Point visiblePosition in visiblePositions)
-      {
-        if (!IsInBounds(visiblePosition.X, visiblePosition.Y))
-          throw new ArgumentOutOfRangeException("point " + (object) visiblePosition + " not in map bounds");
-                m_Tiles[visiblePosition.X, visiblePosition.Y].IsInView = true;
-      }
-    }
-
     public void MarkAsVisited(IEnumerable<Point> positions)
     {
       foreach (Point position in positions)
@@ -834,18 +822,6 @@ namespace djack.RogueSurvivor.Data
         if (!IsInBounds(position.X, position.Y))
           throw new ArgumentOutOfRangeException("point " + (object) position + " not in map bounds");
                 m_Tiles[position.X, position.Y].IsVisited = true;
-      }
-    }
-
-    public void SetViewAndMarkVisited(IEnumerable<Point> visiblePositions)
-    {
-            ClearView();
-      foreach (Point visiblePosition in visiblePositions)
-      {
-        if (!IsInBounds(visiblePosition.X, visiblePosition.Y))
-          throw new ArgumentOutOfRangeException("point " + (object) visiblePosition + " not in map bounds");
-                m_Tiles[visiblePosition.X, visiblePosition.Y].IsInView = true;
-                m_Tiles[visiblePosition.X, visiblePosition.Y].IsVisited = true;
       }
     }
 

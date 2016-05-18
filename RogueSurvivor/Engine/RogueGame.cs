@@ -3554,7 +3554,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (player == null) return;
       (player.Controller as PlayerController)?.UpdateSensors(this);
-      player.Location.Map.SetViewAndMarkVisited(player.Controller.FOV);
+      player.Location.Map.MarkAsVisited(player.Controller.FOV);
     }
 
     private void HandlePlayerActor(Actor player)
@@ -11214,8 +11214,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Point point = new Point();
       bool isUndead = m_Player.Model.Abilities.IsUndead;
-      bool flag1 = (double)m_Player.Model.StartingSheet.BaseSmellRating > 0.0;
-      int num5 = m_Rules.ActorSmellThreshold(m_Player);
+      bool flag1 = m_Player.Model.StartingSheet.BaseSmellRating > 0;
       for (int x = num1; x < num2; ++x)
       {
         point.X = x;
@@ -11225,11 +11224,12 @@ namespace djack.RogueSurvivor.Engine
           Point screen = MapToScreen(x, y);
           bool player = IsVisibleToPlayer(map, point);
           bool flag2 = false;
-          Tile tile = map.IsInBounds(x, y) ? map.GetTileAt(x, y) : (Tile) null;
-          if (map.IsInBounds(x, y))
-                        DrawTile(tile, screen, tint);
-          else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
-                        DrawExit(screen);
+          Tile tile = map.IsInBounds(x, y) ? map.GetTileAt(x, y) : null;
+          if (null != tile) {
+            tile.IsInView = player;
+            DrawTile(tile, screen, tint);
+          } else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
+            DrawExit(screen);
           if (player)
           {
             List<Corpse> corpsesAt = map.GetCorpsesAt(x, y);
@@ -11253,6 +11253,7 @@ namespace djack.RogueSurvivor.Engine
             {
               if (flag1)
               {
+                int num5 = m_Rules.ActorSmellThreshold(m_Player);
                 int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, point);
                 if (scentByOdorAt1 >= num5)
                 {
@@ -13205,11 +13206,6 @@ namespace djack.RogueSurvivor.Engine
       {
         m_MusicManager.StopAll();
         m_MusicManager.Play(GameMusics.INTERLUDE);
-        if (m_Player != null)
-        {
-          m_Player.Location.Map.ClearView();
-          entryMap.ClearView();
-        }
         StopSimThread();
                 lock (m_SimMutex)
                 {
