@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
     public Doll(DollBody body)
     {
             m_Body = body;
-            m_Decorations = new List<string>[9];
+            m_Decorations = new List<string>[(int) DollPart._COUNT];
     }
 
     public List<string> GetDecorations(DollPart part)
@@ -49,15 +49,13 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveDecoration(string imageID)
     {
-      for (int index = 0; index < 9; ++index)
+      for (int index = 0; index < (int)DollPart._COUNT; ++index)
       {
         List<string> stringList = m_Decorations[index];
         if (stringList != null && stringList.Contains(imageID))
         {
           stringList.Remove(imageID);
-          if (stringList.Count != 0)
-            break;
-                    m_Decorations[index] = (List<string>) null;
+          if (stringList.Count == 0) m_Decorations[index] = null;
           break;
         }
       }
@@ -65,13 +63,13 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveDecoration(DollPart part)
     {
-            m_Decorations[(int) part] = (List<string>) null;
+      m_Decorations[(int) part] = null;
     }
 
     public void RemoveAllDecorations()
     {
-      for (int index = 0; index < 9; ++index)
-                m_Decorations[index] = (List<string>) null;
+      for (int index = 0; index < (int)DollPart._COUNT; ++index)
+        m_Decorations[index] = null;
     }
   }
 }
