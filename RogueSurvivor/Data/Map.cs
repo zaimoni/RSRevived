@@ -43,6 +43,8 @@ namespace djack.RogueSurvivor.Data
     private Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition;
     [NonSerialized]
     private Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition;
+    [NonSerialized]
+    private List<Actor> m_aux_Players;
 
     public District District
     {
@@ -471,23 +473,28 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    // possible micro-optimization target
+    public List<Actor> Players { 
+      get {
+        if (null != m_aux_Players) return m_aux_Players;
+        m_aux_Players = new List<Actor>(m_ActorsList.Count);
+        foreach(Actor tmp in m_ActorsList) { 
+          if (tmp.IsPlayer && !tmp.IsDead) m_aux_Players.Add(tmp);
+        }
+        m_aux_Players.TrimExcess();
+        return m_aux_Players;
+      }
+    }
+
     public int PlayerCount { 
       get {
-        int ret = 0;
-        foreach(Actor tmp in m_ActorsList) { 
-          if (tmp.IsPlayer && !tmp.IsDead) ret++;
-        }
-        return ret;
+        return Players.Count;
       }
     }
 
     public Actor FindPlayer { 
       get {
-        foreach(Actor tmp in m_ActorsList) { 
-          if (tmp.IsPlayer && !tmp.IsDead) return tmp;
-        }
-        return null;
+        if (0 == Players.Count) return null;
+        return Players[0];
       }
     }
 
@@ -999,6 +1006,8 @@ namespace djack.RogueSurvivor.Data
         if (null != tmp.Controller) continue;
         tmp.Controller = tmp.Model.InstanciateController();
       }
+
+      m_aux_Players = null;
     }
 
     public void OptimizeBeforeSaving()
