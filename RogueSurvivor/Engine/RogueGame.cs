@@ -12214,7 +12214,6 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
       if (!map.IsInBounds(position.X, position.Y)) return false;
-      if (null == m_Player || map != m_Player.Location.Map) return false;
       if (null == m_Player || map != m_Player.Location.Map) {
         if (0 >= map.PlayerCount) return false;
         foreach (Actor tmp in map.Players) { 

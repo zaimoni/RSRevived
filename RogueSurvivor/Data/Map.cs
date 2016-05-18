@@ -419,43 +419,38 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceActorAt(Actor actor, Point position)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (!IsInBounds(position.X, position.Y)) throw new ArgumentOutOfRangeException("position out of map bounds");
       Actor actorAt = GetActorAt(position);
-      if (actorAt == actor)
-        throw new InvalidOperationException("actor already at position");
-      if (actorAt != null)
-        throw new InvalidOperationException("another actor already at position");
-      if (!IsInBounds(position.X, position.Y))
-        throw new ArgumentOutOfRangeException("position out of map bounds");
+      if (actorAt == actor) throw new InvalidOperationException("actor already at position");
+      if (actorAt != null) throw new InvalidOperationException("another actor already at position");
       if (HasActor(actor))
-                m_aux_ActorsByPosition.Remove(actor.Location.Position);
-      else
-                m_ActorsList.Add(actor);
-            m_aux_ActorsByPosition.Add(position, actor);
+        m_aux_ActorsByPosition.Remove(actor.Location.Position);
+      else {
+        m_ActorsList.Add(actor);
+        if (actor.IsPlayer) m_aux_Players = null;
+      }
+      m_aux_ActorsByPosition.Add(position, actor);
       actor.Location = new Location(this, position);
-            m_iCheckNextActorIndex = 0;
+      m_iCheckNextActorIndex = 0;
     }
 
     public void MoveActorToFirstPosition(Actor actor)
     {
-      if (!m_ActorsList.Contains(actor))
-        throw new ArgumentException("actor not in map");
-            m_ActorsList.Remove(actor);
-      if (m_ActorsList.Count == 0)
-                m_ActorsList.Add(actor);
-      else
-                m_ActorsList.Insert(0, actor);
-            m_iCheckNextActorIndex = 0;
+      if (!m_ActorsList.Contains(actor)) throw new ArgumentException("actor not in map");
+      if (1 == m_ActorsList.Count) return;
+      m_ActorsList.Remove(actor);
+      m_ActorsList.Insert(0, actor);
+      m_iCheckNextActorIndex = 0;
     }
 
     public void RemoveActor(Actor actor)
     {
-      if (!m_ActorsList.Contains(actor))
-        return;
-            m_ActorsList.Remove(actor);
-            m_aux_ActorsByPosition.Remove(actor.Location.Position);
-            m_iCheckNextActorIndex = 0;
+      if (!m_ActorsList.Contains(actor)) return;
+      m_ActorsList.Remove(actor);
+      m_aux_ActorsByPosition.Remove(actor.Location.Position);
+      m_iCheckNextActorIndex = 0;
+      m_aux_Players = null;
     }
 
     public Actor NextActorToAct { 
