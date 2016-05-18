@@ -2464,7 +2464,7 @@ namespace djack.RogueSurvivor.Engine
                 float num = corpse.HitPoints / (float) corpse.MaxHitPoints;
                 corpseList3.Add(corpse);
                 Zombify((Actor) null, corpse.DeadGuy, false);
-                if (IsVisibleToPlayer(map, corpse.Position)) {
+                if (ForceVisibleToPlayer(map, corpse.Position)) {
                                     AddMessage(new Data.Message(string.Format("The corpse of {0} rise again!!", (object) corpse.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Red));
                                     m_MusicManager.Play(GameSounds.UNDEAD_RISE);
                 }
@@ -2475,7 +2475,7 @@ namespace djack.RogueSurvivor.Engine
           if (m_Player != null && m_Player.Location.Map == map) {
             foreach (Corpse c in corpseList2) {
               DestroyCorpse(c, map);
-              if (IsVisibleToPlayer(map, c.Position))
+              if (ForceVisibleToPlayer(map, c.Position))
                 AddMessage(new Data.Message(string.Format("The corpse of {0} turns into dust.", (object) c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
             }
           }
@@ -2486,7 +2486,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
               int infectionPercent = m_Rules.ActorInfectionPercent(actor);
               if (m_Rules.Roll(0, 1000) < m_Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
-                bool player = IsVisibleToPlayer(actor);
+                bool player = ForceVisibleToPlayer(actor);
                 bool flag3 = actor == m_Player;
                 if (actor.IsSleeping) DoWakeUp(actor);
                 bool flag4 = false;
@@ -2544,7 +2544,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (actorList != null) {
             foreach (Actor actor in actorList) {
-              if (IsVisibleToPlayer(actor))
+              if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} of infection!", (object)Conjugate(actor, VERB_DIE))));
               KillActor((Actor) null, actor, "infection");
               if (actor.IsPlayer) {
@@ -2635,7 +2635,7 @@ namespace djack.RogueSurvivor.Engine
             actor.Appetite(1);
             if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
             {
-              if (IsVisibleToPlayer(actor))
+              if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, "is rotting away."));
               if (--actor.HitPoints <= 0) {
                   if (actorList1 == null) actorList1 = new List<Actor>();
@@ -2652,7 +2652,7 @@ namespace djack.RogueSurvivor.Engine
                 DoShout(actor, "NO! LEAVE ME ALONE!");
                 actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
                 actor.SpendSanity(Rules.SANITY_NIGHTMARE_SAN_LOSS);
-                if (IsVisibleToPlayer(actor))
+                if (ForceVisibleToPlayer(actor))
                   AddMessage(MakeMessage(actor, string.Format("{0} from a horrible nightmare!", (object)Conjugate(actor, VERB_WAKE_UP))));
                 if (actor.IsPlayer) {
                   m_MusicManager.StopAll();
@@ -2677,14 +2677,14 @@ namespace djack.RogueSurvivor.Engine
                 RedrawPlayScreen();
                 if (RogueGame.s_Options.SimThread)
                   Thread.Sleep(10);
-              } else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && IsVisibleToPlayer(actor)) {
+              } else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
                 AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_SNORE))));
                 RedrawPlayScreen();
               }
             }
             if (actor.IsExhausted && m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
               DoStartSleeping(actor);
-              if (IsVisibleToPlayer(actor)) {
+              if (ForceVisibleToPlayer(actor)) {
                 AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", (object)Conjugate(actor, VERB_COLLAPSE))));
                 RedrawPlayScreen();
               }
@@ -2701,16 +2701,16 @@ namespace djack.RogueSurvivor.Engine
             if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(m_Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(m_Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
-              if (IsVisibleToPlayer(actor))
+              if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor, VERB_FEEL), (object) actor.Leader.Name, (object)HimOrHer(actor))));
-              if (IsVisibleToPlayer(actor.Leader))
+              if (ForceVisibleToPlayer(actor.Leader))
                 AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor.Leader, VERB_FEEL), (object) actor.Name, (object)HimOrHer(actor.Leader))));
             }
           }
         }
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
-            if (IsVisibleToPlayer(actor)) {
+            if (ForceVisibleToPlayer(actor)) {
               AddMessage(MakeMessage(actor, string.Format("{0} !!", (object)Conjugate(actor, VERB_DIE_FROM_STARVATION))));
               RedrawPlayScreen();
             }
@@ -2718,7 +2718,7 @@ namespace djack.RogueSurvivor.Engine
             if (!actor.Model.Abilities.IsUndead && m_Session.HasImmediateZombification && m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
-              if (IsVisibleToPlayer(actor)) {
+              if (ForceVisibleToPlayer(actor)) {
                 AddMessage(MakeMessage(actor, string.Format("{0} into a Zombie!", (object)Conjugate(actor, "turn"))));
                 RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
@@ -2734,13 +2734,13 @@ namespace djack.RogueSurvivor.Engine
           ItemLight itemLight = equippedItem as ItemLight;
           if (itemLight != null && itemLight.Batteries > 0) {
             --itemLight.Batteries;
-            if (itemLight.Batteries <= 0 && IsVisibleToPlayer(actor))
+            if (itemLight.Batteries <= 0 && ForceVisibleToPlayer(actor))
               AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", (object) itemLight.TheName)));
           }
           ItemTracker itemTracker = equippedItem as ItemTracker;
           if (itemTracker != null && itemTracker.Batteries > 0) {
             --itemTracker.Batteries;
-            if (itemTracker.Batteries <= 0 && IsVisibleToPlayer(actor))
+            if (itemTracker.Batteries <= 0 && ForceVisibleToPlayer(actor))
               AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
           }
         }
@@ -2752,7 +2752,7 @@ namespace djack.RogueSurvivor.Engine
           ItemTracker itemTracker = equippedItem as ItemTracker;
           if (itemTracker != null && itemTracker.Batteries > 0) {
             --itemTracker.Batteries;
-            if (itemTracker.Batteries <= 0 && IsVisibleToPlayer(actor))
+            if (itemTracker.Batteries <= 0 && ForceVisibleToPlayer(actor))
               AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
           }
         }
@@ -2846,9 +2846,9 @@ namespace djack.RogueSurvivor.Engine
           {
             if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE))
             {
-                            UnapplyOnFire(mapObject);
-              if (IsVisibleToPlayer(mapObject))
-                                AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
+              UnapplyOnFire(mapObject);
+              if (ForceVisibleToPlayer(mapObject))
+                AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
             }
           }
         }
@@ -4561,7 +4561,7 @@ namespace djack.RogueSurvivor.Engine
     {
       c.DraggedBy = a;
       a.DraggedCorpse = c;
-      if (!IsVisibleToPlayer(a)) return;
+      if (!ForceVisibleToPlayer(a)) return;
       AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_START), (object) c.DeadGuy.Name)));
     }
 
@@ -4569,7 +4569,7 @@ namespace djack.RogueSurvivor.Engine
     {
       c.DraggedBy = (Actor) null;
       a.DraggedCorpse = (Corpse) null;
-      if (!IsVisibleToPlayer(a)) return;
+      if (!ForceVisibleToPlayer(a)) return;
       AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", (object)Conjugate(a, VERB_STOP), (object) c.DeadGuy.Name)));
     }
 
@@ -4581,7 +4581,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoButcherCorpse(Actor a, Corpse c)
     {
-      bool player = IsVisibleToPlayer(a);
+      bool player = ForceVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
       SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", (object) a.Name, (object) c.DeadGuy.Name));
       int num = m_Rules.ActorDamageVsCorpses(a);
@@ -4596,7 +4596,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEatCorpse(Actor a, Corpse c)
     {
-      bool player = IsVisibleToPlayer(a);
+      bool player = ForceVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) {
@@ -4621,7 +4621,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoReviveCorpse(Actor actor, Corpse corpse)
     {
-      bool player = IsVisibleToPlayer(actor);
+      bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Map map = actor.Location.Map;
       List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt => map.GetActorAt(pt) == null && map.GetMapObjectAt(pt) == null));
@@ -8262,7 +8262,7 @@ namespace djack.RogueSurvivor.Engine
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         location.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
-        if (IsVisibleToPlayer(newLocation) || IsVisibleToPlayer(location))
+        if (ForceVisibleToPlayer(newLocation) || ForceVisibleToPlayer(location))
           AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", (object) Conjugate(actor, VERB_DRAG), (object) draggedCorpse.DeadGuy.TheName)));
       }
       int actionCost = Rules.BASE_ACTION_COST;
@@ -8276,7 +8276,7 @@ namespace djack.RogueSurvivor.Engine
         flag = true;
       if (flag) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-        if (IsVisibleToPlayer(actor))
+        if (ForceVisibleToPlayer(actor))
           AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
         if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
           actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
@@ -8296,7 +8296,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
       {
         OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
-        if (!IsVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
+        if (!ForceVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
           AddMessageIfAudibleForPlayer(actor.Location, MakePlayerCentricMessage("You hear screams of terror", actor.Location.Position));
       }
       OnActorEnterTile(actor);
@@ -8375,7 +8375,7 @@ namespace djack.RogueSurvivor.Engine
                         UntriggerAllTrapsHere(actor.Location);
         }
       }
-      bool visible = IsVisibleToPlayer(actor);
+      bool visible = ForceVisibleToPlayer(actor);
       map.ForEachAdjacentInMap(position, (Action<Point>) (adj =>
       {
         Actor actorAt = map.GetActorAt(adj);
@@ -8402,7 +8402,7 @@ namespace djack.RogueSurvivor.Engine
       isDestroyed = false;
       if (trap.TrapModel.BlockChance <= 0)
         return true;
-      bool player = IsVisibleToPlayer(victim);
+      bool player = ForceVisibleToPlayer(victim);
       bool flag = false;
       if (m_Rules.CheckTrapEscape(trap, victim))
       {
@@ -8468,7 +8468,7 @@ namespace djack.RogueSurvivor.Engine
     private void DoTriggerTrap(ItemTrap trap, Map map, Point pos, Actor victim, MapObject mobj)
     {
       ItemTrapModel trapModel = trap.TrapModel;
-      bool player = IsVisibleToPlayer(map, pos);
+      bool player = ForceVisibleToPlayer(map, pos);
       trap.IsTriggered = true;
       int dmg = trapModel.Damage * trap.Quantity;
       if (dmg > 0 && victim != null)
@@ -8551,7 +8551,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) mapObjectAt.AName)));
         return true;
       }
-      if (IsVisibleToPlayer(actor))
+      if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object) Conjugate(actor, VERB_LEAVE), (object) map.Name)));
       map.RemoveActor(actor);
       if (actor.DraggedCorpse != null)
@@ -8562,7 +8562,7 @@ namespace djack.RogueSurvivor.Engine
       exitAt.ToMap.MoveActorToFirstPosition(actor);
       if (actor.DraggedCorpse != null)
         exitAt.ToMap.AddCorpseAt(actor.DraggedCorpse, exitAt.ToPosition);
-      if (IsVisibleToPlayer(actor) || isPlayer)
+      if (ForceVisibleToPlayer(actor) || isPlayer)
       AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
       if (isPlayer)
       {
@@ -8652,7 +8652,7 @@ namespace djack.RogueSurvivor.Engine
       actor.AddFollower(other);
       int trustIn = other.GetTrustIn(actor);
       other.TrustInLeader = trustIn;
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(other)) return;
       if (actor == m_Player) ClearMessages();
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), other, " to join."));
       if (trustIn == 0) return;
@@ -8665,7 +8665,7 @@ namespace djack.RogueSurvivor.Engine
       actor.RemoveFollower(follower);
       follower.SetTrustIn(actor, follower.TrustInLeader);
       follower.TrustInLeader = 0;
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(follower)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(follower)) return;
       if (actor == m_Player) ClearMessages();
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), follower, " to leave."));
     }
@@ -8673,7 +8673,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoWait(Actor actor)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (IsVisibleToPlayer(actor)) {
+      if (ForceVisibleToPlayer(actor)) {
         if (actor.StaminaPoints < actor.MaxSTA)
           AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", (object) Conjugate(actor, VERB_CATCH), (object) HisOrHer(actor))));
         else
@@ -8806,8 +8806,8 @@ namespace djack.RogueSurvivor.Engine
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
       if (m_IsPlayerLongWait && defender.IsPlayer)
         m_IsPlayerLongWaitForcedStop = true;
-      bool player1 = IsVisibleToPlayer(defender);
-      bool player2 = IsVisibleToPlayer(attacker);
+      bool player1 = ForceVisibleToPlayer(defender);
+      bool player2 = player1 ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool flag = attacker.IsPlayer || defender.IsPlayer;
       if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
         AddMessageIfAudibleForPlayer(attacker.Location, MakePlayerCentricMessage("You hear fighting", attacker.Location.Position));
@@ -8936,7 +8936,7 @@ namespace djack.RogueSurvivor.Engine
       Attack attack = m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
       Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendStaminaPoints(attack.StaminaPenalty);
-      if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(m_Rules.IsWeatherRain(m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && IsVisibleToPlayer(attacker)))
+      if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(m_Rules.IsWeatherRain(m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
       {
                 AddMessage(MakeMessage(attacker, " : weapon jam!"));
       }
@@ -8952,8 +8952,8 @@ namespace djack.RogueSurvivor.Engine
                     m_IsPlayerLongWaitForcedStop = true;
         int num1 = (int) ((double) accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
         int num2 = m_Rules.RollSkill(defence.Value);
-        bool player1 = IsVisibleToPlayer(defender.Location);
-        bool player2 = IsVisibleToPlayer(attacker.Location);
+        bool player1 = ForceVisibleToPlayer(defender.Location);
+        bool player2 = player1 ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool flag = attacker.IsPlayer || defender.IsPlayer;
         if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
                     AddMessageIfAudibleForPlayer(attacker.Location, MakePlayerCentricMessage("You hear firing", attacker.Location.Position));
@@ -9015,8 +9015,8 @@ namespace djack.RogueSurvivor.Engine
         MapObject mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
         if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable))
         {
-          bool player1 = IsVisibleToPlayer(attacker);
-          bool player2 = IsVisibleToPlayer(mapObjectAt);
+          bool player1 = ForceVisibleToPlayer(attacker);
+          bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
           if (player1 || player2)
           {
             if (player1)
@@ -9043,7 +9043,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
       actor.Location.Map.DropItemAt(new ItemGrenadePrimed(m_GameItems[itemGrenade.PrimedModelID]), targetPos);
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(actor.Location.Map, targetPos)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
       AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(32, 32))));
       AddMessage(MakeMessage(actor, string.Format("{0} a {1}!", (object) Conjugate(actor, VERB_THROW), (object) itemGrenade.Model.SingleName)));
@@ -9061,7 +9061,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
       actor.Location.Map.DropItemAt(itemGrenadePrimed, targetPos);
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(actor.Location.Map, targetPos)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
       AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(32, 32))));
       AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", (object) Conjugate(actor, VERB_THROW), (object) itemGrenadePrimed.Model.SingleName)));
@@ -9083,17 +9083,17 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
-            OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
-      if (IsVisibleToPlayer(location))
+      OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
+      if (ForceVisibleToPlayer(location))
       {
-                ShowBlastImage(MapToScreen(location.Position), blastAttack, blastAttack.Damage[0]);
-                RedrawPlayScreen();
+        ShowBlastImage(MapToScreen(location.Position), blastAttack, blastAttack.Damage[0]);
+        RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
-                RedrawPlayScreen();
+        RedrawPlayScreen();
       }
       else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
-                AddMessageIfAudibleForPlayer(location, MakePlayerCentricMessage("You hear an explosion", location.Position));
-            ApplyExplosionDamage(location, 0, blastAttack);
+        AddMessageIfAudibleForPlayer(location, MakePlayerCentricMessage("You hear an explosion", location.Position));
+      ApplyExplosionDamage(location, 0, blastAttack);
       for (int waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance)
       {
         if (ApplyExplosionWave(location, waveDistance, blastAttack))
@@ -9158,9 +9158,8 @@ namespace djack.RogueSurvivor.Engine
       if (!blastCenter.Map.IsInBounds(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance, (List<Point>) null))
         return false;
       int damage = ApplyExplosionDamage(new Location(blastCenter.Map, pt), waveDistance, blast);
-      if (!IsVisibleToPlayer(blastCenter.Map, pt))
-        return false;
-            ShowBlastImage(MapToScreen(pt), blast, damage);
+      if (!ForceVisibleToPlayer(blastCenter.Map, pt)) return false;
+      ShowBlastImage(MapToScreen(pt), blast, damage);
       return true;
     }
 
@@ -9178,12 +9177,12 @@ namespace djack.RogueSurvivor.Engine
         if (dmg > 0)
         {
                     InflictDamage(actorAt, dmg);
-          if (IsVisibleToPlayer(actorAt))
+          if (ForceVisibleToPlayer(actorAt))
                         AddMessage(new Data.Message(string.Format("{0} is hit for {1} damage!", (object) actorAt.Name, (object) dmg), map.LocalTime.TurnCounter, Color.Crimson));
           if (actorAt.HitPoints <= 0 && !actorAt.IsDead)
           {
                         KillActor((Actor) null, actorAt, string.Format("explosion {0} damage", (object) dmg));
-            if (IsVisibleToPlayer(actorAt))
+            if (ForceVisibleToPlayer(actorAt))
                             AddMessage(new Data.Message(string.Format("{0} dies in the explosion!", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));
           }
         }
@@ -9283,7 +9282,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoChat(Actor speaker, Actor target)
     {
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (IsVisibleToPlayer(speaker) || IsVisibleToPlayer(target))
+      if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
       if (!m_Rules.CanActorInitiateTradeWith(speaker, target)) return;
       DoTrade(speaker, target);
@@ -9304,7 +9303,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
-      bool flag1 = IsVisibleToPlayer(speaker) || IsVisibleToPlayer(target);
+      bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       bool wantedItem = true;
       bool flag3 = itSpeaker != null && IsInterestingTradeItem(speaker, itSpeaker, target);
       if (target.Leader == speaker)
@@ -9419,7 +9418,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE)
         speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (!IsVisibleToPlayer(speaker) && (!IsVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
+      if (!ForceVisibleToPlayer(speaker) && (!ForceVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
         return;
       bool isPlayer = target.IsPlayer;
       bool flag = (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE;
@@ -9439,7 +9438,7 @@ namespace djack.RogueSurvivor.Engine
     {
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       OnLoudNoise(speaker.Location.Map, speaker.Location.Position, "A SHOUT");
-      if (!IsVisibleToPlayer(speaker) && !AreLinkedByPhone(speaker, m_Player)) return;
+      if (!AreLinkedByPhone(speaker, m_Player) && !ForceVisibleToPlayer(speaker)) return;
       if (speaker.Leader == m_Player) {
         ClearMessages();
         AddOverlay((new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32)))));
@@ -9457,9 +9456,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoEmote(Actor actor, string text)
     {
-      if (!IsVisibleToPlayer(actor))
-        return;
-            AddMessage(new Data.Message(string.Format("{0} : {1}", (object) actor.Name, (object) text), actor.Location.Map.LocalTime.TurnCounter, SAYOREMOTE_COLOR));
+      if (!ForceVisibleToPlayer(actor)) return;
+      AddMessage(new Data.Message(string.Format("{0} : {1}", (object) actor.Name, (object) text), actor.Location.Map.LocalTime.TurnCounter, SAYOREMOTE_COLOR));
     }
 
     public void DoTakeFromContainer(Actor actor, Point position)
@@ -9482,7 +9480,7 @@ namespace djack.RogueSurvivor.Engine
         if (itemsAt != null && itemsAt.Contains(it))
           map.RemoveItemAt(it, position);
       }
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(new Location(map, position)))
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
       if (!it.Model.DontAutoEquip && m_Rules.CanActorEquipItem(actor, it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         DoEquipItem(actor, it);
@@ -9514,7 +9512,7 @@ namespace djack.RogueSurvivor.Engine
       if (!gift.Model.DontAutoEquip && m_Rules.CanActorEquipItem(target, gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
         DoEquipItem(target, gift);
 
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(target)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(target)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} {1} to", (object) Conjugate(actor,VERB_GIVE), (object) gift.TheName), target));
     }
 
@@ -9528,7 +9526,7 @@ namespace djack.RogueSurvivor.Engine
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
 #endif
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EQUIP), it));
     }
 
@@ -9536,7 +9534,7 @@ namespace djack.RogueSurvivor.Engine
     {
       it.Unequip();
       actor.OnUnequipItem(this, it);
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
 
@@ -9556,12 +9554,12 @@ namespace djack.RogueSurvivor.Engine
       else flag = it.IsUseless;
       if (flag) {
         DiscardItem(actor, it);
-        if (!IsVisibleToPlayer(actor)) return;
+        if (!ForceVisibleToPlayer(actor)) return;
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), it));
       } else {
         if (obj == it) DropItem(actor, it);
         else DropCloneItem(actor, it, obj);
-        if (!IsVisibleToPlayer(actor)) return;
+        if (!ForceVisibleToPlayer(actor)) return;
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DROP), obj));
       }
     }
@@ -9615,7 +9613,7 @@ namespace djack.RogueSurvivor.Engine
       int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
       actor.LivingEat(m_Rules.ActorItemNutritionValue(actor, baseValue));
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
-      bool player = IsVisibleToPlayer(actor);
+      bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
       if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
         return;
@@ -9640,7 +9638,7 @@ namespace djack.RogueSurvivor.Engine
           };
           actor.Location.Map.DropItemAt(itemTrap, actor.Location.Position);
         }
-        bool player = IsVisibleToPlayer(actor);
+        bool player = ForceVisibleToPlayer(actor);
         if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
         if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
           return;
@@ -9681,7 +9679,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Cure(m_Rules.ActorMedicineEffect(actor, med.InfectionCure));
       actor.RegenSanity(m_Rules.ActorMedicineEffect(actor, med.SanityCure));
       actor.Inventory.Consume(med);
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_HEAL_WITH), med));
     }
 
@@ -9693,7 +9691,7 @@ namespace djack.RogueSurvivor.Engine
       itemRangedWeapon.Ammo += num;
       ammoItem.Quantity -= num;
       if (ammoItem.Quantity <= 0) actor.Inventory.RemoveAllQuantity(ammoItem);
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RELOAD), itemRangedWeapon));
     }
 
@@ -9704,7 +9702,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       ItemSprayScentModel itemSprayScentModel = spray.Model as ItemSprayScentModel;
       map.ModifyScentAt(itemSprayScentModel.Odor, itemSprayScentModel.Strength, actor.Location.Position);
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SPRAY), spray));
     }
 
@@ -9712,13 +9710,13 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       trap.IsActivated = !trap.IsActivated;
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, trap.IsActivated ? VERB_ACTIVATE : VERB_DESACTIVATE), trap));
     }
 
     private void DoUseEntertainmentItem(Actor actor, ItemEntertainment ent)
     {
-      bool player = IsVisibleToPlayer(actor);
+      bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.RegenSanity(Rules.ActorSanRegenValue(actor, ent.EntertainmentModel.Value));
       if (player)
@@ -9744,14 +9742,14 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       (it as ItemLight)?.Recharge();
       (it as ItemTracker)?.Recharge();
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
     {
       door.SetState(DoorWindow.STATE_OPEN);
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door)) {
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_OPEN), door));
         RedrawPlayScreen();
       }
@@ -9762,7 +9760,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoCloseDoor(Actor actor, DoorWindow door)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door)) {
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_CLOSE), door));
         RedrawPlayScreen();
       }
@@ -9775,7 +9773,7 @@ namespace djack.RogueSurvivor.Engine
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
       actor.Inventory.Consume(barricadeMaterial);
       door.BarricadePoints = Math.Min(door.BarricadePoints + m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), 80);
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(door))
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
@@ -9790,7 +9788,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Fortification fortification = isLarge ? m_TownGenerator.MakeObjLargeFortification("MapObjects\\wooden_large_fortification") : m_TownGenerator.MakeObjSmallFortification("MapObjects\\wooden_small_fortification");
       actor.Location.Map.PlaceMapObjectAt(fortification, buildPos);
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
         AddMessage(MakeMessage(actor, string.Format("{0} a {1} fortification.", (object) Conjugate(actor, VERB_BUILD), isLarge ? (object) "large" : (object) "small")));
       CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
     }
@@ -9802,7 +9800,7 @@ namespace djack.RogueSurvivor.Engine
       if (barricadeMaterial == null) throw new InvalidOperationException("no material");
       actor.Inventory.Consume(barricadeMaterial);
       fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + m_Rules.ActorBarricadingPoints(actor, (barricadeMaterial.Model as ItemBarricadeMaterialModel).BarricadingValue));
-      if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer((MapObject) fort)) return;
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer((MapObject) fort)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REPAIR), (MapObject) fort));
     }
 
@@ -9810,7 +9808,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       powGen.TogglePower();
-      if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(powGen))
+      if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
       OnMapPowerGeneratorSwitch(actor.Location, powGen);
     }
@@ -9856,7 +9854,7 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.BarricadePoints -= attack.DamageValue;
         OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
-        if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(doorWindow)) {
+        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
         } else {
           if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;
@@ -9873,9 +9871,9 @@ namespace djack.RogueSurvivor.Engine
           DoDestroyObject(mapObj);
           flag = true;
         }
-                OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
-        bool player1 = IsVisibleToPlayer(actor);
-        bool player2 = IsVisibleToPlayer(mapObj);
+        OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
+        bool player1 = ForceVisibleToPlayer(actor);
+        bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
         bool isPlayer = actor.IsPlayer;
         if (player1 || player2)
         {
@@ -9917,7 +9915,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoPush(Actor actor, MapObject mapObj, Point toPos)
     {
-      bool flag = IsVisibleToPlayer(actor) || IsVisibleToPlayer(mapObj);
+      bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
       if (actor.CountFollowers > 0) {
         Location location = new Location(actor.Location.Map, mapObj.Location.Position);
@@ -9975,7 +9973,7 @@ namespace djack.RogueSurvivor.Engine
           map.PlaceActorAt(actor, position);
           OnActorEnterTile(actor);
         }
-        if (IsVisibleToPlayer(actor) || IsVisibleToPlayer(target) || IsVisibleToPlayer(map, toPos)) {
+        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(map, toPos)) {
           AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SHOVE), target));
           RedrawPlayScreen();
         }
@@ -9996,7 +9994,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.Activity = Activity.IDLE;
       actor.IsSleeping = false;
-      if (IsVisibleToPlayer(actor))
+      if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_WAKE_UP))));
       if (!actor.IsPlayer)
         return;
@@ -10008,7 +10006,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       --spray.PaintQuantity;
       actor.Location.Map.GetTileAt(pos.X, pos.Y).AddDecoration((spray.Model as ItemSprayPaintModel).TagImageID);
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} a tag.", (object) Conjugate(actor, VERB_SPRAY))));
     }
 
@@ -10023,7 +10021,7 @@ namespace djack.RogueSurvivor.Engine
         AIController aiController = slave.Controller as AIController;
         if (aiController == null) return;
         aiController.SetOrder(order);
-        if (!IsVisibleToPlayer(master) && !IsVisibleToPlayer(slave)) return;
+        if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
         AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, string.Format(" to {0}.", (object) order.ToString())));
       }
     }
@@ -10034,7 +10032,7 @@ namespace djack.RogueSurvivor.Engine
       AIController aiController = slave.Controller as AIController;
       if (aiController == null) return;
       aiController.SetOrder(null);
-      if (!IsVisibleToPlayer(master) && !IsVisibleToPlayer(slave)) return;
+      if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
       AddMessage(MakeMessage(master, Conjugate(master, VERB_ORDER), slave, " to forget its orders."));
     }
 
@@ -10056,19 +10054,19 @@ namespace djack.RogueSurvivor.Engine
             int noiseDistance = Rules.GridDistance(noisePosition, index1, index2);
             if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(m_Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance)))
             {
-                            DoWakeUp(actorAt);
-              if (IsVisibleToPlayer(actorAt))
+              DoWakeUp(actorAt);
+              if (ForceVisibleToPlayer(actorAt))
               {
-                                AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", (object) noiseName, (object) actorAt.TheName), map.LocalTime.TurnCounter, actorAt == m_Player ? Color.Red : Color.White));
-                                RedrawPlayScreen();
+                AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", (object) noiseName, (object) actorAt.TheName), map.LocalTime.TurnCounter, actorAt == m_Player ? Color.Red : Color.White));
+                RedrawPlayScreen();
               }
             }
           }
         }
       }
-      if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !IsVisibleToPlayer(map, noisePosition)))
+      if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !ForceVisibleToPlayer(map, noisePosition)))
         return;
-            m_IsPlayerLongWaitForcedStop = true;
+      m_IsPlayerLongWaitForcedStop = true;
     }
 
     private void InflictDamage(Actor actor, int dmg)
@@ -10081,7 +10079,7 @@ namespace djack.RogueSurvivor.Engine
       {
         actor.OnUnequipItem(this, equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
-        if (IsVisibleToPlayer(actor))
+        if (ForceVisibleToPlayer(actor))
         {
           AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
           RedrawPlayScreen();
@@ -10107,7 +10105,7 @@ namespace djack.RogueSurvivor.Engine
       if (deadGuy.HasLeader) {
         if (m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy)) {
           deadGuy.Leader.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          if (IsVisibleToPlayer(deadGuy.Leader)) {
+          if (ForceVisibleToPlayer(deadGuy.Leader)) {
             if (deadGuy.Leader.IsPlayer)
               ClearMessages();
             AddMessage(MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(deadGuy.Leader, VERB_BE), (object) deadGuy.Name)));
@@ -10119,7 +10117,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor follower in deadGuy.Followers) {
           if (m_Rules.HasActorBondWith(follower, deadGuy)) {
             follower.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-            if (IsVisibleToPlayer(follower)) {
+            if (ForceVisibleToPlayer(follower)) {
               if (follower.IsPlayer)
                 ClearMessages();
               AddMessage(MakeMessage(follower, string.Format("{0} deeply disturbed by {1} sudden death!", (object)Conjugate(follower, VERB_BE), (object) deadGuy.Name)));
@@ -10193,7 +10191,7 @@ namespace djack.RogueSurvivor.Engine
             }
             killer.RecomputeStartingStats();
           }
-          if (IsVisibleToPlayer(killer)) {
+          if (ForceVisibleToPlayer(killer)) {
             AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location.Position), new Size(32, 32))));
             AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", (object)Conjugate(killer, VERB_TRANSFORM_INTO), (object) actorModel.Name)));
             RedrawPlayScreen();
@@ -10975,7 +10973,7 @@ namespace djack.RogueSurvivor.Engine
       int index = m_Rules.Roll(0, skillsList.Length);
       Skills.IDs id = (Skills.IDs) skillsList[index];
       actor.Sheet.SkillTable.DecOrRemoveSkill(id);
-      if (!IsVisibleToPlayer(actor)) return;
+      if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", (object) Skills.Name(id))));
     }
 
@@ -12203,8 +12201,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsVisibleToPlayer(Actor actor)
     {
-      if (actor != m_Player) return IsVisibleToPlayer(actor.Location);
-      return true;
+      if (actor == m_Player) return true;
+      return IsVisibleToPlayer(actor.Location);
     }
 
     private bool IsVisibleToPlayer(MapObject mapObj)
@@ -12243,6 +12241,28 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
+    private bool ForceVisibleToPlayer(Actor actor)
+    {
+      if (actor == m_Player) return true;
+      if (IsVisibleToPlayer(actor.Location)) return true;
+      if (actor.IsPlayer) { 
+        m_Player = actor;
+        ComputeViewRect(m_Player.Location.Position);
+        RedrawPlayScreen();
+        return true;
+      }
+      return ForceVisibleToPlayer(actor.Location);
+    }
+
+    private bool ForceVisibleToPlayer(MapObject mapObj)
+    {
+      return ForceVisibleToPlayer(mapObj.Location);
+    }
+
+    private bool ForceVisibleToPlayer(Location location)
+    {
+      return ForceVisibleToPlayer(location.Map, location.Position);
+    }
 
     private bool IsKnownToPlayer(Map map, Point position)
     {
@@ -13967,12 +13987,12 @@ namespace djack.RogueSurvivor.Engine
             if (whoDoesTheAction == actor) {
               if (actor.IsPlayer)
                 AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
-              else if (IsVisibleToPlayer(actor))
+              else if (ForceVisibleToPlayer(actor))
                 AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", (object)Conjugate(actor, VERB_HAVE))));
             }
             else if (actor.IsPlayer)
               AddMessage(new Data.Message(string.Format("Seeing {0} is very disturbing...", (object) what), loc.Map.LocalTime.TurnCounter, Color.Orange));
-            else if (IsVisibleToPlayer(actor))
+            else if (ForceVisibleToPlayer(actor))
               AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", (object)Conjugate(actor, VERB_SEE))));
           }
         }
