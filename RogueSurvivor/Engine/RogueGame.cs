@@ -2726,33 +2726,37 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
+        // lights and normal trackers
         foreach (Actor actor in map.Actors)
         {
           Item equippedItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
-          if (equippedItem != null)
-          {
-            ItemLight itemLight = equippedItem as ItemLight;
-            if (itemLight != null)
-            {
-              if (itemLight.Batteries > 0)
-              {
-                --itemLight.Batteries;
-                if (itemLight.Batteries <= 0 && IsVisibleToPlayer(actor))
-                                    AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", (object) itemLight.TheName)));
-              }
-            }
-            else
-            {
-              ItemTracker itemTracker = equippedItem as ItemTracker;
-              if (itemTracker != null && itemTracker.Batteries > 0)
-              {
-                --itemTracker.Batteries;
-                if (itemTracker.Batteries <= 0 && IsVisibleToPlayer(actor))
-                                    AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
-              }
-            }
+          if (null == equippedItem) continue;
+          ItemLight itemLight = equippedItem as ItemLight;
+          if (itemLight != null && itemLight.Batteries > 0) {
+            --itemLight.Batteries;
+            if (itemLight.Batteries <= 0 && IsVisibleToPlayer(actor))
+              AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", (object) itemLight.TheName)));
+          }
+          ItemTracker itemTracker = equippedItem as ItemTracker;
+          if (itemTracker != null && itemTracker.Batteries > 0) {
+            --itemTracker.Batteries;
+            if (itemTracker.Batteries <= 0 && IsVisibleToPlayer(actor))
+              AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
           }
         }
+        // police radios
+        foreach (Actor actor in map.Actors)
+        {
+          Item equippedItem = actor.GetEquippedItem(DollPart.HIP_HOLSTER);
+          if (null == equippedItem) continue;
+          ItemTracker itemTracker = equippedItem as ItemTracker;
+          if (itemTracker != null && itemTracker.Batteries > 0) {
+            --itemTracker.Batteries;
+            if (itemTracker.Batteries <= 0 && IsVisibleToPlayer(actor))
+              AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
+          }
+        }
+
         bool flag5 = false;
         foreach (Inventory groundInventory in map.GroundInventories)
         {
@@ -8248,57 +8252,59 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoMoveActor(Actor actor, Location newLocation)
     {
-      Location location = actor.Location;
       if (!TryActorLeaveTile(actor)) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      } else {
-        if (location.Map != newLocation.Map)
-          throw new NotImplementedException("DoMoveActor : illegal to change map.");
-        newLocation.Map.PlaceActorAt(actor, newLocation.Position);
-        Corpse draggedCorpse = actor.DraggedCorpse;
-        if (draggedCorpse != null)
-        {
-          location.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
-          if (IsVisibleToPlayer(newLocation) || IsVisibleToPlayer(location))
-            AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", (object) Conjugate(actor, VERB_DRAG), (object) draggedCorpse.DeadGuy.TheName)));
-        }
-        int actionCost = Rules.BASE_ACTION_COST;
-        if (actor.IsRunning) {
-          actionCost /= 2;
-          actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
-        }
-        bool flag = false;
-        MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position.X, newLocation.Position.Y);
-        if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable)
-          flag = true;
-        if (flag) {
-          actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
-          if (IsVisibleToPlayer(actor))
-            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
-          if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
-            actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
-            if (IsVisibleToPlayer(actor))
-              AddMessage(MakeMessage(actor, string.Format("{0}!", (object) Conjugate(actor, VERB_STUMBLE))));
-          }
-        }
-        if (draggedCorpse != null)
-          actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
-        actor.SpendActionPoints(actionCost);
-        if (actor.ActionPoints >= Rules.BASE_ACTION_COST)
-          actor.DropScent();
-        if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
-        {
-          OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
-          if (!IsVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
-            AddMessageIfAudibleForPlayer(actor.Location, MakePlayerCentricMessage("You hear screams of terror", actor.Location.Position));
-        }
-        OnActorEnterTile(actor);
+        return;
       }
+      Location location = actor.Location;
+      if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
+      newLocation.Map.PlaceActorAt(actor, newLocation.Position);
+      Corpse draggedCorpse = actor.DraggedCorpse;
+      if (draggedCorpse != null) {
+        location.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
+        if (IsVisibleToPlayer(newLocation) || IsVisibleToPlayer(location))
+          AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", (object) Conjugate(actor, VERB_DRAG), (object) draggedCorpse.DeadGuy.TheName)));
+      }
+      int actionCost = Rules.BASE_ACTION_COST;
+      if (actor.IsRunning) {
+        actionCost /= 2;
+        actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
+      }
+      bool flag = false;
+      MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position.X, newLocation.Position.Y);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable)
+        flag = true;
+      if (flag) {
+        actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
+        if (IsVisibleToPlayer(actor))
+          AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
+        if (actor.Model.Abilities.CanJumpStumble && m_Rules.RollChance(Rules.JUMP_STUMBLE_CHANCE)) {
+          actionCost += Rules.JUMP_STUMBLE_ACTION_COST;
+          if (IsVisibleToPlayer(actor))
+            AddMessage(MakeMessage(actor, string.Format("{0}!", (object) Conjugate(actor, VERB_STUMBLE))));
+        }
+      }
+      if (draggedCorpse != null)
+        actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
+      actor.SpendActionPoints(actionCost);
+
+      // committed to move now
+      ItemTracker itemTracker = actor.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
+      if (itemTracker != null) itemTracker.Batteries += 2;  // police radio recharge
+            
+      if (actor.ActionPoints >= Rules.BASE_ACTION_COST) actor.DropScent();
+      if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
+      {
+        OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
+        if (!IsVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
+          AddMessageIfAudibleForPlayer(actor.Location, MakePlayerCentricMessage("You hear screams of terror", actor.Location.Position));
+      }
+      OnActorEnterTile(actor);
     }
 
     public void DoMoveActor(Actor actor, Direction direction)
     {
-            DoMoveActor(actor, actor.Location + direction);
+      DoMoveActor(actor, actor.Location + direction);
     }
 
     public void OnActorEnterTile(Actor actor)
@@ -11419,7 +11425,7 @@ namespace djack.RogueSurvivor.Engine
       DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
       DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
-      DrawActorEquipment(actor, gx1, gy1, DollPart._FIRST, tint);
+      DrawActorEquipment(actor, gx1, gy1, DollPart.RIGHT_HAND, tint);
       int gx2 = gx1;
       int gy2 = gy1;
       if (m_Player != null)
@@ -11799,7 +11805,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (m_Player == null) return;
       if (!m_Player.IsSleeping)
-      {
+      { // normal detectors/lights
         ItemTracker itemTracker1 = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
         bool find_followers = (null != itemTracker1 && m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
@@ -11807,6 +11813,16 @@ namespace djack.RogueSurvivor.Engine
         bool find_undead = (null != itemTracker1 && itemTracker1.CanTrackUndeads);
         bool find_blackops = (null != itemTracker1 && itemTracker1.CanTrackBlackOps);
         bool find_police = (null != itemTracker1 && itemTracker1.CanTrackPolice) || GameFactions.ThePolice == m_Player.Faction;
+        // the police radio
+        itemTracker1 = m_Player.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
+        if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
+        if (null != itemTracker1) {
+          if (!find_followers) find_followers = (m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
+//        if (!find_leader) find_leader = (m_Player.HasLeader && itemTracker1.CanTrackFollowersOrLeader); // may need this, but not for single PC
+          if (!find_undead) find_undead = itemTracker1.CanTrackUndeads;
+          if (!find_blackops) find_blackops = itemTracker1.CanTrackBlackOps;
+          if (!find_police) find_police = itemTracker1.CanTrackPolice;
+        }
 
         // do not assume tracker capabilities are mutually exclusive.
         if (find_followers) { 

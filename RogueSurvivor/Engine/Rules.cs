@@ -762,12 +762,15 @@ namespace djack.RogueSurvivor.Engine
         {
           if (powGen.IsOn)
           {
-            Item equippedItem1 = actor.GetEquippedItem(DollPart.LEFT_HAND);
-            if (equippedItem1 != null && CanActorRechargeItemBattery(actor, equippedItem1, out reason))
-              return (ActorAction) new ActionRechargeItemBattery(actor, game, equippedItem1);
-            Item equippedItem2 = actor.GetEquippedItem(DollPart._FIRST);
-            if (equippedItem2 != null && CanActorRechargeItemBattery(actor, equippedItem2, out reason))
-              return (ActorAction) new ActionRechargeItemBattery(actor, game, equippedItem2);
+            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
+            if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
+              return new ActionRechargeItemBattery(actor, game, tmp);
+            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
+            if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
+              return new ActionRechargeItemBattery(actor, game, tmp);
+            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
+            if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
+              return new ActionRechargeItemBattery(actor, game, tmp);
           }
           if (IsSwitchableFor(actor, powGen, out reason))
             return (ActorAction) new ActionSwitchPowerGenerator(actor, game, powGen);

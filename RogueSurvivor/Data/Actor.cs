@@ -1037,7 +1037,7 @@ namespace djack.RogueSurvivor.Data
 
     public Item GetEquippedWeapon()
     {
-      return GetEquippedItem(DollPart._FIRST);
+      return GetEquippedItem(DollPart.RIGHT_HAND);
     }
 
     public Skill SkillUpgrade(djack.RogueSurvivor.Gameplay.Skills.IDs id)

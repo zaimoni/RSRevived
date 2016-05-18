@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   {
     NONE = 0,
     RIGHT_HAND = 1,
-    _FIRST = 1,
+    _FIRST = 1,     // actually want this since NONE is not a valid decoration index
     LEFT_HAND = 2,
     HEAD = 3,
     TORSO = 4,
@@ -21,6 +21,7 @@ namespace djack.RogueSurvivor.Data
     FEET = 6,
     SKIN = 7,
     EYES = 8,
-    _COUNT = 9,
+    _COUNT = 9,     // last decoration index
+    HIP_HOLSTER = 9,
   }
 }
