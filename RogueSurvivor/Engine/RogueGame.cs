@@ -11409,19 +11409,17 @@ namespace djack.RogueSurvivor.Engine
       }
       int gx1 = x;
       int gy1 = y;
-      if (actor.Model.ImageID != null)
-                m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
-      if (actor.GetEquippedItem(DollPart.TORSO) != null)
-                DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
-            DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
-            DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
-            DrawActorEquipment(actor, gx1, gy1, DollPart._FIRST, tint);
+      if (actor.Model.ImageID != null) m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
+      DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
+      DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
+      DrawActorEquipment(actor, gx1, gy1, DollPart._FIRST, tint);
       int gx2 = gx1;
       int gy2 = gy1;
       if (m_Player != null)
@@ -11586,9 +11584,8 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorEquipment(Actor actor, int gx, int gy, DollPart part, Color tint)
     {
       Item equippedItem = actor.GetEquippedItem(part);
-      if (equippedItem == null)
-        return;
-            m_UI.UI_DrawImage(equippedItem.ImageID, gx, gy, tint);
+      if (equippedItem == null) return;
+      m_UI.UI_DrawImage(equippedItem.ImageID, gx, gy, tint);
     }
 
     public void DrawCorpse(Corpse c, int gx, int gy, Color tint)

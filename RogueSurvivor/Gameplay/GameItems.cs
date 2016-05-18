@@ -957,22 +957,22 @@ namespace djack.RogueSurvivor.Gameplay
 
       // trackers
       GameItems.TrackerData trackerData = DATA_TRACKER_CELL_PHONE;
-      ItemTrackerModel tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_cellphone", ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, trackerData.BATTERIES * 30);
+      ItemTrackerModel tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_cellphone", ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_CELL_PHONE] = (ItemModel) tmpTrackerModel;
       trackerData = DATA_TRACKER_ZTRACKER;
-      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_ztracker", ItemTrackerModel.TrackingFlags.UNDEADS, trackerData.BATTERIES * 30);
+      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_ztracker", ItemTrackerModel.TrackingFlags.UNDEADS, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_ZTRACKER] = (ItemModel) tmpTrackerModel;
       trackerData = DATA_TRACKER_BLACKOPS_GPS;
-      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_blackops_gps", ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, trackerData.BATTERIES * 30);
+      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_blackops_gps", ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_BLACKOPS] = (ItemModel) tmpTrackerModel;
       trackerData = DATA_TRACKER_POLICE_RADIO;
-      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_police_radio", ItemTrackerModel.TrackingFlags.POLICE_FACTION, trackerData.BATTERIES * 30);
+      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, "Items\\item_police_radio", ItemTrackerModel.TrackingFlags.POLICE_FACTION, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
       tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
       this[GameItems.IDs.TRACKER_POLICE_RADIO] = (ItemModel) tmpTrackerModel;
@@ -1001,12 +1001,12 @@ namespace djack.RogueSurvivor.Gameplay
 
       // Flashlights
       GameItems.LightData lightData = DATA_LIGHT_FLASHLIGHT;
-      ItemLightModel tmpLightModel = new ItemLightModel(lightData.NAME, lightData.PLURAL, "Items\\item_flashlight", lightData.FOV, lightData.BATTERIES * 30, "Items\\item_flashlight_out");
+      ItemLightModel tmpLightModel = new ItemLightModel(lightData.NAME, lightData.PLURAL, "Items\\item_flashlight", lightData.FOV, lightData.BATTERIES * WorldTime.TURNS_PER_HOUR, "Items\\item_flashlight_out");
       tmpLightModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpLightModel.FlavorDescription = lightData.FLAVOR;
       this[GameItems.IDs.LIGHT_FLASHLIGHT] = (ItemModel) tmpLightModel;
       lightData = DATA_LIGHT_BIG_FLASHLIGHT;
-      tmpLightModel = new ItemLightModel(lightData.NAME, lightData.PLURAL, "Items\\item_big_flashlight", lightData.FOV, lightData.BATTERIES * 30, "Items\\item_big_flashlight_out");
+      tmpLightModel = new ItemLightModel(lightData.NAME, lightData.PLURAL, "Items\\item_big_flashlight", lightData.FOV, lightData.BATTERIES * WorldTime.TURNS_PER_HOUR, "Items\\item_big_flashlight_out");
       tmpLightModel.EquipmentPart = DollPart.LEFT_HAND;
       tmpLightModel.FlavorDescription = lightData.FLAVOR;
       this[GameItems.IDs.LIGHT_BIG_FLASHLIGHT] = (ItemModel) tmpLightModel;
