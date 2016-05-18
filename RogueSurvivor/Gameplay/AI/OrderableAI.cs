@@ -790,21 +790,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
-      if (!game.Rules.CanActorGetItem(m_Actor, obj) && m_Actor.Inventory.CountItems >= m_Actor.MaxInv)
-        {
-        ActorAction tmp = BehaviorMakeRoomFor(game,obj);
-        if (null == tmp) return null;
-        if (!tmp.IsLegal()) return null;
-        // XXX : stack full, and on it: item destruction bug if anything is dropped
-        if (stack.IsFull || game.Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, position.X, position.Y)) return tmp;
-        if (position == m_Actor.Location.Position) return tmp;
-        }
+      // the get item checks do not validate that inventory is not full
+      ActorAction tmp = null;
       Item it1 = obj;
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) it1.AName));
-      if (position == m_Actor.Location.Position)
-        return new ActionTakeItem(m_Actor, game, position, it1);
-      return BehaviorIntelligentBumpToward(game, position);
+      if (position == m_Actor.Location.Position) {
+        tmp = new ActionTakeItem(m_Actor, game, position, it1);
+        if (!tmp.IsLegal()) {
+          tmp = BehaviorMakeRoomFor(game,obj);
+          if (null == tmp) return null;
+          if (!tmp.IsLegal()) return null;
+        }
+        return tmp;
+      }
+      if (m_Actor.Inventory.IsFull) { 
+        tmp = BehaviorMakeRoomFor(game,obj);
+        if (null != tmp && tmp.IsLegal()) return tmp;
+      }
+      tmp = BehaviorIntelligentBumpToward(game, position);
+      return tmp;
     }
 
     protected bool NeedsLight(RogueGame game)
