@@ -9516,7 +9516,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
-      it.EquippedPart = it.Model.EquipmentPart;
+      it.Equip();
       actor.OnEquipItem(this, it);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
@@ -9528,8 +9528,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoUnequipItem(Actor actor, Item it)
     {
-      it.EquippedPart = DollPart.NONE;
-        actor.OnUnequipItem(this, it);
+      it.Unequip();
+      actor.OnUnequipItem(this, it);
       if (!IsVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
@@ -9563,14 +9563,14 @@ namespace djack.RogueSurvivor.Engine
     private void DiscardItem(Actor actor, Item it)
     {
       actor.Inventory.RemoveAllQuantity(it);
-      it.EquippedPart = DollPart.NONE;
+      it.Unequip();
     }
 
     private void DropItem(Actor actor, Item it)
     {
       actor.Inventory.RemoveAllQuantity(it);
       actor.Location.Map.DropItemAt(it, actor.Location.Position);
-      it.EquippedPart = DollPart.NONE;
+      it.Unequip();
     }
 
     private void DropCloneItem(Actor actor, Item it, Item clone)
@@ -9578,7 +9578,7 @@ namespace djack.RogueSurvivor.Engine
       if (--it.Quantity <= 0)
         actor.Inventory.RemoveAllQuantity(it);
       actor.Location.Map.DropItemAt(clone, actor.Location.Position);
-      clone.EquippedPart = DollPart.NONE;
+      clone.Unequip();
     }
 
     public void DoUseItem(Actor actor, Item it)

@@ -13,28 +13,22 @@ namespace djack.RogueSurvivor.Data
   {
     private int m_ModelID;
     private int m_Quantity;
-    public DollPart EquippedPart { get; set; }
+    public DollPart EquippedPart { get; private set; }
 
-    public ItemModel Model
-    {
-      get
-      {
+    public ItemModel Model {
+      get {
         return Models.Items[m_ModelID];
       }
     }
 
-    public virtual string ImageID
-    {
-      get
-      {
+    public virtual string ImageID {
+      get {
         return Model.ImageID;
       }
     }
 
-    public string TheName
-    {
-      get
-      {
+    public string TheName {
+      get {
         ItemModel model = Model;
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural)
@@ -43,10 +37,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public string AName
-    {
-      get
-      {
+    public string AName {
+      get {
         ItemModel model = Model;
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural)
@@ -57,24 +49,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int Quantity
-    {
-      get
-      {
+    public int Quantity {
+      get {
         return m_Quantity;
       }
-      set
-      {
+      set {
         m_Quantity = value;
         if (m_Quantity >= 0) return;
         m_Quantity = 0;
       }
     }
 
-    public bool CanStackMore
-    {
-      get
-      {
+    public bool CanStackMore {
+      get {
         ItemModel model = Model;
         if (model.IsStackable)
           return m_Quantity < model.StackingLimit;
@@ -82,12 +69,20 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsEquipped
-    {
-      get
-      {
+    public bool IsEquipped {
+      get {
         return EquippedPart != DollPart.NONE;
       }
+    }
+
+    public void Equip()
+    {   
+      EquippedPart = Model.EquipmentPart;
+    }
+
+    public void Unequip()
+    {   
+      EquippedPart = DollPart.NONE;
     }
 
     public bool IsUnique { get; set; }
