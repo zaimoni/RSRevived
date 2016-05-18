@@ -12194,8 +12194,11 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsVisibleToPlayer(Map map, Point position)
     {
-      if (m_Player != null && (map == m_Player.Location.Map && map.IsInBounds(position.X, position.Y)))
-        return m_Player.Controller.FOV.Contains(position);
+      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+      if (!map.IsInBounds(position.X, position.Y)) return false;
+      if (null == m_Player || map != m_Player.Location.Map) return false; // \todo panning loop #1
+      if (m_Player.Controller.FOV.Contains(position)) return true;
+      // \todo panning loop #2
       return false;
     }
 
