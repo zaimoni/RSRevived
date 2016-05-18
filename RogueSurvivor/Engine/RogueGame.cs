@@ -12196,16 +12196,14 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
       if (!map.IsInBounds(position.X, position.Y)) return false;
-      if (null == m_Player || map != m_Player.Location.Map) return false; // \todo panning loop #1
+      if (null == m_Player || map != m_Player.Location.Map) return false;
       if (m_Player.Controller.FOV.Contains(position)) return true;
-      // \todo panning loop #2
       return false;
     }
 
     private bool IsVisibleToPlayer(Actor actor)
     {
-      if (actor != m_Player)
-        return IsVisibleToPlayer(actor.Location);
+      if (actor != m_Player) return IsVisibleToPlayer(actor.Location);
       return true;
     }
 
@@ -12213,6 +12211,38 @@ namespace djack.RogueSurvivor.Engine
     {
       return IsVisibleToPlayer(mapObj.Location);
     }
+
+    private bool ForceVisibleToPlayer(Map map, Point position)
+    {
+      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+      if (!map.IsInBounds(position.X, position.Y)) return false;
+      if (null == m_Player || map != m_Player.Location.Map) return false;
+      if (null == m_Player || map != m_Player.Location.Map) {
+        if (0 >= map.PlayerCount) return false;
+        foreach (Actor tmp in map.Players) { 
+          if (null == tmp.Controller.FOV) continue; // would prefer to recalculate
+          if (tmp.Controller.FOV.Contains(position)) {
+            m_Player = tmp;
+            ComputeViewRect(m_Player.Location.Position);
+            RedrawPlayScreen();
+            return true;
+          }
+        }
+      }
+      if (m_Player.Controller.FOV.Contains(position)) return true;
+      foreach (Actor tmp in map.Players) {
+        if (tmp == m_Player) continue;
+        if (null == tmp.Controller.FOV) continue; // would prefer to recalculate
+        if (tmp.Controller.FOV.Contains(position)) {
+          m_Player = tmp;
+          ComputeViewRect(m_Player.Location.Position);
+          RedrawPlayScreen();
+          return true;
+        }
+      }
+      return false;
+    }
+
 
     private bool IsKnownToPlayer(Map map, Point position)
     {
