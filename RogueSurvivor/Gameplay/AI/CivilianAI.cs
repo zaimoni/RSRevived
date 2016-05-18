@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES);
+      m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES);
     }
 
     // we don't have memory, but we do have taboo trades
@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
       if (m_Emotes == null)
-                m_Emotes = !m_Actor.IsUnique ? CivilianAI.FIGHT_EMOTES : (m_Actor != game.Session.UniqueActors.BigBear.TheActor ? (m_Actor != game.Session.UniqueActors.FamuFataru.TheActor ? (m_Actor != game.Session.UniqueActors.Santaman.TheActor ? (m_Actor != game.Session.UniqueActors.Roguedjack.TheActor ? (m_Actor != game.Session.UniqueActors.Duckman.TheActor ? (m_Actor != game.Session.UniqueActors.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
+        m_Emotes = !m_Actor.IsUnique ? CivilianAI.FIGHT_EMOTES : (m_Actor != game.Session.UniqueActors.BigBear.TheActor ? (m_Actor != game.Session.UniqueActors.FamuFataru.TheActor ? (m_Actor != game.Session.UniqueActors.Santaman.TheActor ? (m_Actor != game.Session.UniqueActors.Roguedjack.TheActor ? (m_Actor != game.Session.UniqueActors.Duckman.TheActor ? (m_Actor != game.Session.UniqueActors.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
       return m_LOSSensor.Sense(game, m_Actor);
     }
 
@@ -218,11 +218,7 @@ label_10:
       if (!Directives.CanThrowGrenades)
       {
         ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
-        if (itemGrenade != null)
-        {
-          m_Actor.Activity = Activity.IDLE;
-          return (ActorAction) new ActionUnequipItem(m_Actor, game, (Item)itemGrenade);
-        }
+        if (itemGrenade != null) game.DoUnequipItem(m_Actor, itemGrenade);
       }
       else if (null != enemies)
       {

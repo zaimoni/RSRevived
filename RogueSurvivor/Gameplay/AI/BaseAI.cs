@@ -507,12 +507,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
       {
         if (!Directives.CanFireWeapons)
-          return (ActorAction) new ActionUnequipItem(m_Actor, game, equippedWeapon);
+          return new ActionUnequipItem(m_Actor, game, equippedWeapon);
         ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
         if (rw.Ammo > 0) return null;
         ItemAmmo compatibleAmmoItem = GetCompatibleAmmoItem(rw);
         if (compatibleAmmoItem != null)
-          return (ActorAction) new ActionUseItem(m_Actor, game, (Item) compatibleAmmoItem);
+          return new ActionUseItem(m_Actor, game, (Item) compatibleAmmoItem);
       }
       if (Directives.CanFireWeapons)
       {
@@ -546,7 +546,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Item equippedItem = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (equippedItem == null) return null;
-      return (ActorAction) new ActionUnequipItem(m_Actor, game, equippedItem);
+      return new ActionUnequipItem(m_Actor, game, equippedItem);
     }
 
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
