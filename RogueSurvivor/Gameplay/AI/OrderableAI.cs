@@ -774,6 +774,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
+      // but if we cannot take it, ignore anyway
+      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(game, obj) : null);
+      if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
+
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
       Item it1 = obj;
@@ -782,17 +786,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (position == m_Actor.Location.Position) {
         tmp = new ActionTakeItem(m_Actor, game, position, it1);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
-          tmp = BehaviorMakeRoomFor(game,obj);
-          if (null == tmp) return null;
-          if (!tmp.IsLegal()) return null;
+          if (null == recover) return null;
+          if (!recover.IsLegal()) return null;
+          return recover;
         }
         return tmp;
       }
       // BehaviorIntelligentBumpToward will return null if a get item from container is invalid, so need to prevent that
       // best range depends on other factors
       if (m_Actor.Inventory.IsFull) { 
-        tmp = BehaviorMakeRoomFor(game,obj);
-        if (null != tmp && tmp.IsLegal()) return tmp;
+        if (null != recover && recover.IsLegal()) return recover;
       }
       tmp = BehaviorIntelligentBumpToward(game, position);
       return tmp;
