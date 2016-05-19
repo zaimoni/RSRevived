@@ -1034,7 +1034,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
     }
 
-    private ItemBodyArmor GetWorstBodyArmor()
+    protected ItemBodyArmor GetWorstBodyArmor()
     {
       if (m_Actor.Inventory == null) return null;
       int num1 = int.MaxValue;

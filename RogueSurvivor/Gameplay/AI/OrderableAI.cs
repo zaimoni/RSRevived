@@ -305,24 +305,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Behaviors and support functions
-    private ItemBodyArmor GetBestBodyArmor(Predicate<Item> fn)
-    {
-      if (m_Actor.Inventory == null) return null;
-      int num1 = 0;
-      ItemBodyArmor itemBodyArmor1 = null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (null != fn && !fn(obj)) continue;
-        ItemBodyArmor itemBodyArmor2 = obj as ItemBodyArmor;
-        if (null == itemBodyArmor2) continue;
-        int num2 = itemBodyArmor2.Rating;
-        if (num2 > num1) {
-          num1 = num2;
-          itemBodyArmor1 = itemBodyArmor2;
-        }
-      }
-      return itemBodyArmor1;
-    }
-
     // but all body armors are equipped to the torso slot(?)
     private ItemBodyArmor GetEquippedBodyArmor()
     {
@@ -771,6 +753,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Item it in m_Actor.Inventory.Items) {
         if (it.IsUseless) return BehaviorDropItem(game, it);
       }
+      ItemBodyArmor armor = GetWorstBodyArmor();
+      if (null != armor) return BehaviorDropItem(game, armor); 
       return null;
     }
 

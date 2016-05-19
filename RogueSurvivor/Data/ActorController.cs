@@ -111,6 +111,25 @@ namespace djack.RogueSurvivor.Data
         return true;    // default to ok to trade away
     }
 
+    protected ItemBodyArmor GetBestBodyArmor(Predicate<Item> fn)
+    {
+      if (m_Actor.Inventory == null) return null;
+      int num1 = 0;
+      ItemBodyArmor itemBodyArmor1 = null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        if (null != fn && !fn(obj)) continue;
+        ItemBodyArmor itemBodyArmor2 = obj as ItemBodyArmor;
+        if (null == itemBodyArmor2) continue;
+        int num2 = itemBodyArmor2.Rating;
+        if (num2 > num1) {
+          num1 = num2;
+          itemBodyArmor1 = itemBodyArmor2;
+        }
+      }
+      return itemBodyArmor1;
+    }
+
+
     public bool IsInterestingItem(Item it)
     {
       if (it.IsForbiddenToAI || it is ItemSprayPaint || it is ItemTrap && (it as ItemTrap).IsActivated)
@@ -160,6 +179,11 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is ItemMedicine)
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+      if (it is ItemBodyArmor) { 
+        ItemBodyArmor armor = GetBestBodyArmor(null);
+        if (null == armor) return true;
+        return armor.Rating < (it as ItemBodyArmor).Rating;
+      }
       if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))
         return false;
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
