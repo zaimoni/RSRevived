@@ -797,13 +797,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) it1.AName));
       if (position == m_Actor.Location.Position) {
         tmp = new ActionTakeItem(m_Actor, game, position, it1);
-        if (!tmp.IsLegal()) {
+        if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           tmp = BehaviorMakeRoomFor(game,obj);
           if (null == tmp) return null;
           if (!tmp.IsLegal()) return null;
         }
         return tmp;
       }
+      // BehaviorIntelligentBumpToward will return null if a get item from container is invalid, so need to prevent that
+      // best range depends on other factors
       if (m_Actor.Inventory.IsFull) { 
         tmp = BehaviorMakeRoomFor(game,obj);
         if (null != tmp && tmp.IsLegal()) return tmp;

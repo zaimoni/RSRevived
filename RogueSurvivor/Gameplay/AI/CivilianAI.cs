@@ -378,7 +378,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DATAFLOW_TRACE
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
-          MarkTileAsTaboo(percept.Location.Position);
+          MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory))

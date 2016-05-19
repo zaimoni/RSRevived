@@ -31,8 +31,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorOrder m_Order;
     private ActorDirective m_Directive;
     private Location m_prevLocation;
-    private List<Item> m_TabooItems;
-    private List<Point> m_TabooTiles;
+    private Dictionary<Item, int> m_TabooItems;
+    private Dictionary<Point, int> m_TabooTiles;
     private List<Actor> m_TabooTrades;
 
     public override ActorOrder Order
@@ -65,22 +65,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    protected List<Item> TabooItems
-    {
-      get
-      {
-        return m_TabooItems;
-      }
-    }
-
-    protected List<Point> TabooTiles
-    {
-      get
-      {
-        return m_TabooTiles;
-      }
-    }
-
     protected List<Actor> TabooTrades
     {
       get
@@ -93,9 +77,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       base.TakeControl(actor);
             CreateSensors();
-            m_TabooItems = (List<Item>) null;
-            m_TabooTiles = (List<Point>) null;
-            m_TabooTrades = (List<Actor>) null;
+            m_TabooItems = null;
+            m_TabooTiles = null;
+            m_TabooTrades = null;
     }
 
     public override void SetOrder(ActorOrder newOrder)
@@ -555,7 +539,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (Rules.CanActorUnequipItem(m_Actor, it)) {
         game.DoUnequipItem(m_Actor,it);
       }
-      MarkItemAsTaboo(it);
+      MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
       if (!game.Rules.CanActorDropItem(m_Actor, it)) return null;
       return new ActionDropItem(m_Actor, game, it);
     }
@@ -1169,7 +1153,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException("it"); 
-      if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) throw new ArgumentOutOfRangeException("inventory not full");
+      if (!m_Actor.Inventory.IsFull) throw new ArgumentOutOfRangeException("inventory not full",m_Actor.Name);
       if (!IsInterestingItem(it)) throw new ArgumentOutOfRangeException("do not need to make room for uninteresting items");
 #endif
 
@@ -1907,11 +1891,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new Point(x, y);
     }
 
-    protected void MarkItemAsTaboo(Item it)
+    protected void MarkItemAsTaboo(Item it, int expiresTurn)
     {
-      if (m_TabooItems == null) m_TabooItems = new List<Item>(1);
-      else if (m_TabooItems.Contains(it)) return;
-      m_TabooItems.Add(it);
+      if (m_TabooItems == null) m_TabooItems = new Dictionary<Item,int>(1);
+      else if (m_TabooItems.ContainsKey(it)) return;
+      m_TabooItems.Add(it, expiresTurn);
+    }
+
+    public void MarkItemAsTaboo(Item it, Item alt)
+    {
+      if (m_TabooItems == null) return;
+      else if (!m_TabooItems.ContainsKey(it)) return;
+      m_TabooItems.Add(alt, m_TabooItems[it]);
     }
 
     protected void UnmarkItemAsTaboo(Item it)
@@ -1924,25 +1915,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool IsItemTaboo(Item it)
     {
       if (m_TabooItems == null) return false;
-      return m_TabooItems.Contains(it);
+      return m_TabooItems.ContainsKey(it);
     }
 
-    protected void MarkTileAsTaboo(Point p)
+    protected void MarkTileAsTaboo(Point p, int expiresTurn)
     {
-      if (m_TabooTiles == null) m_TabooTiles = new List<Point>(1);
-      else if (m_TabooTiles.Contains(p)) return;
-      m_TabooTiles.Add(p);
+      if (m_TabooTiles == null) m_TabooTiles = new Dictionary<Point,int>(1);
+      else if (m_TabooTiles.ContainsKey(p)) return;
+      m_TabooTiles.Add(p, expiresTurn);
     }
 
     protected bool IsTileTaboo(Point p)
     {
       if (m_TabooTiles == null) return false;
-      return m_TabooTiles.Contains(p);
-    }
-
-    protected void ClearTabooTiles()
-    {
-      m_TabooTiles = null;
+      return m_TabooTiles.ContainsKey(p);
     }
 
     protected void MarkActorAsRecentTrade(Actor other)
@@ -1965,11 +1951,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void ExpireTaboos()
     {
-      // maintain taboo tile/trade information
-      // items are forever
-      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR == 0 && PrevLocation.Map != m_Actor.Location.Map)
-        ClearTabooTiles();
-      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
+      // maintain taboo information
+      int time = m_Actor.LastActionTurn;
+      if (null != m_TabooItems) {
+        foreach (Item tmp in new List<Item>(m_TabooItems.Keys)) { 
+          if (m_TabooItems[tmp] > time) continue;
+          m_TabooItems.Remove(tmp);
+        }
+        if (0 == m_TabooItems.Count) m_TabooItems = null;
+      }
+      if (null != m_TabooTiles) {
+        foreach (Point tmp in new List<Point>(m_TabooTiles.Keys)) {
+        if (m_TabooTiles[tmp] > time) continue;
+          m_TabooTiles.Remove(tmp);
+        }
+        if (0 == m_TabooTiles.Count) m_TabooItems = null;
+      }
+      // actors ok to clear at midnight
+      if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
         ClearTabooTrades();
     }
 
