@@ -4781,40 +4781,31 @@ namespace djack.RogueSurvivor.Engine
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      do
-      {
-                AddMessage(new Data.Message(string.Format("Giving {0} to...", (object) inventoryItem.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                RedrawPlayScreen();
+      ClearOverlays();
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      do {
+        AddMessage(new Data.Message(string.Format("Giving {0} to...", (object) inventoryItem.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        if (direction == null) flag1 = false;
+        else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
-            if (actorAt != null)
-            {
+            if (actorAt != null) {
               string reason;
-              if (m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason))
-              {
+              if (m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason)) {
                 flag2 = true;
                 flag1 = false;
-                                DoGiveItemTo(player, actorAt, inventoryItem);
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", (object) inventoryItem.TheName, (object) actorAt.TheName, (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Noone there."));
+                DoGiveItemTo(player, actorAt, inventoryItem);
+              } else
+                AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", (object) inventoryItem.TheName, (object) actorAt.TheName, (object) reason)));
+            } else AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -6359,65 +6350,53 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerOrderFollowerToGiveItems(Actor player, Actor follower)
     {
-      if (follower.Inventory == null || follower.Inventory.IsEmpty)
-      {
-                ClearMessages();
-                AddMessage(MakeErrorMessage(string.Format("{0} has no items to give.", (object) follower.TheName)));
-                AddMessagePressEnter();
+      if (follower.Inventory == null || follower.Inventory.IsEmpty) {
+        ClearMessages();
+        AddMessage(MakeErrorMessage(string.Format("{0} has no items to give.", (object) follower.TheName)));
+        AddMessagePressEnter();
         return false;
       }
-      if (player.Location.Map != follower.Location.Map || !Rules.IsAdjacent(player.Location.Position, follower.Location.Position))
-      {
-                ClearMessages();
-                AddMessage(MakeErrorMessage(string.Format("{0} is not next to you.", (object) follower.TheName)));
-                AddMessagePressEnter();
+      if (player.Location.Map != follower.Location.Map || !Rules.IsAdjacent(player.Location.Position, follower.Location.Position)) {
+        ClearMessages();
+        AddMessage(MakeErrorMessage(string.Format("{0} is not next to you.", (object) follower.TheName)));
+        AddMessagePressEnter();
         return false;
       }
       bool flag1 = true;
       bool flag2 = false;
       int num1 = 0;
       Inventory inventory = follower.Inventory;
-      do
-      {
-                ClearOverlays();
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-                ClearMessages();
-                AddMessage(new Data.Message(string.Format("Ordering {0} to give...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+      do {
+        ClearOverlays();
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        ClearMessages();
+        AddMessage(new Data.Message(string.Format("Ordering {0} to give...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
         int num2;
-        for (num2 = 0; num2 < 5 && num1 + num2 < inventory.CountItems; ++num2)
-        {
+        for (num2 = 0; num2 < 5 && num1 + num2 < inventory.CountItems; ++num2) {
           int index = num1 + num2;
-                    AddMessage(new Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) inventory.CountItems, (object)DescribeItemShort(inventory[index])), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+          AddMessage(new Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) inventory.CountItems, (object)DescribeItemShort(inventory[index])), m_Session.WorldTime.TurnCounter, Color.LightGreen));
         }
         if (num2 < inventory.CountItems)
-                    AddMessage(new Data.Message("9. next", m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                RedrawPlayScreen();
+          AddMessage(new Data.Message("9. next", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (keyEventArgs.KeyCode == Keys.Escape)
-          flag1 = false;
-        else if (choiceNumber == 9)
-        {
+        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
+        else if (choiceNumber == 9) {
           num1 += 5;
-          if (num1 >= inventory.CountItems)
-            num1 = 0;
-        }
-        else if (choiceNumber >= 1 && choiceNumber <= num2)
-        {
+          if (num1 >= inventory.CountItems) num1 = 0;
+        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
           int index = num1 + choiceNumber - 1;
           Item obj = inventory[index];
           string reason;
-          if (m_Rules.CanActorGiveItemTo(follower, player, obj, out reason))
-          {
-                        DoGiveItemTo(follower, m_Player, obj);
+          if (m_Rules.CanActorGiveItemTo(follower, player, obj, out reason)) {
+            DoGiveItemTo(follower, m_Player, obj);
             flag1 = false;
             flag2 = true;
-          }
-          else
-          {
-                        ClearMessages();
-                        AddMessage(MakeErrorMessage(string.Format("{0} cannot give {1} : {2}.", (object) follower.TheName, (object)DescribeItemShort(obj), (object) reason)));
-                        AddMessagePressEnter();
+          } else {
+            ClearMessages();
+            AddMessage(MakeErrorMessage(string.Format("{0} cannot give {1} : {2}.", (object) follower.TheName, (object)DescribeItemShort(obj), (object) reason)));
+            AddMessagePressEnter();
           }
         }
       }
@@ -13610,6 +13589,7 @@ namespace djack.RogueSurvivor.Engine
                 KillActor(null, theActor, "transformation");
                 Actor local_8 = Zombify(null, theActor, false);
                 local_8.Model = m_GameActors.ZombiePrince;
+                local_8.ActionPoints = 0;   // this was warned, player should get the first move
                 m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", (object) theActor.Name, (object) local_8.Model.Name));
                 m_MusicManager.Play(GameMusics.FIGHT);
                 m_Session.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_2;
