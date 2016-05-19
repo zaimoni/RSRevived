@@ -1174,7 +1174,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // not-best melee weapon can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon))) {
         ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
-        if (null != weapon) return BehaviorDropItem(game, weapon);  
+        // ok to drop if either the weapon won't become interesting, or is less interesting that the other item
+        if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || RHSMoreInteresting(weapon, it))) return BehaviorDropItem(game, weapon);  
       }
 
       // another behavior is responsible for pre-emptively eating perishable food
