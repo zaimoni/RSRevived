@@ -189,16 +189,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
-      // maintain taboo tile/trade information
-      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR != 0)
-      {
-        if (PrevLocation.Map == m_Actor.Location.Map)
-          goto label_10;
-      }
-      ClearTabooTiles();
-label_10:
-      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
-        ClearTabooTrades();
+      ExpireTaboos();
 
       List<Percept> enemies = FilterEnemies(game, percepts1);
       // civilians track how long since they've seen trouble

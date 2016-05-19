@@ -1909,71 +1909,70 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void MarkItemAsTaboo(Item it)
     {
-      if (m_TabooItems == null)
-                m_TabooItems = new List<Item>(1);
-      else if (m_TabooItems.Contains(it))
-        return;
-            m_TabooItems.Add(it);
+      if (m_TabooItems == null) m_TabooItems = new List<Item>(1);
+      else if (m_TabooItems.Contains(it)) return;
+      m_TabooItems.Add(it);
     }
 
     protected void UnmarkItemAsTaboo(Item it)
     {
-      if (m_TabooItems == null)
-        return;
-            m_TabooItems.Remove(it);
-      if (m_TabooItems.Count != 0)
-        return;
-            m_TabooItems = (List<Item>) null;
+      if (m_TabooItems == null) return;
+      m_TabooItems.Remove(it);
+      if (m_TabooItems.Count == 0) m_TabooItems = null;
     }
 
     protected bool IsItemTaboo(Item it)
     {
-      if (m_TabooItems == null)
-        return false;
+      if (m_TabooItems == null) return false;
       return m_TabooItems.Contains(it);
     }
 
     protected void MarkTileAsTaboo(Point p)
     {
-      if (m_TabooTiles == null)
-                m_TabooTiles = new List<Point>(1);
-      else if (m_TabooTiles.Contains(p))
-        return;
-            m_TabooTiles.Add(p);
+      if (m_TabooTiles == null) m_TabooTiles = new List<Point>(1);
+      else if (m_TabooTiles.Contains(p)) return;
+      m_TabooTiles.Add(p);
     }
 
     protected bool IsTileTaboo(Point p)
     {
-      if (m_TabooTiles == null)
-        return false;
+      if (m_TabooTiles == null) return false;
       return m_TabooTiles.Contains(p);
     }
 
     protected void ClearTabooTiles()
     {
-            m_TabooTiles = (List<Point>) null;
+      m_TabooTiles = null;
     }
 
     protected void MarkActorAsRecentTrade(Actor other)
     {
-      if (m_TabooTrades == null)
-                m_TabooTrades = new List<Actor>(1);
-      else if (m_TabooTrades.Contains(other))
-        return;
-            m_TabooTrades.Add(other);
+      if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
+      else if (m_TabooTrades.Contains(other)) return;
+      m_TabooTrades.Add(other);
     }
 
     protected bool IsActorTabooTrade(Actor other)
     {
-      if (m_TabooTrades == null)
-        return false;
+      if (m_TabooTrades == null) return false;
       return m_TabooTrades.Contains(other);
     }
 
     protected void ClearTabooTrades()
     {
-            m_TabooTrades = (List<Actor>) null;
+      m_TabooTrades = null;
     }
+
+    protected void ExpireTaboos()
+    {
+      // maintain taboo tile/trade information
+      // items are forever
+      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_HOUR == 0 && PrevLocation.Map != m_Actor.Location.Map)
+        ClearTabooTiles();
+      if (m_Actor.Location.Map.LocalTime.TurnCounter % WorldTime.TURNS_PER_DAY == 0)
+        ClearTabooTrades();
+    }
+
 
     protected class ChoiceEval<_T_>
     {
