@@ -10791,6 +10791,14 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Actor actor in map.Actors) {
         if (actor != m_Player && actor.Leader != m_Player && !actor.Model.Abilities.IsUndead) {
+          if (actor.IsPlayer) {
+            HandlePlayerDecideUpgrade(actor);
+            continue;
+          }
+          if (actor.HasLeader && actor.Leader.IsPlayer) { 
+            HandlePlayerDecideUpgrade(actor);
+            continue;
+          }
           List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
           Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
           if (upgrade2.HasValue)
@@ -10804,6 +10812,14 @@ namespace djack.RogueSurvivor.Engine
       foreach (Actor actor in map.Actors) {
         if (actor != m_Player && actor.Leader != m_Player && actor.Model.Abilities.IsUndead && ((RogueGame.s_Options.SkeletonsUpgrade || !GameActors.IsSkeletonBranch(actor.Model)) && (RogueGame.s_Options.RatsUpgrade || !GameActors.IsRatBranch(actor.Model))) && (RogueGame.s_Options.ShamblersUpgrade || !GameActors.IsShamblerBranch(actor.Model)))
         {
+          if (actor.IsPlayer) {
+            HandlePlayerDecideUpgrade(actor);
+            continue;
+          }
+          if (actor.HasLeader && actor.Leader.IsPlayer) { 
+            HandlePlayerDecideUpgrade(actor);
+            continue;
+          }
           List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
           Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
           if (upgrade2.HasValue)
