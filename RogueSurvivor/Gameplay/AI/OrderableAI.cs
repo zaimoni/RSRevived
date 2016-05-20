@@ -769,15 +769,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (doorWindow != null && doorWindow.IsBarricaded) return null;
       }
       Item obj = null;
-      if (mapObjectAt.IsContainer) {    // AI can only see the top item of a stack in a container.
-        Item it = stack.TopItem;
-        if (!IsInterestingItem(it)) return null;
-        obj = it;
-      } else {
-        foreach (Item it in stack.Items) {
-          if (!IsInterestingItem(it)) continue;
-          if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
-        }
+      foreach (Item it in stack.Items) {
+        if (!IsInterestingItem(it)) continue;
+        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
       // but if we cannot take it, ignore anyway
@@ -786,11 +780,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
-      Item it1 = obj;
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) it1.AName));
+        game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
       if (position == m_Actor.Location.Position) {
-        tmp = new ActionTakeItem(m_Actor, game, position, it1);
+        tmp = new ActionTakeItem(m_Actor, game, position, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
@@ -804,6 +797,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != recover && recover.IsLegal()) return recover;
       }
       tmp = BehaviorIntelligentBumpToward(game, position);
+      ActionGetFromContainer tmp2 = (tmp as ActionGetFromContainer);
+      if (null != tmp2 && tmp2.Item != obj) {
+        // translate the desired action
+        tmp = new ActionTakeItem(m_Actor, game, position, obj);
+      }
       return tmp;
     }
 
