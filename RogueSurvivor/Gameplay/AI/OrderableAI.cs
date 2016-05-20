@@ -769,9 +769,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (doorWindow != null && doorWindow.IsBarricaded) return null;
       }
       Item obj = null;
-      foreach (Item it in stack.Items) {
-        if (!IsInterestingItem(it)) continue;
-        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+      if (mapObjectAt.IsContainer) {    // AI can only see the top item of a stack in a container.
+        Item it = stack.TopItem;
+        if (!IsInterestingItem(it)) return null;
+        obj = it;
+      } else {
+        foreach (Item it in stack.Items) {
+          if (!IsInterestingItem(it)) continue;
+          if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+        }
       }
       if (obj == null) return null;
       // but if we cannot take it, ignore anyway
