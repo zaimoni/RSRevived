@@ -157,6 +157,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_OPEN = new Verb("open");
     private readonly Verb VERB_ORDER = new Verb("order");
     private readonly Verb VERB_PUSH = new Verb("push", "pushes");
+    private readonly Verb VERB_PUT = new Verb("put", "puts");
     private readonly Verb VERB_RAISE_ALARM = new Verb("raise the alarm", "raises the alarm");
     private readonly Verb VERB_REFUSE_THE_DEAL = new Verb("refuse the deal", "refuses the deal");
     private readonly Verb VERB_RELOAD = new Verb("reload");
@@ -4779,7 +4780,6 @@ namespace djack.RogueSurvivor.Engine
       Point itemPos;
       Item inventoryItem = MouseToInventoryItem(screen, out inv, out itemPos);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
-      bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
       AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
@@ -4787,24 +4787,28 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Giving {0} to...", (object) inventoryItem.TheName), m_Session.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
-            Actor actorAt = player.Location.Map.GetActorAt(point);
-            if (actorAt != null) {
-              string reason;
-              if (m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason)) {
-                flag2 = true;
-                flag1 = false;
-                DoGiveItemTo(player, actorAt, inventoryItem);
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", (object) inventoryItem.TheName, (object) actorAt.TheName, (object) reason)));
-            } else AddMessage(MakeErrorMessage("Noone there."));
+        if (null == direction) break;
+        if (Direction.NEUTRAL == direction) continue;
+        Point point = player.Location.Position + direction;
+        if (!player.Location.Map.IsInBounds(point)) continue;
+        Actor actorAt = player.Location.Map.GetActorAt(point);
+        if (actorAt != null) {
+          string reason;
+          if (m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason)) {
+            flag2 = true;
+            DoGiveItemTo(player, actorAt, inventoryItem);
+            break;
           }
+          AddMessage(MakeErrorMessage(string.Format("Can't give {0} to {1} : {2}.", (object) inventoryItem.TheName, (object) actorAt.TheName, (object) reason)));
+          continue;
+        } else if (m_Rules.CanActorPutItemIntoContainer(player, point)) { 
+          flag2 = true;
+          DoPutItemInContainer(player, point, inventoryItem);
+          break;
         }
+        AddMessage(MakeErrorMessage("Noone there."));
       }
-      while (flag1);
+      while (true);
       ClearOverlays();
       return flag2;
     }
@@ -9494,6 +9498,18 @@ namespace djack.RogueSurvivor.Engine
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(target)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} {1} to", (object) Conjugate(actor,VERB_GIVE), (object) gift.TheName), target));
     }
+
+    public void DoPutItemInContainer(Actor actor, Point dest, Item gift)
+    {
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
+      actor.Location.Map.DropItemAt(gift, dest);
+      actor.Inventory.RemoveAllQuantity(gift);
+      
+      if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, dest)) return;
+      AddMessage(MakeMessage(actor, string.Format("{0} {1} away", (object) Conjugate(actor,VERB_PUT), (object) gift.TheName)));
+    }
+
 
     public void DoEquipItem(Actor actor, Item it)
     {

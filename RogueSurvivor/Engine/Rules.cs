@@ -256,6 +256,38 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+    public bool CanActorPutItemIntoContainer(Actor actor, Point position)
+    {
+      string reason;
+      return CanActorPutItemIntoContainer(actor, position, out reason);
+    }
+
+    public bool CanActorPutItemIntoContainer(Actor actor, Point position, out string reason)
+    {
+      if (actor == null)
+        throw new ArgumentNullException("actor");
+      MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(position);
+      if (mapObjectAt == null || !mapObjectAt.IsContainer)
+      {
+        reason = "object is not a container";
+        return false;
+      }
+      if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || actor.Inventory == null)
+      {
+        reason = "cannot take an item";
+        return false;
+      }
+      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
+      if (null != itemsAt && itemsAt.IsFull) 
+      {
+        reason = "container is full";
+        return false;
+      }
+      reason = "";
+      return true;
+    }
+
+
     public bool CanActorGetItem(Actor actor, Item it)
     {
       string reason;
