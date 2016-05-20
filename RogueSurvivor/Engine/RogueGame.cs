@@ -2381,8 +2381,12 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_SewersInvasion(district.SewersMap)) FireEvent_SewersInvasion(district.SewersMap);
       } // end lock(district)
 
-      if (!RogueGame.s_Options.IsSimON || m_Player == null || (!m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) || m_Player.Location.Map.District != district)
-        return;
+      // if simulation is disabled or threaded, do not try to simulate further
+      if (!RogueGame.s_Options.IsSimON || m_Player == null || RogueGame.s_Options.SimThread) return;
+      // current player has left district
+      if (m_Player.Location.Map.District != district) return;
+      // player is not sleeping
+      if (!m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) return;
       SimulateNearbyDistricts(district);
     }
 
@@ -13489,12 +13493,12 @@ namespace djack.RogueSurvivor.Engine
     private void SimThreadProc()
     {
       try {
+       bool have_simulated = false;
         while (m_SimThread.IsAlive) {
-          Thread.Sleep(10);
           lock (m_SimMutex) {
-            if (m_Player != null)
-              SimulateNearbyDistricts(m_Player.Location.Map.District);
+            have_simulated = (m_Player != null ? SimulateNearbyDistricts(m_Player.Location.Map.District) : false);
           }
+          if (!have_simulated) Thread.Sleep(200);
         }
       } catch (Exception ex) {
         if (ex is ThreadAbortException) return; // this is from the Abort() call
