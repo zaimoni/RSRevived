@@ -72,8 +72,13 @@ namespace zaimoni.Data
         }
 
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
-        public void GoalDistance(IEnumerable<T> goals, int max_depth)
+        public void GoalDistance(IEnumerable<T> goals, int max_depth, T start)
         {
+#if DEBUG
+            if (null == start) throw new ArgumentNullException("start");
+            if (null == goals) throw new ArgumentNullException("goals");
+            if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
+#endif
             _map.Clear();
             Queue<T> gen0 = new Queue<T>();
             foreach(T tmp in goals) {
@@ -82,7 +87,7 @@ namespace zaimoni.Data
                 _map[tmp] = 0;
                 gen0.Enqueue(tmp);
             }
-            while(0 < gen0.Count && 0 < max_depth) {
+            while(0 < gen0.Count && 0 < max_depth && !_map.ContainsKey(start)) {
                 --max_depth;
                 Queue<T> gen1 = new Queue<T>();
                 Dictionary<T,Dictionary<T, int>> candidate_dict = new Dictionary<T, Dictionary<T, int>>();
