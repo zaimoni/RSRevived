@@ -11,14 +11,37 @@ namespace Zaimoni.Data
     /// <typeparam name="Range">the value, e.g. turn</typeparam>
     class Ary2Dictionary<Key1, Key2, Range>
     {
-        readonly Dictionary<Key1, Range> _no_entries;
-        readonly Dictionary<Key1, Dictionary<Key2, Range>> _first_second_dict;
-        readonly Dictionary<Key2, Dictionary<Key1, Range>> _second_first_dict;
+        readonly private Dictionary<Key1, Range> _no_entries;
+        readonly private Dictionary<Key1, Dictionary<Key2, Range>> _first_second_dict;
+        readonly private Dictionary<Key2, Dictionary<Key1, Range>> _second_first_dict;
 
         public Ary2Dictionary() {
             _no_entries = new Dictionary<Key1, Range>();
             _first_second_dict = new Dictionary<Key1, Dictionary<Key2, Range>>();
             _second_first_dict = new Dictionary<Key2, Dictionary<Key1, Range>>();
+        }
+
+        public bool HaveEverSeen(Key1 key, out Range value) {
+            if (_no_entries.TryGetValue(key, out value)) return true;
+            if (_first_second_dict.ContainsKey(key)) {
+                foreach (Range tmp in _first_second_dict[key].Values) {
+                    value = tmp;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Yes, value copy for these two
+        public Dictionary<Key2,Range> WhatIsAt(Key1 key) {
+            if (_first_second_dict.ContainsKey(key)) return new Dictionary<Key2, Range>(_first_second_dict[key]);
+            return null;
+        }
+
+        public Dictionary<Key1, Range> WhereIs(Key2 key)
+        {
+            if (_second_first_dict.ContainsKey(key)) return new Dictionary<Key1, Range>(_second_first_dict[key]);
+            return null;
         }
 
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
@@ -52,19 +75,21 @@ namespace Zaimoni.Data
                     _first_second_dict[key].Remove(tmp);
                 }
             }
-#if DEBUG
+#if FAIL
+            if (0 < changed.Count)
+            {
+                Update(changed, key, value);
+                if (!_first_second_dict.ContainsKey(key)) _first_second_dict[key] = new Dictionary<Key2, Range>(changed.Count);
+                foreach (Key2 tmp in changed)
+                {
+                    _first_second_dict[key][tmp] = value;
+                }
+            }
+#else
             Update(keys2, key, value);
             if (!_first_second_dict.ContainsKey(key)) _first_second_dict[key] = new Dictionary<Key2, Range>();
             foreach (Key2 tmp in keys2) {
                 _first_second_dict[key][tmp] = value;
-            }
-#else
-            if (0 < changed.Count) {
-                Update(changed, key, value);
-                if (!_first_second_dict.ContainsKey(key)) _first_second_dict[key] = new Dictionary<Key2, Range>(changed.Count);
-                foreach (Key2 tmp in changed) {
-                    _first_second_dict[key][tmp] = value;
-                }
             }
 #endif
             _no_entries.Remove(key);
