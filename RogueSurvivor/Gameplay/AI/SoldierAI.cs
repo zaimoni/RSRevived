@@ -33,6 +33,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int BUILD_LARGE_FORT_CHANCE = 50;
     private const int START_FORT_LINE_CHANCE = 1;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
+
     private MemorizedSensor m_MemLOSSensor;
     private ExplorationData m_Exploration;
 
@@ -44,7 +47,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      m_MemLOSSensor = new MemorizedSensor(new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS), LOS_MEMORY);
+      m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     }
 
     public override void OptimizeBeforeSaving()

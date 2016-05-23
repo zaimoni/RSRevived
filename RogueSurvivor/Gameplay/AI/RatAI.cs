@@ -17,12 +17,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class RatAI : BaseAI
   {
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
+
     private LOSSensor m_LOSSensor;
     private SmellSensor m_LivingSmellSensor;
 
     protected override void CreateSensors()
     {
-      m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES);
+      m_LOSSensor = new LOSSensor(VISION_SEES);
       m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     }
 

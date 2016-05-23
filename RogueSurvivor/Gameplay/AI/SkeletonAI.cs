@@ -19,11 +19,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal class SkeletonAI : BaseAI
   {
     private const int IDLE_CHANCE = 80;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
+
     private LOSSensor m_LOSSensor;
 
     protected override void CreateSensors()
     {
-      m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS);
+      m_LOSSensor = new LOSSensor(VISION_SEES);
     }
 
     protected override List<Percept> UpdateSensors(RogueGame game)

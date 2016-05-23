@@ -23,6 +23,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int USE_EXIT_CHANCE = 50;
     private const int FOLLOW_SCENT_THROUGH_EXIT_CHANCE = 90;    // dead constant?
     private const int PUSH_OBJECT_CHANCE = 20;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
+
     private MemorizedSensor m_MemLOSSensor;
     private SmellSensor m_LivingSmellSensor;
     private SmellSensor m_MasterSmellSensor;
@@ -37,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-            m_MemLOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES), LOS_MEMORY);
+            m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
             m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
             m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }

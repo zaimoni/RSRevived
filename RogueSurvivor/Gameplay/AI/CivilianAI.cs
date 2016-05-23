@@ -82,6 +82,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int HUNGRY_PUSH_OBJECTS_CHANCE = 25;
     private const int LAW_ENFORCE_CHANCE = 30;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
+
     private LOSSensor m_LOSSensor;
     private int m_SafeTurns;
     private ExplorationData m_Exploration;
@@ -101,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override void CreateSensors()
     {
-      m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES);
+      m_LOSSensor = new LOSSensor(VISION_SEES);
     }
 
     // we don't have memory, but we do have taboo trades

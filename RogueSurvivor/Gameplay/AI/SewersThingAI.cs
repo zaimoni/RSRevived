@@ -18,13 +18,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal class SewersThingAI : BaseAI
   {
     private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR);
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
+
     private MemorizedSensor m_LOSSensor;
     private SmellSensor m_LivingSmellSensor;
     private SmellSensor m_MasterSmellSensor;
 
     protected override void CreateSensors()
     {
-      m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(LOSSensor.SensingFilter.ACTORS), LOS_MEMORY);
+      m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(VISION_SEES), LOS_MEMORY);
       m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
       m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }

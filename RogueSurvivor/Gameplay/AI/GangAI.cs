@@ -30,18 +30,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
+
     private MemorizedSensor m_MemorizedSensor;
     private ExplorationData m_Exploration;
 
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
-            m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
+      m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
     }
 
     protected override void CreateSensors()
     {
-      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS), LOS_MEMORY);
+      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     }
 
     public override void OptimizeBeforeSaving()

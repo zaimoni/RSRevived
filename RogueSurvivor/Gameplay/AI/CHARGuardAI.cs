@@ -25,11 +25,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "Hey"
     };
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
+
     private MemorizedSensor m_MemorizedSensor;
 
     protected override void CreateSensors()
     {
-      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS), LOS_MEMORY);
+      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     }
 
     public override void TakeControl(Actor actor)

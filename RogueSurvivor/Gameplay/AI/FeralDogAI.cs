@@ -26,13 +26,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     };
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
+
+    public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
+
     private LOSSensor m_LOSSensor;
     private SmellSensor m_LivingSmellSensor;
 
     protected override void CreateSensors()
     {
-            m_LOSSensor = new LOSSensor(LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES);
-            m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+      m_LOSSensor = new LOSSensor(VISION_SEES);
+      m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }

@@ -28,7 +28,6 @@ namespace djack.RogueSurvivor.Data
     }
 
     public abstract HashSet<Point> FOV { get; }
-
     public abstract ActorAction GetAction(RogueGame game);
 
     // savegame support
