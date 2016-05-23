@@ -99,11 +99,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
-      ActorAction actorAction1 = BehaviorEquipWeapon(game);
-      if (actorAction1 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction1;
+      ActorAction tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
@@ -111,27 +110,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (enemies != null)
         {
           List<Percept> perceptList1 = FilterCurrent(enemies);
-          if (perceptList1 != null)
-          {
-            Percept percept1;
-            ActorAction actorAction2 = TargetGridMelee(game, perceptList1, out percept1);
-            if (actorAction2 != null)
-            {
-                            m_Actor.Activity = Activity.CHASING;
-                            m_Actor.TargetActor = percept1.Percepted as Actor;
-              return actorAction2;
+          Actor tmpActor;
+          if (perceptList1 != null) {
+            tmpAction = TargetGridMelee(game, perceptList1, out tmpActor);
+            if (null != tmpAction) {
+              m_Actor.Activity = Activity.CHASING;
+              m_Actor.TargetActor = tmpActor;
+              return tmpAction;
             }
           }
           List<Percept> perceptList2 = Filter(game, enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
-          if (perceptList2 != null)
-          {
-          Percept percept1;
-          ActorAction actorAction2 = TargetGridMelee(game, perceptList2, out percept1);
-          if (actorAction2 != null)
-            {
-                            m_Actor.Activity = Activity.CHASING;
-                            m_Actor.TargetActor = percept1.Percepted as Actor;
-              return actorAction2;
+          if (perceptList2 != null) {
+            tmpAction = TargetGridMelee(game, perceptList2, out tmpActor);
+            if (null != tmpAction) {
+              m_Actor.Activity = Activity.CHASING;
+              m_Actor.TargetActor = tmpActor;
+              return tmpAction;
             }
           }
         }
