@@ -21,7 +21,7 @@ namespace zaimoni.Data
         {
 #if DEBUG
             if (null == Forward) throw new ArgumentNullException("Forward");
-            if (null == Inverse) throw new ArgumentNullException("Forward");
+            if (null == Inverse) throw new ArgumentNullException("Inverse");
             if (null == InDomain) throw new ArgumentNullException("InDomain");
 #endif
             _blacklist = new HashSet<T>();
@@ -46,7 +46,7 @@ namespace zaimoni.Data
         {
 #if DEBUG
             if (null == Forward) throw new ArgumentNullException("Forward");
-            if (null == Inverse) throw new ArgumentNullException("Forward");
+            if (null == Inverse) throw new ArgumentNullException("Inverse");
 #endif
             _blacklist = new HashSet<T>(src._blacklist);
             _inDomain = src._inDomain;
