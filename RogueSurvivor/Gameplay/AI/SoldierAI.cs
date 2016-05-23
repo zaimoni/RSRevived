@@ -171,9 +171,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      List<Percept> percepts4 = FilterCurrent(enemies);
-      if (percepts4 != null) {
-        Percept target = FilterNearest(percepts4);
+      if (current_enemies != null) {
+        Percept target = FilterNearest(current_enemies);
         if (m_Actor.Location == target.Location) {
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
