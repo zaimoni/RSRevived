@@ -16,45 +16,36 @@ namespace djack.RogueSurvivor.Engine.AI
     private Location m_Location;
     private object m_Percepted;
 
-    public int Turn
-    {
-      get
-      {
+    public int Turn {
+      get {
         return m_Turn;
       }
-      set
-      {
-                m_Turn = value;
+      set { // MemorizedSensor needs this
+        m_Turn = value;
       }
     }
 
-    public object Percepted
-    {
-      get
-      {
+    public object Percepted {
+      get {
         return m_Percepted;
       }
     }
 
-    public Location Location
-    {
-      get
-      {
+    public Location Location {
+      get {
         return m_Location;
       }
-      set
-      {
-                m_Location = value;
+      set { // MemorizedSensor needs this
+        m_Location = value;
       }
     }
 
     public Percept(object percepted, int turn, Location location)
     {
-      if (percepted == null)
-        throw new ArgumentNullException("percepted");
-            m_Percepted = percepted;
-            m_Turn = turn;
-            m_Location = location;
+      if (percepted == null) throw new ArgumentNullException("percepted");
+      m_Percepted = percepted;
+      m_Turn = turn;
+      m_Location = location;
     }
 
     public int GetAge(int currentGameTurn)
