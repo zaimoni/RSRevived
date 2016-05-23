@@ -44,9 +44,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction;
       Actor tmpActor;
       if (enemies != null) {
-        List<Percept> perceptList1 = FilterCurrent(enemies);
-        if (perceptList1 != null) {
-          tmpAction = TargetGridMelee(game, perceptList1, out tmpActor);
+        List<Percept> current_enemies = FilterCurrent(enemies);
+        if (current_enemies != null) {
+          tmpAction = TargetGridMelee(game, current_enemies, out tmpActor);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.CHASING;
             m_Actor.TargetActor = tmpActor;

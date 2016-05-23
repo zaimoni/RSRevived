@@ -124,15 +124,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       List<Percept> enemies = FilterEnemies(game, percepts1);
-      List<Percept> perceptList = FilterCurrent(enemies);
-      bool flag1 = perceptList != null;
+      List<Percept> current_enemies = FilterCurrent(enemies);
+      bool flag1 = current_enemies != null;
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
       bool flag4 = !m_Actor.IsTired;
 
       // all free actions must be above the enemies check
       if (flag1 && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
-        List<Percept> percepts3 = FilterFireTargets(game, perceptList);
+        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
         if (percepts3 != null) {
           Percept target = FilterNearest(percepts3);
           ActorAction actorAction3 = BehaviorRangedAttack(game, target);
@@ -147,14 +147,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(game, percepts1);
           if (friends != null) {
-            ActorAction actorAction3 = BehaviorWarnFriends(game, friends, FilterNearest(perceptList).Percepted as Actor);
+            ActorAction actorAction3 = BehaviorWarnFriends(game, friends, FilterNearest(current_enemies).Percepted as Actor);
             if (actorAction3 != null) {
               m_Actor.Activity = Activity.IDLE;
               return actorAction3;
             }
           }
         }
-        ActorAction actorAction4 = BehaviorFightOrFlee(game, perceptList, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
+        ActorAction actorAction4 = BehaviorFightOrFlee(game, current_enemies, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
         if (actorAction4 != null)
           return actorAction4;
       }
@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (flag1 && flag4)
       {
-        Percept target = FilterNearest(perceptList);
+        Percept target = FilterNearest(current_enemies);
         ActorAction actorAction3 = BehaviorChargeEnemy(game, target);
         if (actorAction3 != null)
         {

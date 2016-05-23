@@ -86,9 +86,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // All free actions go above the check for enemies.
       List<Percept> enemies = FilterEnemies(game, percepts1);
-      List<Percept> perceptList1 = FilterCurrent(enemies);
-      if (perceptList1 != null) {
-        List<Percept> percepts3 = FilterFireTargets(game, perceptList1);
+      List<Percept> current_enemies = FilterCurrent(enemies);
+      if (current_enemies != null) {
+        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
         if (percepts3 != null) {
           Percept target = FilterNearest(percepts3);
           Actor actor = target.Percepted as Actor;
@@ -100,9 +100,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (perceptList1 != null) {
-        object percepted = FilterNearest(perceptList1).Percepted;
-        tmpAction = BehaviorFightOrFlee(game, perceptList1, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
+      if (current_enemies != null) {
+        object percepted = FilterNearest(current_enemies).Percepted;
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
       List<Percept> perceptList2 = FilterNonEnemies(game, percepts1);

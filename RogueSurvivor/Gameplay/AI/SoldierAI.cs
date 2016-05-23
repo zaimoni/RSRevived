@@ -98,12 +98,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       List<Percept> enemies = FilterEnemies(game, percepts1);
-      List<Percept> perceptList = FilterCurrent(enemies);
+      List<Percept> current_enemies = FilterCurrent(enemies);
 
       // throwing a grenade overrides normal weapon equipping choices
-      if (null != perceptList)
+      if (null != current_enemies)
       {
-        tmpAction = BehaviorThrowGrenade(game, perceptList);
+        tmpAction = BehaviorThrowGrenade(game, current_enemies);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -115,18 +115,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // all free actions have to be before targeting enemies
-      if (null != perceptList) {
+      if (null != current_enemies) {
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(game, percepts1);
           if (friends != null) {
-            tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(perceptList).Percepted as Actor);
+            tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(current_enemies).Percepted as Actor);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.IDLE;
               return tmpAction;
             }
           }
         }
-        List<Percept> percepts3 = FilterFireTargets(game, perceptList);
+        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
         if (percepts3 != null) {
           Percept target = FilterNearest(percepts3);
           tmpAction = BehaviorRangedAttack(game, target);
@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return tmpAction;
           }
         }
-        tmpAction = BehaviorFightOrFlee(game, perceptList, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorRestIfTired(game);
