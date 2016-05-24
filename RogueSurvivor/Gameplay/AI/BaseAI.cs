@@ -1016,13 +1016,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ActorAction) null;
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE)
       {
-        Actor actorAt = exitAt.ToMap.GetActorAt(exitAt.ToPosition);
+        Actor actorAt = exitAt.Location.Actor;
         if (actorAt != null && game.Rules.IsEnemyOf(m_Actor, actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
           return (ActorAction) new ActionMeleeAttack(m_Actor, game, actorAt);
       }
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE)
       {
-        MapObject mapObjectAt = exitAt.ToMap.GetMapObjectAt(exitAt.ToPosition);
+        MapObject mapObjectAt = exitAt.Location.MapObject;
         if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
           return (ActorAction) new ActionBreak(m_Actor, game, mapObjectAt);
       }

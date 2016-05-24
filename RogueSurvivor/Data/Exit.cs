@@ -15,7 +15,6 @@ namespace djack.RogueSurvivor.Data
     readonly Location m_Location;
 
     public Map ToMap { get { return m_Location.Map; } }
-    public Point ToPosition { get { return m_Location.Position; } }
     public Location Location { get { return m_Location; } }
 
     public bool IsAnAIExit { get; set; }

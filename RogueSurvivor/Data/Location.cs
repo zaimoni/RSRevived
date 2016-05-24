@@ -15,30 +15,26 @@ namespace djack.RogueSurvivor.Data
     private Map m_Map;
     private Point m_Position;
 
-    public Map Map
-    {
-      get
-      {
+    public Map Map {
+      get {
         return m_Map;
       }
     }
 
-    public Point Position
-    {
-      get
-      {
+    public Point Position {
+      get {
         return m_Position;
       }
     }
 
     public Location(Map map, Point position)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-            m_Map = map;
-            m_Position = position;
+      if (map == null) throw new ArgumentNullException("map");
+      m_Map = map;
+      m_Position = position;
     }
 
+    // == operator is useful
     public static bool operator ==(Location lhs, Location rhs)
     {
       return lhs.Equals(rhs);
@@ -66,6 +62,12 @@ namespace djack.RogueSurvivor.Data
     {
       return new Location(lhs.m_Map, new Point(lhs.m_Position.X + rhs.Vector.X, lhs.m_Position.Y + rhs.Vector.Y));
     }
+
+    // thin wrappers
+    public MapObject MapObject { get { return m_Map.GetMapObjectAt(m_Position); } }
+    public Actor Actor { get { return m_Map.GetActorAt(m_Position); } }
+    public void AddCorpse(Corpse c) { m_Map.AddCorpseAt(c, m_Position); }
+    public void PlaceActor(Actor actor) { m_Map.PlaceActorAt(actor, m_Position); }
 
     public override int GetHashCode()
     {

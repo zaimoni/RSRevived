@@ -5001,41 +5001,34 @@ namespace djack.RogueSurvivor.Engine
           }
           else
           {
-            Map toMap = exitAt.ToMap;
-            Actor actorAt = toMap.GetActorAt(exitAt.ToPosition);
+            Actor actorAt = exitAt.Location.Actor;
             string reason;
-            if (actorAt != null)
-            {
-              if (m_Rules.IsEnemyOf(player, actorAt))
-              {
-                if (m_Rules.CanActorMeleeAttack(player, actorAt, out reason))
-                {
-                                    DoMeleeAttack(player, actorAt);
+            if (actorAt != null) {
+              if (m_Rules.IsEnemyOf(player, actorAt)) {
+                if (m_Rules.CanActorMeleeAttack(player, actorAt, out reason)) {
+                  DoMeleeAttack(player, actorAt);
                   flag1 = false;
                   flag2 = true;
                 }
                 else
-                                    AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", (object) actorAt.Name, (object) reason)));
+                  AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", (object) actorAt.Name, (object) reason)));
               }
               else
-                                AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", (object) actorAt.Name)));
+                AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", (object) actorAt.Name)));
             }
-            else
-            {
-              MapObject mapObjectAt = toMap.GetMapObjectAt(exitAt.ToPosition);
-              if (mapObjectAt != null)
-              {
-                if (m_Rules.IsBreakableFor(player, mapObjectAt, out reason))
-                {
-                                    DoBreak(player, mapObjectAt);
+            else {
+              MapObject mapObjectAt = exitAt.Location.MapObject;
+              if (mapObjectAt != null) {
+                if (m_Rules.IsBreakableFor(player, mapObjectAt, out reason)) {
+                  DoBreak(player, mapObjectAt);
                   flag1 = false;
                   flag2 = true;
                 }
                 else
-                                    AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+                  AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
               }
               else
-                                AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
+                AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
             }
           }
         }
@@ -8572,13 +8565,13 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (isPlayer && exitAt.ToMap.District != map.District) 
         BeforePlayerEnterDistrict(exitAt.ToMap.District);
-      Actor actorAt = exitAt.ToMap.GetActorAt(exitAt.ToPosition);
+      Actor actorAt = exitAt.Location.Actor;
       if (actorAt != null) {
         if (isPlayer)
           AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) actorAt.Name)));
         return true;
       }
-      MapObject mapObjectAt = exitAt.ToMap.GetMapObjectAt(exitAt.ToPosition);
+      MapObject mapObjectAt = exitAt.Location.MapObject;
       if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !m_Rules.HasActorJumpAbility(actor)) && !mapObjectAt.IsCouch))
       {
         if (isPlayer)
@@ -8592,10 +8585,10 @@ namespace djack.RogueSurvivor.Engine
         map.RemoveCorpse(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District)
         OnPlayerLeaveDistrict();
-      exitAt.ToMap.PlaceActorAt(actor, exitAt.ToPosition);
+      exitAt.Location.PlaceActor(actor);
       exitAt.ToMap.MoveActorToFirstPosition(actor);
       if (actor.DraggedCorpse != null)
-        exitAt.ToMap.AddCorpseAt(actor.DraggedCorpse, exitAt.ToPosition);
+        exitAt.Location.AddCorpse(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer)
       AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
       if (isPlayer)
@@ -8608,19 +8601,19 @@ namespace djack.RogueSurvivor.Engine
       }
       OnActorEnterTile(actor);
       if (actor.CountFollowers > 0)
-        DoFollowersEnterMap(actor, map, position, exitAt.ToMap, exitAt.ToPosition);
+        DoFollowersEnterMap(actor, map, position, exitAt.Location);
       return true;
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void DoFollowersEnterMap(Actor leader, Map fromMap, Point fromPos, Map toMap, Point toPos)
+    private void DoFollowersEnterMap(Actor leader, Map fromMap, Point fromPos, Location to)
     {
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
         List<Point> pointList = (List<Point>) null;
         if (Rules.IsAdjacent(fromPos, fo.Location.Position)) {
-          pointList = toMap.FilterAdjacentInMap(toPos, (Predicate<Point>) (pt => m_Rules.IsWalkableFor(fo, toMap, pt.X, pt.Y)));
+          pointList = to.Map.FilterAdjacentInMap(to.Position, (Predicate<Point>) (pt => m_Rules.IsWalkableFor(fo, to.Map, pt.X, pt.Y)));
           flag3 = pointList != null && pointList.Count != 0;
         }
         if (!flag3) {
@@ -8629,10 +8622,10 @@ namespace djack.RogueSurvivor.Engine
         } else if (TryActorLeaveTile(fo)) {
           Point position = pointList[m_Rules.Roll(0, pointList.Count)];
           fromMap.RemoveActor(fo);
-          toMap.PlaceActorAt(fo, position);
-          toMap.MoveActorToFirstPosition(fo);
+          to.Map.PlaceActorAt(fo, position);
+          to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
-          if (fromMap.District != toMap.District) {
+          if (fromMap.District != to.Map.District) {
             fo.ActionPoints += fo.Speed;
           }
         }      
@@ -8640,7 +8633,7 @@ namespace djack.RogueSurvivor.Engine
       if (actorList == null) return;
 
       bool flag2 = m_Player == leader;
-      if (toMap.District != fromMap.District) {
+      if (to.Map.District != fromMap.District) {
         foreach (Actor other in actorList) {
           leader.RemoveFollower(other);
           if (flag2) {
