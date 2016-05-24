@@ -61,13 +61,6 @@ namespace djack.RogueSurvivor.Data
       return m_Map.GetHashCode() ^ m_Position.GetHashCode();
     }
 
-    public override bool Equals(object obj)
-    {
-      if (obj == null || !(obj is Location))
-        return false;
-      return this == (Location) obj;
-    }
-
     public override string ToString()
     {
       throw new NotImplementedException();

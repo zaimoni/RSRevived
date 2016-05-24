@@ -5,6 +5,10 @@ using System.Linq;
 
 namespace Zaimoni.Data
 {
+    // rethinking design here
+    // hard-coding Point as the domain didn't work, as that didn't cope with exits.  We really wanted Location as the domain,
+    // which is templatable.  (We actually want a value-comparable location)
+    
     // This is very geometry-dependent, so templating doesn't make sense
     class PlausbilityMap
     {

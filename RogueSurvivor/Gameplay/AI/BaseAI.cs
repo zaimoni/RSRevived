@@ -889,7 +889,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (choiceEval != null)
             return (ActorAction) new ActionBarricadeDoor(m_Actor, game, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(50))
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))
         {
           ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);
           if (actorAction != null)
