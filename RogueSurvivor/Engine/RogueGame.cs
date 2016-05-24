@@ -12813,25 +12813,29 @@ namespace djack.RogueSurvivor.Engine
       GeneratePlayerOnMap(entryMap, m_TownGenerator);
       SetCurrentMap(entryMap);
       RefreshPlayer();
-      UpdatePlayerFOV(m_Player);
+      foreach(Actor player in entryMap.Players) {
+        UpdatePlayerFOV(player);
+      }
       if (RogueGame.s_Options.RevealStartingDistrict) {
         Map map = entryMap;
-        Point pos = m_Player.Location.Position;
-        List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
-        if (zonesAt1 != null) {
-          Zone zone = zonesAt1[0];
-          for (int x2 = 0; x2 < entryMap.Width; ++x2) {
-            for (int y2 = 0; y2 < entryMap.Height; ++y2) {
-              bool flag = false;
-              List<Zone> zonesAt2 = entryMap.GetZonesAt(x2, y2);
-              if (zonesAt2 != null && zonesAt2[0] == zone)
-                flag = true;
-              else if (!entryMap.GetTileAt(x2, y2).IsInside)
-                flag = true;
-              if (flag)
-                entryMap.GetTileAt(x2, y2).IsVisited = true;
+        foreach(Actor player in map.Players) {
+          Point pos = player.Location.Position;
+          List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
+          if (zonesAt1 != null) {
+            Zone zone = zonesAt1[0];
+            for (int x2 = 0; x2 < entryMap.Width; ++x2) {
+              for (int y2 = 0; y2 < entryMap.Height; ++y2) {
+                bool flag = false;
+                List<Zone> zonesAt2 = entryMap.GetZonesAt(x2, y2);
+                if (zonesAt2 != null && zonesAt2[0] == zone)
+                  flag = true;
+                else if (!entryMap.GetTileAt(x2, y2).IsInside)
+                  flag = true;
+                if (flag)
+                  entryMap.GetTileAt(x2, y2).IsVisited = true;
+              }
             }
-          }
+          }           
         }
       }
       if (!isVerbose) return;

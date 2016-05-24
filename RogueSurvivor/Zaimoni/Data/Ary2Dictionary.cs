@@ -44,6 +44,10 @@ namespace Zaimoni.Data
             return null;
         }
 
+        public List<Key2> WhatHaveISeen() {
+            return new List<Key2>(_second_first_dict.Keys);
+        }
+
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
             if (null == keys2) {
                 if (_first_second_dict.ContainsKey(key))  Remove(keys2, key);
