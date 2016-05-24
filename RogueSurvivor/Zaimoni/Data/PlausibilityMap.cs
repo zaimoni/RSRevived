@@ -8,60 +8,59 @@ namespace Zaimoni.Data
     // rethinking design here
     // hard-coding Point as the domain didn't work, as that didn't cope with exits.  We really wanted Location as the domain. 
     // We probably shouldn't be as concerned with data validation (delegate that to the forward iteration)
-    
-    // This is very geometry-dependent, so templating doesn't make sense
-    class PlausbilityMap
+    class PlausbilityMap<T>
     {
         /// <summary>
         /// 100% confidence that something is there.
+        /// <para>This really should be templated on the type T, but C# doesn't cleanly support this</para>
         /// <para>Numerically, Factorial 7 i.e. 7!  Divisible by 2, 3, ..., 9 which are the possible exit counts from a square</para>
         /// </summary>
         public const int CERTAIN = 5040;
 
-        private Dictionary<Point, int> _map;
+        private Dictionary<T, int> _map;
 
-        readonly private Func<Point, Dictionary<Point,int>> _forward;
+        readonly private Func<T, Dictionary<T,int>> _forward;
         private int _target_count;
 
-        public PlausbilityMap(Func<Point, Dictionary<Point, int>> Forward, int TargetCount)
+        public PlausbilityMap(Func<T, Dictionary<T, int>> Forward, int TargetCount)
         {
 #if DEBUG
             if (null == Forward) throw new ArgumentNullException("Forward");
 #endif
-            _map = new Dictionary<Point, int>();
+            _map = new Dictionary<T, int>();
             _forward = Forward; // required
             _target_count = TargetCount;
         }
 
         // Need a value copy constructor for typical uses
-        public PlausbilityMap(PlausbilityMap src)
+        public PlausbilityMap(PlausbilityMap<T> src)
         {
-            _map = new Dictionary<Point, int>(src._map);
+            _map = new Dictionary<T, int>(src._map);
             _forward = src._forward;
             _target_count = src._target_count;
         }
 
-        public int ConfidenceAt(Point x)
+        public int ConfidenceAt(T x)
         {
             if (_map.ContainsKey(x)) return _map[x];
             return 0;
         }
 
         // apply an invasion or similar
-        public void AddThreat(HashSet<Point> SpawnZone, int TargetCount)
+        public void AddThreat(HashSet<T> SpawnZone, int TargetCount)
         {
             if (int.MaxValue / CERTAIN < TargetCount) throw new ArgumentOutOfRangeException("TargetCount", "too many threat to add at once");
             if (TargetCount > SpawnZone.Count) throw new InvalidOperationException("more threat than places to spawn in");
 
             // validate the spawn zone
-            Queue<Point> valid = new Queue<Point>(SpawnZone);
+            Queue<T> valid = new Queue<T>(SpawnZone);
 
             // add confidence that threat is present
             // this operation does not typically denormalize the confidence map, but it can drive points above CERTAIN which is a denormalization
             int TotalConfidence = TargetCount * CERTAIN;
             while (0 < valid.Count) {
                 int _confidence = TotalConfidence / valid.Count;
-                Point tmp = valid.Dequeue();
+                T tmp = valid.Dequeue();
                 if (_map.ContainsKey(tmp)) _map[tmp] += _confidence;
                 else _map[tmp] = _confidence;
                 TotalConfidence -= _confidence;
@@ -69,11 +68,11 @@ namespace Zaimoni.Data
         }
 
         // apply observations
-        public void Observe(HashSet<Point> Cleared, HashSet<Point> Sighted)
+        public void Observe(HashSet<T> Cleared, HashSet<T> Sighted)
         {
             // positively not there
             if (null != Cleared && 0 < Cleared.Count) {
-                foreach (Point tmp in Cleared) {
+                foreach (T tmp in Cleared) {
                    _map.Remove(tmp);
                 }
             }
@@ -92,42 +91,42 @@ namespace Zaimoni.Data
 
         // let time elapse
         // this should not denormalize; exits are problematic to model
-        public void TimeStep(HashSet<Point> Observed)
+        public void TimeStep(HashSet<T> Observed)
         {
-            Dictionary<Point, int> new_map = new Dictionary<Point, int>();
+            Dictionary<T, int> new_map = new Dictionary<T, int>();
             if (null != Observed && 0 < Observed.Count) {
-                foreach(Point tmp in Observed) {
+                foreach(T tmp in Observed) {
                     if (_map.ContainsKey(tmp)) new_map[tmp] = _map[tmp];
                 }
             }
-            foreach(Point tmp in _map.Keys) {
+            foreach(T tmp in _map.Keys) {
                 if (Observed.Contains(tmp)) continue;
-                Dictionary<Point, int> next_step = _forward(tmp);    // return value is a denormalized weighted probability distribution
-                foreach(Point tmp2 in new HashSet<Point>(next_step.Keys)) {
+                Dictionary<T, int> next_step = _forward(tmp);    // return value is a denormalized weighted probability distribution
+                foreach(T tmp2 in new HashSet<T>(next_step.Keys)) {
                     next_step.Remove(tmp2);
                 }
                 int total_weight = Enumerable.Sum(next_step.Values);
-                foreach(Point tmp2 in next_step.Keys) {
+                foreach(T tmp2 in next_step.Keys) {
                     if (new_map.ContainsKey(tmp2)) new_map[tmp2] += (new NormalizeScaler(next_step[tmp2],total_weight)).Scale(_map[tmp]);
                     else new_map[tmp2] = (new NormalizeScaler(next_step[tmp2], total_weight)).Scale(_map[tmp]);
                 }
             }
         }
 
-        private void IgnoreCertain(HashSet<Point> Certain)
+        private void IgnoreCertain(HashSet<T> Certain)
         {
             if (null == Certain || 0 >= Certain.Count) return;
             _target_count -= Certain.Count;
-            foreach (Point tmp in Certain) {
+            foreach (T tmp in Certain) {
                 _map.Remove(tmp);
             }
         }
 
-        private void IncludeCertain(HashSet<Point> Certain)
+        private void IncludeCertain(HashSet<T> Certain)
         {
             if (null == Certain || 0 >= Certain.Count) return;
             _target_count += Certain.Count;
-            foreach (Point tmp in Certain) {
+            foreach (T tmp in Certain) {
                 _map[tmp] = CERTAIN;
             }
         }
@@ -156,7 +155,7 @@ namespace Zaimoni.Data
 
             // we are currently denormalized.
             // locations that are certain are already normalized, so temporarily ignore them
-            HashSet<Point> Certain = new HashSet<Point>(_map.Keys.Where(x => CERTAIN <= _map[x]));
+            HashSet<T> Certain = new HashSet<T>(_map.Keys.Where(x => CERTAIN <= _map[x]));
             IgnoreCertain(Certain);
 
             // corner cases, again
@@ -171,9 +170,9 @@ namespace Zaimoni.Data
                     NormalizeScaler scaler = new NormalizeScaler(TheoreticalTotalConfidence,TotalConfidence);
                     int max = Enumerable.Max(_map.Values);
                     if (max != scaler.Scale(max)) { // not a no-op
-                        Queue<Point> tmp2 = new Queue<Point>(_map.Keys);
+                        Queue<T> tmp2 = new Queue<T>(_map.Keys);
                         while(0 < tmp2.Count) {
-                            Point tmp = tmp2.Dequeue();
+                            T tmp = tmp2.Dequeue();
                             if (0 < _map[tmp]) _map[tmp] = scaler.Scale(_map[tmp]);
                             else _map.Remove(tmp);
                         }
