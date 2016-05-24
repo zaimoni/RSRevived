@@ -817,34 +817,6 @@ namespace djack.RogueSurvivor.Data
             m_aux_ScentsByPosition.Remove(scent.Position);
     }
 
-    public void MarkAsVisited(IEnumerable<Point> positions)
-    {
-      foreach (Point position in positions)
-      {
-        if (!IsInBounds(position.X, position.Y))
-          throw new ArgumentOutOfRangeException("point " + (object) position + " not in map bounds");
-                m_Tiles[position.X, position.Y].IsVisited = true;
-      }
-    }
-
-    public void SetAllAsVisited()
-    {
-      for (int index1 = 0; index1 < Width; ++index1)
-      {
-        for (int index2 = 0; index2 < Height; ++index2)
-          m_Tiles[index1, index2].IsVisited = true;
-      }
-    }
-
-    public void SetAllAsUnvisited()
-    {
-      for (int index1 = 0; index1 < Width; ++index1)
-      {
-        for (int index2 = 0; index2 < Height; ++index2)
-          m_Tiles[index1, index2].IsVisited = false;
-      }
-    }
-
     public bool IsTransparent(int x, int y)
     {
       if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsTransparent)

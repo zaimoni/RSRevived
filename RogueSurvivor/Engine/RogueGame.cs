@@ -3563,7 +3563,6 @@ namespace djack.RogueSurvivor.Engine
     {
       if (player == null) return;
       (player.Controller as PlayerController)?.UpdateSensors(this);
-      player.Location.Map.MarkAsVisited(player.Controller.FOV);
     }
 
     private void HandlePlayerActor(Actor player)
@@ -11301,6 +11300,7 @@ namespace djack.RogueSurvivor.Engine
           Tile tile = map.IsInBounds(x, y) ? map.GetTileAt(x, y) : null;
           if (null != tile) {
             tile.IsInView = player;
+            tile.IsVisited = (m_Player.Controller as PlayerController).IsKnown(new Location(map,point));
             DrawTile(tile, screen, tint);
           } else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
             DrawExit(screen);
@@ -11831,22 +11831,15 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DrawMiniMap(Map map)
     {
+      if (null == m_Player) return;   // fail-safe.
       if (RogueGame.s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         Point pos = new Point();
-        for (int x = 0; x < map.Width; ++x) {
-          pos.X = x;
-          for (int y = 0; y < map.Height; ++y) {
-            pos.Y = y;
-            Tile tileAt = map.GetTileAt(x, y);
-            if (tileAt.IsVisited)
-            {
-              if (map.GetExitAt(pos) != null)
-                m_UI.UI_SetMinimapColor(x, y, Color.HotPink);
-              else
-                m_UI.UI_SetMinimapColor(x, y, tileAt.Model.MinimapColor);
-            }
+        for (pos.X = 0; pos.X < map.Width; ++pos.X) {
+          for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
+            if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
+            m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
           }
         }
 #endregion
@@ -11854,19 +11847,19 @@ namespace djack.RogueSurvivor.Engine
       }
       m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * MINITILE_SIZE, MINIMAP_Y + m_MapViewRect.Top * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
       if (RogueGame.s_Options.ShowPlayerTagsOnMinimap) {
-        for (int x = 0; x < map.Width; ++x) {
-          for (int y = 0; y < map.Height; ++y) {
-            Tile tileAt = map.GetTileAt(x, y);
-            if (tileAt.IsVisited) {
-              string imageID = null;
-              if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag")) imageID = "mini_player_tag";
-              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag2")) imageID = "mini_player_tag2";
-              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag3")) imageID = "mini_player_tag3";
-              else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag4")) imageID = "mini_player_tag4";
-              if (imageID != null) {
-                Point point = new Point(MINIMAP_X + x * MINITILE_SIZE, MINIMAP_Y + y * MINITILE_SIZE);
-                m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
-              }
+        Point pos = new Point();
+        for (pos.X = 0; pos.X < map.Width; ++pos.X) {
+          for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
+            if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
+            Tile tileAt = map.GetTileAt(pos);
+            string imageID = null;
+            if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag")) imageID = "mini_player_tag";
+            else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag2")) imageID = "mini_player_tag2";
+            else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag3")) imageID = "mini_player_tag3";
+            else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag4")) imageID = "mini_player_tag4";
+            if (imageID != null) {
+              Point point = new Point(MINIMAP_X + pos.X * MINITILE_SIZE, MINIMAP_Y + pos.Y * MINITILE_SIZE);
+              m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
             }
           }
         }
@@ -12806,7 +12799,7 @@ namespace djack.RogueSurvivor.Engine
           List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
           if (null == zonesAt1) continue;
           Zone zone = zonesAt1[0];
-          Point point = new Point(0,0);
+          Point point = new Point();
           for (point.X = 0; point.X < entryMap.Width; ++point.X) {
             for (point.Y = 0; point.Y < entryMap.Height; ++point.Y) {
               bool flag = false;
@@ -12816,7 +12809,6 @@ namespace djack.RogueSurvivor.Engine
                 if (zonesAt2 != null && zonesAt2[0] == zone) flag = true;
               }
               if (flag) { 
-                entryMap.GetTileAt(point).IsVisited = true;
                 (player.Controller as PlayerController).ForceKnown(point);
               }
             }
@@ -13849,12 +13841,8 @@ namespace djack.RogueSurvivor.Engine
           m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("(reincarnation {0})", (object)m_Session.Scoring.ReincarnationNumber));
           m_Session.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
           m_Session.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber);
-          for (int index1 = 0; index1 < m_Session.World.Size; ++index1) {
-            for (int index2 = 0; index2 < m_Session.World.Size; ++index2) {
-              foreach (Map map in m_Session.World[index1, index2].Maps)
-                map.SetAllAsUnvisited();
-            }
-          }
+          // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
+          // This may not be a useful idea, however.
           m_MusicManager.StopAll();
           UpdatePlayerFOV(m_Player);
           ComputeViewRect(m_Player.Location.Position);
