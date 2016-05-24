@@ -8285,7 +8285,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
-      newLocation.Map.PlaceActorAt(actor, newLocation.Position);
+      newLocation.PlaceActor(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         location.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
@@ -11095,7 +11095,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor actor = m_TownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
       if (!isStartingGame)
-        deadVictim.Location.Map.PlaceActorAt(actor, deadVictim.Location.Position);
+        deadVictim.Location.PlaceActor(actor);
       if (deadVictim == m_Player || deadVictim.IsPlayer)
         m_Session.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
