@@ -9,6 +9,7 @@ namespace Zaimoni.Data
     /// <typeparam name="Key1">The key for which a nothing observed entry is meaningful; e.g. Point</typeparam>
     /// <typeparam name="Key2">The key for which something has to be observed; e.g. GameItems.IDs</typeparam>
     /// <typeparam name="Range">the value, e.g. turn</typeparam>
+    [Serializable]
     class Ary2Dictionary<Key1, Key2, Range>
     {
         readonly private Dictionary<Key1, Range> _no_entries;
