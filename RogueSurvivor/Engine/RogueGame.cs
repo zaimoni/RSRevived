@@ -11456,7 +11456,7 @@ namespace djack.RogueSurvivor.Engine
         DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
       } else {
-        if (!IsKnownToPlayer(mapObj) || IsPlayerSleeping()) return;
+        if (!(m_Player.Controller as PlayerController).IsKnown(mapObj.Location) || IsPlayerSleeping()) return;
         DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
       }
     }
@@ -12333,23 +12333,6 @@ namespace djack.RogueSurvivor.Engine
       return ForceVisibleToPlayer(location.Map, location.Position);
     }
 
-    private bool IsKnownToPlayer(Map map, Point position)
-    {
-      if (map.IsInBounds(position.X, position.Y))
-        return map.GetTileAt(position.X, position.Y).IsVisited;
-      return false;
-    }
-
-    private bool IsKnownToPlayer(Location location)
-    {
-      return IsKnownToPlayer(location.Map, location.Position);
-    }
-
-    private bool IsKnownToPlayer(MapObject mapObj)
-    {
-      return IsKnownToPlayer(mapObj.Location);
-    }
-
     private bool IsPlayerSleeping()
     {
       if (m_Player != null)
@@ -12834,7 +12817,7 @@ namespace djack.RogueSurvivor.Engine
               }
               if (flag) { 
                 entryMap.GetTileAt(point).IsVisited = true;
-                (player.Controller as PlayerController).ForceSeen(point);
+                (player.Controller as PlayerController).ForceKnown(point);
               }
             }
           }

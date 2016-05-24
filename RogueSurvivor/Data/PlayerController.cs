@@ -27,12 +27,12 @@ namespace djack.RogueSurvivor.Data
       return m_itemMemory.HaveEverSeen(x,out turn);
     }
 
-    public bool HaveSeen(Location x) {
+    public bool IsKnown(Location x) {
       int discard;
       return LastSeen(x, out discard);
     }
 
-    public void ForceSeen(Point x) {   // for world creation
+    public void ForceKnown(Point x) {   // for world creation
       m_itemMemory.Set(new Location(m_Actor.Location.Map, x), null, m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
