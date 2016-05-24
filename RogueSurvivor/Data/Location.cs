@@ -41,14 +41,25 @@ namespace djack.RogueSurvivor.Data
 
     public static bool operator ==(Location lhs, Location rhs)
     {
-      if (lhs.m_Map == rhs.m_Map)
-        return lhs.m_Position == rhs.m_Position;
-      return false;
+      return lhs.Equals(rhs);
     }
 
     public static bool operator !=(Location lhs, Location rhs)
     {
-      return !(lhs == rhs);
+      return !lhs.Equals(rhs);
+    }
+    
+    // silence compiler warnings
+    public bool Equals(Location x)
+    {
+      return m_Map == x.m_Map && m_Position == x.m_Position;
+    }
+
+    public override bool Equals(object obj)
+    {
+      Location? tmp = obj as Location?;
+      if (null == tmp) return false;
+      return Equals(tmp.Value);
     }
 
     public static Location operator +(Location lhs, Direction rhs)
