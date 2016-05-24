@@ -12821,21 +12821,23 @@ namespace djack.RogueSurvivor.Engine
         foreach(Actor player in map.Players) {
           Point pos = player.Location.Position;
           List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
-          if (zonesAt1 != null) {
-            Zone zone = zonesAt1[0];
-            for (int x2 = 0; x2 < entryMap.Width; ++x2) {
-              for (int y2 = 0; y2 < entryMap.Height; ++y2) {
-                bool flag = false;
-                List<Zone> zonesAt2 = entryMap.GetZonesAt(x2, y2);
-                if (zonesAt2 != null && zonesAt2[0] == zone)
-                  flag = true;
-                else if (!entryMap.GetTileAt(x2, y2).IsInside)
-                  flag = true;
-                if (flag)
-                  entryMap.GetTileAt(x2, y2).IsVisited = true;
+          if (null == zonesAt1) continue;
+          Zone zone = zonesAt1[0];
+          Point point = new Point(0,0);
+          for (point.X = 0; point.X < entryMap.Width; ++point.X) {
+            for (point.Y = 0; point.Y < entryMap.Height; ++point.Y) {
+              bool flag = false;
+              if (!entryMap.GetTileAt(point).IsInside) flag = true;
+              else { 
+                List<Zone> zonesAt2 = entryMap.GetZonesAt(point.X, point.Y);
+                if (zonesAt2 != null && zonesAt2[0] == zone) flag = true;
+              }
+              if (flag) { 
+                entryMap.GetTileAt(point).IsVisited = true;
+                (player.Controller as PlayerController).ForceSeen(point);
               }
             }
-          }           
+          }
         }
       }
       if (!isVerbose) return;

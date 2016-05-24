@@ -23,13 +23,17 @@ namespace djack.RogueSurvivor.Data
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
-    bool LastSeen(Location x, out int turn) {
+    public bool LastSeen(Location x, out int turn) {
       return m_itemMemory.HaveEverSeen(x,out turn);
     }
 
-    bool HaveSeen(Location x) {
+    public bool HaveSeen(Location x) {
       int discard;
       return LastSeen(x, out discard);
+    }
+
+    public void ForceSeen(Point x) {   // for world creation
+      m_itemMemory.Set(new Location(m_Actor.Location.Map, x), null, m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
     public List<Engine.AI.Percept> UpdateSensors(RogueGame game)
