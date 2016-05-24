@@ -636,7 +636,7 @@ namespace djack.RogueSurvivor.Engine
           reason = "not reachable";
           return false;
         }
-        if (exitAt.ToMap != target.Location.Map || exitAt.ToPosition != target.Location.Position)
+        if (exitAt.Location != target.Location)
         {
           reason = "not reachable";
           return false;

@@ -1012,7 +1012,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ActorAction) null;
       if (!exitAt.IsAnAIExit)
         return (ActorAction) null;
-      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.ToMap == m_prevLocation.Map && exitAt.ToPosition == m_prevLocation.Position)
+      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation)
         return (ActorAction) null;
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE)
       {
