@@ -6,8 +6,8 @@ using System.Linq;
 namespace Zaimoni.Data
 {
     // rethinking design here
-    // hard-coding Point as the domain didn't work, as that didn't cope with exits.  We really wanted Location as the domain,
-    // which is templatable.  (We actually want a value-comparable location)
+    // hard-coding Point as the domain didn't work, as that didn't cope with exits.  We really wanted Location as the domain. 
+    // We probably shouldn't be as concerned with data validation (delegate that to the forward iteration)
     
     // This is very geometry-dependent, so templating doesn't make sense
     class PlausbilityMap
@@ -18,22 +18,16 @@ namespace Zaimoni.Data
         /// </summary>
         public const int CERTAIN = 5040;
 
-        readonly private HashSet<Point> _blacklist;     // coordinates that cannot be entered at all.  For Map, usually walls.
-        readonly private Func<Point, bool> _inDomain;   // legal coordinates; for Map, usually InBounds
-
         private Dictionary<Point, int> _map;
 
         readonly private Func<Point, Dictionary<Point,int>> _forward;
         private int _target_count;
 
-        public PlausbilityMap(Func<Point, Dictionary<Point, int>> Forward, Func<Point, bool> InDomain, int ProbabilityNoMove, int TargetCount)
+        public PlausbilityMap(Func<Point, Dictionary<Point, int>> Forward, int TargetCount)
         {
 #if DEBUG
             if (null == Forward) throw new ArgumentNullException("Forward");
-            if (null == InDomain) throw new ArgumentNullException("InDomain");
 #endif
-            _blacklist = new HashSet<Point>();
-            _inDomain = InDomain;   // required
             _map = new Dictionary<Point, int>();
             _forward = Forward; // required
             _target_count = TargetCount;
@@ -42,26 +36,9 @@ namespace Zaimoni.Data
         // Need a value copy constructor for typical uses
         public PlausbilityMap(PlausbilityMap src)
         {
-            _blacklist = new HashSet<Point>(src._blacklist);
-            _inDomain = src._inDomain;
             _map = new Dictionary<Point, int>(src._map);
             _forward = src._forward;
             _target_count = src._target_count;
-        }
-
-        // blacklist manipulation
-        public void Blacklist(IEnumerable<Point> src)
-        {
-            foreach (Point tmp in src) {
-                if (_inDomain(tmp)) _blacklist.Add(tmp);
-            }
-        }
-
-        public void Approve(IEnumerable<Point> src)
-        {
-            foreach (Point tmp in src) {
-                _blacklist.Remove(tmp);
-            }
         }
 
         public int ConfidenceAt(Point x)
@@ -74,10 +51,10 @@ namespace Zaimoni.Data
         public void AddThreat(HashSet<Point> SpawnZone, int TargetCount)
         {
             if (int.MaxValue / CERTAIN < TargetCount) throw new ArgumentOutOfRangeException("TargetCount", "too many threat to add at once");
+            if (TargetCount > SpawnZone.Count) throw new InvalidOperationException("more threat than places to spawn in");
 
             // validate the spawn zone
-            Queue<Point> valid = new Queue<Point>(SpawnZone.Where(x => !_blacklist.Contains(x) && _inDomain(x)));
-            if (TargetCount > valid.Count) throw new InvalidOperationException("more threat than places to spawn in");
+            Queue<Point> valid = new Queue<Point>(SpawnZone);
 
             // add confidence that threat is present
             // this operation does not typically denormalize the confidence map, but it can drive points above CERTAIN which is a denormalization
@@ -94,13 +71,6 @@ namespace Zaimoni.Data
         // apply observations
         public void Observe(HashSet<Point> Cleared, HashSet<Point> Sighted)
         {
-            // validate Sighted
-            if (null != Sighted) {
-                foreach (Point tmp in Sighted) {
-                    if (_blacklist.Contains(tmp) || !_inDomain(tmp)) Sighted.Remove(tmp);
-                }
-            }
-
             // positively not there
             if (null != Cleared && 0 < Cleared.Count) {
                 foreach (Point tmp in Cleared) {
@@ -134,7 +104,6 @@ namespace Zaimoni.Data
                 if (Observed.Contains(tmp)) continue;
                 Dictionary<Point, int> next_step = _forward(tmp);    // return value is a denormalized weighted probability distribution
                 foreach(Point tmp2 in new HashSet<Point>(next_step.Keys)) {
-                    if (!_blacklist.Contains(tmp2) && _inDomain(tmp2)) continue;
                     next_step.Remove(tmp2);
                 }
                 int total_weight = Enumerable.Sum(next_step.Values);
