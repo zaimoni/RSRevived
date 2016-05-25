@@ -789,7 +789,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!recover.IsLegal()) return null;
           return recover;
         }
-        return tmp;
+        return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
       }
       // BehaviorIntelligentBumpToward will return null if a get item from container is invalid, so need to prevent that
       // best range depends on other factors
