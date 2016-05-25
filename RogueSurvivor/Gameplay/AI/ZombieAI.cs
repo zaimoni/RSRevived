@@ -26,23 +26,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private MemorizedSensor m_MemLOSSensor;
-    private SmellSensor m_LivingSmellSensor;
-    private SmellSensor m_MasterSmellSensor;
+    private readonly MemorizedSensor m_MemLOSSensor;
+    private readonly SmellSensor m_LivingSmellSensor;
+    private readonly SmellSensor m_MasterSmellSensor;
     private ExplorationData m_Exploration;
+
+    public ZombieAI()
+    {
+      m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
+      m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
+      m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
+    }
 
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
       if (!m_Actor.Model.Abilities.ZombieAI_Explore) return;
       m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
-    }
-
-    protected override void CreateSensors()
-    {
-            m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
-            m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
-            m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
     }
 
     public override void OptimizeBeforeSaving()

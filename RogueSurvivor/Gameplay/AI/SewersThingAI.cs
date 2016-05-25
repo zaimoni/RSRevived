@@ -21,11 +21,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private MemorizedSensor m_LOSSensor;
-    private SmellSensor m_LivingSmellSensor;
-    private SmellSensor m_MasterSmellSensor;
+    private readonly MemorizedSensor m_LOSSensor;
+    private readonly SmellSensor m_LivingSmellSensor;
+    private readonly SmellSensor m_MasterSmellSensor;
 
-    protected override void CreateSensors()
+    public SewersThingAI()
     {
       m_LOSSensor = new MemorizedSensor((Sensor) new LOSSensor(VISION_SEES), LOS_MEMORY);
       m_LivingSmellSensor = new SmellSensor(Odor.LIVING);

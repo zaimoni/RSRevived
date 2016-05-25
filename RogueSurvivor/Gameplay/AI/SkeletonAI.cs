@@ -22,9 +22,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private LOSSensor m_LOSSensor;
+    private readonly LOSSensor m_LOSSensor;
 
-    protected override void CreateSensors()
+    public SkeletonAI()
     {
       m_LOSSensor = new LOSSensor(VISION_SEES);
     }

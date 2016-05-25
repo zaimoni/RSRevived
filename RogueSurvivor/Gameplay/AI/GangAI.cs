@@ -33,18 +33,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private MemorizedSensor m_MemorizedSensor;
+    private readonly MemorizedSensor m_MemorizedSensor;
     private ExplorationData m_Exploration;
+
+    public GangAI()
+    {
+      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
+    }
 
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
       m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
-    }
-
-    protected override void CreateSensors()
-    {
-      m_MemorizedSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     }
 
     public override void OptimizeBeforeSaving()

@@ -76,15 +76,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
-            CreateSensors();
-            m_TabooItems = null;
-            m_TabooTiles = null;
-            m_TabooTrades = null;
+      m_TabooItems = null;
+      m_TabooTiles = null;
+      m_TabooTrades = null;
     }
 
     public override void SetOrder(ActorOrder newOrder)
     {
-            m_Order = newOrder;
+      m_Order = newOrder;
     }
 
     public override ActorAction GetAction(RogueGame game)
@@ -100,8 +99,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.Activity = Activity.IDLE;
       return (ActorAction) new ActionWait(m_Actor, game);
     }
-
-    protected abstract void CreateSensors();
 
     protected abstract List<Percept> UpdateSensors(RogueGame game);
 
