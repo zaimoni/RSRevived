@@ -77,7 +77,6 @@
     <Compile Include="PointExtensions.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Data\ActorController.cs" />
-    <Compile Include="Data\AIController.cs" />
     <Compile Include="Data\ItemModel.cs" />
     <Compile Include="Data\ActorAction.cs" />
     <Compile Include="Data\TileModel.cs" />

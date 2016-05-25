@@ -20,8 +20,8 @@ using System.Drawing;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
-  internal abstract class BaseAI : AIController
-  {
+  internal abstract class BaseAI : ActorController
+    {
     private const int FLEE_THROUGH_EXIT_CHANCE = 50;
     private const int EMOTE_FLEE_CHANCE = 30;
     private const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
@@ -35,25 +35,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private Dictionary<Point, int> m_TabooTiles;
     private List<Actor> m_TabooTrades;
 
-    public override ActorOrder Order
-    {
-      get
-      {
+    public ActorOrder Order {
+      get {
         return m_Order;
       }
     }
 
-    public override ActorDirective Directives
-    {
-      get
-      {
+    public ActorDirective Directives {
+      get {
         if (m_Directive == null)
-                    m_Directive = new ActorDirective();
+          m_Directive = new ActorDirective();
         return m_Directive;
       }
-      set
-      {
-                m_Directive = value;
+      set {
+        m_Directive = value;
       }
     }
 
@@ -81,7 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_TabooTrades = null;
     }
 
-    public override void SetOrder(ActorOrder newOrder)
+    public virtual void SetOrder(ActorOrder newOrder)
     {
       m_Order = newOrder;
     }

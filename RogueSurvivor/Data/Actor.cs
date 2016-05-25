@@ -546,7 +546,7 @@ namespace djack.RogueSurvivor.Data
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
       other.m_Leader = null;
-      AIController aiController = other.Controller as AIController;
+      Gameplay.AI.BaseAI aiController = other.Controller as Gameplay.AI.BaseAI;
       if (aiController == null) return;
       aiController.Directives.Reset();
       aiController.SetOrder(null);

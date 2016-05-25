@@ -5799,18 +5799,18 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       do
       {
-        ActorDirective directives = (follower.Controller as AIController).Directives;
-                ClearOverlays();
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-                ClearMessages();
-                AddMessage(new Data.Message(string.Format("{0} directives...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
-                AddMessage(new Data.Message(string.Format("1. {0} items.", directives.CanTakeItems ? (object) "Take" : (object) "Don't take"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Data.Message(string.Format("2. {0} weapons.", directives.CanFireWeapons ? (object) "Fire" : (object) "Don't fire"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Data.Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? (object) "Throw" : (object) "Don't throw"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Data.Message(string.Format("4. {0}.", directives.CanSleep ? (object) "Sleep" : (object) "Don't sleep"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Data.Message(string.Format("5. {0}.", directives.CanTrade ? (object) "Trade" : (object) "Don't trade"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                AddMessage(new Data.Message(string.Format("6. {0}.", (object) ActorDirective.CourageString(directives.Courage)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
-                RedrawPlayScreen();
+        ActorDirective directives = (follower.Controller as BaseAI).Directives;
+        ClearOverlays();
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        ClearMessages();
+        AddMessage(new Data.Message(string.Format("{0} directives...", (object) follower.Name), m_Session.WorldTime.TurnCounter, Color.Yellow));
+        AddMessage(new Data.Message(string.Format("1. {0} items.", directives.CanTakeItems ? (object) "Take" : (object) "Don't take"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("2. {0} weapons.", directives.CanFireWeapons ? (object) "Fire" : (object) "Don't fire"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("3. {0} grenades.", directives.CanThrowGrenades ? (object) "Throw" : (object) "Don't throw"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("4. {0}.", directives.CanSleep ? (object) "Sleep" : (object) "Don't sleep"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("5. {0}.", directives.CanTrade ? (object) "Trade" : (object) "Don't trade"), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        AddMessage(new Data.Message(string.Format("6. {0}.", (object) ActorDirective.CourageString(directives.Courage)), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen();
         KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
         int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
         if (keyEventArgs.KeyCode == Keys.Escape)
@@ -7380,8 +7380,8 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Name)));
       stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Model.Name)));
       stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? (object) "Undead" : (object) "Staying alive", (object) new WorldTime(actor.SpawnTime).ToString()));
-      AIController aiController = actor.Controller as AIController;
-      if (aiController != null && aiController.Order != null)
+      BaseAI aiController = actor.Controller as BaseAI;
+      if (aiController?.Order != null)
         stringList.Add(string.Format("Order : {0}.", (object) aiController.Order.ToString()));
       if (actor.HasLeader)
       {
@@ -9380,7 +9380,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       else
-        acceptDeal = !target.HasLeader || (target.Controller as AIController).Directives.CanTrade;
+        acceptDeal = !target.HasLeader || (target.Controller as BaseAI).Directives.CanTrade;
 
       if (!acceptDeal)
       {
@@ -10064,7 +10064,7 @@ namespace djack.RogueSurvivor.Engine
       else if (!m_Rules.IsActorTrustingLeader(slave)) {
                 DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
       } else {
-        AIController aiController = slave.Controller as AIController;
+        BaseAI aiController = slave.Controller as BaseAI;
         if (aiController == null) return;
         aiController.SetOrder(order);
         if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
@@ -10075,7 +10075,7 @@ namespace djack.RogueSurvivor.Engine
     private void DoCancelOrder(Actor master, Actor slave)
     {
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
-      AIController aiController = slave.Controller as AIController;
+      BaseAI aiController = slave.Controller as BaseAI;
       if (aiController == null) return;
       aiController.SetOrder(null);
       if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
