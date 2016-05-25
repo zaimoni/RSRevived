@@ -93,11 +93,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public CivilianAI()
     {
       m_LOSSensor = new LOSSensor(VISION_SEES);
-    }
-
-    public override void TakeControl(Actor actor)
-    {
-      base.TakeControl(actor);
       m_SafeTurns = 0;
       m_Exploration = new ExplorationData(EXPLORATION_MAX_LOCATIONS, EXPLORATION_MAX_ZONES);
       m_LastEnemySaw = null;

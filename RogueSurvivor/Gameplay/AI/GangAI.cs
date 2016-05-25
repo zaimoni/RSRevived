@@ -39,11 +39,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public GangAI()
     {
       m_MemorizedSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
-    }
-
-    public override void TakeControl(Actor actor)
-    {
-      base.TakeControl(actor);
       m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
     }
 

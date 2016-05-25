@@ -35,6 +35,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private Dictionary<Point, int> m_TabooTiles;
     private List<Actor> m_TabooTrades;
 
+    public BaseAI()
+    {
+      m_Order = null;
+      m_Directive = null;
+      m_TabooItems = null;
+      m_TabooTiles = null;
+      m_TabooTrades = null;
+    }
+
     public ActorOrder Order {
       get {
         return m_Order;
@@ -66,14 +75,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         return m_TabooTrades;
       }
-    }
-
-    public override void TakeControl(Actor actor)
-    {
-      base.TakeControl(actor);
-      m_TabooItems = null;
-      m_TabooTiles = null;
-      m_TabooTrades = null;
     }
 
     public virtual void SetOrder(ActorOrder newOrder)
