@@ -4305,21 +4305,17 @@ namespace djack.RogueSurvivor.Engine
           num1 += 5;
           if (num1 >= item_classes.Count) num1 = 0;
         } else if (choiceNumber >= 1 && choiceNumber <= num2) {
-#if FAIL
           int index = num1 + choiceNumber - 1;
-          Item obj = inv[index];
-          string reason;
-          if (m_Rules.CanActorGetItem(player, obj, out reason)) {
-            DoTakeItem(player, src, obj);
-            flag1 = false;
-          } else {
-            ClearMessages();
-            AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", (object) player.TheName, (object)DescribeItemShort(obj), (object) reason)));
-            AddMessagePressEnter();
+          Gameplay.GameItems.IDs item_type = item_classes[index];
+          Dictionary<Location, int> catalog = (m_Player.Controller as PlayerController).WhereIs(item_type);
+          List<string> tmp = new List<string>();
+          foreach(Location tmp2 in catalog.Keys) {
+            tmp.Add(tmp2.ToString()+": "+catalog[tmp2].ToString());
+            if (20<tmp.Count) break;
           }
-#endif
-                }
-            }
+          ShowSpecialDialogue(m_Player,tmp.ToArray());
+        }
+      }
       while (flag1);
       ClearOverlays();
     }
