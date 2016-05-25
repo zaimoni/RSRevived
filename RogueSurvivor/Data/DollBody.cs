@@ -11,10 +11,9 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class DollBody
   {
-    [NonSerialized]
     public static readonly DollBody UNDEF = new DollBody(true, 0);
-    private readonly bool m_IsMale;
-    private readonly int m_Speed;
+    private bool m_IsMale;
+    private int m_Speed;
 
     public bool IsMale
     {

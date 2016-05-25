@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor m_MemorizedSensor;
+    private MemorizedSensor m_MemorizedSensor;
 
     public CHARGuardAI()
     {

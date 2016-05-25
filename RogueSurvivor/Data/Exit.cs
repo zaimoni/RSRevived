@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Exit
   {
-    readonly Location m_Location;
+    Location m_Location;
 
     public Map ToMap { get { return m_Location.Map; } }
     public Location Location { get { return m_Location; } }

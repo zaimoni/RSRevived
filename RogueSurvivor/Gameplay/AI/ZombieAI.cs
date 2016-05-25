@@ -26,9 +26,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly MemorizedSensor m_MemLOSSensor;
-    private readonly SmellSensor m_LivingSmellSensor;
-    private readonly SmellSensor m_MasterSmellSensor;
+    private MemorizedSensor m_MemLOSSensor;
+    private SmellSensor m_LivingSmellSensor;
+    private SmellSensor m_MasterSmellSensor;
     private ExplorationData m_Exploration;
 
     public ZombieAI()

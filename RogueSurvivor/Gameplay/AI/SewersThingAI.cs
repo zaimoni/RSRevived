@@ -21,9 +21,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private readonly MemorizedSensor m_LOSSensor;
-    private readonly SmellSensor m_LivingSmellSensor;
-    private readonly SmellSensor m_MasterSmellSensor;
+    private MemorizedSensor m_LOSSensor;
+    private SmellSensor m_LivingSmellSensor;
+    private SmellSensor m_MasterSmellSensor;
 
     public SewersThingAI()
     {

@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor m_MemorizedSensor;
+    private MemorizedSensor m_MemorizedSensor;
     private ExplorationData m_Exploration;
 
     public GangAI()
