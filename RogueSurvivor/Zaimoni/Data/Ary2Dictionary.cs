@@ -51,7 +51,7 @@ namespace Zaimoni.Data
 
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
             if (null == keys2) {
-                if (_first_second_dict.ContainsKey(key))  Remove(keys2, key);
+                if (_first_second_dict.ContainsKey(key))  Remove(_first_second_dict[key].Keys, key);
                 _first_second_dict.Remove(key);
                 _no_entries[key] = value;
                 return;
@@ -65,7 +65,7 @@ namespace Zaimoni.Data
                 at_least_one_key2 = true;
             }
             if (!at_least_one_key2) { // keys2 morally null
-                if (_first_second_dict.ContainsKey(key))  Remove(keys2, key);
+                if (_first_second_dict.ContainsKey(key))  Remove(_first_second_dict[key].Keys, key);
                 _first_second_dict.Remove(key);
                 _no_entries[key] = value;
                 return;
@@ -98,6 +98,7 @@ namespace Zaimoni.Data
         }
 
         private void Remove(IEnumerable<Key2> src, Key1 key) {
+            if (null == src) return;
             foreach(Key2 tmp in src) {
                 _second_first_dict[tmp].Remove(key);
                 if (0 == _second_first_dict[tmp].Count) _second_first_dict.Remove(tmp);

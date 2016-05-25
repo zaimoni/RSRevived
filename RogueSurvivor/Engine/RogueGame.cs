@@ -4321,6 +4321,7 @@ namespace djack.RogueSurvivor.Engine
                 }
             }
       while (flag1);
+      ClearOverlays();
     }
 
     private bool HandleMouseLook(Point mousePos)
@@ -6494,6 +6495,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
+      ClearOverlays();
     }
 
     private void HandleAiActor(Actor aiActor)
