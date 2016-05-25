@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor
     private IContainer components;
     private IGameCanvas m_GameCanvas;
 
-    internal RogueGame Game { get; private set; }
+    internal static RogueGame Game { get; private set; }    // de-facto singleton
 
 #region Init
     public RogueForm()
