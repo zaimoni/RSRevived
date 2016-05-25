@@ -258,10 +258,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static HashSet<Point> ComputeFOVFor(Actor actor, WorldTime time, Weather weather)
     {
-      Location location = actor.Location;
       HashSet<Point> visibleSet = new HashSet<Point>();
-      Point position = location.Position;
-      Map map = location.Map;
+      Point position = actor.Location.Position;
+      Map map = actor.Location.Map;
       int maxRange = actor.FOVrange(time, weather);
       int x1 = position.X - maxRange;
       int x2 = position.X + maxRange;
@@ -279,7 +278,7 @@ namespace djack.RogueSurvivor.Engine
           point1.Y = y3;
           if ((double) Rules.LOSDistance(position, point1) <= (double) maxRange && !visibleSet.Contains(point1))
           {
-            if (!LOS.FOVSub(location, point1, maxRange, ref visibleSet))
+            if (!LOS.FOVSub(actor.Location, point1, maxRange, ref visibleSet))
             {
               bool flag = false;
               Tile tileAt = map.GetTileAt(x3, y3);
@@ -300,7 +299,11 @@ namespace djack.RogueSurvivor.Engine
       // Postprocess map objects and tiles whose edges would reasonably be seen
       List<Point> pointList2 = new List<Point>(pointList1.Count);
       foreach (Point point2 in pointList1)
-      {
+      { // if visibility is blocked for cardinal directions, post-processing merely makes what should be invisible, visible
+        Direction not_cardinal = null;
+        Direction tmp = Direction.To(position.X, position.Y, point2.X, point2.Y, out not_cardinal);
+        if (null == not_cardinal) continue;
+
         int num = 0;
         foreach (Direction direction in Direction.COMPASS)
         {
