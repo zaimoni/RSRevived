@@ -36,6 +36,11 @@ namespace djack.RogueSurvivor.Data
       m_itemMemory.Set(new Location(m_Actor.Location.Map, x), null, m_Actor.Location.Map.LocalTime.TurnCounter);
     }
 
+    public List<Gameplay.GameItems.IDs> WhatHaveISeen()
+    {
+      return m_itemMemory.WhatHaveISeen();
+    }
+
     public List<Engine.AI.Percept> UpdateSensors(RogueGame game)
     {
       List<Engine.AI.Percept> tmp = m_LOSSensor.Sense(game, m_Actor);

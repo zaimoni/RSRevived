@@ -1978,7 +1978,7 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         bool flag2 = RogueGame.s_KeyBindings.CheckForConflict();
-        string[] entries = new string[50]
+        string[] entries = new string[51]
         {
           "Move N",
           "Move NE",
@@ -1997,6 +1997,7 @@ namespace djack.RogueSurvivor.Engine
           "Build Large Fortification",
           "Build Small Fortification",
           "City Info",
+          "Item Info",
           "Close",
           "Fire",
           "Give",
@@ -2031,7 +2032,7 @@ namespace djack.RogueSurvivor.Engine
           "Use Exit",
           "Use Spray"
         };
-        string[] values = new string[50]
+        string[] values = new string[51]
         {
           RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_N).ToString(),
           RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_NE).ToString(),
@@ -2050,6 +2051,7 @@ namespace djack.RogueSurvivor.Engine
           RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString(),
           RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(),
           RogueGame.s_KeyBindings.Get(PlayerCommand.CITY_INFO).ToString(),
+          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_INFO).ToString(),
           RogueGame.s_KeyBindings.Get(PlayerCommand.CLOSE_DOOR).ToString(),
           RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString(),
           RogueGame.s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString(),
@@ -3796,10 +3798,13 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !HandlePlayerUseSpray(player);
                 break;
               case PlayerCommand.CITY_INFO:
-                                HandleCityInfo();
+                HandleCityInfo();
+                break;
+              case PlayerCommand.ITEM_INFO:
+                HandleItemInfo();
                 break;
               case PlayerCommand.MESSAGE_LOG:
-                                HandleMessageLog();
+                HandleMessageLog();
                 break;
               case PlayerCommand.ITEM_SLOT_0:
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 0, key);
@@ -4267,6 +4272,55 @@ namespace djack.RogueSurvivor.Engine
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
       WaitEscape();
+    }
+
+    private void HandleItemInfo()
+    {
+      List<Gameplay.GameItems.IDs> item_classes = (m_Player.Controller as PlayerController).WhatHaveISeen();
+      if (null == item_classes || 0>=item_classes.Count) {
+        AddMessage(new Data.Message("You have seen no memorable items.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+        return;
+      }
+      item_classes.Sort();
+      
+      bool flag1 = true;
+      int num1 = 0;
+      do {
+        ClearOverlays();
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        ClearMessages();
+        AddMessage(new Data.Message("Reviewing...", m_Session.WorldTime.TurnCounter, Color.Yellow));
+        int num2;
+        for (num2 = 0; num2 < 5 && num1 + num2 < item_classes.Count; ++num2) {
+          int index = num1 + num2;
+          AddMessage(new Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) item_classes.Count, item_classes[index].ToString()), m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        }
+        if (num2 < item_classes.Count)
+          AddMessage(new Data.Message("9. next", m_Session.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
+        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
+        else if (choiceNumber == 9) {
+          num1 += 5;
+          if (num1 >= item_classes.Count) num1 = 0;
+        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
+#if FAIL
+          int index = num1 + choiceNumber - 1;
+          Item obj = inv[index];
+          string reason;
+          if (m_Rules.CanActorGetItem(player, obj, out reason)) {
+            DoTakeItem(player, src, obj);
+            flag1 = false;
+          } else {
+            ClearMessages();
+            AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", (object) player.TheName, (object)DescribeItemShort(obj), (object) reason)));
+            AddMessagePressEnter();
+          }
+#endif
+                }
+            }
+      while (flag1);
     }
 
     private bool HandleMouseLook(Point mousePos)
@@ -6405,7 +6459,6 @@ namespace djack.RogueSurvivor.Engine
       if (1 != Rules.GridDistance(player.Location.Position,src)) throw new ArgumentOutOfRangeException("src", "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
 
       bool flag1 = true;
-      bool flag2 = false;
       int num1 = 0;
       do {
         ClearOverlays();
@@ -6433,7 +6486,6 @@ namespace djack.RogueSurvivor.Engine
           if (m_Rules.CanActorGetItem(player, obj, out reason)) {
             DoTakeItem(player, src, obj);
             flag1 = false;
-            flag2 = true;
           } else {
             ClearMessages();
             AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", (object) player.TheName, (object)DescribeItemShort(obj), (object) reason)));
@@ -6442,7 +6494,6 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-//    return flag2;
     }
 
     private void HandleAiActor(Actor aiActor)
@@ -12422,13 +12473,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void SaveKeybindings()
     {
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
-            m_UI.UI_Repaint();
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings...", 0, 0, new Color?());
+      m_UI.UI_Repaint();
       Keybindings.Save(RogueGame.s_KeyBindings, RogueGame.GetUserConfigPath() + "keys.dat");
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
-            m_UI.UI_Repaint();
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Saving keybindings... done!", 0, 0, new Color?());
+      m_UI.UI_Repaint();
     }
 
     private void LoadHints()

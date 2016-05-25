@@ -61,5 +61,6 @@ namespace djack.RogueSurvivor.Engine
     ITEM_SLOT_7,
     ITEM_SLOT_8,
     ITEM_SLOT_9,
-  }
+    ITEM_INFO,
+   }
 }

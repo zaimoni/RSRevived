@@ -52,6 +52,7 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.BUILD_LARGE_FORTIFICATION, Keys.N | Keys.Control);
             Set(PlayerCommand.BUILD_SMALL_FORTIFICATION, Keys.N);
             Set(PlayerCommand.CITY_INFO, Keys.I);
+            Set(PlayerCommand.ITEM_INFO, Keys.I | Keys.Shift);
             Set(PlayerCommand.EAT_CORPSE, Keys.E | Keys.Shift);
             Set(PlayerCommand.GIVE_ITEM, Keys.G);
             Set(PlayerCommand.HINTS_SCREEN_MODE, Keys.H | Keys.Control);
