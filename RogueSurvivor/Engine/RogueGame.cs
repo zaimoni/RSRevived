@@ -4114,92 +4114,91 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleCityInfo()
     {
-      int num1;
-      int gx = num1 = 0;
+      int gx = 0;
+      int gy = 0;
       m_UI.UI_Clear(Color.Black);
-      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Get.Seed.ToString(), num1, num1, new Color?());
-      int gy1 = num1 + 28;
-      if (m_Player.Model.Abilities.IsUndead)
-      {
-        m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy1, new Color?());
-        int gy2 = gy1 + 14;
-        m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy2, new Color?());
-        int num2 = gy2 + 28;
+      m_UI.UI_DrawStringBold(Color.White, "CITY INFORMATION -- "+Session.Get.Seed.ToString(), gx, gy, new Color?());
+      gy = 2* BOLD_LINE_SPACING;
+      if (m_Player.Model.Abilities.IsUndead) {
+        m_UI.UI_DrawStringBold(Color.Red, "You can't remember where you are...", gx, gy, new Color?());
+        gy += BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.Red, "Must be that rotting brain of yours...", gx, gy, new Color?());
+        DrawFootnote(Color.White, "press ESC to leave");
+        m_UI.UI_Repaint();
+        WaitEscape();
+        return;
       }
-      else
+
+      m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy, new Color?());
+      gy += BOLD_LINE_SPACING;
+      int num2 = gy + BOLD_LINE_SPACING;
+      for (int index = 0; index < m_Session.World.Size; ++index)
       {
-        m_UI.UI_DrawStringBold(Color.White, "> DISTRICTS LAYOUT", gx, gy1, new Color?());
-        int num2 = gy1 + 14 + 14;
-        for (int index = 0; index < m_Session.World.Size; ++index)
+        Color color = index == m_Player.Location.Map.District.WorldPosition.Y ? Color.LightGreen : Color.White;
+        m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING, new Color?());
+        m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING, new Color?());
+        m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * BOLD_LINE_SPACING + 2* BOLD_LINE_SPACING, new Color?());
+      }
+      for (int index = 0; index < m_Session.World.Size; ++index)
+        m_UI.UI_DrawStringBold(index == m_Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (object) (char) (65 + index)), 32 + index * 48, gy, new Color?());
+      int num3 = gy + BOLD_LINE_SPACING;
+      int num4 = 32;
+      int num5 = num3;
+      for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
+      {
+        for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
         {
-          Color color = index == m_Player.Location.Map.District.WorldPosition.Y ? Color.LightGreen : Color.White;
-                    m_UI.UI_DrawStringBold(color, index.ToString(), 20, num2 + index * 3 * 14 + 14, new Color?());
-                    m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * 14, new Color?());
-                    m_UI.UI_DrawStringBold(color, ".", 20, num2 + index * 3 * 14 + 28, new Color?());
-        }
-        int gy2 = num2 - 14;
-        for (int index = 0; index < m_Session.World.Size; ++index)
-                    m_UI.UI_DrawStringBold(index == m_Player.Location.Map.District.WorldPosition.X ? Color.LightGreen : Color.White, string.Format("..{0}..", (object) (char) (65 + index)), 32 + index * 48, gy2, new Color?());
-        int num3 = gy2 + 14;
-        int num4 = 32;
-        int num5 = num3;
-        for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
-        {
-          for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
+          District district = m_Session.World[index2, index1];
+          char ch = district == m_Session.CurrentMap.District ? '*' : (m_Session.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
+          Color color;
+          string str;
+          switch (district.Kind)
           {
-            District district = m_Session.World[index2, index1];
-            char ch = district == m_Session.CurrentMap.District ? '*' : (m_Session.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
-            Color color;
-            string str;
-            switch (district.Kind)
-            {
-              case DistrictKind.GENERAL:
-                color = Color.Gray;
-                str = "Gen";
-                break;
-              case DistrictKind.RESIDENTIAL:
-                color = Color.Orange;
-                str = "Res";
-                break;
-              case DistrictKind.SHOPPING:
-                color = Color.White;
-                str = "Sho";
-                break;
-              case DistrictKind.GREEN:
-                color = Color.Green;
-                str = "Gre";
-                break;
-              case DistrictKind.BUSINESS:
-                color = Color.Red;
-                str = "Bus";
-                break;
-              default:
-                throw new ArgumentOutOfRangeException("unhandled district kind");
-            }
-            string text = "";
-            for (int index3 = 0; index3 < 5; ++index3)
-              text += ch;
-                        m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * 14, new Color?());
-                        m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", (object) ch, (object) str, (object) ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * 14, new Color?());
-                        m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * 14, new Color?());
+            case DistrictKind.GENERAL:
+              color = Color.Gray;
+              str = "Gen";
+              break;
+            case DistrictKind.RESIDENTIAL:
+              color = Color.Orange;
+              str = "Res";
+              break;
+            case DistrictKind.SHOPPING:
+              color = Color.White;
+              str = "Sho";
+              break;
+            case DistrictKind.GREEN:
+              color = Color.Green;
+              str = "Gre";
+              break;
+            case DistrictKind.BUSINESS:
+              color = Color.Red;
+              str = "Bus";
+              break;
+            default:
+              throw new ArgumentOutOfRangeException("unhandled district kind");
           }
+          string text = "".PadLeft(5,ch);
+          m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * BOLD_LINE_SPACING, new Color?());
+          m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", (object) ch, (object) str, (object) ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * BOLD_LINE_SPACING, new Color?());
+          m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * BOLD_LINE_SPACING, new Color?());
         }
+       
         int num6 = m_Session.World.Size / 2;
         for (int index = 1; index < m_Session.World.Size; ++index)
-                    m_UI.UI_DrawStringBold(Color.White, "=", num4 + index * 48 - 8, num5 + num6 * 3 * 14 + 14, new Color?());
-        int gy3 = num3 + (m_Session.World.Size * 3 + 1) * 14;
-                m_UI.UI_DrawStringBold(Color.White, "Legend", gx, gy3, new Color?());
-        int gy4 = gy3 + 14;
-                m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy4, new Color?());
-        int gy5 = gy4 + 12;
-                m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy5, new Color?());
-        int gy6 = gy5 + 12;
-                m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy6, new Color?());
-        int gy7 = gy6 + 12;
-                m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy7, new Color?());
-        int gy8 = gy7 + 12 + 14;
-                m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy8, new Color?());
-        int gy9 = gy8 + 14;
+          m_UI.UI_DrawStringBold(Color.White, "=", num4 + index * 48 - 8, num5 + num6 * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING, new Color?());
+        int gy3 = num3 + (m_Session.World.Size * 3 + 1) * BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.White, "Legend", gx, gy3, new Color?());
+        int gy4 = gy3 + BOLD_LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy4, new Color?());
+        int gy5 = gy4 + LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy5, new Color?());
+        int gy6 = gy5 + LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy6, new Color?());
+        int gy7 = gy6 + LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy7, new Color?());
+        int gy8 = gy7 + LINE_SPACING + BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy8, new Color?());
+        int gy9 = gy8 + BOLD_LINE_SPACING;
         int num7 = gy9;
         for (int y = 0; y < m_Session.World.Size; ++y)
         {
@@ -4209,10 +4208,9 @@ namespace djack.RogueSurvivor.Engine
             Zone zoneByPartialName1;
             if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) != null)
             {
-                            m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName1.Name), gx, gy9, new Color?());
-              gy9 += 14;
-              if (gy9 >= 740)
-              {
+              m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName1.Name), gx, gy9, new Color?());
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= 740) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -4220,50 +4218,45 @@ namespace djack.RogueSurvivor.Engine
             Zone zoneByPartialName2;
             if ((zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance")) != null)
             {
-                            m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName2.Name), gx, gy9, new Color?());
-              gy9 += 14;
-              if (gy9 >= 740)
-              {
+              m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object) zoneByPartialName2.Name), gx, gy9, new Color?());
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= 740) {
                 gy9 = num7;
                 gx += 350;
               }
             }
             if (entryMap == m_Session.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap)
             {
-                            m_UI.UI_DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
-              gy9 += 14;
-              if (gy9 >= 740)
-              {
+              m_UI.UI_DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= 740) {
                 gy9 = num7;
                 gx += 350;
               }
             }
             if (entryMap == m_Session.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap)
             {
-                            m_UI.UI_DrawStringBold(Color.White, string.Format("at {0} : Hospital.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
-              gy9 += 14;
-              if (gy9 >= 740)
-              {
+              m_UI.UI_DrawStringBold(Color.White, string.Format("at {0} : Hospital.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= 740) {
                 gy9 = num7;
                 gx += 350;
               }
             }
             if (m_Session.PlayerKnows_CHARUndergroundFacilityLocation && entryMap == m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap)
             {
-                            m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object)m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy9, new Color?());
-              gy9 += 14;
-              if (gy9 >= 740)
-              {
+              m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : {1}.", (object) World.CoordToString(x, y), (object)m_Session.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy9, new Color?());
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= 740) {
                 gy9 = num7;
                 gx += 350;
               }
             }
             if (m_Session.PlayerKnows_TheSewersThingLocation && (entryMap == m_Session.UniqueActors.TheSewersThing.TheActor.Location.Map.District.EntryMap && !m_Session.UniqueActors.TheSewersThing.TheActor.IsDead))
             {
-                            m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
-              gy9 += 14;
-              if (gy9 >= 740)
-              {
+              m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", (object) World.CoordToString(x, y)), gx, gy9, new Color?());
+              gy9 += BOLD_LINE_SPACING;
+              if (gy9 >= 740) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -4271,9 +4264,9 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-            DrawFootnote(Color.White, "press ESC to leave");
-            m_UI.UI_Repaint();
-            WaitEscape();
+      DrawFootnote(Color.White, "press ESC to leave");
+      m_UI.UI_Repaint();
+      WaitEscape();
     }
 
     private bool HandleMouseLook(Point mousePos)
