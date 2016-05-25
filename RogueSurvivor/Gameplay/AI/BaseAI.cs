@@ -1096,8 +1096,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // if food is interesting, it will dominate non-food
-      if (lhs is ItemFood) return !(rhs is ItemFood);
-      else if (rhs is ItemFood) return true;
+      if (rhs is ItemFood) return !(lhs is ItemFood);
+      else if (lhs is ItemFood) return false;
 
       // ranged weapons
       if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon);
