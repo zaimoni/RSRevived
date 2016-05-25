@@ -58,13 +58,10 @@ namespace Zaimoni.Data
             }
 
             // there was a pre-existing entry.  Take a set difference and update.
-            HashSet<Key2> removed = new HashSet<Key2>(_first_second_dict[key].Keys);
-//          HashSet<Key2> changed = new HashSet<Key2>();
             bool at_least_one_key2 = false;
+            HashSet<Key2> removed = (_first_second_dict.ContainsKey(key) ? new HashSet<Key2>(_first_second_dict[key].Keys) : new HashSet<Key2>());
             foreach (Key2 tmp in keys2) {
                 removed.Remove(tmp);
-//              if (value != _first_second_dict[key][tmp]) changed.Add(tmp);    // != triggers CS0019, official fix Range : IComparable<Range>  is a no-op
-//              changed.Add(tmp);
                 at_least_one_key2 = true;
             }
             if (!at_least_one_key2) { // keys2 morally null
