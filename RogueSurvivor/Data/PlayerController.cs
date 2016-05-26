@@ -69,22 +69,23 @@ namespace djack.RogueSurvivor.Data
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);
-      if (null == speaker || mull = e._target || e.shown) return;
+      if (null == speaker || null == e._target || e.shown) return;
       if (m_Actor.IsSleeping) return;
-      if (!CanSee(sender.Location) && !CanSee(e._target)) return;
+      if (!CanSee(speaker.Location) && !CanSee(e._target.Location)) return;
+      RogueForm.Game.PanViewportTo(m_Actor);
       e.shown = true;
 
-      if (e.important) learMessages();
-      foreach(Data.Message tmp in e.message) {
-        AddMessage(tmp,SAYOREMOTE_COLOR);
+      if (e._important) RogueForm.Game.ClearMessages();
+      foreach(Data.Message tmp in e.messages) {
+        RogueForm.Game.AddMessage(tmp);
       }
-      if (!e.important) return;
+      if (!e._important) return;
 
-      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
-      AddMessagePressEnter();
-      ClearOverlays();
-      RemoveLastMessage();
-      RedrawPlayScreen();
+      RogueForm.Game.AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(RogueForm.Game.MapToScreen(speaker.Location.Position), new Size(32, 32))));
+      RogueForm.Game.AddMessagePressEnter();
+      RogueForm.Game.ClearOverlays();
+      RogueForm.Game.RemoveLastMessage();
+      RogueForm.Game.RedrawPlayScreen();
     }
 #endif
     }

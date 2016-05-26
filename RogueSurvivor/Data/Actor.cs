@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
+using System.Drawing;
 using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
@@ -1202,11 +1203,11 @@ namespace djack.RogueSurvivor.Data
     public struct SayArgs
     {
       public readonly Actor _target;
-      public readonly List<Data.Message> messages = new List<Data.Message>();
+      public readonly List<Data.Message> messages;
       public readonly bool _important;
       public bool shown;
 
-      SayArgs(Actor target,bool important)
+      public SayArgs(Actor target, bool important)
       {
         _target = target;
         messages = new List<Data.Message>();
@@ -1225,9 +1226,9 @@ namespace djack.RogueSurvivor.Data
 
       EventHandler<SayArgs> handler = Says; // work around non-atomic test, etc.
       if (null != handler) {
-        SayArgs tmp = new SayArgs(target,text,target.IsPlayer || (flags & Engine.RogueGame.Sayflags.IS_IMPORTANT) != Engine.RogueGame.Sayflags.NONE};
-        tmp.messages.Add(MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName));
-        tmp.messages.Add(MakeMessage(speaker, string.Format("\"{0}\"", (object) text));
+        SayArgs tmp = new SayArgs(target,target.IsPlayer || (flags & Engine.RogueGame.Sayflags.IS_IMPORTANT) != Engine.RogueGame.Sayflags.NONE);
+        tmp.messages.Add(RogueForm.Game.MakeMessage(this, string.Format("to {0} : ", (object) target.TheName, Engine.RogueGame.SAYOREMOTE_COLOR)));
+        tmp.messages.Add(RogueForm.Game.MakeMessage(this, string.Format("\"{0}\"", (object) text, Engine.RogueGame.SAYOREMOTE_COLOR)));
         handler(this,tmp);
       }
 #if FAIL
