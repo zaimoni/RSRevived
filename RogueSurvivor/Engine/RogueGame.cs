@@ -9507,6 +9507,9 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
     {
+#if ALPHA_SAY
+      speaker.Say(target,text,flags);
+#else
       if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE)
         speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (!ForceVisibleToPlayer(speaker) && (!ForceVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
@@ -9523,6 +9526,7 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       RemoveLastMessage();
       RedrawPlayScreen();
+#endif
     }
 
     public void DoShout(Actor speaker, string text)

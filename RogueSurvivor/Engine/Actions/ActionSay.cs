@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-//#define ALPHA_SAY
-
 using djack.RogueSurvivor.Data;
 using System;
 
@@ -20,11 +18,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionSay(Actor actor, RogueGame game, Actor target, string text, RogueGame.Sayflags flags)
       : base(actor, game)
     {
-      if (target == null)
-        throw new ArgumentNullException("target");
-            m_Target = target;
-            m_Text = text;
-            m_Flags = flags;
+      if (target == null) throw new ArgumentNullException("target");
+      m_Target = target;
+      m_Text = text;
+      m_Flags = flags;
     }
 
     public override bool IsLegal()
@@ -34,11 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-#if ALPHA_SAY
-      m_Actor.Say(m_Target, m_Text, m_Flags);
-#else
       m_Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
-#endif
     }
   }
 }
