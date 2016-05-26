@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define ALPHA_SAY
+
 using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Drawing;
@@ -1199,7 +1201,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#if FAIL
+#if ALPHA_SAY
     public struct SayArgs
     {
       public readonly Actor _target;
@@ -1227,32 +1229,15 @@ namespace djack.RogueSurvivor.Data
       EventHandler<SayArgs> handler = Says; // work around non-atomic test, etc.
       if (null != handler) {
         SayArgs tmp = new SayArgs(target,target.IsPlayer || (flags & Engine.RogueGame.Sayflags.IS_IMPORTANT) != Engine.RogueGame.Sayflags.NONE);
-        tmp.messages.Add(RogueForm.Game.MakeMessage(this, string.Format("to {0} : ", (object) target.TheName, Engine.RogueGame.SAYOREMOTE_COLOR)));
-        tmp.messages.Add(RogueForm.Game.MakeMessage(this, string.Format("\"{0}\"", (object) text, Engine.RogueGame.SAYOREMOTE_COLOR)));
+        tmp.messages.Add(RogueForm.Game.MakeMessage(this, string.Format("to {0} : ", (object) target.TheName), RogueForm.Game.SAYOREMOTE_COLOR));
+        tmp.messages.Add(RogueForm.Game.MakeMessage(this, string.Format("\"{0}\"", (object) text), RogueForm.Game.SAYOREMOTE_COLOR));
         handler(this,tmp);
       }
-#if FAIL
-      // only PlayerController sees these
-      if (!ForceVisibleToPlayer(this) && (!ForceVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
-        return;
-      bool isPlayer = target.IsPlayer;
-      bool flag = (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE;
-      if (isPlayer && flag)
-        ClearMessages();
-      AddMessage(MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName), SAYOREMOTE_COLOR));
-      AddMessage(MakeMessage(speaker, string.Format("\"{0}\"", (object) text), SAYOREMOTE_COLOR));
-      if (!isPlayer || !flag) return;
-      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
-      AddMessagePressEnter();
-      ClearOverlays();
-      RemoveLastMessage();
-      RedrawPlayScreen();
-#endif
     }
 #endif
 
-        // administrative functions whose presence here is not clearly advisable but they improve the access situation here
-        public void RecomputeStartingStats()
+    // administrative functions whose presence here is not clearly advisable but they improve the access situation here
+    public void RecomputeStartingStats()
     {
       m_HitPoints = MaxHPs;
       m_StaminaPoints = MaxSTA;

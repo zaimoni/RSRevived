@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define ALPHA_SAY
+
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
@@ -65,15 +67,17 @@ namespace djack.RogueSurvivor.Data
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }
 
-#if FAIL
+#if ALPHA_SAY
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);
-      if (null == speaker || null == e._target || e.shown) return;
-      if (m_Actor.IsSleeping) return;
-      if (!CanSee(speaker.Location) && !CanSee(e._target.Location)) return;
+      lock(speaker) {
+        if (null == speaker || null == e._target || e.shown) return;
+        if (m_Actor.IsSleeping) return;
+        if (!CanSee(speaker.Location) && !CanSee(e._target.Location)) return;
+        e.shown = true;
+      }
       RogueForm.Game.PanViewportTo(m_Actor);
-      e.shown = true;
 
       if (e._important) RogueForm.Game.ClearMessages();
       foreach(Data.Message tmp in e.messages) {
