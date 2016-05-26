@@ -1198,8 +1198,60 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    // administrative functions whose presence here is not clearly advisable but they improve the access situation here
-    public void RecomputeStartingStats()
+#if FAIL
+    public struct SayArgs
+    {
+      public readonly Actor _target;
+      public readonly List<Data.Message> messages = new List<Data.Message>();
+      public readonly bool _important;
+      public bool shown;
+
+      SayArgs(Actor target,bool important)
+      {
+        _target = target;
+        messages = new List<Data.Message>();
+        _important = important;
+        shown = false;
+      }
+    }
+
+    public static EventHandler<SayArgs> Says;
+
+    // experimental...testing an event approach to this
+    public void Say(Actor target, string text, Engine.RogueGame.Sayflags flags)
+    {
+      if ((flags & Engine.RogueGame.Sayflags.IS_FREE_ACTION) == Engine.RogueGame.Sayflags.NONE)
+        SpendActionPoints(Engine.Rules.BASE_ACTION_COST);
+
+      EventHandler<SayArgs> handler = Says; // work around non-atomic test, etc.
+      if (null != handler) {
+        SayArgs tmp = new SayArgs(target,text,target.IsPlayer || (flags & Engine.RogueGame.Sayflags.IS_IMPORTANT) != Engine.RogueGame.Sayflags.NONE};
+        tmp.messages.Add(MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName));
+        tmp.messages.Add(MakeMessage(speaker, string.Format("\"{0}\"", (object) text));
+        handler(this,tmp);
+      }
+#if FAIL
+      // only PlayerController sees these
+      if (!ForceVisibleToPlayer(this) && (!ForceVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
+        return;
+      bool isPlayer = target.IsPlayer;
+      bool flag = (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE;
+      if (isPlayer && flag)
+        ClearMessages();
+      AddMessage(MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName), SAYOREMOTE_COLOR));
+      AddMessage(MakeMessage(speaker, string.Format("\"{0}\"", (object) text), SAYOREMOTE_COLOR));
+      if (!isPlayer || !flag) return;
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
+      AddMessagePressEnter();
+      ClearOverlays();
+      RemoveLastMessage();
+      RedrawPlayScreen();
+#endif
+    }
+#endif
+
+        // administrative functions whose presence here is not clearly advisable but they improve the access situation here
+        public void RecomputeStartingStats()
     {
       m_HitPoints = MaxHPs;
       m_StaminaPoints = MaxSTA;

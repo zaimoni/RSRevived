@@ -64,5 +64,28 @@ namespace djack.RogueSurvivor.Data
     {
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }
-  }
+
+#if FAIL
+    private void HandleSay(object sender, Actor.SayArgs e)
+    {
+      Actor speaker = (sender as Actor);
+      if (null == speaker || mull = e._target || e.shown) return;
+      if (m_Actor.IsSleeping) return;
+      if (!CanSee(sender.Location) && !CanSee(e._target)) return;
+      e.shown = true;
+
+      if (e.important) learMessages();
+      foreach(Data.Message tmp in e.message) {
+        AddMessage(tmp,SAYOREMOTE_COLOR);
+      }
+      if (!e.important) return;
+
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
+      AddMessagePressEnter();
+      ClearOverlays();
+      RemoveLastMessage();
+      RedrawPlayScreen();
+    }
+#endif
+    }
 }

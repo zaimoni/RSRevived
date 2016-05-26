@@ -10329,6 +10329,8 @@ namespace djack.RogueSurvivor.Engine
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
+      // this doesn't *look* safe, but it turns out we never have a foreach loop on the actors list when calling KillActor.
+      deadGuy.Location.Map.RemoveActor(deadGuy);
 
       if (deadGuy != m_Session.UniqueActors.TheSewersThing.TheActor || (killer != m_Player && killer.Leader != m_Player))
         return;
@@ -12308,6 +12310,14 @@ namespace djack.RogueSurvivor.Engine
       return IsVisibleToPlayer(mapObj.Location);
     }
 
+    private void PanViewportTo(Actor player)
+    {
+      m_Player = player;
+      m_Session.CurrentMap = player.Location.Map;
+      ComputeViewRect(m_Player.Location.Position);
+      RedrawPlayScreen();
+    }
+
     private bool ForceVisibleToPlayer(Map map, Point position)
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
@@ -12317,9 +12327,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor tmp in map.Players) { 
           if (null == tmp.Controller.FOV) continue; // would prefer to recalculate
           if (tmp.Controller.FOV.Contains(position)) {
-            m_Player = tmp;
-            ComputeViewRect(m_Player.Location.Position);
-            RedrawPlayScreen();
+            PanViewportTo(tmp);
             return true;
           }
         }
@@ -12329,9 +12337,7 @@ namespace djack.RogueSurvivor.Engine
         if (tmp == m_Player) continue;
         if (null == tmp.Controller.FOV) continue; // would prefer to recalculate
         if (tmp.Controller.FOV.Contains(position)) {
-          m_Player = tmp;
-          ComputeViewRect(m_Player.Location.Position);
-          RedrawPlayScreen();
+          PanViewportTo(tmp);
           return true;
         }
       }
@@ -12343,9 +12349,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == m_Player) return true;
       if (IsVisibleToPlayer(actor.Location)) return true;
       if (actor.IsPlayer) { 
-        m_Player = actor;
-        ComputeViewRect(m_Player.Location.Position);
-        RedrawPlayScreen();
+        PanViewportTo(actor);
         return true;
       }
       return ForceVisibleToPlayer(actor.Location);
