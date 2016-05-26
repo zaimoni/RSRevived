@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define ALPHA_SAY
+//#define ALPHA_SAY
 
 using djack.RogueSurvivor.Engine;
 using System;
@@ -24,6 +24,20 @@ namespace djack.RogueSurvivor.Data
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES);
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
+
+#if ALPHA_SAY
+    public virtual void TakeControl(Actor actor)
+    {
+      base.TakeControl(actor);
+      Actor.Says += HandleSay;
+    }
+
+    public virtual void LeaveControl()
+    {
+      base.LeaveControl();
+      Actor.Says -= HandleSay;
+    }
+#endif
 
     public bool LastSeen(Location x, out int turn) { return m_itemMemory.HaveEverSeen(x,out turn); }
 

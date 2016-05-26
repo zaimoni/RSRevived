@@ -6,7 +6,7 @@
 
 // #define DATAFLOW_TRACE
 
-#define ALPHA_SAY
+//#define ALPHA_SAY
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
