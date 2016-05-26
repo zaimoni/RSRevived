@@ -1067,6 +1067,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //    if (!IsInterestingItem(lhs)) throw new ArgumentOutOfRangeException("lhs","!IsInterestingItem");   // LHS may be from own inventory
       if (!IsInterestingItem(rhs)) throw new ArgumentOutOfRangeException("rhs","!IsInterestingItem");
 #endif
+      if (IsItemTaboo(rhs)) return false;
+      if (IsItemTaboo(lhs)) return true;
       if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
         if (lhs.Quantity > rhs.Quantity) return false;
@@ -1538,8 +1540,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return false;
       foreach (Item it in inv.Items) {
-        if (IsItemTaboo(it)) continue;
-        if (IsInterestingItem(it)) return true;
+        if (!IsItemTaboo(it)  && IsInterestingItem(it)) return true;
       }
       return false;
     }
@@ -1548,8 +1549,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (Items == null) return false;
       foreach (Item it in Items) {
-        if (IsItemTaboo(it)) continue;
-        if (IsInterestingItem(it)) return true;
+        if (!IsItemTaboo(it) && IsInterestingItem(it)) return true;
       }
       return false;
     }
@@ -1558,16 +1558,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return null;
       foreach (Item it in inv.Items) {
-        if (IsInterestingItem(it)) return it;
+        if (!IsItemTaboo(it) && IsInterestingItem(it)) return it;
       }
       return null;
     }
 
     protected void RunIfPossible(Rules rules)
     {
-      if (!rules.CanActorRun(m_Actor))
-        return;
-            m_Actor.IsRunning = true;
+      if (!rules.CanActorRun(m_Actor)) return;
+      m_Actor.IsRunning = true;
     }
 
     protected int GridDistancesSum(Point from, List<Percept> goals)
@@ -1691,7 +1690,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is ActionChat) {
         return Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader;
       }
-      if (a is ActionGetFromContainer) return IsInterestingItem((a as ActionGetFromContainer).Item);
+      if (a is ActionGetFromContainer) {
+        Item it = (a as ActionGetFromContainer).Item;
+        return !IsItemTaboo(it) && IsInterestingItem(it);
+      }
       return a is ActionBarricadeDoor;
     }
 

@@ -296,10 +296,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorGetItem(Actor actor, Item it, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (it == null)
-        throw new ArgumentNullException("item");
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (it == null) throw new ArgumentNullException("item");
       if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || actor.Inventory == null)
       {
         reason = "no inventory";

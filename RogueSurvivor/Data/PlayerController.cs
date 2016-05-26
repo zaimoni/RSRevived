@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-//#define ALPHA_SAY
+#define ALPHA_SAY
 
 using djack.RogueSurvivor.Engine;
 using System;
@@ -26,13 +26,14 @@ namespace djack.RogueSurvivor.Data
     }
 
 #if ALPHA_SAY
-    public virtual void TakeControl(Actor actor)
+    public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
       Actor.Says += HandleSay;
+      if (null == Actor.Says) throw new ArgumentNullException("Actor.Says", "failed to set up event handling");
     }
 
-    public virtual void LeaveControl()
+    public override void LeaveControl()
     {
       base.LeaveControl();
       Actor.Says -= HandleSay;
@@ -85,8 +86,8 @@ namespace djack.RogueSurvivor.Data
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);
-      lock(speaker) {
-        if (null == speaker) throw new ArgumentNullException("speaker");
+      if (null == speaker) throw new ArgumentNullException("speaker");
+      lock (speaker) {
         if (null == e._target) throw new ArgumentNullException("e.target");
         if (null == speaker || null == e._target || e.shown) return;
         if (m_Actor.IsSleeping) return;

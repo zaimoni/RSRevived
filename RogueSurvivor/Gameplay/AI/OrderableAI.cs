@@ -770,7 +770,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       Item obj = null;
       foreach (Item it in stack.Items) {
-        if (!IsInterestingItem(it)) continue;
+        if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;

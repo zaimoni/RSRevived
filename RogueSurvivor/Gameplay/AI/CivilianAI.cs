@@ -354,8 +354,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!HasAnyInterestingItem(tmp)) return true; // nothing interesting
           if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return false;  // obviously have space, ok
           foreach (Item it in tmp.Items) {
-            if (!IsInterestingItem(it)) continue;
-            if (IsItemTaboo(it)) continue;
+            if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
             foreach (Item it2 in m_Actor.Inventory.Items) {
               if (RHSMoreInteresting(it2, it)) return false;    // clearly more interesting than what we have
             }

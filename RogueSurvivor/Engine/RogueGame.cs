@@ -6,7 +6,7 @@
 
 // #define DATAFLOW_TRACE
 
-//#define ALPHA_SAY
+#define ALPHA_SAY
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -9591,8 +9591,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (target.Leader == actor) {
-        BaseAI baseAi = target.Controller as BaseAI;
-        bool flag = baseAi != null && baseAi.IsInterestingItem(gift);
+        bool flag = target.Controller.IsInterestingItem(gift);
         if (flag)
           DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
         else

@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-//#define ALPHA_SAY
+#define ALPHA_SAY
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
