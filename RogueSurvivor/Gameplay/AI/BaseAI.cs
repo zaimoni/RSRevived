@@ -1100,41 +1100,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else if (lhs is ItemFood) return false;
 
       // ranged weapons
-      if (lhs is ItemRangedWeapon) return !(rhs is ItemRangedWeapon);
-      else if (rhs is ItemRangedWeapon) return true;
+      if (rhs is ItemRangedWeapon) return !(lhs is ItemRangedWeapon);
+      else if (lhs is ItemRangedWeapon) return true;
 
-      if (lhs is ItemAmmo) return !(rhs is ItemAmmo);
-      else if (rhs is ItemAmmo) return true;
+      if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
+      else if (lhs is ItemAmmo) return true;
 
-      if (lhs is ItemMeleeWeapon)
+      if (rhs is ItemMeleeWeapon)
         {
-        if (!(rhs is ItemMeleeWeapon)) return false;
+        if (!(lhs is ItemMeleeWeapon)) return false;
         return (lhs.Model as ItemMeleeWeaponModel).Attack.Rating < (rhs.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
-      else if (rhs is ItemMeleeWeapon) return true;
+      else if (lhs is ItemMeleeWeapon) return true;
 
-      if (lhs is ItemBodyArmor)
+      if (rhs is ItemBodyArmor)
         {
-        if (!(rhs is ItemBodyArmor)) return false;
+        if (!(lhs is ItemBodyArmor)) return false;
         return (lhs as ItemBodyArmor).Rating < (rhs as ItemBodyArmor).Rating;
         }
-      else if (rhs is ItemBodyArmor) return true;
+      else if (lhs is ItemBodyArmor) return true;
 
-      if (lhs is ItemGrenade) return !(rhs is ItemGrenade);
-      else if (rhs is ItemGrenade) return true;
+      if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
+      else if (lhs is ItemGrenade) return true;
 
-      bool rhs_low_priority = (rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial);
-      if ((lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial)) return !rhs_low_priority;
-      else if (rhs_low_priority) return true;
+      bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
+      if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
+      else if (lhs_low_priority) return true;
 
       bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
-      if (lhs is ItemTracker)
+      if (rhs is ItemTracker)
         {
-        if (!(rhs is ItemTracker)) return false;
+        if (!(lhs is ItemTracker)) return false;
         if (wantCellPhone && (rhs as ItemTracker).CanTrackFollowersOrLeader) return true;
         return false;
         }
-      else if (rhs is ItemTracker) return true;
+      else if (lhs is ItemTracker) return true;
 
       return false;
     }
