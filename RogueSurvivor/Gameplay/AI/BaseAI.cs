@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Directive = new ActorDirective();
         return m_Directive;
       }
-      set {
+      protected set {
         m_Directive = value;
       }
     }
@@ -1147,6 +1147,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == it) throw new ArgumentNullException("it"); 
       if (!m_Actor.Inventory.IsFull) throw new ArgumentOutOfRangeException("inventory not full",m_Actor.Name);
       if (!IsInterestingItem(it)) throw new ArgumentOutOfRangeException("do not need to make room for uninteresting items");
+      if (IsItemTaboo(it)) throw new ArgumentOutOfRangeException("do not need to make room for taboo items");
 #endif
 
       Inventory inv = m_Actor.Inventory;
@@ -1905,7 +1906,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_TabooItems.Count == 0) m_TabooItems = null;
     }
 
-    protected bool IsItemTaboo(Item it)
+    public bool IsItemTaboo(Item it)
     {
       if (m_TabooItems == null) return false;
       return m_TabooItems.ContainsKey(it);
@@ -1918,7 +1919,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_TabooTiles.Add(p, expiresTurn);
     }
 
-    protected bool IsTileTaboo(Point p)
+    public bool IsTileTaboo(Point p)
     {
       if (m_TabooTiles == null) return false;
       return m_TabooTiles.ContainsKey(p);
@@ -1931,7 +1932,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_TabooTrades.Add(other);
     }
 
-    protected bool IsActorTabooTrade(Actor other)
+    public bool IsActorTabooTrade(Actor other)
     {
       if (m_TabooTrades == null) return false;
       return m_TabooTrades.Contains(other);
