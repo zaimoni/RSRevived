@@ -363,10 +363,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         })));
         if (perceptList2 != null)
         {
-          Percept percept = FilterNearest(perceptList2);
+retry:    Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
           Inventory stack = percept.Percepted as Inventory;
           ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
+          if (actorAction5 != null && actorAction5.IsLegal() && actorAction5 is ActionTakeItem) {
+            Item tmp = (actorAction5 as ActionTakeItem).Item;
+            // check for "more interesting stack"
+            foreach(Percept p in perceptList2) {
+              if (p == percept) continue;
+              Inventory inv = p.Percepted as Inventory;
+              foreach (Item it in inv.Items) {
+                if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
+                if (RHSMoreInteresting(tmp, it)) {  // we have a wrong stack
+                  perceptList2.Remove(percept);
+                  goto retry;
+                }
+              }
+            }
+          }
           if (actorAction5 != null && actorAction5.IsLegal())
           {
             m_Actor.Activity = Activity.IDLE;

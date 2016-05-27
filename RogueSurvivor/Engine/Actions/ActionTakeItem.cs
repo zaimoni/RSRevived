@@ -18,10 +18,15 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionTakeItem(Actor actor, RogueGame game, Point position, Item it)
       : base(actor, game)
     {
-      if (it == null)
-        throw new ArgumentNullException("item");
-            m_Position = position;
-            m_Item = it;
+      if (it == null) throw new ArgumentNullException("item");
+      m_Position = position;
+      m_Item = it;
+    }
+
+    public Item Item {
+      get {
+        return m_Item;
+      }
     }
 
     public override bool IsLegal()
@@ -31,7 +36,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-            m_Game.DoTakeItem(m_Actor, m_Position, m_Item);
+      m_Game.DoTakeItem(m_Actor, m_Position, m_Item);
     }
   }
 }

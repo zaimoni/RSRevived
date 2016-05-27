@@ -143,6 +143,22 @@ namespace djack.RogueSurvivor.Data
       return itemBodyArmor1;
     }
 
+    protected ItemMeleeWeapon GetWorstMeleeWeapon()
+    {
+      if (m_Actor.Inventory == null) return null;
+      int num1 = int.MaxValue;
+      ItemMeleeWeapon ret = null;
+      foreach (Item obj in m_Actor.Inventory.Items) {
+        ItemMeleeWeapon tmp = obj as ItemMeleeWeapon;
+        if (null == tmp) continue;
+        int num2 = (tmp.Model as ItemMeleeWeaponModel).Attack.Rating;
+        if (num2 < num1) {
+          num1 = num2;
+          ret = tmp;
+        }
+      }
+      return ret;
+    }
 
     public bool IsInterestingItem(Item it)
     {
@@ -187,9 +203,13 @@ namespace djack.RogueSurvivor.Data
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemMeleeWeapon)
-      {
+      { // better handling of martial arts requires better attack juggling in general
         if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
-        return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) < 2;
+        if (2<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
+          ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
+          return (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
+        }
+        return true;
       }
       if (it is ItemMedicine)
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);

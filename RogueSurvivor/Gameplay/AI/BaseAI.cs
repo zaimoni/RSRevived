@@ -1042,23 +1042,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected ItemMeleeWeapon GetWorstMeleeWeapon()
-    {
-      if (m_Actor.Inventory == null) return null;
-      int num1 = int.MaxValue;
-      ItemMeleeWeapon ret = null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemMeleeWeapon tmp = obj as ItemMeleeWeapon;
-        if (null == tmp) continue;
-        int num2 = (tmp.Model as ItemMeleeWeaponModel).Attack.Rating;
-        if (num2 < num1) {
-          num1 = num2;
-          ret = tmp;
-        }
-      }
-      return ret;
-    }
-
     protected bool RHSMoreInteresting(Item lhs, Item rhs)
     {
 #if DEBUG
@@ -1168,7 +1151,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon))) {
         ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
         // ok to drop if either the weapon won't become interesting, or is less interesting that the other item
-        if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || RHSMoreInteresting(weapon, it))) return BehaviorDropItem(game, weapon);  
+        if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || (it is ItemMeleeWeapon && RHSMoreInteresting(weapon, it)))) return BehaviorDropItem(game, weapon);  
       }
 
       // another behavior is responsible for pre-emptively eating perishable food
