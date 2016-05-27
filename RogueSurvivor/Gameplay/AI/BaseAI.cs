@@ -1958,7 +1958,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_TabooTiles[tmp] > time) continue;
           m_TabooTiles.Remove(tmp);
         }
-        if (0 == m_TabooTiles.Count) m_TabooItems = null;
+        if (0 == m_TabooTiles.Count) m_TabooTiles = null;
       }
       // actors ok to clear at midnight
       if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
