@@ -300,9 +300,9 @@ namespace djack.RogueSurvivor.Engine
       List<Point> pointList2 = new List<Point>(pointList1.Count);
       foreach (Point point2 in pointList1)
       { // if visibility is blocked for cardinal directions, post-processing merely makes what should be invisible, visible
-        Direction not_cardinal = null;
-        Direction tmp = Direction.To(position.X, position.Y, point2.X, point2.Y, out not_cardinal);
-        if (null == not_cardinal) continue;
+        if (position.X == point2.X) continue;   // due N/S
+        if (position.Y == point2.Y) continue;   // due E/W
+        // tests for due NE/NW/SE/SW are more complex.
 
         int num = 0;
         foreach (Direction direction in Direction.COMPASS)
