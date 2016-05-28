@@ -87,9 +87,9 @@ namespace djack.RogueSurvivor.Data
     {
       Actor speaker = (sender as Actor);
       if (null == speaker) throw new ArgumentNullException("speaker");
+      if (null == e._target) throw new ArgumentNullException("e.target");
       lock (speaker) {
-        if (null == e._target) throw new ArgumentNullException("e.target");
-        if (null == speaker || null == e._target || e.shown) return;
+        if (e.shown) return;
         if (m_Actor.IsSleeping) return;
         if (!CanSee(speaker.Location) && !CanSee(e._target.Location)) return;
         e.shown = true;
