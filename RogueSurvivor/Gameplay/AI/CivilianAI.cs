@@ -376,6 +376,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
               foreach (Item it in inv.Items) {
                 if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
                 if (RHSMoreInteresting(tmp, it)) {  // we have a wrong stack
+                  MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
                   perceptList2.Remove(percept);
                   goto retry;
                 }
