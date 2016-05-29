@@ -803,16 +803,11 @@ namespace djack.RogueSurvivor.Gameplay
     private static void Load(string id)
     {
       string filename = "Resources\\Images\\" + id + ".png";
-      try
-      {
-        Bitmap bitmap = new Bitmap(filename);
-        Bitmap img = new Bitmap((Image) bitmap);
-        bitmap.Dispose();
-        GameImages.s_Images.Add(id, (Image) img);
+      try {
+        Bitmap img = new Bitmap(filename);
+        GameImages.s_Images.Add(id, img);
         GameImages.s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         throw new ArgumentException("coud not load image id=" + id + "; file=" + filename);
       }
     }
@@ -820,10 +815,8 @@ namespace djack.RogueSurvivor.Gameplay
     private static Image MakeGrayLevel(Bitmap img)
     {
       Bitmap bitmap = new Bitmap((Image) img);
-      for (int x = 0; x < bitmap.Width; ++x)
-      {
-        for (int y = 0; y < bitmap.Height; ++y)
-        {
+      for (int x = 0; x < bitmap.Width; ++x) {
+        for (int y = 0; y < bitmap.Height; ++y) {
           Color pixel = img.GetPixel(x, y);
           int num = (int) (140.25 * (double) pixel.GetBrightness());
           bitmap.SetPixel(x, y, Color.FromArgb((int) pixel.A, num, num, num));
