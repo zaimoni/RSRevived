@@ -36,20 +36,16 @@ namespace djack.RogueSurvivor.UI
 
     public float ScaleX
     {
-      get
-      {
-        if (m_RogueForm == null)
-          return 1f;
+      get {
+        if (m_RogueForm == null) return 1f;
         return (float)m_RogueForm.ClientRectangle.Width / 1024f;
       }
     }
 
     public float ScaleY
     {
-      get
-      {
-        if (m_RogueForm == null)
-          return 1f;
+      get {
+        if (m_RogueForm == null) return 1f;
         return (float)m_RogueForm.ClientRectangle.Height / 768f;
       }
     }
@@ -59,21 +55,21 @@ namespace djack.RogueSurvivor.UI
     {
       NeedRedraw = true;
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas::InitializeComponent");
-            InitializeComponent();
+      InitializeComponent();
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create render image");
-            m_RenderImage = new Bitmap(1024, 768);
+      m_RenderImage = new Bitmap(1024, 768);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get render graphics");
-            m_RenderGraphics = Graphics.FromImage((Image)m_RenderImage);
+      m_RenderGraphics = Graphics.FromImage((Image)m_RenderImage);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create minimap bitmap");
-            m_MinimapBitmap = new Bitmap(200, 200);
+      m_MinimapBitmap = new Bitmap(200, 200);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get minimap stride");
       BitmapData bitmapdata = m_MinimapBitmap.LockBits(new Rectangle(0, 0, m_MinimapBitmap.Width, m_MinimapBitmap.Height), ImageLockMode.ReadWrite, m_MinimapBitmap.PixelFormat);
-            m_MinimapStride = bitmapdata.Stride;
-            m_MinimapBitmap.UnlockBits(bitmapdata);
+      m_MinimapStride = bitmapdata.Stride;
+      m_MinimapBitmap.UnlockBits(bitmapdata);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create minimap bytes");
-            m_MinimapBytes = new byte[m_MinimapStride * m_MinimapBitmap.Height];
+      m_MinimapBytes = new byte[m_MinimapStride * m_MinimapBitmap.Height];
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas::SetStyle");
-            SetStyle(ControlStyles.UserPaint | ControlStyles.Opaque | ControlStyles.AllPaintingInWmPaint | ControlStyles.EnableNotifyMessage, true);
+      SetStyle(ControlStyles.UserPaint | ControlStyles.Opaque | ControlStyles.AllPaintingInWmPaint | ControlStyles.EnableNotifyMessage, true);
     }
 
     protected override void OnCreateControl()
@@ -84,7 +80,7 @@ namespace djack.RogueSurvivor.UI
     protected override void OnKeyDown(KeyEventArgs e)
     {
       base.OnKeyDown(e);
-            m_RogueForm.UI_PostKey(e);
+      m_RogueForm.UI_PostKey(e);
     }
 
     protected override bool IsInputKey(Keys keyData)
@@ -95,20 +91,20 @@ namespace djack.RogueSurvivor.UI
     protected override void OnMouseMove(MouseEventArgs e)
     {
       base.OnMouseMove(e);
-            MouseLocation = e.Location;
+      MouseLocation = e.Location;
     }
 
     protected override void OnMouseClick(MouseEventArgs e)
     {
       base.OnMouseClick(e);
-            m_RogueForm.UI_PostMouseButtons(e.Button);
+      m_RogueForm.UI_PostMouseButtons(e.Button);
     }
 
     protected override void OnSizeChanged(EventArgs e)
     {
       base.OnSizeChanged(e);
-            NeedRedraw = true;
-            Invalidate();
+      NeedRedraw = true;
+      Invalidate();
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -132,25 +128,23 @@ namespace djack.RogueSurvivor.UI
 
     private void DoDraw(Graphics g)
     {
-      if (m_RogueForm == null)
-        return;
+      if (m_RogueForm == null) return;
       g.Clear(m_ClearColor);
-      foreach (GDIPlusGameCanvas.IGfx gfx in m_Gfxs)
+      foreach (GDIPlusGameCanvas.IGfx gfx in new List<GDIPlusGameCanvas.IGfx>(m_Gfxs))  // Bay12/jorgene0: this collection can change at reincarnation
         gfx.Draw(g);
     }
 
     public void BindForm(RogueForm form)
     {
-            m_RogueForm = form;
-            FillGameForm();
+      m_RogueForm = form;
+      FillGameForm();
     }
 
     public void FillGameForm()
     {
-            Location = new Point(0, 0);
-      if (m_RogueForm == null)
-        return;
-            Size = MinimumSize = MaximumSize = m_RogueForm.Size;
+      Location = new Point(0, 0);
+      if (m_RogueForm == null) return;
+      Size = MinimumSize = MaximumSize = m_RogueForm.Size;
     }
 
     public void Clear(Color clearColor)
@@ -168,7 +162,7 @@ namespace djack.RogueSurvivor.UI
 
     public void AddImage(Image img, int x, int y, Color color)
     {
-            AddImage(img, x, y);
+      AddImage(img, x, y);
     }
 
     public void AddImageTransform(Image img, int x, int y, float rotation, float scale)
@@ -210,10 +204,9 @@ namespace djack.RogueSurvivor.UI
     private Pen GetPen(Color color)
     {
       Pen pen;
-      if (!m_PensCache.TryGetValue(color, out pen))
-      {
+      if (!m_PensCache.TryGetValue(color, out pen)) {
         pen = new Pen(color);
-                m_PensCache.Add(color, pen);
+        m_PensCache.Add(color, pen);
       }
       return pen;
     }
@@ -232,10 +225,9 @@ namespace djack.RogueSurvivor.UI
 
     public void ClearMinimap(Color color)
     {
-      for (int x = 0; x < 100; ++x)
-      {
-        for (int y = 0; y < 100; ++y)
-                    SetMinimapColor(x, y, color);
+      for (int x = 0; x < Engine.RogueGame.MAP_MAX_WIDTH; ++x) {
+        for (int y = 0; y < Engine.RogueGame.MAP_MAX_HEIGHT; ++y)
+          SetMinimapColor(x, y, color);
       }
     }
 
@@ -243,10 +235,8 @@ namespace djack.RogueSurvivor.UI
     {
       int num1 = x * 2;
       int num2 = y * 2;
-      for (int index1 = 0; index1 < 2; ++index1)
-      {
-        for (int index2 = 0; index2 < 2; ++index2)
-        {
+      for (int index1 = 0; index1 < 2; ++index1) {
+        for (int index2 = 0; index2 < 2; ++index2) {
           int index3 = (num2 + index2) * m_MinimapStride + 4 * (num1 + index1);
           m_MinimapBytes[index3] = (byte)color.B;
           m_MinimapBytes[index3+1] = (byte)color.G;
@@ -261,9 +251,9 @@ namespace djack.RogueSurvivor.UI
     {
       BitmapData bitmapdata = m_MinimapBitmap.LockBits(new Rectangle(0, 0, m_MinimapBitmap.Width, m_MinimapBitmap.Height), ImageLockMode.ReadWrite, m_MinimapBitmap.PixelFormat);
       Marshal.Copy(m_MinimapBytes, 0, bitmapdata.Scan0, m_MinimapBytes.Length);
-            m_MinimapBitmap.UnlockBits(bitmapdata);
-            m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImage((Image)m_MinimapBitmap, gx, gy));
-            NeedRedraw = true;
+      m_MinimapBitmap.UnlockBits(bitmapdata);
+      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImage((Image)m_MinimapBitmap, gx, gy));
+      NeedRedraw = true;
     }
 
     public string SaveScreenShot(string filePath)
@@ -271,12 +261,12 @@ namespace djack.RogueSurvivor.UI
       Logger.WriteLine(Logger.Stage.RUN_GFX, "taking screenshot...");
       try
       {
-                m_RenderImage.Save(filePath, ImageFormat.Png);
+        m_RenderImage.Save(filePath, ImageFormat.Png);
       }
       catch (Exception ex)
       {
         Logger.WriteLine(Logger.Stage.RUN_GFX, string.Format("exception when taking screenshot : {0}", (object) ex.ToString()));
-        return (string) null;
+        return null;
       }
       Logger.WriteLine(Logger.Stage.RUN_GFX, "taking screenshot... done!");
       return filePath + ".png";
@@ -317,8 +307,8 @@ namespace djack.RogueSurvivor.UI
 
     private void InitializeComponent()
     {
-            components = (IContainer) new Container();
-            AutoScaleMode = AutoScaleMode.Font;
+      components = (IContainer) new Container();
+      AutoScaleMode = AutoScaleMode.Font;
     }
 
     public interface IGfx
@@ -334,9 +324,9 @@ namespace djack.RogueSurvivor.UI
 
       public GfxImage(Image img, int x, int y)
       {
-                m_Img = img;
-                m_X = x;
-                m_Y = y;
+        m_Img = img;
+        m_X = x;
+        m_Y = y;
       }
 
       public void Draw(Graphics g)
@@ -388,8 +378,7 @@ namespace djack.RogueSurvivor.UI
           disposed = true;
           }
       }
-
-        }
+    }
 
     private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
     {
@@ -458,11 +447,11 @@ namespace djack.RogueSurvivor.UI
 
       public GfxLine(Pen pen, int xFrom, int yFrom, int xTo, int yTo)
       {
-                m_Pen = pen;
-                m_xFrom = xFrom;
-                m_yFrom = yFrom;
-                m_xTo = xTo;
-                m_yTo = yTo;
+        m_Pen = pen;
+        m_xFrom = xFrom;
+        m_yFrom = yFrom;
+        m_xTo = xTo;
+        m_yTo = yTo;
       }
 
       public void Draw(Graphics g)
@@ -520,8 +509,8 @@ namespace djack.RogueSurvivor.UI
 
       public GfxFilledRect(Brush brush, Rectangle rect)
       {
-                m_Brush = brush;
-                m_Rect = rect;
+        m_Brush = brush;
+        m_Rect = rect;
       }
 
       public void Draw(Graphics g)
@@ -537,8 +526,8 @@ namespace djack.RogueSurvivor.UI
 
       public GfxRect(Pen pen, Rectangle rect)
       {
-                m_Pen = pen;
-                m_Rect = rect;
+        m_Pen = pen;
+        m_Rect = rect;
       }
 
       public void Draw(Graphics g)
