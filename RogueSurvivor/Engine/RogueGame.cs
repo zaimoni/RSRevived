@@ -3589,6 +3589,12 @@ namespace djack.RogueSurvivor.Engine
       (player.Controller as PlayerController)?.UpdateSensors(this);
     }
 
+    public void StopTheWorld()
+    {
+      StopSimThread();
+      m_IsGameRunning = false;
+    }
+
     private void HandlePlayerActor(Actor player)
     {
       UpdatePlayerFOV(player);
@@ -3652,11 +3658,9 @@ namespace djack.RogueSurvivor.Engine
           PlayerCommand command = InputTranslator.KeyToCommand(key);
           if (command == PlayerCommand.QUIT_GAME)
           {
-            if (HandleQuitGame())
-            {
-                            StopSimThread();
-                            RedrawPlayScreen();
-                            m_IsGameRunning = false;
+            if (HandleQuitGame()) {
+              StopTheWorld();
+              RedrawPlayScreen();
               return;
             }
           }

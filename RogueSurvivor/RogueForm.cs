@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor
     {
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form...");
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::InitializeComponent...");
-            InitializeComponent();
+      InitializeComponent();
       Text = SetupConfig.GAME_NAME+" - " + SetupConfig.GAME_VERSION;
       if (SetupConfig.Video == SetupConfig.eVideo.VIDEO_GDI_PLUS)
         Text += " (GDI+)";
@@ -49,17 +49,17 @@ namespace djack.RogueSurvivor
         break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetClientSizeCore...");
-            SetClientSizeCore(1024, 768);
+      SetClientSizeCore(1024, 768);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetStyle...");
-            SetStyle(ControlStyles.Opaque | ControlStyles.AllPaintingInWmPaint, true);
+      SetStyle(ControlStyles.Opaque | ControlStyles.AllPaintingInWmPaint, true);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create font 1...");
-            m_NormalFont = new Font("Lucida Console", 8.25f, FontStyle.Regular);
+      m_NormalFont = new Font("Lucida Console", 8.25f, FontStyle.Regular);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create font 2...");
-            m_BoldFont = new Font("Lucida Console", 8.25f, FontStyle.Bold);
+      m_BoldFont = new Font("Lucida Console", 8.25f, FontStyle.Bold);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create RogueGame...");
       Game = new RogueGame((IRogueUI) this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "bind form...");
-            m_GameCanvas.BindForm(this);
+      m_GameCanvas.BindForm(this);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating main form done.");
     }
 
@@ -138,22 +138,18 @@ namespace djack.RogueSurvivor
     protected override void OnClosing(CancelEventArgs e)
     {
       if (!Game.IsGameRunning) return;
-      e.Cancel = true;
-      int num = (int) MessageBox.Show("The game is still running. Please quit inside the game.");
-        }
+      Game.StopTheWorld();
+    }
 #endregion
 
 #region IRogueUI implementation
     public KeyEventArgs UI_WaitKey()
     {
       m_HasKey = false;
-      while (true)
-      {
+      while (true) {    // XXX no clean way to do this loop
         Application.DoEvents();
-        if (!m_HasKey)
-          Thread.Sleep(1);
-        else
-          break;
+        if (m_HasKey) break;
+        Thread.Sleep(100);
       }
       return m_InKey;
     }
@@ -162,9 +158,8 @@ namespace djack.RogueSurvivor
     {
       Thread.Sleep(1);
       Application.DoEvents();
-      if (!m_HasKey)
-        return (KeyEventArgs) null;
-            m_HasKey = false;
+      if (!m_HasKey) return null;
+      m_HasKey = false;
       return m_InKey;
     }
 
