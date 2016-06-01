@@ -13797,8 +13797,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleReincarnation()
     {
        // support savefile hacking: patch up if at least one other live player on the map
-       foreach(Actor tmp in m_Session.CurrentMap.Actors)
-       {
+       foreach(Actor tmp in m_Session.CurrentMap.Actors) {
          if (tmp.IsPlayer && !tmp.IsDead)
            {
            m_Player = tmp;
@@ -13807,16 +13806,13 @@ namespace djack.RogueSurvivor.Engine
        }
 
             m_MusicManager.Play(GameMusics.LIMBO);
-      if (RogueGame.s_Options.MaxReincarnations <= 0 || !AskForReincarnation())
-      {
-                m_MusicManager.StopAll();
-      }
-      else
-      {
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
-                m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
-                m_UI.UI_Repaint();
+      if (RogueGame.s_Options.MaxReincarnations <= 0 || !AskForReincarnation()) {
+        m_MusicManager.StopAll();
+      } else {
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
+        m_UI.UI_Repaint();
         int matchingActors1;
         Actor reincarnationAvatar1 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out matchingActors1);
         int matchingActors2;
@@ -13853,22 +13849,21 @@ namespace djack.RogueSurvivor.Engine
         {
           int gy1;
           int gx = gy1 = 0;
-                    m_UI.UI_Clear(Color.Black);
-                    m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
+          m_UI.UI_Clear(Color.Black);
+          m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
           int gy2 = gy1 + 28;
-                    DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy2, 256);
+          DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy2, 256);
           gy2 += 28;
-                    m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy2, new Color?());
+          m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy2, new Color?());
           int gy3 = gy2 + 14;
-                    m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", (object) new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy3, new Color?());
+          m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", (object) new WorldTime(m_Session.WorldTime.TurnCounter).ToString()), gx, gy3, new Color?());
           int gy4 = gy3 + 28;
-          for (int index = 0; index < strArray.Length; ++index)
-          {
-                        m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
+          for (int index = 0; index < strArray.Length; ++index) {
+            m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
             gy4 += 14;
           }
-                    DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
-                    m_UI.UI_Repaint();
+          DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
+          m_UI.UI_Repaint();
           switch (m_UI.UI_WaitKey().KeyCode)
           {
             case Keys.Return:
@@ -13897,7 +13892,7 @@ namespace djack.RogueSurvivor.Engine
               break;
             case Keys.Escape:
               flag = true;
-              newPlayerAvatar = (Actor) null;
+              newPlayerAvatar = null;
               break;
             case Keys.Up:
               if (currentChoice > 0)
@@ -14002,61 +13997,48 @@ namespace djack.RogueSurvivor.Engine
       switch (reincMode)
       {
         case GameOptions.ReincMode._FIRST:
-          if (m_Session.Scoring.FollowersWhendDied == null)
-          {
+          if (m_Session.Scoring.FollowersWhendDied == null) {
             matchingActors = 0;
-            return (Actor) null;
+            return null;
           }
           List<Actor> actorList1 = new List<Actor>(m_Session.Scoring.FollowersWhendDied.Count);
-          foreach (Actor a in m_Session.Scoring.FollowersWhendDied)
-          {
+          foreach (Actor a in m_Session.Scoring.FollowersWhendDied) {
             if (IsSuitableReincarnation(a, true))
               actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
-          if (actorList1.Count == 0)
-            return (Actor) null;
+          if (actorList1.Count == 0) return null;
           return actorList1[m_Rules.Roll(0, actorList1.Count)];
         case GameOptions.ReincMode.KILLER:
           Actor killer = m_Session.Scoring.Killer;
-          if (IsSuitableReincarnation(killer, true) || IsSuitableReincarnation(killer, false))
-          {
+          if (IsSuitableReincarnation(killer, true) || IsSuitableReincarnation(killer, false)) {
             matchingActors = 1;
             return killer;
           }
           matchingActors = 0;
-          return (Actor) null;
+          return null;
         case GameOptions.ReincMode.ZOMBIFIED:
           Actor zombifiedPlayer = m_Session.Scoring.ZombifiedPlayer;
-          if (IsSuitableReincarnation(zombifiedPlayer, false))
-          {
+          if (IsSuitableReincarnation(zombifiedPlayer, false)) {
             matchingActors = 1;
             return zombifiedPlayer;
           }
           matchingActors = 0;
-          return (Actor) null;
+          return null;
         case GameOptions.ReincMode.RANDOM_LIVING:
         case GameOptions.ReincMode.RANDOM_UNDEAD:
         case GameOptions.ReincMode.RANDOM_ACTOR:
           bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50);
           List<Actor> actorList2 = new List<Actor>();
-          for (int index1 = 0; index1 < m_Session.World.Size; ++index1)
-          {
-            for (int index2 = 0; index2 < m_Session.World.Size; ++index2)
-            {
-              foreach (Map map in m_Session.World[index1, index2].Maps)
-              {
-                foreach (Actor actor in map.Actors)
-                {
-                  if (IsSuitableReincarnation(actor, asLiving))
-                    actorList2.Add(actor);
-                }
-              }
+          // prior implementation iterated through all districts even though IsSuitableReincarnation requires m_Session.CurrentMap.District
+          foreach (Map map in m_Session.CurrentMap.District.Maps) {
+            foreach (Actor actor in map.Actors) {
+              if (IsSuitableReincarnation(actor, asLiving))
+                actorList2.Add(actor);
             }
           }
           matchingActors = actorList2.Count;
-          if (actorList2.Count == 0)
-            return (Actor) null;
+          if (actorList2.Count == 0) return null;
           return actorList2[m_Rules.Roll(0, actorList2.Count)];
         default:
           throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
