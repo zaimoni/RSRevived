@@ -3593,6 +3593,7 @@ namespace djack.RogueSurvivor.Engine
     {
       StopSimThread();
       m_IsGameRunning = false;
+      m_MusicManager.StopAll();
     }
 
     private void HandlePlayerActor(Actor player)

@@ -110,17 +110,6 @@ namespace djack.RogueSurvivor
 #endregion
 
 #region Form overloads
-    protected override CreateParams CreateParams
-    {
-      [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-      get
-      {
-        CreateParams createParams = base.CreateParams;
-        createParams.ClassStyle |= CP_NOCLOSE_BUTTON;
-        return createParams;
-      }
-    }
-
     protected override void OnShown(EventArgs e)
     {
       base.OnShown(e);
