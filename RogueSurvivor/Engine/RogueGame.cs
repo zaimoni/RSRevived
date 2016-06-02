@@ -13803,15 +13803,6 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleReincarnation()
     {
-       // support savefile hacking: patch up if at least one other live player on the map
-       foreach(Actor tmp in m_Session.CurrentMap.Actors) {
-         if (tmp.IsPlayer && !tmp.IsDead)
-           {
-           m_Player = tmp;
-           return;
-           }
-       }
-
       m_MusicManager.Play(GameMusics.LIMBO);
       if (RogueGame.s_Options.MaxReincarnations <= 0 || !AskForReincarnation()) {
         m_MusicManager.StopAll();
