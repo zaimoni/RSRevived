@@ -773,7 +773,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (mode)
       {
-        case GameOptions.ReincMode._FIRST:
+        case GameOptions.ReincMode.RANDOM_FOLLOWER:
           return "Random Follower";
         case GameOptions.ReincMode.KILLER:
           return "Your Killer";
@@ -1097,13 +1097,11 @@ namespace djack.RogueSurvivor.Engine
     public enum ReincMode
     {
       RANDOM_FOLLOWER = 0,
-      _FIRST = 0,
       KILLER = 1,
       ZOMBIFIED = 2,
       RANDOM_LIVING = 3,
       RANDOM_UNDEAD = 4,
       RANDOM_ACTOR = 5,
-      _LAST = 5,
       _COUNT = 6,
     }
   }

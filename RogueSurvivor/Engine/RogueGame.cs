@@ -2364,8 +2364,9 @@ namespace djack.RogueSurvivor.Engine
       foreach(Map current in district.Maps) {
         while(null != current.NextActorToAct) {
           AdvancePlay(current, sim);
-          if (m_Player.IsDead) FindPlayer();
-          if (m_Player.IsDead) HandleReincarnation();
+          if (district == m_Session.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
+            if (m_Player.IsDead) HandleReincarnation();
+          }
           if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         }
       }
@@ -2457,7 +2458,6 @@ namespace djack.RogueSurvivor.Engine
         nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
       else if (nextActorToAct.IsPlayer) {
         HandlePlayerActor(nextActorToAct);
-        if (m_Player.IsDead) FindPlayer();
         if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       }
@@ -10362,10 +10362,17 @@ namespace djack.RogueSurvivor.Engine
       // this doesn't *look* safe, but it turns out we never have a foreach loop on the actors list when calling KillActor.
       deadGuy.Location.Map.RemoveActor(deadGuy);
 
-      if (deadGuy != m_Session.UniqueActors.TheSewersThing.TheActor || (killer != m_Player && killer.Leader != m_Player))
-        return;
-      m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
-      ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
+      // achievement: killing the Sewers Thing
+      if (killer == m_Player && killer.Leader == m_Player) {
+        if (deadGuy == m_Session.UniqueActors.TheSewersThing.TheActor) {
+          m_Session.Scoring.SetCompletedAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
+          ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
+        }
+      }
+
+      // If m_Player has just died, then we should be in the current district and thus clear to find a player
+      // furthermore, the viewport didn't pan away to another player
+      if (deadGuy == m_Player) FindPlayer();
     }
 
     private ActorModel CheckUndeadEvolution(Actor undead)
@@ -13805,7 +13812,7 @@ namespace djack.RogueSurvivor.Engine
            }
        }
 
-            m_MusicManager.Play(GameMusics.LIMBO);
+      m_MusicManager.Play(GameMusics.LIMBO);
       if (RogueGame.s_Options.MaxReincarnations <= 0 || !AskForReincarnation()) {
         m_MusicManager.StopAll();
       } else {
@@ -13820,21 +13827,21 @@ namespace djack.RogueSurvivor.Engine
         int matchingActors3;
         Actor reincarnationAvatar3 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out matchingActors3);
         int matchingActors4;
-        Actor reincarnationAvatar4 = FindReincarnationAvatar(GameOptions.ReincMode._FIRST, out matchingActors4);
+        Actor reincarnationAvatar4 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_FOLLOWER, out matchingActors4);
         Actor reincarnationAvatar5 = FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out matchingActors1);
         Actor reincarnationAvatar6 = FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out matchingActors1);
         string[] strArray = CompileDistrictFunFacts(m_Player.Location.Map.District);
         bool flag = false;
-        string[] entries = new string[6]
+        string[] entries = new string[(int)GameOptions.ReincMode._COUNT]
         {
           GameOptions.Name(GameOptions.ReincMode.RANDOM_ACTOR),
           GameOptions.Name(GameOptions.ReincMode.RANDOM_LIVING),
           GameOptions.Name(GameOptions.ReincMode.RANDOM_UNDEAD),
-          GameOptions.Name(GameOptions.ReincMode._FIRST),
+          GameOptions.Name(GameOptions.ReincMode.RANDOM_FOLLOWER),
           GameOptions.Name(GameOptions.ReincMode.KILLER),
           GameOptions.Name(GameOptions.ReincMode.ZOMBIFIED)
         };
-        string[] values = new string[6]
+        string[] values = new string[(int)GameOptions.ReincMode._COUNT]
         {
           DescribeAvatar(reincarnationAvatar1),
           string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar2), (object) matchingActors2),
@@ -13844,7 +13851,7 @@ namespace djack.RogueSurvivor.Engine
           DescribeAvatar(reincarnationAvatar6)
         };
         int currentChoice = 0;
-        Actor newPlayerAvatar = (Actor) null;
+        Actor newPlayerAvatar = null;
         do
         {
           int gy1;
@@ -13996,7 +14003,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (reincMode)
       {
-        case GameOptions.ReincMode._FIRST:
+        case GameOptions.ReincMode.RANDOM_FOLLOWER:
           if (m_Session.Scoring.FollowersWhendDied == null) {
             matchingActors = 0;
             return null;
