@@ -11279,26 +11279,24 @@ namespace djack.RogueSurvivor.Engine
                     default:
                         throw new ArgumentOutOfRangeException("unhandled lighting");
                 }
-                m_UI.UI_DrawString(color, text, 808, 716, new Color?());
-                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", (object)m_Session.WorldTime.TurnCounter), 680, 728, new Color?());
-                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object)m_Session.Scoring.TotalPoints, (object)(int)(100.0 * (double)Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), (object)Session.DescShortGameMode(m_Session.GameMode)), 808, 728, new Color?());
-                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object)(1 + m_Session.Scoring.ReincarnationNumber), (object)(1 + RogueGame.s_Options.MaxReincarnations)), 808, 740, new Color?());
-                if (m_Player.MurdersCounter > 0)
-                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", (object)m_Player.MurdersCounter), 808, 752, new Color?());
-                if (m_Player != null)
-                    DrawActorStatus(m_Player, 680, 4);
-                if (m_Player != null)
-                {
-                    if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
-                        DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
-                    DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, 10, 10, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
-                    DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, INVENTORYPANEL_X, CORPSESPANEL_Y);
-                }
-                if (m_Player != null && m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
+                m_UI.UI_DrawString(color, text, 808, 716);
+                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", (object)m_Session.WorldTime.TurnCounter), 680, 728);
+                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object)m_Session.Scoring.TotalPoints, (object)(int)(100.0 * (double)Scoring.ComputeDifficultyRating(RogueGame.s_Options, m_Session.Scoring.Side, m_Session.Scoring.ReincarnationNumber)), (object)Session.DescShortGameMode(m_Session.GameMode)), 808, 728);
+                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object)(1 + m_Session.Scoring.ReincarnationNumber), (object)(1 + RogueGame.s_Options.MaxReincarnations)), 808, 740);
+                if (null != m_Player) {
+                  if (m_Player.MurdersCounter > 0)
+                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", (object)m_Player.MurdersCounter), 808, 752);
+                  DrawActorStatus(m_Player, 680, 4);
+                  if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
+                    DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
+                  DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, 10, 10, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, INVENTORYPANEL_X, CORPSESPANEL_Y);
+                  if (m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
                     DrawActorSkillTable(m_Player, 680, 352);
+                }
                 lock (m_Overlays) {
-                    foreach (RogueGame.Overlay mOverlay in m_Overlays)
-                        mOverlay.Draw(m_UI);
+                  foreach (RogueGame.Overlay mOverlay in m_Overlays)
+                    mOverlay.Draw(m_UI);
                 }
                 m_UI.UI_Repaint();
             };  // lock(m_UI)
