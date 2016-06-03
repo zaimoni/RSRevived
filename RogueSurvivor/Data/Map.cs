@@ -480,6 +480,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void RecalcPlayers() { m_aux_Players = null; }
+
     public int PlayerCount { 
       get {
         return Players.Count;

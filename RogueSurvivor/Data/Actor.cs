@@ -169,11 +169,10 @@ namespace djack.RogueSurvivor.Data
         return m_Controller;
       }
       set {
-        if (m_Controller != null)
-          m_Controller.LeaveControl();
+        if (m_Controller != null) m_Controller.LeaveControl();
         m_Controller = value;
-        if (m_Controller != null)
-          m_Controller.TakeControl(this);
+        if (m_Controller != null) m_Controller.TakeControl(this);
+        if (m_Location.Map != null) m_Location.Map.RecalcPlayers();
       }
     }
 
