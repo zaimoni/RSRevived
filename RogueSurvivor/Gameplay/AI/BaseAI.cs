@@ -1086,31 +1086,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // ranged weapons
       if (rhs is ItemRangedWeapon) return !(lhs is ItemRangedWeapon);
-      else if (lhs is ItemRangedWeapon) return true;
+      else if (lhs is ItemRangedWeapon) return false;
 
       if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
-      else if (lhs is ItemAmmo) return true;
+      else if (lhs is ItemAmmo) return false;
 
       if (rhs is ItemMeleeWeapon)
         {
         if (!(lhs is ItemMeleeWeapon)) return false;
         return (lhs.Model as ItemMeleeWeaponModel).Attack.Rating < (rhs.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
-      else if (lhs is ItemMeleeWeapon) return true;
+      else if (lhs is ItemMeleeWeapon) return false;
 
       if (rhs is ItemBodyArmor)
         {
         if (!(lhs is ItemBodyArmor)) return false;
         return (lhs as ItemBodyArmor).Rating < (rhs as ItemBodyArmor).Rating;
         }
-      else if (lhs is ItemBodyArmor) return true;
+      else if (lhs is ItemBodyArmor) return false;
 
       if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
-      else if (lhs is ItemGrenade) return true;
+      else if (lhs is ItemGrenade) return false;
 
       bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
       if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
-      else if (lhs_low_priority) return true;
+      else if (lhs_low_priority) return false;
 
       bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
       if (rhs is ItemTracker)
@@ -1119,7 +1119,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (wantCellPhone && (rhs as ItemTracker).CanTrackFollowersOrLeader) return true;
         return false;
         }
-      else if (lhs is ItemTracker) return true;
+      else if (lhs is ItemTracker) return false;
 
       return false;
     }
