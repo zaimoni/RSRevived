@@ -10215,6 +10215,8 @@ namespace djack.RogueSurvivor.Engine
       if (deadGuy.IsDead)
         throw new InvalidOperationException(String.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (killer == null ? "N/A" : killer.TheName), deadGuy.TheName, reason));
 #endif
+      Actor m_Player_bak = m_Player;    // ForceVisibleToPlayer calls below can change this
+
       deadGuy.IsDead = true;
       DoStopDraggingCorpses(deadGuy);
       UntriggerAllTrapsHere(deadGuy.Location);
@@ -10251,8 +10253,11 @@ namespace djack.RogueSurvivor.Engine
         else
           m_Session.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} died by {1}! *", (object) deadGuy.TheName, (object) reason));
       }
-      if (deadGuy == m_Player && 0 >= m_Session.World.PlayerCount)
-        PlayerDied(killer, reason);
+      if (deadGuy == m_Player_bak) { 
+        m_Player = m_Player_bak;
+        m_Player.Location.Map.RecalcPlayers(); 
+        if (0 >= m_Session.World.PlayerCount) PlayerDied(killer, reason);
+      }
       deadGuy.RemoveAllFollowers();
       if (deadGuy.Leader != null)
       {
