@@ -1246,11 +1246,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // uninteresting ammo
       ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>((Predicate<ItemAmmo>) (ammo => !IsInterestingItem(ammo)));
-      if (null != tmpAmmo)
-      {
+      if (null != tmpAmmo) {
         ItemRangedWeapon tmpRw = GetCompatibleRangedWeapon(tmpAmmo);
-        if (null != tmpRw)
-        {
+        if (null != tmpRw) {
           tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
           if (game.Rules.CanActorUseItem(m_Actor, tmpAmmo)) return new ActionUseItem(m_Actor, game, tmpAmmo);
         }
@@ -1269,6 +1267,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemGrenade) return null;
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>(null);
       if (null != tmpGrenade) return BehaviorDropItem(game, tmpGrenade);
+
+      // do not pick up trackers if it means dropping body armor or higher priority
+      if (it is ItemTracker) return null;
 
       // body armor
       // XXX dropping body armor to get a better one should be ok
