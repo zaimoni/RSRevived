@@ -10906,9 +10906,39 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag);
-    }
+#if DEBUG
+      // this is the change target for becoming a cop.  The test may need extracting to an ImpersonateCop function
+      // 0) must be civilian or survivor with 0 murders
+      if ((GameFactions.TheCivilians == upgradeActor.Faction || GameFactions.TheSurvivors == upgradeActor.Faction)
+           // 1) required skills: Firearms 1, Leadership 1
+           && 1 <= upgradeActor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS) && 1 <= upgradeActor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)
+           // 2) must have equipped: police radio, police armor
+           && null != upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO)
+           && (null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_JACKET) || null != upgradeActor.GetEquippedItem(GameItems.IDs.ARMOR_POLICE_RIOT))    // XXX should just check good police armors list
+           // 3) must have in inventory: one of pistol or shotgun
+           && (null != upgradeActor.GetItem(GameItems.IDs.RANGED_PISTOL) || null != upgradeActor.GetItem(GameItems.IDs.RANGED_SHOTGUN))
+           // 4) must have committed no murders
+           && 0 >= upgradeActor.MurdersCounter) {
+        AddMessage(MakeYesNoMessage("Become a cop?"));
+        RedrawPlayScreen();
+        if (WaitYesOrNo()) {
+          upgradeActor.Faction = GameFactions.ThePolice;
+          DiscardItem(upgradeActor, upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO));    // now implicit; don't worry about efficiency here
+          upgradeActor.Name = "Cop " + upgradeActor.UnmodifiedName; // adjust job title
+          upgradeActor.Doll.AddDecoration(DollPart.HEAD, "Actors\\Decoration\\police_hat"); // XXX should selectively remove clothes when re-clothing
+          upgradeActor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\police_uniform");
+          upgradeActor.Doll.AddDecoration(DollPart.LEGS, "Actors\\Decoration\\police_pants");
+          upgradeActor.Doll.AddDecoration(DollPart.FEET, "Actors\\Decoration\\police_shoes");
+          AddMessage(new Data.Message("Welcome to the force.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+        } else
+          AddMessage(new Data.Message("Acknowledged.", m_Session.WorldTime.TurnCounter, Color.Yellow));
 
-    private void HandlePlayerFollowersUpgrade()
+      }
+      // then: y/n prompt, if y become cop
+#endif
+        }
+
+        private void HandlePlayerFollowersUpgrade()
     {
       if (m_Player.CountFollowers == 0) return;
       ClearMessages();

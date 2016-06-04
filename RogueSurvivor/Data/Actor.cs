@@ -1037,9 +1037,28 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public Item GetEquippedItem(Gameplay.GameItems.IDs id)
+    {
+      if (null == m_Inventory) return null;
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.Model.ID == id && obj.EquippedPart != DollPart.NONE) return obj;
+      }
+      return null;
+    }
+
     public Item GetEquippedWeapon()
     {
       return GetEquippedItem(DollPart.RIGHT_HAND);
+    }
+
+    // maybe this should be over on the Inventory object
+    public Item GetItem(Gameplay.GameItems.IDs id)
+    {
+      if (null == m_Inventory) return null;
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.Model.ID == id) return obj;
+      }
+      return null;
     }
 
     public Skill SkillUpgrade(djack.RogueSurvivor.Gameplay.Skills.IDs id)
@@ -1279,12 +1298,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     // This prepares an actor for being a PC.  Note that hacking the player controller in
-    // by hex-editing does work flawlessly at the Actor, level, so whether any of this 
-    // is needed is a good question.
+    // by hex-editing does work flawlessly at the Actor level.
     public void PrepareForPlayerControl()
     {
-      if (m_Inventory == null) m_Inventory = new Inventory(1);  // but the GUI still won't display it for undead
-      if (Sheet.SkillTable == null) Sheet.SkillTable = new SkillTable(); 
+      if (m_Inventory == null) m_Inventory = new Inventory(1);  // but the GUI still won't display it for undead; test removing for 0.10.0
+      if (Sheet.SkillTable == null) Sheet.SkillTable = new SkillTable(); // plausibly needed for PC upgrade
       if (Leader != null) Leader.RemoveFollower(this);   // needed if leader is NPC
     }
 

@@ -20,113 +20,87 @@ namespace djack.RogueSurvivor.Gameplay
       GameItems.IDs.ARMOR_POLICE_JACKET,
       GameItems.IDs.ARMOR_POLICE_RIOT
     };
-    private Faction[] m_Factions = new Faction[11];
+    private Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
-    public override Faction this[int id]
-    {
-      get
-      {
+    public override Faction this[int id] {
+      get {
         return m_Factions[id];
       }
     }
 
     public Faction this[GameFactions.IDs id]
     {
-      get
-      {
+      get {
         return this[(int) id];
       }
-      private set
-      {
-                m_Factions[(int) id] = value;
-                m_Factions[(int) id].ID = (int) id;
+      private set {
+        m_Factions[(int) id] = value;
+        m_Factions[(int) id].ID = (int) id;
       }
     }
 
-    public Faction TheArmy
-    {
-      get
-      {
+    public Faction TheArmy {
+      get {
         return this[GameFactions.IDs.TheArmy];
       }
     }
 
-    public Faction TheBikers
-    {
-      get
-      {
+    public Faction TheBikers {
+      get {
         return this[GameFactions.IDs.TheBikers];
       }
     }
 
-    public Faction TheBlackOps
-    {
-      get
-      {
+    public Faction TheBlackOps {
+      get {
         return this[GameFactions.IDs.TheBlackOps];
       }
     }
 
-    public Faction TheCHARCorporation
-    {
-      get
-      {
+    public Faction TheCHARCorporation {
+      get {
         return this[GameFactions.IDs._FIRST];
       }
     }
 
-    public Faction TheCivilians
-    {
-      get
-      {
+    public Faction TheCivilians {
+      get {
         return this[GameFactions.IDs.TheCivilians];
       }
     }
 
-    public Faction TheGangstas
-    {
-      get
-      {
+    public Faction TheGangstas {
+      get {
         return this[GameFactions.IDs.TheGangstas];
       }
     }
 
-    public Faction ThePolice
-    {
-      get
-      {
+    public Faction ThePolice {
+      get {
         return this[GameFactions.IDs.ThePolice];
       }
     }
 
-    public Faction TheUndeads
-    {
-      get
-      {
+    public Faction TheUndeads {
+      get {
         return this[GameFactions.IDs.TheUndeads];
       }
     }
 
-    public Faction ThePsychopaths
-    {
-      get
-      {
+    public Faction ThePsychopaths {
+      get {
         return this[GameFactions.IDs.ThePsychopaths];
       }
     }
 
-    public Faction TheSurvivors
-    {
-      get
-      {
+    public Faction TheSurvivors {
+      get {
         return this[GameFactions.IDs.TheSurvivors];
       }
     }
 
-    public Faction TheFerals
-    {
-      get
-      {
+    public Faction TheFerals {
+      get {
         return this[GameFactions.IDs.TheFerals];
       }
     }
