@@ -32,6 +32,18 @@ namespace Zaimoni.Data
             _weights = new Dictionary<T, float>(src._weights);
         }
 
+        public int Count {
+            get {
+              return _weights.Count;
+            }
+        }
+
+        public Dictionary<T,float>.KeyCollection Keys {
+            get {
+                return _weights.Keys;
+            }
+        }
+
         public float this[T x]
         {
             get {
