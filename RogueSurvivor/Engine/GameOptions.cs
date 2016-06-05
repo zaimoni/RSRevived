@@ -11,6 +11,16 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace djack.RogueSurvivor.Engine
 {
+/*
+ * DEFAULT_DISTRICT_SIZE is a key time-scaling parameter.  It is 5/3 of WorldTime.TURNS_PER_HOUR.
+ * At the standard 30 turns/hour, this is 50
+ * At the other extreme of interest (15 turns/minute, 900/hour) it would be 1,500.  This *plausibly*
+ * is unmanagable even with Dungeon Crawl Stone Soup's large map UI features.
+ * One would expect DEFAULT_MAX_CIVILIANS/DOGS/UNDEAD to scale as the square of the time unit
+ * Note that weapon and visibility ranges *also* scale with time in order to stay proportionate with the district distance scale.
+ * The stamina cost for pushing cars should not scale, but the stamina stat of livings should scale (as should the relevant skills).
+ */
+
   [Serializable]
   internal struct GameOptions
   {
