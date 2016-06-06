@@ -9,6 +9,8 @@ using System.Drawing;
 
 namespace djack.RogueSurvivor.Data
 {
+  // This must *not* implement ISerializable.  Save-load puts the Prisoner Who Should Not Be at 0,0 rather than his intended location if the reasonable optimization
+  // of saving/loading short rather than int is done.
   [Serializable]
   internal struct Location
   {
