@@ -13438,6 +13438,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void BeforePlayerEnterDistrict(District district)
     {
+      if (m_Session.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
       Map entryMap = district.EntryMap;
       int turnCounter = entryMap.LocalTime.TurnCounter;
       if (RogueGame.s_Options.IsSimON)
@@ -13489,14 +13490,6 @@ namespace djack.RogueSurvivor.Engine
                 }
         RestartSimThread();
         RemoveLastMessage();
-#if FAIL
-        foreach (Map map in district.Maps) {
-          foreach (Actor actor in map.Actors) {
-            if (!actor.IsSleeping)
-              actor.ActionPoints = 0;
-          }
-        }
-#endif
         m_MusicManager.StopAll();
       }
       else
