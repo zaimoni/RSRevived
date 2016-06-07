@@ -12514,6 +12514,7 @@ namespace djack.RogueSurvivor.Engine
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       m_Session = Session.Get;
       m_Rules = new Rules(new DiceRoller(m_Session.Seed));
+      m_Player = null;
       RefreshPlayer();
       AddMessage(new Data.Message("LOADING DONE.", m_Session.WorldTime.TurnCounter, Color.Yellow));
       AddMessage(new Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", m_Session.WorldTime.TurnCounter, Color.LightGreen));
@@ -13497,11 +13498,6 @@ namespace djack.RogueSurvivor.Engine
         foreach (Map map in district.Maps)
           map.LocalTime.TurnCounter = m_Session.WorldTime.TurnCounter;
       }
-    }
-
-    private void OnPlayerChangeMap()
-    {
-      RefreshPlayer();
     }
 
     private RogueGame.SimFlags ComputeSimFlagsForTurn(int turn)
