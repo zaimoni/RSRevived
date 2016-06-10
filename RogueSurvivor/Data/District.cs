@@ -158,7 +158,7 @@ namespace djack.RogueSurvivor.Data
     {
       get {
         foreach(Map tmp in Maps) {
-          if (null != tmp.NextActorToAct) return false;
+          if (!tmp.IsSecret && null != tmp.NextActorToAct) return false;
         }
         return true;
       }

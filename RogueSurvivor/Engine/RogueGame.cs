@@ -4,10 +4,10 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define DATAFLOW_TRACE
+//#define DATAFLOW_TRACE
 
 #define ALPHA_SAY
-// #define ALPHA_SIM
+//#define ALPHA_SIM
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -2380,7 +2380,12 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
 #endif
       foreach(Map current in district.Maps) {
+#if ALPHA_SIM
+        // not processing secret maps used to be a micro-optimization; now a hang bug
+        while(!current.IsSecret && null != current.NextActorToAct) {
+#else
         while(null != current.NextActorToAct) {
+#endif
           AdvancePlay(current, sim);
           if (district == m_Session.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
             if (m_Player.IsDead) HandleReincarnation();
@@ -2423,6 +2428,10 @@ namespace djack.RogueSurvivor.Engine
       if (CheckForEvent_BandOfSurvivors(district.EntryMap)) FireEvent_BandOfSurvivors(district.EntryMap);
       if (CheckForEvent_SewersInvasion(district.SewersMap)) FireEvent_SewersInvasion(district.SewersMap);
       } // end lock(district)
+
+#if DATAFLOW_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
+#endif
 
       // if simulation is disabled or threaded, do not try to simulate further
       if (!RogueGame.s_Options.IsSimON || m_Player == null || RogueGame.s_Options.SimThread) return;
@@ -2919,6 +2928,9 @@ namespace djack.RogueSurvivor.Engine
             map.RemoveTimer(t);
         }
       }
+#if DATAFLOW_TRACE
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
+#endif
       bool isNight = map.LocalTime.IsNight;
       ++map.LocalTime.TurnCounter;
       bool flag = !map.LocalTime.IsNight;
@@ -13552,17 +13564,17 @@ namespace djack.RogueSurvivor.Engine
 
     private void SimulateDistrict(District d)
     {
-            AdvancePlay(d, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));
+      AdvancePlay(d, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));
     }
 
     private bool SimulateNearbyDistricts(District d)
     {
       bool flag = false;
 #if ALPHA_SIM
-      District d = m_Session.World.CurrentSimulationDistrict();
-      if (null == d) return false; 
-      SimulateDistrict(d);
-      m_Session.World.ScheduleAdjacentForAdvancePlay(d);
+      District d1 = m_Session.World.CurrentSimulationDistrict();
+      if (null == d1) return false; 
+      SimulateDistrict(d1);
+      m_Session.World.ScheduleAdjacentForAdvancePlay(d1);
       return true;
 #else
       int x1 = 0;

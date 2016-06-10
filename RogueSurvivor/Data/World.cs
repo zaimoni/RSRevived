@@ -231,8 +231,8 @@ retry:
       District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
 
       lock(m_PCready) {
-        if (d == m_PCready.Peek()) m_PCready.Dequeue();
-        if (d == m_NPCready.Peek()) m_NPCready.Dequeue();
+        if (0 < m_PCready.Count && d == m_PCready.Peek()) m_PCready.Dequeue();
+        if (0 < m_NPCready.Count && d == m_NPCready.Peek()) m_NPCready.Dequeue();
 
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
@@ -242,9 +242,9 @@ retry:
         // backstops
         if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
         if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
-        if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NW);
+        if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NE);
         if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
-        if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SW);
+        if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SE);
       }
     }
 
