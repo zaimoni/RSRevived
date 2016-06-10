@@ -753,7 +753,7 @@ namespace djack.RogueSurvivor.Engine
       while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
 #if ALPHA_SIM
-        District d = m_Session.World.NextPlayerDistrict();
+        District d = m_Session.World.CurrentPlayerDistrict();
         if (null == d) {
           Thread.Sleep(100);
           continue;
@@ -13559,7 +13559,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag = false;
 #if ALPHA_SIM
-      District d = m_Session.World.NextSimulationDistrict();
+      District d = m_Session.World.CurrentSimulationDistrict();
       if (null == d) return false; 
       SimulateDistrict(d);
       m_Session.World.ScheduleAdjacentForAdvancePlay(d);

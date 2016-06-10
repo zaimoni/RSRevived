@@ -113,12 +113,12 @@ namespace djack.RogueSurvivor.Data
     private void ScheduleForAdvancePlay(District d)
     {
       District irrational_caution = d; // so we don't write to a locked variable while it is locked
-      // these are based on morally readonly properties and thus can be used without a lock
 retry:
       d = irrational_caution;
       if (m_PCready.Contains(d)) return;
       if (m_NPCready.Contains(d)) return;
 
+      // these are based on morally readonly properties and thus can be used without a lock
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
       District tmp = null;
@@ -214,6 +214,9 @@ retry:
 
     public void ScheduleAdjacentForAdvancePlay(District d)
     {
+      if (d == m_PCready.Peek()) m_PCready.Dequeue();
+      if (d == m_NPCready.Peek()) m_NPCready.Dequeue();
+
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
       District tmp_N = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
@@ -238,7 +241,8 @@ retry:
       if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SW);
     }
 
-    // avoiding property idiom for these two as they affect World state
+    // avoiding property idiom for these as they affect World state
+#if FAIL
     public District NextPlayerDistrict()
     {
       while(0 < m_PCready.Count) {
@@ -255,6 +259,27 @@ retry:
         District tmp = m_NPCready.Dequeue();
         if (0 == tmp.PlayerCount) return tmp;
         m_PCready.Enqueue(tmp);
+      }
+      return null;
+    }
+#endif
+
+    public District CurrentPlayerDistrict()
+    {
+      while(0 < m_PCready.Count) {
+        District tmp = m_PCready.Peek();
+        if (0 < tmp.PlayerCount) return tmp;
+        m_NPCready.Enqueue(m_PCready.Dequeue());
+      }
+      return null;
+    }
+
+    public District CurrentSimulationDistrict()
+    {
+      while(0 < m_NPCready.Count) {
+        District tmp = m_NPCready.Peek();
+        if (0 == tmp.PlayerCount) return tmp;
+        m_PCready.Enqueue(m_NPCready.Dequeue());
       }
       return null;
     }
