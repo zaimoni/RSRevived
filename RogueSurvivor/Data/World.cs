@@ -92,22 +92,33 @@ namespace djack.RogueSurvivor.Data
  000
  000
 
- i.e. B1 and A2 are legal to run.  After both of those have run we are at
+ We would like to schedule both A2 and B1, but A2 requires B1 to have already run.  After B1 has run:
  110
+ 000
+ 000
+
+ B1 enables both C1 and A2 to be scheduled.  It's closer to "standard" to schedule C1 before A2.  After C1 and A2 runs:
+ 111
  100
  000
 
- and all of A0,C0,B1,A2 are legal to run.  We would prefer to run A0 last.
+ we are now clear to schedule B2 (the first PC district in a 3x3 game).  After B2 has run
+ 111
+ 110
+ 000
+
+ All of C2, A3, and A0 can be scheduled.  In "standard" we would defer A1 until after C2 had been scheduled, but that is a "global"
+ constraint.
  */
     private void ScheduleForAdvancePlay(District d)
     {
-      if (m_PCready.Contains(d)) return;
-      if (m_NPCready.Contains(d)) return;
-
       District irrational_caution = d; // so we don't write to a locked variable while it is locked
       // these are based on morally readonly properties and thus can be used without a lock
 retry:
       d = irrational_caution;
+      if (m_PCready.Contains(d)) return;
+      if (m_NPCready.Contains(d)) return;
+
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
       District tmp = null;
@@ -134,6 +145,26 @@ retry:
             }
           }
         }
+        // district 1 northeast must be at a strictly later gametime to not be lagged relative to us
+        tmp = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
+        tmp = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
         // district 1 south must not be too far behind us
         tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
         if (null != tmp) {
@@ -145,7 +176,7 @@ retry:
           }
         }
         // district 1 east must not be too far behind us
-        tmp = (m_Size > x+1 ? m_DistrictsGrid[x+1,y] : null);
+        tmp = (m_Size > x + 1 ? m_DistrictsGrid[x + 1,y] : null);
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
@@ -154,6 +185,27 @@ retry:
             }
           }
         }
+       // district 1 southwest must not be too far behind us
+        tmp = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // district 1 southeast must not be too far behind us
+        tmp = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1,y + 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+ 
         // we're clear.
         if (0 < d.PlayerCount) m_PCready.Enqueue(d);
         else m_NPCready.Enqueue(d);
@@ -168,10 +220,22 @@ retry:
       District tmp_W = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
       District tmp_S = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
       District tmp_E = (m_Size > x + 1 ? m_DistrictsGrid[x + 1, y] : null);
-      if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
+      District tmp_NE = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
+      District tmp_NW = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
+      District tmp_SW = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
+      District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
+
+      // the ones that would typically be scheduled
       if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
+      if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
+      if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);
+
+      // backstops
       if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
       if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
+      if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NW);
+      if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
+      if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SW);
     }
 
     // avoiding property idiom for these two as they affect World state
