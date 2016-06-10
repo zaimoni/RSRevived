@@ -14,7 +14,10 @@ namespace djack.RogueSurvivor.Data
   {
     private District[,] m_DistrictsGrid;
     private int m_Size;
-    private Weather m_Weather;
+    private Queue<District> m_PCready;
+    private Queue<District> m_NPCready;
+
+    public Weather Weather { get; set; }
 
     public int Size
     {
@@ -30,21 +33,10 @@ namespace djack.RogueSurvivor.Data
         if (y < 0 || y >= m_Size) throw new ArgumentOutOfRangeException("y");
         return m_DistrictsGrid[x, y];
       }
-      set
-      {
+      set {
         if (x < 0 || x >= m_Size) throw new ArgumentOutOfRangeException("x");
         if (y < 0 || y >= m_Size) throw new ArgumentOutOfRangeException("y");
         m_DistrictsGrid[x, y] = value;
-      }
-    }
-
-    public Weather Weather
-    {
-      get {
-        return m_Weather;
-      }
-      set {
-        m_Weather = value;
       }
     }
 
@@ -53,7 +45,9 @@ namespace djack.RogueSurvivor.Data
       if (size <= 0) throw new ArgumentOutOfRangeException("size <=0");
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
-      m_Weather = Weather.CLEAR;
+      Weather = Weather.CLEAR;
+      m_PCready = new Queue<District>(size*size);
+      m_NPCready = new Queue<District>(size*size);
     }
 
     // possible micro-optimization target
@@ -78,6 +72,86 @@ namespace djack.RogueSurvivor.Data
         }
         return ret;
       }
+    }
+
+    // Simulation support
+    public void ScheduleForAdvancePlay(District d)
+    {
+      District irrational_caution = d; // so we don't write to a locked variable while it is locked
+      // these are based on morally readonly properties and thus can be used without a lock
+retry:
+      d = irrational_caution;
+      int x = d.WorldPosition.X;
+      int y = d.WorldPosition.Y;
+      District tmp = null;
+
+      lock (d) { 
+        int district_turn = d.EntryMap.LocalTime.TurnCounter;
+        // district 1 north must be at a strictly later gametime to not be lagged relative to us
+        tmp = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // district 1 west must be at a strictly later gametime to not be lagged relative to us
+        tmp = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // district 1 south must not be too far behind us
+        tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // district 1 east must not be too far behind us
+        tmp = (m_Size > x+1 ? m_DistrictsGrid[x+1,y] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // we're clear.
+        if (0 < d.PlayerCount) m_PCready.Enqueue(d);
+        else m_NPCready.Enqueue(d);
+      }
+    }
+
+    // avoiding property idiom for these two as they affect World state
+    public District NextPlayerDistrict()
+    {
+      while(0 < m_PCready.Count) {
+        District tmp = m_PCready.Dequeue();
+        if (0 < tmp.PlayerCount) return tmp;
+        m_NPCready.Enqueue(tmp);
+      }
+      return null;
+    }
+
+    public District NextSimulationDistrict()
+    {
+      while(0 < m_NPCready.Count) {
+        District tmp = m_NPCready.Dequeue();
+        if (0 == tmp.PlayerCount) return tmp;
+        m_PCready.Enqueue(tmp);
+      }
+      return null;
     }
 
     public void TrimToBounds(ref int x, ref int y)
