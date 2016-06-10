@@ -111,8 +111,8 @@ namespace djack.RogueSurvivor.Data
  110
  000
 
- All of C2, A3, and A0 can be scheduled.  In "standard" we would defer A1 until after C2 had been scheduled, but that is a "global"
- constraint.
+ All of C2, A3, and A1 can be scheduled.  In "standard" we would defer A1 until after C2 had been scheduled, but that is a "global"
+ constraint.  We do want A1 run twice before B2 is run twice.
  */
     private void ScheduleForAdvancePlay(District d)
     {
