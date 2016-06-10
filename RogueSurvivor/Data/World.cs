@@ -75,8 +75,35 @@ namespace djack.RogueSurvivor.Data
     }
 
     // Simulation support
-    public void ScheduleForAdvancePlay(District d)
+    public void ScheduleForAdvancePlay() {
+      ScheduleForAdvancePlay(m_DistrictsGrid[0,0]);
+    }
+
+/*
+ Idea here is to schedule the districts so that they never get "too far ahead" if we should want to build out cross-district pathfinding or line of sight.
+
+ At game start for a 3x3 city, we have
+ 000
+ 000
+ 000
+ 
+ i.e. only A1 is legal to run.  After it has run, we are at
+ 100
+ 000
+ 000
+
+ i.e. B1 and A2 are legal to run.  After both of those have run we are at
+ 110
+ 100
+ 000
+
+ and all of A0,C0,B1,A2 are legal to run.  We would prefer to run A0 last.
+ */
+    private void ScheduleForAdvancePlay(District d)
     {
+      if (m_PCready.Contains(d)) return;
+      if (m_NPCready.Contains(d)) return;
+
       District irrational_caution = d; // so we don't write to a locked variable while it is locked
       // these are based on morally readonly properties and thus can be used without a lock
 retry:
@@ -131,6 +158,20 @@ retry:
         if (0 < d.PlayerCount) m_PCready.Enqueue(d);
         else m_NPCready.Enqueue(d);
       }
+    }
+
+    public void ScheduleAdjacentForAdvancePlay(District d)
+    {
+      int x = d.WorldPosition.X;
+      int y = d.WorldPosition.Y;
+      District tmp_N = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
+      District tmp_W = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
+      District tmp_S = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
+      District tmp_E = (m_Size > x + 1 ? m_DistrictsGrid[x + 1, y] : null);
+      if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
+      if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
+      if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
+      if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
     }
 
     // avoiding property idiom for these two as they affect World state

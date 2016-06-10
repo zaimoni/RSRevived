@@ -7,6 +7,7 @@
 // #define DATAFLOW_TRACE
 
 #define ALPHA_SAY
+// #define ALPHA_SIM
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -751,6 +752,19 @@ namespace djack.RogueSurvivor.Engine
       HandleMainMenu();
       while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
+#if ALPHA_SIM
+        District d = m_Session.World.NextPlayerDistrict();
+        if (null == d) {
+          Thread.Sleep(100);
+          continue;
+        }
+        m_HasLoadedGame = false;
+        DateTime now = DateTime.Now;
+        AdvancePlay(d, RogueGame.SimFlags.NOT_SIMULATING);
+        if (!m_IsGameRunning) break;
+        m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
+        m_Session.World.ScheduleAdjacentForAdvancePlay(d);
+#else
         List<District> tmp = m_Session.World.PlayerDistricts;
         int lastDistrictTurn = tmp[tmp.Count-1].EntryMap.LocalTime.TurnCounter;
         foreach (District d1 in tmp) { 
@@ -761,6 +775,7 @@ namespace djack.RogueSurvivor.Engine
           if (!m_IsGameRunning) break;
           m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
         }
+#endif
       }
     }
 
@@ -1591,6 +1606,9 @@ namespace djack.RogueSurvivor.Engine
             ClearMessages();
             AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", (object)m_Player.Name), 0, Color.White));
             RedrawPlayScreen();
+#if ALPHA_SIM
+            m_Session.World.ScheduleForAdvancePlay();   // simulation starts at district A1
+#endif
             RestartSimThread();
     }
 
@@ -13540,6 +13558,13 @@ namespace djack.RogueSurvivor.Engine
     private bool SimulateNearbyDistricts(District d)
     {
       bool flag = false;
+#if ALPHA_SIM
+      District d = m_Session.World.NextSimulationDistrict();
+      if (null == d) return false; 
+      SimulateDistrict(d);
+      m_Session.World.ScheduleAdjacentForAdvancePlay(d);
+      return true;
+#else
       int x1 = 0;
       int x2 = m_Session.World.Size - 1;
       int y1 = 0;
@@ -13556,6 +13581,7 @@ namespace djack.RogueSurvivor.Engine
           SimulateDistrict(d1);
         }
       }
+#endif
       return flag;
     }
 
