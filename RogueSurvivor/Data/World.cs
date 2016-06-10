@@ -75,8 +75,12 @@ namespace djack.RogueSurvivor.Data
     }
 
     // Simulation support
+    // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in 
+    // an inconsistent state
     public void ScheduleForAdvancePlay() {
-      ScheduleForAdvancePlay(m_DistrictsGrid[0,0]);
+      lock (m_PCready) {
+        ScheduleForAdvancePlay(m_DistrictsGrid[0,0]);
+      }
     }
 
 /*
@@ -185,7 +189,7 @@ retry:
             }
           }
         }
-       // district 1 southwest must not be too far behind us
+        // district 1 southwest must not be too far behind us
         tmp = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
         if (null != tmp) {
           lock(tmp) {
@@ -214,9 +218,7 @@ retry:
 
     public void ScheduleAdjacentForAdvancePlay(District d)
     {
-      if (d == m_PCready.Peek()) m_PCready.Dequeue();
-      if (d == m_NPCready.Peek()) m_NPCready.Dequeue();
-
+      // d.WorldPosition is morally readonly
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
       District tmp_N = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
@@ -228,58 +230,45 @@ retry:
       District tmp_SW = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
       District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
 
-      // the ones that would typically be scheduled
-      if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
-      if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
-      if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);
+      lock(m_PCready) {
+        if (d == m_PCready.Peek()) m_PCready.Dequeue();
+        if (d == m_NPCready.Peek()) m_NPCready.Dequeue();
 
-      // backstops
-      if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
-      if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
-      if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NW);
-      if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
-      if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SW);
+        // the ones that would typically be scheduled
+        if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
+        if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
+        if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);
+
+        // backstops
+        if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
+        if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
+        if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NW);
+        if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
+        if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SW);
+      }
     }
 
     // avoiding property idiom for these as they affect World state
-#if FAIL
-    public District NextPlayerDistrict()
-    {
-      while(0 < m_PCready.Count) {
-        District tmp = m_PCready.Dequeue();
-        if (0 < tmp.PlayerCount) return tmp;
-        m_NPCready.Enqueue(tmp);
-      }
-      return null;
-    }
-
-    public District NextSimulationDistrict()
-    {
-      while(0 < m_NPCready.Count) {
-        District tmp = m_NPCready.Dequeue();
-        if (0 == tmp.PlayerCount) return tmp;
-        m_PCready.Enqueue(tmp);
-      }
-      return null;
-    }
-#endif
-
     public District CurrentPlayerDistrict()
     {
-      while(0 < m_PCready.Count) {
-        District tmp = m_PCready.Peek();
-        if (0 < tmp.PlayerCount) return tmp;
-        m_NPCready.Enqueue(m_PCready.Dequeue());
+      lock(m_PCready) {
+        while(0 < m_PCready.Count) {
+          District tmp = m_PCready.Peek();
+          if (0 < tmp.PlayerCount) return tmp;
+          m_NPCready.Enqueue(m_PCready.Dequeue());
+        }
       }
       return null;
     }
 
     public District CurrentSimulationDistrict()
     {
-      while(0 < m_NPCready.Count) {
-        District tmp = m_NPCready.Peek();
-        if (0 == tmp.PlayerCount) return tmp;
-        m_PCready.Enqueue(m_NPCready.Dequeue());
+      lock(m_PCready) {
+        while(0 < m_NPCready.Count) {
+          District tmp = m_NPCready.Peek();
+          if (0 == tmp.PlayerCount) return tmp;
+          m_PCready.Enqueue(m_NPCready.Dequeue());
+        }
       }
       return null;
     }
