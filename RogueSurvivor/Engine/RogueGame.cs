@@ -755,6 +755,8 @@ namespace djack.RogueSurvivor.Engine
 #if ALPHA_SIM
         District d = m_Session.World.CurrentPlayerDistrict();
         if (null == d) {
+          if (null == m_Session.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
+          if (null == m_SimThread) throw new InvalidOperationException("no simulation thread");
           Thread.Sleep(100);
           continue;
         }
@@ -884,6 +886,9 @@ namespace djack.RogueSurvivor.Engine
                   m_UI.UI_Repaint();
                   LoadGame(RogueGame.GetUserSave());
                   LogSaveScumStats();
+#if ALPHA_SIM
+                  RestartSimThread();
+#endif
                   flag1 = false;
                   break;
                 }
@@ -2374,11 +2379,11 @@ namespace djack.RogueSurvivor.Engine
     {
       bool isNight1 = m_Session.WorldTime.IsNight;
       DayPhase phase1 = m_Session.WorldTime.Phase;
-
-      lock(district) {
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
 #endif
+
+      lock(district) {
       foreach(Map current in district.Maps) {
 #if ALPHA_SIM
         // not processing secret maps used to be a micro-optimization; now a hang bug
@@ -3721,17 +3726,17 @@ namespace djack.RogueSurvivor.Engine
                                 HandleScreenshot();
                 break;
               case PlayerCommand.SAVE_GAME:
-                                StopSimThread();
-                                HandleSaveGame();
-                                RestartSimThread();
+                StopSimThread();
+                HandleSaveGame();
+                RestartSimThread();
                 break;
               case PlayerCommand.LOAD_GAME:
-                                StopSimThread();
-                                HandleLoadGame();
-                                RestartSimThread();
+                StopSimThread();
+                HandleLoadGame();
+                RestartSimThread();
                 player = m_Player;
                 flag1 = false;
-                                m_HasLoadedGame = true;
+                m_HasLoadedGame = true;
                 break;
               case PlayerCommand.ABANDON_GAME:
                 if (HandleAbandonGame())
