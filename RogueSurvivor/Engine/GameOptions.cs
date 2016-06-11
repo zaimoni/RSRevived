@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define STABLE_SIM_OPTIONAL
+
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -51,10 +53,12 @@ namespace djack.RogueSurvivor.Engine
     private bool m_ShowMinimap;
     private bool m_EnabledAdvisor;
     private bool m_CombatAssistant;
+#if STABLE_SIM_OPTIONAL
     private GameOptions.SimRatio m_SimulateDistricts;
     private float m_cachedSimRatioFloat;
     private bool m_SimulateWhenSleeping;
     private bool m_SimThread;
+#endif
     private bool m_ShowPlayerTagsOnMinimap;
     private int m_SpawnSkeletonChance;
     private int m_SpawnZombieChance;
@@ -283,58 +287,86 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if STABLE_SIM_OPTIONAL
     public GameOptions.SimRatio SimulateDistricts
     {
-      get
-      {
+      get{
+#if STABLE_SIM_OPTIONAL
         return m_SimulateDistricts;
+#else
+        return GameOptions.SimRatio.FULL;
+#endif
       }
-      set
-      {
-                m_SimulateDistricts = value;
-                m_cachedSimRatioFloat = GameOptions.SimRatioToFloat(m_SimulateDistricts);
+#if STABLE_SIM_OPTIONAL
+      set {
+        m_SimulateDistricts = value;
+        m_cachedSimRatioFloat = GameOptions.SimRatioToFloat(m_SimulateDistricts);
       }
+#endif
     }
+#endif
 
+#if STABLE_SIM_OPTIONAL
     public float SimRatioFloat
     {
-      get
-      {
+      get {
+#if STABLE_SIM_OPTIONAL
         return m_cachedSimRatioFloat;
+#else
+        return GameOptions.SimRatioToFloat(GameOptions.SimRatio.FULL);
+#endif
       }
     }
+#endif
 
+#if STABLE_SIM_OPTIONAL
     public bool SimulateWhenSleeping
     {
-      get
-      {
+      get {
+#if STABLE_SIM_OPTIONAL
         return m_SimulateWhenSleeping;
+#else
+        return false;
+#endif
       }
-      set
-      {
-                m_SimulateWhenSleeping = value;
+#if STABLE_SIM_OPTIONAL
+      set {
+        m_SimulateWhenSleeping = value;
       }
+#endif
     }
+#endif
 
+#if STABLE_SIM_OPTIONAL
     public bool IsSimON
     {
-      get
-      {
+      get {
+#if STABLE_SIM_OPTIONAL
         return m_SimulateDistricts != GameOptions.SimRatio._FIRST;
+#else
+        return GameOptions.SimRatio.FULL != GameOptions.SimRatio._FIRST;
+#endif
       }
     }
+#endif
 
+#if STABLE_SIM_OPTIONAL
     public bool SimThread
     {
-      get
-      {
+      get {
+#if STABLE_SIM_OPTIONAL
         return m_SimThread;
+#else
+        return true;
+#endif
       }
-      set
-      {
-                m_SimThread = value;
+#if STABLE_SIM_OPTIONAL
+      set {
+        m_SimThread = value;
       }
+#endif
     }
+#endif
 
     public int DistrictSize
     {
@@ -659,9 +691,11 @@ namespace djack.RogueSurvivor.Engine
             m_ShowPlayerTagsOnMinimap = true;
             m_EnabledAdvisor = true;
             m_CombatAssistant = false;
+#if STABLE_SIM_OPTIONAL
             SimulateDistricts = GameOptions.SimRatio.FULL;
             m_SimulateWhenSleeping = false;
             m_SimThread = true;
+#endif
             m_SpawnSkeletonChance = DEFAULT_SPAWN_SKELETON_CHANCE;
             m_SpawnZombieChance = DEFAULT_SPAWN_ZOMBIE_CHANCE;
             m_SpawnZombieMasterChance = DEFAULT_SPAWN_ZOMBIE_MASTER_CHANCE;
@@ -925,11 +959,23 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.GAME_MAX_UNDEADS:
           return string.Format("{0:D3}*  (default {1:D3})", (object)MaxUndeads, (object) DEFAULT_MAX_UNDEADS);
         case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
+#if STABLE_SIM_OPTIONAL
           return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(SimulateDistricts), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
+#else
+          return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(GameOptions.SimRatio.FULL), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
+#endif
         case GameOptions.IDs.GAME_SIMULATE_SLEEP:
+#if STABLE_SIM_OPTIONAL
           return !SimulateWhenSleeping ? "NO*   (default NO)" : "YES*  (default NO)";
+#else
+          return "NO*   (default NO)";
+#endif
         case GameOptions.IDs.GAME_SIM_THREAD:
+#if STABLE_SIM_OPTIONAL
           return !SimThread ? "NO*   (default YES)" : "YES*  (default YES)";
+#else
+          return "YES*  (default YES)";
+#endif
         case GameOptions.IDs.GAME_CITY_SIZE:
           return string.Format("{0:D2}*   (default {1:D2})", (object)CitySize, (object) DEFAULT_CITY_SIZE);
         case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
