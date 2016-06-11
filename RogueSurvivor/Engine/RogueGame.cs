@@ -2932,23 +2932,11 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (map.CountTimers > 0)
-      {
-        List<TimedTask> timedTaskList = (List<TimedTask>) null;
-        foreach (TimedTask timer in map.Timers)
-        {
+
+      if (map.CountTimers > 0) {
+        foreach (TimedTask timer in new List<TimedTask>(map.Timers)) {
           timer.Tick(map);
-          if (timer.IsCompleted)
-          {
-            if (timedTaskList == null)
-              timedTaskList = new List<TimedTask>(map.CountTimers);
-            timedTaskList.Add(timer);
-          }
-        }
-        if (timedTaskList != null)
-        {
-          foreach (TimedTask t in timedTaskList)
-            map.RemoveTimer(t);
+          if (timer.IsCompleted) map.RemoveTimer(timer);
         }
       }
 #if DATAFLOW_TRACE
