@@ -129,8 +129,8 @@ retry:
 
       lock (d) { 
         int district_turn = d.EntryMap.LocalTime.TurnCounter;
-        // district 1 north must be at a strictly later gametime to not be lagged relative to us
-        tmp = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
+        // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
+        tmp = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -139,8 +139,8 @@ retry:
             }
           }
         }
-        // district 1 west must be at a strictly later gametime to not be lagged relative to us
-        tmp = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
+        // district 1 north must be at a strictly later gametime to not be lagged relative to us
+        tmp = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -159,21 +159,11 @@ retry:
             }
           }
         }
-        // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
-        tmp = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
+        // district 1 west must be at a strictly later gametime to not be lagged relative to us
+        tmp = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
-              irrational_caution = tmp;
-              goto retry;
-            }
-          }
-        }
-        // district 1 south must not be too far behind us
-        tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
-        if (null != tmp) {
-          lock(tmp) {
-            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
               irrational_caution = tmp;
               goto retry;
             }
@@ -191,6 +181,16 @@ retry:
         }
         // district 1 southwest must not be too far behind us
         tmp = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
+        if (null != tmp) {
+          lock(tmp) {
+            if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+              irrational_caution = tmp;
+              goto retry;
+            }
+          }
+        }
+        // district 1 south must not be too far behind us
+        tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
