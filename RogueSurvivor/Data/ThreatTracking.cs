@@ -14,6 +14,12 @@ namespace djack.RogueSurvivor.Data
           _threats_on_map = new Dictionary<Map, HashSet<Actor>>();
         }
 
+        public void Clear()
+        {
+          _threats.Clear();
+          _threats_on_map.Clear();
+        }
+
         public void RecordSpawn(Actor a, IEnumerable<Location> locs)
         {
           Zaimoni.Data.DenormalizedProbability<Location> tmp = new Zaimoni.Data.DenormalizedProbability<Location>();

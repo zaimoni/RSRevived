@@ -25,6 +25,8 @@ namespace djack.RogueSurvivor.Engine
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
+    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_PoliceItemMemory;
+    private readonly ThreatTracking m_PoliceThreatTracking;
 
     public GameMode GameMode { get; set; }
     public int Seed { get; set; }
@@ -58,9 +60,23 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> PoliceItemMemory {
+      get {
+        return m_PoliceItemMemory;
+      }
+    }
+
+    public ThreatTracking PoliceThreatTracking {
+      get {
+        return m_PoliceThreatTracking;
+      }
+    }
+
     private Session()
     {
       m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new System.Collections.Generic.Dictionary<string, string>(Session.CommandLineOptions)));
+      m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+      m_PoliceThreatTracking = new ThreatTracking();
       Reset();
     }
 
@@ -85,6 +101,8 @@ namespace djack.RogueSurvivor.Engine
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
+      m_PoliceItemMemory = (Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>) info.GetValue("UniqueMaps", typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
+      m_PoliceThreatTracking = (ThreatTracking) info.GetValue("m_PoliceThreatTracking", typeof(ThreatTracking));
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -106,6 +124,8 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
       info.AddValue("UniqueItems",UniqueItems,typeof(UniqueItems));
       info.AddValue("UniqueMaps",UniqueMaps,typeof(UniqueMaps));
+      info.AddValue("m_PoliceItemMemory", m_PoliceItemMemory, typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
+      info.AddValue("m_PoliceThreatTracking", m_PoliceThreatTracking, typeof(ThreatTracking));
     }
 #endregion
 
@@ -131,6 +151,8 @@ namespace djack.RogueSurvivor.Engine
       UniqueActors = new UniqueActors();
       UniqueItems = new UniqueItems();
       UniqueMaps = new UniqueMaps();
+      m_PoliceItemMemory.Clear();
+      m_PoliceThreatTracking.Clear();
     }
 
     public bool CMDoptionExists(string x) {

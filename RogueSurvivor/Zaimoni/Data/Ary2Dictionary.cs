@@ -22,6 +22,12 @@ namespace Zaimoni.Data
             _second_first_dict = new Dictionary<Key2, Dictionary<Key1, Range>>();
         }
 
+        public void Clear() {
+            _no_entries.Clear();
+            _first_second_dict.Clear();
+            _second_first_dict.Clear();
+        }
+
         public bool HaveEverSeen(Key1 key, out Range value) {
             if (_no_entries.TryGetValue(key, out value)) return true;
             if (_first_second_dict.ContainsKey(key)) {
