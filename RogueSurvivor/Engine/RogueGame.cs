@@ -7542,7 +7542,7 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Name)));
       stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Model.Name)));
       stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? (object) "Undead" : (object) "Staying alive", (object) new WorldTime(actor.SpawnTime).ToString()));
-      BaseAI aiController = actor.Controller as BaseAI;
+      OrderableAI aiController = actor.Controller as OrderableAI;
       if (aiController?.Order != null)
         stringList.Add(string.Format("Order : {0}.", (object) aiController.Order.ToString()));
       if (actor.HasLeader)
@@ -7685,7 +7685,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string DescribePlayerFollowerStatus(Actor follower)
     {
-      BaseAI baseAi = follower.Controller as BaseAI;
+      OrderableAI baseAi = follower.Controller as OrderableAI;
       return (baseAi.Order != null ? baseAi.Order.ToString() : "(no orders)") + string.Format("(trust:{0})", (object) follower.TrustInLeader);
     }
 
@@ -10229,7 +10229,7 @@ namespace djack.RogueSurvivor.Engine
       else if (!m_Rules.IsActorTrustingLeader(slave)) {
                 DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
       } else {
-        BaseAI aiController = slave.Controller as BaseAI;
+        OrderableAI aiController = slave.Controller as OrderableAI;
         if (aiController == null) return;
         aiController.SetOrder(order);
         if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;
@@ -10240,7 +10240,7 @@ namespace djack.RogueSurvivor.Engine
     private void DoCancelOrder(Actor master, Actor slave)
     {
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
-      BaseAI aiController = slave.Controller as BaseAI;
+      OrderableAI aiController = slave.Controller as OrderableAI;
       if (aiController == null) return;
       aiController.SetOrder(null);
       if (!ForceVisibleToPlayer(master) && !ForceVisibleToPlayer(slave)) return;

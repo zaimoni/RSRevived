@@ -28,8 +28,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
     private const float LEADER_LOF_PENALTY = 1f;
-    private ActorOrder m_Order;
-    private ActorDirective m_Directive;
+    private ActorDirective m_Directive; // Should be in orderableAI but needed for movement AI here, and also FeralDogAI
     private Location m_prevLocation;
     private Dictionary<Item, int> m_TabooItems;
     private Dictionary<Point, int> m_TabooTiles;
@@ -37,27 +36,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public BaseAI()
     {
-      m_Order = null;
       m_Directive = null;
       m_TabooItems = null;
       m_TabooTiles = null;
       m_TabooTrades = null;
     }
 
-    public ActorOrder Order {
-      get {
-        return m_Order;
-      }
-    }
-
+    // BaseAI does have to know about directives for the movement behaviors
     public ActorDirective Directives {
       get {
         if (m_Directive == null)
           m_Directive = new ActorDirective();
         return m_Directive;
-      }
-      protected set {
-        m_Directive = value;
       }
     }
 
@@ -75,11 +65,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         return m_TabooTrades;
       }
-    }
-
-    public virtual void SetOrder(ActorOrder newOrder)
-    {
-      m_Order = newOrder;
     }
 
     public override ActorAction GetAction(RogueGame game)

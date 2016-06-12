@@ -21,6 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     private const int EMOTE_GRAB_ITEM_CHANCE = 30;
 
+    private ActorOrder m_Order;
     protected Percept m_LastEnemySaw;
     protected Percept m_LastItemsSaw;
     protected Percept m_LastSoldierSaw;
@@ -30,9 +31,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool DontFollowLeader { get; set; }
 
-    public override void SetOrder(ActorOrder newOrder)
+    public OrderableAI()
     {
-      base.SetOrder(newOrder);
+      m_Order = null;
+      m_LastEnemySaw = null;
+      m_LastItemsSaw = null;
+      m_LastSoldierSaw = null;
+      m_LastRaidHeard = null;
+      m_ReachedPatrolPoint = false;
+      m_ReportStage = 0;
+    }
+
+    public ActorOrder Order {
+      get {
+        return m_Order;
+      }
+    }
+
+    public void SetOrder(ActorOrder newOrder)
+    {
+      m_Order = newOrder;
       m_ReachedPatrolPoint = false;
       m_ReportStage = 0;
     }
