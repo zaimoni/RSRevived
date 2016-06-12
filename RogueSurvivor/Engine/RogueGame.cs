@@ -2523,8 +2523,33 @@ namespace djack.RogueSurvivor.Engine
         ++map.LocalTime.TurnCounter;
         return;
       }
+
+            ////////////////////////////////////////
+            // (the following are skipped in lodetail turns)
+            // 0. Raise the deads; Check infections (non STD)
+            // 1. Update odors.
+            //      1.1 Odor suppression/generation.
+            //      1.2 Odors decay.
+            //      1.3 Drop new scents.
+            // 2. Regen actors AP & STA
+            // 3. Stop tired actors from running.
+            // 4. Actor gauges & states :
+            //    Hunger, Sleep, Sanity, Leader Trust.
+            //      4.1 May kill starved actors.
+            //      4.2 Handle sleeping actors.
+            //      4.3 Exhausted actors might collapse.
+            // 5. Check batteries : lights, trackers.
+            // 6. Check explosives.
+            // 7. Check fires.
+            // (the following are always performed)
+            // - Check timers.
+            // - Advance local time.
+            // - Check for NPC upgrade.
+            ////////////////////////////////////////
+
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
         if (m_Session.HasCorpses && map.CountCorpses > 0) {
+#region corpses: decide who zombify or rots.
           List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
           List<Corpse> corpseList2 = new List<Corpse>(map.CountCorpses);
           foreach (Corpse corpse in map.Corpses) {
@@ -2557,8 +2582,10 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(new Data.Message(string.Format("The corpse of {0} turns into dust.", (object) c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
             }
           }
+#endregion
         }
         if (m_Session.HasInfection) {
+#region Infection effects
           List<Actor> actorList = null;
           foreach (Actor actor in map.Actors) {
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
@@ -2634,8 +2661,10 @@ namespace djack.RogueSurvivor.Engine
               }
             }
           }
+#endregion
         }
 
+#region 1. Update odors.
         List<OdorScent> odorScentList1 = new List<OdorScent>();
         foreach (OdorScent scent in map.Scents)
         {
@@ -2684,8 +2713,11 @@ namespace djack.RogueSurvivor.Engine
           foreach (OdorScent scent in odorScentList2)
             map.RemoveScent(scent);
         }
+#endregion
+        // 2. Regen actors AP & STA
         foreach (Actor actor in map.Actors) actor.PreTurnStart();
         map.CheckNextActorIndex = 0;
+#region 3. Stop tired actors from running.
         foreach (Actor actor in map.Actors) {
           if (actor.IsRunning && actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
             actor.IsRunning = false;
@@ -2695,9 +2727,12 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
+#endregion
+#region 4. Actor gauges & states
         List<Actor> actorList1 = (List<Actor>) null;
         foreach (Actor actor in map.Actors)
         {
+#region hunger & rot
           if (actor.Model.Abilities.HasToEat)
           {
             actor.Appetite(1);
@@ -2723,7 +2758,9 @@ namespace djack.RogueSurvivor.Engine
             else if (actor.IsRotHungry && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
           }
+#endregion
           if (actor.Model.Abilities.HasToSleep) {
+#region sleep.
             if (actor.IsSleeping) {
               if (m_Rules.IsActorDisturbed(actor) && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
                 DoWakeUp(actor);
@@ -2741,6 +2778,7 @@ namespace djack.RogueSurvivor.Engine
               actor.Drowse(map.LocalTime.IsNight ? 2 : 1);
             }
             if (actor.IsSleeping) {
+#region 4.2 Handle sleeping actors.
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Activity.SLEEPING;
               actor.Rest(m_Rules.ActorSleepRegen(actor, isOnCouch));
@@ -2760,8 +2798,10 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_SNORE))));
                 RedrawPlayScreen();
               }
+#endregion
             }
             if (actor.IsExhausted && m_Rules.RollChance(Rules.SLEEP_EXHAUSTION_COLLAPSE_CHANCE)) {
+#region 4.3 Exhausted actors might collapse.
               DoStartSleeping(actor);
               if (ForceVisibleToPlayer(actor)) {
                 AddMessage(MakeMessage(actor, string.Format("{0} from exhaustion !!", (object)Conjugate(actor, VERB_COLLAPSE))));
@@ -2772,10 +2812,13 @@ namespace djack.RogueSurvivor.Engine
                 ComputeViewRect(m_Player.Location.Position);
                 RedrawPlayScreen();
               }
+#endregion
             }
+#endregion
           }
           actor.SpendSanity(1);
           if (actor.HasLeader) {
+#region leader trust & leader/follower bond.
             ModifyActorTrustInLeader(actor, m_Rules.ActorTrustIncrease(actor.Leader), false);
             if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(m_Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
@@ -2785,8 +2828,10 @@ namespace djack.RogueSurvivor.Engine
               if (ForceVisibleToPlayer(actor.Leader))
                 AddMessage(MakeMessage(actor.Leader, string.Format("{0} reassured knowing {1} is with {2}.", (object)Conjugate(actor.Leader, VERB_FEEL), (object) actor.Name, (object)HimOrHer(actor.Leader))));
             }
+#endregion
           }
         }
+#region Kill (zombify) starved actors.
         if (actorList1 != null) {
           foreach (Actor actor in actorList1) {
             if (ForceVisibleToPlayer(actor)) {
@@ -2805,6 +2850,9 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
+#endregion
+#endregion
+#region 5. Check batteries : lights, trackers.
         // lights and normal trackers
         foreach (Actor actor in map.Actors)
         {
@@ -2835,8 +2883,11 @@ namespace djack.RogueSurvivor.Engine
               AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
           }
         }
+#endregion
 
-        bool flag5 = false;
+#region 6. Check explosives.
+        bool hasExplosivesToExplode = false;
+#region 6.1 Update fuses.
         foreach (Inventory groundInventory in map.GroundInventories)
         {
           foreach (Item obj in groundInventory.Items)
@@ -2846,7 +2897,7 @@ namespace djack.RogueSurvivor.Engine
             {
               --itemPrimedExplosive.FuseTimeLeft;
               if (itemPrimedExplosive.FuseTimeLeft <= 0)
-                flag5 = true;
+                hasExplosivesToExplode = true;
             }
           }
         }
@@ -2862,18 +2913,20 @@ namespace djack.RogueSurvivor.Engine
               {
                 --itemPrimedExplosive.FuseTimeLeft;
                 if (itemPrimedExplosive.FuseTimeLeft <= 0)
-                  flag5 = true;
+                  hasExplosivesToExplode = true;
               }
             }
           }
         }
-        if (flag5)
+#endregion
+        if (hasExplosivesToExplode)
         {
-          bool flag3;
+#region 6.2 Explode.
+          bool hasExplodedSomething;
           do
           {
-            flag3 = false;
-            if (!flag3)
+            hasExplodedSomething = false;
+            if (!hasExplodedSomething)
             {
               foreach (Inventory groundInventory in map.GroundInventories)
               {
@@ -2887,15 +2940,14 @@ namespace djack.RogueSurvivor.Engine
                   {
                     map.RemoveItemAt((Item) itemPrimedExplosive, inventoryPosition.Value);
                                         DoBlast(new Location(map, inventoryPosition.Value), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
-                    flag3 = true;
+                    hasExplodedSomething = true;
                     break;
                   }
                 }
-                if (flag3)
-                  break;
+                if (hasExplodedSomething) break;
               }
             }
-            if (!flag3)
+            if (!hasExplodedSomething)
             {
               foreach (Actor actor in map.Actors)
               {
@@ -2909,7 +2961,7 @@ namespace djack.RogueSurvivor.Engine
                     {
                       actor.Inventory.RemoveAllQuantity((Item) itemPrimedExplosive);
                                             DoBlast(new Location(map, actor.Location.Position), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
-                      flag3 = true;
+                      hasExplodedSomething = true;
                       break;
                     }
                   }
@@ -2917,8 +2969,12 @@ namespace djack.RogueSurvivor.Engine
               }
             }
           }
-          while (flag3);
+          while (hasExplodedSomething);
+#endregion
         }
+#endregion
+#region 7. Check fires.
+        // \todo implement per-map weather, then use it here
         if (m_Rules.IsWeatherRain(m_Session.World.Weather) && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE))
         {
           foreach (MapObject mapObject in map.MapObjects)
@@ -2931,30 +2987,34 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-      }
+#endregion
+      } // skipped in lodetail turns.
 
+#region Check timers
       if (map.CountTimers > 0) {
         foreach (TimedTask timer in new List<TimedTask>(map.Timers)) {
           timer.Tick(map);
           if (timer.IsCompleted) map.RemoveTimer(timer);
         }
       }
+#endregion
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
 #endif
+#region Advance local time
       bool isNight = map.LocalTime.IsNight;
       ++map.LocalTime.TurnCounter;
       bool flag = !map.LocalTime.IsNight;
-      if (isNight && flag)
-      {
-                HandleLivingNPCsUpgrade(map);
-      }
-      else
-      {
+#endregion
+#region Check for NPC upgrade
+      if (isNight && flag) {
+        HandleLivingNPCsUpgrade(map);
+      } else {
         if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || isNight || (flag || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day)))
           return;
-                HandleUndeadNPCsUpgrade(map);
+        HandleUndeadNPCsUpgrade(map);
       }
+#endregion
     }
 
     private void ModifyActorTrustInLeader(Actor a, int mod, bool addMessage)
