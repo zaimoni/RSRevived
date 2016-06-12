@@ -19,29 +19,21 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private HashSet<Point> m_FOV;
     private LOSSensor.SensingFilter m_Filters;
 
-    public HashSet<Point> FOV
-    {
-      get
-      {
+    public HashSet<Point> FOV {
+      get {
         return m_FOV;
       }
     }
 
-    public LOSSensor.SensingFilter Filters
-    {
-      get
-      {
+    public LOSSensor.SensingFilter Filters {
+      get {
         return m_Filters;
-      }
-      set
-      {
-                m_Filters = value;
       }
     }
 
     public LOSSensor(LOSSensor.SensingFilter filters)
     {
-            m_Filters = filters;
+      m_Filters = filters;
     }
 
     public override List<Percept> Sense(RogueGame game, Actor actor)
