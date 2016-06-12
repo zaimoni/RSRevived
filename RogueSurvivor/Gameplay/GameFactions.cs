@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public Faction TheCHARCorporation {
       get {
-        return this[GameFactions.IDs._FIRST];
+        return this[GameFactions.IDs.TheCHARCorporation];
       }
     }
 
@@ -111,7 +111,7 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameFactions.IDs.TheArmy] = new Faction("Army", "soldier", true);
       this[GameFactions.IDs.TheBikers] = new Faction("Bikers", "biker", true);
       this[GameFactions.IDs.TheBlackOps] = new Faction("BlackOps", "blackOp", true);
-      this[GameFactions.IDs._FIRST] = new Faction("CHAR Corp.", "CHAR employee", true);
+      this[GameFactions.IDs.TheCHARCorporation] = new Faction("CHAR Corp.", "CHAR employee", true);
       this[GameFactions.IDs.TheCivilians] = new Faction("Civilians", "civilian");
       this[GameFactions.IDs.TheGangstas] = new Faction("Gangstas", "gangsta", true);
       this[GameFactions.IDs.ThePolice] = new Faction("Police", "police officer", true);
@@ -128,33 +128,33 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
       this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.TheArmy]);
       this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
-      this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs._FIRST]);
+      this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.TheCHARCorporation]);
       this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.TheGangstas]);
       this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.ThePolice]);
       this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.TheUndeads]);
       this[GameFactions.IDs.TheBikers].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheArmy]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheBikers]);
-      this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs._FIRST]);
+      this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheCHARCorporation]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheCivilians]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheGangstas]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.ThePolice]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheUndeads]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
       this[GameFactions.IDs.TheBlackOps].AddEnemy(this[GameFactions.IDs.TheSurvivors]);
-      this[GameFactions.IDs._FIRST].AddEnemy(this[GameFactions.IDs.TheArmy]);
-      this[GameFactions.IDs._FIRST].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
-      this[GameFactions.IDs._FIRST].AddEnemy(this[GameFactions.IDs.TheBikers]);
-      this[GameFactions.IDs._FIRST].AddEnemy(this[GameFactions.IDs.TheGangstas]);
-      this[GameFactions.IDs._FIRST].AddEnemy(this[GameFactions.IDs.TheUndeads]);
-      this[GameFactions.IDs._FIRST].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
+      this[GameFactions.IDs.TheCHARCorporation].AddEnemy(this[GameFactions.IDs.TheArmy]);
+      this[GameFactions.IDs.TheCHARCorporation].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
+      this[GameFactions.IDs.TheCHARCorporation].AddEnemy(this[GameFactions.IDs.TheBikers]);
+      this[GameFactions.IDs.TheCHARCorporation].AddEnemy(this[GameFactions.IDs.TheGangstas]);
+      this[GameFactions.IDs.TheCHARCorporation].AddEnemy(this[GameFactions.IDs.TheUndeads]);
+      this[GameFactions.IDs.TheCHARCorporation].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
       this[GameFactions.IDs.TheCivilians].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
       this[GameFactions.IDs.TheCivilians].AddEnemy(this[GameFactions.IDs.TheUndeads]);
       this[GameFactions.IDs.TheCivilians].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
       this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.TheArmy]);
       this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.TheBikers]);
       this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
-      this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs._FIRST]);
+      this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.TheCHARCorporation]);
       this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.ThePolice]);
       this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.TheUndeads]);
       this[GameFactions.IDs.TheGangstas].AddEnemy(this[GameFactions.IDs.ThePsychopaths]);
@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.TheArmy]);
       this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.TheBikers]);
       this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
-      this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs._FIRST]);
+      this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.TheCHARCorporation]);
       this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.TheCivilians]);
       this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.TheGangstas]);
       this[GameFactions.IDs.TheUndeads].AddEnemy(this[GameFactions.IDs.ThePolice]);
@@ -176,7 +176,7 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.TheArmy]);
       this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.TheBikers]);
       this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
-      this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs._FIRST]);
+      this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.TheCHARCorporation]);
       this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.TheCivilians]);
       this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.TheGangstas]);
       this[GameFactions.IDs.ThePsychopaths].AddEnemy(this[GameFactions.IDs.ThePolice]);
@@ -199,7 +199,6 @@ namespace djack.RogueSurvivor.Gameplay
     public enum IDs
     {
       TheCHARCorporation = 0,
-      _FIRST = 0,
       TheCivilians = 1,
       TheUndeads = 2,
       TheArmy = 3,
