@@ -2701,17 +2701,9 @@ namespace djack.RogueSurvivor.Engine
           }
         }
 
-        List<OdorScent> odorScentList2 = null;
-        foreach (OdorScent scent in map.Scents) {
+        foreach (OdorScent scent in new List<OdorScent>(map.Scents)) {
           map.ModifyScentAt(scent.Odor, -odorDecayRate, scent.Position);
-          if (scent.Strength < 1) {
-            if (odorScentList2 == null) odorScentList2 = new List<OdorScent>(1);
-            odorScentList2.Add(scent);
-          }
-        }
-        if (odorScentList2 != null) {
-          foreach (OdorScent scent in odorScentList2)
-            map.RemoveScent(scent);
+          if (scent.Strength < 1) map.RemoveScent(scent);
         }
 #endregion
         // 2. Regen actors AP & STA
