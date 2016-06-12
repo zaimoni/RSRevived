@@ -9,7 +9,6 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
-  [Serializable]
   internal class Faction
   {
     private List<Faction> m_Enemies = new List<Faction>(1);
@@ -17,22 +16,21 @@ namespace djack.RogueSurvivor.Data
     public int ID { get; set; }
     public string Name { get; private set; }
     public string MemberName { get; private set; }
-    public bool LeadOnlyBySameFaction { get; set; }
+    public bool LeadOnlyBySameFaction { get; private set; }
 
-    public IEnumerable<Faction> Enemies
-    {
-      get
-      {
+    public IEnumerable<Faction> Enemies {
+      get {
         return (IEnumerable<Faction>) m_Enemies;
       }
     }
 
-    public Faction(string name, string memberName)
+    public Faction(string name, string memberName, bool leadOnlyBySameFaction = false)
     {
       if (name == null) throw new ArgumentNullException("name");
       if (memberName == null) throw new ArgumentNullException("memberName");
       Name = name;
       MemberName = memberName;
+      LeadOnlyBySameFaction = leadOnlyBySameFaction;
     }
 
     public void AddEnemy(Faction other)

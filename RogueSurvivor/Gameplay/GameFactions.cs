@@ -108,38 +108,19 @@ namespace djack.RogueSurvivor.Gameplay
     public GameFactions()
     {
       Models.Factions = (FactionDB) this;
-      this[GameFactions.IDs.TheArmy] = new Faction("Army", "soldier")
-      {
-        LeadOnlyBySameFaction = true
-      };
-      this[GameFactions.IDs.TheBikers] = new Faction("Bikers", "biker")
-      {
-        LeadOnlyBySameFaction = true
-      };
-      this[GameFactions.IDs.TheBlackOps] = new Faction("BlackOps", "blackOp")
-      {
-        LeadOnlyBySameFaction = true
-      };
-      this[GameFactions.IDs._FIRST] = new Faction("CHAR Corp.", "CHAR employee")
-      {
-        LeadOnlyBySameFaction = true
-      };
+      this[GameFactions.IDs.TheArmy] = new Faction("Army", "soldier", true);
+      this[GameFactions.IDs.TheBikers] = new Faction("Bikers", "biker", true);
+      this[GameFactions.IDs.TheBlackOps] = new Faction("BlackOps", "blackOp", true);
+      this[GameFactions.IDs._FIRST] = new Faction("CHAR Corp.", "CHAR employee", true);
       this[GameFactions.IDs.TheCivilians] = new Faction("Civilians", "civilian");
-      this[GameFactions.IDs.TheGangstas] = new Faction("Gangstas", "gangsta")
-      {
-        LeadOnlyBySameFaction = true
-      };
-      this[GameFactions.IDs.ThePolice] = new Faction("Police", "police officer")
-      {
-        LeadOnlyBySameFaction = true
-      };
+      this[GameFactions.IDs.TheGangstas] = new Faction("Gangstas", "gangsta", true);
+      this[GameFactions.IDs.ThePolice] = new Faction("Police", "police officer", true);
       this[GameFactions.IDs.TheUndeads] = new Faction("Undeads", "undead");
       this[GameFactions.IDs.ThePsychopaths] = new Faction("Psychopaths", "psychopath");
       this[GameFactions.IDs.TheSurvivors] = new Faction("Survivors", "survivor");
-      this[GameFactions.IDs.TheFerals] = new Faction("Ferals", "feral")
-      {
-        LeadOnlyBySameFaction = true
-      };
+      this[GameFactions.IDs.TheFerals] = new Faction("Ferals", "feral", true);
+      
+      // set up faction-level enemies
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheBikers]);
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheGangstas]);
