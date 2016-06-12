@@ -15,6 +15,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -99,7 +100,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LastItemsSaw = null;
       m_LastSoldierSaw = null;
       m_LastRaidHeard = null;
-      m_Emotes = null;
+      m_Emotes = CivilianAI.FIGHT_EMOTES;
     }
 
     // we don't have memory, but we do have taboo trades
@@ -112,11 +113,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    public override void TakeControl(Actor actor)
+    {
+      base.TakeControl(actor);
+      if (!m_Actor.IsUnique) return;
+      UniqueActors tmp = Session.Get.UniqueActors;
+      m_Emotes = (m_Actor != tmp.BigBear.TheActor ? (m_Actor != tmp.FamuFataru.TheActor ? (m_Actor != tmp.Santaman.TheActor ? (m_Actor != tmp.Roguedjack.TheActor ? (m_Actor != tmp.Duckman.TheActor ? (m_Actor != tmp.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
+    }
+
     protected override List<Percept> UpdateSensors(RogueGame game)
     {
-      if (m_Emotes == null)
-        m_Emotes = !m_Actor.IsUnique ? CivilianAI.FIGHT_EMOTES : (m_Actor != game.Session.UniqueActors.BigBear.TheActor ? (m_Actor != game.Session.UniqueActors.FamuFataru.TheActor ? (m_Actor != game.Session.UniqueActors.Santaman.TheActor ? (m_Actor != game.Session.UniqueActors.Roguedjack.TheActor ? (m_Actor != game.Session.UniqueActors.Duckman.TheActor ? (m_Actor != game.Session.UniqueActors.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
-      return m_LOSSensor.Sense(game, m_Actor);
+      List<Percept> tmp = m_LOSSensor.Sense(game, m_Actor);
+      if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) {
+        // police report the items they see to other police.
+        // \todo This implementation is too powerful; it should be a mutual-update between police
+        // in the same district
+        Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = Session.Get.PoliceItemMemory;
+
+        // update the enhanced item memory here
+        Dictionary<Location,HashSet< Gameplay.GameItems.IDs >> seen_items = new Dictionary<Location, HashSet<Gameplay.GameItems.IDs>>();
+        foreach(Engine.AI.Percept tmp2 in tmp) {
+          Inventory tmp3 = tmp2.Percepted as Inventory;
+          if (null == tmp3) continue;
+          if (0 >= tmp3.CountItems) continue;
+          seen_items[tmp2.Location] = new HashSet<Gameplay.GameItems.IDs>(tmp3.Items.Select(x => x.Model.ID));
+        }
+        foreach(Point tmp2 in FOV) {
+          Location tmp3 = new Location(m_Actor.Location.Map,tmp2);
+          if (seen_items.ContainsKey(tmp3)) { ItemMemory.Set(tmp3, seen_items[tmp3], m_Actor.Location.Map.LocalTime.TurnCounter); }
+          else { ItemMemory.Set(tmp3, null, m_Actor.Location.Map.LocalTime.TurnCounter); }
+        }
+      }
+
+      return tmp;
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
