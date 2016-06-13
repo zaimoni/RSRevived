@@ -8,7 +8,6 @@
 
 #define STABLE_SIM_OPTIONAL
 
-#define ALPHA_SAY
 #define ALPHA_SIM
 
 using djack.RogueSurvivor.Data;
@@ -108,11 +107,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Color MODE_FILLCOLOR = Color.FromArgb(192, Color.Gray);
     private readonly Color PLAYER_ACTION_COLOR = Color.White;
     private readonly Color OTHER_ACTION_COLOR = Color.Gray;
-#if ALPHA_SAY
     public readonly Color SAYOREMOTE_COLOR = Color.Brown;
-#else
-    private readonly Color SAYOREMOTE_COLOR = Color.Brown;
-#endif
     private readonly Color PLAYER_AUDIO_COLOR = Color.Green;
     private readonly Color NIGHT_COLOR = Color.Cyan;
     private readonly Color DAY_COLOR = Color.Gold;
@@ -504,11 +499,7 @@ namespace djack.RogueSurvivor.Engine
       return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
     }
 
-#if ALPHA_SAY
     public Data.Message MakeMessage(Actor actor, string doWhat, Color color)
-#else
-    private Data.Message MakeMessage(Actor actor, string doWhat, Color color)
-#endif
     {
       StringBuilder stringBuilder = new StringBuilder();
       stringBuilder.Append(ActorVisibleIdentity(actor));
@@ -580,11 +571,7 @@ namespace djack.RogueSurvivor.Engine
       };
     }
 
-#if ALPHA_SAY
     public void ClearMessages()
-#else
-    private void ClearMessages()
-#endif
     {
       m_MessageManager.Clear();
     }
@@ -594,11 +581,7 @@ namespace djack.RogueSurvivor.Engine
       m_MessageManager.ClearHistory();
     }
 
-#if ALPHA_SAY
     public void RemoveLastMessage()
-#else
-    private void RemoveLastMessage()
-#endif
     {
       m_MessageManager.RemoveLastMessage();
     }
@@ -609,11 +592,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-#if ALPHA_SAY
     public void AddMessagePressEnter()
-#else
-    private void AddMessagePressEnter()
-#endif
     {
       AddMessage(new Data.Message("<press ENTER>", m_Session.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
@@ -9605,26 +9584,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
     {
-#if ALPHA_SAY
       speaker.Say(target,text,flags);
-#else
-      if ((flags & RogueGame.Sayflags.IS_FREE_ACTION) == RogueGame.Sayflags.NONE)
-        speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (!ForceVisibleToPlayer(speaker) && (!ForceVisibleToPlayer(target) || m_Player.IsSleeping && target == m_Player))
-        return;
-      bool isPlayer = target.IsPlayer;
-      bool flag = (flags & RogueGame.Sayflags.IS_IMPORTANT) != RogueGame.Sayflags.NONE;
-      if (isPlayer && flag)
-        ClearMessages();
-      AddMessage(MakeMessage(speaker, string.Format("to {0} : ", (object) target.TheName), SAYOREMOTE_COLOR));
-      AddMessage(MakeMessage(speaker, string.Format("\"{0}\"", (object) text), SAYOREMOTE_COLOR));
-      if (!isPlayer || !flag) return;
-      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), new Size(32, 32))));
-      AddMessagePressEnter();
-      ClearOverlays();
-      RemoveLastMessage();
-      RedrawPlayScreen();
-#endif
     }
 
     public void DoShout(Actor speaker, string text)
@@ -12395,29 +12355,17 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#if ALPHA_SAY
     public void AddOverlay(RogueGame.Overlay o)
-#else
-    private void AddOverlay(RogueGame.Overlay o)
-#endif
     {
       lock(m_Overlays) { m_Overlays.Add(o); }
     }
 
-#if ALPHA_SAY
     public void ClearOverlays()
-#else
-    private void ClearOverlays()
-#endif
     {
       lock(m_Overlays) { m_Overlays.Clear(); }
     }
 
-#if ALPHA_SAY
     public Point MapToScreen(Point mapPosition)
-#else
-    private Point MapToScreen(Point mapPosition)
-#endif
     {
       return MapToScreen(mapPosition.X, mapPosition.Y);
     }
@@ -12486,13 +12434,9 @@ namespace djack.RogueSurvivor.Engine
       return IsVisibleToPlayer(mapObj.Location);
     }
 
-#if ALPHA_SAY
     public void PanViewportTo(Actor player)
-#else
-    private void PanViewportTo(Actor player)
-#endif
     {
-            m_Player = player;
+      m_Player = player;
       m_Session.CurrentMap = player.Location.Map;
       ComputeViewRect(m_Player.Location.Position);
       RedrawPlayScreen();
@@ -14671,11 +14615,7 @@ namespace djack.RogueSurvivor.Engine
       Skills.LoadSkillsFromCSV(m_UI, "Resources\\Data\\Skills.csv");
     }
 
-#if ALPHA_SAY
     public abstract class Overlay
-#else
-    private abstract class Overlay
-#endif
     {
       public abstract void Draw(IRogueUI ui);
     }
@@ -14771,11 +14711,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-#if ALPHA_SAY
     public class OverlayRect : RogueGame.Overlay
-#else
-    private class OverlayRect : RogueGame.Overlay
-#endif
     {
       public Rectangle Rectangle { get; set; }
 

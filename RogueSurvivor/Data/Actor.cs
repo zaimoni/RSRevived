@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define ALPHA_SAY
-
 using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Drawing;
@@ -1219,7 +1217,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-#if ALPHA_SAY
+#region Event-based Say implementation
     public struct SayArgs
     {
       public readonly Actor _target;
@@ -1252,7 +1250,7 @@ namespace djack.RogueSurvivor.Data
         handler(this,tmp);
       }
     }
-#endif
+#endregion
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void RecomputeStartingStats()

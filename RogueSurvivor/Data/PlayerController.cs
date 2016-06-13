@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define ALPHA_SAY
-
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
@@ -25,7 +23,6 @@ namespace djack.RogueSurvivor.Data
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
-#if ALPHA_SAY
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
@@ -42,7 +39,6 @@ namespace djack.RogueSurvivor.Data
       base.LeaveControl();
       Actor.Says -= HandleSay;
     }
-#endif
 
     public bool LastSeen(Location x, out int turn) { return m_itemMemory.HaveEverSeen(x,out turn); }
 
@@ -86,7 +82,6 @@ namespace djack.RogueSurvivor.Data
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }
 
-#if ALPHA_SAY
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);
@@ -112,6 +107,5 @@ namespace djack.RogueSurvivor.Data
       RogueForm.Game.RemoveLastMessage();
       RogueForm.Game.RedrawPlayScreen();
     }
-#endif
-    }
+  }
 }
