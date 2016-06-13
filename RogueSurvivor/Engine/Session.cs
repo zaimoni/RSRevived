@@ -160,6 +160,10 @@ namespace djack.RogueSurvivor.Engine
       return m_CommandLineOptions.ContainsKey(x);
     }
 
+    public void ForcePoliceKnown(Location x) {   // for world creation
+      m_PoliceItemMemory.Set(x, null, 0);
+    }
+
     public bool HasRaidHappened(RaidType raid, District district)
     {
       if (district == null) throw new ArgumentNullException("district");

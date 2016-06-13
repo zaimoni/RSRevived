@@ -23,29 +23,40 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = base.Generate(seed);
       map.Name = "Std City";
       int maxTries = 10 * map.Width * map.Height;
+      bool have_placed_cop = false;
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index)
       {
         if (m_DiceRoller.RollChance(Params.PolicemanChance))
         {
           Actor newPoliceman = CreateNewPoliceman(0);
-                    ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+          if (ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside))) have_placed_cop = true;
         }
         else
         {
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
-                    ActorPlace(m_DiceRoller, maxTries, map, newCivilian, (Predicate<Point>) (pt => map.GetTileAt(pt.X, pt.Y).IsInside));
+          ActorPlace(m_DiceRoller, maxTries, map, newCivilian, (Predicate<Point>) (pt => map.GetTileAt(pt.X, pt.Y).IsInside));
         }
       }
       for (int index = 0; index < RogueGame.Options.MaxDogs; ++index)
       {
         Actor newFeralDog = CreateNewFeralDog(0);
-                ActorPlace(m_DiceRoller, maxTries, map, newFeralDog, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+        ActorPlace(m_DiceRoller, maxTries, map, newFeralDog, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
       }
       int num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
       for (int index = 0; index < num; ++index)
       {
         Actor newUndead = CreateNewUndead(0);
-                ActorPlace(m_DiceRoller, maxTries, map, newUndead, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+        ActorPlace(m_DiceRoller, maxTries, map, newUndead, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+      }
+      // successfully placing a cop means the police faction knows all outside squares (map revealing effect)
+      if (have_placed_cop) {
+        Point pos = new Point(0);
+        for (pos.X = 0; pos.X < map.Width; ++pos.X) {
+          for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
+            if (map.GetTileAt(pos.X, pos.Y).IsInside) continue;
+            Session.Get.ForcePoliceKnown(new Location(map,pos));
+          }
+        }
       }
       return map;
     }
