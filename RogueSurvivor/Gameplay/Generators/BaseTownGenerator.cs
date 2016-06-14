@@ -173,87 +173,105 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public virtual Map GenerateSewersMap(int seed, District district)
     {
-            m_DiceRoller = new DiceRoller(seed);
+      m_DiceRoller = new DiceRoller(seed);
       Map sewers = new Map(seed, "sewers", district.EntryMap.Width, district.EntryMap.Height)
       {
         Lighting = Lighting.DARKNESS
       };
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
-            TileFill(sewers, m_Game.GameTiles.WALL_SEWER);
+      TileFill(sewers, m_Game.GameTiles.WALL_SEWER);
+
+      ///////////////////////////////////////////////////
+      // 1. Make blocks.
+      // 2. Make tunnels.
+      // 3. Link with surface.
+      // 4. Additional jobs.
+      // 5. Sewers Maintenance Room & Building(surface).
+      // 6. Some rooms.
+      // 7. Objects.
+      // 8. Items.
+      // 9. Tags.
+      ///////////////////////////////////////////////////
+
       Map surface = district.EntryMap;
+
+      // 1. Make blocks.
       List<BaseTownGenerator.Block> list = new List<BaseTownGenerator.Block>(m_SurfaceBlocks.Count);
-            MakeBlocks(sewers, false, ref list, new Rectangle(0, 0, sewers.Width, sewers.Height));
+      MakeBlocks(sewers, false, ref list, new Rectangle(0, 0, sewers.Width, sewers.Height));
+
+#region 2. Make tunnels.
       foreach (BaseTownGenerator.Block block in list)
-                TileRectangle(sewers, m_Game.GameTiles.FLOOR_SEWER_WATER, block.Rectangle);
-      foreach (BaseTownGenerator.Block block in list)
-      {
-        if (m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE))
-        {
-          bool flag = false;
-          int x1;
-          int y1;
-          int x2;
-          int y2;
-          do
+        TileRectangle(sewers, m_Game.GameTiles.FLOOR_SEWER_WATER, block.Rectangle);
+      foreach (BaseTownGenerator.Block block in list) {
+        if (!m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE)) continue;
+        bool flag = false;
+        int x1;
+        int y1;
+        int x2;
+        int y2;
+        do {
+          int num = m_DiceRoller.Roll(0, 4);
+          switch (num)
           {
-            int num = m_DiceRoller.Roll(0, 4);
-            switch (num)
-            {
-              case 0:
-              case 1:
-                x1 = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
-                y1 = num == 0 ? block.Rectangle.Top : block.Rectangle.Bottom - 1;
-                x2 = x1;
-                y2 = num == 0 ? y1 - 1 : y1 + 1;
-                break;
-              case 2:
-              case 3:
-                x1 = num == 2 ? block.Rectangle.Left : block.Rectangle.Right - 1;
-                y1 = m_DiceRoller.Roll(block.Rectangle.Top, block.Rectangle.Bottom - 1);
-                x2 = num == 2 ? x1 - 1 : x1 + 1;
-                y2 = y1;
-                break;
-              default:
-                throw new ArgumentOutOfRangeException("unhandled roll");
-            }
-            if (!sewers.IsOnMapBorder(x1, y1) && !sewers.IsOnMapBorder(x2, y2) && (CountAdjWalls(sewers, x1, y1) == 3 && CountAdjWalls(sewers, x2, y2) == 3))
-              flag = true;
+            case 0:
+            case 1:
+              x1 = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
+              y1 = num == 0 ? block.Rectangle.Top : block.Rectangle.Bottom - 1;
+              x2 = x1;
+              y2 = num == 0 ? y1 - 1 : y1 + 1;
+              break;
+            case 2:
+            case 3:
+              x1 = num == 2 ? block.Rectangle.Left : block.Rectangle.Right - 1;
+              y1 = m_DiceRoller.Roll(block.Rectangle.Top, block.Rectangle.Bottom - 1);
+              x2 = num == 2 ? x1 - 1 : x1 + 1;
+              y2 = y1;
+              break;
+            default:
+              throw new ArgumentOutOfRangeException("unhandled roll");
           }
-          while (!flag);
-                    MapObjectPlace(sewers, x1, y1, MakeObjIronFence("MapObjects\\iron_fence"));
-                    MapObjectPlace(sewers, x2, y2, MakeObjIronFence("MapObjects\\iron_fence"));
+          if (!sewers.IsOnMapBorder(x1, y1) && !sewers.IsOnMapBorder(x2, y2) && (CountAdjWalls(sewers, x1, y1) == 3 && CountAdjWalls(sewers, x2, y2) == 3))
+            flag = true;
         }
+        while (!flag);
+        MapObjectPlace(sewers, x1, y1, MakeObjIronFence("MapObjects\\iron_fence"));
+        MapObjectPlace(sewers, x2, y2, MakeObjIronFence("MapObjects\\iron_fence"));
       }
-      int num1 = 0;
-      do
-      {
-        for (int x = 0; x < sewers.Width; ++x)
-        {
-          for (int y = 0; y < sewers.Height; ++y)
-          {
-            if (m_DiceRoller.RollChance(3) && sewers.GetTileAt(x, y).Model.IsWalkable)
-            {
+#endregion
+
+#region 3. Link with surface.
+      int countLinks = 0;
+      do {
+        for (int x = 0; x < sewers.Width; ++x) {
+          for (int y = 0; y < sewers.Height; ++y) {
+            if (m_DiceRoller.RollChance(3) && sewers.GetTileAt(x, y).Model.IsWalkable) {
               Tile tileAt = surface.GetTileAt(x, y);
               if (tileAt.Model.IsWalkable && sewers.GetMapObjectAt(x, y) == null && !tileAt.IsInside && ((tileAt.Model == m_Game.GameTiles.FLOOR_WALKWAY || tileAt.Model == m_Game.GameTiles.FLOOR_GRASS) && surface.GetMapObjectAt(x, y) == null))
               {
                 Point point = new Point(x, y);
                 if (!sewers.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => sewers.GetExitAt(p) != null)) && !surface.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => surface.GetExitAt(p) != null)))
                 {
-                                    AddExit(sewers, point, surface, point, "Tiles\\Decoration\\sewer_ladder", true);
-                                    AddExit(surface, point, sewers, point, "Tiles\\Decoration\\sewer_hole", true);
-                  ++num1;
+                  AddExit(sewers, point, surface, point, "Tiles\\Decoration\\sewer_ladder", true);
+                  AddExit(surface, point, sewers, point, "Tiles\\Decoration\\sewer_hole", true);
+                  ++countLinks;
                 }
               }
             }
           }
         }
       }
-      while (num1 < 1);
+      while (countLinks < 1);
+#endregion
+
+#region 4. Additional jobs.
       for (int x = 0; x < sewers.Width; ++x)
       {
         for (int y = 0; y < sewers.Height; ++y)
           sewers.GetTileAt(x, y).IsInside = true;
       }
+#endregion
+
+#region 5. Sewers Maintenance Room & Building(surface).
       List<BaseTownGenerator.Block> blockList = (List<BaseTownGenerator.Block>) null;
       foreach (BaseTownGenerator.Block mSurfaceBlock in m_SurfaceBlocks)
       {
@@ -295,6 +313,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         BaseTownGenerator.Block b2 = new BaseTownGenerator.Block(block.Rectangle);
                 MakeSewersMaintenanceBuilding(sewers, false, b2, surface, exitPosition);
       }
+#endregion
+
+#region 6. Some rooms.
       foreach (BaseTownGenerator.Block block in list)
       {
         if (m_DiceRoller.RollChance(SEWERS_ROOM_CHANCE) && CheckForEachTile(sewers, block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileAt(pt).Model.IsWalkable)))
@@ -343,18 +364,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           sewers.AddZone(MakeUniqueZone("room", block.InsideRect));
         }
       }
-            MapObjectFill(sewers, new Rectangle(0, 0, sewers.Width, sewers.Height), (Func<Point, MapObject>) (pt =>
+#endregion
+
+#region 7. Objects.
+      MapObjectFill(sewers, new Rectangle(0, 0, sewers.Width, sewers.Height), (Func<Point, MapObject>) (pt =>
       {
-        if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE))
-          return (MapObject) null;
-        if (!sewers.IsWalkable(pt.X, pt.Y))
-          return (MapObject) null;
+        if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE)) return null;
+        if (!sewers.IsWalkable(pt.X, pt.Y)) return null;
         return MakeObjJunk("MapObjects\\junk");
       }));
-      for (int x = 0; x < sewers.Width; ++x)
-      {
-        for (int y = 0; y < sewers.Height; ++y)
-        {
+#endregion
+
+#region 8. Items.
+      for (int x = 0; x < sewers.Width; ++x) {
+        for (int y = 0; y < sewers.Height; ++y) {
           if (m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE) && sewers.IsWalkable(x, y))
           {
             Item it;
@@ -376,10 +399,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
-      for (int x = 0; x < sewers.Width; ++x)
-      {
-        for (int y = 0; y < sewers.Height; ++y)
-        {
+#endregion
+
+#region 9. Tags.
+      for (int x = 0; x < sewers.Width; ++x) {
+        for (int y = 0; y < sewers.Height; ++y) {
           if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE))
           {
             Tile tileAt = sewers.GetTileAt(x, y);
@@ -388,6 +412,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
+#endregion
       return sewers;
     }
 
