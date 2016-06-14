@@ -409,17 +409,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       /////////////////////////////////////
 
 #region 1. Trace rail line.
+      // rail line is 4 squares high (does not scale until close to 900 turns/hour)
+      // reseruved coordinates are y1 to y1+3 inclusive, so subway.Width/2-1 to subway.Width/2+2
       Map entryMap = district.EntryMap;
-      int x1 = 0;
-      int num1 = subway.Width - 1;
-      int y1 = subway.Width / 2 - 1;
-      int height = 4;
-      for (int x2 = x1; x2 <= num1; ++x2)
+      int railY = subway.Width / 2 - 1;
+      const int height = 4;
+      for (int x2 = 0; x2 < subway.Width; ++x2)
       {
-        for (int y2 = y1; y2 < y1 + height; ++y2)
+        for (int y2 = railY; y2 < railY + height; ++y2)
           subway.SetTileModelAt(x2, y2, m_Game.GameTiles.RAIL_EW);
       }
-      subway.AddZone(MakeUniqueZone("rails", new Rectangle(x1, y1, num1 - x1 + 1, height)));
+      subway.AddZone(MakeUniqueZone("rails", new Rectangle(0, railY, subway.Width, height)));
 #endregion
 
 #region 2. Make station linked to surface.
@@ -428,16 +428,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2 && (mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 && !IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)))
         {
-          bool flag = true;
-          int num2 = 8;
-          for (int x2 = mSurfaceBlock.Rectangle.Left - num2; x2 < mSurfaceBlock.Rectangle.Right + num2 && flag; ++x2)
-          {
-            for (int y2 = mSurfaceBlock.Rectangle.Top - num2; y2 < mSurfaceBlock.Rectangle.Bottom + num2 && flag; ++y2)
-            {
-              if (subway.IsInBounds(x2, y2) && subway.GetTileAt(x2, y2).Model.IsWalkable)
-                flag = false;
-            }
-          }
+           // unclear whether this scales with turns per hour.
+           // If anything, at high magnifications we may need to not be "too far" from the rails either
+          const int minDistToRails = 8;
+          bool flag = false;
+          // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
+          // at district size 50: railY 24, upper bound 27; 38 should pass
+          // we want a simple interval-does-not-intersect test
+          if (mSurfaceBlock.Rectangle.Top - minDistToRails > railY-1+height) flag = true;  // top below critical y
+          if (mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 < railY) flag = true;   // bottom above critical y
           if (flag)
           {
             if (blockList == null)
@@ -461,6 +460,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
 #endregion
 #region 3.  Small tools room.
+      const int toolsRoomWidth = 5;
+      const int toolsRoomHeight = 5;
       Direction direction = m_DiceRoller.RollChance(50) ? Direction.N : Direction.S;
       Rectangle rect = Rectangle.Empty;
       bool flag1 = false;
@@ -468,10 +469,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       do
       {
         int x2 = m_DiceRoller.Roll(10, subway.Width - 10);
-        int y2 = direction == Direction.N ? y1 - 1 : y1 + height;
+        int y2 = direction == Direction.N ? railY - 1 : railY + height;
         if (!subway.GetTileAt(x2, y2).Model.IsWalkable)
         {
-          rect = direction != Direction.N ? new Rectangle(x2, y2, 5, 5) : new Rectangle(x2, y2 - 5 + 1, 5, 5);
+          rect = direction != Direction.N ? new Rectangle(x2, y2, toolsRoomWidth, toolsRoomHeight) : new Rectangle(x2, y2 - toolsRoomHeight + 1, toolsRoomWidth, toolsRoomHeight);
           flag1 = CheckForEachTile(subway, rect, (Predicate<Point>) (pt => !subway.GetTileAt(pt).Model.IsWalkable));
         }
         ++num3;

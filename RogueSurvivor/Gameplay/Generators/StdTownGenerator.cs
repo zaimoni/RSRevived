@@ -48,6 +48,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Actor newUndead = CreateNewUndead(0);
         ActorPlace(m_DiceRoller, maxTries, map, newUndead, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
       }
+#if FAIL
+      / NOTE: this is too early, the map's district is not set
       // successfully placing a cop means the police faction knows all outside squares (map revealing effect)
       if (have_placed_cop) {
         Point pos = new Point(0);
@@ -58,6 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
+#endif
       return map;
     }
 
@@ -71,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         for (int index = 0; index < num; ++index)
         {
           Actor newSewersUndead = CreateNewSewersUndead(0);
-                    ActorPlace(m_DiceRoller, maxTries, sewersMap, newSewersUndead);
+          ActorPlace(m_DiceRoller, maxTries, sewersMap, newSewersUndead);
         }
       }
       return sewersMap;
