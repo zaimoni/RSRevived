@@ -413,6 +413,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
 #endregion
+
+      sewers.Name = string.Format("Sewers@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
+      district.SewersMap = sewers;
       return sewers;
     }
 
@@ -544,6 +547,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         for (int y2 = 0; y2 < subway.Height; ++y2)
           subway.GetTileAt(x2, y2).IsInside = true;
       }
+
+      subway.Name = string.Format("Subway@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
+      district.SubwayMap = subway;
       return subway;
     }
 

@@ -13365,16 +13365,12 @@ namespace djack.RogueSurvivor.Engine
 
     private void GenerateDistrictSewersMap(District district)
     {
-      Map sewersMap = m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
-      sewersMap.Name = string.Format("Sewers@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
-      district.SewersMap = sewersMap;
+      m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
     }
 
     private void GenerateDistrictSubwayMap(District district)
     {
-      Map subwayMap = m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
-      subwayMap.Name = string.Format("Subway@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
-      district.SubwayMap = subwayMap;
+      m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
     }
 
     private void GeneratePlayerOnMap(Map map, BaseTownGenerator townGen)
