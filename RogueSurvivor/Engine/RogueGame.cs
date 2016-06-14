@@ -12831,10 +12831,8 @@ namespace djack.RogueSurvivor.Engine
           // All map generation types should have an entry map so that is sort-of-ok to have as a member function of District
           district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, RogueGame.s_Options.DistrictSize, m_TownGenerator);
           // other (hypothetical) map generation types are not guaranteed to have sewers or subways so leave those where they are
-          district.SewersMap = GenerateDistrictSewersMap(district);
-          if (index2 == world.Size / 2) {
-            district.SubwayMap = GenerateDistrictSubwayMap(district);
-          }
+          GenerateDistrictSewersMap(district);
+          if (index2 == world.Size / 2) GenerateDistrictSubwayMap(district);
         }
       }
       if (isVerbose) {
@@ -13365,18 +13363,18 @@ namespace djack.RogueSurvivor.Engine
       return (DistrictKind) m_Rules.Roll(0, (int) DistrictKind._COUNT);
     }
 
-    private Map GenerateDistrictSewersMap(District district)
+    private void GenerateDistrictSewersMap(District district)
     {
       Map sewersMap = m_TownGenerator.GenerateSewersMap(district.EntryMap.Seed << 1 ^ district.EntryMap.Seed, district);
       sewersMap.Name = string.Format("Sewers@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
-      return sewersMap;
+      district.SewersMap = sewersMap;
     }
 
-    private Map GenerateDistrictSubwayMap(District district)
+    private void GenerateDistrictSubwayMap(District district)
     {
       Map subwayMap = m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
       subwayMap.Name = string.Format("Subway@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
-      return subwayMap;
+      district.SubwayMap = subwayMap;
     }
 
     private void GeneratePlayerOnMap(Map map, BaseTownGenerator townGen)
