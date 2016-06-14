@@ -393,12 +393,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public virtual Map GenerateSubwayMap(int seed, District district)
     {
-            m_DiceRoller = new DiceRoller(seed);
+      m_DiceRoller = new DiceRoller(seed);
       Map subway = new Map(seed, "subway", district.EntryMap.Width, district.EntryMap.Height)
       {
         Lighting = Lighting.DARKNESS
       };
-            TileFill(subway, m_Game.GameTiles.WALL_BRICK);
+      TileFill(subway, m_Game.GameTiles.WALL_BRICK);
+
+      /////////////////////////////////////
+      // 1. Trace rail line.
+      // 2. Make station linked to surface?
+      // 3. Small tools room.
+      // 4. Tags & Posters almost everywhere.
+      // 5. Additional jobs.
+      /////////////////////////////////////
+
+#region 1. Trace rail line.
       Map entryMap = district.EntryMap;
       int x1 = 0;
       int num1 = subway.Width - 1;
@@ -410,6 +420,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           subway.SetTileModelAt(x2, y2, m_Game.GameTiles.RAIL_EW);
       }
       subway.AddZone(MakeUniqueZone("rails", new Rectangle(x1, y1, num1 - x1 + 1, height)));
+#endregion
+
+#region 2. Make station linked to surface.
       List<BaseTownGenerator.Block> blockList = (List<BaseTownGenerator.Block>) null;
       foreach (BaseTownGenerator.Block mSurfaceBlock in m_SurfaceBlocks)
       {
@@ -446,6 +459,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         BaseTownGenerator.Block b2 = new BaseTownGenerator.Block(block.Rectangle);
                 MakeSubwayStationBuilding(subway, false, b2, entryMap, exitPosition);
       }
+#endregion
+#region 3.  Small tools room.
       Direction direction = m_DiceRoller.RollChance(50) ? Direction.N : Direction.S;
       Rectangle rect = Rectangle.Empty;
       bool flag1 = false;
@@ -476,6 +491,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           subway.DropItemAt(MakeShopConstructionItem(), pt);
         }));
       }
+#endregion
+#region 4. Tags & Posters almost everywhere.
       for (int x2 = 0; x2 < subway.Width; ++x2)
       {
         for (int y2 = 0; y2 < subway.Height; ++y2)
@@ -493,6 +510,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
+#endregion
+      // 5. Additional jobs.
+      // Mark all the map as inside.
       for (int x2 = 0; x2 < subway.Width; ++x2)
       {
         for (int y2 = 0; y2 < subway.Height; ++y2)
