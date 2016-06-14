@@ -195,7 +195,7 @@ namespace djack.RogueSurvivor.Gameplay
         }
       }
     }
-
+    
     public enum IDs
     {
       TheCHARCorporation = 0,

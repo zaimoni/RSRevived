@@ -467,6 +467,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // tracking players on map
     public List<Actor> Players { 
       get {
         if (null != m_aux_Players) return m_aux_Players;
@@ -491,6 +492,18 @@ namespace djack.RogueSurvivor.Data
       get {
         if (0 == Players.Count) return null;
         return Players[0];
+      }
+    }
+
+    // police on map
+    public List<Actor> Police { 
+      get {
+        List<Actor> police = new List<Actor>(m_ActorsList.Count);
+        foreach(Actor tmp in m_ActorsList) { 
+          if ((int)Gameplay.GameFactions.IDs.ThePolice==tmp.Faction.ID && !tmp.IsDead) police.Add(tmp);
+        }
+        police.TrimExcess();
+        return 0 < police.Count ? police : null;
       }
     }
 

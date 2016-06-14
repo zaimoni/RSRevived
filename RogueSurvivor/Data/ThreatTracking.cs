@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
+    [Serializable]
     class ThreatTracking
     {
         private Dictionary<Actor, Zaimoni.Data.DenormalizedProbability<Location>> _threats;

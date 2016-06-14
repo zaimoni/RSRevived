@@ -48,19 +48,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Actor newUndead = CreateNewUndead(0);
         ActorPlace(m_DiceRoller, maxTries, map, newUndead, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
       }
-#if FAIL
-      / NOTE: this is too early, the map's district is not set
-      // successfully placing a cop means the police faction knows all outside squares (map revealing effect)
-      if (have_placed_cop) {
-        Point pos = new Point(0);
-        for (pos.X = 0; pos.X < map.Width; ++pos.X) {
-          for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
-            if (map.GetTileAt(pos.X, pos.Y).IsInside) continue;
-            Session.Get.ForcePoliceKnown(new Location(map,pos));
-          }
-        }
-      }
-#endif
       return map;
     }
 
