@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Engine
       return p;
     }
 
-    public void DoForEachTile(Map map, Rectangle rect, Action<Point> doFn)
+    public void DoForEachTile(Rectangle rect, Action<Point> doFn)
     {
       if (doFn == null) throw new ArgumentNullException("doFn");
       Point point = new Point();
@@ -153,7 +153,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public bool CheckForEachTile(Map map, Rectangle rect, Predicate<Point> predFn)
+    public bool CheckForEachTile(Rectangle rect, Predicate<Point> predFn)
     {
       if (predFn == null) throw new ArgumentNullException("predFn");
       Point point = new Point();
