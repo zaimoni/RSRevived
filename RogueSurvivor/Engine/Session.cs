@@ -6,6 +6,8 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -18,7 +20,7 @@ namespace djack.RogueSurvivor.Engine
   internal class Session : ISerializable
   {
     public static int COMMAND_LINE_SEED = 0;
-    public static System.Collections.Generic.Dictionary<string, string> CommandLineOptions = new System.Collections.Generic.Dictionary<string, string>();
+    public static Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession;
 
     private WorldTime m_WorldTime;
@@ -74,7 +76,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Session()
     {
-      m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new System.Collections.Generic.Dictionary<string, string>(Session.CommandLineOptions)));
+      m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
       m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
       m_PoliceThreatTracking = new ThreatTracking();
       Reset();
@@ -160,8 +162,11 @@ namespace djack.RogueSurvivor.Engine
       return m_CommandLineOptions.ContainsKey(x);
     }
 
-    public void ForcePoliceKnown(Location x) {   // for world creation
-      m_PoliceItemMemory.Set(x, null, 0);
+    public void ForcePoliceKnown(Location loc) {   // for world creation
+      Inventory tmp = loc.Map.GetItemsAt(loc.Position);
+      if (0 >= tmp.CountItems) tmp = null;
+      HashSet<Gameplay.GameItems.IDs> seen_items = (null == tmp ? null : new HashSet<Gameplay.GameItems.IDs>(tmp.Items.Select(x => x.Model.ID)));
+      m_PoliceItemMemory.Set(loc, seen_items, 0);
     }
 
     public bool HasRaidHappened(RaidType raid, District district)
