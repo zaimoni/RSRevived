@@ -43,33 +43,66 @@ namespace djack.RogueSurvivor.Data
       return tmpFOV.Contains(x.Position);
     }
 
-#if FAIL
-    public Dictionary<Location,int> VisibleMaximumDamage()
+    public Dictionary<Point,int> VisibleMaximumDamage()
     {
       if (null == m_Actor) return null;
       if (null == m_Actor.Location.Map) return null;    // Duckman
       HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
       if (null == tmpFOV) return null;
-      Dictionary<Location,int> ret = new Dictionary<Location,int>();
+      Dictionary<Point,int> ret = new Dictionary<Point,int>();
       foreach(Point tmp in tmpFOV) {
         if (tmp == m_Actor.Location.Position) continue;
         Actor a = m_Actor.Location.Map.GetActorAt(tmp);
         if (null == a) continue;
-        if (!IsEnemyOf(m_Actor,a)) continue;
+        if (!RogueForm.Game.Rules.IsEnemyOf(m_Actor,a)) continue;
         if (!a.CanActNextTurn) continue;
-        HashSet<Point> aFOV = a.FOV;
-        // get: maximum melee damage
-        // get: maximum ranged damage
-        // range 1: maximum of max damages
-        Location test = new Location(m_Actor.Location.Map,tmp);
-
+        HashSet<Point> aFOV = a.Controller.FOV;
+        if (null == aFOV) continue;
+        // maximum melee damage: a.CurrentMeleeAttack.DamageValue
+        // maximum ranged damage: a.CurrentRangedAttack.DamageValue
+        // we can do better than these
+        if (RogueForm.Game.Rules.WillOtherActTwiceBefore(m_Actor, a)) {
+          foreach(Point tmp2 in aFOV) {
+            if (tmp2 == a.Location.Position) continue;
+            int dist = Rules.GridDistance(tmp2,a.Location.Position);
+            int max_dam = 0;
+            if (1 == dist) {
+               max_dam = 2*a.CurrentMeleeAttack.DamageValue;
+            } else if (2 == dist) {
+               max_dam = a.CurrentMeleeAttack.DamageValue;
+            }
+        
+            if (dist <= a.CurrentRangedAttack.Range && max_dam < 2*a.CurrentRangedAttack.DamageValue) {
+              max_dam = 2*a.CurrentRangedAttack.DamageValue;
+            } else if (dist == a.CurrentRangedAttack.Range+1 && max_dam < a.CurrentRangedAttack.DamageValue) {
+              max_dam = a.CurrentRangedAttack.DamageValue;
+            }
+            if (0 < max_dam) {
+              if (ret.ContainsKey(tmp2)) ret[tmp2] += max_dam;
+              else ret[tmp2] = max_dam;
+            }
+          }
+        } else {
+          foreach(Point tmp2 in aFOV) {
+            if (tmp2 == a.Location.Position) continue;
+            int dist = Rules.GridDistance(tmp2,a.Location.Position);
+            int max_dam = 0;
+            if (1 == dist) max_dam = a.CurrentMeleeAttack.DamageValue;
+            if (dist <= a.CurrentRangedAttack.Range && max_dam < a.CurrentRangedAttack.DamageValue) {
+              max_dam = a.CurrentRangedAttack.DamageValue;
+            }
+            if (0 < max_dam) {
+              if (ret.ContainsKey(tmp2)) ret[tmp2] += max_dam;
+              else ret[tmp2] = max_dam;
+            }
+          }
+        }
       }
       if (0 == ret.Count) return null;
       return ret;
     }
-#endif
 
-        public abstract ActorAction GetAction(RogueGame game);
+    public abstract ActorAction GetAction(RogueGame game);
 
     // savegame support
     public virtual void OptimizeBeforeSaving() { }  // override this if there are memorized sensors
