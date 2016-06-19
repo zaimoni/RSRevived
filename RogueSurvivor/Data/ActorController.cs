@@ -43,7 +43,33 @@ namespace djack.RogueSurvivor.Data
       return tmpFOV.Contains(x.Position);
     }
 
-    public abstract ActorAction GetAction(RogueGame game);
+#if FAIL
+    public Dictionary<Location,int> VisibleMaximumDamage()
+    {
+      if (null == m_Actor) return null;
+      if (null == m_Actor.Location.Map) return null;    // Duckman
+      HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
+      if (null == tmpFOV) return null;
+      Dictionary<Location,int> ret = new Dictionary<Location,int>();
+      foreach(Point tmp in tmpFOV) {
+        if (tmp == m_Actor.Location.Position) continue;
+        Actor a = m_Actor.Location.Map.GetActorAt(tmp);
+        if (null == a) continue;
+        if (!IsEnemyOf(m_Actor,a)) continue;
+        if (!a.CanActNextTurn) continue;
+        HashSet<Point> aFOV = a.FOV;
+        // get: maximum melee damage
+        // get: maximum ranged damage
+        // range 1: maximum of max damages
+        Location test = new Location(m_Actor.Location.Map,tmp);
+
+      }
+      if (0 == ret.Count) return null;
+      return ret;
+    }
+#endif
+
+        public abstract ActorAction GetAction(RogueGame game);
 
     // savegame support
     public virtual void OptimizeBeforeSaving() { }  // override this if there are memorized sensors
