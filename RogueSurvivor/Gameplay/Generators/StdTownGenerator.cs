@@ -23,13 +23,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = base.Generate(seed);
       map.Name = "Std City";
       int maxTries = 10 * map.Width * map.Height;
-      bool have_placed_cop = false;
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index)
       {
         if (m_DiceRoller.RollChance(Params.PolicemanChance))
         {
           Actor newPoliceman = CreateNewPoliceman(0);
-          if (ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside))) have_placed_cop = true;
+          ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
         }
         else
         {

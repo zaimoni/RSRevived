@@ -18,9 +18,8 @@ namespace djack.RogueSurvivor.Engine
 
     public MapGenerator(Rules rules)
     {
-      if (rules == null)
-        throw new ArgumentNullException("rules");
-            m_Rules = rules;
+      if (rules == null) throw new ArgumentNullException("rules");
+      m_Rules = rules;
     }
 
     public abstract Map Generate(int seed);

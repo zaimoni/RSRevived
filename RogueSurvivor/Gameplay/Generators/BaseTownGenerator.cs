@@ -100,21 +100,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public override Map Generate(int seed)
     {
-            m_DiceRoller = new DiceRoller(seed);
+      m_DiceRoller = new DiceRoller(seed);
       Map map = new Map(seed, "Base City", m_Params.MapWidth, m_Params.MapHeight);
-            TileFill(map, m_Game.GameTiles.FLOOR_GRASS);
+      map.District = m_Params.District;
+
+      TileFill(map, m_Game.GameTiles.FLOOR_GRASS);
       List<BaseTownGenerator.Block> list = new List<BaseTownGenerator.Block>();
       Rectangle rect = new Rectangle(0, 0, map.Width, map.Height);
-            MakeBlocks(map, true, ref list, rect);
+      MakeBlocks(map, true, ref list, rect);
       List<BaseTownGenerator.Block> blockList1 = new List<BaseTownGenerator.Block>((IEnumerable<BaseTownGenerator.Block>) list);
       List<BaseTownGenerator.Block> blockList2 = new List<BaseTownGenerator.Block>(blockList1.Count);
-            m_SurfaceBlocks = new List<BaseTownGenerator.Block>(list.Count);
+      m_SurfaceBlocks = new List<BaseTownGenerator.Block>(list.Count);
       foreach (BaseTownGenerator.Block copyFrom in list)
-                m_SurfaceBlocks.Add(new BaseTownGenerator.Block(copyFrom));
+        m_SurfaceBlocks.Add(new BaseTownGenerator.Block(copyFrom));
       if (m_Params.GeneratePoliceStation)
       {
         BaseTownGenerator.Block policeBlock;
-                MakePoliceStation(map, list, out policeBlock);
+        MakePoliceStation(map, list, out policeBlock);
         blockList1.Remove(policeBlock);
       }
       if (m_Params.GenerateHospital)
@@ -2607,20 +2609,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       policeBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
       Point stairsToLevel1;
-            GeneratePoliceStation(map, policeBlock, out stairsToLevel1);
+      GeneratePoliceStation(map, policeBlock, out stairsToLevel1);
       Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map, policeBlock, stairsToLevel1);
       Map stationJailsLevel = GeneratePoliceStation_JailsLevel(stationOfficesLevel);
-            AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), "Tiles\\Decoration\\stairs_down", true);
-            AddExit(stationOfficesLevel, new Point(1, 1), map, stairsToLevel1, "Tiles\\Decoration\\stairs_up", true);
-            AddExit(stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), stationJailsLevel, new Point(1, 1), "Tiles\\Decoration\\stairs_down", true);
-            AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), "Tiles\\Decoration\\stairs_up", true);
-            m_Params.District.AddUniqueMap(stationOfficesLevel);
-            m_Params.District.AddUniqueMap(stationJailsLevel);
-            m_Game.Session.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap()
+      AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), "Tiles\\Decoration\\stairs_down", true);
+      AddExit(stationOfficesLevel, new Point(1, 1), map, stairsToLevel1, "Tiles\\Decoration\\stairs_up", true);
+      AddExit(stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), stationJailsLevel, new Point(1, 1), "Tiles\\Decoration\\stairs_down", true);
+      AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), "Tiles\\Decoration\\stairs_up", true);
+      m_Params.District.AddUniqueMap(stationOfficesLevel);
+      m_Params.District.AddUniqueMap(stationJailsLevel);
+      m_Game.Session.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap()
       {
         TheMap = stationOfficesLevel
       };
-            m_Game.Session.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap()
+      m_Game.Session.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap()
       {
         TheMap = stationJailsLevel
       };
@@ -2631,7 +2633,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, policeBlock.InsideRect);
       TileRectangle(surfaceMap, m_Game.GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, m_Game.GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
-      DoForEachTile(policeBlock.InsideRect, (Action<Point>) (pt => surfaceMap.GetTileAt(pt).IsInside = true));
+      DoForEachTile(policeBlock.InsideRect,(Action<Point>)(pt => {
+          surfaceMap.GetTileAt(pt).IsInside = true;
+          Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt));
+      }));
       Point point = new Point(policeBlock.BuildingRect.Left + policeBlock.BuildingRect.Width / 2, policeBlock.BuildingRect.Bottom - 1);
       surfaceMap.GetTileAt(point.X - 1, point.Y).AddDecoration("Tiles\\Decoration\\police_station");
       surfaceMap.GetTileAt(point.X + 1, point.Y).AddDecoration("Tiles\\Decoration\\police_station");
@@ -2656,6 +2661,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS
       };
+      map.District = surfaceMap.District;
+
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
       TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
@@ -2741,6 +2748,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Actor newPoliceman = CreateNewPoliceman(0);
                 ActorPlace(m_DiceRoller, map.Width * map.Height, map, newPoliceman);
       }
+      DoForEachTile(map.Rect, (Action<Point>)(pt => {
+          Session.Get.ForcePoliceKnown(new Location(map, pt));
+      }));
       return map;
     }
 
@@ -2750,6 +2760,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS
       };
+      map.District = surfaceMap.District;
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
       TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
@@ -2792,6 +2803,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         TheActor = newCivilian1,
         IsSpawned = true
       };
+      DoForEachTile(map.Rect, (Action<Point>)(pt => {
+          Session.Get.ForcePoliceKnown(new Location(map, pt));
+      }));
       return map;
     }
 
