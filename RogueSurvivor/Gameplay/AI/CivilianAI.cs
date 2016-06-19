@@ -252,6 +252,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // all free actions must be above the enemies check
+      // \todo melee risk management check
+      // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
+      // count how many attacks we may take
+      // 0: ok
+      // 1: ok if good chance of one-shotting and no speed advantage
+      // 2+: bad
+
       if (null != enemies && Directives.CanFireWeapons && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
       {
         List<Percept> percepts2 = FilterFireTargets(game, enemies);
