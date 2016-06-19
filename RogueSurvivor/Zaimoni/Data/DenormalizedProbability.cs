@@ -10,6 +10,8 @@ namespace Zaimoni.Data
     // Note that we are still probability rather than quasiprobability; thus, negative values
     // are illegal.
     // Default value if no key is zero.
+
+    [Serializable]
     class DenormalizedProbability<T>
     {
         private Dictionary<T, float> _weights;

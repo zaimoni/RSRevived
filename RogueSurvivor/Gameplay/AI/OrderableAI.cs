@@ -21,6 +21,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     private const int EMOTE_GRAB_ITEM_CHANCE = 30;
 
+    // OrderableAI subsumes all close-to-normal livings.  The Police Faction AI needs the following capabilities
+    // * sweep district for threat
+    // * explore
+    // * pick up Y at X
+    // * do Y at X (e.g., turn on generators)
+    // * drop Y at X
+    // * do Y at X at time T (e.g., sleep; be in position for invasion)
+
+    // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorOrder m_Order;
     protected Percept m_LastEnemySaw;
     protected Percept m_LastItemsSaw;
