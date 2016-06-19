@@ -458,7 +458,7 @@ namespace djack.RogueSurvivor.Data
         int countActors = m_ActorsList.Count;
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
           Actor actor = m_ActorsList[checkNextActorIndex];
-          if (actor.ActionPoints > 0 && !actor.IsSleeping) {
+          if (actor.CanActThisTurn && !actor.IsSleeping) {
             m_iCheckNextActorIndex = checkNextActorIndex;
             return actor;
           }

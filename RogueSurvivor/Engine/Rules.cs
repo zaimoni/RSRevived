@@ -1822,23 +1822,6 @@ namespace djack.RogueSurvivor.Engine
       return (float) Math.Sqrt(0.75 * (double) (num1 * num1 + num2 * num2));
     }
 
-    public bool CanActorActThisTurn(Actor actor)
-    {
-      if (actor == null) return false;
-      return actor.ActionPoints > 0;
-    }
-
-    public bool CanActorActNextTurn(Actor actor)
-    {
-      if (actor == null) return false;
-      return actor.ActionPoints + actor.Speed > 0;
-    }
-
-    public bool WillActorActAgainBefore(Actor actor, Actor other)
-    {
-      return other.ActionPoints <= 0 && (other.ActionPoints + other.Speed <= 0 || actor.IsBefore(other));
-    }
-
     public bool WillOtherActTwiceBefore(Actor actor, Actor other)
     {
       if (actor.IsBefore(other)) return other.ActionPoints > BASE_ACTION_COST;

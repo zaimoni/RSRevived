@@ -1732,7 +1732,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (WillTireAfterAttack(actor)) return true;
       if (actor.Speed > target.Speed) {
-        if (game.Rules.WillActorActAgainBefore(actor, target)) return false;
+        if (actor.WillActAgainBefore(target)) return false;
         if (target.TargetActor == actor) return true;
       }
       Actor weakerInMelee = FindWeakerInMelee(game, m_Actor, target);

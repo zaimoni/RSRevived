@@ -11719,17 +11719,17 @@ namespace djack.RogueSurvivor.Engine
                         m_UI.UI_DrawImage("Icons\\leader", gx2, gy2, tint);
           if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !m_Rules.IsEnemyOf(actor, m_Player)))
             break;
-          if (m_Rules.WillActorActAgainBefore(m_Player, actor))
+          if (m_Player.WillActAgainBefore(actor))
           {
-                        m_UI.UI_DrawImage("Icons\\threat_safe", gx2, gy2, tint);
+            m_UI.UI_DrawImage("Icons\\threat_safe", gx2, gy2, tint);
             break;
           }
           if (m_Rules.WillOtherActTwiceBefore(m_Player, actor))
           {
-                        m_UI.UI_DrawImage("Icons\\threat_high_danger", gx2, gy2, tint);
+            m_UI.UI_DrawImage("Icons\\threat_high_danger", gx2, gy2, tint);
             break;
           }
-                    m_UI.UI_DrawImage("Icons\\threat_danger", gx2, gy2, tint);
+          m_UI.UI_DrawImage("Icons\\threat_danger", gx2, gy2, tint);
           break;
         case Activity.CHASING:
         case Activity.FIGHTING:

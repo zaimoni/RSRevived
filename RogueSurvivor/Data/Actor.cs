@@ -720,6 +720,24 @@ namespace djack.RogueSurvivor.Data
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
     }
 
+    public bool CanActThisTurn {
+      get {
+        return 0 < m_ActionPoints;
+      }
+    }
+
+    public bool CanActNextTurn {
+      get {
+        return 0 < m_ActionPoints + Speed;
+      }
+    }
+
+    public bool WillActAgainBefore(Actor other)
+    {
+      return other.ActionPoints <= 0 && (!other.CanActNextTurn || IsBefore(other));
+    }
+
+
     public int Speed { 
       get {
         float num = Doll.Body.Speed;    // an exhausted, sleepy living dragging a corpse in heavy armor, below 36 here, will have a speed of zero
