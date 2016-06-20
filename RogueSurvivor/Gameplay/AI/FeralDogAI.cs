@@ -75,10 +75,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool isLeaderFighting = m_Actor.HasLeader && IsAdjacentToEnemy(game, m_Actor.Leader);
       if (enemies != null)
       {
-        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, FeralDogAI.FIGHT_EMOTES);
+        ActorAction actorAction = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, ActorCourage.CAUTIOUS, FeralDogAI.FIGHT_EMOTES);
         if (actorAction != null)
         {
-                    m_Actor.IsRunning = true;
+          m_Actor.IsRunning = true;
           return actorAction;
         }
       }
