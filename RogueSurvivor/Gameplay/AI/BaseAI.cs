@@ -472,6 +472,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemAmmo compatibleAmmoItem = GetCompatibleAmmoItem(rw);
         if (compatibleAmmoItem != null)
           return new ActionUseItem(m_Actor, game, (Item) compatibleAmmoItem);
+        return new ActionUnequipItem(m_Actor, game, equippedWeapon);
       }
       if (Directives.CanFireWeapons)
       {
@@ -1536,6 +1537,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void RunIfPossible(Rules rules)
     {
       if (!rules.CanActorRun(m_Actor)) return;
+      m_Actor.IsRunning = true;
+    }
+
+    protected void RunIfAdvisable(Rules rules, Point dest)
+    {
+      if (!rules.CanActorRun(m_Actor)) return;
+      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(dest);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
+        if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP)) return;
+      }
+      if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING)) return;
       m_Actor.IsRunning = true;
     }
 

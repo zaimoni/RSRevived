@@ -233,6 +233,67 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
+      // melee risk management check
+      // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
+      // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
+      Dictionary<Point,int> damage_field = (null != enemies ? VisibleMaximumDamage() : null);
+      List<Point> retreat = new List<Point>(8);
+      List<Actor> slow_threat = new List<Actor>(8);
+      if (null != damage_field && damage_field.ContainsKey(m_Actor.Location.Position)) {
+        foreach(Direction tmp in Direction.COMPASS_LIST) {
+          Point tmp2 = m_Actor.Location.Position+tmp;
+          if (RogueForm.Game.Rules.IsWalkableFor(m_Actor,new Location(m_Actor.Location.Map,tmp2)) && !damage_field.ContainsKey(tmp2)) retreat.Add(tmp2);
+          Actor tmp3 = m_Actor.Location.Map.GetActorAt(tmp2);
+          if (null != tmp3 && game.Rules.IsEnemyOf(m_Actor, tmp3) && HasSpeedAdvantage(game, m_Actor, tmp3)) slow_threat.Add(tmp3);
+        }
+        if (0 == retreat.Count) {
+          foreach(Direction tmp in Direction.COMPASS_LIST) {
+           Point tmp2 = m_Actor.Location.Position+tmp;
+           if (RogueForm.Game.Rules.IsWalkableFor(m_Actor,new Location(m_Actor.Location.Map,tmp2)) && damage_field[tmp2]<damage_field[m_Actor.Location.Position]) retreat.Add(tmp2);
+          }
+        }
+      }
+      if (0 == retreat.Count) retreat = null;
+      // prefer not to jump
+      if (null != retreat && 2 <= retreat.Count) {
+        int clear_squares = retreat.Count;
+        List<Point> no_jump = new List<Point>(retreat.Count);
+        foreach(Point tmp in retreat) {
+          MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(tmp);
+          if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) continue;
+          no_jump.Add(tmp);
+        }
+        if (0 < no_jump.Count && no_jump.Count < retreat.Count) retreat = no_jump;
+      }
+      // ranged weapon: fast retreat ok
+      if (null != retreat && (m_Actor.GetEquippedWeapon() is ItemRangedWeapon)) {
+        Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
+        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        if (tmpAction.IsLegal()) {
+          RunIfAdvisable(game.Rules,tmp);
+          m_Actor.Activity = Activity.FLEEING;
+          return tmpAction;
+        }
+      }
+      // need stamina to melee: slow retreat ok
+      if (null != retreat && WillTireAfterAttack(m_Actor)) {
+        Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
+        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        if (tmpAction.IsLegal()) {
+          m_Actor.Activity = Activity.FLEEING;
+          return tmpAction;
+        }
+      }
+      // have slow enemies nearby
+      if (null != retreat && 0 < slow_threat.Count) {
+        Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
+        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        if (tmpAction.IsLegal()) {
+          m_Actor.Activity = Activity.FLEEING;
+          return tmpAction;
+        }
+      }
+
       if (!Directives.CanThrowGrenades)
       {
         ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
@@ -252,35 +313,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // all free actions must be above the enemies check
-      // \todo melee risk management check
-      // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
-      // count how many attacks we may take
-      // 0: ok
-      // 1: ok if good chance of one-shotting and no speed advantage
-      // 2+: bad
-
-      if (null != enemies && Directives.CanFireWeapons && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
+      if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
       {
         List<Percept> percepts2 = FilterFireTargets(game, enemies);
         if (percepts2 != null)
         {
           Percept percept = FilterNearest(percepts2);
           Actor actor = percept.Percepted as Actor;
-          if (Rules.GridDistance(percept.Location.Position, m_Actor.Location.Position) == 1 && !HasEquipedRangedWeapon(actor) && HasSpeedAdvantage(game, m_Actor, actor))
-          {
-            ActorAction actorAction2 = BehaviorWalkAwayFrom(game, percept);
-            if (actorAction2 != null)
-            {
-                            RunIfPossible(game.Rules);
-                            m_Actor.Activity = Activity.FLEEING;
-              return actorAction2;
-            }
-          }
           ActorAction actorAction5 = BehaviorRangedAttack(game, percept);
           if (actorAction5 != null)
           {
-                        m_Actor.Activity = Activity.FIGHTING;
-                        m_Actor.TargetActor = actor;
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = actor;
             return actorAction5;
           }
         }
