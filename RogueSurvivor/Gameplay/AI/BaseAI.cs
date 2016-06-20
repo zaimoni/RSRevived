@@ -791,35 +791,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
     {
       Percept target = FilterNearest(enemies);
-      bool flag1 = false;
+      bool doRun = false;
       Actor enemy = target.Percepted as Actor;
-      bool flag2;
+      bool decideToFlee;
       if (HasEquipedRangedWeapon(enemy))
-        flag2 = false;
+        decideToFlee = false;
       else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
-        flag2 = false;
+        decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
-        flag2 = true;
+        decideToFlee = true;
       else if (m_Actor.Leader != null)
       {
         switch (courage)
         {
           case ActorCourage.COWARD:
-            flag2 = true;
-            flag1 = true;
+            decideToFlee = true;
+            doRun = true;
             break;
           case ActorCourage.CAUTIOUS:
-            flag2 = WantToEvadeMelee(game, m_Actor, courage, enemy);
-            flag1 = !HasSpeedAdvantage(game, m_Actor, enemy);
+            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            doRun = !HasSpeedAdvantage(game, m_Actor, enemy);
             break;
           case ActorCourage.COURAGEOUS:
             if (isLeaderFighting)
             {
-              flag2 = false;
+              decideToFlee = false;
               break;
             }
-            flag2 = WantToEvadeMelee(game, m_Actor, courage, enemy);
-            flag1 = !HasSpeedAdvantage(game, m_Actor, enemy);
+            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            doRun = !HasSpeedAdvantage(game, m_Actor, enemy);
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled courage");
@@ -830,19 +830,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         switch (courage)
         {
           case ActorCourage.COWARD:
-            flag2 = true;
-            flag1 = true;
+            decideToFlee = true;
+            doRun = true;
             break;
           case ActorCourage.CAUTIOUS:
           case ActorCourage.COURAGEOUS:
-            flag2 = WantToEvadeMelee(game, m_Actor, courage, enemy);
-            flag1 = !HasSpeedAdvantage(game, m_Actor, enemy);
+            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            doRun = !HasSpeedAdvantage(game, m_Actor, enemy);
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled courage");
         }
       }
-      if (flag2)
+      if (decideToFlee)
       {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
@@ -899,9 +899,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction1 = BehaviorWalkAwayFrom(game, enemies);
         if (actorAction1 != null)
         {
-          if (flag1)
-                        RunIfPossible(game.Rules);
-                    m_Actor.Activity = Activity.FLEEING;
+          if (doRun) RunIfPossible(game.Rules);
+          m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
         if (actorAction1 == null && IsAdjacentToEnemy(game, enemy))
