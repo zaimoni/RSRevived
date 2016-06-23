@@ -266,6 +266,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < no_jump.Count && no_jump.Count < retreat.Count) retreat = no_jump;
       }
       // ranged weapon: fast retreat ok
+      // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
+      // XXX we also want to be close enough to fire at all
       if (null != retreat && (m_Actor.GetEquippedWeapon() is ItemRangedWeapon)) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
         tmpAction = new ActionMoveStep(m_Actor, game, tmp);
@@ -350,6 +352,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
+        // \todo use damage_field to improve on BehaviorFightOrFlee
         ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
         if (actorAction5 != null)
           return actorAction5;
