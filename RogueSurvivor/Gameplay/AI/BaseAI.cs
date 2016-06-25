@@ -440,24 +440,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) null;
     }
 
-    protected ActorAction BehaviorMeleeAttack(RogueGame game, Percept target)
+    protected ActorAction BehaviorMeleeAttack(RogueGame game, Actor target)
     {
-      Actor target1 = target.Percepted as Actor;
-      if (target1 == null)
-        throw new ArgumentException("percepted is not an actor");
-      if (!game.Rules.CanActorMeleeAttack(m_Actor, target1))
-        return (ActorAction) null;
-      return (ActorAction) new ActionMeleeAttack(m_Actor, game, target1);
+      if (null == target) throw new ArgumentNullException("target");
+      if (!game.Rules.CanActorMeleeAttack(m_Actor, target)) return null;
+      return new ActionMeleeAttack(m_Actor, game, target);
     }
 
-    protected ActorAction BehaviorRangedAttack(RogueGame game, Percept target)
+    protected ActorAction BehaviorRangedAttack(RogueGame game, Actor target)
     {
-      Actor target1 = target.Percepted as Actor;
-      if (target1 == null)
-        throw new ArgumentException("percepted is not an actor");
-      if (!game.Rules.CanActorFireAt(m_Actor, target1))
-        return (ActorAction) null;
-      return (ActorAction) new ActionRangedAttack(m_Actor, game, target1);
+      if (null == target) throw new ArgumentNullException("target");
+      if (!game.Rules.CanActorFireAt(m_Actor, target)) return null;
+      return new ActionRangedAttack(m_Actor, game, target);
     }
 
     protected ActorAction BehaviorEquipWeapon(RogueGame game)
@@ -777,9 +771,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target)
     {
-      ActorAction tmpAction = BehaviorMeleeAttack(game, target);
-      if (null != tmpAction) return tmpAction;
       Actor actor = target.Percepted as Actor;
+      ActorAction tmpAction = BehaviorMeleeAttack(game, actor);
+      if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
         return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor, game);
       tmpAction = BehaviorIntelligentBumpToward(game, target.Location.Position);
@@ -907,7 +901,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
-          return BehaviorMeleeAttack(game, target);
+          return BehaviorMeleeAttack(game, target.Percepted as Actor);
         }
       }
       else

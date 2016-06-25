@@ -129,11 +129,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (flag1 && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
         List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
         if (percepts3 != null) {
-          Percept target = FilterNearest(percepts3);
+          Actor target = FilterNearest(percepts3).Percepted as Actor;
           ActorAction actorAction3 = BehaviorRangedAttack(game, target);
           if (actorAction3 != null) {
             m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = target.Percepted as Actor;
+            m_Actor.TargetActor = target;
             return actorAction3;
           }
         }
