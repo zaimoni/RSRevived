@@ -265,6 +265,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (0 < no_jump.Count && no_jump.Count < retreat.Count) retreat = no_jump;
       }
+      // XXX the proper weapon should be calculated like a player....
+      // range 1: if melee weapon has a good enough one-shot kill rate, use it
+      // any range: of all ranged weapons available, use the weakest one with a good enough one-shot kill rate
+      // we may estimate typical damage as 5/8ths of the damage rating for linear approximations
+      // use above both for choosing which threat to target, and actual weapon equipping
+
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
       // XXX we also want to be close enough to fire at all
