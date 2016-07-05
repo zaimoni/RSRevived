@@ -832,7 +832,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp;
     }
 
-    protected bool NeedsLight(RogueGame game)
+#if FAIL
+    // Gun bunny AI support
+    protected Dictionary<Actor,Dictionary<Item,float>> AttackEfficiency(List<Actor> enemies)
+    {
+      List<Item> tmpMelee = m_Actor.Inventory.Items.Where(it => it.Model.GetType()==typeof(ItemMeleeWeaponModel));
+      List<Item> tmpRanged = m_Actor.Inventory.Items.Where(it => it.Model.GetType()==typeof(ItemRangedWeaponModel));
+      Dictionary<Actor,Dictionary<Item,float>> ret = new Dictionary<Actor,Dictionary<Item,float>>(enemies.Count);
+      foreach(Actor tmp in enemies) {
+        if (0 < tmpMelee.Count && 1==Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position)) {
+          foreach(Item tmp2 in tmpMelee) {
+          }
+        }
+        if (0 < tmpRanged.Count) {
+          foreach(Item tmp2 in tmpRanged) {
+            if (Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position) < ...) continue;
+          }
+        }
+      }
+      return ret;
+    }
+#endif
+
+        protected bool NeedsLight(RogueGame game)
     {
       switch (m_Actor.Location.Map.Lighting)
       {
