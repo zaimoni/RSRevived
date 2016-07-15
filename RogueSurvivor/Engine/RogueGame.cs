@@ -11271,8 +11271,6 @@ namespace djack.RogueSurvivor.Engine
         m_Session.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
       if (skillTable != null && skillTable.CountSkills > 0) {
-        if (actor.Sheet.SkillTable == null)
-          actor.Sheet.SkillTable = new SkillTable();
         int countSkills = skillTable.CountSkills;
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index) {
