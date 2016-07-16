@@ -36,6 +36,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
+    public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
@@ -529,6 +530,13 @@ namespace djack.RogueSurvivor.Data
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
+    public int DamageBonusVsUndeads {
+      get {
+        return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.NECROLOGY);
+      }
+    }
+
+    // leadership/follower handling
     public void AddFollower(Actor other)
     {
       if (other == null) throw new ArgumentNullException("other");

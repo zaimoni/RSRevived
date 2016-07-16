@@ -8265,7 +8265,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.MEDIC:
           return string.Format("+{0}% medicine effects, +{1}% revive ", (object) (int) (100.0 * (double) Rules.SKILL_MEDIC_BONUS), (object) Rules.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
-          return string.Format("+{0}/+{1} Dmg vs undeads/corpses, data on corpses", (object) Rules.SKILL_NECROLOGY_UNDEAD_BONUS, (object) Rules.SKILL_NECROLOGY_CORPSE_BONUS);
+          return string.Format("+{0}/+{1} Dmg vs undeads/corpses, data on corpses", (object) Actor.SKILL_NECROLOGY_UNDEAD_BONUS, (object) Rules.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
           return string.Format("+{0} melee DMG, +{1} throw range", (object) Rules.SKILL_STRONG_DMG_BONUS, (object) Rules.SKILL_STRONG_THROW_BONUS);
         case Skills.IDs.STRONG_PSYCHE:
@@ -12180,8 +12180,8 @@ namespace djack.RogueSurvivor.Engine
       }
       gy += 14;
       Attack attack1 = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
-      int num1 = m_Rules.ActorDamageBonusVsUndeads(actor);
-            m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", (object) attack1.HitValue, (object) attack1.DamageValue, (object) (attack1.DamageValue + num1)), gx, gy, new Color?());
+      int num1 = actor.DamageBonusVsUndeads;
+      m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", (object) attack1.HitValue, (object) attack1.DamageValue, (object) (attack1.DamageValue + num1)), gx, gy, new Color?());
       gy += 14;
       Attack attack2 = m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, (Actor) null);
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;

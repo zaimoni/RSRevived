@@ -50,7 +50,6 @@ namespace djack.RogueSurvivor.Engine
     public static float SKILL_MEDIC_BONUS = 0.2f;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
-    public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
     public static int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
     public static int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
@@ -1881,11 +1880,6 @@ namespace djack.RogueSurvivor.Engine
       return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
     }
 
-    public int ActorDamageBonusVsUndeads(Actor actor)
-    {
-      return Rules.SKILL_NECROLOGY_UNDEAD_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
-    }
-
     public Attack ActorMeleeAttack(Actor actor, Attack baseAttack, Actor target)
     {
       int num3 = Rules.SKILL_AGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
@@ -1896,7 +1890,7 @@ namespace djack.RogueSurvivor.Engine
         num4 += Rules.SKILL_MARTIAL_ARTS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       }
       if (target != null && target.Model.Abilities.IsUndead)
-        num4 += ActorDamageBonusVsUndeads(actor);
+        num4 += actor.DamageBonusVsUndeads;
       float num5 = (float)baseAttack.HitValue + (float) num3;
       if (actor.IsExhausted) num5 /= 2f;
       else if (actor.IsSleepy) num5 *= 0.75f;
@@ -1919,7 +1913,7 @@ namespace djack.RogueSurvivor.Engine
           break;
       }
       if (target != null && target.Model.Abilities.IsUndead)
-        num2 += ActorDamageBonusVsUndeads(actor);
+        num2 += actor.DamageBonusVsUndeads;
       int efficientRange = baseAttack.EfficientRange;
       if (distance != efficientRange) {
         num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
