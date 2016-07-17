@@ -155,14 +155,14 @@ namespace djack.RogueSurvivor.Gameplay
       for (int index = 0; index < (int)Skills.IDs._COUNT; ++index)
         Skills.s_Names[index] = data[index].NAME;
       Skills.SkillData skillData1 = data[0];
-      Rules.SKILL_AGILE_ATK_BONUS = (int) skillData1.VALUE1;
+      Data.Actor.SKILL_AGILE_ATK_BONUS = (int) skillData1.VALUE1;
       Rules.SKILL_AGILE_DEF_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[1];
       Data.Actor.SKILL_AWAKE_SLEEP_BONUS = skillData1.VALUE1;
       Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS = skillData1.VALUE2;
       skillData1 = data[2];
-      Rules.SKILL_BOWS_ATK_BONUS = (int) skillData1.VALUE1;
-      Rules.SKILL_BOWS_DMG_BONUS = (int) skillData1.VALUE2;
+      Data.Actor.SKILL_BOWS_ATK_BONUS = (int) skillData1.VALUE1;
+      Data.Actor.SKILL_BOWS_DMG_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[3];
       Rules.SKILL_CARPENTRY_BARRICADING_BONUS = skillData1.VALUE1;
       Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = (int) skillData1.VALUE2;
@@ -170,8 +170,8 @@ namespace djack.RogueSurvivor.Gameplay
       Rules.SKILL_CHARISMATIC_TRUST_BONUS = (int) skillData1.VALUE1;
       Rules.SKILL_CHARISMATIC_TRADE_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[5];
-      Rules.SKILL_FIREARMS_ATK_BONUS = (int) skillData1.VALUE1;
-      Rules.SKILL_FIREARMS_DMG_BONUS = (int) skillData1.VALUE2;
+      Data.Actor.SKILL_FIREARMS_ATK_BONUS = (int) skillData1.VALUE1;
+      Data.Actor.SKILL_FIREARMS_DMG_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[6];
       Rules.SKILL_HARDY_HEAL_CHANCE_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[7];
@@ -188,8 +188,8 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[12];
       Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[13];
-      Rules.SKILL_MARTIAL_ARTS_ATK_BONUS = (int) skillData2.VALUE1;
-      Rules.SKILL_MARTIAL_ARTS_DMG_BONUS = (int) skillData2.VALUE2;
+      Data.Actor.SKILL_MARTIAL_ARTS_ATK_BONUS = (int) skillData2.VALUE1;
+      Data.Actor.SKILL_MARTIAL_ARTS_DMG_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[14];
       Rules.SKILL_MEDIC_BONUS = skillData2.VALUE1;
       Rules.SKILL_MEDIC_REVIVE_BONUS = (int) skillData2.VALUE2;
@@ -197,7 +197,7 @@ namespace djack.RogueSurvivor.Gameplay
       Data.Actor.SKILL_NECROLOGY_UNDEAD_BONUS = (int) skillData2.VALUE1;
       Rules.SKILL_NECROLOGY_CORPSE_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[16];
-      Rules.SKILL_STRONG_DMG_BONUS = (int) skillData2.VALUE1;
+      Data.Actor.SKILL_STRONG_DMG_BONUS = (int) skillData2.VALUE1;
       Rules.SKILL_STRONG_THROW_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[17];
       Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS = skillData2.VALUE1;
@@ -207,7 +207,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[19];
       Rules.SKILL_UNSUSPICIOUS_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[20];
-      Rules.SKILL_ZAGILE_ATK_BONUS = (int) skillData2.VALUE1;
+      Data.Actor.SKILL_ZAGILE_ATK_BONUS = (int) skillData2.VALUE1;
       Rules.SKILL_ZAGILE_DEF_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[21];
       Rules.SKILL_ZEATER_REGEN_BONUS = skillData2.VALUE1;
@@ -221,7 +221,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[25];
       Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[26];
-      Rules.SKILL_ZSTRONG_DMG_BONUS = (int) skillData2.VALUE1;
+      Data.Actor.SKILL_ZSTRONG_DMG_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[27];
       Data.Actor.SKILL_ZTOUGH_HP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[28];

@@ -31,6 +31,9 @@ namespace djack.RogueSurvivor.Data
     private const int FOV_PENALTY_SUNRISE = 2;
     private const int FOV_PENALTY_RAIN = 1;
     private const int FOV_PENALTY_HEAVY_RAIN = 2;
+    private const int FIRE_DISTANCE_VS_RANGE_MODIFIER = 2;
+    private const float FIRING_WHEN_STA_TIRED = 0.75f;
+    private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
 
     public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_HAULER_INV_BONUS = 1;
@@ -40,6 +43,17 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
+
+    public static int SKILL_AGILE_ATK_BONUS = 2;
+    public static int SKILL_BOWS_ATK_BONUS = 5;
+    public static int SKILL_BOWS_DMG_BONUS = 2;
+    public static int SKILL_FIREARMS_ATK_BONUS = 5;
+    public static int SKILL_FIREARMS_DMG_BONUS = 2;
+    public static int SKILL_MARTIAL_ARTS_ATK_BONUS = 3;
+    public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 1;
+    public static int SKILL_STRONG_DMG_BONUS = 2;
+    public static int SKILL_ZAGILE_ATK_BONUS = 1;
+    public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
     private Actor.Flags m_Flags;
     private int m_ModelID;
@@ -534,6 +548,58 @@ namespace djack.RogueSurvivor.Data
       get {
         return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.NECROLOGY);
       }
+    }
+
+    // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
+    // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
+    public Attack MeleeAttack(Actor target = null)
+    {
+      Attack baseAttack = CurrentMeleeAttack;
+      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
+      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
+      if (GetEquippedWeapon() == null)
+      {
+        num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.MARTIAL_ARTS);
+        num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.MARTIAL_ARTS);
+      }
+      if (target != null && target.Model.Abilities.IsUndead)
+        num4 += DamageBonusVsUndeads;
+      float num5 = (float)baseAttack.HitValue + (float) num3;
+      if (IsExhausted) num5 /= 2f;
+      else if (IsSleepy) num5 *= 0.75f;
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
+    }
+
+    public Attack RangedAttack(int distance, Actor target = null)
+    {
+      Attack baseAttack = CurrentRangedAttack;
+      int num1 = 0;
+      int num2 = 0;
+      switch (baseAttack.Kind)
+      {
+        case AttackKind.FIREARM:
+          num1 = Actor.SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.FIREARMS);
+          num2 = Actor.SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.FIREARMS);
+          break;
+        case AttackKind.BOW:
+          num1 = Actor.SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.BOWS);
+          num2 = Actor.SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.BOWS);
+          break;
+      }
+      if (target != null && target.Model.Abilities.IsUndead)
+        num2 += DamageBonusVsUndeads;
+      int efficientRange = baseAttack.EfficientRange;
+      if (distance != efficientRange) {
+        num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
+      }
+      float num4 = (float) (baseAttack.HitValue + num1);
+      if (IsExhausted) num4 /= 2f;
+      else if (IsSleepy) num4 *= 0.75f;
+      if (IsTired)
+        num4 *= FIRING_WHEN_STA_TIRED;
+      else if (StaminaPoints < MaxSTA)
+        num4 *= FIRING_WHEN_STA_NOT_FULL;
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
     }
 
     // leadership/follower handling

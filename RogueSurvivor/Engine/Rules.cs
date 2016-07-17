@@ -29,24 +29,17 @@ namespace djack.RogueSurvivor.Engine
     public static int INFECTION_EFFECT_TRIGGER_CHANCE_1000 = 2;
     public static int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
     public static int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
-    public static int SKILL_AGILE_ATK_BONUS = 2;
     public static int SKILL_AGILE_DEF_BONUS = 2;
     public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.2f;
-    public static int SKILL_BOWS_ATK_BONUS = 5;
-    public static int SKILL_BOWS_DMG_BONUS = 2;
     public static float SKILL_CARPENTRY_BARRICADING_BONUS = 0.2f;
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
-    public static int SKILL_FIREARMS_ATK_BONUS = 5;
-    public static int SKILL_FIREARMS_DMG_BONUS = 2;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
-    public static int SKILL_MARTIAL_ARTS_ATK_BONUS = 3;
-    public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 1;
     public static float SKILL_MEDIC_BONUS = 0.2f;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
     public static int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
@@ -55,14 +48,11 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static float SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15f;
     public static float SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15f;
-    public static int SKILL_STRONG_DMG_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_UNSUSPICIOUS_BONUS = 25;
     public static int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
     public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
-    public static int SKILL_ZAGILE_ATK_BONUS = 1;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
-    public static int SKILL_ZSTRONG_DMG_BONUS = 2;
     public static float SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static float SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
@@ -83,9 +73,6 @@ namespace djack.RogueSurvivor.Engine
     public const int MELEE_WEAPON_FRAGILE_BREAK_CHANCE = 3;
     public const int FIREARM_JAM_CHANCE_NO_RAIN = 1;
     public const int FIREARM_JAM_CHANCE_RAIN = 3;
-    private const int FIRE_DISTANCE_VS_RANGE_MODIFIER = 2;
-    private const float FIRING_WHEN_STA_TIRED = 0.75f;
-    private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
     public const int BODY_ARMOR_BREAK_CHANCE = 2;
     public const int FOOD_BASE_POINTS = 2*Actor.FOOD_HUNGRY_LEVEL;
     public const int ROT_BASE_POINTS = 2*Actor.ROT_HUNGRY_LEVEL;
@@ -1878,54 +1865,6 @@ namespace djack.RogueSurvivor.Engine
     public int ActorDisturbedLevel(Actor actor)
     {
       return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
-    }
-
-    public Attack ActorMeleeAttack(Actor actor, Attack baseAttack, Actor target)
-    {
-      int num3 = Rules.SKILL_AGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Rules.SKILL_ZAGILE_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int num4 = Rules.SKILL_STRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Rules.SKILL_ZSTRONG_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
-      if (actor.GetEquippedWeapon() == null)
-      {
-        num3 += Rules.SKILL_MARTIAL_ARTS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-        num4 += Rules.SKILL_MARTIAL_ARTS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-      }
-      if (target != null && target.Model.Abilities.IsUndead)
-        num4 += actor.DamageBonusVsUndeads;
-      float num5 = (float)baseAttack.HitValue + (float) num3;
-      if (actor.IsExhausted) num5 /= 2f;
-      else if (actor.IsSleepy) num5 *= 0.75f;
-      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
-    }
-
-    public Attack ActorRangedAttack(Actor actor, Attack baseAttack, int distance, Actor target)
-    {
-      int num1 = 0;
-      int num2 = 0;
-      switch (baseAttack.Kind)
-      {
-        case AttackKind.FIREARM:
-          num1 = Rules.SKILL_FIREARMS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
-          num2 = Rules.SKILL_FIREARMS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
-          break;
-        case AttackKind.BOW:
-          num1 = Rules.SKILL_BOWS_ATK_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
-          num2 = Rules.SKILL_BOWS_DMG_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
-          break;
-      }
-      if (target != null && target.Model.Abilities.IsUndead)
-        num2 += actor.DamageBonusVsUndeads;
-      int efficientRange = baseAttack.EfficientRange;
-      if (distance != efficientRange) {
-        num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
-      }
-      float num4 = (float) (baseAttack.HitValue + num1);
-      if (actor.IsExhausted) num4 /= 2f;
-      else if (actor.IsSleepy) num4 *= 0.75f;
-      if (actor.IsTired)
-        num4 *= FIRING_WHEN_STA_TIRED;
-      else if (actor.StaminaPoints < actor.MaxSTA)
-        num4 *= FIRING_WHEN_STA_NOT_FULL;
-      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
     }
 
     public int ActorMaxThrowRange(Actor actor, int baseRange)

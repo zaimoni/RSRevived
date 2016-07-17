@@ -5276,7 +5276,7 @@ namespace djack.RogueSurvivor.Engine
                 RedrawPlayScreen();
         return false;
       }
-      Attack attack = m_Rules.ActorRangedAttack(player, player.CurrentRangedAttack, 0, (Actor) null);
+      Attack attack = player.RangedAttack(0);
       int index = 0;
       List<Point> LoF = new List<Point>(attack.Range);
       FireMode mode = FireMode.DEFAULT;
@@ -7606,7 +7606,7 @@ namespace djack.RogueSurvivor.Engine
           stringBuilder.Append(string.Format("   STA : {0} MAX", (object) actor.StaminaPoints));
       }
       stringList.Add(stringBuilder.ToString());
-      Attack attack = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
+      Attack attack = actor.MeleeAttack();
       stringList.Add(string.Format("Atk : {0:D2} Dmg : {1:D2}", (object) attack.HitValue, (object) attack.DamageValue));
       Defence defence = m_Rules.ActorDefence(actor, actor.CurrentDefence);
       stringList.Add(string.Format("Def : {0:D2}", (object) defence.Value));
@@ -8235,17 +8235,17 @@ namespace djack.RogueSurvivor.Engine
       switch (id)
       {
         case Skills.IDs._FIRST:
-          return string.Format("+{0} melee ATK, +{1} DEF", (object) Rules.SKILL_AGILE_ATK_BONUS, (object) Rules.SKILL_AGILE_DEF_BONUS);
+          return string.Format("+{0} melee ATK, +{1} DEF", (object) Actor.SKILL_AGILE_ATK_BONUS, (object) Rules.SKILL_AGILE_DEF_BONUS);
         case Skills.IDs.AWAKE:
           return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (object) (int) (100.0 * (double) Actor.SKILL_AWAKE_SLEEP_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
         case Skills.IDs.BOWS:
-          return string.Format("bows +{0} Atk, +{1} Dmg", (object) Rules.SKILL_BOWS_ATK_BONUS, (object) Rules.SKILL_BOWS_DMG_BONUS);
+          return string.Format("bows +{0} Atk, +{1} Dmg", (object) Actor.SKILL_BOWS_ATK_BONUS, (object) Actor.SKILL_BOWS_DMG_BONUS);
         case Skills.IDs.CARPENTRY:
           return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", (object) Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (object) (int) (100.0 * (double) Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
         case Skills.IDs.CHARISMATIC:
           return string.Format("+{0} trust per turn, +{1}% trade offers", (object) Rules.SKILL_CHARISMATIC_TRUST_BONUS, (object) Rules.SKILL_CHARISMATIC_TRADE_BONUS);
         case Skills.IDs.FIREARMS:
-          return string.Format("firearms +{0} Atk, +{1} Dmg", (object) Rules.SKILL_FIREARMS_ATK_BONUS, (object) Rules.SKILL_FIREARMS_DMG_BONUS);
+          return string.Format("firearms +{0} Atk, +{1} Dmg", (object) Actor.SKILL_FIREARMS_ATK_BONUS, (object) Actor.SKILL_FIREARMS_DMG_BONUS);
         case Skills.IDs.HARDY:
           return string.Format("sleep heals anywhere, +{0}% chance to heal", (object) Rules.SKILL_HARDY_HEAL_CHANCE_BONUS);
         case Skills.IDs.HAULER:
@@ -8261,13 +8261,13 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.LIGHT_SLEEPER:
           return string.Format("+{0}% noise wake up chance", (object) Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS);
         case Skills.IDs.MARTIAL_ARTS:
-          return string.Format("unarmed only melee +{0} Atk, +{1} Dmg", (object) Rules.SKILL_MARTIAL_ARTS_ATK_BONUS, (object) Rules.SKILL_MARTIAL_ARTS_DMG_BONUS);
+          return string.Format("unarmed only melee +{0} Atk, +{1} Dmg", (object) Actor.SKILL_MARTIAL_ARTS_ATK_BONUS, (object) Actor.SKILL_MARTIAL_ARTS_DMG_BONUS);
         case Skills.IDs.MEDIC:
           return string.Format("+{0}% medicine effects, +{1}% revive ", (object) (int) (100.0 * (double) Rules.SKILL_MEDIC_BONUS), (object) Rules.SKILL_MEDIC_REVIVE_BONUS);
         case Skills.IDs.NECROLOGY:
           return string.Format("+{0}/+{1} Dmg vs undeads/corpses, data on corpses", (object) Actor.SKILL_NECROLOGY_UNDEAD_BONUS, (object) Rules.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
-          return string.Format("+{0} melee DMG, +{1} throw range", (object) Rules.SKILL_STRONG_DMG_BONUS, (object) Rules.SKILL_STRONG_THROW_BONUS);
+          return string.Format("+{0} melee DMG, +{1} throw range", (object) Actor.SKILL_STRONG_DMG_BONUS, (object) Rules.SKILL_STRONG_THROW_BONUS);
         case Skills.IDs.STRONG_PSYCHE:
           return string.Format("+{0}% SAN threshold, +{1}% regen", (object) (int) (100.0 * (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS));
         case Skills.IDs.TOUGH:
@@ -8275,7 +8275,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.UNSUSPICIOUS:
           return string.Format("+{0}% unnoticed by law enforcers and gangs", (object) Rules.SKILL_UNSUSPICIOUS_BONUS);
         case Skills.IDs._FIRST_UNDEAD:
-          return string.Format("+{0} melee ATK, +{1} DEF, can jump", (object) Rules.SKILL_ZAGILE_ATK_BONUS, (object) Rules.SKILL_ZAGILE_DEF_BONUS);
+          return string.Format("+{0} melee ATK, +{1} DEF, can jump", (object)Actor.SKILL_ZAGILE_ATK_BONUS, (object) Rules.SKILL_ZAGILE_DEF_BONUS);
         case Skills.IDs.Z_EATER:
           return string.Format("+{0}% hp regen", (object) (int) (100.0 * (double) Rules.SKILL_ZEATER_REGEN_BONUS));
         case Skills.IDs.Z_GRAB:
@@ -8287,7 +8287,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_LIGHT_FEET:
           return string.Format("+{0}% to avoid traps", (object) Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.Z_STRONG:
-          return string.Format("+{0} melee DMG, can push", (object) Rules.SKILL_ZSTRONG_DMG_BONUS);
+          return string.Format("+{0} melee DMG, can push", (object) Actor.SKILL_ZSTRONG_DMG_BONUS);
         case Skills.IDs.Z_TOUGH:
           return string.Format("+{0} HP", (object) Actor.SKILL_ZTOUGH_HP_BONUS);
         case Skills.IDs.Z_TRACKER:
@@ -8962,7 +8962,7 @@ namespace djack.RogueSurvivor.Engine
       attacker.TargetActor = defender;
       if (!m_Rules.IsEnemyOf(attacker, defender))
         DoMakeAggression(attacker, defender);
-      Attack attack = m_Rules.ActorMeleeAttack(attacker, attacker.CurrentMeleeAttack, defender);
+      Attack attack = attacker.MeleeAttack(defender);
       Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
@@ -9101,7 +9101,7 @@ namespace djack.RogueSurvivor.Engine
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
       int distance = Rules.GridDistance(attacker.Location.Position, defender.Location.Position);
-      Attack attack = m_Rules.ActorRangedAttack(attacker, attacker.CurrentRangedAttack, distance, defender);
+      Attack attack = attacker.RangedAttack(distance, defender);
       Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendStaminaPoints(attack.StaminaPenalty);
       if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(m_Rules.IsWeatherRain(m_Session.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
@@ -10018,7 +10018,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoBreak(Actor actor, MapObject mapObj)
     {
-      Attack attack = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, null);
+      Attack attack = actor.MeleeAttack();
       DoorWindow doorWindow = mapObj as DoorWindow;
       if (doorWindow != null && doorWindow.IsBarricaded) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -12179,11 +12179,11 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", (object)m_Rules.ActorInfectionPercent(actor)), gx + 84 + 100, gy, new Color?());
       }
       gy += 14;
-      Attack attack1 = m_Rules.ActorMeleeAttack(actor, actor.CurrentMeleeAttack, (Actor) null);
+      Attack attack1 = actor.MeleeAttack();
       int num1 = actor.DamageBonusVsUndeads;
       m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", (object) attack1.HitValue, (object) attack1.DamageValue, (object) (attack1.DamageValue + num1)), gx, gy, new Color?());
       gy += 14;
-      Attack attack2 = m_Rules.ActorRangedAttack(actor, actor.CurrentRangedAttack, actor.CurrentRangedAttack.EfficientRange, (Actor) null);
+      Attack attack2 = actor.RangedAttack(actor.CurrentRangedAttack.EfficientRange);
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon != null)
       {
