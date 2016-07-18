@@ -1746,13 +1746,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Actor FindWeakerInMelee(RogueGame game, Actor a, Actor b)
     {
-      int num1 = a.HitPoints + a.CurrentMeleeAttack.DamageValue;
-      int num2 = b.HitPoints + b.CurrentMeleeAttack.DamageValue;
-      if (num1 < num2)
-        return a;
-      if (num1 <= num2)
-        return (Actor) null;
-      return b;
+      int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
+      int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;
+      if (num1 < num2) return a;
+      if (num1 > num2) return b;
+      return null;
     }
 
     protected bool WillTireAfterAttack(Actor actor)

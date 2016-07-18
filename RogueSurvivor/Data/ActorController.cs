@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Data
         if (!a.CanActNextTurn) continue;
         HashSet<Point> aFOV = a.Controller.FOV;
         if (null == aFOV) continue;
-        // maximum melee damage: a.CurrentMeleeAttack.DamageValue
+        // maximum melee damage: a.MeleeAttack(m_Actor).DamageValue
         // maximum ranged damage: a.CurrentRangedAttack.DamageValue
         // we can do better than these
         if (RogueForm.Game.Rules.WillOtherActTwiceBefore(m_Actor, a)) {
@@ -67,9 +67,9 @@ namespace djack.RogueSurvivor.Data
             int dist = Rules.GridDistance(tmp2,a.Location.Position);
             int max_dam = 0;
             if (1 == dist) {
-               max_dam = 2*a.CurrentMeleeAttack.DamageValue;
+               max_dam = 2*a.MeleeAttack(m_Actor).DamageValue;
             } else if (2 == dist) {
-               max_dam = a.CurrentMeleeAttack.DamageValue;
+               max_dam = a.MeleeAttack(m_Actor).DamageValue;
             }
         
             if (dist <= a.CurrentRangedAttack.Range && max_dam < 2*a.CurrentRangedAttack.DamageValue) {
@@ -87,7 +87,7 @@ namespace djack.RogueSurvivor.Data
             if (tmp2 == a.Location.Position) continue;
             int dist = Rules.GridDistance(tmp2,a.Location.Position);
             int max_dam = 0;
-            if (1 == dist) max_dam = a.CurrentMeleeAttack.DamageValue;
+            if (1 == dist) max_dam = a.MeleeAttack(m_Actor).DamageValue;
             if (dist <= a.CurrentRangedAttack.Range && max_dam < a.CurrentRangedAttack.DamageValue) {
               max_dam = a.CurrentRangedAttack.DamageValue;
             }
