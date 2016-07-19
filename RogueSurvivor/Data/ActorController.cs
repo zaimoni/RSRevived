@@ -71,11 +71,14 @@ namespace djack.RogueSurvivor.Data
             } else if (2 == dist) {
                max_dam = a.MeleeAttack(m_Actor).DamageValue;
             }
-        
-            if (dist <= a.CurrentRangedAttack.Range && max_dam < 2*a.CurrentRangedAttack.DamageValue) {
-              max_dam = 2*a.CurrentRangedAttack.DamageValue;
-            } else if (dist == a.CurrentRangedAttack.Range+1 && max_dam < a.CurrentRangedAttack.DamageValue) {
-              max_dam = a.CurrentRangedAttack.DamageValue;
+
+            if (dist <= a.CurrentRangedAttack.Range + 1) { 
+              int test_dam = a.RangedAttack(dist,m_Actor).DamageValue;
+              if (dist <= a.CurrentRangedAttack.Range && max_dam < 2*test_dam) {
+                max_dam = 2*test_dam;
+              } else if (dist == a.CurrentRangedAttack.Range+1 && max_dam < test_dam) {
+                max_dam = test_dam;
+              }
             }
             if (0 < max_dam) {
               if (ret.ContainsKey(tmp2)) ret[tmp2] += max_dam;
@@ -88,8 +91,9 @@ namespace djack.RogueSurvivor.Data
             int dist = Rules.GridDistance(tmp2,a.Location.Position);
             int max_dam = 0;
             if (1 == dist) max_dam = a.MeleeAttack(m_Actor).DamageValue;
-            if (dist <= a.CurrentRangedAttack.Range && max_dam < a.CurrentRangedAttack.DamageValue) {
-              max_dam = a.CurrentRangedAttack.DamageValue;
+            if (dist <= a.CurrentRangedAttack.Range) { 
+              int test_dam = a.RangedAttack(dist,m_Actor).DamageValue;
+              if (max_dam < test_dam) max_dam = test_dam;
             }
             if (0 < max_dam) {
               if (ret.ContainsKey(tmp2)) ret[tmp2] += max_dam;
