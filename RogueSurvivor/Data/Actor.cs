@@ -1269,13 +1269,11 @@ namespace djack.RogueSurvivor.Data
     public void OnEquipItem(Engine.RogueGame game, Item it)
     {
       if (it.Model is ItemMeleeWeaponModel) {
-        ItemMeleeWeaponModel meleeWeaponModel = it.Model as ItemMeleeWeaponModel;
-        m_CurrentMeleeAttack = new Attack(meleeWeaponModel.Attack.Kind, meleeWeaponModel.Attack.Verb, meleeWeaponModel.Attack.HitValue + Sheet.UnarmedAttack.HitValue, meleeWeaponModel.Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, meleeWeaponModel.Attack.StaminaPenalty);
+        m_CurrentMeleeAttack = (it.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet);
         return;
       }
       if (it.Model is ItemRangedWeaponModel) {
-        ItemRangedWeaponModel rangedWeaponModel = it.Model as ItemRangedWeaponModel;
-        m_CurrentRangedAttack = new Attack(rangedWeaponModel.Attack.Kind, rangedWeaponModel.Attack.Verb, rangedWeaponModel.Attack.HitValue, rangedWeaponModel.Attack.DamageValue, rangedWeaponModel.Attack.StaminaPenalty, rangedWeaponModel.Attack.Range);
+        m_CurrentRangedAttack = (it.Model as ItemRangedWeaponModel).Attack;   // value-copy due to struct Attack
         return;
       }
       if (it.Model is ItemBodyArmorModel) {

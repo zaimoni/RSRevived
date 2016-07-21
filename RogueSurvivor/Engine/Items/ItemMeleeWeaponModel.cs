@@ -16,5 +16,9 @@ namespace djack.RogueSurvivor.Engine.Items
       : base(aName, theNames, imageID, attack)
     {
     }
+
+    public Attack BaseMeleeAttack(ActorSheet Sheet) {
+      return new Attack(Attack.Kind, Attack.Verb, Attack.HitValue + Sheet.UnarmedAttack.HitValue, Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, Attack.StaminaPenalty);
+    }
   }
 }

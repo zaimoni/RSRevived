@@ -841,14 +841,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Dictionary<Actor,Dictionary<Item,float>> ret = new Dictionary<Actor,Dictionary<Item,float>>(enemies.Count);
       foreach(Actor tmp in enemies) {
         if (0 < tmpMelee.Count && 1==Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position)) {
-          // ItemMeleeWeaponModel meleeWeaponModel = it.Model as ItemMeleeWeaponModel;
-          // m_CurrentMeleeAttack = new Attack(meleeWeaponModel.Attack.Kind, meleeWeaponModel.Attack.Verb, meleeWeaponModel.Attack.HitValue + Sheet.UnarmedAttack.HitValue, meleeWeaponModel.Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, meleeWeaponModel.Attack.StaminaPenalty);          
+          // m_CurrentMeleeAttack = (it.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet);
           foreach(Item tmp2 in tmpMelee) {
           }
         }
         if (0 < tmpRanged.Count) {
-          // ItemRangedWeaponModel rangedWeaponModel = it.Model as ItemRangedWeaponModel;
-          // m_CurrentRangedAttack = new Attack(rangedWeaponModel.Attack.Kind, rangedWeaponModel.Attack.Verb, rangedWeaponModel.Attack.HitValue, rangedWeaponModel.Attack.DamageValue, rangedWeaponModel.Attack.StaminaPenalty, rangedWeaponModel.Attack.Range);
+          // m_CurrentRangedAttack = (it.Model as ItemRangedWeaponModel).Attack;   // value-copy due to struct Attack
           foreach(Item tmp2 in tmpRanged) {
             if (Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position) < ...) continue;
           }
@@ -858,7 +856,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-        protected bool NeedsLight(RogueGame game)
+    protected bool NeedsLight(RogueGame game)
     {
       switch (m_Actor.Location.Map.Lighting)
       {
