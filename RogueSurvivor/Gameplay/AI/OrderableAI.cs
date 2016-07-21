@@ -834,21 +834,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #if FAIL
     // Gun bunny AI support
+    // for efficiency purposes we probably want to return both the probability of hitting (current)
+    // and some proxy for the "damage distribution"
     protected Dictionary<Actor,Dictionary<Item,float>> AttackEfficiency(List<Actor> enemies)
     {
       List<Item> tmpMelee = m_Actor.Inventory.Items.Where(it => it.Model.GetType()==typeof(ItemMeleeWeaponModel));
       List<Item> tmpRanged = m_Actor.Inventory.Items.Where(it => it.Model.GetType()==typeof(ItemRangedWeaponModel));
       Dictionary<Actor,Dictionary<Item,float>> ret = new Dictionary<Actor,Dictionary<Item,float>>(enemies.Count);
       foreach(Actor tmp in enemies) {
+        CurrentDefence tmpDef = tmp.CurrentDefence;
+        Dictionary<Item,float> prob = new Dictionary<Item,float>();
         if (0 < tmpMelee.Count && 1==Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position)) {
           // m_CurrentMeleeAttack = (it.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet);
-          foreach(Item tmp2 in tmpMelee) {
+          foreach(Item it in tmpMelee) {
+            Attack tmpAtt = (it.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet);
           }
         }
         if (0 < tmpRanged.Count) {
           // m_CurrentRangedAttack = (it.Model as ItemRangedWeaponModel).Attack;   // value-copy due to struct Attack
-          foreach(Item tmp2 in tmpRanged) {
-            if (Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position) < ...) continue;
+          foreach(Item it in tmpRanged) {
+            Attack tmpAtt = (it.Model as ItemRangedWeaponModel).Attack;
+            if (Rules.GridDistance(m_Actor.Location.Position,tmp.Location.Position) > tmp2.Range) continue;
           }
         }
       }
