@@ -29,6 +29,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // * drop Y at X
     // * do Y at X at time T (e.g., sleep; be in position for invasion)
 
+    // examples for actor objective stack, which is checked only when no enemies in sight:
+    // Be at Location at time t
+    // Have Location in view at time t (probably best to delegate this)
+    // get item type at time t
+    // sleep (on bed) at time t with food value >= and sanity value >= 
+    // * reversed-sense of these inequalities may also be of use
+    // Engine.AI.Percept looks related, but reverse-engineering the required action is problematic
+    enum ObjectiveKinds
+    {
+      NONE = 0,
+      LOCATION,
+      GET_ITEM,
+      DROP_ITEM,
+      USE_ITEM,
+      SLEEP
+    }
+    [Serializable]
+    struct Objective
+    {
+      int turn;
+      ObjectiveKinds _type;
+      object _data; // objectives have wildly varying required parameters
+    }
+
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorOrder m_Order;
     protected Percept m_LastEnemySaw;
