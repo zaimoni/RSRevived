@@ -46,12 +46,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SLEEP
     }
     [Serializable]
-    struct Objective
+    protected struct Objective
     {
       int turn;
       ObjectiveKinds _type;
       object _data; // objectives have wildly varying required parameters
     }
+
+    // build out CivilianAI first, then fix the other AIs
+    private List<Objective> m_Objectives;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorOrder m_Order;
@@ -66,6 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public OrderableAI()
     {
+      m_Objectives = null;
       m_Order = null;
       m_LastEnemySaw = null;
       m_LastItemsSaw = null;
@@ -73,6 +77,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LastRaidHeard = null;
       m_ReachedPatrolPoint = false;
       m_ReportStage = 0;
+    }
+
+    protected List<Objective> Objectives {
+      get {
+        if (null == m_Objectives) return null;
+        if (0 == m_Objectives.Count) return null;
+        return new List<Objective>(m_Objectives);
+      }
     }
 
     public ActorOrder Order {
