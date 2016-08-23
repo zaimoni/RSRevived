@@ -46,11 +46,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SLEEP
     }
     [Serializable]
-    protected struct Objective
+    protected class Objective
     {
       int turn;
       ObjectiveKinds _type;
       object _data; // objectives have wildly varying required parameters
+      List<Objective> _sub;  // but we're pretty sure objectives can have subobjectives
     }
 
     // build out CivilianAI first, then fix the other AIs
