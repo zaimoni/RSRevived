@@ -41,11 +41,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_LocationsQueue.Contains(loc);
     }
 
-    public void AddExplored(Location loc)
+    private void AddExplored(Location loc)
     {
       if (m_LocationsQueue.Count >= m_LocationsQueueSize)
-                m_LocationsQueue.Dequeue();
-            m_LocationsQueue.Enqueue(loc);
+        m_LocationsQueue.Dequeue();
+      m_LocationsQueue.Enqueue(loc);
     }
 
     public bool HasExplored(Zone zone)
@@ -65,23 +65,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return true;
     }
 
-    public void AddExplored(Zone zone)
+    private void AddExplored(Zone zone)
     {
       if (m_ZonesQueue.Count >= m_ZonesQueueSize)
-                m_ZonesQueue.Dequeue();
-            m_ZonesQueue.Enqueue(zone);
+        m_ZonesQueue.Dequeue();
+      m_ZonesQueue.Enqueue(zone);
     }
 
     public void Update(Location location)
     {
-            AddExplored(location);
+      AddExplored(location);
       List<Zone> zonesAt = location.Map.GetZonesAt(location.Position.X, location.Position.Y);
-      if (zonesAt == null || zonesAt.Count <= 0)
-        return;
-      foreach (Zone zone in zonesAt)
-      {
-        if (!HasExplored(zone))
-                    AddExplored(zone);
+      if (zonesAt == null || zonesAt.Count <= 0) return;
+      foreach (Zone zone in zonesAt) {
+        if (!HasExplored(zone)) AddExplored(zone);
       }
     }
   }
