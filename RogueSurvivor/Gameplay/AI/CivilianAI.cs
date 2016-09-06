@@ -235,6 +235,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       Dictionary<Point,int> damage_field = (null != enemies ? VisibleMaximumDamage() : null);
+      // \todo visible primed explosives also have a damage field that civilians and soldiers respect, CHAR and gang don't
       List<Point> retreat = new List<Point>(8);
       List<Actor> slow_threat = new List<Actor>(8);
       if (null != damage_field && damage_field.ContainsKey(m_Actor.Location.Position)) {
