@@ -27,8 +27,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
     private const int FOLLOW_LEADER_MIN_DIST = 1;
     private const int FOLLOW_LEADER_MAX_DIST = 2;
-    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
-    private const int EXPLORATION_ZONES = 3;
     private const int BUILD_SMALL_FORT_CHANCE = 20;
     private const int BUILD_LARGE_FORT_CHANCE = 50;
     private const int START_FORT_LINE_CHANCE = 1;
@@ -42,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public SoldierAI()
     {
       m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
-      m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
+      m_Exploration = new ExplorationData();
     }
 
     public override void OptimizeBeforeSaving()

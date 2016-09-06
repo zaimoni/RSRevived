@@ -13,27 +13,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class ExplorationData
   {
-    private int m_LocationsQueueSize;
+    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
+    private const int EXPLORATION_ZONES = 3;
+
     private Queue<Location> m_LocationsQueue;
-    private int m_ZonesQueueSize;
     private Queue<Zone> m_ZonesQueue;
 
-    public ExplorationData(int locationsToRemember, int zonesToRemember)
+    public ExplorationData()
     {
-      if (locationsToRemember < 1)
-        throw new ArgumentOutOfRangeException("locationsQueueSize < 1");
-      if (zonesToRemember < 1)
-        throw new ArgumentOutOfRangeException("zonesQueueSize < 1");
-            m_LocationsQueueSize = locationsToRemember;
-            m_LocationsQueue = new Queue<Location>(locationsToRemember);
-            m_ZonesQueueSize = zonesToRemember;
-            m_ZonesQueue = new Queue<Zone>(zonesToRemember);
+      m_LocationsQueue = new Queue<Location>(EXPLORATION_LOCATIONS);
+      m_ZonesQueue = new Queue<Zone>(EXPLORATION_ZONES);
     }
 
     public void Clear()
     {
-            m_LocationsQueue.Clear();
-            m_ZonesQueue.Clear();
+      m_LocationsQueue.Clear();
+      m_ZonesQueue.Clear();
     }
 
     public bool HasExplored(Location loc)
@@ -43,7 +38,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private void AddExplored(Location loc)
     {
-      if (m_LocationsQueue.Count >= m_LocationsQueueSize)
+      if (m_LocationsQueue.Count >= EXPLORATION_LOCATIONS)
         m_LocationsQueue.Dequeue();
       m_LocationsQueue.Enqueue(loc);
     }
@@ -67,7 +62,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private void AddExplored(Zone zone)
     {
-      if (m_ZonesQueue.Count >= m_ZonesQueueSize)
+      if (m_ZonesQueue.Count >= EXPLORATION_ZONES)
         m_ZonesQueue.Dequeue();
       m_ZonesQueue.Enqueue(zone);
     }

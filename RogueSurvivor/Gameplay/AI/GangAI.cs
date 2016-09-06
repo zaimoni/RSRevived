@@ -27,8 +27,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
     private const int LOS_MEMORY = WorldTime.TURNS_PER_HOUR/3;
-    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
-    private const int EXPLORATION_ZONES = 3;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
@@ -39,7 +37,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public GangAI()
     {
       m_MemorizedSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
-      m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
+      m_Exploration = new ExplorationData();
     }
 
     public override void OptimizeBeforeSaving()

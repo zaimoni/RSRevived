@@ -18,8 +18,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal class ZombieAI : BaseAI
   {
     private const int LOS_MEMORY = 2*(WorldTime.TURNS_PER_HOUR/3);
-    private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
-    private const int EXPLORATION_ZONES = 3;
     private const int USE_EXIT_CHANCE = 50;
     private const int FOLLOW_SCENT_THROUGH_EXIT_CHANCE = 90;    // dead constant?
     private const int PUSH_OBJECT_CHANCE = 20;
@@ -42,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       base.TakeControl(actor);
       if (!m_Actor.Model.Abilities.ZombieAI_Explore) return;
-      m_Exploration = new ExplorationData(EXPLORATION_LOCATIONS, EXPLORATION_ZONES);
+      m_Exploration = new ExplorationData();
     }
 
     public override void OptimizeBeforeSaving()

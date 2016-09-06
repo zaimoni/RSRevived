@@ -66,8 +66,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     };
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
-    private const int EXPLORATION_MAX_LOCATIONS = WorldTime.TURNS_PER_HOUR;
-    private const int EXPLORATION_MAX_ZONES = 3;
     private const int USE_EXIT_CHANCE = 20;
     private const int BUILD_TRAP_CHANCE = 50;
     private const int BUILD_SMALL_FORT_CHANCE = 20;
@@ -95,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       m_LOSSensor = new LOSSensor(VISION_SEES);
       m_SafeTurns = 0;
-      m_Exploration = new ExplorationData(EXPLORATION_MAX_LOCATIONS, EXPLORATION_MAX_ZONES);
+      m_Exploration = new ExplorationData();
       m_LastEnemySaw = null;
       m_LastItemsSaw = null;
       m_LastSoldierSaw = null;
