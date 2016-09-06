@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // sleep (on bed) at time t with food value >= and sanity value >= 
     // * reversed-sense of these inequalities may also be of use
     // Engine.AI.Percept looks related, but reverse-engineering the required action is problematic
-    enum ObjectiveKinds
+    protected enum ObjectiveKinds
     {
       NONE = 0,
       LOCATION,
@@ -47,12 +47,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       WAKE_UP
     }
     [Serializable]
-    protected class Objective
+    protected abstract class Objective
     {
       int turn;
-      ObjectiveKinds _type;
-      object _data; // objectives have wildly varying required parameters
-      List<Objective> _sub;  // but we're pretty sure objectives can have subobjectives
+
+      public abstract ObjectiveKinds type();
+      public virtual List<Objective> Subobjectives() { return null; }
     }
 
 #if FAIL
