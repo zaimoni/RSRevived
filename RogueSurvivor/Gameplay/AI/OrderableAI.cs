@@ -43,7 +43,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       GET_ITEM,
       DROP_ITEM,
       USE_ITEM,
-      SLEEP
+      SLEEP,
+      WAKE_UP
     }
     [Serializable]
     protected class Objective
@@ -54,8 +55,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Objective> _sub;  // but we're pretty sure objectives can have subobjectives
     }
 
+#if FAIL
     // build out CivilianAI first, then fix the other AIs
     private List<Objective> m_Objectives;
+#endif
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
     private ActorOrder m_Order;
@@ -70,7 +73,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public OrderableAI()
     {
+#if FAIL
       m_Objectives = null;
+#endif
       m_Order = null;
       m_LastEnemySaw = null;
       m_LastItemsSaw = null;
@@ -80,6 +85,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_ReportStage = 0;
     }
 
+#if FAIL
     protected List<Objective> Objectives {
       get {
         if (null == m_Objectives) return null;
@@ -87,6 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new List<Objective>(m_Objectives);
       }
     }
+#endif
 
     public ActorOrder Order {
       get {
