@@ -877,6 +877,28 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool CanRun(out string reason)
+    {
+      if (!Model.Abilities.CanRun)
+      {
+        reason = "no ability to run";
+        return false;
+      }
+      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
+      {
+        reason = "not enough stamina to run";
+        return false;
+      }
+      reason = "";
+      return true;
+    }
+
+    public bool CanRun()
+    {
+      string reason;
+      return CanRun(out reason);
+    }
+
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {

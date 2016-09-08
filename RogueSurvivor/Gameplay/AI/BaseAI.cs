@@ -727,10 +727,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return (ActorAction) new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(game, otherPosition);
-      if (actorAction == null || !actorAction.IsLegal())
-        return (ActorAction) null;
-      if (other.IsRunning)
-                RunIfPossible(game.Rules);
+      if (actorAction == null || !actorAction.IsLegal()) return null;
+      if (other.IsRunning) RunIfPossible();
       return actorAction;
     }
 
@@ -750,9 +748,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       while (Rules.GridDistance(p, otherPosition) < minDist && ++num < 100);
       ActorAction a = BehaviorIntelligentBumpToward(game, p);
       if (a == null || !IsValidMoveTowardGoalAction(a) || !a.IsLegal())
-        return (ActorAction) null;
-      if (other.IsRunning)
-                RunIfPossible(game.Rules);
+        return null;
+      if (other.IsRunning) RunIfPossible();
       return a;
     }
 
@@ -778,7 +775,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor, game);
       tmpAction = BehaviorIntelligentBumpToward(game, target.Location.Position);
       if (null == tmpAction) return null;
-      if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible(game.Rules);
+      if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
       return tmpAction;
     }
 
@@ -804,7 +801,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             break;
           case ActorCourage.CAUTIOUS:
             decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(game, m_Actor, enemy);
+            doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           case ActorCourage.COURAGEOUS:
             if (isLeaderFighting)
@@ -813,7 +810,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               break;
             }
             decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(game, m_Actor, enemy);
+            doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled courage");
@@ -830,7 +827,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           case ActorCourage.CAUTIOUS:
           case ActorCourage.COURAGEOUS:
             decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(game, m_Actor, enemy);
+            doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           default:
             throw new ArgumentOutOfRangeException("unhandled courage");
@@ -893,7 +890,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction1 = BehaviorWalkAwayFrom(game, enemies);
         if (actorAction1 != null)
         {
-          if (doRun) RunIfPossible(game.Rules);
+          if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
@@ -1527,15 +1524,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected void RunIfPossible(Rules rules)
+    protected void RunIfPossible()
     {
-      if (!rules.CanActorRun(m_Actor)) return;
+      if (!m_Actor.CanRun()) return;
       m_Actor.IsRunning = true;
     }
 
-    protected void RunIfAdvisable(Rules rules, Point dest)
+    protected void RunIfAdvisable(Point dest)
     {
-      if (!rules.CanActorRun(m_Actor)) return;
+      if (!m_Actor.CanRun()) return;
       MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(dest);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
         if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP)) return;
@@ -1764,11 +1761,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor.WillTireAfter(Rules.STAMINA_COST_RUNNING);
     }
 
-    protected bool HasSpeedAdvantage(RogueGame game, Actor actor, Actor target)
+    protected bool HasSpeedAdvantage(Actor actor, Actor target)
     {
       int num1 = actor.Speed;
       int num2 = target.Speed;
-      return num1 > num2 || game.Rules.CanActorRun(actor) && !game.Rules.CanActorRun(target) && (!WillTireAfterRunning(actor) && num1 * 2 > num2);
+      return num1 > num2 || actor.CanRun() && !target.CanRun() && (!WillTireAfterRunning(actor) && num1 * 2 > num2);
     }
 
     protected bool IsBetween(Point A, Point between, Point B)

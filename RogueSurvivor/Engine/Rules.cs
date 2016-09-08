@@ -563,30 +563,6 @@ namespace djack.RogueSurvivor.Engine
       return CanActorGetItem(target, gift, out reason);
     }
 
-    public bool CanActorRun(Actor actor)
-    {
-      string reason;
-      return CanActorRun(actor, out reason);
-    }
-
-    public bool CanActorRun(Actor actor, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (!actor.Model.Abilities.CanRun)
-      {
-        reason = "no ability to run";
-        return false;
-      }
-      if (actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
-      {
-        reason = "not enough stamina to run";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorMeleeAttack(Actor actor, Actor target)
     {
       string reason;

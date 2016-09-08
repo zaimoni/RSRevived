@@ -243,7 +243,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Point tmp2 = m_Actor.Location.Position+tmp;
           if (RogueForm.Game.Rules.IsWalkableFor(m_Actor,new Location(m_Actor.Location.Map,tmp2)) && !damage_field.ContainsKey(tmp2)) retreat.Add(tmp2);
           Actor tmp3 = m_Actor.Location.Map.GetActorAt(tmp2);
-          if (null != tmp3 && game.Rules.IsEnemyOf(m_Actor, tmp3) && HasSpeedAdvantage(game, m_Actor, tmp3) && tmp3.CanActThisTurn && 1 >= tmp3.CurrentRangedAttack.Range) slow_threat.Add(tmp3);
+          if (null != tmp3 && game.Rules.IsEnemyOf(m_Actor, tmp3) && HasSpeedAdvantage(m_Actor, tmp3) && tmp3.CanActThisTurn && 1 >= tmp3.CurrentRangedAttack.Range) slow_threat.Add(tmp3);
         }
         if (0 == retreat.Count) {
           foreach(Direction tmp in Direction.COMPASS_LIST) {
@@ -278,7 +278,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
         tmpAction = new ActionMoveStep(m_Actor, game, tmp);
         if (tmpAction.IsLegal()) {
-          RunIfAdvisable(game.Rules,tmp);
+          RunIfAdvisable(tmp);
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }

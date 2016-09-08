@@ -5009,14 +5009,14 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerRunToggle(Actor player)
     {
       string reason;
-      if (!m_Rules.CanActorRun(player, out reason))
+      if (!player.CanRun(out reason))
       {
-                AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", (object) reason)));
       }
       else
       {
         player.IsRunning = !player.IsRunning;
-                AddMessage(MakeMessage(player, string.Format("{0} running.", (object)Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
+        AddMessage(MakeMessage(player, string.Format("{0} running.", (object)Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
       }
     }
 
@@ -6690,7 +6690,7 @@ namespace djack.RogueSurvivor.Engine
           return IsAdjacentToEnemy(map, position, m_Player);
         case AdvisorHint.MOVE_RUN:
           if (map.LocalTime.TurnCounter >= 5)
-            return m_Rules.CanActorRun(m_Player);
+            return m_Player.CanRun();
           return false;
         case AdvisorHint.MOVE_RESTING:
           return m_Player.IsTired;
@@ -11673,7 +11673,7 @@ namespace djack.RogueSurvivor.Engine
             DrawMapHealthBar(actor.HitPoints, maxHitPoints, gx2, gy2);
           if (actor.IsRunning)
             m_UI.UI_DrawImage("Icons\\running", gx2, gy2, tint);
-          else if (actor.Model.Abilities.CanRun && !m_Rules.CanActorRun(actor))
+          else if (actor.Model.Abilities.CanRun && !actor.CanRun())
             m_UI.UI_DrawImage("Icons\\cant_run", gx2, gy2, tint);
           if (actor.Model.Abilities.HasToSleep)
           {
@@ -12102,7 +12102,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         if (actor.IsRunning)
           m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
-        else if (m_Rules.CanActorRun(actor))
+        else if (actor.CanRun())
           m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
         else if (actor.IsTired)
           m_UI.UI_DrawStringBold(Color.Gray, "TIRED", gx + 126 + 100, gy, new Color?());

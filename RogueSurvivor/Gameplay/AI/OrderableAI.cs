@@ -155,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       tmpAction = BehaviorIntelligentBumpToward(game, location.Position);
       if (null == tmpAction) return null;
-      RunIfPossible(game.Rules);
+      RunIfPossible();
       return tmpAction;
     }
 
@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       tmpAction = BehaviorIntelligentBumpToward(game, location.Position);
       if (null == tmpAction) return null;
-      RunIfPossible(game.Rules);
+      RunIfPossible();
       return tmpAction;
     }
 
@@ -629,7 +629,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (goals == null || goals.Count == 0) return null;
       ActorAction actorAction = BehaviorWalkAwayFrom(game, goals);
       if (actorAction == null) return null;
-      RunIfPossible(game.Rules);
+      RunIfPossible();
       return actorAction;
     }
 
