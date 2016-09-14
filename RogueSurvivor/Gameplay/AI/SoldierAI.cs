@@ -59,12 +59,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
 
-      ActorAction tmpAction = BehaviorEquipBodyArmor(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      BehaviorEquipBodyArmor(game);
       
       // OrderableAI specific: respond to orders
       if (null != Order)
@@ -83,7 +78,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // fleeing from explosives is done before the enemies check
-      tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
+      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;

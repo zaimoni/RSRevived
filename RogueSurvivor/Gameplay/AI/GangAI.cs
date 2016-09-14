@@ -56,13 +56,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
       
-      ActorAction tmpAction = BehaviorEquipBodyArmor(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      BehaviorEquipBodyArmor(game);
 
+      ActorAction tmpAction;
       // start item juggling
       if ((m_Actor.HasLeader && !DontFollowLeader) || m_Actor.CountFollowers > 0)
       {

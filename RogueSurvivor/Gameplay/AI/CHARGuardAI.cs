@@ -50,11 +50,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
 
-      ActorAction tmpAction = BehaviorEquipBodyArmor(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      BehaviorEquipBodyArmor(game);
       
       // OrderableAI specific: respond to orders
       if (null != Order)
@@ -72,7 +68,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
 
-      tmpAction = BehaviorEquipWeapon(game);
+      ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

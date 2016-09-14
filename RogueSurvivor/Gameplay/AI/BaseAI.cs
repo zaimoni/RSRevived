@@ -288,6 +288,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
+    // policy change for behaviors: unless the action from a behavior is being used to decide whether to commit to the behavior,
+    // a behavior should handle all free actions itself and return only non-free actions.
+
     protected ActorAction BehaviorWander(RogueGame game, Predicate<Location> goodWanderLocFn)
     {
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>

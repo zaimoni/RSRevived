@@ -386,13 +386,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorEquipBodyArmor(RogueGame game)
+    protected void BehaviorEquipBodyArmor(RogueGame game)
     {
       ItemBodyArmor bestBodyArmor = GetBestBodyArmor((Predicate<Item>) (it => !IsItemTaboo(it)));
-      if (bestBodyArmor == null) return null;
+      if (bestBodyArmor == null) return;
       ItemBodyArmor equippedBodyArmor = GetEquippedBodyArmor();
-      if (equippedBodyArmor == bestBodyArmor) return null;
-      return new ActionEquipItem(m_Actor, game, bestBodyArmor);
+      if (equippedBodyArmor == bestBodyArmor) return;
+      game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
