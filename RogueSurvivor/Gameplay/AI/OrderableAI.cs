@@ -493,7 +493,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorEquipCellPhone(RogueGame game)
+    /// <returns>true if and only if a cell phone is required to be equipped</returns>
+    protected bool BehaviorEquipCellPhone(RogueGame game)
     {
       bool wantCellPhone = false;
       if (m_Actor.CountFollowers > 0) wantCellPhone = true;
@@ -501,22 +502,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemTracker itemTracker = m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         wantCellPhone = (null != itemTracker && itemTracker.CanTrackFollowersOrLeader);
       }
+      else return false; // XXX could dial 911, at least while that desk is manned
 
       Item equippedCellPhone = GetEquippedCellPhone();
       if (equippedCellPhone != null) {
-        if (wantCellPhone) return null;
-        return new ActionUnequipItem(m_Actor, game, equippedCellPhone);
+        if (wantCellPhone) return true;
+        game.DoUnequipItem(m_Actor, equippedCellPhone);
       }
-      if (!wantCellPhone) return null;
+      if (!wantCellPhone) return false;
       ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it =>
       {
         if (it.CanTrackFollowersOrLeader && 0 < it.Batteries)
           return !IsItemTaboo(it);
         return false;
       }));
-      if (firstTracker != null && game.Rules.CanActorEquipItem(m_Actor, firstTracker))
-        return new ActionEquipItem(m_Actor, game, firstTracker);
-      return null;
+      if (firstTracker != null && game.Rules.CanActorEquipItem(m_Actor, firstTracker)) {
+        game.DoEquipItem(m_Actor, equippedCellPhone);
+        return true;
+      }
+      return false;
     }
 
     /// <returns>null, or a legal ActionThrowGrenade</returns>
