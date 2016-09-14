@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -471,11 +472,7 @@ namespace djack.RogueSurvivor.Data
     public List<Actor> Players { 
       get {
         if (null != m_aux_Players) return m_aux_Players;
-        m_aux_Players = new List<Actor>(m_ActorsList.Count);
-        foreach(Actor tmp in m_ActorsList) { 
-          if (tmp.IsPlayer && !tmp.IsDead) m_aux_Players.Add(tmp);
-        }
-        m_aux_Players.TrimExcess();
+        m_aux_Players = new List<Actor>(m_ActorsList.Where((Func<Actor,bool>)(a => a.IsPlayer && !a.IsDead)));
         return m_aux_Players;
       }
     }
