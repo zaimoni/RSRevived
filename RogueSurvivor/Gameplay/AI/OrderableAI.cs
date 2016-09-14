@@ -519,6 +519,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    /// <returns>null, or a legal ActionThrowGrenade</returns>
     protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies)
     {
       if (enemies == null || enemies.Count == 0) return null;
@@ -527,41 +528,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model as ItemGrenadeModel;
       int maxRange = game.Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
-      Point? nullable = new Point?();
+      Point? nullable = null;
       int num1 = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
         if (Rules.GridDistance(m_Actor.Location.Position, point) > itemGrenadeModel.BlastAttack.Radius && (Rules.GridDistance(m_Actor.Location.Position, point) <= maxRange && LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange, (List<Point>) null))) {
           int num2 = 0;
           for (int x = point.X - itemGrenadeModel.BlastAttack.Radius; x <= point.X + itemGrenadeModel.BlastAttack.Radius; ++x) {
             for (int y = point.Y - itemGrenadeModel.BlastAttack.Radius; y <= point.Y + itemGrenadeModel.BlastAttack.Radius; ++y) {
-              if (m_Actor.Location.Map.IsInBounds(x, y)) {
-                Actor actorAt = m_Actor.Location.Map.GetActorAt(x, y);
-                if (actorAt != null && actorAt != m_Actor) {
-                  int distance = Rules.GridDistance(point, actorAt.Location.Position);
-                  if (distance <= itemGrenadeModel.BlastAttack.Radius) {
-                    if (game.Rules.IsEnemyOf(m_Actor, actorAt)) {
-                      int num3 = game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs;
-                      num2 += num3;
-                    } else {
-                      num2 = -1;
-                      break;
-                    }
-                  }
-                }
+              if (!m_Actor.Location.Map.IsInBounds(x, y)) continue;
+              Actor actorAt = m_Actor.Location.Map.GetActorAt(x, y);
+              if (null == actorAt) continue;
+              if (actorAt == m_Actor) throw new ArgumentOutOfRangeException("actorAt == m_Actor"); // probably an invariant failure
+              int distance = Rules.GridDistance(point, actorAt.Location.Position);
+              if (distance > itemGrenadeModel.BlastAttack.Radius) throw new ArgumentOutOfRangeException("distance > itemGrenadeModel.BlastAttack.Radius"); // again, probably an invariant failure
+              if (game.Rules.IsEnemyOf(m_Actor, actorAt)) {
+                num2 += (game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs);
+              } else {
+                num2 = -1;
+                break;
               }
             }
           }
-          if (num2 > 0 && (!nullable.HasValue || num2 > num1)) {
-            nullable = new Point?(point);
+          if (num2 > num1) {
+            nullable = point;
             num1 = num2;
           }
         }
       }
-      if (!nullable.HasValue) return null;
-      if (!firstGrenade.IsEquipped)
-        return new ActionEquipItem(m_Actor, game, firstGrenade);
+      if (null == nullable || !nullable.HasValue) return null;  // 2nd test probably redundant
+      if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);
       ActorAction actorAction = new ActionThrowGrenade(m_Actor, game, nullable.Value);
-      if (!actorAction.IsLegal()) return null;
+      if (!actorAction.IsLegal()) throw new ArgumentOutOfRangeException("created illegal ActionThrowGrenade");  // invariant failure
       return actorAction;
     }
 

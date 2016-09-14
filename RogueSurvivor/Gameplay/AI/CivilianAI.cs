@@ -224,10 +224,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies)
         m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
+      if (!Directives.CanThrowGrenades) {
+        ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
+        if (itemGrenade != null) {
+          game.DoUnequipItem(m_Actor, itemGrenade);
+          tmpAction = BehaviorEquipWeapon(game);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+        }
+      }
+
       tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+        return tmpAction;
+      }
+
+      tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
 
@@ -303,22 +321,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end melee risk management check
 
-      if (!Directives.CanThrowGrenades)
-      {
-        ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
-        if (itemGrenade != null) game.DoUnequipItem(m_Actor, itemGrenade);
-      }
-      else if (null != enemies)
+      if (null != enemies && Directives.CanThrowGrenades)
       {
         tmpAction = BehaviorThrowGrenade(game, enemies);
         if (null != tmpAction) return tmpAction;
-      }
-
-      tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
       }
 
       // all free actions must be above the enemies check
