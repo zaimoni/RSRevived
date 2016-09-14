@@ -243,11 +243,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      // while we need to be sure a valid weapon is equipped before attempting the melee risk management check, we don't
+      // want to take a non-free action at this time.
+      BehaviorEquipWeapon(game);
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -325,6 +323,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         tmpAction = BehaviorThrowGrenade(game, enemies);
         if (null != tmpAction) return tmpAction;
+      }
+
+      // inefficiently recheck for the non-free action from BehaviorEquipWeapon
+      tmpAction = BehaviorEquipWeapon(game);
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
 
       // all free actions must be above the enemies check

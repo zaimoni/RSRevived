@@ -454,32 +454,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionRangedAttack(m_Actor, game, target);
     }
 
+    /// <returns>null, or a non-free action</returns>
     protected ActorAction BehaviorEquipWeapon(RogueGame game)
     {
       Item equippedWeapon = GetEquippedWeapon();
+      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon && !Directives.CanFireWeapons) {
+        game.DoUnequipItem(m_Actor, equippedWeapon);
+        equippedWeapon = null;
+      }
       if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
       {
-        if (!Directives.CanFireWeapons)
-          return new ActionUnequipItem(m_Actor, game, equippedWeapon);
         ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
         if (rw.Ammo > 0) return null;
         ItemAmmo compatibleAmmoItem = GetCompatibleAmmoItem(rw);
         if (compatibleAmmoItem != null)
-          return new ActionUseItem(m_Actor, game, (Item) compatibleAmmoItem);
-        return new ActionUnequipItem(m_Actor, game, equippedWeapon);
+          return new ActionUseItem(m_Actor, game, compatibleAmmoItem);
+        game.DoUnequipItem(m_Actor, equippedWeapon);
+        equippedWeapon = null;
       }
       if (Directives.CanFireWeapons)
       {
         Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo((Predicate<Item>) (it => !IsItemTaboo(it)));
-        if (rangedWeaponWithAmmo != null && game.Rules.CanActorEquipItem(m_Actor, rangedWeaponWithAmmo))
-          return (ActorAction) new ActionEquipItem(m_Actor, game, rangedWeaponWithAmmo);
+        if (rangedWeaponWithAmmo != null && game.Rules.CanActorEquipItem(m_Actor, rangedWeaponWithAmmo)) {
+          game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
+          return null;
+        }
       }
 
       // ranged weapon non-option for some reason
       ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon((Predicate<Item>) (it => !IsItemTaboo(it)));
       if (bestMeleeWeapon == null) return null;
       if (equippedWeapon == bestMeleeWeapon) return null;
-      return (ActorAction) new ActionEquipItem(m_Actor, game, (Item) bestMeleeWeapon);
+      game.DoEquipItem(m_Actor, bestMeleeWeapon);
+      return null;
     }
 
     protected ActorAction BehaviorEquipStenchKiller(RogueGame game)
