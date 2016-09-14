@@ -228,11 +228,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
         if (itemGrenade != null) {
           game.DoUnequipItem(m_Actor, itemGrenade);
-          tmpAction = BehaviorEquipWeapon(game);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
+          BehaviorEquipWeapon(game);    // want only free actions
         }
       }
 

@@ -1158,6 +1158,7 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    // this cannot be side-effecting (martial arts, grenades)
     public Item GetEquippedWeapon()
     {
       return GetEquippedItem(DollPart.RIGHT_HAND);

@@ -1381,6 +1381,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(game, percept.Location.Position);
     }
 
+    // XXX why not delegate to Actor ...
     protected Item GetEquippedWeapon()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
