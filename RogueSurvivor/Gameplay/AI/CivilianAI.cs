@@ -156,14 +156,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ActorAction tmpAction;
       // start item juggling
-      if (!BehaviorEquipCellPhone(game)) {
-        if (NeedsLight(game)) {
-          tmpAction = BehaviorEquipLight(game);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        } else if (IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) {
+      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight(game)) {
+        if (IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) {
           tmpAction = BehaviorEquipStenchKiller(game);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;

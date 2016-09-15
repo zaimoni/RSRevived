@@ -60,20 +60,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ActorAction tmpAction;
       // start item juggling
-      if (!BehaviorEquipCellPhone(game)) {
-        if (NeedsLight(game)) {
-          tmpAction = BehaviorEquipLight(game);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        } else {
+      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight(game)) {
           tmpAction = BehaviorUnequipLeftItem(game);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
-        }
       }
       // end item juggling check
 

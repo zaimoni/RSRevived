@@ -469,18 +469,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorEquipLight(RogueGame game)
+    /// <returns>true if and only if light should be equipped</returns>
+    protected bool BehaviorEquipLight(RogueGame game)
     {
+      if (!NeedsLight(game)) return false;
       ItemLight tmp = GetEquippedLight();
-      if (null != tmp && !tmp.IsUseless) return null;
+      if (null != tmp && !tmp.IsUseless) return true;
       tmp = m_Actor.GetFirstMatching<ItemLight>((Predicate<ItemLight>)(it =>
       {
           if (!it.IsUseless) return !IsItemTaboo(it);
           return false;
       }));
-      if (tmp != null && game.Rules.CanActorEquipItem(m_Actor, tmp))
-        return new ActionEquipItem(m_Actor, game, tmp);
-      return null;
+      if (tmp != null && game.Rules.CanActorEquipItem(m_Actor, tmp)) {
+        game.DoEquipItem(m_Actor, tmp);
+        return true;
+      }
+      return false;
     }
 
     protected Item GetEquippedCellPhone()
