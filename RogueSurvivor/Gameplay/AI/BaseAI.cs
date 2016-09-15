@@ -492,20 +492,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorEquipStenchKiller(RogueGame game)
-    {
-      if ((Item)GetEquippedStenchKiller() != null)
-        return (ActorAction) null;
-      ItemSprayScent firstStenchKiller = GetFirstStenchKiller((Predicate<ItemSprayScent>)(it =>
-      {
-          if (0 < it.SprayQuantity) return !IsItemTaboo((Item)it);
-          return false;
-      }));
-      if (firstStenchKiller != null && game.Rules.CanActorEquipItem(m_Actor, (Item) firstStenchKiller))
-        return (ActorAction) new ActionEquipItem(m_Actor, game, (Item) firstStenchKiller);
-      return (ActorAction) null;
-    }
-
     protected ActorAction BehaviorUnequipLeftItem(RogueGame game)
     {
       Item equippedItem = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
@@ -1267,33 +1253,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUseStenchKiller(RogueGame game)
-    {
-      ItemSprayScent itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
-      if (itemSprayScent == null)
-        return (ActorAction) null;
-      if (itemSprayScent.SprayQuantity <= 0)
-        return (ActorAction) null;
-      if ((itemSprayScent.Model as ItemSprayScentModel).Odor != Odor.PERFUME_LIVING_SUPRESSOR)
-        return (ActorAction) null;
-      if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position))
-        return (ActorAction) null;
-      ActionUseItem actionUseItem = new ActionUseItem(m_Actor, game, (Item) itemSprayScent);
-      if (actionUseItem.IsLegal())
-        return (ActorAction) actionUseItem;
-      return (ActorAction) null;
-    }
-
-    protected bool IsGoodStenchKillerSpot(RogueGame game, Map map, Point pos)
-    {
-      if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0)
-        return false;
-      if (m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside != map.GetTileAt(pos).IsInside)
-        return true;
-      MapObject mapObjectAt = map.GetMapObjectAt(pos);
-      return mapObjectAt != null && mapObjectAt is DoorWindow || map.GetExitAt(pos) != null;
-    }
-
     protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts, out Actor target)
     {
       target = (Actor) null;
@@ -1454,26 +1413,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj is ItemBodyArmor && (fn == null || fn(obj))) return obj;
-      }
-      return null;
-    }
-
-    protected ItemSprayScent GetEquippedStenchKiller()
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemSprayScent && ((obj as ItemSprayScent).Model as ItemSprayScentModel).Odor == Odor.PERFUME_LIVING_SUPRESSOR)
-          return obj as ItemSprayScent;
-      }
-      return (ItemSprayScent) null;
-    }
-
-    protected ItemSprayScent GetFirstStenchKiller(Predicate<ItemSprayScent> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemSprayScent && (fn == null || fn(obj as ItemSprayScent)))
-          return obj as ItemSprayScent;
       }
       return null;
     }
