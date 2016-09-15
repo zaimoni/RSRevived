@@ -878,16 +878,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorEquipStenchKiller(RogueGame game)
+    protected bool BehaviorEquipStenchKiller(RogueGame game)
     {
-      if (GetEquippedStenchKiller() != null) return null;
+      if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) return false;
+      if (GetEquippedStenchKiller() != null) return true;
       ItemSprayScent firstStenchKiller = GetFirstStenchKiller((Predicate<ItemSprayScent>)(it =>
       {
           return !it.IsUseless && !IsItemTaboo(it);
       }));
-      if (firstStenchKiller != null && game.Rules.CanActorEquipItem(m_Actor, firstStenchKiller))
-        return new ActionEquipItem(m_Actor, game, firstStenchKiller);
-      return null;
+      if (firstStenchKiller != null && game.Rules.CanActorEquipItem(m_Actor, firstStenchKiller)) {
+        game.DoEquipItem(m_Actor, firstStenchKiller);
+        return true;
+      }
+      return false;
     }
 
     protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
