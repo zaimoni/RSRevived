@@ -154,14 +154,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       BehaviorEquipBodyArmor(game);
 
-      ActorAction tmpAction;
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight(game) && !BehaviorEquipStenchKiller(game)) {
-          tmpAction = BehaviorUnequipLeftItem(game);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
+        BehaviorUnequipLeftItem(game);
       }
       // end item juggling check
       
@@ -199,7 +194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
+      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;

@@ -492,13 +492,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUnequipLeftItem(RogueGame game)
-    {
-      Item equippedItem = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (equippedItem == null) return null;
-      return new ActionUnequipItem(m_Actor, game, equippedItem);
-    }
-
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
     {
       if (it == null) return null;

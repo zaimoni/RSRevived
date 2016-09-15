@@ -58,14 +58,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       
       BehaviorEquipBodyArmor(game);
 
-      ActorAction tmpAction;
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight(game)) {
-          tmpAction = BehaviorUnequipLeftItem(game);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
+          BehaviorUnequipLeftItem(game);
       }
       // end item juggling check
 
@@ -86,7 +81,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // Bikers and gangsters don't throw grenades
-      tmpAction = BehaviorEquipWeapon(game);
+      ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction)
       {
         m_Actor.Activity = Activity.IDLE;

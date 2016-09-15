@@ -460,6 +460,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, game, bestEdibleItem);
     }
 
+    protected void BehaviorUnequipLeftItem(RogueGame game)
+    {
+      Item equippedItem = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
+      if (null != equippedItem) game.DoUnequipItem(m_Actor, equippedItem);
+    }
+
     protected ItemLight GetEquippedLight()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
