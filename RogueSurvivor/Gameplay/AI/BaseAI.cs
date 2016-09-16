@@ -218,13 +218,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
     {
-      return Filter(percepts, (Predicate<Percept>) (p =>
-      {
-        Actor target = p.Percepted as Actor;
-        if (target == null)
-          return false;
-        return game.Rules.CanActorFireAt(m_Actor, target);
-      }));
+      return FilterActors(percepts, (Predicate<Actor>) (target => game.Rules.CanActorFireAt(m_Actor, target)));
     }
 
     protected List<Percept> FilterStacks(List<Percept> percepts)
