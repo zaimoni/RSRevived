@@ -331,27 +331,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (actorAction5 != null)
           return actorAction5;
       }
-      ActorAction actorAction6 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (actorAction6 != null)
-      {
+      tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
-        return actorAction6;
+        return tmpAction;
       }
       tmpAction = BehaviorRestIfTired(game);
-      if (null != tmpAction)
-      {
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
       if (null != enemies && assistLeader)
       {
         Percept target = FilterNearest(enemies);
-        ActorAction actorAction2 = BehaviorChargeEnemy(game, target);
-        if (actorAction2 != null)
-        {
+        tmpAction = BehaviorChargeEnemy(game, target);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
-          return actorAction2;
+          return tmpAction;
         }
       }
 
@@ -368,43 +365,38 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.IsHungry)
       {
-        ActorAction actorAction2 = BehaviorEat(game);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+        tmpAction = BehaviorEat(game);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
         if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
-          ActorAction actorAction5 = BehaviorGoEatCorpse(game, FilterCorpses(game, percepts1));
-          if (actorAction5 != null)
-          {
-                        m_Actor.Activity = Activity.IDLE;
-            return actorAction5;
+          tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(game, percepts1));
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
           }
         }
       }
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(m_Actor))
       {
-        ActorAction actorAction2 = BehaviorSecurePerimeter(game);
-        if (actorAction2 != null)
-        {
+        tmpAction = BehaviorSecurePerimeter(game);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+          return tmpAction;
         }
-        ActorAction actorAction5 = BehaviorSleep(game);
-        if (actorAction5 != null)
-        {
-          if (actorAction5 is ActionSleep)
+        tmpAction = BehaviorSleep(game);
+        if (null != tmpAction) {
+          if (tmpAction is ActionSleep)
             m_Actor.Activity = Activity.SLEEPING;
-          return actorAction5;
+          return tmpAction;
         }
       }
-      ActorAction actorAction7 = BehaviorDropUselessItem(game);
-      if (actorAction7 != null)
-      {
+      tmpAction = BehaviorDropUselessItem(game);
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
-        return actorAction7;
+        return tmpAction;
       }
 
       if (null == enemies && Directives.CanTakeItems)
@@ -476,25 +468,19 @@ retry:    Percept percept = FilterNearest(perceptList2);
           if (percepts2 != null)
           {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;
-            if (Rules.IsAdjacent(m_Actor.Location, actor.Location))
-            {
-              ActorAction actorAction2 = (ActorAction) new ActionTrade(m_Actor, game, actor);
-              if (actorAction2.IsLegal())
-              {
-                                MarkActorAsRecentTrade(actor);
+            if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
+              tmpAction = new ActionTrade(m_Actor, game, actor);
+              if (tmpAction.IsLegal()) {
+                MarkActorAsRecentTrade(actor);
                 game.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
-                return actorAction2;
+                return tmpAction;
               }
-            }
-            else
-            {
-              Point position1 = actor.Location.Position;
-              ActorAction actorAction2 = BehaviorIntelligentBumpToward(game, position1);
-              if (actorAction2 != null)
-              {
+            } else {
+              tmpAction = BehaviorIntelligentBumpToward(game, actor.Location.Position);
+              if (null != tmpAction) {
                 m_Actor.Activity = Activity.FOLLOWING;
                 m_Actor.TargetActor = actor;
-                return actorAction2;
+                return tmpAction;
               }
             }
           }
@@ -513,47 +499,42 @@ retry:    Percept percept = FilterNearest(perceptList2);
             return false;
           return itemsAt.HasItemOfType(typeof (ItemFood));
         })));
-        if (target != null)
-        {
-          ActorAction actorAction2 = BehaviorChargeEnemy(game, target);
-          if (actorAction2 != null)
-          {
+        if (target != null) {
+          tmpAction = BehaviorChargeEnemy(game, target);
+          if (null != tmpAction) {
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
-                        m_Actor.Activity = Activity.FIGHTING;
-                        m_Actor.TargetActor = target.Percepted as Actor;
-            return actorAction2;
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = target.Percepted as Actor;
+            return tmpAction;
           }
         }
       }
-      if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorUseStenchKiller(game);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {
+        tmpAction = BehaviorUseStenchKiller(game);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      ActorAction actorAction8 = BehaviorCloseDoorBehindMe(game, PrevLocation);
-      if (actorAction8 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction8;
+      tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
       if (m_Actor.Model.Abilities.HasSanity)
       {
         if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
-          ActorAction actorAction2 = BehaviorUseEntertainment(game);
-          if (actorAction2 != null) {
+          tmpAction = BehaviorUseEntertainment(game);
+          if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
-            return actorAction2;
+            return tmpAction;
           }
         }
-        ActorAction actorAction5 = BehaviorDropBoringEntertainment(game);
-        if (actorAction5 != null) {
+        tmpAction = BehaviorDropBoringEntertainment(game);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
-          return actorAction5;
+          return tmpAction;
         }
       }
       if (m_Actor.HasLeader && !DontFollowLeader)
@@ -561,95 +542,81 @@ retry:    Percept percept = FilterNearest(perceptList2);
         Point position1 = m_Actor.Leader.Location.Position;
         bool isVisible = m_LOSSensor.FOV.Contains(position1);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        ActorAction actorAction2 = BehaviorFollowActor(game, m_Actor.Leader, position1, isVisible, maxDist);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.FOLLOWING;
-                    m_Actor.TargetActor = m_Actor.Leader;
-          return actorAction2;
+        tmpAction = BehaviorFollowActor(game, m_Actor.Leader, position1, isVisible, maxDist);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.FOLLOWING;
+          m_Actor.TargetActor = m_Actor.Leader;
+          return tmpAction;
         }
       }
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)))
       {
         Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
         if (target != null) {
-          ActorAction actorAction2 = BehaviorLeadActor(game, target);
-          if (actorAction2 != null) {
+          tmpAction = BehaviorLeadActor(game, target);
+          if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             m_Actor.TargetActor = target.Percepted as Actor;
-            return actorAction2;
+            return tmpAction;
           }
         }
       }
       if (m_Actor.IsHungry)
       {
-        ActorAction actorAction2 = BehaviorAttackBarricade(game);
-        if (actorAction2 != null)
-        {
+        tmpAction = BehaviorAttackBarricade(game);
+        if (null != tmpAction) {
           game.DoEmote(m_Actor, "Open damn it! I know there is food there!");
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
         if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE))
         {
-          ActorAction actorAction5 = BehaviorPushNonWalkableObjectForFood(game);
-          if (actorAction5 != null)
-          {
+          tmpAction = BehaviorPushNonWalkableObjectForFood(game);
+          if (null != tmpAction) {
             game.DoEmote(m_Actor, "Where is all the damn food?!");
-                        m_Actor.Activity = Activity.IDLE;
-            return actorAction5;
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
           }
         }
       }
-      ActorAction actorAction9 = BehaviorGoReviveCorpse(game, FilterCorpses(game, percepts1));
-      if (actorAction9 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction9;
+      tmpAction = BehaviorGoReviveCorpse(game, FilterCorpses(game, percepts1));
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
-      if (game.Rules.RollChance(USE_EXIT_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorUseExit(game, BaseAI.UseExitFlags.DONT_BACKTRACK);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
+        tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.DONT_BACKTRACK);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      if (game.Rules.RollChance(BUILD_TRAP_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorBuildTrap(game);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
+        tmpAction = BehaviorBuildTrap(game);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorBuildLargeFortification(game, 1);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildLargeFortification(game, 1);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorBuildSmallFortification(game);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildSmallFortification(game);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
+        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
       Percept percept1 = FilterFirst(game, percepts1, (Predicate<Percept>) (p =>
@@ -661,74 +628,61 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }));
       if (percept1 != null)
                 m_LastSoldierSaw = percept1;
-      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE) && m_LastSoldierSaw != null)
-      {
-        ActorAction actorAction2 = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE) && m_LastSoldierSaw != null) {
+        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE) && m_LastEnemySaw != null)
-      {
-        ActorAction actorAction2 = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE) && m_LastEnemySaw != null) {
+        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE) && m_LastItemsSaw != null)
-      {
-        ActorAction actorAction2 = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE) && m_LastItemsSaw != null) {
+        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
       if (m_Actor.Model.Abilities.IsLawEnforcer && percepts1 != null && game.Rules.RollChance(LAW_ENFORCE_CHANCE))
       {
         Actor target;
-        ActorAction actorAction2 = BehaviorEnforceLaw(game, percepts1, out target);
-        if (actorAction2 != null)
-        {
-                    m_Actor.TargetActor = target;
-          return actorAction2;
+        tmpAction = BehaviorEnforceLaw(game, percepts1, out target);
+        if (null != tmpAction) {
+          m_Actor.TargetActor = target;
+          return tmpAction;
         }
       }
       if (m_Actor.CountFollowers > 0)
       {
         Actor target;
-        ActorAction actorAction2 = BehaviorDontLeaveFollowersBehind(game, 2, out target);
-        if (actorAction2 != null)
-        {
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
-          {
-            if (target.IsSleeping)
-            {
+        tmpAction = BehaviorDontLeaveFollowersBehind(game, 2, out target);
+        if (null != tmpAction) {
+          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
+            if (target.IsSleeping) {
               game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));
-            }
-            else
-            {
+            } else {
               if (m_LOSSensor.FOV.Contains(target.Location.Position))
                 game.DoEmote(m_Actor, string.Format("Come on {0}! Hurry up!", (object) target.Name));
               else
                 game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", (object) target.Name));
             }
           }
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
         }
       }
-      ActorAction actorAction10 = BehaviorExplore(game, m_Exploration);
-      if (actorAction10 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
-        return actorAction10;
+      tmpAction = BehaviorExplore(game, m_Exploration);
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
-            m_Actor.Activity = Activity.IDLE;
+      m_Actor.Activity = Activity.IDLE;
       return BehaviorWander(game);
     }
   }
