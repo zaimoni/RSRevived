@@ -16,6 +16,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -207,15 +208,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept> FilterActors(List<Percept> percepts, Predicate<Actor> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        Actor actor = percept.Percepted as Actor;
-        if (null != actor && predicateFn(actor)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      IEnumerable<Percept> tmp = percepts.Where((Func<Percept,bool>) (p =>
+      {
+        Actor a = p.Percepted as Actor;
+        return null != a && predicateFn(a);
+      }));
+      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
     }
 
     protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
@@ -238,15 +236,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept> FilterStacks(List<Percept> percepts, Predicate<Inventory> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        Inventory inv = percept.Percepted as Inventory;
-        if (null != inv && predicateFn(inv)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      IEnumerable<Percept> tmp = percepts.Where((Func<Percept,bool>) (p =>
+      {
+        Inventory i = p.Percepted as Inventory;
+        return null != i && predicateFn(i);
+      }));
+      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
     }
 
     protected List<Percept> FilterCorpses(List<Percept> percepts)
@@ -258,15 +253,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept> FilterCorpses(List<Percept> percepts, Predicate<List<Corpse>> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        List<Corpse> inv = percept.Percepted as List<Corpse>;
-        if (null != inv && predicateFn(inv)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      IEnumerable<Percept> tmp = percepts.Where((Func<Percept,bool>) (p =>
+      {
+        List<Corpse> i = p.Percepted as List<Corpse>;
+        return null != i && predicateFn(i);
+      }));
+      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
     }
 
     protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)
