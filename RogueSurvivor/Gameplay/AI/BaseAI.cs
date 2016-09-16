@@ -198,6 +198,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
+    // XXX dead function?
+    protected List<Percept> FilterActors(List<Percept> percepts)
+    {
+      return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is Actor));
+    }
+
     protected List<Percept> FilterActors(List<Percept> percepts, Predicate<Actor> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
@@ -228,9 +234,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is Inventory));
     }
 
+    // XXX dead function?
+    protected List<Percept> FilterStacks(List<Percept> percepts, Predicate<Inventory> predicateFn)
+    {
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
+        Inventory inv = percept.Percepted as Inventory;
+        if (null != inv && predicateFn(inv)) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
+          perceptList.Add(percept);
+        }
+      }
+      return perceptList;
+    }
+
     protected List<Percept> FilterCorpses(List<Percept> percepts)
     {
       return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is List<Corpse>));
+    }
+
+    // XXX dead function?
+    protected List<Percept> FilterCorpses(List<Percept> percepts, Predicate<List<Corpse>> predicateFn)
+    {
+      if (null == percepts || 0 == percepts.Count) return null;
+      List<Percept> perceptList = null;
+      foreach (Percept percept in percepts) {
+        List<Corpse> inv = percept.Percepted as List<Corpse>;
+        if (null != inv && predicateFn(inv)) {
+          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
+          perceptList.Add(percept);
+        }
+      }
+      return perceptList;
     }
 
     protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)
