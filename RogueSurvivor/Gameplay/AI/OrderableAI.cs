@@ -527,7 +527,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }));
       if (firstTracker != null && game.Rules.CanActorEquipItem(m_Actor, firstTracker)) {
-        game.DoEquipItem(m_Actor, equippedCellPhone);
+        game.DoEquipItem(m_Actor, firstTracker);
         return true;
       }
       return false;
