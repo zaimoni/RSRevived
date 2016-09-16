@@ -78,9 +78,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // fleeing from explosives is done before the enemies check
-      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
-      if (null != tmpAction)
-      {
+      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(percepts1));
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
         return tmpAction;
       }
@@ -89,8 +88,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> current_enemies = FilterCurrent(enemies);
 
       // throwing a grenade overrides normal weapon equipping choices
-      if (null != current_enemies)
-      {
+      if (null != current_enemies) {
         tmpAction = BehaviorThrowGrenade(game, current_enemies);
         if (null != tmpAction) return tmpAction;
       }

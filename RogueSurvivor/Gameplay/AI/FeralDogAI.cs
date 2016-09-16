@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.IsAlmostHungry(m_Actor))
       {
-        List<Percept> stacksPercepts = FilterStacks(game, percepts1);
+        List<Percept> stacksPercepts = FilterStacks(percepts1);
         if (stacksPercepts != null)
         {
           ActorAction actorAction = BehaviorGoEatFoodOnGround(game, stacksPercepts);
@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.IsHungry)
       {
-        List<Percept> corpsesPercepts = FilterCorpses(game, percepts1);
+        List<Percept> corpsesPercepts = FilterCorpses(percepts1);
         if (corpsesPercepts != null)
         {
           ActorAction actorAction = BehaviorGoEatCorpse(game, corpsesPercepts);

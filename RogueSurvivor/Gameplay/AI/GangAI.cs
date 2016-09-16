@@ -160,7 +160,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
-          ActorAction actorAction4 = BehaviorGoEatCorpse(game, FilterCorpses(game, percepts1));
+          ActorAction actorAction4 = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
           if (actorAction4 != null)
           {
             m_Actor.Activity = Activity.IDLE;
@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!flag1)
       {
         Map map = m_Actor.Location.Map;
-        List<Percept> percepts3 = FilterOut(game, FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
+        List<Percept> percepts3 = FilterOut(FilterStacks(percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn == map.LocalTime.TurnCounter)
             return IsOccupiedByOther(map, p.Location.Position);

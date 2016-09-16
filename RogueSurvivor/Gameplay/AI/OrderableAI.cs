@@ -628,7 +628,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorFleeFromExplosives(RogueGame game, List<Percept> itemStacks)
     {
       if (itemStacks == null || itemStacks.Count == 0) return null;
-      List<Percept> goals = Filter(game, itemStacks, (Predicate<Percept>) (p =>
+      List<Percept> goals = Filter(itemStacks, (Predicate<Percept>) (p =>
       {
         Inventory inventory = p.Percepted as Inventory;
         if (inventory == null || inventory.IsEmpty) return false;

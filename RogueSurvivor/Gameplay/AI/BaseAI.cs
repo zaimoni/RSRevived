@@ -214,7 +214,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
     {
-      return Filter(game, percepts, (Predicate<Percept>) (p =>
+      return Filter(percepts, (Predicate<Percept>) (p =>
       {
         Actor target = p.Percepted as Actor;
         if (target == null)
@@ -223,17 +223,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
-    protected List<Percept> FilterStacks(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterStacks(List<Percept> percepts)
     {
-      return Filter(game, percepts, (Predicate<Percept>) (p => p.Percepted is Inventory));
+      return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is Inventory));
     }
 
-    protected List<Percept> FilterCorpses(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterCorpses(List<Percept> percepts)
     {
-      return Filter(game, percepts, (Predicate<Percept>) (p => p.Percepted is List<Corpse>));
+      return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is List<Corpse>));
     }
 
-    protected List<Percept> Filter(RogueGame game, List<Percept> percepts, Predicate<Percept> predicateFn)
+    protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = null;
@@ -255,9 +255,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected List<Percept> FilterOut(RogueGame game, List<Percept> percepts, Predicate<Percept> rejectPredicateFn)
+    protected List<Percept> FilterOut(List<Percept> percepts, Predicate<Percept> rejectPredicateFn)
     {
-      return Filter(game, percepts, (Predicate<Percept>) (p => !rejectPredicateFn(p)));
+      return Filter(percepts, (Predicate<Percept>) (p => !rejectPredicateFn(p)));
     }
 
     protected List<Percept> SortByDistance(List<Percept> percepts)
@@ -1279,7 +1279,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorGoEatFoodOnGround(RogueGame game, List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;
-      List<Percept> percepts = Filter(game, stacksPercepts, (Predicate<Percept>) (p => (p.Percepted as Inventory).HasItemOfType(typeof (ItemFood))));
+      List<Percept> percepts = Filter(stacksPercepts, (Predicate<Percept>) (p => (p.Percepted as Inventory).HasItemOfType(typeof (ItemFood))));
       if (percepts == null) return null;
       Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
       ItemFood firstByType = itemsAt?.GetFirstByType(typeof (ItemFood)) as ItemFood;
@@ -1310,7 +1310,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (corpsesPercepts == null) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
       if (!m_Actor.HasItemOfModel((ItemModel) game.GameItems.MEDIKIT)) return null;
-      List<Percept> percepts = Filter(game, corpsesPercepts, (Predicate<Percept>) (p =>
+      List<Percept> percepts = Filter(corpsesPercepts, (Predicate<Percept>) (p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>)
         {

@@ -194,9 +194,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(game, percepts1));
-      if (null != tmpAction)
-      {
+      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(percepts1));
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
         return tmpAction;
       }
@@ -372,7 +371,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
-          tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(game, percepts1));
+          tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
@@ -402,7 +401,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == enemies && Directives.CanTakeItems)
       {
         Map map = m_Actor.Location.Map;
-        List<Percept> perceptList2 = SortByDistance(FilterOut(game, FilterStacks(game, percepts1), (Predicate<Percept>) (p =>
+        List<Percept> perceptList2 = SortByDistance(FilterOut(FilterStacks(percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
@@ -454,7 +453,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory))
         {
           List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
-          List<Percept> percepts2 = FilterOut(game, FilterNonEnemies(game, percepts1), (Predicate<Percept>) (p =>
+          List<Percept> percepts2 = FilterOut(FilterNonEnemies(game, percepts1), (Predicate<Percept>) (p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
               return true;
@@ -579,7 +578,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           }
         }
       }
-      tmpAction = BehaviorGoReviveCorpse(game, FilterCorpses(game, percepts1));
+      tmpAction = BehaviorGoReviveCorpse(game, FilterCorpses(percepts1));
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

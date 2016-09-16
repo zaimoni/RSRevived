@@ -96,7 +96,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       List<Percept> perceptList2 = FilterNonEnemies(game, percepts1);
       if (perceptList2 != null) {
-        List<Percept> percepts3 = Filter(game, perceptList2, (Predicate<Percept>) (p =>
+        List<Percept> percepts3 = Filter(perceptList2, (Predicate<Percept>) (p =>
         {
           Actor actor = p.Percepted as Actor;
           if (actor.Faction == game.GameFactions.TheCHARCorporation)

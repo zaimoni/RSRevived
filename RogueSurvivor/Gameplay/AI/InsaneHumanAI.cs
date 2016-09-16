@@ -119,7 +119,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return tmpAction;
             }
           }
-          List<Percept> perceptList2 = Filter(game, enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
+          List<Percept> perceptList2 = Filter(enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
           if (perceptList2 != null) {
             tmpAction = TargetGridMelee(game, perceptList2, out tmpActor);
             if (null != tmpAction) {
