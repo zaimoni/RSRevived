@@ -298,7 +298,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                   return tmpAction;
                 }
               }
-              if (1==enemies.Count) { // probably ok
+              if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
                 tmpAction = BehaviorMeleeAttack(game,en);
                 if (null != tmpAction) {
                   game.DoEquipItem(m_Actor, tmp_melee);
@@ -317,7 +317,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 tmpAction = BehaviorMeleeAttack(game,en);
                 if (null != tmpAction) return tmpAction;
               }
-              if (1==enemies.Count) { 
+              if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
                 tmpAction = BehaviorMeleeAttack(game,en);
                 if (null != tmpAction) return tmpAction;
               }
