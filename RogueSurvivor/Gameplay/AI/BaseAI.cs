@@ -486,7 +486,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (Directives.CanFireWeapons)
       {
-        Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo((Predicate<Item>) (it => !IsItemTaboo(it)));
+        Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo(it => !IsItemTaboo(it));
         if (rangedWeaponWithAmmo != null && game.Rules.CanActorEquipItem(m_Actor, rangedWeaponWithAmmo)) {
           game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
           return null;
@@ -494,7 +494,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ranged weapon non-option for some reason
-      ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon((Predicate<Item>) (it => !IsItemTaboo(it)));
+      ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon(it => !IsItemTaboo(it));
       if (bestMeleeWeapon == null) return null;
       if (equippedWeapon == bestMeleeWeapon) return null;
       game.DoEquipItem(m_Actor, bestMeleeWeapon);
@@ -1665,17 +1665,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn)
     {
       if (m_Actor.Inventory == null) return null;
+      List<ItemMeleeWeapon> tmp = m_Actor.Inventory.GetItemsByType<ItemMeleeWeapon>();
+      if (null == tmp) return null;
       int num1 = 0;
       ItemMeleeWeapon itemMeleeWeapon1 = null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
+      foreach (ItemMeleeWeapon obj in tmp) {
         if (fn == null || fn(obj)) {
-          ItemMeleeWeapon itemMeleeWeapon2 = obj as ItemMeleeWeapon;
-          if (itemMeleeWeapon2 != null) {
-            int num2 = (itemMeleeWeapon2.Model as ItemMeleeWeaponModel).Attack.Rating;
-            if (num2 > num1) {
-              num1 = num2;
-              itemMeleeWeapon1 = itemMeleeWeapon2;
-            }
+          int num2 = (obj.Model as ItemMeleeWeaponModel).Attack.Rating;
+          if (num2 > num1) {
+            num1 = num2;
+            itemMeleeWeapon1 = obj;
           }
         }
       }

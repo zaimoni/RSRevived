@@ -280,13 +280,53 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-#if FAIL
       if (null != enemies) {
-        // see if we could snipe something
-        tmp_rw = available_ranged_weapons?.Where(rw => 0 < rw.Ammo);
-        List<ItemRangedWeapon> noreload_ranged_weapons = (null!=tmp_rw && 0<tmp_rw.Count() ? new List<ItemRangedWeapon>(tmp_rw) : null);
-      }
+        if (1==Rules.GridDistance(enemies[0].Location.Position,m_Actor.Location.Position)) {
+          // something adjacent...check for one-shotting
+          ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon(it => !IsItemTaboo(it));
+          if (null!=tmp_melee && !tmp_melee.IsEquipped) {
+#if FAIL
+            foreach(Percept p in enemies) {
+              if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
+              Actor en = p.Percepted as Actor;
+              Attack tmp_attack = m_Actor.HypotheticalMeleeAttack(en,tmp_melee);
+              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
+              // can one-shot
+              if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {
+                tmpAction = BehaviorMeleeAttack(game,en);
+                if (null != tmpAction) {
+                  game.DoEquipItem(m_Actor, tmp_melee)
+                  return tmpAction;
+                }
+              }
+              if (1==enemies.Count) { 
+                tmpAction = BehaviorMeleeAttack(game,en);
+                if (null != tmpAction) {
+                  game.DoEquipItem(m_Actor, tmp_melee)
+                  return tmpAction;
+                }
+              }
+            }
 #endif
+          } else {
+            foreach(Percept p in enemies) {
+              if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
+              Actor en = p.Percepted as Actor;
+              Attack tmp_attack = m_Actor.MeleeAttack(en);
+              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
+              // can one-shot
+              if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {
+                tmpAction = BehaviorMeleeAttack(game,en);
+                if (null != tmpAction) return tmpAction;
+              }
+              if (1==enemies.Count) { 
+                tmpAction = BehaviorMeleeAttack(game,en);
+                if (null != tmpAction) return tmpAction;
+              }
+            }
+          }
+        }
+      }
 
       tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) {
