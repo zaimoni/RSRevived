@@ -95,58 +95,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // April 22, 2016: testing indicates this does not need micro-optimization
     protected List<Percept> FilterSameMap(List<Percept> percepts)
     {
-      if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
       Map map = m_Actor.Location.Map;
-      foreach (Percept percept in percepts) {
-        if (percept.Location.Map == map) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      return Filter(percepts,(Predicate<Percept>) (p => p.Location.Map == map));
     }
 
     protected List<Percept> FilterEnemies(RogueGame game, List<Percept> percepts)
     {
-      if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        Actor target = percept.Percepted as Actor;
-        if (null != target && target != m_Actor && game.Rules.IsEnemyOf(m_Actor, target)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && game.Rules.IsEnemyOf(m_Actor, target)));
     }
 
     protected List<Percept> FilterNonEnemies(RogueGame game, List<Percept> percepts)
     {
-      if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        Actor target = percept.Percepted as Actor;
-        if (null != target && target != m_Actor && !game.Rules.IsEnemyOf(m_Actor, target)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !game.Rules.IsEnemyOf(m_Actor, target)));
     }
 
     protected List<Percept> FilterCurrent(List<Percept> percepts)
     {
-      if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      foreach (Percept percept in percepts) {
-        if (percept.Turn == turnCounter) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      return Filter(percepts,(Predicate<Percept>) (p => p.Turn == turnCounter));
     }
 
     protected Percept FilterNearest(List<Percept> percepts)
