@@ -190,7 +190,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
         if (itemGrenade != null) {
           game.DoUnequipItem(m_Actor, itemGrenade);
-          BehaviorEquipWeapon(game);    // want only free actions
         }
       }
 
@@ -199,10 +198,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
         return tmpAction;
       }
-
-      // while we need to be sure a valid weapon is equipped before attempting the melee risk management check, we don't
-      // want to take a non-free action at this time.
-      BehaviorEquipWeapon(game);
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -244,10 +239,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
+      IEnumerable<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != GetCompatibleAmmoItem(rw));
+      List<ItemRangedWeapon> available_ranged_weapons = (null!=tmp_rw && 0<tmp_rw.Count() ? new List<ItemRangedWeapon>(tmp_rw) : null);
+
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
       // XXX we also want to be close enough to fire at all
-      if (null != retreat && (m_Actor.GetEquippedWeapon() is ItemRangedWeapon)) {
+      if (null != retreat && null!=available_ranged_weapons) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
         tmpAction = new ActionMoveStep(m_Actor, game, tmp);
         if (tmpAction.IsLegal()) {
@@ -282,7 +280,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      // inefficiently recheck for the non-free action from BehaviorEquipWeapon
       tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;

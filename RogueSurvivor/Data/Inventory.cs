@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   internal class Inventory
   {
     private List<Item> m_Items;
-    public int MaxCapacity { get; set; }
+    public int MaxCapacity { get; set; }    // Actor requires a public setter
 
     public IEnumerable<Item> Items
     {
