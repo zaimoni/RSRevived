@@ -550,11 +550,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
-    // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
-    public Attack MeleeAttack(Actor target = null)
+    public Attack HypotheticalMeleeAttack(Attack baseAttack, Actor target = null)
     {
-      Attack baseAttack = CurrentMeleeAttack;
       int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
       int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
       if (GetEquippedWeapon() == null)
@@ -569,6 +566,10 @@ namespace djack.RogueSurvivor.Data
       else if (IsSleepy) num5 *= 0.75f;
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
+
+    // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
+    // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
+    public Attack MeleeAttack(Actor target = null) { return HypotheticalMeleeAttack(CurrentMeleeAttack, target); }
 
     public Attack RangedAttack(int distance, Actor target = null)
     {
