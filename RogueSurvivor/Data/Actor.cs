@@ -1002,6 +1002,12 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = Math.Min(m_FoodPoints + f, MaxRot);
     }
 
+    public bool CanEatCorpse {
+      get {
+        return Model.Abilities.IsUndead || IsStarving || IsInsane;
+      }
+    }
+
     // sleep
     public int SleepToHoursUntilSleepy {
       get {

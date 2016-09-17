@@ -1279,13 +1279,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorGoEatCorpse(RogueGame game, List<Percept> corpsesPercepts)
     {
       if (corpsesPercepts == null) return null;
+      if (!m_Actor.CanEatCorpse) return null;
       if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
       List<Corpse> corpsesAt = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
       if (corpsesAt != null)
       {
         Corpse corpse = corpsesAt[0];
-        if (game.Rules.CanActorEatCorpse(m_Actor, corpse))
-          return (ActorAction) new ActionEatCorpse(m_Actor, game, corpse);
+        return new ActionEatCorpse(m_Actor, game, corpse);
       }
       Percept percept = FilterNearest(corpsesPercepts);
       if (!m_Actor.Model.Abilities.IsIntelligent)

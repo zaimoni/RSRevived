@@ -4633,19 +4633,19 @@ namespace djack.RogueSurvivor.Engine
         string reason;
         if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason))
         {
-                    DoStopDragCorpse(m_Player, c);
+          DoStopDragCorpse(m_Player, c);
           return false;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
         return false;
       }
       string reason1;
       if (m_Rules.CanActorStartDragCorpse(m_Player, c, out reason1))
       {
-                DoStartDragCorpse(m_Player, c);
+        DoStartDragCorpse(m_Player, c);
         return false;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
       return false;
     }
 
@@ -4654,21 +4654,21 @@ namespace djack.RogueSurvivor.Engine
       if (m_Player.Model.Abilities.IsUndead)
       {
         string reason;
-        if (m_Rules.CanActorEatCorpse(m_Player, c, out reason))
+        if (m_Rules.CanActorEatCorpse(m_Player, c, out reason)) // currently automatically succeeds, other than null checks
         {
-                    DoEatCorpse(m_Player, c);
+          DoEatCorpse(m_Player, c);
           return true;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason)));
         return false;
       }
       string reason1;
       if (m_Rules.CanActorButcherCorpse(m_Player, c, out reason1))
       {
-                DoButcherCorpse(m_Player, c);
+        DoButcherCorpse(m_Player, c);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", (object) c.DeadGuy.Name, (object) reason1)));
       return false;
     }
 
@@ -4676,15 +4676,14 @@ namespace djack.RogueSurvivor.Engine
     {
       Point corpsePos;
       Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
-      if (corpse == null)
-        return false;
+      if (corpse == null) return false;
       string reason;
       if (!m_Rules.CanActorEatCorpse(player, corpse, out reason))
       {
-                AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
         return false;
       }
-            DoEatCorpse(player, corpse);
+      DoEatCorpse(player, corpse);
       return true;
     }
 
@@ -4692,15 +4691,14 @@ namespace djack.RogueSurvivor.Engine
     {
       Point corpsePos;
       Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
-      if (corpse == null)
-        return false;
+      if (corpse == null) return false;
       string reason;
       if (!m_Rules.CanActorReviveCorpse(player, corpse, out reason))
       {
-                AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", (object) corpse.DeadGuy.Name, (object) reason)));
         return false;
       }
-            DoReviveCorpse(player, corpse);
+      DoReviveCorpse(player, corpse);
       return true;
     }
 
