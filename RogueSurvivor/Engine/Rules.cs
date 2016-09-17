@@ -1261,31 +1261,17 @@ namespace djack.RogueSurvivor.Engine
       return actorList;
     }
 
-    public bool CanActorFireAt(Actor actor, Actor target)
+    public bool CanActorFireAt(Actor actor, Actor target)   // must be public
     {
       string reason;
-      return CanActorFireAt(actor, target, out reason);
+      return CanActorFireAt(actor, target, null, out reason);
     }
 
-    public bool CanActorFireAt(Actor actor, Actor target, out string reason)
+    public bool CanActorFireAt(Actor actor, Actor target, List<Point> LoF, out string reason)  // must be public
     {
-      return CanActorFireAt(actor, target, (List<Point>) null, out reason);
-    }
-
-    public bool CanActorFireAt(Actor actor, Actor target, List<Point> LoF)
-    {
-      string reason;
-      return CanActorFireAt(actor, target, LoF, out reason);
-    }
-
-    public bool CanActorFireAt(Actor actor, Actor target, List<Point> LoF, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (LoF != null)
-        LoF.Clear();
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (target == null) throw new ArgumentNullException("target");
+      if (LoF != null) LoF.Clear();
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null)
       {
