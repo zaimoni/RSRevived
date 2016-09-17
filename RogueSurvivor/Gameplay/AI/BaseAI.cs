@@ -192,7 +192,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is Inventory));
     }
 
-    // XXX dead function?
     protected List<Percept> FilterStacks(List<Percept> percepts, Predicate<Inventory> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;

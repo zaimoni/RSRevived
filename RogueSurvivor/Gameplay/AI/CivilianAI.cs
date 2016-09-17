@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      ActorAction tmpAction = BehaviorFleeFromExplosives(game, FilterStacks(percepts1));
+      ActorAction tmpAction = BehaviorFleeFromExplosives(game, percepts1);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
         return tmpAction;
