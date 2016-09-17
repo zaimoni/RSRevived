@@ -262,6 +262,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
+    // firearms use grid i.e. L-infinity distance
+    protected List<Percept> SortByGridDistance(List<Percept> percepts)
+    {
+      if (null == percepts || 0 == percepts.Count) return null;
+      if (1==percepts.Count) return percepts;
+
+      List<Percept> perceptList = new List<Percept>(percepts);
+      Point from = m_Actor.Location.Position;
+      Dictionary<Percept,int> dict = new Dictionary<Percept,int>(perceptList.Count);
+      foreach(Percept p in perceptList) {
+        dict.Add(p,Rules.GridDistance(p.Location.Position, from));
+      }
+      perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
+      {
+        int num1 = dict[pA];
+        int num2 = dict[pB];
+        if (num1 > num2) return 1;
+        return num1 < num2 ? -1 : 0;
+      }));
+      return perceptList;
+    }
+
     protected List<Percept> SortByDate(RogueGame game, List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;

@@ -178,7 +178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ExpireTaboos();
 
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(game, percepts1));
       // civilians track how long since they've seen trouble
       if (null != enemies) m_SafeTurns = 0;
       else ++m_SafeTurns;
@@ -279,6 +279,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorThrowGrenade(game, enemies);
         if (null != tmpAction) return tmpAction;
       }
+
+#if FAIL
+      if (null != enemies) {
+        // see if we could snipe something
+        tmp_rw = available_ranged_weapons?.Where(rw => 0 < rw.Ammo);
+        List<ItemRangedWeapon> noreload_ranged_weapons = (null!=tmp_rw && 0<tmp_rw.Count() ? new List<ItemRangedWeapon>(tmp_rw) : null);
+      }
+#endif
 
       tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) {
