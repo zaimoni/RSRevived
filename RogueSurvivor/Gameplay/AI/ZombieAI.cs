@@ -87,13 +87,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      List<Percept> corpsesPercepts = FilterCorpses(percepts1);
-      if (corpsesPercepts != null) {
-        ActorAction actorAction = BehaviorGoEatCorpse(game, corpsesPercepts);
-        if (actorAction != null) {
-          m_Actor.Activity = Activity.IDLE;
-          return actorAction;
-        }
+      tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
       if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE)) {
         ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);

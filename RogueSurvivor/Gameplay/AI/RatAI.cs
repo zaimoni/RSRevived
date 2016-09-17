@@ -63,13 +63,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      List<Percept> corpsesPercepts = FilterCorpses(percepts1);
-      if (corpsesPercepts != null) {
-        ActorAction actorAction = BehaviorGoEatCorpse(game, corpsesPercepts);
-        if (actorAction != null) {
-          m_Actor.Activity = Activity.IDLE;
-          return actorAction;
-        }
+      ActorAction actorAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+      if (actorAction != null) {
+        m_Actor.Activity = Activity.IDLE;
+        return actorAction;
       }
       ActorAction actorAction3 = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
       if (actorAction3 != null) {

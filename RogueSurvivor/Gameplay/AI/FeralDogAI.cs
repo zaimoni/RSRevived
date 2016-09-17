@@ -98,16 +98,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.IsHungry)
       {
-        List<Percept> corpsesPercepts = FilterCorpses(percepts1);
-        if (corpsesPercepts != null)
+        ActorAction actorAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+        if (actorAction != null)
         {
-          ActorAction actorAction = BehaviorGoEatCorpse(game, corpsesPercepts);
-          if (actorAction != null)
-          {
-                        m_Actor.IsRunning = true;
-                        m_Actor.Activity = Activity.IDLE;
-            return actorAction;
-          }
+          m_Actor.IsRunning = true;
+          m_Actor.Activity = Activity.IDLE;
+          return actorAction;
         }
       }
       if (m_Actor.IsSleepy)
