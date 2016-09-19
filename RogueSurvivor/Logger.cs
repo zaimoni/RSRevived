@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 
 namespace djack.RogueSurvivor
 {
@@ -24,6 +23,7 @@ namespace djack.RogueSurvivor
       }
     }
 
+    // XXX dead function?
     public static void Clear()
     {
       lock (Logger.s_Mutex) { Logger.s_Lines.Clear(); }
