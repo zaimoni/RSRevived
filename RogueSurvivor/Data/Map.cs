@@ -871,47 +871,21 @@ namespace djack.RogueSurvivor.Data
 
     public List<Point> FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-      if (!IsInBounds(position))
-        return (List<Point>) null;
-      List<Point> pointList = (List<Point>) null;
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        Point p = position + direction;
-        if (IsInBounds(p) && predicateFn(p))
-        {
-          if (pointList == null)
-            pointList = new List<Point>(8);
-          pointList.Add(p);
-        }
-      }
-      return pointList;
+      if (!IsInBounds(position)) return null;
+      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
+      return (0<tmp.Count() ? new List<Point>(tmp) : null);
     }
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-      if (!IsInBounds(position))
-        return false;
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        Point p = position + direction;
-        if (IsInBounds(p) && predicateFn(p))
-          return true;
-      }
-      return false;
+      if (!IsInBounds(position)) return false;
+      return Direction.COMPASS.Select(dir => position + dir).Any(p=>IsInBounds(p) && predicateFn(p));
     }
 
     public int CountAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
-      if (!IsInBounds(position))
-        return 0;
-      int num = 0;
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        Point p = position + direction;
-        if (IsInBounds(p) && predicateFn(p))
-          ++num;
-      }
-      return num;
+      if (!IsInBounds(position)) return 0;
+      return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
     }
 
     public void ForEachAdjacentInMap(Point position, Action<Point> fn)
