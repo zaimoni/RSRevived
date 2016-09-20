@@ -369,30 +369,22 @@ namespace djack.RogueSurvivor.Data
       return zoneList;
     }
 
+    // XXX dead function?
     public Zone GetZoneByName(string name)
     {
-      foreach (Zone mZone in m_Zones) {
-        if (mZone.Name == name) return mZone;
-      }
-      return null;
+      return m_Zones.FirstOrDefault(mZone => mZone.Name == name);
     }
 
     public Zone GetZoneByPartialName(string partOfname)
     {
-      foreach (Zone mZone in m_Zones) {
-        if (mZone.Name.Contains(partOfname)) return mZone;
-      }
-      return null;
+      return m_Zones.FirstOrDefault(mZone => mZone.Name.Contains(partOfname));
     }
 
     public bool HasZonePartiallyNamedAt(Point pos, string partOfName)
     {
       List<Zone> zonesAt = GetZonesAt(pos.X, pos.Y);
       if (zonesAt == null) return false;
-      foreach (Zone zone in zonesAt) {
-        if (zone.Name.Contains(partOfName)) return true;
-      }
-      return false;
+      return zonesAt.Any(zone=>zone.Name.Contains(partOfName));
     }
 
     // Actor manipulation functions
