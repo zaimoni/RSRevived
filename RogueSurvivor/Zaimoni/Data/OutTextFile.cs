@@ -2,12 +2,12 @@
 
 namespace Zaimoni.Data
 {
-    class OutTextFile
+    public class OutTextFile
     {
         public readonly string filepath;
         private StreamWriter _file = null;
 
-        OutTextFile(string dest) {
+        public OutTextFile(string dest) {
             filepath = dest;
         }
 

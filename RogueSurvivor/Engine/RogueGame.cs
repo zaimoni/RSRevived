@@ -3675,19 +3675,17 @@ namespace djack.RogueSurvivor.Engine
       m_Session.CurrentMap = player.Location.Map;  // multi-PC support
       ComputeViewRect(player.Location.Position);
       m_Session.Scoring.TurnsSurvived = m_Session.WorldTime.TurnCounter;
-      if (m_IsPlayerLongWait)
-      {
-        if (CheckPlayerWaitLong(player))
-        {
-                    DoWait(player);
+      if (m_IsPlayerLongWait) {
+        if (CheckPlayerWaitLong(player)) {
+          DoWait(player);
           return;
         }
-                m_IsPlayerLongWait = false;
-                m_IsPlayerLongWaitForcedStop = false;
+        m_IsPlayerLongWait = false;
+        m_IsPlayerLongWaitForcedStop = false;
         if (m_Session.WorldTime.TurnCounter >= m_PlayerLongWaitEnd.TurnCounter)
-                    AddMessage(new Data.Message("Wait ended.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+          AddMessage(new Data.Message("Wait ended.", m_Session.WorldTime.TurnCounter, Color.Yellow));
         else
-                    AddMessage(new Data.Message("Wait interrupted!", m_Session.WorldTime.TurnCounter, Color.Red));
+          AddMessage(new Data.Message("Wait interrupted!", m_Session.WorldTime.TurnCounter, Color.Red));
       }
 
       GC.Collect(); // force garbage collection when things should be slow anyway
@@ -3695,7 +3693,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       do
       {
-                m_UI.UI_SetCursor((Cursor) null);
+        m_UI.UI_SetCursor(null);
         if (RogueGame.s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
                     AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
           {
@@ -3729,8 +3727,7 @@ namespace djack.RogueSurvivor.Engine
         if (flag3)
         {
           PlayerCommand command = InputTranslator.KeyToCommand(key);
-          if (command == PlayerCommand.QUIT_GAME)
-          {
+          if (command == PlayerCommand.QUIT_GAME) {
             if (HandleQuitGame()) {
               StopTheWorld();
               RedrawPlayScreen();
@@ -3744,14 +3741,14 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.NONE:
                 break;
               case PlayerCommand.HELP_MODE:
-                                HandleHelpMode();
+                HandleHelpMode();
                 break;
               case PlayerCommand.ADVISOR:
-                                HandleAdvisor(player);
+                HandleAdvisor(player);
                 break;
               case PlayerCommand.OPTIONS_MODE:
-                                HandleOptions(true);
-                                ApplyOptions(true);
+                HandleOptions(true);
+                ApplyOptions(true);
                 break;
               case PlayerCommand.KEYBINDING_MODE:
                                 HandleRedefineKeys();
@@ -3776,11 +3773,10 @@ namespace djack.RogueSurvivor.Engine
                 m_HasLoadedGame = true;
                 break;
               case PlayerCommand.ABANDON_GAME:
-                if (HandleAbandonGame())
-                {
-                                    StopSimThread();
+                if (HandleAbandonGame()) {
+                  StopSimThread();
                   flag1 = false;
-                                    KillActor((Actor) null, m_Player, "suicide");
+                  KillActor((Actor) null, m_Player, "suicide");
                   break;
                 }
                 break;
@@ -3809,30 +3805,27 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.NW);
                 break;
               case PlayerCommand.RUN_TOGGLE:
-                if (TryPlayerInsanity())
-                {
+                if (TryPlayerInsanity()) {
                   flag1 = false;
                   break;
                 }
-                                HandlePlayerRunToggle(player);
+                HandlePlayerRunToggle(player);
                 break;
               case PlayerCommand.WAIT_OR_SELF:
-                if (TryPlayerInsanity())
-                {
+                if (TryPlayerInsanity()) {
                   flag1 = false;
                   break;
                 }
                 flag1 = false;
-                                DoWait(player);
+                DoWait(player);
                 break;
               case PlayerCommand.WAIT_LONG:
-                if (TryPlayerInsanity())
-                {
+                if (TryPlayerInsanity()) {
                   flag1 = false;
                   break;
                 }
                 flag1 = false;
-                                StartPlayerWaitLong(player);
+                StartPlayerWaitLong(player);
                 break;
               case PlayerCommand.BARRICADE_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerBarricade(player);
@@ -3870,7 +3863,7 @@ namespace djack.RogueSurvivor.Engine
                   flag1 = false;
                   break;
                 }
-                                HandlePlayerMarkEnemies(player);
+                HandlePlayerMarkEnemies(player);
                 break;
               case PlayerCommand.ORDER_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(player);
@@ -3901,6 +3894,9 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.ITEM_INFO:
                 HandleItemInfo();
+                break;
+              case PlayerCommand.DAIMON_MAP:    // cheat command
+                HandleDaimonMap();
                 break;
               case PlayerCommand.MESSAGE_LOG:
                 HandleMessageLog();
@@ -3958,9 +3954,9 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-            UpdatePlayerFOV(player);
-            ComputeViewRect(player.Location.Position);
-            m_Session.LastTurnPlayerActed = m_Session.WorldTime.TurnCounter;
+      UpdatePlayerFOV(player);
+      ComputeViewRect(player.Location.Position);
+      m_Session.LastTurnPlayerActed = m_Session.WorldTime.TurnCounter;
     }
 
     private bool TryPlayerInsanity()
@@ -4417,6 +4413,27 @@ namespace djack.RogueSurvivor.Engine
       }
       while (flag1);
       ClearOverlays();
+    }
+
+    private void HandleDaimonMap()
+    {
+      if (!Session.Get.CMDoptionExists("socrates-daimon")) return;
+      AddMessage(new Data.Message("You pray for wisdom.", m_Session.WorldTime.TurnCounter, Color.Green));
+      Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
+      Session.CurrentMap.District.DaimonMap(dest);
+      int x = 0;
+      int y = 0;
+      for(x = 0; x<Session.World.Size; x++) {
+        for(y = 0; y<Session.World.Size; y++) {
+          if (x==Session.CurrentMap.District.WorldPosition.X && y == Session.CurrentMap.District.WorldPosition.Y) continue;
+          District d = Session.World[x,y];
+//        lock(d) { // this is causing a deadlock
+            d.DaimonMap(dest);
+//        }
+        }
+      }
+      dest.Close();
+      AddMessage(new Data.Message("Your prayers are not clearly answered.", m_Session.WorldTime.TurnCounter, Color.Yellow));
     }
 
     private bool HandleMouseLook(Point mousePos)

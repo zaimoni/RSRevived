@@ -12,6 +12,11 @@ namespace djack.RogueSurvivor.Engine
   {
     public static PlayerCommand KeyToCommand(KeyEventArgs key)
     {
+      // debugging/cheat commands
+      if (Session.Get.CMDoptionExists("socrates-daimon")) {
+        if (key.KeyData == (Keys.I  | Keys.Control)) return PlayerCommand.DAIMON_MAP;
+      }
+
       PlayerCommand playerCommand = RogueGame.KeyBindings.Get(key.KeyData);
       if (playerCommand != PlayerCommand.NONE)
         return playerCommand;

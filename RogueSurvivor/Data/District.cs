@@ -174,6 +174,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // cheat map similar to savefile viewer
+    public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
+      if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
+      dest.WriteLine(Name+"<br>");   
+    }
+
     // low-level support
     public void GenerateEntryMap(World world, Point policeStationDistrictPos, Point hospitalDistrictPos, int districtSize, Gameplay.Generators.BaseTownGenerator m_TownGenerator)
     {
