@@ -177,7 +177,15 @@ namespace djack.RogueSurvivor.Data
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
-      dest.WriteLine(Name+"<br>");   
+      m_EntryMap.DaimonMap(dest);   // name of this is also the district name
+      m_SewersMap.DaimonMap(dest);
+      if (null!= m_SubwayMap) m_SubwayMap.DaimonMap(dest);
+      foreach(Map map in m_Maps) {
+        if (map == m_EntryMap) continue;
+        if (map == m_SewersMap) continue;
+        if (map == m_SubwayMap) continue;
+        map.DaimonMap(dest);
+      }
     }
 
     // low-level support

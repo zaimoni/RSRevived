@@ -941,6 +941,12 @@ namespace djack.RogueSurvivor.Data
       return new Point?();
     }
 
+    // cheat map similar to savefile viewer
+    public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
+      if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
+      dest.WriteLine(Name+"<br>");
+    }
+
     private void ReconstructAuxiliaryFields()
     {
       m_aux_ActorsByPosition = new Dictionary<Point, Actor>();
