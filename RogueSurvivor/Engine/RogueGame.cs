@@ -4433,7 +4433,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       dest.Close();
-      AddMessage(new Data.Message("Your prayers are not clearly answered.", m_Session.WorldTime.TurnCounter, Color.Yellow));
+      AddMessage(new Data.Message("Your prayers are unclearly answered.", m_Session.WorldTime.TurnCounter, Color.Yellow));
     }
 
     private bool HandleMouseLook(Point mousePos)

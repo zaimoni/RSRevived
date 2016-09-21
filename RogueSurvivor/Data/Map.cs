@@ -911,6 +911,137 @@ namespace djack.RogueSurvivor.Data
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       dest.WriteLine(Name+"<br>");
+      // XXX since the lock at the district level causes deadlocking, we may be inconsistent for simulation districtions
+      List<Actor> tmp_Actors = (0<CountActors ? new List<Actor>(Actors) : null);
+      List<Point> inv_locs = (0<m_GroundItemsByPosition.Count ? new List<Point>(m_GroundItemsByPosition.Keys) : null);
+      if (null==tmp_Actors && null==inv_locs) return;
+      // we have one of actors or items here...full map has motivation
+      List<string> inv_data = new List<string>();
+      List<string> actor_data = new List<string>();
+      string[][] ascii_map = new string[Height][];
+      foreach(int y in Enumerable.Range(0, Height)) {
+        ascii_map[y] = new string[Width];
+        foreach(int x in Enumerable.Range(0, Width)) {
+          // XXX does not handle transparent walls or opaque non-walls
+          ascii_map[y][x] = (m_Tiles[x,y].Model.IsWalkable ? "." : "#");    // typical floor tile if walkable, typical wall otherwise
+          if (null!=GetExitAt(x,y)) ascii_map[y][x] = ">";                  // downwards exit
+#region map objects
+          MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
+          if (null!=tmp_obj) {
+            if (tmp_obj.IsCouch) {
+              ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
+              continue;
+            }
+            Engine.MapObjects.DoorWindow tmp_door = tmp_obj as Engine.MapObjects.DoorWindow;
+            if (null!=tmp_door) {
+              if (tmp_door.IsBarricaded) {
+                ascii_map[y][x] = "+"; // no good icon...pretend it's a closed door
+              } else if (tmp_door.IsClosed) {
+                ascii_map[y][x] = "+"; // typical closed door
+              } else if (tmp_door.IsOpen) {
+                ascii_map[y][x] = "'"; // typical open door
+              } else /* if (tmp_door.IsBroken */ { 
+                ascii_map[y][x] = "'"; // typical broken door
+              }
+            }
+          }
+#endregion
+#region map inventory
+          Inventory inv = GetItemsAt(x,y);
+          if (null!=inv && 0<inv.CountItems) { 
+            string p_txt = '('+x.ToString()+','+y.ToString()+')';
+            string item_str = "&"; // Angband/Nethack pile.
+            foreach (Item it in inv.Items) {
+              inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.Model.ID.ToString()+"</td></tr>\n");
+            }
+            ascii_map[y][x] = item_str;
+          }
+#endregion
+#region actors
+          Actor a = GetActorAt(x,y);
+          if (null!=a && !a.IsDead) { 
+            string p_txt = '('+a.Location.Position.X.ToString()+','+ a.Location.Position.Y.ToString()+')';
+            string a_str = a.Faction.ID.ToString(); // default to the faction numeral
+            string pos_css = "";
+            if (a.Controller is PlayerController) {
+              a_str = "@";
+              pos_css = " style='background:lightgreen'";
+            };
+            switch(a.Model.ID) {
+              case (int)Gameplay.GameActors.IDs.UNDEAD_SKELETON:
+                a_str = "<span style='background:orange'>s</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_RED_EYED_SKELETON:
+                a_str = "<span style='background:red'>s</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_RED_SKELETON:
+                a_str = "<span style='background:darkred'>s</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE:
+                a_str = "<span style='background:orange'>S</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE:
+                a_str = "<span style='background:red'>S</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_DARK_ZOMBIE:
+                a_str = "<span style='background:darkred'>S</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
+                a_str = "<span style='background:orange'>Z</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_LORD:
+                a_str = "<span style='background:red'>Z</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_PRINCE:
+                a_str = "<span style='background:darkred'>Z</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
+              case (int)Gameplay.GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
+                a_str = "<span style='background:orange'>d</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_MALE_NEOPHYTE:
+              case (int)Gameplay.GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE:
+                a_str = "<span style='background:red'>d</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_MALE_DISCIPLE:
+              case (int)Gameplay.GameActors.IDs.UNDEAD_FEMALE_DISCIPLE:
+                a_str = "<span style='background:darkred'>d</span>"; break;
+              case (int)Gameplay.GameActors.IDs.UNDEAD_RAT_ZOMBIE:
+                a_str = "<span style='background:orange'>r</span>"; break;
+              case (int)Gameplay.GameActors.IDs.MALE_CIVILIAN:
+              case (int)Gameplay.GameActors.IDs.FEMALE_CIVILIAN:
+                a_str = "<span style='background:lightgreen'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.FERAL_DOG:
+                a_str = "<span style='background:lightgreen'>C</span>"; break;    // C in Angband, Nethack
+              case (int)Gameplay.GameActors.IDs.CHAR_GUARD:
+                a_str = "<span style='background:darkgray;color:white'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.ARMY_NATIONAL_GUARD:
+                a_str = "<span style='background:darkgreen;color:white'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.BIKER_MAN:
+                a_str = "<span style='background:darkorange;color:white'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.POLICEMAN:
+                a_str = "<span style='background:lightblue'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.GANGSTA_MAN:
+                a_str = "<span style='background:red;color:white'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.BLACKOPS_MAN:
+                a_str = "<span style='background:black;color:white'>"+a_str+"</span>"; break;
+              case (int)Gameplay.GameActors.IDs.SEWERS_THING:
+              case (int)Gameplay.GameActors.IDs.JASON_MYERS:
+                a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
+                a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
+            }          
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>\n");
+            ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
+          }
+#endregion
+        }
+      }
+      if (0>=inv_data.Count && 0>=actor_data.Count) return;
+      if (0<actor_data.Count()) {
+        dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=left>");
+        dest.WriteLine("<tr><th>pos</th><th>name</th><th>AP</th><th>HP</th></tr>");
+        foreach(string s in actor_data) dest.WriteLine(s);
+        dest.WriteLine("</table>");
+      }
+      if (0<inv_data.Count()) {
+        dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=right>");
+        foreach(string s in inv_data) dest.WriteLine(s);
+        dest.WriteLine("</table>");
+      }
+      dest.WriteLine("<pre style='clear:both'>");
+      foreach (int y in Enumerable.Range(0, Height)) {
+        dest.WriteLine(String.Join("",ascii_map[y]));
+      }
+      dest.WriteLine("</pre>");
     }
 
     private void ReconstructAuxiliaryFields()
