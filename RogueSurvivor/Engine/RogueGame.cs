@@ -239,7 +239,7 @@ namespace djack.RogueSurvivor.Engine
     public const string NAME_SEWERS_MAINTENANCE = "Sewers Maintenance";
     public const string NAME_SUBWAY_RAILS = "rails";
     public const string NAME_POLICE_STATION_JAILS_CELL = "jail";
-    private const int SPAWN_DISTANCE_TO_PLAYER = 10;
+    private const int SPAWN_DISTANCE_TO_PLAYER = WorldTime.TURNS_PER_HOUR/3;
     private const int SEWERS_INVASION_CHANCE = 1;
     public const float SEWERS_UNDEADS_FACTOR = 0.5f;
     private const float REFUGEES_WAVE_SIZE = 0.2f;
@@ -3108,7 +3108,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = CountUndeads(map);
       int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double) RogueGame.s_Options.MaxUndeads) - num1;
       for (int index = 0; index < num2; ++index)
-                SpawnNewUndead(map, map.LocalTime.Day);
+        SpawnNewUndead(map, map.LocalTime.Day);
     }
 
     private bool CheckForEvent_SewersInvasion(Map map)
@@ -3121,7 +3121,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = CountUndeads(map);
       int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double)(RogueGame.s_Options.MaxUndeads/2)) - num1;
       for (int index = 0; index < num2; ++index)
-                SpawnNewSewersUndead(map);
+        SpawnNewSewersUndead(map);
     }
 
     private bool CheckForEvent_RefugeesWave(Map map)
@@ -3525,21 +3525,29 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-            SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);
+//    SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);    // allows cheesy metagaming
+      SpawnActorOnMapBorder(map, newUndead, 1, true); 
     }
 
     private void SpawnNewSewersUndead(Map map)
     {
       Actor newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
-      SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false);
+//    SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false); // allows cheesy metagaming
+      SpawnActorOnMapBorder(map, newSewersUndead, 1, false);
     }
 
+    // Balance issue is problematic here (cop spawning at distance 2 can severely damage most undead PCs)
+    // eliminating PC spawn radius shielding to match undead
+
+    // The ley line backstory doesn't work for livings.
     private void SpawnNewRefugee(Map map)
     {
       Actor newRefugee = m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
-      SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true);
+//    SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true); // allows cheesy metagaming
+      SpawnActorOnMapBorder(map, newRefugee, 1, true);
     }
 
+    // The bands remain PC spawn radius shielded, for now.
     private Actor SpawnNewSurvivor(Map map)
     {
       Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);

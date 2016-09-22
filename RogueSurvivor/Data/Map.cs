@@ -1017,7 +1017,6 @@ namespace djack.RogueSurvivor.Data
               case (int)Gameplay.GameActors.IDs.SEWERS_THING:
               case (int)Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
-                a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }          
             actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>\n");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
