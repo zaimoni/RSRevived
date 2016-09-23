@@ -8,8 +8,6 @@
 
 #define STABLE_SIM_OPTIONAL
 
-#define ALPHA_SIM
-
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
@@ -734,7 +732,6 @@ namespace djack.RogueSurvivor.Engine
       HandleMainMenu();
       while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
       {
-#if ALPHA_SIM
         District d = m_Session.World.CurrentPlayerDistrict();
         if (null == d) {
           if (null == m_Session.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
@@ -748,18 +745,6 @@ namespace djack.RogueSurvivor.Engine
         if (!m_IsGameRunning) break;
         m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
         m_Session.World.ScheduleAdjacentForAdvancePlay(d);
-#else
-        List<District> tmp = m_Session.World.PlayerDistricts;
-        int lastDistrictTurn = tmp[tmp.Count-1].EntryMap.LocalTime.TurnCounter;
-        foreach (District d1 in tmp) { 
-          if (d1.EntryMap.LocalTime.TurnCounter > lastDistrictTurn) continue;
-          DateTime now = DateTime.Now;
-          m_HasLoadedGame = false;
-          AdvancePlay(d1, RogueGame.SimFlags.NOT_SIMULATING);
-          if (!m_IsGameRunning) break;
-          m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
-        }
-#endif
       }
     }
 
@@ -868,9 +853,7 @@ namespace djack.RogueSurvivor.Engine
                   m_UI.UI_Repaint();
                   LoadGame(RogueGame.GetUserSave());
                   LogSaveScumStats();
-#if ALPHA_SIM
                   RestartSimThread();
-#endif
                   flag1 = false;
                   break;
                 }
@@ -1593,9 +1576,7 @@ namespace djack.RogueSurvivor.Engine
             ClearMessages();
             AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", (object)m_Player.Name), 0, Color.White));
             RedrawPlayScreen();
-#if ALPHA_SIM
             m_Session.World.ScheduleForAdvancePlay();   // simulation starts at district A1
-#endif
             RestartSimThread();
     }
 
@@ -2380,12 +2361,8 @@ namespace djack.RogueSurvivor.Engine
 
       lock(district) {
       foreach(Map current in district.Maps) {
-#if ALPHA_SIM
         // not processing secret maps used to be a micro-optimization; now a hang bug
         while(!current.IsSecret && null != current.NextActorToAct) {
-#else
-        while(null != current.NextActorToAct) {
-#endif
           AdvancePlay(current, sim);
           if (district == m_Session.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
             if (m_Player.IsDead) HandleReincarnation();
@@ -13594,32 +13571,11 @@ namespace djack.RogueSurvivor.Engine
 
     private bool SimulateNearbyDistricts(District d)
     {
-#if ALPHA_SIM
       District d1 = m_Session.World.CurrentSimulationDistrict();
       if (null == d1) return false; 
       SimulateDistrict(d1);
       m_Session.World.ScheduleAdjacentForAdvancePlay(d1);
       return true;
-#else
-      bool flag = false;
-      int x1 = 0;
-      int x2 = m_Session.World.Size - 1;
-      int y1 = 0;
-      int y2 = m_Session.World.Size - 1;
-      m_Session.World.TrimToBounds(ref x1, ref y1);
-      m_Session.World.TrimToBounds(ref x2, ref y2);
-      for (int index1 = x1; index1 <= x2; ++index1) {
-        for (int index2 = y1; index2 <= y2; ++index2) {
-          if (index1 == d.WorldPosition.X && index2 == d.WorldPosition.Y) continue;
-          District d1 = m_Session.World[index1, index2];
-          if (0 < d1.PlayerCount) continue;
-          if (d.EntryMap.LocalTime.TurnCounter <= d1.EntryMap.LocalTime.TurnCounter) continue;
-          flag = true;
-          SimulateDistrict(d1);
-        }
-      }
-      return flag;
-#endif
     }
 
     private void RestartSimThread()
