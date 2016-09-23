@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Color LIT_GRAY2 = Color.LightGray;
     private static readonly Color LIT_GRAY3 = Color.FromArgb(230, 230, 230);
     private static readonly Color LIT_BROWN = Color.BurlyWood;
-    private TileModel[] m_Models = new TileModel[19];
+    private readonly TileModel[] m_Models = new TileModel[19];
 
     public override TileModel this[int id]
     {

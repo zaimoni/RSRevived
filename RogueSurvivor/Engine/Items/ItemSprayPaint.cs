@@ -18,12 +18,10 @@ namespace djack.RogueSurvivor.Engine.Items
       get { return 0 >= PaintQuantity; }
     }
 
-    public ItemSprayPaint(ItemModel model)
+    public ItemSprayPaint(ItemSprayPaintModel model)
       : base(model)
     {
-      if (!(model is ItemSprayPaintModel))
-        throw new ArgumentException("model is not a SprayPaintModel");
-            PaintQuantity = (model as ItemSprayPaintModel).MaxPaintQuantity;
+      PaintQuantity = model.MaxPaintQuantity;
     }
   }
 }

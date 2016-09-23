@@ -10,12 +10,10 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemWeaponModel : ItemModel
   {
-    private Attack m_Attack;
+    private readonly Attack m_Attack;
 
-    public Attack Attack
-    {
-      get
-      {
+    public Attack Attack {
+      get {
         return m_Attack;
       }
     }
@@ -23,7 +21,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemWeaponModel(string aName, string theNames, string imageID, Attack attack)
       : base(aName, theNames, imageID)
     {
-            m_Attack = attack;
+      m_Attack = attack;
     }
   }
 }

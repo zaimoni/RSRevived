@@ -10,30 +10,24 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemLightModel : ItemModel
   {
-    private int m_MaxBatteries;
-    private int m_FovBonus;
-    private string m_OutOfBatteriesImageID;
+    private readonly int m_MaxBatteries;
+    private readonly int m_FovBonus;
+    private readonly string m_OutOfBatteriesImageID;
 
-    public int MaxBatteries
-    {
-      get
-      {
+    public int MaxBatteries {
+      get {
         return m_MaxBatteries;
       }
     }
 
-    public int FovBonus
-    {
-      get
-      {
+    public int FovBonus {
+      get {
         return m_FovBonus;
       }
     }
 
-    public string OutOfBatteriesImageID
-    {
-      get
-      {
+    public string OutOfBatteriesImageID {
+      get {
         return m_OutOfBatteriesImageID;
       }
     }
@@ -41,10 +35,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemLightModel(string aName, string theNames, string imageID, int fovBonus, int maxBatteries, string outOfBatteriesImageID)
       : base(aName, theNames, imageID)
     {
-            m_FovBonus = fovBonus;
-            m_MaxBatteries = maxBatteries;
-            m_OutOfBatteriesImageID = outOfBatteriesImageID;
-            DontAutoEquip = true;
+      m_FovBonus = fovBonus;
+      m_MaxBatteries = maxBatteries;
+      m_OutOfBatteriesImageID = outOfBatteriesImageID;
+      DontAutoEquip = true;
     }
   }
 }

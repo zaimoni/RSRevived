@@ -13,21 +13,18 @@ namespace djack.RogueSurvivor.Engine
   {
     private char m_Delimiter;
 
-    public char Delimiter
-    {
-      get
-      {
+    public char Delimiter {
+      get {
         return m_Delimiter;
       }
-      set
-      {
-                m_Delimiter = value;
+      set {
+        m_Delimiter = value;
       }
     }
 
     public CSVParser()
     {
-            m_Delimiter = ',';
+      m_Delimiter = ',';
     }
 
     public string[] Parse(string line)

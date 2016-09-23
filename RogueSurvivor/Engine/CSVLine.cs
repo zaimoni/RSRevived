@@ -8,31 +8,27 @@ namespace djack.RogueSurvivor.Engine
 {
   public class CSVLine
   {
-    private CSVField[] m_Fields;
+    private readonly CSVField[] m_Fields;
 
     public CSVField this[int field]
     {
-      get
-      {
+      get {
         return m_Fields[field];
       }
-      set
-      {
-                m_Fields[field] = value;
+      set {
+        m_Fields[field] = value;
       }
     }
 
-    public int FieldsCount
-    {
-      get
-      {
+    public int FieldsCount {
+      get {
         return m_Fields.Length;
       }
     }
 
     public CSVLine(int nbFields)
     {
-            m_Fields = new CSVField[nbFields];
+      m_Fields = new CSVField[nbFields];
     }
   }
 }

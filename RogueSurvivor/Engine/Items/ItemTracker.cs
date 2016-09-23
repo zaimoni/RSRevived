@@ -16,56 +16,42 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemTrackerModel.TrackingFlags Tracking { get; private set; }
 
-    public bool CanTrackFollowersOrLeader
-    {
-      get
-      {
+    public bool CanTrackFollowersOrLeader {
+      get {
         return (Tracking & ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
-    public bool CanTrackUndeads
-    {
-      get
-      {
+    public bool CanTrackUndeads {
+      get {
         return (Tracking & ItemTrackerModel.TrackingFlags.UNDEADS) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
-    public bool CanTrackBlackOps
-    {
-      get
-      {
+    public bool CanTrackBlackOps {
+      get {
         return (Tracking & ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
-    public bool CanTrackPolice
-    {
-      get
-      {
+    public bool CanTrackPolice {
+      get {
         return (Tracking & ItemTrackerModel.TrackingFlags.POLICE_FACTION) != ItemTrackerModel.TrackingFlags.NONE;
       }
     }
 
-    public int Batteries
-    {
-      get
-      {
+    public int Batteries {
+      get {
         return m_Batteries;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-                m_Batteries = Math.Min(value, (Model as ItemTrackerModel).MaxBatteries);
+      set {
+        if (value < 0) value = 0;
+        m_Batteries = Math.Min(value, (Model as ItemTrackerModel).MaxBatteries);
       }
     }
 
-    public bool IsFullyCharged
-    {
-      get
-      {
+    public bool IsFullyCharged {
+      get {
         return m_Batteries >= (Model as ItemTrackerModel).MaxBatteries;
       }
     }
@@ -74,14 +60,12 @@ namespace djack.RogueSurvivor.Engine.Items
       get { return 0 >= m_Batteries; }
     }
 
-    public ItemTracker(ItemModel model)
+    public ItemTracker(ItemTrackerModel model)
       : base(model)
     {
-      if (!(model is ItemTrackerModel))
-        throw new ArgumentException("model is not a TrackerModel");
-      ItemTrackerModel itemTrackerModel = model as ItemTrackerModel;
-            Tracking = itemTrackerModel.Tracking;
-            Batteries = itemTrackerModel.MaxBatteries;
+      ItemTrackerModel itemTrackerModel = model;
+      Tracking = itemTrackerModel.Tracking;
+      Batteries = itemTrackerModel.MaxBatteries;
     }
 
     public void Recharge()

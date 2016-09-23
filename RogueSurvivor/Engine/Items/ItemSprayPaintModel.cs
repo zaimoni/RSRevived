@@ -11,21 +11,17 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemSprayPaintModel : ItemModel
   {
-    private int m_MaxPaintQuantity;
-    private string m_TagImageID;
+    private readonly int m_MaxPaintQuantity;
+    private readonly string m_TagImageID;
 
-    public int MaxPaintQuantity
-    {
-      get
-      {
+    public int MaxPaintQuantity {
+      get {
         return m_MaxPaintQuantity;
       }
     }
 
-    public string TagImageID
-    {
-      get
-      {
+    public string TagImageID {
+      get {
         return m_TagImageID;
       }
     }
@@ -35,8 +31,8 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       if (tagImageID == null)
         throw new ArgumentNullException("tagImageID");
-            m_MaxPaintQuantity = paintQuantity;
-            m_TagImageID = tagImageID;
+      m_MaxPaintQuantity = paintQuantity;
+      m_TagImageID = tagImageID;
     }
   }
 }

@@ -10,98 +10,76 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemTrapModel : ItemModel
   {
-    private ItemTrapModel.Flags m_Flags;
-    private int m_TriggerChance;
-    private int m_Damage;
-    private int m_BreakChance;
-    private int m_BreakChanceWhenEscape;
-    private int m_BlockChance;
-    private string m_NoiseName;
+    private readonly ItemTrapModel.Flags m_Flags;
+    private readonly int m_TriggerChance;
+    private readonly int m_Damage;
+    private readonly int m_BreakChance;
+    private readonly int m_BreakChanceWhenEscape;
+    private readonly int m_BlockChance;
+    private readonly string m_NoiseName;
 
-    public int TriggerChance
-    {
-      get
-      {
+    public int TriggerChance {
+      get {
         return m_TriggerChance;
       }
     }
 
-    public int Damage
-    {
-      get
-      {
+    public int Damage {
+      get {
         return m_Damage;
       }
     }
 
-    public bool UseToActivate
-    {
-      get
-      {
+    public bool UseToActivate {
+      get {
         return (m_Flags & ItemTrapModel.Flags.USE_TO_ACTIVATE) != ItemTrapModel.Flags.NONE;
       }
     }
 
-    public bool IsNoisy
-    {
-      get
-      {
+    public bool IsNoisy {
+      get {
         return (m_Flags & ItemTrapModel.Flags.IS_NOISY) != ItemTrapModel.Flags.NONE;
       }
     }
 
-    public bool IsOneTimeUse
-    {
-      get
-      {
+    public bool IsOneTimeUse {
+      get {
         return (m_Flags & ItemTrapModel.Flags.IS_ONE_TIME_USE) != ItemTrapModel.Flags.NONE;
       }
     }
 
-    public bool IsFlammable
-    {
-      get
-      {
+    public bool IsFlammable {
+      get {
         return (m_Flags & ItemTrapModel.Flags.IS_FLAMMABLE) != ItemTrapModel.Flags.NONE;
       }
     }
 
-    public bool ActivatesWhenDropped
-    {
-      get
-      {
+    public bool ActivatesWhenDropped {
+      get {
         return (m_Flags & ItemTrapModel.Flags.DROP_ACTIVATE) != ItemTrapModel.Flags.NONE;
       }
     }
 
-    public int BreakChance
-    {
-      get
-      {
+    public int BreakChance {
+      get {
         return m_BreakChance;
       }
     }
 
-    public int BlockChance
-    {
-      get
-      {
+    public int BlockChance {
+      get {
         return m_BlockChance;
       }
     }
 
-    public int BreakChanceWhenEscape
-    {
-      get
-      {
+    public int BreakChanceWhenEscape {
+      get {
         return m_BreakChanceWhenEscape;
       }
     }
 
-    public string NoiseName
-    {
-      get
-      {
+    public string NoiseName {
+      get {
         return m_NoiseName;
       }
     }

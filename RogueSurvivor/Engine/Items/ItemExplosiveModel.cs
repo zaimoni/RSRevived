@@ -10,30 +10,24 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemExplosiveModel : ItemModel
   {
-    private int m_FuseDelay;
-    private BlastAttack m_Attack;
-    private string m_BlastImageID;
+    private readonly int m_FuseDelay;
+    private readonly BlastAttack m_Attack;
+    private readonly string m_BlastImageID;
 
-    public int FuseDelay
-    {
-      get
-      {
+    public int FuseDelay {
+      get {
         return m_FuseDelay;
       }
     }
 
-    public BlastAttack BlastAttack
-    {
-      get
-      {
+    public BlastAttack BlastAttack {
+      get {
         return m_Attack;
       }
     }
 
-    public string BlastImage
-    {
-      get
-      {
+    public string BlastImage {
+      get {
         return m_BlastImageID;
       }
     }
@@ -41,9 +35,9 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemExplosiveModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID)
       : base(aName, theNames, imageID)
     {
-            m_FuseDelay = fuseDelay;
-            m_Attack = attack;
-            m_BlastImageID = blastImageID;
+      m_FuseDelay = fuseDelay;
+      m_Attack = attack;
+      m_BlastImageID = blastImageID;
     }
   }
 }

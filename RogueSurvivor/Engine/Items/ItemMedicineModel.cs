@@ -10,48 +10,38 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemMedicineModel : ItemModel
   {
-    private int m_Healing;
-    private int m_StaminaBoost;
-    private int m_SleepBoost;
-    private int m_InfectionCure;
-    private int m_SanityCure;
+    private readonly int m_Healing;
+    private readonly int m_StaminaBoost;
+    private readonly int m_SleepBoost;
+    private readonly int m_InfectionCure;
+    private readonly int m_SanityCure;
 
-    public int Healing
-    {
-      get
-      {
+    public int Healing {
+      get {
         return m_Healing;
       }
     }
 
-    public int StaminaBoost
-    {
-      get
-      {
+    public int StaminaBoost {
+      get {
         return m_StaminaBoost;
       }
     }
 
-    public int SleepBoost
-    {
-      get
-      {
+    public int SleepBoost {
+      get {
         return m_SleepBoost;
       }
     }
 
-    public int InfectionCure
-    {
-      get
-      {
+    public int InfectionCure {
+      get {
         return m_InfectionCure;
       }
     }
 
-    public int SanityCure
-    {
-      get
-      {
+    public int SanityCure {
+      get {
         return m_SanityCure;
       }
     }
@@ -59,11 +49,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure)
       : base(aName, theNames, imageID)
     {
-            m_Healing = healing;
-            m_StaminaBoost = staminaBoost;
-            m_SleepBoost = sleepBoost;
-            m_InfectionCure = infectionCure;
-            m_SanityCure = sanityCure;
+      m_Healing = healing;
+      m_StaminaBoost = staminaBoost;
+      m_SleepBoost = sleepBoost;
+      m_InfectionCure = infectionCure;
+      m_SanityCure = sanityCure;
     }
   }
 }

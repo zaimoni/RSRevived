@@ -893,42 +893,42 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemBandages()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.BANDAGE);
+      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.BANDAGE);
       itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.BANDAGE.StackingLimit);
-      return (Item) itemMedicine;
+      return itemMedicine;
     }
 
     public Item MakeItemMedikit()
     {
-      return (Item) new ItemMedicine((ItemModel)m_Game.GameItems.MEDIKIT);
+      return new ItemMedicine(m_Game.GameItems.MEDIKIT);
     }
 
     public Item MakeItemPillsSTA()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_STA);
+      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_STA);
       itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_STA.StackingLimit);
-      return (Item) itemMedicine;
+      return itemMedicine;
     }
 
     public Item MakeItemPillsSLP()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_SLP);
+      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_SLP);
       itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SLP.StackingLimit);
-      return (Item) itemMedicine;
+      return itemMedicine;
     }
 
     public Item MakeItemPillsSAN()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_SAN);
+      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_SAN);
       itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SAN.StackingLimit);
-      return (Item) itemMedicine;
+      return itemMedicine;
     }
 
     public Item MakeItemPillsAntiviral()
     {
-      ItemMedicine itemMedicine = new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_ANTIVIRAL);
+      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_ANTIVIRAL);
       itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_ANTIVIRAL.StackingLimit);
-      return (Item) itemMedicine;
+      return itemMedicine;
     }
 
     public Item MakeItemGroceries()
@@ -936,14 +936,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int turnCounter = m_Game.Session.WorldTime.TurnCounter;
       int max = WorldTime.TURNS_PER_DAY * m_Game.GameItems.GROCERIES.BestBeforeDays;
       int min = max / 2;
-      return (Item) new ItemFood((ItemModel)m_Game.GameItems.GROCERIES, turnCounter + m_Rules.Roll(min, max));
+      return new ItemFood(m_Game.GameItems.GROCERIES, turnCounter + m_Rules.Roll(min, max));
     }
 
     public Item MakeItemCannedFood()
     {
-      ItemFood itemFood = new ItemFood((ItemModel)m_Game.GameItems.CANNED_FOOD);
+      ItemFood itemFood = new ItemFood(m_Game.GameItems.CANNED_FOOD);
       itemFood.Quantity = m_Rules.Roll(1, m_Game.GameItems.CANNED_FOOD.StackingLimit);
-      return (Item) itemFood;
+      return itemFood;
     }
 
     public Item MakeItemCrowbar()
@@ -1097,7 +1097,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemCellPhone()
     {
-      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.CELL_PHONE);
+      return new ItemTracker(m_Game.GameItems.CELL_PHONE);
     }
 
     public Item MakeItemSprayPaint()
@@ -1120,7 +1120,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         default:
           throw new ArgumentOutOfRangeException("unhandled roll");
       }
-      return (Item) new ItemSprayPaint((ItemModel) itemSprayPaintModel);
+      return new ItemSprayPaint(itemSprayPaintModel);
     }
 
     public Item MakeItemStenchKiller()
@@ -1160,39 +1160,39 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemArmyRation()
     {
-      return (Item) new ItemFood((ItemModel) m_Game.GameItems.ARMY_RATION, m_Game.Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * m_Game.GameItems.ARMY_RATION.BestBeforeDays);
+      return new ItemFood(m_Game.GameItems.ARMY_RATION, m_Game.Session.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * m_Game.GameItems.ARMY_RATION.BestBeforeDays);
     }
 
     public Item MakeItemFlashlight()
     {
-      return (Item) new ItemLight((ItemModel)m_Game.GameItems.FLASHLIGHT);
+      return new ItemLight(m_Game.GameItems.FLASHLIGHT);
     }
 
     public Item MakeItemBigFlashlight()
     {
-      return (Item) new ItemLight((ItemModel)m_Game.GameItems.BIG_FLASHLIGHT);
+      return new ItemLight(m_Game.GameItems.BIG_FLASHLIGHT);
     }
 
     public Item MakeItemZTracker()
     {
-      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.ZTRACKER);
+      return new ItemTracker(m_Game.GameItems.ZTRACKER);
     }
 
     public Item MakeItemBlackOpsGPS()
     {
-      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.BLACKOPS_GPS);
+      return new ItemTracker(m_Game.GameItems.BLACKOPS_GPS);
     }
 
     public Item MakeItemPoliceRadio()
     {
-      return (Item) new ItemTracker((ItemModel)m_Game.GameItems.POLICE_RADIO);
+      return new ItemTracker(m_Game.GameItems.POLICE_RADIO);
     }
 
     public Item MakeItemGrenade()
     {
-      ItemGrenade itemGrenade = new ItemGrenade((ItemModel)m_Game.GameItems.GRENADE, (ItemModel)m_Game.GameItems.GRENADE_PRIMED);
+      ItemGrenade itemGrenade = new ItemGrenade(m_Game.GameItems.GRENADE, m_Game.GameItems.GRENADE_PRIMED);
       itemGrenade.Quantity = m_Rules.Roll(1, m_Game.GameItems.GRENADE.StackingLimit);
-      return (Item) itemGrenade;
+      return itemGrenade;
     }
 
     public Item MakeItemBearTrap()

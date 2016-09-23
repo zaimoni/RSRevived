@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -89,14 +90,14 @@ namespace djack.RogueSurvivor.Gameplay
 
     public ItemModel this[GameItems.IDs id]
     {
-      get
-      {
+      get {
         return this[(int) id];
       }
-      private set
-      {
-                m_Models[(int) id] = value;
-                m_Models[(int) id].ID = id;
+      private set {
+        Contract.Requires(null!=value);
+        Contract.Requires((int)id < m_Models.Length);
+        m_Models[(int) id] = value;
+        m_Models[(int) id].ID = id;
       }
     }
 

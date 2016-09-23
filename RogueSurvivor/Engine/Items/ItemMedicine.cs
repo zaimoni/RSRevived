@@ -22,17 +22,15 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public int SanityCure { get; private set; }
 
-    public ItemMedicine(ItemModel model)
+    public ItemMedicine(ItemMedicineModel model)
       : base(model)
     {
-      if (!(model is ItemMedicineModel))
-        throw new ArgumentException("model is not a MedecineModel");
-      ItemMedicineModel itemMedicineModel = model as ItemMedicineModel;
-            Healing = itemMedicineModel.Healing;
-            StaminaBoost = itemMedicineModel.StaminaBoost;
-            SleepBoost = itemMedicineModel.SleepBoost;
-            InfectionCure = itemMedicineModel.InfectionCure;
-            SanityCure = itemMedicineModel.SanityCure;
+      ItemMedicineModel itemMedicineModel = model;
+      Healing = itemMedicineModel.Healing;
+      StaminaBoost = itemMedicineModel.StaminaBoost;
+      SleepBoost = itemMedicineModel.SleepBoost;
+      InfectionCure = itemMedicineModel.InfectionCure;
+      SanityCure = itemMedicineModel.SanityCure;
     }
   }
 }

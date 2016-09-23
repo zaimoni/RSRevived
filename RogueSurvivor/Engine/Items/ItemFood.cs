@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -43,23 +44,20 @@ namespace djack.RogueSurvivor.Engine.Items
       return (2*Nutrition)/3;
     }
 
-    public ItemFood(ItemModel model)
+    public ItemFood(ItemFoodModel model)
       : base(model)
     {
-      if (!(model is ItemFoodModel))
-        throw new ArgumentException("model is not a FoodModel");
-            Nutrition = (model as ItemFoodModel).Nutrition;
-            IsPerishable = false;
+      Nutrition = model.Nutrition;
+      IsPerishable = false;
     }
 
-    public ItemFood(ItemModel model, int bestBefore)
+    public ItemFood(ItemFoodModel model, int bestBefore)
       : base(model)
     {
-      if (!(model is ItemFoodModel))
-        throw new ArgumentException("model is not a FoodModel");
-            Nutrition = (model as ItemFoodModel).Nutrition;
-            BestBefore = new WorldTime(bestBefore);
-            IsPerishable = true;
+      Contract.Requires(0<=bestBefore);
+      Nutrition = model.Nutrition;
+      BestBefore = new WorldTime(bestBefore);
+      IsPerishable = true;
     }
   }
 }
