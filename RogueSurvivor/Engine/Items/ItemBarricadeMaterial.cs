@@ -12,11 +12,9 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemBarricadeMaterial : Item
   {
-    public ItemBarricadeMaterial(ItemModel model)
+    public ItemBarricadeMaterial(ItemBarricadeMaterialModel model)
       : base(model)
     {
-      if (!(model is ItemBarricadeMaterialModel))
-        throw new ArgumentException("model is not BarricadeMaterialModel");
     }
   }
 }

@@ -26,6 +26,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -186,8 +187,8 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_WAIT = new Verb("wait");
     private readonly Verb VERB_WAKE_UP = new Verb("wake up", "wakes up");
     private bool m_IsGameRunning = true;
-    private List<RogueGame.Overlay> m_Overlays = new List<RogueGame.Overlay>();
-    private object m_SimMutex = new object();
+    private readonly List<RogueGame.Overlay> m_Overlays = new List<RogueGame.Overlay>();
+    private readonly object m_SimMutex = new object();
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
     public const int TILE_SIZE = 32;
@@ -290,23 +291,23 @@ namespace djack.RogueSurvivor.Engine
     private Rules m_Rules;
     private Session m_Session;
     private HiScoreTable m_HiScoreTable;
-    private MessageManager m_MessageManager;
+    private readonly MessageManager m_MessageManager;
     private bool m_HasLoadedGame;
     private Actor m_Player;
     private Rectangle m_MapViewRect;
     private static GameOptions s_Options;
     private static Keybindings s_KeyBindings;
     private static GameHintsStatus s_Hints;
-    private BaseTownGenerator m_TownGenerator;
+    private readonly BaseTownGenerator m_TownGenerator;
     private bool m_PlayedIntro;
-    private ISoundManager m_MusicManager;
+    private readonly ISoundManager m_MusicManager;
     private RogueGame.CharGen m_CharGen;
     private TextFile m_Manual;
     private int m_ManualLine;
-    private GameFactions m_GameFactions;
-    private GameActors m_GameActors;
-    private GameItems m_GameItems;
-    private GameTiles m_GameTiles;
+    private readonly GameFactions m_GameFactions;
+    private readonly GameActors m_GameActors;
+    private readonly GameItems m_GameItems;
+    private readonly GameTiles m_GameTiles;
     private bool m_IsPlayerLongWait;
     private bool m_IsPlayerLongWaitForcedStop;
     private WorldTime m_PlayerLongWaitEnd;
@@ -10017,7 +10018,7 @@ namespace djack.RogueSurvivor.Engine
         int val2 = 1 + mapObj.MaxHitPoints / 40;
         while (val2 > 0)
         {
-          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial((ItemModel)m_GameItems.WOODENPLANK);
+          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(m_GameItems.WOODENPLANK);
           barricadeMaterial.Quantity = Math.Min(m_GameItems.WOODENPLANK.StackingLimit, val2);
           Item it = (Item) barricadeMaterial;
           if (it.Quantity < 1)
@@ -12758,13 +12759,14 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckDirectory(string path, string description, ref int gy)
     {
-            m_UI.UI_DrawString(Color.White, string.Format("{0} : {1}...", (object) description, (object) path), 0, gy, new Color?());
+      Contract.Requires(!string.IsNullOrEmpty(path));
+      m_UI.UI_DrawString(Color.White, string.Format("{0} : {1}...", (object) description, (object) path), 0, gy, new Color?());
       gy += 14;
-            m_UI.UI_Repaint();
+      m_UI.UI_Repaint();
       bool directory = CreateDirectory(path);
-            m_UI.UI_DrawString(Color.White, "ok.", 0, gy, new Color?());
+      m_UI.UI_DrawString(Color.White, "ok.", 0, gy, new Color?());
       gy += 14;
-            m_UI.UI_Repaint();
+      m_UI.UI_Repaint();
       return directory;
     }
 

@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -25,6 +26,8 @@ namespace djack.RogueSurvivor.Engine
 
     public int Roll(int min, int max)
     {
+      Contract.Ensures(Contract.Result<int>()>=min);
+      Contract.Ensures(Contract.Result<int>()<max);
       if (max <= min) return min;
       // should not need to defend aganst bugs in the C# library
       lock(m_Rng) { return m_Rng.Next(min, max); }

@@ -18,26 +18,22 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Color LIT_GRAY2 = Color.LightGray;
     private static readonly Color LIT_GRAY3 = Color.FromArgb(230, 230, 230);
     private static readonly Color LIT_BROWN = Color.BurlyWood;
-    private readonly TileModel[] m_Models = new TileModel[19];
+    private readonly TileModel[] m_Models = new TileModel[(int) IDs._COUNT];
 
-    public override TileModel this[int id]
-    {
-      get
-      {
+    public override TileModel this[int id] {
+      get {
         return m_Models[id];
       }
     }
 
-    public TileModel this[GameTiles.IDs id]
+    public TileModel this[IDs id]
     {
-      get
-      {
+      get {
         return this[(int) id];
       }
-      set
-      {
-                m_Models[(int) id] = value;
-                m_Models[(int) id].ID = (int) id;
+      private set {
+        m_Models[(int) id] = value;
+        m_Models[(int) id].ID = (int) id;
       }
     }
 
@@ -194,7 +190,7 @@ namespace djack.RogueSurvivor.Gameplay
     public GameTiles()
     {
       Models.Tiles = (TileModelDB) this;
-      this[GameTiles.IDs._FIRST] = TileModel.UNDEF;
+      this[GameTiles.IDs.UNDEF] = TileModel.UNDEF;
       this[GameTiles.IDs.FLOOR_ASPHALT] = new TileModel("Tiles\\floor_asphalt", GameTiles.LIT_GRAY1, true, true);
       this[GameTiles.IDs.FLOOR_CONCRETE] = new TileModel("Tiles\\floor_concrete", GameTiles.LIT_GRAY2, true, true);
       this[GameTiles.IDs.FLOOR_GRASS] = new TileModel("Tiles\\floor_grass", Color.Green, true, true);
@@ -229,7 +225,6 @@ namespace djack.RogueSurvivor.Gameplay
     public enum IDs
     {
       UNDEF = 0,
-      _FIRST = 0,
       FLOOR_ASPHALT = 1,
       FLOOR_CONCRETE = 2,
       FLOOR_GRASS = 3,

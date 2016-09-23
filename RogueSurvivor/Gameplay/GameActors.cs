@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -64,6 +65,8 @@ namespace djack.RogueSurvivor.Gameplay
     {
       get
       {
+        Contract.Ensures(null!=Contract.Result<ActorModel>().DollBody);
+        Contract.Ensures(null!=Contract.Result<ActorModel>().StartingSheet);
         return m_Models[id];
       }
     }
@@ -76,8 +79,8 @@ namespace djack.RogueSurvivor.Gameplay
       }
       private set
       {
-                m_Models[(int) id] = value;
-                m_Models[(int) id].ID = (int) id;
+        m_Models[(int) id] = value;
+        m_Models[(int) id].ID = (int) id;
       }
     }
 

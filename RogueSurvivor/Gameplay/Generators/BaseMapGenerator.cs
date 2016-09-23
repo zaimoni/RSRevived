@@ -1007,7 +1007,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemBarricadeMaterial MakeItemWoodenPlank()
     {
-      return new ItemBarricadeMaterial((ItemModel)m_Game.GameItems.WOODENPLANK);
+      return new ItemBarricadeMaterial(m_Game.GameItems.WOODENPLANK);
     }
 
     public Item MakeItemHuntingCrossbow()

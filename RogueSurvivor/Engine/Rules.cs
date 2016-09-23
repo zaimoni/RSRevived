@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -159,6 +160,8 @@ namespace djack.RogueSurvivor.Engine
 
     public int Roll(int min, int max)
     {
+      Contract.Ensures(Contract.Result<int>()>=min);
+      Contract.Ensures(Contract.Result<int>()<max);
       return m_DiceRoller.Roll(min, max);
     }
 

@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Data
       }
       set
       {
-                m_Color = value;
+        m_Color = value;
       }
     }
 
