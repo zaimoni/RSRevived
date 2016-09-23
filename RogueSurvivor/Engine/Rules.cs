@@ -627,8 +627,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (actor == null) throw new ArgumentNullException("actor");
+      Contract.Requires(null!=map);
+      Contract.Requires(null!=actor);
       if (!map.IsInBounds(x, y)) {
         reason = "out of map";
         return false;
