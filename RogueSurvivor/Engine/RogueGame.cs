@@ -10893,8 +10893,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("You will hunt another day!", m_Session.WorldTime.TurnCounter, Color.Green));
       UpdatePlayerFOV(m_Player);
       AddMessagePressEnter();
-      HandlePlayerDecideUpgrade(m_Player);
-      HandlePlayerFollowersUpgrade();
+//    HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
       ClearMessages();
       AddMessage(new Data.Message("Welcome to the night.", m_Session.WorldTime.TurnCounter, Color.White));
       ClearOverlays();
@@ -10913,8 +10912,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("You survived another night!", m_Session.WorldTime.TurnCounter, Color.Green));
         UpdatePlayerFOV(m_Player);
         AddMessagePressEnter();
-        HandlePlayerDecideUpgrade(m_Player);
-        HandlePlayerFollowersUpgrade();
+//      HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
         ClearMessages();
         AddMessage(new Data.Message("Welcome to tomorrow.", m_Session.WorldTime.TurnCounter, Color.White));
         ClearOverlays();
@@ -11015,56 +11013,51 @@ namespace djack.RogueSurvivor.Engine
         } else
           AddMessage(new Data.Message("Acknowledged.", m_Session.WorldTime.TurnCounter, Color.Yellow));
       }
+      if (upgradeActor.IsPlayer) HandlePlayerFollowersUpgrade(upgradeActor);
     }
 
-    private void HandlePlayerFollowersUpgrade()
+    private void HandlePlayerFollowersUpgrade(Actor player)
     {
-      if (m_Player.CountFollowers == 0) return;
+      if (player.CountFollowers == 0) return;
       ClearMessages();
       AddMessage(new Data.Message("Your followers learned new skills at your side!", m_Session.WorldTime.TurnCounter, Color.Green));
       AddMessagePressEnter();
-      foreach (Actor follower in m_Player.Followers)
+      foreach (Actor follower in player.Followers)
         HandlePlayerDecideUpgrade(follower);
     }
 
     private void HandleLivingNPCsUpgrade(Map map)
     {
       foreach (Actor actor in map.Actors) {
-        if (actor != m_Player && actor.Leader != m_Player && !actor.Model.Abilities.IsUndead) {
-          if (actor.IsPlayer) {
-            HandlePlayerDecideUpgrade(actor);
-            continue;
-          }
-          if (actor.HasLeader && actor.Leader.IsPlayer) { 
-            HandlePlayerDecideUpgrade(actor);
-            continue;
-          }
-          List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
-          Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
-          if (upgrade2.HasValue)
-            actor.SkillUpgrade(upgrade2.Value);
+        if (actor.Model.Abilities.IsUndead) continue;
+        if (actor.HasLeader && actor.Leader.IsPlayer) continue; // leader triggers upgrade
+        if (actor.IsPlayer) { 
+          HandlePlayerDecideUpgrade(actor);
+          continue;
         }
+        List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
+        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
+        if (upgrade2.HasValue)
+          actor.SkillUpgrade(upgrade2.Value);
       }
     }
 
     private void HandleUndeadNPCsUpgrade(Map map)
     {
       foreach (Actor actor in map.Actors) {
-        if (actor != m_Player && actor.Leader != m_Player && actor.Model.Abilities.IsUndead && ((RogueGame.s_Options.SkeletonsUpgrade || !GameActors.IsSkeletonBranch(actor.Model)) && (RogueGame.s_Options.RatsUpgrade || !GameActors.IsRatBranch(actor.Model))) && (RogueGame.s_Options.ShamblersUpgrade || !GameActors.IsShamblerBranch(actor.Model)))
-        {
-          if (actor.IsPlayer) {
-            HandlePlayerDecideUpgrade(actor);
-            continue;
-          }
-          if (actor.HasLeader && actor.Leader.IsPlayer) { 
-            HandlePlayerDecideUpgrade(actor);
-            continue;
-          }
-          List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
-          Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
-          if (upgrade2.HasValue)
-            actor.SkillUpgrade(upgrade2.Value);
+        if (!actor.Model.Abilities.IsUndead) continue;
+        if (!RogueGame.s_Options.SkeletonsUpgrade && GameActors.IsSkeletonBranch(actor.Model)) continue;
+        if (!RogueGame.s_Options.RatsUpgrade && GameActors.IsRatBranch(actor.Model)) continue;
+        if (!RogueGame.s_Options.ShamblersUpgrade && GameActors.IsShamblerBranch(actor.Model)) continue;
+        if (actor.HasLeader && actor.Leader.IsPlayer) continue; // leader triggers upgrade
+        if (actor.IsPlayer) {
+          HandlePlayerDecideUpgrade(actor);
+          continue;
         }
+        List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
+        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
+        if (upgrade2.HasValue)
+          actor.SkillUpgrade(upgrade2.Value);
       }
     }
 
