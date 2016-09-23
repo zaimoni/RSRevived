@@ -619,13 +619,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool HasActorJumpAbility(Actor actor)
-    {
-      if (!actor.Model.Abilities.CanJump && actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) <= 0)
-        return actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE) > 0;
-      return true;
-    }
-
     public bool IsWalkableFor(Actor actor, Map map, int x, int y)
     {
       string reason;
@@ -647,7 +640,7 @@ namespace djack.RogueSurvivor.Engine
       MapObject mapObjectAt = map.GetMapObjectAt(x, y);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
-          if (!HasActorJumpAbility(actor)) {
+          if (!actor.CanJump) {
             reason = "cannot jump";
             return false;
           }

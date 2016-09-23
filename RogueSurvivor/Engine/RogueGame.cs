@@ -8737,7 +8737,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
       MapObject mapObjectAt = exitAt.Location.MapObject;
-      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !m_Rules.HasActorJumpAbility(actor)) && !mapObjectAt.IsCouch))
+      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !actor.CanJump) && !mapObjectAt.IsCouch))
       {
         if (isPlayer)
           AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) mapObjectAt.AName)));

@@ -900,6 +900,14 @@ namespace djack.RogueSurvivor.Data
       return CanRun(out reason);
     }
 
+    public bool CanJump {
+      get {
+       return Model.Abilities.CanJump
+            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE)
+            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
+      }
+    }
+
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {
