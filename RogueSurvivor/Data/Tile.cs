@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Data
     {
       get {
         Contract.Requires(null!=Models.Tiles);
-        Contract.Ensures(null!= Models.Tiles[m_ModelID]);
+        Contract.Ensures(null!=Contract.Result<TileModel>());
         return Models.Tiles[m_ModelID];
       }
       set {
