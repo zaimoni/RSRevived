@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public HashSet<Point> FOV {
       get {
-        Contract.Ensures(null!=m_FOV);
+        Contract.Ensures(null!=Contract.Result<HashSet<Point>>());
         return m_FOV;
       }
     }

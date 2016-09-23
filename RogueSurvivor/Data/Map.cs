@@ -424,7 +424,9 @@ namespace djack.RogueSurvivor.Data
         if (actor.IsPlayer) m_aux_Players = null;
       }
       m_aux_ActorsByPosition.Add(position, actor);
+      bool new_map = (null==actor.Location.Map);
       actor.Location = new Location(this, position);
+      if (new_map) actor.Controller.UpdateSensors();
       m_iCheckNextActorIndex = 0;
     }
 

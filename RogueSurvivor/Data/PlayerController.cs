@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Data
     public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return m_itemMemory.WhatHaveISeen(); }
     public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return m_itemMemory.WhereIs(x); }
 
-    public List<Engine.AI.Percept> UpdateSensors(RogueGame game)
+    protected override List<Engine.AI.Percept> UpdateSensors(RogueGame game)
     {
       List<Engine.AI.Percept> tmp = m_LOSSensor.Sense(game, m_Actor);
 

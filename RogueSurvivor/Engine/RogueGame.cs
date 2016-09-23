@@ -3666,7 +3666,7 @@ namespace djack.RogueSurvivor.Engine
     public void UpdatePlayerFOV(Actor player)
     {
       if (player == null) return;
-      (player.Controller as PlayerController)?.UpdateSensors(this);
+      (player.Controller as PlayerController)?.UpdateSensors();
     }
 
     public void StopTheWorld()
@@ -11008,7 +11008,6 @@ namespace djack.RogueSurvivor.Engine
           upgradeActor.Doll.AddDecoration(DollPart.LEGS, "Actors\\Decoration\\police_pants");
           upgradeActor.Doll.AddDecoration(DollPart.FEET, "Actors\\Decoration\\police_shoes");
           upgradeActor.Controller = new PlayerController();
-          (upgradeActor.Controller as PlayerController).UpdateSensors(RogueForm.Game);
           AddMessage(new Data.Message("Welcome to the force.", m_Session.WorldTime.TurnCounter, Color.Yellow));
         } else
           AddMessage(new Data.Message("Acknowledged.", m_Session.WorldTime.TurnCounter, Color.Yellow));
