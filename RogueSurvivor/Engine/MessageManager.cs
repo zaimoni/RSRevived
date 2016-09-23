@@ -8,16 +8,17 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
   internal class MessageManager
   {
     private readonly List<Message> m_Messages = new List<Message>();
-    private int m_LinesSpacing;
-    private int m_FadeoutFactor;
+    private readonly int m_LinesSpacing;
+    private readonly int m_FadeoutFactor;
     private readonly List<Message> m_History;
-    private int m_HistorySize;
+    private readonly int m_HistorySize;
 
     public int Count
     {
@@ -37,14 +38,13 @@ namespace djack.RogueSurvivor.Engine
 
     public MessageManager(int linesSpacing, int fadeoutFactor, int historySize)
     {
-      if (linesSpacing < 0)
-        throw new ArgumentOutOfRangeException("linesSpacing < 0");
-      if (fadeoutFactor < 0)
-        throw new ArgumentOutOfRangeException("fadeoutFactor < 0");
-            m_LinesSpacing = linesSpacing;
-            m_FadeoutFactor = fadeoutFactor;
-            m_HistorySize = historySize;
-            m_History = new List<Message>(historySize);
+      if (linesSpacing < 0) throw new ArgumentOutOfRangeException("linesSpacing < 0");
+      if (fadeoutFactor < 0) throw new ArgumentOutOfRangeException("fadeoutFactor < 0");
+      Contract.Requires(0 <= historySize);
+      m_LinesSpacing = linesSpacing;
+      m_FadeoutFactor = fadeoutFactor;
+      m_HistorySize = historySize;
+      m_History = new List<Message>(historySize);
     }
 
     public void Clear()

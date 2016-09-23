@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -16,11 +17,8 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<Skill> Skills
     {
-      get
-      {
-        if (m_Table == null)
-          return (IEnumerable<Skill>) null;
-        return (IEnumerable<Skill>)m_Table.Values;
+      get {
+        return (null== m_Table ? null : m_Table.Values);
       }
     }
 
@@ -40,18 +38,15 @@ namespace djack.RogueSurvivor.Data
 
     public int CountSkills
     {
-      get
-      {
-        if (m_Table == null)
-          return 0;
-        return m_Table.Values.Count;
+      get {
+        return (null==m_Table ? 0 : m_Table.Values.Count);
       }
     }
 
     public int CountTotalSkillLevels
     {
-      get
-      {
+      get {
+        if (null==m_Table) return 0;
         int num = 0;
         foreach (Skill skill in m_Table.Values)
           num += skill.Level;
@@ -65,45 +60,38 @@ namespace djack.RogueSurvivor.Data
 
     public SkillTable(IEnumerable<Skill> startingSkills)
     {
-      if (startingSkills == null)
-        throw new ArgumentNullException("startingSkills");
+      Contract.Requires(null!=startingSkills);
       foreach (Skill startingSkill in startingSkills)
-                AddSkill(startingSkill);
+        AddSkill(startingSkill);
     }
 
     public Skill GetSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      if (m_Table == null)
-        return (Skill) null;
+      if (m_Table == null) return null;
       Skill skill;
       if (m_Table.TryGetValue((int) id, out skill))
         return skill;
-      return (Skill) null;
+      return null;
     }
 
     public int GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
       Skill skill = GetSkill(id);
-      if (skill == null)
-        return 0;
-      return skill.Level;
+      return (null== skill ? 0 : skill.Level);
     }
 
     public void AddSkill(Skill sk)
     {
-      if (m_Table == null)
-                m_Table = new Dictionary<int, Skill>(3);
-      if (m_Table.ContainsKey(sk.ID))
-        throw new ArgumentException("skill of same ID already in table");
-      if (m_Table.ContainsValue(sk))
-        throw new ArgumentException("skill already in table");
-            m_Table.Add(sk.ID, sk);
+      Contract.Requires(null!=sk);
+      if (m_Table == null) m_Table = new Dictionary<int, Skill>(3);
+      if (m_Table.ContainsKey(sk.ID)) throw new ArgumentException("skill of same ID already in table");
+      if (m_Table.ContainsValue(sk)) throw new ArgumentException("skill already in table");
+      m_Table.Add(sk.ID, sk);
     }
 
     public void AddOrIncreaseSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      if (m_Table == null)
-                m_Table = new Dictionary<int, Skill>(3);
+      if (m_Table == null) m_Table = new Dictionary<int, Skill>(3);
       Skill skill = GetSkill(id);
       if (skill == null)
       {
@@ -115,15 +103,12 @@ namespace djack.RogueSurvivor.Data
 
     public void DecOrRemoveSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      if (m_Table == null)
-        return;
+      if (m_Table == null) return;
       Skill skill = GetSkill(id);
-      if (skill == null || --skill.Level > 0)
-        return;
-            m_Table.Remove((int) id);
-      if (m_Table.Count != 0)
-        return;
-            m_Table = (Dictionary<int, Skill>) null;
+      if (skill == null || --skill.Level > 0) return;
+      m_Table.Remove((int) id);
+      if (m_Table.Count != 0) return;
+      m_Table = null;
     }
   }
 }

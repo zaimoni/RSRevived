@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -18,13 +19,14 @@ namespace djack.RogueSurvivor.Data
 
     public TileModel Model
     {
-      get
-      {
+      get {
+        Contract.Requires(null!=Models.Tiles);
+        Contract.Ensures(null!= Models.Tiles[m_ModelID]);
         return Models.Tiles[m_ModelID];
       }
-      set
-      {
-                m_ModelID = value.ID;
+      set {
+        Contract.Requires(null!=value);
+        m_ModelID = value.ID;
       }
     }
 

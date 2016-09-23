@@ -12,16 +12,14 @@ namespace djack.RogueSurvivor.Engine
 {
   internal class WAVSoundManager : ISoundManager,IDisposable
     {
-    private Dictionary<string, SoundPlayer> m_Musics;
-    private Dictionary<string, SoundPlayer> m_PlayingMusics;
+    readonly Dictionary<string, SoundPlayer> m_Musics = new Dictionary<string, SoundPlayer>();
+    readonly Dictionary<string, SoundPlayer> m_PlayingMusics = new Dictionary<string, SoundPlayer>();
 
     public bool IsMusicEnabled { get; set; }
     public int Volume { get; set; }
 
     public WAVSoundManager()
     {
-      m_Musics = new Dictionary<string, SoundPlayer>();
-      m_PlayingMusics = new Dictionary<string, SoundPlayer>();
       Volume = 100;
     }
 

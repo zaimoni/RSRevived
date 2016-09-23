@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -50,8 +51,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrap(ItemModel model)
       : base(model)
     {
-      if (!(model is ItemTrapModel))
-        throw new ArgumentException("model is not a TrapModel");
+      Contract.Requires(model is ItemTrapModel);
     }
 
     public ItemTrap Clone()

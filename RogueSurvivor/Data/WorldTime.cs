@@ -6,6 +6,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -27,10 +28,12 @@ namespace djack.RogueSurvivor.Data
     {
       get
       {
+        Contract.Ensures(0<= m_TurnCounter);
         return m_TurnCounter;
       }
       set
       {
+        Contract.Requires(0<=value);
         m_TurnCounter = value;
         RecomputeDate();
       }
@@ -92,11 +95,12 @@ namespace djack.RogueSurvivor.Data
     public WorldTime(WorldTime src)
       : this(src.TurnCounter)
     {
+      Contract.Requires(null!=src);
     }
 
     public WorldTime(int turnCounter)
     {
-      if (turnCounter < 0) throw new ArgumentOutOfRangeException("turnCounter < 0");
+      Contract.Requires(0<=turnCounter);
       TurnCounter = turnCounter;
     }
 

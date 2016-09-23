@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -17,6 +18,8 @@ namespace djack.RogueSurvivor.Data
 
     public ItemModel Model {
       get {
+        Contract.Requires(null!=Models.Items);
+        Contract.Ensures(null!=Contract.Result<ItemModel>());
         return Models.Items[m_ModelID];
       }
     }
@@ -94,6 +97,7 @@ namespace djack.RogueSurvivor.Data
 
     public Item(ItemModel model)
     {
+      Contract.Requires(null!=model);
       m_ModelID = (int) model.ID;
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;
