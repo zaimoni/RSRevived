@@ -10,6 +10,7 @@ using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 {
@@ -21,6 +22,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public HashSet<Point> FOV {
       get {
+        Contract.Ensures(null!=m_FOV);
         return m_FOV;
       }
     }
