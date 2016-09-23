@@ -18,6 +18,7 @@ namespace djack.RogueSurvivor.Data
 
     public string Text {
       get { 
+        Contract.Ensures(null!=Contract.Result<string>());
         return m_Text;
       }
       set { 
