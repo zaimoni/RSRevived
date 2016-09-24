@@ -17,4 +17,12 @@ namespace djack.RogueSurvivor.Data
     HEAVY_RAIN = 3,
     _COUNT = 4,
   }
+
+  public static class WeatherExtension
+  {
+    internal static bool IsRain(this Weather w)
+    {
+      return Weather.RAIN==w || Weather.HEAVY_RAIN==w;
+    }
+  }
 }
