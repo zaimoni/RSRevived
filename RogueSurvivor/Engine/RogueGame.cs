@@ -12551,10 +12551,8 @@ namespace djack.RogueSurvivor.Engine
     {
       m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
       m_MusicManager.Volume = RogueGame.Options.MusicVolume;
-      if (Session.Get != null && Session.Get.Scoring != null) {
-        Session.Get.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
-        Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
-      }
+      Session.Get.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
       if (m_MusicManager.IsMusicEnabled) return;
       m_MusicManager.StopAll();
     }
