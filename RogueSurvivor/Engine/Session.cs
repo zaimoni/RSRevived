@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Formatters.Soap;
 using System.Xml.Serialization;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -23,7 +24,7 @@ namespace djack.RogueSurvivor.Engine
     public static Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession;
 
-    private WorldTime m_WorldTime;
+    private readonly WorldTime m_WorldTime;
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
@@ -31,13 +32,13 @@ namespace djack.RogueSurvivor.Engine
     private readonly ThreatTracking m_PoliceThreatTracking;
 
     public GameMode GameMode { get; set; }
-    public int Seed { get; set; }
+    public int Seed { get; private set; }
     public int LastTurnPlayerActed { get; set; }
     public World World { get; set; }
     public Map CurrentMap { get; set; }
-    public UniqueActors UniqueActors { get; set; }
-    public UniqueItems UniqueItems { get; set; }
-    public UniqueMaps UniqueMaps { get; set; }
+    public UniqueActors UniqueActors { get; private set; }
+    public UniqueItems UniqueItems { get; private set; }
+    public UniqueMaps UniqueMaps { get; private set; }
     public bool PlayerKnows_CHARUndergroundFacilityLocation { get; set; }
     public bool PlayerKnows_TheSewersThingLocation { get; set; }
     public bool CHARUndergroundFacility_Activated { get; set; }
@@ -45,6 +46,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static Session Get {
       get {
+        Contract.Ensures(null!=Contract.Result<Session>());
         if (Session.s_TheSession == null) Session.s_TheSession = new Session();
         return Session.s_TheSession;
       }
@@ -76,6 +78,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Session()
     {
+      m_WorldTime = new WorldTime();
       m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
       m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
       m_PoliceThreatTracking = new ThreatTracking();
@@ -137,7 +140,7 @@ namespace djack.RogueSurvivor.Engine
       CurrentMap = null;
       m_Scoring = new Scoring();
       World = null;
-      m_WorldTime = new WorldTime();
+      m_WorldTime.TurnCounter = 0;
       LastTurnPlayerActed = 0;
       m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
       for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1) {
