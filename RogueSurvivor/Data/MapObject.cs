@@ -134,13 +134,11 @@ namespace djack.RogueSurvivor.Data
 
     public int JumpLevel
     {
-      get
-      {
+      get {
         return m_JumpLevel;
       }
-      set
-      {
-                m_JumpLevel = value;
+      set {
+        m_JumpLevel = value;
       }
     }
 
@@ -286,13 +284,8 @@ namespace djack.RogueSurvivor.Data
 
     public MapObject.Fire FireState
     {
-      get
-      {
+      get {
         return m_FireState;
-      }
-      set
-      {
-                m_FireState = value;
       }
     }
 
@@ -334,6 +327,7 @@ namespace djack.RogueSurvivor.Data
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
+    // flag handling
     private bool GetFlag(MapObject.Flags f)
     {
       return (m_Flags & f) != MapObject.Flags.NONE;
@@ -356,6 +350,20 @@ namespace djack.RogueSurvivor.Data
     {
             m_Flags &= ~f;
     }
+
+    // fire
+    public void Ignite()
+    {
+      m_FireState = MapObject.Fire.ONFIRE;
+      --m_JumpLevel;
+    }
+
+    public void Extinguish()
+    {
+      ++m_JumpLevel;
+      m_FireState = MapObject.Fire.BURNABLE;
+    }
+
 
     [Serializable]
     public enum Break : byte

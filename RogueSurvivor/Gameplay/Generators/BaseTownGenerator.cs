@@ -686,7 +686,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual void AddWreckedCarsOutside(Map map, Rectangle rect)
     {
-            MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
       {
         if (m_DiceRoller.RollChance(m_Params.WreckedCarChance))
         {
@@ -695,11 +695,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           {
             MapObject mapObj = MakeObjWreckedCar(m_DiceRoller);
             if (m_DiceRoller.RollChance(50))
-                      m_Game.ApplyOnFire(mapObj);
+              mapObj.Ignite();
             return mapObj;
           }
         }
-        return (MapObject) null;
+        return null;
       }));
     }
 

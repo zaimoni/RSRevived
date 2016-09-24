@@ -2924,7 +2924,7 @@ namespace djack.RogueSurvivor.Engine
           {
             if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE))
             {
-              UnapplyOnFire(mapObject);
+              mapObject.Extinguish();
               if (ForceVisibleToPlayer(mapObject))
                 AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
             }
@@ -11277,18 +11277,6 @@ namespace djack.RogueSurvivor.Engine
         default:
           return new Skills.IDs?();
       }
-    }
-
-    public void ApplyOnFire(MapObject mapObj)
-    {
-      mapObj.FireState = MapObject.Fire.ONFIRE;
-      --mapObj.JumpLevel;
-    }
-
-    public void UnapplyOnFire(MapObject mapObj)
-    {
-      ++mapObj.JumpLevel;
-      mapObj.FireState = MapObject.Fire.BURNABLE;
     }
 
     public void ComputeViewRect(Point mapCenter)
