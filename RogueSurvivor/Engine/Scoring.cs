@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -264,6 +265,7 @@ namespace djack.RogueSurvivor.Engine
 
     public Achievement GetAchievement(Achievement.IDs id)
     {
+      Contract.Ensures(null!=Contract.Result<Achievement>());
       return Achievements[(int) id];
     }
 

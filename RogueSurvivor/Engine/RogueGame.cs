@@ -1,4 +1,5 @@
-﻿// Decompiled with JetBrains decompiler
+﻿
+// Decompiled with JetBrains decompiler
 // Type: djack.RogueSurvivor.Engine.RogueGame
 // Assembly: RogueSurvivor, Version=0.9.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
@@ -24,6 +25,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
@@ -10079,18 +10081,10 @@ namespace djack.RogueSurvivor.Engine
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
       if (actor.CountFollowers > 0) {
-        Location location = new Location(actor.Location.Map, mapObj.Location.Position);
-        List<Actor> actorList = null;
-        foreach (Actor follower in actor.Followers) {
-          if (!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location)) {
-            if (actorList == null)
-              actorList = new List<Actor>(actor.CountFollowers);
-            actorList.Add(follower);
-          }
-        }
-        if (actorList != null) {
-          staminaCost = mapObj.Weight / (1 + actorList.Count);
-          foreach (Actor actor1 in actorList) {
+        IEnumerable<Actor> tmp = actor.Followers.Where(follower=>!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location));
+        if (0<tmp.Count()) {
+          staminaCost = mapObj.Weight / (1 + tmp.Count());
+          foreach(Actor actor1 in tmp) {
             actor1.SpendActionPoints(Rules.BASE_ACTION_COST);
             actor1.SpendStaminaPoints(staminaCost);
             if (flag)
@@ -10102,7 +10096,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendStaminaPoints(staminaCost);
       Map map = mapObj.Location.Map;
       Point position = mapObj.Location.Position;
-      map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
+      map.RemoveMapObjectAt(position.X, position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
       if (!Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
         map.RemoveActor(actor);
