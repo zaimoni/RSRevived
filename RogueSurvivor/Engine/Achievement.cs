@@ -40,7 +40,6 @@ namespace djack.RogueSurvivor.Engine
     public enum IDs
     {
       REACHED_DAY_07 = 0,
-      _FIRST = 0,
       REACHED_DAY_14 = 1,
       REACHED_DAY_21 = 2,
       REACHED_DAY_28 = 3,

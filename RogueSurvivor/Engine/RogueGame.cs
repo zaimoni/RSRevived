@@ -10627,12 +10627,12 @@ namespace djack.RogueSurvivor.Engine
       if (Session.Get.Scoring.CompletedAchievementsCount == 0)
       {
         textFile.Append("Didn't achieve anything notable. And then died.");
-        textFile.Append(string.Format("(unlock all the {0} achievements to win this game version)", (object) 8));
+        textFile.Append(string.Format("(unlock all the {0} achievements to win this game version)", (object) ((int)Achievement.IDs._COUNT)));
       }
       else
       {
-        textFile.Append(string.Format("Total : {0}/{1}.", (object)Session.Get.Scoring.CompletedAchievementsCount, (object) 8));
-        if (Session.Get.Scoring.CompletedAchievementsCount >= 8)
+        textFile.Append(string.Format("Total : {0}/{1}.", (object)Session.Get.Scoring.CompletedAchievementsCount, (object) ((int)Achievement.IDs._COUNT)));
+        if (Session.Get.Scoring.CompletedAchievementsCount >= (int)Achievement.IDs._COUNT)
           textFile.Append("*** You achieved everything! You can consider having won this version of the game! CONGRATULATIONS! ***");
         else
           textFile.Append("(unlock all the achievements to win this game version)");
@@ -10885,8 +10885,8 @@ namespace djack.RogueSurvivor.Engine
       CheckWeatherChange();
       if (m_Player.Model.Abilities.IsUndead) return;
       if (Session.Get.WorldTime.Day == 7) {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs._FIRST);
-        ShowNewAchievement(Achievement.IDs._FIRST);
+        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_07);
+        ShowNewAchievement(Achievement.IDs.REACHED_DAY_07);
       }
       else if (Session.Get.WorldTime.Day == 14)
       {
