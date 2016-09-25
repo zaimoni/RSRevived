@@ -1038,14 +1038,8 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.TRAP_BARBED_WIRE] = (ItemModel) tmpTrapModel;
 
       // entertainment
-      ItemEntertainmentModel tmpEntertainmentModel = new ItemEntertainmentModel(DATA_ENT_BOOK.NAME, DATA_ENT_BOOK.PLURAL, "Items\\item_book", DATA_ENT_BOOK.VALUE, DATA_ENT_BOOK.BORECHANCE);
-      tmpEntertainmentModel.StackingLimit = DATA_ENT_BOOK.STACKING;
-      tmpEntertainmentModel.FlavorDescription = DATA_ENT_BOOK.FLAVOR;
-      this[GameItems.IDs.ENT_BOOK] = tmpEntertainmentModel;
-      tmpEntertainmentModel = new ItemEntertainmentModel(DATA_ENT_MAGAZINE.NAME, DATA_ENT_MAGAZINE.PLURAL, "Items\\item_magazine", DATA_ENT_MAGAZINE.VALUE, DATA_ENT_MAGAZINE.BORECHANCE);
-      tmpEntertainmentModel.StackingLimit = DATA_ENT_MAGAZINE.STACKING;
-      tmpEntertainmentModel.FlavorDescription = DATA_ENT_MAGAZINE.FLAVOR;
-      this[GameItems.IDs.ENT_MAGAZINE] = tmpEntertainmentModel;
+      this[GameItems.IDs.ENT_BOOK] = new ItemEntertainmentModel(DATA_ENT_BOOK.NAME, DATA_ENT_BOOK.PLURAL, "Items\\item_book", DATA_ENT_BOOK.VALUE, DATA_ENT_BOOK.BORECHANCE, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR);
+      this[GameItems.IDs.ENT_MAGAZINE] = new ItemEntertainmentModel(DATA_ENT_MAGAZINE.NAME, DATA_ENT_MAGAZINE.PLURAL, "Items\\item_magazine", DATA_ENT_MAGAZINE.VALUE, DATA_ENT_MAGAZINE.BORECHANCE, DATA_ENT_MAGAZINE.STACKING, DATA_ENT_MAGAZINE.FLAVOR);
 
       this[GameItems.IDs.UNIQUE_SUBWAY_BADGE] = new ItemModel("Subway Worker Badge", "Subways Worker Badges", "Items\\item_subway_badge")
       {
