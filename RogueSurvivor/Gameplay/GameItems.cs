@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal class GameItems : ItemModelDB
   {
-    private ItemModel[] m_Models = new ItemModel[(int) GameItems.IDs._COUNT];
+    private readonly ItemModel[] m_Models = new ItemModel[(int) GameItems.IDs._COUNT];
     private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
     private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
     private GameItems.MedecineData DATA_MEDICINE_PILLS_STA;
@@ -1038,16 +1038,14 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.TRAP_BARBED_WIRE] = (ItemModel) tmpTrapModel;
 
       // entertainment
-      GameItems.EntData entData1 = DATA_ENT_BOOK;
-      ItemEntertainmentModel tmpEntertainmentModel = new ItemEntertainmentModel(entData1.NAME, entData1.PLURAL, "Items\\item_book", entData1.VALUE, entData1.BORECHANCE);
-      tmpEntertainmentModel.StackingLimit = entData1.STACKING;
-      tmpEntertainmentModel.FlavorDescription = entData1.FLAVOR;
-      this[GameItems.IDs.ENT_BOOK] = (ItemModel) tmpEntertainmentModel;
-      GameItems.EntData entData2 = DATA_ENT_MAGAZINE;
-      tmpEntertainmentModel = new ItemEntertainmentModel(entData2.NAME, entData2.PLURAL, "Items\\item_magazine", entData2.VALUE, entData2.BORECHANCE);
-      tmpEntertainmentModel.StackingLimit = entData2.STACKING;
-      tmpEntertainmentModel.FlavorDescription = entData2.FLAVOR;
-      this[GameItems.IDs.ENT_MAGAZINE] = (ItemModel) tmpEntertainmentModel;
+      ItemEntertainmentModel tmpEntertainmentModel = new ItemEntertainmentModel(DATA_ENT_BOOK.NAME, DATA_ENT_BOOK.PLURAL, "Items\\item_book", DATA_ENT_BOOK.VALUE, DATA_ENT_BOOK.BORECHANCE);
+      tmpEntertainmentModel.StackingLimit = DATA_ENT_BOOK.STACKING;
+      tmpEntertainmentModel.FlavorDescription = DATA_ENT_BOOK.FLAVOR;
+      this[GameItems.IDs.ENT_BOOK] = tmpEntertainmentModel;
+      tmpEntertainmentModel = new ItemEntertainmentModel(DATA_ENT_MAGAZINE.NAME, DATA_ENT_MAGAZINE.PLURAL, "Items\\item_magazine", DATA_ENT_MAGAZINE.VALUE, DATA_ENT_MAGAZINE.BORECHANCE);
+      tmpEntertainmentModel.StackingLimit = DATA_ENT_MAGAZINE.STACKING;
+      tmpEntertainmentModel.FlavorDescription = DATA_ENT_MAGAZINE.FLAVOR;
+      this[GameItems.IDs.ENT_MAGAZINE] = tmpEntertainmentModel;
 
       this[GameItems.IDs.UNIQUE_SUBWAY_BADGE] = new ItemModel("Subway Worker Badge", "Subways Worker Badges", "Items\\item_subway_badge")
       {
@@ -1066,19 +1064,16 @@ namespace djack.RogueSurvivor.Gameplay
 
     private CSVLine FindLineForModel(CSVTable table, GameItems.IDs modelID)
     {
-      foreach (CSVLine line in table.Lines)
-      {
+      foreach (CSVLine line in table.Lines) {
         if (line[0].ParseText() == modelID.ToString())
           return line;
       }
-      return (CSVLine) null;
+      throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
     }
 
     private _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(IRogueUI ui, CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs modelID)
     {
       CSVLine lineForModel = FindLineForModel(table, modelID);
-      if (lineForModel == null)
-        throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
       try
       {
         return fn(lineForModel);
@@ -1120,8 +1115,9 @@ namespace djack.RogueSurvivor.Gameplay
 
     public bool LoadMedicineFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.MedecineData[] data;
-            LoadDataFromCSV(ui, path, "medicine items", 10, new Func<CSVLine, GameItems.MedecineData>(GameItems.MedecineData.FromCSVLine), new GameItems.IDs[6]
+      LoadDataFromCSV(ui, path, "medicine items", 10, new Func<CSVLine, GameItems.MedecineData>(GameItems.MedecineData.FromCSVLine), new GameItems.IDs[6]
       {
         GameItems.IDs._FIRST,
         GameItems.IDs.MEDICINE_MEDIKIT,
@@ -1130,34 +1126,36 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.MEDICINE_PILLS_SAN,
         GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL
       }, out data);
-            DATA_MEDICINE_BANDAGE = data[0];
-            DATA_MEDICINE_MEDIKIT = data[1];
-            DATA_MEDICINE_PILLS_SLP = data[2];
-            DATA_MEDICINE_PILLS_STA = data[3];
-            DATA_MEDICINE_PILLS_SAN = data[4];
-            DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
+      DATA_MEDICINE_BANDAGE = data[0];
+      DATA_MEDICINE_MEDIKIT = data[1];
+      DATA_MEDICINE_PILLS_SLP = data[2];
+      DATA_MEDICINE_PILLS_STA = data[3];
+      DATA_MEDICINE_PILLS_SAN = data[4];
+      DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
       return true;
     }
 
     public bool LoadFoodFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.FoodData[] data;
-            LoadDataFromCSV(ui, path, "food items", 7, new Func<CSVLine, GameItems.FoodData>(GameItems.FoodData.FromCSVLine), new GameItems.IDs[3]
+      LoadDataFromCSV(ui, path, "food items", 7, new Func<CSVLine, GameItems.FoodData>(GameItems.FoodData.FromCSVLine), new GameItems.IDs[3]
       {
         GameItems.IDs.FOOD_ARMY_RATION,
         GameItems.IDs.FOOD_CANNED_FOOD,
         GameItems.IDs.FOOD_GROCERIES
       }, out data);
-            DATA_FOOD_ARMY_RATION = data[0];
-            DATA_FOOD_CANNED_FOOD = data[1];
-            DATA_FOOD_GROCERIES = data[2];
+      DATA_FOOD_ARMY_RATION = data[0];
+      DATA_FOOD_CANNED_FOOD = data[1];
+      DATA_FOOD_GROCERIES = data[2];
       return true;
     }
 
     public bool LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.MeleeWeaponData[] data;
-            LoadDataFromCSV(ui, path, "melee weapons items", 9, new Func<CSVLine, GameItems.MeleeWeaponData>(GameItems.MeleeWeaponData.FromCSVLine), new GameItems.IDs[16]
+      LoadDataFromCSV(ui, path, "melee weapons items", 9, new Func<CSVLine, GameItems.MeleeWeaponData>(GameItems.MeleeWeaponData.FromCSVLine), new GameItems.IDs[16]
       {
         GameItems.IDs.MELEE_BASEBALLBAT,
         GameItems.IDs.MELEE_COMBAT_KNIFE,
@@ -1176,29 +1174,30 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.UNIQUE_BIGBEAR_BAT,
         GameItems.IDs.UNIQUE_ROGUEDJACK_KEYBOARD
       }, out data);
-            DATA_MELEE_BASEBALLBAT = data[0];
-            DATA_MELEE_COMBAT_KNIFE = data[1];
-            DATA_MELEE_CROWBAR = data[2];
-            DATA_MELEE_GOLFCLUB = data[3];
-            DATA_MELEE_HUGE_HAMMER = data[4];
-            DATA_MELEE_IRON_GOLFCLUB = data[5];
-            DATA_MELEE_SHOVEL = data[6];
-            DATA_MELEE_SHORT_SHOVEL = data[7];
-            DATA_MELEE_TRUNCHEON = data[8];
-            DATA_MELEE_UNIQUE_JASON_MYERS_AXE = data[9];
-            DATA_MELEE_IMPROVISED_CLUB = data[10];
-            DATA_MELEE_IMPROVISED_SPEAR = data[11];
-            DATA_MELEE_SMALL_HAMMER = data[12];
-            DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = data[13];
-            DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
-            DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
+      DATA_MELEE_BASEBALLBAT = data[0];
+      DATA_MELEE_COMBAT_KNIFE = data[1];
+      DATA_MELEE_CROWBAR = data[2];
+      DATA_MELEE_GOLFCLUB = data[3];
+      DATA_MELEE_HUGE_HAMMER = data[4];
+      DATA_MELEE_IRON_GOLFCLUB = data[5];
+      DATA_MELEE_SHOVEL = data[6];
+      DATA_MELEE_SHORT_SHOVEL = data[7];
+      DATA_MELEE_TRUNCHEON = data[8];
+      DATA_MELEE_UNIQUE_JASON_MYERS_AXE = data[9];
+      DATA_MELEE_IMPROVISED_CLUB = data[10];
+      DATA_MELEE_IMPROVISED_SPEAR = data[11];
+      DATA_MELEE_SMALL_HAMMER = data[12];
+      DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = data[13];
+      DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
+      DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
       return true;
     }
 
     public bool LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.RangedWeaponData[] data;
-            LoadDataFromCSV(ui, path, "ranged weapons items", 8, new Func<CSVLine, GameItems.RangedWeaponData>(GameItems.RangedWeaponData.FromCSVLine), new GameItems.IDs[10]
+      LoadDataFromCSV(ui, path, "ranged weapons items", 8, new Func<CSVLine, GameItems.RangedWeaponData>(GameItems.RangedWeaponData.FromCSVLine), new GameItems.IDs[10]
       {
         GameItems.IDs.RANGED_ARMY_PISTOL,
         GameItems.IDs.RANGED_ARMY_RIFLE,
@@ -1211,45 +1210,48 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN,
         GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL
       }, out data);
-            DATA_RANGED_ARMY_PISTOL = data[0];
-            DATA_RANGED_ARMY_RIFLE = data[1];
-            DATA_RANGED_HUNTING_CROSSBOW = data[2];
-            DATA_RANGED_HUNTING_RIFLE = data[3];
-            DATA_RANGED_KOLT_REVOLVER = data[4];
-            DATA_RANGED_PISTOL = data[5];
-            DATA_RANGED_PRECISION_RIFLE = data[6];
-            DATA_RANGED_SHOTGUN = data[7];
-            DATA_UNIQUE_SANTAMAN_SHOTGUN = data[8];
-            DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
+      DATA_RANGED_ARMY_PISTOL = data[0];
+      DATA_RANGED_ARMY_RIFLE = data[1];
+      DATA_RANGED_HUNTING_CROSSBOW = data[2];
+      DATA_RANGED_HUNTING_RIFLE = data[3];
+      DATA_RANGED_KOLT_REVOLVER = data[4];
+      DATA_RANGED_PISTOL = data[5];
+      DATA_RANGED_PRECISION_RIFLE = data[6];
+      DATA_RANGED_SHOTGUN = data[7];
+      DATA_UNIQUE_SANTAMAN_SHOTGUN = data[8];
+      DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
       return true;
     }
 
     public bool LoadExplosivesFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.ExplosiveData[] data;
-            LoadDataFromCSV(ui, path, "explosives items", 14, new Func<CSVLine, GameItems.ExplosiveData>(GameItems.ExplosiveData.FromCSVLine), new GameItems.IDs[1]
+      LoadDataFromCSV(ui, path, "explosives items", 14, new Func<CSVLine, GameItems.ExplosiveData>(GameItems.ExplosiveData.FromCSVLine), new GameItems.IDs[1]
       {
         GameItems.IDs.EXPLOSIVE_GRENADE
       }, out data);
-            DATA_EXPLOSIVE_GRENADE = data[0];
+      DATA_EXPLOSIVE_GRENADE = data[0];
       return true;
     }
 
     public bool LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.BarricadingMaterialData[] data;
-            LoadDataFromCSV(ui, path, "barricading items", 6, new Func<CSVLine, GameItems.BarricadingMaterialData>(GameItems.BarricadingMaterialData.FromCSVLine), new GameItems.IDs[1]
+      LoadDataFromCSV(ui, path, "barricading items", 6, new Func<CSVLine, GameItems.BarricadingMaterialData>(GameItems.BarricadingMaterialData.FromCSVLine), new GameItems.IDs[1]
       {
         GameItems.IDs.BAR_WOODEN_PLANK
       }, out data);
-            DATA_BAR_WOODEN_PLANK = data[0];
+      DATA_BAR_WOODEN_PLANK = data[0];
       return true;
     }
 
     public bool LoadArmorsFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.ArmorData[] data;
-            LoadDataFromCSV(ui, path, "armors items", 8, new Func<CSVLine, GameItems.ArmorData>(GameItems.ArmorData.FromCSVLine), new GameItems.IDs[7]
+      LoadDataFromCSV(ui, path, "armors items", 8, new Func<CSVLine, GameItems.ArmorData>(GameItems.ArmorData.FromCSVLine), new GameItems.IDs[7]
       {
         GameItems.IDs.ARMOR_ARMY_BODYARMOR,
         GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
@@ -1259,101 +1261,107 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.ARMOR_POLICE_RIOT,
         GameItems.IDs.ARMOR_HUNTER_VEST
       }, out data);
-            DATA_ARMOR_ARMY = data[0];
-            DATA_ARMOR_CHAR = data[1];
-            DATA_ARMOR_HELLS_SOULS_JACKET = data[2];
-            DATA_ARMOR_FREE_ANGELS_JACKET = data[3];
-            DATA_ARMOR_POLICE_JACKET = data[4];
-            DATA_ARMOR_POLICE_RIOT = data[5];
-            DATA_ARMOR_HUNTER_VEST = data[6];
+      DATA_ARMOR_ARMY = data[0];
+      DATA_ARMOR_CHAR = data[1];
+      DATA_ARMOR_HELLS_SOULS_JACKET = data[2];
+      DATA_ARMOR_FREE_ANGELS_JACKET = data[3];
+      DATA_ARMOR_POLICE_JACKET = data[4];
+      DATA_ARMOR_POLICE_RIOT = data[5];
+      DATA_ARMOR_HUNTER_VEST = data[6];
       return true;
     }
 
     public bool LoadTrackersFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.TrackerData[] data;
-            LoadDataFromCSV(ui, path, "trackers items", 5, new Func<CSVLine, GameItems.TrackerData>(GameItems.TrackerData.FromCSVLine), new GameItems.IDs[4]
+      LoadDataFromCSV(ui, path, "trackers items", 5, new Func<CSVLine, GameItems.TrackerData>(GameItems.TrackerData.FromCSVLine), new GameItems.IDs[4]
       {
         GameItems.IDs.TRACKER_BLACKOPS,
         GameItems.IDs.TRACKER_CELL_PHONE,
         GameItems.IDs.TRACKER_ZTRACKER,
         GameItems.IDs.TRACKER_POLICE_RADIO
       }, out data);
-            DATA_TRACKER_BLACKOPS_GPS = data[0];
-            DATA_TRACKER_CELL_PHONE = data[1];
-            DATA_TRACKER_ZTRACKER = data[2];
-            DATA_TRACKER_POLICE_RADIO = data[3];
+      DATA_TRACKER_BLACKOPS_GPS = data[0];
+      DATA_TRACKER_CELL_PHONE = data[1];
+      DATA_TRACKER_ZTRACKER = data[2];
+      DATA_TRACKER_POLICE_RADIO = data[3];
       return true;
     }
 
     public bool LoadSpraypaintsFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.SprayPaintData[] data;
-            LoadDataFromCSV(ui, path, "spraypaint items", 5, new Func<CSVLine, GameItems.SprayPaintData>(GameItems.SprayPaintData.FromCSVLine), new GameItems.IDs[4]
+      LoadDataFromCSV(ui, path, "spraypaint items", 5, new Func<CSVLine, GameItems.SprayPaintData>(GameItems.SprayPaintData.FromCSVLine), new GameItems.IDs[4]
       {
         GameItems.IDs.SPRAY_PAINT1,
         GameItems.IDs.SPRAY_PAINT2,
         GameItems.IDs.SPRAY_PAINT3,
         GameItems.IDs.SPRAY_PAINT4
       }, out data);
-            DATA_SPRAY_PAINT1 = data[0];
-            DATA_SPRAY_PAINT2 = data[1];
-            DATA_SPRAY_PAINT3 = data[2];
-            DATA_SPRAY_PAINT4 = data[3];
+      DATA_SPRAY_PAINT1 = data[0];
+      DATA_SPRAY_PAINT2 = data[1];
+      DATA_SPRAY_PAINT3 = data[2];
+      DATA_SPRAY_PAINT4 = data[3];
       return true;
     }
 
     public bool LoadLightsFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.LightData[] data;
-            LoadDataFromCSV(ui, path, "lights items", 6, new Func<CSVLine, GameItems.LightData>(GameItems.LightData.FromCSVLine), new GameItems.IDs[2]
+      LoadDataFromCSV(ui, path, "lights items", 6, new Func<CSVLine, GameItems.LightData>(GameItems.LightData.FromCSVLine), new GameItems.IDs[2]
       {
         GameItems.IDs.LIGHT_FLASHLIGHT,
         GameItems.IDs.LIGHT_BIG_FLASHLIGHT
       }, out data);
-            DATA_LIGHT_FLASHLIGHT = data[0];
-            DATA_LIGHT_BIG_FLASHLIGHT = data[1];
+      DATA_LIGHT_FLASHLIGHT = data[0];
+      DATA_LIGHT_BIG_FLASHLIGHT = data[1];
       return true;
     }
 
     public bool LoadScentspraysFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.ScentSprayData[] data;
-            LoadDataFromCSV(ui, path, "scentsprays items", 6, new Func<CSVLine, GameItems.ScentSprayData>(GameItems.ScentSprayData.FromCSVLine), new GameItems.IDs[1]
+      LoadDataFromCSV(ui, path, "scentsprays items", 6, new Func<CSVLine, GameItems.ScentSprayData>(GameItems.ScentSprayData.FromCSVLine), new GameItems.IDs[1]
       {
         GameItems.IDs.SCENT_SPRAY_STENCH_KILLER
       }, out data);
-            DATA_SCENT_SPRAY_STENCH_KILLER = data[0];
+      DATA_SCENT_SPRAY_STENCH_KILLER = data[0];
       return true;
     }
 
     public bool LoadTrapsFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.TrapData[] data;
-            LoadDataFromCSV(ui, path, "traps items", 16, new Func<CSVLine, GameItems.TrapData>(GameItems.TrapData.FromCSVLine), new GameItems.IDs[4]
+      LoadDataFromCSV(ui, path, "traps items", 16, new Func<CSVLine, GameItems.TrapData>(GameItems.TrapData.FromCSVLine), new GameItems.IDs[4]
       {
         GameItems.IDs.TRAP_EMPTY_CAN,
         GameItems.IDs.TRAP_BEAR_TRAP,
         GameItems.IDs.TRAP_SPIKES,
         GameItems.IDs.TRAP_BARBED_WIRE
       }, out data);
-            DATA_TRAP_EMPTY_CAN = data[0];
-            DATA_TRAP_BEAR_TRAP = data[1];
-            DATA_TRAP_SPIKES = data[2];
-            DATA_TRAP_BARBED_WIRE = data[3];
+      DATA_TRAP_EMPTY_CAN = data[0];
+      DATA_TRAP_BEAR_TRAP = data[1];
+      DATA_TRAP_SPIKES = data[2];
+      DATA_TRAP_BARBED_WIRE = data[3];
       return true;
     }
 
     public bool LoadEntertainmentFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       GameItems.EntData[] data;
-            LoadDataFromCSV(ui, path, "entertainment items", 7, new Func<CSVLine, GameItems.EntData>(GameItems.EntData.FromCSVLine), new GameItems.IDs[2]
+      LoadDataFromCSV(ui, path, "entertainment items", 7, new Func<CSVLine, GameItems.EntData>(GameItems.EntData.FromCSVLine), new GameItems.IDs[2]
       {
         GameItems.IDs.ENT_BOOK,
         GameItems.IDs.ENT_MAGAZINE
       }, out data);
-            DATA_ENT_BOOK = data[0];
-            DATA_ENT_MAGAZINE = data[1];
+      DATA_ENT_BOOK = data[0];
+      DATA_ENT_MAGAZINE = data[1];
       return true;
     }
 
