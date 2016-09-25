@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
@@ -706,21 +707,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected bool IsThereASpecialBuilding(Map map, Rectangle rect)
     {
       List<Zone> zonesAt = map.GetZonesAt(rect.Left, rect.Top);
-      if (zonesAt != null)
-      {
-        bool flag = false;
-        foreach (Zone zone in zonesAt)
-        {
-          if (zone.Name.Contains("Sewers Maintenance") || zone.Name.Contains("Subway Station") || (zone.Name.Contains("office") || zone.Name.Contains("shop")))
-          {
-            flag = true;
-            break;
-          }
-        }
-        if (flag)
-          return true;
-      }
-      return map.HasAnExitIn(rect);
+      if (null != zonesAt && zonesAt.Any(zone=> zone.Name.Contains("Sewers Maintenance") || zone.Name.Contains("Subway Station") || zone.Name.Contains("office") || zone.Name.Contains("shop")))
+        return true;
+      return map.HasAnExitIn(rect); // relatively slow compared to above
     }
 
     protected virtual bool MakeShopBuilding(Map map, BaseTownGenerator.Block b)
