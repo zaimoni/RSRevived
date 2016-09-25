@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure)
+    public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure, string flavor, int stackingLimit=0)
       : base(aName, theNames, imageID)
     {
       m_Healing = healing;
@@ -54,6 +54,11 @@ namespace djack.RogueSurvivor.Engine.Items
       m_SleepBoost = sleepBoost;
       m_InfectionCure = infectionCure;
       m_SanityCure = sanityCure;
+      FlavorDescription = flavor;
+      if (0<stackingLimit) {
+        IsPlural = true;
+        StackingLimit = stackingLimit;
+      }
     }
   }
 }
