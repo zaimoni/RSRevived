@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -67,19 +68,16 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static CSVLine FindLineForModel(CSVTable table, Skills.IDs skillID)
     {
-      foreach (CSVLine line in table.Lines)
-      {
+      foreach (CSVLine line in table.Lines) {
         if (line[0].ParseText() == skillID.ToString())
           return line;
       }
-      return (CSVLine) null;
+      throw new InvalidOperationException(string.Format("skill {0} not found", (object) skillID.ToString()));
     }
 
     private static _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(IRogueUI ui, CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs skillID)
     {
       CSVLine lineForModel = Skills.FindLineForModel(table, skillID);
-      if (lineForModel == null)
-        throw new InvalidOperationException(string.Format("skill {0} not found", (object) skillID.ToString()));
       try
       {
         return fn(lineForModel);
@@ -92,6 +90,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
+      Contract.Requires(!string.IsNullOrEmpty(path));
       Skills.Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;

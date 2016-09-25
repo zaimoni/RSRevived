@@ -784,19 +784,16 @@ namespace djack.RogueSurvivor.Gameplay
 
     private CSVLine FindLineForModel(CSVTable table, GameActors.IDs modelID)
     {
-      foreach (CSVLine line in table.Lines)
-      {
+      foreach (CSVLine line in table.Lines) {
         if (line[0].ParseText() == modelID.ToString())
           return line;
       }
-      return (CSVLine) null;
+      throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
     }
 
     private GameActors.ActorData GetDataFromCSVTable(IRogueUI ui, CSVTable table, GameActors.IDs modelID)
     {
       CSVLine lineForModel = FindLineForModel(table, modelID);
-      if (lineForModel == null)
-        throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
       try
       {
         return GameActors.ActorData.FromCSVLine(lineForModel);
