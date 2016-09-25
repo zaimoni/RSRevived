@@ -84,34 +84,28 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable)
+    public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
       : base(aName, theNames, imageID)
     {
-            DontAutoEquip = true;
-      if (stackLimit > 1)
-      {
-                StackingLimit = stackLimit;
+      DontAutoEquip = true;
+      if (stackLimit > 1) {
+        StackingLimit = stackLimit;
       }
-            m_TriggerChance = triggerChance;
-            m_Damage = damage;
-            m_BreakChance = breakChance;
-            m_BlockChance = blockChance;
-            m_BreakChanceWhenEscape = breakChanceWhenEscape;
-            m_Flags = ItemTrapModel.Flags.NONE;
-      if (dropActivate)
-                m_Flags |= ItemTrapModel.Flags.DROP_ACTIVATE;
-      if (useToActivate)
-                m_Flags |= ItemTrapModel.Flags.USE_TO_ACTIVATE;
-      if (IsNoisy)
-      {
-                m_Flags |= ItemTrapModel.Flags.IS_NOISY;
-                m_NoiseName = noiseName;
+      m_TriggerChance = triggerChance;
+      m_Damage = damage;
+      m_BreakChance = breakChance;
+      m_BlockChance = blockChance;
+      m_BreakChanceWhenEscape = breakChanceWhenEscape;
+      FlavorDescription = flavor;
+      m_Flags = ItemTrapModel.Flags.NONE;
+      if (dropActivate) m_Flags |= ItemTrapModel.Flags.DROP_ACTIVATE;
+      if (useToActivate) m_Flags |= ItemTrapModel.Flags.USE_TO_ACTIVATE;
+      if (IsNoisy) {
+        m_Flags |= ItemTrapModel.Flags.IS_NOISY;
+        m_NoiseName = noiseName;
       }
-      if (IsOneTimeUse)
-                m_Flags |= ItemTrapModel.Flags.IS_ONE_TIME_USE;
-      if (!IsFlammable)
-        return;
-            m_Flags |= ItemTrapModel.Flags.IS_FLAMMABLE;
+      if (IsOneTimeUse) m_Flags |= ItemTrapModel.Flags.IS_ONE_TIME_USE;
+      if (IsFlammable) m_Flags |= ItemTrapModel.Flags.IS_FLAMMABLE;
     }
 
     [System.Flags]
