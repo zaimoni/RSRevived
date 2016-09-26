@@ -7978,31 +7978,10 @@ namespace djack.RogueSurvivor.Engine
             stringList.Add(string.Format("Amo  : {0}/{1}", (object) itemRangedWeapon.Ammo, (object) rangedWeaponModel.MaxAmmo));
           else
             stringList.Add(string.Format("Amo  : {0} MAX", (object) itemRangedWeapon.Ammo));
-          stringList.Add(string.Format("Type : {0}", (object)DescribeAmmoType(rangedWeaponModel.AmmoType)));
+          stringList.Add(string.Format("Type : {0}", (object)rangedWeaponModel.AmmoType.Describe()));
         }
       }
       return stringList.ToArray();
-    }
-
-    private string DescribeAmmoType(AmmoType at)
-    {
-      switch (at)
-      {
-        case AmmoType.LIGHT_PISTOL:
-          return "light pistol bullets";
-        case AmmoType.HEAVY_PISTOL:
-          return "heavy pistol bullets";
-        case AmmoType.SHOTGUN:
-          return "shotgun cartridge";
-        case AmmoType.LIGHT_RIFLE:
-          return "light rifle bullets";
-        case AmmoType.HEAVY_RIFLE:
-          return "heavy rifle bullets";
-        case AmmoType.BOLT:
-          return "bolts";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled ammo type");
-      }
     }
 
     private string[] DescribeItemAmmo(ItemAmmo am)
@@ -8010,7 +7989,7 @@ namespace djack.RogueSurvivor.Engine
       return new List<string>()
       {
         "> ammo",
-        string.Format("Type : {0}", (object) DescribeAmmoType(am.AmmoType))
+        string.Format("Type : {0}", (object) am.AmmoType.Describe())
       }.ToArray();
     }
 
