@@ -7988,7 +7988,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (at)
       {
-        case AmmoType._FIRST:
+        case AmmoType.LIGHT_PISTOL:
           return "light pistol bullets";
         case AmmoType.HEAVY_PISTOL:
           return "heavy pistol bullets";
