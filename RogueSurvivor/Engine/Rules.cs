@@ -619,13 +619,13 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsWalkableFor(Actor actor, Map map, int x, int y)
+    public static bool IsWalkableFor(Actor actor, Map map, Point p)
     {
       string reason;
-      return IsWalkableFor(actor, map, x, y, out reason);
+      return IsWalkableFor(actor, map, p.X, p.Y, out reason);
     }
 
-    public bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
+    public static bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
     {
       Contract.Requires(null!=map);
       Contract.Requires(null!=actor);
@@ -671,13 +671,13 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsWalkableFor(Actor actor, Location location)
+    public static bool IsWalkableFor(Actor actor, Location location)
     {
       string reason;
       return IsWalkableFor(actor, location, out reason);
     }
 
-    public bool IsWalkableFor(Actor actor, Location location, out string reason)
+    public static bool IsWalkableFor(Actor actor, Location location, out string reason)
     {
       return IsWalkableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }

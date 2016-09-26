@@ -3447,7 +3447,7 @@ namespace djack.RogueSurvivor.Engine
           point.Y = m_Rules.RollY(map);
         }
         if (mustBeOutside && map.GetTileAt(point.X, point.Y).IsInside) continue;
-        if (!m_Rules.IsWalkableFor(actorToSpawn, map, point.X, point.Y)) continue;
+        if (!Rules.IsWalkableFor(actorToSpawn, map, point)) continue;
         if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
         if (IsAdjacentToEnemy(map, point, actorToSpawn)) continue;
         map.PlaceActorAt(actorToSpawn, point);
@@ -3471,7 +3471,7 @@ namespace djack.RogueSurvivor.Engine
         p.X = num3;
         p.Y = num4;
         map.TrimToBounds(ref p);
-        if (!map.GetTileAt(p.X, p.Y).IsInside && m_Rules.IsWalkableFor(actorToSpawn, map, p.X, p.Y) && (DistanceToPlayer(map, p) >= minDistToPlayer && !IsAdjacentToEnemy(map, p, actorToSpawn)))
+        if (!map.GetTileAt(p.X, p.Y).IsInside && Rules.IsWalkableFor(actorToSpawn, map, p) && (DistanceToPlayer(map, p) >= minDistToPlayer && !IsAdjacentToEnemy(map, p, actorToSpawn)))
         {
           map.PlaceActorAt(actorToSpawn, p);
           return true;
@@ -6328,7 +6328,7 @@ namespace djack.RogueSurvivor.Engine
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2))
             {
               string reason;
-              if (map2 == follower.Location.Position || m_Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
+              if (map2 == follower.Location.Position || Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
               {
                 nullable = new Point?(map2);
                 color = Color.LightGreen;
@@ -6413,7 +6413,7 @@ namespace djack.RogueSurvivor.Engine
                 flag3 = false;
                 reason = "no zone here";
               }
-              else if (!(map2 == follower.Location.Position) && !m_Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
+              else if (!(map2 == follower.Location.Position) && !Rules.IsWalkableFor(follower, map1, map2.X, map2.Y, out reason))
                 flag3 = false;
               if (flag3)
               {
@@ -8725,7 +8725,7 @@ namespace djack.RogueSurvivor.Engine
         bool flag3 = false;
         List<Point> pointList = (List<Point>) null;
         if (Rules.IsAdjacent(fromPos, fo.Location.Position)) {
-          pointList = to.Map.FilterAdjacentInMap(to.Position, (Predicate<Point>) (pt => m_Rules.IsWalkableFor(fo, to.Map, pt.X, pt.Y)));
+          pointList = to.Map.FilterAdjacentInMap(to.Position, (Predicate<Point>) (pt => Rules.IsWalkableFor(fo, to.Map, pt)));
           flag3 = pointList != null && pointList.Count != 0;
         }
         if (!flag3) {
@@ -10077,7 +10077,7 @@ namespace djack.RogueSurvivor.Engine
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(position.X, position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
-      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
+      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && Rules.IsWalkableFor(actor, map, position)) {
         map.RemoveActor(actor);
         map.PlaceActorAt(actor, position);
       }
@@ -10101,7 +10101,7 @@ namespace djack.RogueSurvivor.Engine
         Map map = target.Location.Map;
         Point position = target.Location.Position;
         map.PlaceActorAt(target, toPos);
-        if (!Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
+        if (!Rules.IsAdjacent(toPos, actor.Location.Position) && Rules.IsWalkableFor(actor, map, position)) {
           if (!TryActorLeaveTile(actor)) return;
           map.RemoveActor(actor);
           map.PlaceActorAt(actor, position);

@@ -366,7 +366,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         if (ptA == ptB) return 0.0f;
         float num = Rules.StdDistance(ptA, ptB);
-        if (!game.Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, ptA.X, ptA.Y))
+        if (!Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, ptA))
           num += 0.42f;
         return num;
       }));
@@ -436,7 +436,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        float num = SafetyFrom(game.Rules, location.Position, goals);
+        float num = SafetyFrom(location.Position, goals);
         if (m_Actor.HasLeader)
         {
           num -= Rules.StdDistance(location.Position, m_Actor.Leader.Location.Position);
@@ -1499,7 +1499,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return num;
     }
 
-    protected float SafetyFrom(Rules rules, Point from, List<Percept> dangers)
+    protected float SafetyFrom(Point from, List<Percept> dangers)
     {
       Map map = m_Actor.Location.Map;
       float num1 = (float) (GridDistancesSum(from, dangers) / (1 + dangers.Count));
@@ -1507,7 +1507,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Direction direction in Direction.COMPASS)
       {
         Point point = from + direction;
-        if (point == m_Actor.Location.Position || rules.IsWalkableFor(m_Actor, map, point.X, point.Y))
+        if (point == m_Actor.Location.Position || Rules.IsWalkableFor(m_Actor, map, point))
           ++num2;
       }
       float num3 = (float) num2 * 0.1f;

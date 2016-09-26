@@ -191,7 +191,7 @@ namespace djack.RogueSurvivor.Engine
       {
         position.X = roller.Roll(left, left + width);
         position.Y = roller.Roll(top, top + height);
-        if (m_Rules.IsWalkableFor(actor, map, position.X, position.Y) && (goodPositionFn == null || goodPositionFn(position)))
+        if (Rules.IsWalkableFor(actor, map, position) && (goodPositionFn == null || goodPositionFn(position)))
         {
           map.PlaceActorAt(actor, position);
           return true;
