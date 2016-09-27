@@ -40,6 +40,12 @@ namespace djack.RogueSurvivor
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "loading setup...");
       SetupConfig.Load();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup : " + SetupConfig.toString(SetupConfig.Video) + ", " + SetupConfig.toString(SetupConfig.Sound));
+#if DEBUG
+      using (RogueForm rogueForm = new RogueForm())
+      {
+        Application.Run((Form)rogueForm);
+      }
+#else
       using (RogueForm rogueForm = new RogueForm())
       {
         try
@@ -55,6 +61,7 @@ namespace djack.RogueSurvivor
           Application.Exit();
         }
       }
+#endif
       Logger.WriteLine(Logger.Stage.CLEAN_MAIN, "exiting program...");
     }
   }
