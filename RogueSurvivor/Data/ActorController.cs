@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Data
         if (tmp == m_Actor.Location.Position) continue;
         Actor a = m_Actor.Location.Map.GetActorAt(tmp);
         if (null == a) continue;
-        if (!RogueForm.Game.Rules.IsEnemyOf(m_Actor,a)) continue;
+        if (!m_Actor.IsEnemyOf(a)) continue;
         if (!a.CanActNextTurn) continue;
         HashSet<Point> aFOV = a.Controller.FOV;
         if (null == aFOV) continue;

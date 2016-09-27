@@ -555,7 +555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (actorAt == m_Actor) throw new ArgumentOutOfRangeException("actorAt == m_Actor"); // probably an invariant failure
               int distance = Rules.GridDistance(point, actorAt.Location.Position);
               if (distance > itemGrenadeModel.BlastAttack.Radius) throw new ArgumentOutOfRangeException("distance > itemGrenadeModel.BlastAttack.Radius"); // again, probably an invariant failure
-              if (game.Rules.IsEnemyOf(m_Actor, actorAt)) {
+              if (m_Actor.IsEnemyOf(actorAt)) {
                 num2 += (game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs);
               } else {
                 num2 = -1;
@@ -597,7 +597,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {
         Actor actorAt = map.GetActorAt(pt);
-        return actorAt != null && !actorAt.IsSleeping && !game.Rules.IsEnemyOf(m_Actor, actorAt);
+        return actorAt != null && !actorAt.IsSleeping && !m_Actor.IsEnemyOf(actorAt);
       }));
       if (pointList == null || pointList.Count == 0) return null;
       Actor actorAt1 = map.GetActorAt(pointList[game.Rules.Roll(0, pointList.Count)]);
@@ -672,7 +672,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Percept friend in friends) {
         Actor actor = friend.Percepted as Actor;
         if (actor == null) throw new ArgumentException("percept not an actor");
-        if (actor != m_Actor && (actor.IsSleeping && !game.Rules.IsEnemyOf(m_Actor, actor)) && game.Rules.IsEnemyOf(actor, nearestEnemy)) {
+        if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
           string text = nearestEnemy == null ? string.Format("Wake up {0}!", (object) actor.Name) : string.Format("Wake up {0}! {1} sighted!", (object) actor.Name, (object) nearestEnemy.Name);
           return new ActionShout(m_Actor, game, text);
         }

@@ -548,7 +548,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("target");
       if (gift == null)
         throw new ArgumentNullException("gift");
-      if (IsEnemyOf(actor, target))
+      if (actor.IsEnemyOf(target))
       {
         reason = "enemy";
         return false;
@@ -707,7 +707,7 @@ namespace djack.RogueSurvivor.Engine
       Actor actorAt = map.GetActorAt(point);
       if (actorAt != null)
       {
-        if (IsEnemyOf(actor, actorAt))
+        if (actor.IsEnemyOf(actorAt))
         {
           if (CanActorMeleeAttack(actor, actorAt, out reason))
             return (ActorAction) new ActionMeleeAttack(actor, game, actorAt);
@@ -898,7 +898,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "target can't trade";
         return false;
       }
-      if (IsEnemyOf(speaker, target))
+      if (speaker.IsEnemyOf(target))
       {
         reason = "is an enemy";
         return false;
@@ -1238,7 +1238,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Point position in fov)
       {
         Actor actorAt = actor.Location.Map.GetActorAt(position);
-        if (actorAt != null && actorAt != actor && IsEnemyOf(actor, actorAt))
+        if (actorAt != null && actorAt != actor && actor.IsEnemyOf(actorAt))
         {
           if (actorList == null)
             actorList = new List<Actor>(3);
@@ -1398,7 +1398,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "undead";
         return false;
       }
-      if (IsEnemyOf(actor, target))
+      if (actor.IsEnemyOf(target))
       {
         reason = "enemy";
         return false;
@@ -1764,11 +1764,6 @@ namespace djack.RogueSurvivor.Engine
       return other.ActionPoints + other.Speed > BASE_ACTION_COST;
     }
 
-    public bool IsEnemyOf(Actor actor, Actor target)
-    {
-      return actor != null && target != null && (actor.Faction.IsEnemyOf(target.Faction) || actor.Faction == target.Faction && actor.IsInAGang && (target.IsInAGang && actor.GangID != target.GangID) || (actor.AreDirectEnemies(target) || actor.AreIndirectEnemies(target)));
-    }
-
     public bool IsMurder(Actor killer, Actor victim)
     {
       if (null == killer) return false;
@@ -1779,7 +1774,7 @@ namespace djack.RogueSurvivor.Engine
       if (killer.IsSelfDefenceFrom(victim)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
-      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && IsEnemyOf(killer.Leader,victim)) return false;
+      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && killer.Leader.IsEnemyOf(victim)) return false;
       if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && victim.IsSelfDefenceFrom(killer.Leader)) return false;
 
       // resume old definition

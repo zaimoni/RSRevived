@@ -3425,7 +3425,7 @@ namespace djack.RogueSurvivor.Engine
           if (x3 != pos.X || y3 != pos.Y)
           {
             Actor actorAt = map.GetActorAt(x3, y3);
-            if (actorAt != null && m_Rules.IsEnemyOf(actor, actorAt))
+            if (actorAt != null && actor.IsEnemyOf(actorAt))
               return true;
           }
         }
@@ -4782,7 +4782,7 @@ namespace djack.RogueSurvivor.Engine
           map.PlaceActorAt(corpse.DeadGuy, position);
           if (player)
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
-          if (m_Rules.IsEnemyOf(actor, corpse.DeadGuy)) return;
+          if (actor.IsEnemyOf(corpse.DeadGuy)) return;
           DoSay(corpse.DeadGuy, actor, "Thank you, you saved my life!", RogueGame.Sayflags.NONE);
           corpse.DeadGuy.AddTrustIn(actor, Rules.TRUST_REVIVE_BONUS);
         } else {
@@ -5139,7 +5139,7 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = exitAt.Location.Actor;
             string reason;
             if (actorAt != null) {
-              if (m_Rules.IsEnemyOf(player, actorAt)) {
+              if (player.IsEnemyOf(actorAt)) {
                 if (m_Rules.CanActorMeleeAttack(player, actorAt, out reason)) {
                   DoMeleeAttack(player, actorAt);
                   flag1 = false;
@@ -5366,7 +5366,7 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(MakeErrorMessage("Can't make your leader your enemy."));
                 flag2 = false;
               }
-              else if (m_Rules.IsEnemyOf(m_Player, target))
+              else if (m_Player.IsEnemyOf(target))
               {
                 AddMessage(MakeErrorMessage("Already enemies."));
                 flag2 = false;
@@ -5842,7 +5842,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Point position in m_Player.Controller.FOV)
       {
         Actor actorAt = player.Location.Map.GetActorAt(position);
-        if (actorAt != null && m_Rules.IsEnemyOf(player, actorAt))
+        if (actorAt != null && player.IsEnemyOf(actorAt))
           return false;
       }
       return !TryPlayerInsanity();
@@ -6842,14 +6842,14 @@ namespace djack.RogueSurvivor.Engine
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null) return false;
-            return !m_Rules.IsEnemyOf(m_Player, actorAt);
+            return !m_Player.IsEnemyOf(actorAt);
           }));
         case AdvisorHint.NPC_SHOUTING:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null || !actorAt.IsSleeping) return false;
-            return !m_Rules.IsEnemyOf(m_Player, actorAt);
+            return !m_Player.IsEnemyOf(actorAt);
           }));
         case AdvisorHint.BUILD_FORTIFICATION:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => m_Rules.CanActorBuildFortification(m_Player, pt, false)));
@@ -6859,7 +6859,7 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null)
               return false;
-            return !m_Rules.IsEnemyOf(m_Player, actorAt);
+            return !m_Player.IsEnemyOf(actorAt);
           }));
         case AdvisorHint.LEADING_CAN_RECRUIT:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
@@ -8518,7 +8518,7 @@ namespace djack.RogueSurvivor.Engine
       map.ForEachAdjacentInMap(position, (Action<Point>) (adj =>
       {
         Actor actorAt = map.GetActorAt(adj);
-        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || (!m_Rules.IsEnemyOf(actorAt, actor) || m_Rules.ZGrabChance(actorAt, actor) == 0) || !m_Rules.RollChance(m_Rules.ZGrabChance(actorAt, actor)))
+        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || (!actorAt.IsEnemyOf(actor) || m_Rules.ZGrabChance(actorAt, actor) == 0) || !m_Rules.RollChance(m_Rules.ZGrabChance(actorAt, actor)))
           return;
         if (visible)
               AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
@@ -8881,7 +8881,7 @@ namespace djack.RogueSurvivor.Engine
                 DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
             MakeEnemyOfTargetFactionInDistrict(aggressor, cop, (Action<Actor>) (a =>
       {
-        if (!a.IsPlayer || a == cop || (a.IsSleeping || m_Rules.IsEnemyOf(a, aggressor)))
+        if (!a.IsPlayer || a == cop || a.IsSleeping || a.IsEnemyOf(aggressor))
           return;
         int turnCounter = Session.Get.WorldTime.TurnCounter;
         ClearMessages();
@@ -8898,7 +8898,7 @@ namespace djack.RogueSurvivor.Engine
         DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, (Action<Actor>) (a =>
       {
-        if (!a.IsPlayer || a == soldier || (a.IsSleeping || m_Rules.IsEnemyOf(a, aggressor)))
+        if (!a.IsPlayer || a == soldier || a.IsSleeping || a.IsEnemyOf(aggressor))
           return;
         int turnCounter = Session.Get.WorldTime.TurnCounter;
         ClearMessages();
@@ -8931,7 +8931,7 @@ namespace djack.RogueSurvivor.Engine
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
-      if (!m_Rules.IsEnemyOf(attacker, defender))
+      if (!attacker.IsEnemyOf(defender))
         DoMakeAggression(attacker, defender);
       Attack attack = attacker.MeleeAttack(defender);
       Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
@@ -9040,7 +9040,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
-      if (!m_Rules.IsEnemyOf(attacker, defender))
+      if (!attacker.IsEnemyOf(defender))
         DoMakeAggression(attacker, defender);
       switch (mode)
       {
@@ -10344,7 +10344,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor follower in killer.Followers)
         {
           bool flag2 = false;
-          if (follower.TargetActor == deadGuy || m_Rules.IsEnemyOf(follower, deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location))
+          if (follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location))
             flag2 = true;
           if (flag2)
           {
@@ -11652,7 +11652,7 @@ namespace djack.RogueSurvivor.Engine
                         m_UI.UI_DrawImage("Icons\\healing", gx2, gy2, tint);
           if (actor.CountFollowers > 0)
                         m_UI.UI_DrawImage("Icons\\leader", gx2, gy2, tint);
-          if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !m_Rules.IsEnemyOf(actor, m_Player)))
+          if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !actor.IsEnemyOf(m_Player)))
             break;
           if (m_Player.WillActAgainBefore(actor))
           {
@@ -13545,8 +13545,17 @@ namespace djack.RogueSurvivor.Engine
 
     private void SimThreadProc()
     {
+#if DEBUG
+        bool have_simulated = false;
+        while (m_SimThread.IsAlive) {
+          lock (m_SimMutex) {
+            have_simulated = (m_Player != null ? SimulateNearbyDistricts(m_Player.Location.Map.District) : false);
+          }
+          if (!have_simulated) Thread.Sleep(200);
+        }
+#else
       try {
-       bool have_simulated = false;
+        bool have_simulated = false;
         while (m_SimThread.IsAlive) {
           lock (m_SimMutex) {
             have_simulated = (m_Player != null ? SimulateNearbyDistricts(m_Player.Location.Map.District) : false);
@@ -13564,6 +13573,7 @@ namespace djack.RogueSurvivor.Engine
         // Thread.CurrentThread.Abort();    // makes RogueSurvivor.exe also stay around
         // return;  // no-op for not-so-obvious reasons
       }
+#endif
     }
 
     private void ShowNewAchievement(Achievement.IDs id)
@@ -14052,7 +14062,7 @@ namespace djack.RogueSurvivor.Engine
           int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
           foreach (Actor actor1 in actor.Location.Map.Actors)
           {
-            if (actor1 != actor && !m_Rules.IsEnemyOf(actor, actor1) && (LOS.CanTraceViewLine(actor.Location, actor1.Location.Position, maxRange) && m_Rules.RollChance(50)))
+            if (actor1 != actor && !actor.IsEnemyOf(actor1) && (LOS.CanTraceViewLine(actor.Location, actor1.Location.Position, maxRange) && m_Rules.RollChance(50)))
             {
               if (actor.HasLeader)
               {

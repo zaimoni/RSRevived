@@ -99,12 +99,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterEnemies(RogueGame game, List<Percept> percepts)
     {
-      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && game.Rules.IsEnemyOf(m_Actor, target)));
+      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
     }
 
     protected List<Percept> FilterNonEnemies(RogueGame game, List<Percept> percepts)
     {
-      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !game.Rules.IsEnemyOf(m_Actor, target)));
+      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
     }
 
     protected List<Percept> FilterCurrent(List<Percept> percepts)
@@ -982,7 +982,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE)
       {
         Actor actorAt = exitAt.Location.Actor;
-        if (actorAt != null && game.Rules.IsEnemyOf(m_Actor, actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
+        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
           return (ActorAction) new ActionMeleeAttack(m_Actor, game, actorAt);
       }
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE)
@@ -1263,7 +1263,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> percepts1 = FilterActors(percepts, (Predicate<Actor>) (a =>
       {
         if (a.MurdersCounter > 0)
-          return !game.Rules.IsEnemyOf(m_Actor, a);
+          return !m_Actor.IsEnemyOf(a);
         return false;
       }));
       if (percepts1 == null || percepts1.Count == 0)
@@ -1321,7 +1321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>)
         {
-          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !game.Rules.IsEnemyOf(m_Actor, corpse.DeadGuy))
+          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return true;
         }
         return false;
@@ -1333,7 +1333,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         foreach (Corpse corpse in corpsesAt)
         {
-          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !game.Rules.IsEnemyOf(m_Actor, corpse.DeadGuy))
+          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return (ActorAction) new ActionReviveCorpse(m_Actor, game, corpse);
         }
       }
@@ -1651,7 +1651,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor actorAt = map.GetActorAt(pt);
         if (actorAt == null)
           return false;
-        return game.Rules.IsEnemyOf(actor, actorAt);
+        return actor.IsEnemyOf(actorAt);
       }));
     }
 
@@ -1724,7 +1724,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsFriendOf(RogueGame game, Actor other)
     {
-      if (!game.Rules.IsEnemyOf(m_Actor, other))
+      if (!m_Actor.IsEnemyOf(other))
         return m_Actor.Faction == other.Faction;
       return false;
     }
@@ -1736,7 +1736,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int num1 = int.MaxValue;
       foreach (Actor actor2 in map.Actors)
       {
-        if (!actor2.IsDead && actor2 != actor && game.Rules.IsEnemyOf(actor, actor2))
+        if (!actor2.IsDead && actor2 != actor && actor.IsEnemyOf(actor2))
         {
           int num2 = Rules.GridDistance(actor2.Location.Position, actor.Location.Position);
           if (num2 < num1 && (num2 == 1 || LOS.CanTraceViewLine(actor.Location, actor2.Location.Position)))
