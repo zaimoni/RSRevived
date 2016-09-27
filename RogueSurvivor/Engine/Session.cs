@@ -172,6 +172,15 @@ namespace djack.RogueSurvivor.Engine
       m_PoliceItemMemory.Set(loc, seen_items, 0);
     }
 
+    // to eventually be obsoleted by an event
+#if FAIL
+    public void PoliceTrackingThroughExitSpawn(Actor a) {
+      if (a.Faction.IsEnemyOf() || m_PoliceThreatTracking.IsThreat(a)) {
+        m_PoliceThreatTracking.RecordTaint(a,a.Location);
+      }
+    }
+#endif
+
     public bool HasRaidHappened(RaidType raid, District district)
     {
       if (district == null) throw new ArgumentNullException("district");

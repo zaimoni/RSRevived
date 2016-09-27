@@ -1376,7 +1376,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public static EventHandler<SayArgs> Says;
+    public static event EventHandler<SayArgs> Says;
 
     // experimental...testing an event approach to this
     public void Say(Actor target, string text, Engine.RogueGame.Sayflags flags)
@@ -1393,6 +1393,37 @@ namespace djack.RogueSurvivor.Data
       }
     }
 #endregion
+#region Event-based Dies implementation
+    public struct DieArgs
+    {
+      public readonly Actor _deadGuy;
+      public readonly Actor _killer;
+      public readonly string _reason;
+
+      public DieArgs(Actor deadGuy, Actor killer, string reason)
+      {
+        _deadGuy = deadGuy;
+        _killer = killer;
+        _reason = reason;
+      }
+    }
+
+    public static event EventHandler<DieArgs> Dies;
+
+    public void Killed(string reason, Actor killer=null) {
+      EventHandler<DieArgs> handler = Dies; // work around non-atomic test, etc.
+      if (null != handler) {
+        DieArgs tmp = new DieArgs(this,killer,reason);
+        handler(this,tmp);
+      }
+    }
+#endregion
+
+    public static event EventHandler Moving;
+    public void Moved() {
+      EventHandler handler = Moving; // work around non-atomic test, etc.
+      if (null!=handler) handler(this,null);
+    }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void RecomputeStartingStats()

@@ -8397,6 +8397,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
+      actor.Moved();
       newLocation.PlaceActor(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
@@ -8778,6 +8779,8 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
       Map map = other.Location.Map;
       Point position = actor.Location.Position;
+      actor.Moved();
+      other.Moved();
       map.RemoveActor(other);
       map.PlaceActorAt(actor, other.Location.Position);
       map.PlaceActorAt(other, position);
@@ -10078,6 +10081,7 @@ namespace djack.RogueSurvivor.Engine
       map.RemoveMapObjectAt(position.X, position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
       if (!Rules.IsAdjacent(toPos, actor.Location.Position) && Rules.IsWalkableFor(actor, map, position)) {
+        actor.Moved();
         map.RemoveActor(actor);
         map.PlaceActorAt(actor, position);
       }
@@ -10100,9 +10104,11 @@ namespace djack.RogueSurvivor.Engine
         DoStopDraggingCorpses(target);
         Map map = target.Location.Map;
         Point position = target.Location.Position;
+        target.Moved();
         map.PlaceActorAt(target, toPos);
         if (!Rules.IsAdjacent(toPos, actor.Location.Position) && Rules.IsWalkableFor(actor, map, position)) {
           if (!TryActorLeaveTile(actor)) return;
+          actor.Moved();
           map.RemoveActor(actor);
           map.PlaceActorAt(actor, position);
           OnActorEnterTile(actor);
@@ -10226,14 +10232,15 @@ namespace djack.RogueSurvivor.Engine
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
     {
-#if DEBUG
       // for some reason, this can happen with starved actors (cf. alpha 8)
       if (deadGuy.IsDead)
         throw new InvalidOperationException(String.Format("killing deadGuy that is already dead : killer={0} deadGuy={1} reason={2}", (killer == null ? "N/A" : killer.TheName), deadGuy.TheName, reason));
-#endif
       Actor m_Player_bak = m_Player;    // ForceVisibleToPlayer calls below can change this
 
       deadGuy.IsDead = true;
+
+      deadGuy.Killed(reason,killer);    // initates messaging
+
       DoStopDraggingCorpses(deadGuy);
       UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
