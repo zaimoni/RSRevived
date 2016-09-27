@@ -867,7 +867,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!IsInBounds(position)) return null;
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
-      return (0<tmp.Count() ? new List<Point>(tmp) : null);
+      return tmp.Any() ? new List<Point>(tmp) : null;
     }
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)

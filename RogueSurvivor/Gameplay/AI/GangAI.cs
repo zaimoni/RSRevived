@@ -193,17 +193,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null == current_enemies) {
         Map map = m_Actor.Location.Map;
-        List<Percept> percepts3 = FilterActors(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
+        // rewriting this to work around a paradoxical bug indicating runtime state corruption
+        Percept victimize = FilterNearest(FilterActors(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
         {
-          if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(game, a))
+          if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(a))
             return false;
           if (!game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, a)))
             return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
           return false;
-        }));
-        if (percepts3 != null) {
-          Actor target = FilterNearest(percepts3).Percepted as Actor;
+        })));
+        if (null!=victimize) {
+          Actor target = victimize.Percepted as Actor;
           Item obj = FirstInterestingItem(target.Inventory);
           game.DoMakeAggression(m_Actor, target);
           m_Actor.Activity = Activity.CHASING;

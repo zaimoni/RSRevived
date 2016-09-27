@@ -799,7 +799,7 @@ namespace djack.RogueSurvivor.Data
 
     public List<Point> OneStepRange(Map m,Point p) {
       IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>Engine.Rules.IsWalkableFor(this,m,pt));
-      return (0<tmp.Count() ? new List<Point>(tmp) : null);
+      return tmp.Any() ? new List<Point>(tmp) : null;
     }
 
     // event timing

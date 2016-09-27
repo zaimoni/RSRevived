@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor a = p.Percepted as Actor;
         return null != a && predicateFn(a);
       }));
-      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
+      return tmp.Any() ? new List<Percept>(tmp) : null;
     }
 
     protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
@@ -198,7 +198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Inventory i = p.Percepted as Inventory;
         return null != i && predicateFn(i);
       }));
-      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
+      return tmp.Any() ? new List<Percept>(tmp) : null;
     }
 
     protected List<Percept> FilterCorpses(List<Percept> percepts)
@@ -215,20 +215,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Corpse> i = p.Percepted as List<Corpse>;
         return null != i && predicateFn(i);
       }));
-      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
+      return tmp.Any() ? new List<Percept>(tmp) : null;
     }
 
     protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        if (predicateFn(percept)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      IEnumerable<Percept> tmp = percepts.Where(p=> predicateFn(p));
+      return tmp.Any() ? new List<Percept>(tmp) : null;
     }
 
     protected Percept FilterFirst(RogueGame game, List<Percept> percepts, Predicate<Percept> predicateFn)
@@ -1722,11 +1716,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (double) Rules.StdDistance(A, between) + (double) Rules.StdDistance(B, between) <= (double) Rules.StdDistance(A, B) + 0.25;
     }
 
-    protected bool IsFriendOf(RogueGame game, Actor other)
+    protected bool IsFriendOf(Actor other)
     {
-      if (!m_Actor.IsEnemyOf(other))
-        return m_Actor.Faction == other.Faction;
-      return false;
+      return !m_Actor.IsEnemyOf(other) && m_Actor.Faction == other.Faction;
     }
 
     protected Actor GetNearestTargetFor(RogueGame game, Actor actor)
