@@ -6,7 +6,9 @@
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
+using System.Drawing;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
@@ -787,6 +789,11 @@ namespace djack.RogueSurvivor.Data
       get {
         return Location.Map.GetTileAt(Location.Position.X, Location.Position.Y).IsInside;
       }
+    }
+
+    public List<Point> OneStepRange(Map m,Point p) {
+      IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>Engine.Rules.IsWalkableFor(this,m,pt));
+      return (0<tmp.Count() ? new List<Point>(tmp) : null);
     }
 
     // event timing

@@ -204,33 +204,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       Dictionary<Point,int> damage_field = (null != enemies ? VisibleMaximumDamage() : null);
       // \todo visible primed explosives also have a damage field that civilians and soldiers respect, CHAR and gang don't
-      List<Point> retreat = new List<Point>(8);
-      List<Actor> slow_threat = new List<Actor>(8);
-      if (null != damage_field && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        foreach(Direction tmp in Direction.COMPASS_LIST) {
-          Point tmp2 = m_Actor.Location.Position+tmp;
-          if (Rules.IsWalkableFor(m_Actor,new Location(m_Actor.Location.Map,tmp2)) && !damage_field.ContainsKey(tmp2)) retreat.Add(tmp2);
-          Actor tmp3 = m_Actor.Location.Map.GetActorAt(tmp2);
-          if (null != tmp3 && game.Rules.IsEnemyOf(m_Actor, tmp3) && HasSpeedAdvantage(m_Actor, tmp3) && tmp3.CanActThisTurn && 1 >= tmp3.CurrentRangedAttack.Range) slow_threat.Add(tmp3);
-        }
-        if (0 == retreat.Count) {
-          foreach(Direction tmp in Direction.COMPASS_LIST) {
-           Point tmp2 = m_Actor.Location.Position+tmp;
-           if (Rules.IsWalkableFor(m_Actor,new Location(m_Actor.Location.Map,tmp2)) && damage_field[tmp2]<damage_field[m_Actor.Location.Position]) retreat.Add(tmp2);
-          }
+      List<Point> retreat = null;
+      List<Actor> slow_threat = null;
+      IEnumerable<Point> tmp_point;
+      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
+        IEnumerable<Percept> tmp_percept = enemies.Where(p=>1==Rules.GridDistance(m_Actor.Location.Position,p.Location.Position));
+        if (tmp_percept.Any()) slow_threat = new List<Actor>(tmp_percept.Select(p=>(p.Percepted as Actor)));
+        tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
+        if (tmp_point.Any()) retreat = new List<Point>(tmp_point);
+        // XXX we should be checking for running retreats before damaging ones
+        // that would allow handling grenades as a damage field source
+        if (null == retreat) {
+          tmp_point = legal_steps.Where(p=> damage_field[p] < damage_field[m_Actor.Location.Position]);
+          if (tmp_point.Any()) retreat = new List<Point>(tmp_point);
         }
       }
-      if (0 == retreat.Count) retreat = null;
+      // XXX should not block line of fire to mutual enemies of a non-enemy
       // prefer not to jump
       if (null != retreat && 2 <= retreat.Count) {
-        int clear_squares = retreat.Count;
-        List<Point> no_jump = new List<Point>(retreat.Count);
-        foreach(Point tmp in retreat) {
-          MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(tmp);
-          if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) continue;
-          no_jump.Add(tmp);
-        }
-        if (0 < no_jump.Count && no_jump.Count < retreat.Count) retreat = no_jump;
+        tmp_point = retreat.Where(pt=> {
+          MapObject tmp = m_Actor.Location.Map.GetMapObjectAt(pt);
+          return null==tmp || tmp.IsWalkable || tmp.IsJumpable;
+        });
+        if (tmp_point.Count()<retreat.Count()) retreat = new List<Point>(tmp_point);
       }
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it
@@ -264,7 +261,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       // have slow enemies nearby
-      if (null != retreat && 0 < slow_threat.Count) {
+      if (null != retreat && null!=slow_threat) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
         tmpAction = new ActionMoveStep(m_Actor, game, tmp);
         if (tmpAction.IsLegal()) {
