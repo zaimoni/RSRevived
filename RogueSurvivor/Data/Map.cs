@@ -427,6 +427,7 @@ namespace djack.RogueSurvivor.Data
       bool new_map = (null==actor.Location.Map);
       actor.Location = new Location(this, position);
       if (new_map) actor.Controller.UpdateSensors();
+      Engine.Session.Get.PoliceTrackingThroughExitSpawn(actor); // XXX overprecise
       m_iCheckNextActorIndex = 0;
     }
 

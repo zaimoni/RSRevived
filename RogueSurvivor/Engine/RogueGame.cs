@@ -11224,8 +11224,9 @@ namespace djack.RogueSurvivor.Engine
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
       Actor actor = m_TownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
-      if (!isStartingGame)
+      if (!isStartingGame) {
         deadVictim.Location.PlaceActor(actor);
+      }
       if (deadVictim == m_Player || deadVictim.IsPlayer)
         Session.Get.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;

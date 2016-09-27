@@ -173,13 +173,11 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // to eventually be obsoleted by an event
-#if FAIL
     public void PoliceTrackingThroughExitSpawn(Actor a) {
-      if (a.Faction.IsEnemyOf() || m_PoliceThreatTracking.IsThreat(a)) {
+      if (a.Faction.IsEnemyOf(Models.Factions[(int) Gameplay.GameFactions.IDs.ThePolice]) || m_PoliceThreatTracking.IsThreat(a)) {
         m_PoliceThreatTracking.RecordTaint(a,a.Location);
       }
     }
-#endif
 
     public bool HasRaidHappened(RaidType raid, District district)
     {
