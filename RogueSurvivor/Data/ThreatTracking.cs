@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
@@ -54,8 +55,9 @@ namespace djack.RogueSurvivor.Data
         }
 
         public void Cleared(Location loc)
-        {
-          foreach (Actor a in new List<Actor>(_threats.Keys)) {
+        { // some sort of race condition here ... a dead actor may be removed between _threats[a].Remove(loc)
+          // and _threats[a].Count
+          foreach (Actor a in _threats.Keys.ToList().Where(a=>!a.IsDead)) {
             if (_threats[a].Remove(loc) && 0 >= _threats[a].Count) _threats.Remove(a);
           }
         }
@@ -79,9 +81,12 @@ namespace djack.RogueSurvivor.Data
           Actor moving = (sender as Actor);
           if (null == moving) throw new ArgumentNullException("moving");
           if (!_threats.ContainsKey(moving)) return;
-          List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
-          foreach(Point pt in tmp) {
-            _threats[moving].Add(new Location(moving.Location.Map,pt));
+          foreach(Point pt in new List<Point>(_threats[moving].Where(loc=>loc.Map==moving.Location.Map).Select(loc=>loc.Position))) {
+            List<Point> tmp = moving.OneStepRange(moving.Location.Map, pt);
+            if (null==tmp) continue;
+            foreach (Point pt2 in tmp) {
+              _threats[moving].Add(new Location(moving.Location.Map,pt2));
+            }
           }
         }
     }
