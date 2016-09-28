@@ -676,13 +676,20 @@ namespace djack.RogueSurvivor.Data
       return 0;
     }
 
+    public ThreatTracking Threats { 
+      get {
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceThreatTracking;
+        return null;
+      }
+    }
+
     public void MarkAsAgressorOf(Actor other)
     {
       if (other == null || other.IsDead) return;
       if (m_AggressorOf == null) m_AggressorOf = new List<Actor>(1);
       else if (m_AggressorOf.Contains(other)) return;
       m_AggressorOf.Add(other);
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == other.Faction.ID) Engine.Session.Get.PoliceThreatTracking.RecordTaint(other, other.Location);
+      Threats?.RecordTaint(other, other.Location);
     }
 
     public void MarkAsSelfDefenceFrom(Actor other)
@@ -691,7 +698,7 @@ namespace djack.RogueSurvivor.Data
       if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>(1);
       else if (m_SelfDefenceFrom.Contains(other)) return;
       m_SelfDefenceFrom.Add(other);
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == other.Faction.ID) Engine.Session.Get.PoliceThreatTracking.RecordTaint(other, other.Location);
+      Threats?.RecordTaint(other, other.Location);
     }
 
     public bool IsAggressorOf(Actor other)
