@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -40,11 +41,8 @@ namespace djack.RogueSurvivor.Data
         public void RecordTaint(Actor a, Location loc)
         {
 //        if (!_is_threat(a)) return;
-          if (!_threats.ContainsKey(a)) {
-            _threats[a] = new HashSet<Location>();
-            _threats[a].Add(loc);
-          }
-          else _threats[a].Add(loc);
+          if (!_threats.ContainsKey(a))  _threats[a] = new HashSet<Location>();
+         _threats[a].Add(loc);
         }
 
         public void Sighted(Actor a, Location loc)
@@ -70,16 +68,15 @@ namespace djack.RogueSurvivor.Data
         // cheating die handler
         private void HandleDie(object sender, Actor.DieArgs e)
         {
-            Actor fatality = (sender as Actor);
-            if (null == fatality) throw new ArgumentNullException("fatality");
-            _threats.Remove(fatality);
+            Contract.Requires(null!=(sender as Actor));
+            _threats.Remove(sender as Actor);
         }
 
         // cheating move handler
         private void HandleMove(object sender, EventArgs e)
         {
+          Contract.Requires(null != (sender as Actor));
           Actor moving = (sender as Actor);
-          if (null == moving) throw new ArgumentNullException("moving");
           if (!_threats.ContainsKey(moving)) return;
           foreach(Point pt in new List<Point>(_threats[moving].Where(loc=>loc.Map==moving.Location.Map).Select(loc=>loc.Position))) {
             List<Point> tmp = moving.OneStepRange(moving.Location.Map, pt);
