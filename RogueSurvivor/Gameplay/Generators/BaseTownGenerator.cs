@@ -1601,7 +1601,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         {
           if (!map.GetTileAt(pt).Model.IsWalkable) return null;
           if (CountAdjWalls(map, pt.X, pt.Y) < 3 || CountAdjDoors(map, pt.X, pt.Y) > 0) return null;
-          return MakeObjPowerGenerator("MapObjects\\power_generator_off", "MapObjects\\power_generator_on");
+          return MakeObjPowerGenerator();
         }));
         DoForEachTile(rect2, (Action<Point>)(pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
@@ -2596,7 +2596,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (!map.GetTileAt(pt).Model.IsWalkable || map.GetExitAt(pt) != null || CountAdjWalls(map, pt.X, pt.Y) < 3)
           return;
-        map.PlaceMapObjectAt((MapObject)MakeObjPowerGenerator("MapObjects\\power_generator_off", "MapObjects\\power_generator_on"), pt);
+        map.PlaceMapObjectAt(MakeObjPowerGenerator(), pt);
       }));
     }
 
@@ -2777,7 +2777,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       Rectangle rect1 = Rectangle.FromLTRB(1, 1, map.Width, 3);
       map.AddZone(MakeUniqueZone("cells corridor", rect1));
-      map.PlaceMapObjectAt((MapObject)MakeObjPowerGenerator("MapObjects\\power_generator_off", "MapObjects\\power_generator_on"), new Point(map.Width - 2, 1));
+      map.PlaceMapObjectAt(MakeObjPowerGenerator(), new Point(map.Width - 2, 1));
       for (int index = 0; index < rectangleList.Count - 1; ++index)
       {
         Rectangle rectangle = rectangleList[index];
@@ -3081,7 +3081,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (pt.X == room.Left || !map.IsWalkable(pt) || CountAdjWalls(map, pt) < 3)
           return;
-        map.PlaceMapObjectAt((MapObject)MakeObjPowerGenerator("MapObjects\\power_generator_off", "MapObjects\\power_generator_on"), pt);
+        map.PlaceMapObjectAt(MakeObjPowerGenerator(), pt);
       }));
       Actor named = m_Game.GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
       named.IsUnique = true;
