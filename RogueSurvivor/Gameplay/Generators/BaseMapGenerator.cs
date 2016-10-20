@@ -644,7 +644,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected DoorWindow MakeObjWindow()
     {
       DoorWindow doorWindow = new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, 10);
-      doorWindow.IsWindow = true;
       doorWindow.IsMaterialTransparent = true;
       doorWindow.GivesWood = true;
       doorWindow.BreaksWhenFiredThrough = true;

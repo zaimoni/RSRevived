@@ -49,13 +49,9 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-    public bool IsWindow
-    {
+    public bool IsWindow {
       get {
         return m_IsWindow;
-      }
-      set {
-        m_IsWindow = value;
       }
     }
 
@@ -91,6 +87,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       m_BrokenImageID = brokenImageID;
       m_BarricadePoints = 0;
       SetState(STATE_CLOSED);
+      if ("window" == name) m_IsWindow = true;  // XXX arguably should be a constructor parameter
     }
 
     public override void SetState(int newState)
