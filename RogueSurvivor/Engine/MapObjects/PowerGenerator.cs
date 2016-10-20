@@ -34,7 +34,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public override void SetState(int newState)
     {
-      base.SetState(newState);
       switch (newState)
       {
         case STATE_OFF:
@@ -46,6 +45,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         default:
           throw new ArgumentOutOfRangeException("unhandled state");
       }
+      base.SetState(newState);
     }
 
     public void TogglePower()

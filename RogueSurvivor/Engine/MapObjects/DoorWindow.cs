@@ -22,37 +22,28 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     private bool m_IsWindow;
     private int m_BarricadePoints;
 
-    public bool IsOpen
-    {
-      get
-      {
-        return State == 2;
+    public bool IsOpen {
+      get {
+        return State == STATE_OPEN;
       }
     }
 
-    public bool IsClosed
-    {
-      get
-      {
-        return State == 1;
+    public bool IsClosed {
+      get {
+        return State == STATE_CLOSED;
       }
     }
 
-    public bool IsBroken
-    {
-      get
-      {
-        return State == 3;
+    public bool IsBroken {
+      get {
+        return State == STATE_BROKEN;
       }
     }
 
-    public override bool IsTransparent
-    {
-      get
-      {
-        if (m_BarricadePoints > 0)
-          return false;
-        if (State != 2)
+    public override bool IsTransparent {
+      get {
+        if (m_BarricadePoints > 0) return false;
+        if (State != STATE_OPEN)
           return base.IsTransparent;
         return FireState != MapObject.Fire.ONFIRE;
       }
@@ -60,42 +51,34 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public bool IsWindow
     {
-      get
-      {
+      get {
         return m_IsWindow;
       }
-      set
-      {
-                m_IsWindow = value;
+      set {
+        m_IsWindow = value;
       }
     }
 
     public int BarricadePoints
     {
-      get
-      {
+      get {
         return m_BarricadePoints;
       }
-      set
-      {
-        if (value > 0 && m_BarricadePoints <= 0)
-        {
+      set {
+        if (value > 0 && m_BarricadePoints <= 0) {
           --JumpLevel;
-                    IsWalkable = false;
+          IsWalkable = false;
         }
         else if (value <= 0 && m_BarricadePoints > 0)
-                    SetState(State);
-                m_BarricadePoints = value;
-        if (m_BarricadePoints >= 0)
-          return;
-                m_BarricadePoints = 0;
+          SetState(State);
+        m_BarricadePoints = value;
+        if (m_BarricadePoints >= 0) return;
+        m_BarricadePoints = 0;
       }
     }
 
-    public bool IsBarricaded
-    {
-      get
-      {
+    public bool IsBarricaded {
+      get {
         return m_BarricadePoints > 0;
       }
     }
@@ -103,31 +86,31 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public DoorWindow(string name, string closedImageID, string openImageID, string brokenImageID, int hitPoints)
       : base(name, closedImageID, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)
     {
-            m_ClosedImageID = closedImageID;
-            m_OpenImageID = openImageID;
-            m_BrokenImageID = brokenImageID;
-            m_BarricadePoints = 0;
-            SetState(1);
+      m_ClosedImageID = closedImageID;
+      m_OpenImageID = openImageID;
+      m_BrokenImageID = brokenImageID;
+      m_BarricadePoints = 0;
+      SetState(STATE_CLOSED);
     }
 
     public override void SetState(int newState)
     {
       switch (newState)
       {
-        case 1:
-                    ImageID = m_ClosedImageID;
-                    IsWalkable = false;
+        case STATE_CLOSED:
+          ImageID = m_ClosedImageID;
+          IsWalkable = false;
           break;
-        case 2:
-                    ImageID = m_OpenImageID;
-                    IsWalkable = true;
+        case STATE_OPEN:
+          ImageID = m_OpenImageID;
+          IsWalkable = true;
           break;
-        case 3:
-                    ImageID = m_BrokenImageID;
-                    BreakState = MapObject.Break.BROKEN;
-                    HitPoints = 0;
-                    m_BarricadePoints = 0;
-                    IsWalkable = true;
+        case STATE_BROKEN:
+          ImageID = m_BrokenImageID;
+          BreakState = MapObject.Break.BROKEN;
+          HitPoints = 0;
+          m_BarricadePoints = 0;
+          IsWalkable = true;
           break;
         default:
           throw new ArgumentOutOfRangeException("newState unhandled");
