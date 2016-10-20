@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   [Serializable]
   internal class Board : MapObject
   {
-    public string[] Text { get; set; }
+    public string[] Text { get; private set; }
 
     public Board(string name, string imageID, string[] text)
       : base(name, imageID)
