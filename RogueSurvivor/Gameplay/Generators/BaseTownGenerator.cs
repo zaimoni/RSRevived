@@ -521,7 +521,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         {
           if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt.X, pt.Y) == 0 || CountAdjDoors(subway, pt.X, pt.Y) > 0)
             return;
-          subway.PlaceMapObjectAt(MakeObjShelf("MapObjects\\shop_shelf"), pt);
+          subway.PlaceMapObjectAt(MakeObjShelf(), pt);
           subway.DropItemAt(MakeShopConstructionItem(), pt);
         }));
         DoForEachTile(rect, (Action<Point>)(pt => { Session.Get.ForcePoliceKnown(new Location(subway, pt)); }));
@@ -744,8 +744,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             MapObjectFill(map, alleysRect, (Func<Point, MapObject>) (pt =>
       {
         if (!horizontalAlleys ? (pt.X - alleysRect.Left) % 2 == 1 && pt.Y != centralAlley : (pt.Y - alleysRect.Top) % 2 == 1 && pt.X != centralAlley)
-          return MakeObjShelf("MapObjects\\shop_shelf");
-        return (MapObject) null;
+          return MakeObjShelf();
+        return null;
       }));
       int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
       int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
@@ -896,7 +896,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE))
           {
-            shopBasement.PlaceMapObjectAt(MakeObjShelf("MapObjects\\shop_shelf"), pt);
+            shopBasement.PlaceMapObjectAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF))
             {
               Item it = MakeRandomShopItem(shopType);
@@ -2309,7 +2309,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           basement.DropItemAt(MakeItemGrenade(), pt);
           for (int index = 0; index < 5; ++index)
             basement.DropItemAt(MakeShopGunshopItem(), pt);
-          return MakeObjShelf("MapObjects\\shop_shelf");
+          return MakeObjShelf();
         }));
       return basement;
     }
@@ -2492,14 +2492,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
             MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(20))
-          return (MapObject) null;
+        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(20)) return null;
         map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo()) : (m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle())) : MakeItemGrenade()) : (m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : MakeItemCHARLightBodyArmor(), pt);
-        return MakeObjShelf("MapObjects\\shop_shelf");
+        return MakeObjShelf();
       }));
     }
 
@@ -2563,14 +2560,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
             MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(20))
-          return (MapObject) null;
+        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(20)) return null;
         map.DropItemAt(MakeHospitalItem(), pt);
-        return MakeObjShelf("MapObjects\\shop_shelf");
+        return MakeObjShelf();
       }));
     }
 
@@ -2672,7 +2666,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           {
             if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || CountAdjDoors(map, pt.X, pt.Y) > 0)
               return;
-            map.PlaceMapObjectAt(MakeObjShelf("MapObjects\\shop_shelf"), pt);
+            map.PlaceMapObjectAt(MakeObjShelf(), pt);
             Item it;
             switch (m_DiceRoller.Roll(0, 10))
             {
@@ -3201,7 +3195,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DoForEachTile(room, (Action<Point>) (pt =>
       {
         if (!map.IsWalkable(pt) || CountAdjDoors(map, pt.X, pt.Y) > 0) return;
-        map.PlaceMapObjectAt(MakeObjShelf("MapObjects\\shop_shelf"), pt);
+        map.PlaceMapObjectAt(MakeObjShelf(), pt);
         Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
         if (it.Model.IsStackable)
           it.Quantity = it.Model.StackingLimit;
