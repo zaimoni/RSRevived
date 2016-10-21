@@ -1442,11 +1442,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeItemCannedFood(), pt);
-          return MakeObjFridge("MapObjects\\fridge");
+          return MakeObjFridge();
         }));
       }
       Actor newCivilian = CreateNewCivilian(0, 3, 1);
-            ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+      ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       map.AddZone(MakeUniqueZone("Sewers Maintenance", b.BuildingRect));
     }
 
@@ -1766,7 +1766,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 map.DropItemAt(it, pt);
               if (m_DiceRoller.RollChance(50))
                 return MakeObjWardrobe("MapObjects\\wardrobe");
-              return MakeObjDrawer("MapObjects\\drawer");
+              return MakeObjDrawer();
             }));
           break;
         case 5:
@@ -1804,7 +1804,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               if (CountAdjWalls(map, pt.X, pt.Y) >= 2)
                 return CountAdjDoors(map, pt.X, pt.Y) == 0;
               return false;
-            }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer("MapObjects\\drawer")));
+            }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer()));
           break;
         case 8:
         case 9:
@@ -1842,7 +1842,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               if (it != null)
                 map.DropItemAt(it, pt);
             }
-            return MakeObjFridge("MapObjects\\fridge");
+            return MakeObjFridge();
           }));
           break;
         default:
@@ -2288,7 +2288,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             return MakeObjTable("MapObjects\\table");
           case 3:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
-            return MakeObjDrawer("MapObjects\\drawer");
+            return MakeObjDrawer();
           case 4:
             return MakeObjBed("MapObjects\\bed");
           default:
@@ -2529,24 +2529,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, roomRect, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration("Tiles\\Decoration\\char_floor_logo")));
             MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(30))
-          return (MapObject) null;
+        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(30)) return null;
         if (m_DiceRoller.RollChance(50))
           return MakeObjBed("MapObjects\\bed");
-        return MakeObjFridge("MapObjects\\fridge");
+        return MakeObjFridge();
       }));
             MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) > 0)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(30))
-          return (MapObject) null;
+        if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(30)) return null;
         if (!m_DiceRoller.RollChance(30))
           return MakeObjChair("MapObjects\\char_chair");
         MapObject mapObject = MakeObjTable("MapObjects\\char_table");
