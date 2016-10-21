@@ -13786,7 +13786,7 @@ namespace djack.RogueSurvivor.Engine
           MapObject mapObjectAt = map.GetMapObjectAt(pt);
           if (mapObjectAt == null)
             return false;
-          return mapObjectAt.ImageID == "MapObjects\\gate_closed";
+          return mapObjectAt.ImageID == GameImages.OBJ_GATE_CLOSED;
         })))
         {
           DoTurnAllGeneratorsOn(map);

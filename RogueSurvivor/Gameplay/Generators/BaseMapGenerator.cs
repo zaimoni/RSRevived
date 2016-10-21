@@ -452,10 +452,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     };
     private static string[] CARS = new string[4]
     {
-      "MapObjects\\car1",
-      "MapObjects\\car2",
-      "MapObjects\\car3",
-      "MapObjects\\car4"
+      GameImages.OBJ_CAR1,
+      GameImages.OBJ_CAR2,
+      GameImages.OBJ_CAR3,
+      GameImages.OBJ_CAR4
     };
     protected readonly RogueGame m_Game;
 
