@@ -1234,7 +1234,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         {
           DoorWindow doorWindow = map.GetMapObjectAt(left, top) as DoorWindow;
           if (doorWindow != null)
-            doorWindow.BarricadePoints = barricadeLevel;
+            doorWindow.Barricade(barricadeLevel);
         }
       }
     }

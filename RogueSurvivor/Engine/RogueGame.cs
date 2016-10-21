@@ -9360,7 +9360,7 @@ namespace djack.RogueSurvivor.Engine
             if (doorWindow != null && doorWindow.IsBarricaded)
             {
               int num2 = Math.Min(doorWindow.BarricadePoints, val2);
-              doorWindow.BarricadePoints -= num2;
+              doorWindow.Barricade(-num2);
               val2 -= num2;
             }
             if (val2 >= 0)
@@ -9920,7 +9920,7 @@ namespace djack.RogueSurvivor.Engine
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
       actor.Inventory.Consume(barricadeMaterial);
-      door.BarricadePoints = Math.Min(door.BarricadePoints + m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), Rules.BARRICADING_MAX);
+      door.Barricade(m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -10000,7 +10000,7 @@ namespace djack.RogueSurvivor.Engine
       if (doorWindow != null && doorWindow.IsBarricaded) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
-        doorWindow.BarricadePoints -= attack.DamageValue;
+        doorWindow.Barricade(-attack.DamageValue);
         OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
