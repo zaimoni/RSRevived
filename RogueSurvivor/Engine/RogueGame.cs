@@ -7708,8 +7708,8 @@ namespace djack.RogueSurvivor.Engine
         DoorWindow doorWindow = obj as DoorWindow;
         if (doorWindow != null)
         {
-          if (doorWindow.BarricadePoints < 80)
-            stringList.Add(string.Format("Barricades: {0}/{1}", (object) doorWindow.BarricadePoints, (object) 80));
+          if (doorWindow.BarricadePoints < Rules.BARRICADING_MAX)
+            stringList.Add(string.Format("Barricades: {0}/{1}", (object) doorWindow.BarricadePoints, (object) Rules.BARRICADING_MAX));
           else
             stringList.Add(string.Format("Barricades: {0} MAX", (object) doorWindow.BarricadePoints));
         }
@@ -9920,7 +9920,7 @@ namespace djack.RogueSurvivor.Engine
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
       actor.Inventory.Consume(barricadeMaterial);
-      door.BarricadePoints = Math.Min(door.BarricadePoints + m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), 80);
+      door.BarricadePoints = Math.Min(door.BarricadePoints + m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), Rules.BARRICADING_MAX);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -11563,7 +11563,7 @@ namespace djack.RogueSurvivor.Engine
           DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
         DoorWindow doorWindow = mapObj as DoorWindow;
         if (doorWindow == null || doorWindow.BarricadePoints <= 0) return;
-        DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
+        DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
       } else {
         if (!(m_Player.Controller as PlayerController).IsKnown(mapObj.Location) || IsPlayerSleeping()) return;

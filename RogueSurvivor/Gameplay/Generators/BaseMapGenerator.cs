@@ -1227,7 +1227,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {
-      barricadeLevel = Math.Min(80, barricadeLevel);
+      barricadeLevel = Math.Min(Rules.BARRICADING_MAX, barricadeLevel);
       for (int left = rect.Left; left < rect.Right; ++left)
       {
         for (int top = rect.Top; top < rect.Bottom; ++top)

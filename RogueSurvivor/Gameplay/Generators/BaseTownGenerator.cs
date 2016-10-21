@@ -860,15 +860,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           default:
             throw new ArgumentOutOfRangeException("unhandled side");
         }
-        bool flag = true;
-        if (map.GetTileAt(x2, y2).Model.IsWalkable)
-          flag = false;
-        if (flag)
-                    PlaceDoor(map, x2, y2, m_Game.GameTiles.FLOOR_TILES, MakeObjWindow());
+        if (!map.GetTileAt(x2, y2).Model.IsWalkable)
+          PlaceDoor(map, x2, y2, m_Game.GameTiles.FLOOR_TILES, MakeObjWindow());
       }
       if (shopType == BaseTownGenerator.ShopType.GUNSHOP)
-                BarricadeDoors(map, b.BuildingRect, 80);
-            ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
+        BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
+      ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || !(mapObjectAt.ImageID == "MapObjects\\shop_shelf"))
@@ -1075,7 +1072,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           return (string) null;
         return officeImage;
       }));
-            BarricadeDoors(map, b.BuildingRect, 80);
+      BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       if (direction == Direction.N)
                 TileHLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + 3, b.InsideRect.Width);
       else if (direction == Direction.S)
@@ -1403,7 +1400,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           throw new ArgumentOutOfRangeException("unhandled roll");
       }
             PlaceDoor(map, x, y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-            BarricadeDoors(map, b.BuildingRect, 80);
+            BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       map.GetTileAt(exitPosition.X, exitPosition.Y).AddDecoration(isSurface ? "Tiles\\Decoration\\sewer_hole" : "Tiles\\Decoration\\sewer_ladder");
       map.SetExitAt(exitPosition, new Exit(linkedMap, exitPosition)
       {
@@ -2366,7 +2363,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) return;
         surfaceMap.RemoveMapObjectAt(pt.X, pt.Y);
         DoorWindow doorWindow = MakeObjIronDoor();
-        doorWindow.BarricadePoints = 80;
+        doorWindow.BarricadePoints = Rules.BARRICADING_MAX;
         surfaceMap.PlaceMapObjectAt((MapObject) doorWindow, pt);
       }));
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
