@@ -1262,8 +1262,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
             MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
-        if (m_DiceRoller.RollChance(PARK_BENCH_CHANCE))
-          return MakeObjBench("MapObjects\\bench");
+        if (m_DiceRoller.RollChance(PARK_BENCH_CHANCE)) return MakeObjBench();
         return null;
       }));
       int x;
@@ -1570,7 +1569,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         for (int left2 = rect1.Left; left2 < rect1.Right; ++left2)
         {
           if (CountAdjWalls(map, left2, y) >= 3)
-            map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), new Point(left2, y));
+            map.PlaceMapObjectAt(MakeObjIronBench(), new Point(left2, y));
         }
         map.AddZone(MakeUniqueZone("platform", rect1));
         Point point1 = direction != Direction.S ? new Point(x1, rect1.Bottom) : new Point(x1, rect1.Top - 1);
@@ -1609,7 +1608,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y)
         {
           if (CountAdjWalls(map, left, y) >= 2 && CountAdjDoors(map, left, y) <= 0 && Rules.GridDistance(new Point(left, y), new Point(x1, num)) >= 2)
-            map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), new Point(left, y));
+            map.PlaceMapObjectAt(MakeObjIronBench(), new Point(left, y));
         }
       }
       if (isSurface)
@@ -2634,7 +2633,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (!surfaceMap.IsWalkable(pt.X, pt.Y) || CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || CountAdjDoors(surfaceMap, pt.X, pt.Y) > 0)
           return;
-        surfaceMap.PlaceMapObjectAt(MakeObjBench("MapObjects\\bench"), pt);
+        surfaceMap.PlaceMapObjectAt(MakeObjBench(), pt);
       }));
       stairsToLevel1 = new Point(point.X, policeBlock.InsideRect.Top);
       surfaceMap.AddZone(MakeUniqueZone("Police Station", policeBlock.BuildingRect));
@@ -2727,7 +2726,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3)
           return;
-        map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), pt);
+        map.PlaceMapObjectAt(MakeObjIronBench(), pt);
       }));
       for (int index = 0; index < 5; ++index)
       {
@@ -2759,7 +2758,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, rect);
         TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, rect);
         Point position1 = new Point(x + 1, 4);
-        map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), position1);
+        map.PlaceMapObjectAt(MakeObjIronBench(), position1);
         Point position2 = new Point(x + 1, 3);
         map.SetTileModelAt(position2.X, position2.Y, m_Game.GameTiles.FLOOR_CONCRETE);
         map.PlaceMapObjectAt(MakeObjIronGate(), position2);
@@ -2869,7 +2868,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || CountAdjDoors(surfaceMap, pt.X, pt.Y) > 0)))
           return;
-        surfaceMap.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), pt);
+        surfaceMap.PlaceMapObjectAt(MakeObjIronBench(), pt);
       }));
       surfaceMap.AddZone(MakeUniqueZone("Hospital", block.BuildingRect));
       MakeWalkwayZones(surfaceMap, block);
