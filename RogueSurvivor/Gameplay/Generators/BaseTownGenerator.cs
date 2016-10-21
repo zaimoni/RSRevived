@@ -375,7 +375,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE)) return null;
         if (!sewers.IsWalkable(pt.X, pt.Y)) return null;
-        return MakeObjJunk("MapObjects\\junk");
+        return MakeObjJunk();
       }));
 #endregion
 
@@ -2269,20 +2269,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (!m_DiceRoller.RollChance(20) || pt == basementStairs) return;
         basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
       }));
-            MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
-        if (!m_DiceRoller.RollChance(10))
-          return (MapObject) null;
-        if (basement.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!basement.IsWalkable(pt.X, pt.Y))
-          return (MapObject) null;
+        if (!m_DiceRoller.RollChance(10)) return null;
+        if (basement.GetExitAt(pt) != null) return null;
+        if (!basement.IsWalkable(pt.X, pt.Y)) return null;
         switch (m_DiceRoller.Roll(0, 5))
         {
           case 0:
-            return MakeObjJunk("MapObjects\\junk");
+            return MakeObjJunk();
           case 1:
-            return MakeObjBarrels("MapObjects\\barrels");
+            return MakeObjBarrels();
           case 2:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
             return MakeObjTable("MapObjects\\table");
@@ -2504,15 +2501,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, roomRect);
             MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) > 0)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
+        if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(50)) return null;
         if (!m_DiceRoller.RollChance(50))
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(50))
-          return MakeObjBarrels("MapObjects\\barrels");
-        return MakeObjJunk("MapObjects\\junk");
+          return MakeObjBarrels();
+        return MakeObjJunk();
       }));
       for (int left = roomRect.Left; left < roomRect.Right; ++left)
       {
