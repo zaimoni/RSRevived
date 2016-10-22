@@ -2325,7 +2325,7 @@ namespace djack.RogueSurvivor.Engine
        Actor tmp = Session.Get.CurrentMap.FindPlayer;
        if (null != tmp) {
          m_Player = tmp;
-         UpdatePlayerFOV(m_Player);
+         m_Player.Controller.UpdateSensors();
          ComputeViewRect(m_Player.Location.Position);
          RedrawPlayScreen();
          return;
@@ -2447,7 +2447,7 @@ namespace djack.RogueSurvivor.Engine
           {
           m_Player = tmp;
           Session.Get.CurrentMap = map;  // multi-PC support
-          UpdatePlayerFOV(m_Player);
+          m_Player.Controller.UpdateSensors();
           ComputeViewRect(m_Player.Location.Position);
           RedrawPlayScreen();
           }
@@ -2754,7 +2754,7 @@ namespace djack.RogueSurvivor.Engine
                 RedrawPlayScreen();
               }
               if (actor == m_Player) {
-                UpdatePlayerFOV(m_Player);
+                m_Player.Controller.UpdateSensors();
                 ComputeViewRect(m_Player.Location.Position);
                 RedrawPlayScreen();
               }
@@ -3637,12 +3637,6 @@ namespace djack.RogueSurvivor.Engine
       return newBlackOps;
     }
 
-    public void UpdatePlayerFOV(Actor player)
-    {
-      if (player == null) return;
-      (player.Controller as PlayerController)?.UpdateSensors();
-    }
-
     public void StopTheWorld()
     {
       StopSimThread();
@@ -3652,7 +3646,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerActor(Actor player)
     {
-      UpdatePlayerFOV(player);
+      player.Controller.UpdateSensors();
       m_Player = player;
       Session.Get.CurrentMap = player.Location.Map;  // multi-PC support
       ComputeViewRect(player.Location.Position);
@@ -3936,21 +3930,19 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       while (flag1);
-      UpdatePlayerFOV(player);
+      player.Controller.UpdateSensors();
       ComputeViewRect(player.Location.Position);
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
     }
 
     private bool TryPlayerInsanity()
     {
-      if (!m_Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
-        return false;
+      if (!m_Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
       ActorAction insaneAction = GenerateInsaneAction(m_Player);
-      if (insaneAction == null || !insaneAction.IsLegal())
-        return false;
-            ClearMessages();
-            AddMessage(new Data.Message("(your insanity takes over)", m_Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
-            AddMessagePressEnter();
+      if (insaneAction == null || !insaneAction.IsLegal()) return false;
+      ClearMessages();
+      AddMessage(new Data.Message("(your insanity takes over)", m_Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
+      AddMessagePressEnter();
       insaneAction.Perform();
       return true;
     }
@@ -10828,7 +10820,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnNewNight()
     {
-      UpdatePlayerFOV(m_Player);
+      m_Player.Controller.UpdateSensors();
       if (!m_Player.Model.Abilities.IsUndead || m_Player.Location.Map.LocalTime.Day % 2 != 1)
         return;
       ClearOverlays();
@@ -10837,7 +10829,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.Play(GameMusics.INTERLUDE);
       ClearMessages();
       AddMessage(new Data.Message("You will hunt another day!", Session.Get.WorldTime.TurnCounter, Color.Green));
-      UpdatePlayerFOV(m_Player);
+      m_Player.Controller.UpdateSensors();
       AddMessagePressEnter();
 //    HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
       ClearMessages();
@@ -10856,7 +10848,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.INTERLUDE);
         ClearMessages();
         AddMessage(new Data.Message("You survived another night!", Session.Get.WorldTime.TurnCounter, Color.Green));
-        UpdatePlayerFOV(m_Player);
+        m_Player.Controller.UpdateSensors();
         AddMessagePressEnter();
 //      HandlePlayerDecideUpgrade(m_Player);    // XXX skill upgrade timing problems with non-following PCs
         ClearMessages();
@@ -12898,7 +12890,7 @@ namespace djack.RogueSurvivor.Engine
       SetCurrentMap(entryMap);
       RefreshPlayer();
       foreach(Actor player in entryMap.Players) {
-        UpdatePlayerFOV(player);
+        player.Controller.UpdateSensors();
       }
       if (RogueGame.s_Options.RevealStartingDistrict) {
         Map map = entryMap;
@@ -13926,7 +13918,7 @@ namespace djack.RogueSurvivor.Engine
           // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
           // This may not be a useful idea, however.
           m_MusicManager.StopAll();
-          UpdatePlayerFOV(m_Player);
+          m_Player.Controller.UpdateSensors();
           ComputeViewRect(m_Player.Location.Position);
           ClearMessages();
           AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", (object)m_Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
