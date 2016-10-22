@@ -3064,21 +3064,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor named = m_Game.GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\jason_myers");
-            GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-            GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-            GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-            GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      named.Inventory.AddAll(MakeItemJasonMyersAxe());
+      GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+      GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+      GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+      GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+      GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+      GiveStartingSkillToActor(named, Skills.IDs.STRONG);
+      GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+      GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+      GiveStartingSkillToActor(named, Skills.IDs._FIRST);
+      GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      named.Inventory.AddAll(new ItemMeleeWeapon(m_Game.GameItems.UNIQUE_JASON_MYERS_AXE)
+      {
+          IsUnique = true
+      });
       map.PlaceActorAt(named, new Point(map.Width / 2, map.Height / 2));
-            m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
+      m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
       {
         TheActor = named,
         IsSpawned = true

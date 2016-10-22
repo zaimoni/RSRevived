@@ -20,11 +20,9 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemMeleeWeapon(ItemModel model)
+    public ItemMeleeWeapon(ItemMeleeWeaponModel model)
       : base(model)
     {
-      if (!(model is ItemMeleeWeaponModel))
-        throw new ArgumentException("model is not a MeleeWeaponModel");
     }
   }
 }

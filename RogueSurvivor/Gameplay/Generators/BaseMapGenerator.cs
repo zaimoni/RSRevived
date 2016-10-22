@@ -947,61 +947,54 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemCrowbar()
     {
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)m_Game.GameItems.CROWBAR);
-      itemMeleeWeapon.Quantity = m_Rules.Roll(1, m_Game.GameItems.CROWBAR.StackingLimit);
-      return (Item) itemMeleeWeapon;
+      return new ItemMeleeWeapon(m_Game.GameItems.CROWBAR) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.CROWBAR.StackingLimit)
+      };
     }
 
     public Item MakeItemBaseballBat()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.BASEBALLBAT);
+      return new ItemMeleeWeapon(m_Game.GameItems.BASEBALLBAT);
     }
 
     public Item MakeItemCombatKnife()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.COMBAT_KNIFE);
+      return new ItemMeleeWeapon(m_Game.GameItems.COMBAT_KNIFE);
     }
 
     public Item MakeItemTruncheon()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.TRUNCHEON);
+      return new ItemMeleeWeapon(m_Game.GameItems.TRUNCHEON);
     }
 
     public Item MakeItemGolfClub()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.GOLFCLUB);
+      return new ItemMeleeWeapon(m_Game.GameItems.GOLFCLUB);
     }
 
     public Item MakeItemIronGolfClub()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.IRON_GOLFCLUB);
+      return new ItemMeleeWeapon(m_Game.GameItems.IRON_GOLFCLUB);
     }
 
     public Item MakeItemHugeHammer()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.HUGE_HAMMER);
+      return new ItemMeleeWeapon(m_Game.GameItems.HUGE_HAMMER);
     }
 
     public Item MakeItemSmallHammer()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.SMALL_HAMMER);
-    }
-
-    public Item MakeItemJasonMyersAxe()
-    {
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)m_Game.GameItems.UNIQUE_JASON_MYERS_AXE);
-      itemMeleeWeapon.IsUnique = true;
-      return (Item) itemMeleeWeapon;
+      return new ItemMeleeWeapon(m_Game.GameItems.SMALL_HAMMER);
     }
 
     public Item MakeItemShovel()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.SHOVEL);
+      return new ItemMeleeWeapon(m_Game.GameItems.SHOVEL);
     }
 
     public Item MakeItemShortShovel()
     {
-      return (Item) new ItemMeleeWeapon((ItemModel)m_Game.GameItems.SHORT_SHOVEL);
+      return new ItemMeleeWeapon(m_Game.GameItems.SHORT_SHOVEL);
     }
 
     public ItemBarricadeMaterial MakeItemWoodenPlank()
