@@ -3541,12 +3541,10 @@ namespace djack.RogueSurvivor.Engine
     private Actor SpawnNewNatGuardLeader(Map map)
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");
-            m_TownGenerator.GiveStartingSkillToActor(armyNationalGuard, Skills.IDs.LEADERSHIP);
+      armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemZTracker());
-      if (!SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true))
-        return (Actor) null;
-      return armyNationalGuard;
+      return SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true) ? armyNationalGuard : null;
     }
 
     private Actor SpawnNewNatGuardTrooper(Map map, Point leaderPos)
@@ -3556,85 +3554,61 @@ namespace djack.RogueSurvivor.Engine
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemCombatKnife());
       else
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());
-      if (!SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
-        return (Actor) null;
-      return armyNationalGuard;
+      return SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? armyNationalGuard : null;
     }
 
     private Actor SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
     {
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      if (!SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, true))
-        return (Actor) null;
-      return newBikerMan;
+      newBikerMan.StartingSkill(Skills.IDs.LEADERSHIP);
+      newBikerMan.StartingSkill(Skills.IDs.TOUGH,3);
+      newBikerMan.StartingSkill(Skills.IDs.STRONG,3);
+      return SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, true) ? newBikerMan : null;
     }
 
     private Actor SpawnNewBiker(Map map, GameGangs.IDs gangId, Point leaderPos)
     {
       Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.TOUGH);
-            m_TownGenerator.GiveStartingSkillToActor(newBikerMan, Skills.IDs.STRONG);
-      if (!SpawnActorNear(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
-        return (Actor) null;
-      return newBikerMan;
+      newBikerMan.StartingSkill(Skills.IDs.TOUGH);
+      newBikerMan.StartingSkill(Skills.IDs.STRONG);
+      return SpawnActorNear(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? newBikerMan : null;
     }
 
     private Actor SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
-            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs.FIREARMS);
-      if (!SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, true))
-        return (Actor) null;
-      return newGangstaMan;
+      newGangstaMan.StartingSkill(Skills.IDs.LEADERSHIP);
+      newGangstaMan.StartingSkill(Skills.IDs._FIRST,3);
+      newGangstaMan.StartingSkill(Skills.IDs.FIREARMS);
+      return SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, true) ? newGangstaMan : null;
     }
 
     private Actor SpawnNewGangsta(Map map, GameGangs.IDs gangId, Point leaderPos)
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
-            m_TownGenerator.GiveStartingSkillToActor(newGangstaMan, Skills.IDs._FIRST);
-      if (!SpawnActorNear(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
-        return (Actor) null;
-      return newGangstaMan;
+      newGangstaMan.StartingSkill(Skills.IDs._FIRST);
+      return SpawnActorNear(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? newGangstaMan : null;
     }
 
     private Actor SpawnNewBlackOpsLeader(Map map)
     {
       Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      if (!SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, true))
-        return (Actor) null;
-      return newBlackOps;
+      newBlackOps.StartingSkill(Skills.IDs.LEADERSHIP);
+      newBlackOps.StartingSkill(Skills.IDs._FIRST,3);
+      newBlackOps.StartingSkill(Skills.IDs.FIREARMS,3);
+      newBlackOps.StartingSkill(Skills.IDs.TOUGH,3);
+      return SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, true) ? newBlackOps : null;
     }
 
     private Actor SpawnNewBlackOpsTrooper(Map map, Point leaderPos)
     {
       Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Agent");
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs._FIRST);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(newBlackOps, Skills.IDs.TOUGH);
-      if (!SpawnActorNear(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3))
-        return (Actor) null;
-      return newBlackOps;
+      // policy decision: blackops not to get carpentry automatically, national guard not to get tough or alertness automatically
+      // these are MOS skills, not boot camp skills
+      newBlackOps.StartingSkill(Skills.IDs._FIRST);
+      newBlackOps.StartingSkill(Skills.IDs.FIREARMS);
+      newBlackOps.StartingSkill(Skills.IDs.TOUGH);
+      return SpawnActorNear(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? newBlackOps : null;
     }
 
     public void StopTheWorld()
@@ -12966,24 +12940,10 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\big_bear");
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs.STRONG,5);
+      named.StartingSkill(Skills.IDs.TOUGH,5);
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT)
       {
           IsUnique = true
@@ -13008,24 +12968,10 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\famu_fataru");
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs._FIRST);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA)
       {
           IsUnique = true
@@ -13050,24 +12996,10 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\santaman");
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.AWAKE);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs.AWAKE,5);
+      named.StartingSkill(Skills.IDs.FIREARMS,5);
       ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel)GameItems.UNIQUE_SANTAMAN_SHOTGUN);
       itemRangedWeapon.IsUnique = true;
       Item it = (Item) itemRangedWeapon;
@@ -13092,24 +13024,10 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\roguedjack");
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HARDY);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs.LEADERSHIP,5);
+      named.StartingSkill(Skills.IDs.CHARISMATIC,5);
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD)
       {
           IsUnique = true
@@ -13134,27 +13052,11 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\duckman");
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.MARTIAL_ARTS);
+      named.StartingSkill(Skills.IDs.CHARISMATIC,5);
+      named.StartingSkill(Skills.IDs.LEADERSHIP);
+      named.StartingSkill(Skills.IDs.STRONG,5);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
+      named.StartingSkill(Skills.IDs.MARTIAL_ARTS,5);
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
@@ -13176,24 +13078,10 @@ namespace djack.RogueSurvivor.Engine
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\hans_von_hanz");
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HAULER);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.FIREARMS);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.LEADERSHIP);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
-            m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.NECROLOGY);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.FIREARMS,5);
+      named.StartingSkill(Skills.IDs.LEADERSHIP,5);
+      named.StartingSkill(Skills.IDs.NECROLOGY,5);
       ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel)GameItems.UNIQUE_HANS_VON_HANZ_PISTOL);
       itemRangedWeapon.IsUnique = true;
       Item it = (Item) itemRangedWeapon;

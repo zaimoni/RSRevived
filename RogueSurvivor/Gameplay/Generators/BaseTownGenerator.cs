@@ -3064,18 +3064,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor named = m_Game.GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, "Actors\\jason_myers");
-      GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-      GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-      GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      named.StartingSkill(Skills.IDs.TOUGH,3);
+      named.StartingSkill(Skills.IDs.STRONG,3);
+      named.StartingSkill(Skills.IDs._FIRST,3);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Inventory.AddAll(new ItemMeleeWeapon(m_Game.GameItems.UNIQUE_JASON_MYERS_AXE)
       {
           IsUnique = true
@@ -3103,12 +3095,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Actor CreateNewHospitalNurse(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
-            SkinNakedHuman(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      SkinNakedHuman(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Nurse " + numberedName.Name;
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_nurse_uniform");
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      numberedName.StartingSkill(Skills.IDs.MEDIC);
       numberedName.Inventory.AddAll(MakeItemBandages());
       return numberedName;
     }
@@ -3116,15 +3108,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Actor CreateNewHospitalDoctor(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
-            SkinNakedHuman(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      SkinNakedHuman(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Doctor " + numberedName.Name;
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_doctor_uniform");
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      numberedName.StartingSkill(Skills.IDs.MEDIC,3);
+      numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       numberedName.Inventory.AddAll(MakeItemMedikit());
       numberedName.Inventory.AddAll(MakeItemBandages());
       return numberedName;
@@ -3352,8 +3342,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Cop " + numberedName.Name;
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-      GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
-      GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
+      numberedName.StartingSkill(Skills.IDs.FIREARMS);
+      numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       if (m_DiceRoller.RollChance(50)) {
         numberedName.Inventory.AddAll(MakeItemPistol());
         numberedName.Inventory.AddAll(MakeItemLightPistolAmmo());
@@ -3458,8 +3448,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // The minimum physical fitness standards slide off with age.
       // If we had a melee weapons skill it would be here.
       // Maximum acceptable fat % 23%, discharged at 26%
-      GiveStartingSkillToActor(numberedName, Skills.IDs.CARPENTRY);
-      GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
+      numberedName.StartingSkill(Skills.IDs.CARPENTRY);
+      numberedName.StartingSkill(Skills.IDs.FIREARMS);
       int count = new WorldTime(spawnTime).Day - RogueGame.NATGUARD_DAY;
       if (count > 0)
         GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);

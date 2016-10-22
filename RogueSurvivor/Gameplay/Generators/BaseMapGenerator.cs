@@ -591,20 +591,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void GiveRandomSkillsToActor(DiceRoller roller, Actor actor, int count)
     {
       for (int index = 0; index < count; ++index)
-                GiveRandomSkillToActor(roller, actor);
+        GiveRandomSkillToActor(roller, actor);
     }
 
     public void GiveRandomSkillToActor(DiceRoller roller, Actor actor)
     {
-      Skills.IDs skillID = !actor.Model.Abilities.IsUndead ? Skills.RollLiving(roller) : Skills.RollUndead(roller);
-            GiveStartingSkillToActor(actor, skillID);
-    }
-
-    public void GiveStartingSkillToActor(Actor actor, Skills.IDs skillID)
-    {
-      if (actor.Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
-      actor.Sheet.SkillTable.AddOrIncreaseSkill(skillID);
-      actor.RecomputeStartingStats();
+      actor.StartingSkill(actor.Model.Abilities.IsUndead ? Skills.RollUndead(roller) : Skills.RollLiving(roller));
     }
 
     protected DoorWindow MakeObjWoodenDoor()
