@@ -55,11 +55,11 @@ namespace djack.RogueSurvivor.Engine.AI
         }
     }
 
-    public override List<Percept> Sense(RogueGame game, Actor actor)
+    public override List<Percept> Sense(Actor actor)
     {
       Forget(actor);
 
-      List<Percept> perceptList1 = m_Sensor.Sense(game, actor);
+      List<Percept> perceptList1 = m_Sensor.Sense(actor);
       List<Percept> perceptList2 = null;
       foreach (Percept percept in perceptList1)
       {

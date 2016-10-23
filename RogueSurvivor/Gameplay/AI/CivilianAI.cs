@@ -119,9 +119,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Emotes = (m_Actor != tmp.BigBear.TheActor ? (m_Actor != tmp.FamuFataru.TheActor ? (m_Actor != tmp.Santaman.TheActor ? (m_Actor != tmp.Roguedjack.TheActor ? (m_Actor != tmp.Duckman.TheActor ? (m_Actor != tmp.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
     }
 
-    protected override List<Percept> UpdateSensors(RogueGame game)
+    protected override List<Percept> _UpdateSensors()
     {
-      List<Percept> tmp = m_LOSSensor.Sense(game, m_Actor);
+      List<Percept> tmp = m_LOSSensor.Sense(m_Actor);
       if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) {
         // police report the items they see to other police.
         // \todo This implementation is too powerful; it should be a mutual-update between police

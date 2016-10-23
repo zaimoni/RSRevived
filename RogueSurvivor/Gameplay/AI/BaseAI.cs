@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override ActorAction GetAction(RogueGame game)
     {
-      List<Percept> percepts = UpdateSensors(game);
+      List<Percept> percepts = _UpdateSensors();
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       ActorAction actorAction = SelectAction(game, percepts);

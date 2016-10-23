@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     public virtual void TakeControl(Actor actor)
     {
       m_Actor = actor;
-      if (null!=actor.Location.Map) UpdateSensors(RogueForm.Game);
+      if (null!=actor.Location.Map) _UpdateSensors();
     }
 
     public virtual void LeaveControl()
@@ -28,8 +28,9 @@ namespace djack.RogueSurvivor.Data
       m_Actor = null;
     }
 
-    protected abstract List<Engine.AI.Percept> UpdateSensors(RogueGame game);
-    public void UpdateSensors() { UpdateSensors(RogueForm.Game); }
+    // note that we cannot overload based on just the signature
+    protected abstract List<Engine.AI.Percept> _UpdateSensors();
+    public void UpdateSensors() { _UpdateSensors(); }
 
     // vision
     public abstract HashSet<Point> FOV { get; }
