@@ -839,12 +839,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // stench killer support -- don't want to lock down to the only user, CivilianAI
     // actually, this particular heuristic is *bad* because it causes the z to lose tracking too close to shelter.
-    protected bool IsGoodStenchKillerSpot(RogueGame game, Map map, Point pos)
+    protected bool IsGoodStenchKillerSpot(Map map, Point pos)
     {
-      if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0)
-        return false;
-      if (PrevLocation.Map.GetTileAt(PrevLocation.Position).IsInside != map.GetTileAt(pos).IsInside)
-        return true;
+      if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
+      if (PrevLocation.Map.GetTileAt(PrevLocation.Position).IsInside != map.GetTileAt(pos).IsInside) return true;
       MapObject mapObjectAt = map.GetMapObjectAt(pos);
       return mapObjectAt != null && mapObjectAt is DoorWindow || map.GetExitAt(pos) != null;
     }
@@ -869,13 +867,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUseStenchKiller(RogueGame game)
+    protected ActorAction BehaviorUseStenchKiller()
     {
       ItemSprayScent itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
       if (itemSprayScent == null) return null;
       if (itemSprayScent.IsUseless) return null;
       if ((itemSprayScent.Model as ItemSprayScentModel).Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
-      if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) return null;
+      if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return null;
       ActionUseItem actionUseItem = new ActionUseItem(m_Actor, itemSprayScent);
       if (actionUseItem.IsLegal()) return actionUseItem;
       return null;
@@ -883,7 +881,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool BehaviorEquipStenchKiller(RogueGame game)
     {
-      if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) return false;
+      if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return false;
       if (GetEquippedStenchKiller() != null) return true;
       ItemSprayScent firstStenchKiller = GetFirstStenchKiller((Predicate<ItemSprayScent>)(it =>
       {

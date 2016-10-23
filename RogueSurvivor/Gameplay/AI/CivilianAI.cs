@@ -561,7 +561,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         }
       }
       if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {
-        tmpAction = BehaviorUseStenchKiller(game);
+        tmpAction = BehaviorUseStenchKiller();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
