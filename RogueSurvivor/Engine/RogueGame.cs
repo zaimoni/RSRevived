@@ -8985,29 +8985,28 @@ namespace djack.RogueSurvivor.Engine
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      else if (player2 || player1)
-      {
-                AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
-                RedrawPlayScreen();
+      else if (player2 || player1) {
+        AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+        RedrawPlayScreen();
         AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
       ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
       if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
-        attacker.OnUnequipItem(this, itemMeleeWeapon);
+        attacker.OnUnequipItem(itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
           --itemMeleeWeapon.Quantity;
         else
           attacker.Inventory.RemoveAllQuantity((Item) itemMeleeWeapon);
         if (player2)
         {
-                    AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", (object) itemMeleeWeapon.TheName)));
-                    RedrawPlayScreen();
+          AddMessage(MakeMessage(attacker, string.Format(": {0} breaks and is now useless!", (object) itemMeleeWeapon.TheName)));
+          RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-            ClearOverlays();
+      ClearOverlays();
     }
 
     public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
@@ -9634,7 +9633,7 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
       it.Equip();
-      actor.OnEquipItem(this, it);
+      actor.OnEquipItem(it);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
@@ -9646,7 +9645,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoUnequipItem(Actor actor, Item it)
     {
       it.Unequip();
-      actor.OnUnequipItem(this, it);
+      actor.OnUnequipItem(it);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
@@ -10185,7 +10184,7 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(DollPart.TORSO);
       if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE))
       {
-        actor.OnUnequipItem(this, equippedItem);
+        actor.OnUnequipItem(equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
         if (ForceVisibleToPlayer(actor))
         {

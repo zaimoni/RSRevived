@@ -1327,7 +1327,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // event handlers
-    public void OnEquipItem(Engine.RogueGame game, Item it)
+    public void OnEquipItem(Item it)
     {
       if (it.Model is ItemMeleeWeaponModel) {
         m_CurrentMeleeAttack = (it.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet);
@@ -1352,7 +1352,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void OnUnequipItem(Engine.RogueGame game, Item it)
+    public void OnUnequipItem(Item it)
     {
       if (it.Model is ItemMeleeWeaponModel) {
         m_CurrentMeleeAttack = Sheet.UnarmedAttack;
