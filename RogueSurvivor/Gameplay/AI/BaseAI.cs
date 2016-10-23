@@ -227,7 +227,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp.Any() ? new List<Percept>(tmp) : null;
     }
 
-    protected Percept FilterFirst(RogueGame game, List<Percept> percepts, Predicate<Percept> predicateFn)
+    protected Percept FilterFirst(List<Percept> percepts, Predicate<Percept> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       foreach (Percept percept in percepts) {

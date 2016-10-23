@@ -669,11 +669,10 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return tmpAction;
         }
       }
-      Percept percept1 = FilterFirst(game, percepts1, (Predicate<Percept>) (p =>
+      Percept percept1 = FilterFirst(percepts1, (Predicate<Percept>) (p =>
       {
         Actor actor = p.Percepted as Actor;
-        if (actor == null || actor == m_Actor)
-          return false;
+        if (actor == null || actor == m_Actor) return false;
         return IsSoldier(actor);
       }));
       if (percept1 != null)
