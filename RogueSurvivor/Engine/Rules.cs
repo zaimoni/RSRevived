@@ -684,24 +684,20 @@ namespace djack.RogueSurvivor.Engine
 
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Map map, int x, int y, out string reason)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (actor == null)
-        throw new ArgumentNullException("actor");
+      if (map == null) throw new ArgumentNullException("map");
+      if (actor == null) throw new ArgumentNullException("actor");
       reason = "";
       if (!map.IsInBounds(x, y))
       {
-        if (!CanActorLeaveMap(actor, out reason))
-          return (ActorAction) null;
-        reason = "";
-        return (ActorAction) new ActionLeaveMap(actor, game, new Point(x, y));
+        if (!CanActorLeaveMap(actor, out reason)) return null;
+        reason = "";    // XXX currently redundant
+        return new ActionLeaveMap(actor, new Point(x, y));
       }
       Point point = new Point(x, y);
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, game, point);
-      if (actionMoveStep.IsLegal())
-      {
+      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
+      if (actionMoveStep.IsLegal()) {
         reason = "";
-        return (ActorAction) actionMoveStep;
+        return actionMoveStep;
       }
       reason = actionMoveStep.FailReason;
       Actor actorAt = map.GetActorAt(point);
@@ -709,15 +705,13 @@ namespace djack.RogueSurvivor.Engine
       {
         if (actor.IsEnemyOf(actorAt))
         {
-          if (CanActorMeleeAttack(actor, actorAt, out reason))
-            return (ActorAction) new ActionMeleeAttack(actor, game, actorAt);
-          return (ActorAction) null;
+          if (CanActorMeleeAttack(actor, actorAt, out reason)) return new ActionMeleeAttack(actor, actorAt);
+          return null;
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
-          return (ActorAction) new ActionSwitchPlace(actor, game, actorAt);
-        if (CanActorChatWith(actor, actorAt, out reason))
-          return (ActorAction) new ActionChat(actor, game, actorAt);
-        return (ActorAction) null;
+          return new ActionSwitchPlace(actor, actorAt);
+        if (CanActorChatWith(actor, actorAt, out reason)) return new ActionChat(actor, actorAt);
+        return null;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null)
@@ -727,24 +721,20 @@ namespace djack.RogueSurvivor.Engine
         {
           if (door.IsClosed)
           {
-            if (IsOpenableFor(actor, door, out reason))
-              return (ActorAction) new ActionOpenDoor(actor, game, door);
-            if (IsBashableFor(actor, door, out reason))
-              return (ActorAction) new ActionBashDoor(actor, game, door);
-            return (ActorAction) null;
+            if (IsOpenableFor(actor, door, out reason)) return new ActionOpenDoor(actor, door);
+            if (IsBashableFor(actor, door, out reason)) return new ActionBashDoor(actor, door);
+            return null;
           }
           if (door.BarricadePoints > 0)
           {
-            if (IsBashableFor(actor, door, out reason))
-              return (ActorAction) new ActionBashDoor(actor, game, door);
+            if (IsBashableFor(actor, door, out reason)) return new ActionBashDoor(actor, door);
             reason = "cannot bash the barricade";
-            return (ActorAction) null;
+            return null;
           }
         }
-        if (CanActorGetItemFromContainer(actor, point, out reason))
-          return (ActorAction) new ActionGetFromContainer(actor, game, point);
+        if (CanActorGetItemFromContainer(actor, point, out reason)) return new ActionGetFromContainer(actor, point);
         if (actor.Model.Abilities.CanBashDoors && IsBreakableFor(actor, mapObjectAt, out reason))
-          return (ActorAction) new ActionBreak(actor, game, mapObjectAt);
+          return new ActionBreak(actor, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
         if (powGen != null)
         {
@@ -752,20 +742,19 @@ namespace djack.RogueSurvivor.Engine
           {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
-              return new ActionRechargeItemBattery(actor, game, tmp);
+              return new ActionRechargeItemBattery(actor, tmp);
             tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
-              return new ActionRechargeItemBattery(actor, game, tmp);
+              return new ActionRechargeItemBattery(actor, tmp);
             tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
-              return new ActionRechargeItemBattery(actor, game, tmp);
+              return new ActionRechargeItemBattery(actor, tmp);
           }
-          if (IsSwitchableFor(actor, powGen, out reason))
-            return (ActorAction) new ActionSwitchPowerGenerator(actor, game, powGen);
-          return (ActorAction) null;
+          if (IsSwitchableFor(actor, powGen, out reason)) return new ActionSwitchPowerGenerator(actor, powGen);
+          return null;
         }
       }
-      return (ActorAction) null;
+      return null;
     }
 
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Location location)
@@ -801,10 +790,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorLeaveMap(Actor actor, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (!actor.IsPlayer)
-      {
+      if (actor == null) throw new ArgumentNullException("actor");
+      if (!actor.IsPlayer) {
         reason = "can't leave maps";
         return false;
       }

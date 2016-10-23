@@ -15,8 +15,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     private string m_Text;
     private RogueGame.Sayflags m_Flags;
 
-    public ActionSay(Actor actor, RogueGame game, Actor target, string text, RogueGame.Sayflags flags)
-      : base(actor, game)
+    public ActionSay(Actor actor, Actor target, string text, RogueGame.Sayflags flags)
+      : base(actor)
     {
       if (target == null) throw new ArgumentNullException("target");
       m_Target = target;
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      m_Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
+      RogueForm.Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
     }
   }
 }

@@ -13,22 +13,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionReviveCorpse(Actor actor, RogueGame game, Corpse target)
-      : base(actor, game)
+    public ActionReviveCorpse(Actor actor, Corpse target)
+      : base(actor)
     {
-      if (target == null)
-        throw new ArgumentNullException("target");
-            m_Target = target;
+      if (target == null) throw new ArgumentNullException("target");
+      m_Target = target;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorReviveCorpse(m_Actor, m_Target, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorReviveCorpse(m_Actor, m_Target, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoReviveCorpse(m_Actor, m_Target);
+      RogueForm.Game.DoReviveCorpse(m_Actor, m_Target);
     }
   }
 }

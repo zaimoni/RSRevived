@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private ItemFood m_Item;
 
-    public ActionEatFoodOnGround(Actor actor, RogueGame game, ItemFood it)
-      : base(actor, game)
+    public ActionEatFoodOnGround(Actor actor, ItemFood it)
+      : base(actor)
     {
       if (it == null) throw new ArgumentNullException("item");
       m_Item = it;
@@ -23,12 +23,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorEatFoodOnGround(m_Actor, m_Item, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorEatFoodOnGround(m_Actor, m_Item, out m_FailReason);
     }
 
     public override void Perform()
     {
-      m_Game.DoEatFoodFromGround(m_Actor, m_Item);
+      RogueForm.Game.DoEatFoodFromGround(m_Actor, m_Item);
     }
   }
 }

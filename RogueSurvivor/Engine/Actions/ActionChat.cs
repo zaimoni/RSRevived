@@ -13,20 +13,17 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Actor m_Target;
 
-    public Actor Target
-    {
-      get
-      {
+    public Actor Target {
+      get {
         return m_Target;
       }
     }
 
-    public ActionChat(Actor actor, RogueGame game, Actor target)
-      : base(actor, game)
+    public ActionChat(Actor actor, Actor target)
+      : base(actor)
     {
-      if (target == null)
-        throw new ArgumentNullException("target");
-            m_Target = target;
+      if (target == null) throw new ArgumentNullException("target");
+       m_Target = target;
     }
 
     public override bool IsLegal()
@@ -36,7 +33,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-            m_Game.DoChat(m_Actor, m_Target);
+      RogueForm.Game.DoChat(m_Actor, m_Target);
     }
   }
 }

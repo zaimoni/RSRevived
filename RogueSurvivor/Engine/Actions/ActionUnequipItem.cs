@@ -13,12 +13,11 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Item m_Item;
 
-    public ActionUnequipItem(Actor actor, RogueGame game, Item it)
-      : base(actor, game)
+    public ActionUnequipItem(Actor actor, Item it)
+      : base(actor)
     {
-      if (it == null)
-        throw new ArgumentNullException("item");
-            m_Item = it;
+      if (it == null) throw new ArgumentNullException("item");
+      m_Item = it;
     }
 
     public override bool IsLegal()
@@ -28,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-            m_Game.DoUnequipItem(m_Actor, m_Item);
+      RogueForm.Game.DoUnequipItem(m_Actor, m_Item);
     }
   }
 }

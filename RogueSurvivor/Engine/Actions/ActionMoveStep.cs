@@ -13,16 +13,16 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Location m_NewLocation;
 
-    public ActionMoveStep(Actor actor, RogueGame game, Direction direction)
-      : base(actor, game)
+    public ActionMoveStep(Actor actor, Direction direction)
+      : base(actor)
     {
-            m_NewLocation = actor.Location + direction;
+      m_NewLocation = actor.Location + direction;
     }
 
-    public ActionMoveStep(Actor actor, RogueGame game, Point to)
-      : base(actor, game)
+    public ActionMoveStep(Actor actor, Point to)
+      : base(actor)
     {
-            m_NewLocation = new Location(actor.Location.Map, to);
+      m_NewLocation = new Location(actor.Location.Map, to);
     }
 
     public override bool IsLegal()
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-            m_Game.DoMoveActor(m_Actor, m_NewLocation);
+      RogueForm.Game.DoMoveActor(m_Actor, m_NewLocation);
     }
   }
 }

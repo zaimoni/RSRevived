@@ -26,12 +26,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
     }
 
-    public ActionBump(Actor actor, RogueGame game, Direction direction)
-      : base(actor, game)
+    public ActionBump(Actor actor, Direction direction)
+      : base(actor)
     {
       m_Direction = direction;
       m_NewLocation = actor.Location + direction;
-      m_ConcreteAction = game.Rules.IsBumpableFor(m_Actor, game, m_NewLocation, out m_FailReason);
+      m_ConcreteAction = RogueForm.Game.Rules.IsBumpableFor(m_Actor, RogueForm.Game, m_NewLocation, out m_FailReason);
     }
 
     public override bool IsLegal()

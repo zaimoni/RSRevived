@@ -13,28 +13,26 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Point m_ExitPoint;
 
-    public Point ExitPoint
-    {
-      get
-      {
+    public Point ExitPoint {
+      get {
         return m_ExitPoint;
       }
     }
 
-    public ActionLeaveMap(Actor actor, RogueGame game, Point exitPoint)
-      : base(actor, game)
+    public ActionLeaveMap(Actor actor, Point exitPoint)
+      : base(actor)
     {
-            m_ExitPoint = exitPoint;
+      m_ExitPoint = exitPoint;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorLeaveMap(m_Actor, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorLeaveMap(m_Actor, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoLeaveMap(m_Actor, m_ExitPoint, true);
+      RogueForm.Game.DoLeaveMap(m_Actor, m_ExitPoint, true);
     }
   }
 }

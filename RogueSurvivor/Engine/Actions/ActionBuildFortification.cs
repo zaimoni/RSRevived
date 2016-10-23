@@ -14,21 +14,21 @@ namespace djack.RogueSurvivor.Engine.Actions
     private Point m_BuildPos;
     private bool m_IsLarge;
 
-    public ActionBuildFortification(Actor actor, RogueGame game, Point buildPos, bool isLarge)
-      : base(actor, game)
+    public ActionBuildFortification(Actor actor, Point buildPos, bool isLarge)
+      : base(actor)
     {
-            m_BuildPos = buildPos;
-            m_IsLarge = isLarge;
+      m_BuildPos = buildPos;
+      m_IsLarge = isLarge;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
+      return RogueForm.Game.Rules.CanActorBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
     }
 
     public override void Perform()
     {
-            m_Game.DoBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
+      RogueForm.Game.DoBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
     }
   }
 }

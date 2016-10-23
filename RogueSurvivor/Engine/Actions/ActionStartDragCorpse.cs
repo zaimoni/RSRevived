@@ -13,22 +13,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionStartDragCorpse(Actor actor, RogueGame game, Corpse target)
-      : base(actor, game)
+    public ActionStartDragCorpse(Actor actor, Corpse target)
+      : base(actor)
     {
-      if (target == null)
-        throw new ArgumentNullException("target");
-            m_Target = target;
+      if (target == null) throw new ArgumentNullException("target");
+      m_Target = target;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorStartDragCorpse(m_Actor, m_Target, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorStartDragCorpse(m_Actor, m_Target, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoStartDragCorpse(m_Actor, m_Target);
+      RogueForm.Game.DoStartDragCorpse(m_Actor, m_Target);
     }
   }
 }

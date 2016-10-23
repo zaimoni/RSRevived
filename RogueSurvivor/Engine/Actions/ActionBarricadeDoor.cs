@@ -14,22 +14,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private DoorWindow m_Door;
 
-    public ActionBarricadeDoor(Actor actor, RogueGame game, DoorWindow door)
-      : base(actor, game)
+    public ActionBarricadeDoor(Actor actor, DoorWindow door)
+      : base(actor)
     {
-      if (door == null)
-        throw new ArgumentNullException("door");
-            m_Door = door;
+      if (door == null) throw new ArgumentNullException("door");
+      m_Door = door;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorBarricadeDoor(m_Actor, m_Door, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorBarricadeDoor(m_Actor, m_Door, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoBarricadeDoor(m_Actor, m_Door);
+      RogueForm.Game.DoBarricadeDoor(m_Actor, m_Door);
     }
   }
 }

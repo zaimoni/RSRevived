@@ -15,23 +15,23 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Point m_ThrowPos;
 
-    public ActionThrowGrenade(Actor actor, RogueGame game, Point throwPos)
-      : base(actor, game)
+    public ActionThrowGrenade(Actor actor, Point throwPos)
+      : base(actor)
     {
-            m_ThrowPos = throwPos;
+      m_ThrowPos = throwPos;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorThrowTo(m_Actor, m_ThrowPos, (List<Point>) null, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorThrowTo(m_Actor, m_ThrowPos, (List<Point>) null, out m_FailReason);
     }
 
     public override void Perform()
     {
       if (m_Actor.GetEquippedWeapon() is ItemPrimedExplosive)
-                m_Game.DoThrowGrenadePrimed(m_Actor, m_ThrowPos);
+        RogueForm.Game.DoThrowGrenadePrimed(m_Actor, m_ThrowPos);
       else
-                m_Game.DoThrowGrenadeUnprimed(m_Actor, m_ThrowPos);
+        RogueForm.Game.DoThrowGrenadeUnprimed(m_Actor, m_ThrowPos);
     }
   }
 }

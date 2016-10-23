@@ -13,20 +13,20 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Point m_ExitPoint;
 
-    public ActionUseExit(Actor actor, Point exitPoint, RogueGame game)
-      : base(actor, game)
+    public ActionUseExit(Actor actor, Point exitPoint)
+      : base(actor)
     {
-            m_ExitPoint = exitPoint;
+      m_ExitPoint = exitPoint;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorUseExit(m_Actor, m_ExitPoint, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorUseExit(m_Actor, m_ExitPoint, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoUseExit(m_Actor, m_ExitPoint);
+      RogueForm.Game.DoUseExit(m_Actor, m_ExitPoint);
     }
   }
 }

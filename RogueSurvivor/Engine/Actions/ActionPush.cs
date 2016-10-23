@@ -16,42 +16,37 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Direction m_Direction;
     private readonly Point m_To;
 
-    public Direction Direction
-    {
-      get
-      {
+    public Direction Direction {
+      get {
         return m_Direction;
       }
     }
 
-    public Point To
-    {
-      get
-      {
+    public Point To {
+      get {
         return m_To;
       }
     }
 
-    public ActionPush(Actor actor, RogueGame game, MapObject pushObj, Direction pushDir)
-      : base(actor, game)
+    public ActionPush(Actor actor, MapObject pushObj, Direction pushDir)
+      : base(actor)
     {
-      if (pushObj == null)
-        throw new ArgumentNullException("pushObj");
-            m_Object = pushObj;
-            m_Direction = pushDir;
-            m_To = pushObj.Location.Position + pushDir;
+      if (pushObj == null) throw new ArgumentNullException("pushObj");
+      m_Object = pushObj;
+      m_Direction = pushDir;
+      m_To = pushObj.Location.Position + pushDir;
     }
 
     public override bool IsLegal()
     {
-      if (m_Game.Rules.CanActorPush(m_Actor, m_Object))
-        return m_Game.Rules.CanPushObjectTo(m_Object, m_To, out m_FailReason);
+      if (RogueForm.Game.Rules.CanActorPush(m_Actor, m_Object))
+        return RogueForm.Game.Rules.CanPushObjectTo(m_Object, m_To, out m_FailReason);
       return false;
     }
 
     public override void Perform()
     {
-            m_Game.DoPush(m_Actor, m_Object, m_To);
+      RogueForm.Game.DoPush(m_Actor, m_Object, m_To);
     }
   }
 }

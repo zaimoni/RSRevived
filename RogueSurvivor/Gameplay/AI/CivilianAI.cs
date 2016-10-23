@@ -255,7 +255,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX we also want to be close enough to fire at all
       if (null != retreat && null!=available_ranged_weapons) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        tmpAction = new ActionMoveStep(m_Actor, tmp);
         if (tmpAction.IsLegal()) {
           RunIfAdvisable(tmp);
           m_Actor.Activity = Activity.FLEEING;
@@ -265,7 +265,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // need stamina to melee: slow retreat ok
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        tmpAction = new ActionMoveStep(m_Actor, tmp);
         if (tmpAction.IsLegal()) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -274,7 +274,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // have slow enemies nearby
       if (null != retreat && null!=slow_threat) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        tmpAction = new ActionMoveStep(m_Actor, tmp);
         if (tmpAction.IsLegal()) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -519,7 +519,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
-              tmpAction = new ActionTrade(m_Actor, game, actor);
+              tmpAction = new ActionTrade(m_Actor, actor);
               if (tmpAction.IsLegal()) {
                 MarkActorAsRecentTrade(actor);
                 game.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);

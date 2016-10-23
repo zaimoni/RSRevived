@@ -10,8 +10,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionWait : ActorAction
   {
-    public ActionWait(Actor actor, RogueGame game)
-      : base(actor, game)
+    public ActionWait(Actor actor)
+      : base(actor)
     {
     }
 
@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-            m_Game.DoWait(m_Actor);
+      RogueForm.Game.DoWait(m_Actor);
     }
   }
 }

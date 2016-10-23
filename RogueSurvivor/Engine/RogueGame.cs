@@ -8795,7 +8795,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
-      ActionBump actionBump = new ActionBump(player, this, direction);
+      ActionBump actionBump = new ActionBump(player, direction);
       if (actionBump == null) return false;
       if (actionBump.IsLegal()) {
         actionBump.Perform();
@@ -13929,26 +13929,22 @@ namespace djack.RogueSurvivor.Engine
       switch (m_Rules.Roll(0, 5))
       {
         case 0:
-          return (ActorAction) new ActionShout(actor, this, "AAAAAAAAAAA!!!");
+          return new ActionShout(actor, "AAAAAAAAAAA!!!");
         case 1:
-          return (ActorAction) new ActionBump(actor, this, m_Rules.RollDirection());
+          return new ActionBump(actor, m_Rules.RollDirection());
         case 2:
           Direction direction = m_Rules.RollDirection();
           MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
-          if (mapObjectAt == null)
-            return (ActorAction) null;
-          return (ActorAction) new ActionBreak(actor, this, mapObjectAt);
+          if (mapObjectAt == null) return null;
+          return new ActionBreak(actor, mapObjectAt);
         case 3:
           Inventory inventory = actor.Inventory;
-          if (inventory == null || inventory.CountItems == 0)
-            return (ActorAction) null;
+          if (inventory == null || inventory.CountItems == 0) return null;
           Item it = inventory[m_Rules.Roll(0, inventory.CountItems)];
-          ActionUseItem actionUseItem = new ActionUseItem(actor, this, it);
-          if (actionUseItem.IsLegal())
-            return (ActorAction) actionUseItem;
-          if (it.IsEquipped)
-            return (ActorAction) new ActionUnequipItem(actor, this, it);
-          return (ActorAction) new ActionDropItem(actor, this, it);
+          ActionUseItem actionUseItem = new ActionUseItem(actor, it);
+          if (actionUseItem.IsLegal()) return actionUseItem;
+          if (it.IsEquipped) return new ActionUnequipItem(actor, it);
+          return new ActionDropItem(actor, it);
         case 4:
           int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
           foreach (Actor actor1 in actor.Location.Map.Actors)
@@ -13960,13 +13956,13 @@ namespace djack.RogueSurvivor.Engine
                 actor.Leader.RemoveFollower(actor);
                 actor.TrustInLeader = 0;
               }
-                            DoMakeAggression(actor, actor1);
-              return (ActorAction) new ActionSay(actor, this, actor1, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);
+              DoMakeAggression(actor, actor1);
+              return new ActionSay(actor, actor1, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);
             }
           }
-          return (ActorAction) null;
+          return null;
         default:
-          return (ActorAction) null;
+          return null;
       }
     }
 

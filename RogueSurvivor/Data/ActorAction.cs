@@ -11,30 +11,19 @@ namespace djack.RogueSurvivor.Data
 {
   internal abstract class ActorAction
   {
-    protected readonly RogueGame m_Game;
     protected readonly Actor m_Actor;
     protected string m_FailReason;
 
-    public string FailReason
-    {
-      get
-      {
+    public string FailReason {
+      get {
         return m_FailReason;
-      }
-      set
-      {
-                m_FailReason = value;
       }
     }
 
-    protected ActorAction(Actor actor, RogueGame game)
+    protected ActorAction(Actor actor)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (game == null)
-        throw new ArgumentNullException("game");
-            m_Actor = actor;
-            m_Game = game;
+      if (actor == null) throw new ArgumentNullException("actor");
+      m_Actor = actor;
     }
 
     public abstract bool IsLegal();

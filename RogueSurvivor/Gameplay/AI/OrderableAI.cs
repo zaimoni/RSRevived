@@ -148,7 +148,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorBarricadeDoor(m_Actor, door)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
-        tmpAction= new ActionBarricadeDoor(m_Actor, game, door);
+        tmpAction= new ActionBarricadeDoor(m_Actor, door);
         if (!tmpAction.IsLegal()) return null;
         if (!toTheMax) SetOrder(null);
         return tmpAction;
@@ -165,7 +165,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorBuildFortification(m_Actor, location.Position, isLarge)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
-        tmpAction = new ActionBuildFortification(m_Actor, game, location.Position, isLarge);
+        tmpAction = new ActionBuildFortification(m_Actor, location.Position, isLarge);
         if (!tmpAction.IsLegal()) return null;
         SetOrder(null);
         return tmpAction;
@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
 
       if (m_Actor.Location.Position != location.Position)
@@ -199,18 +199,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction3 = BehaviorEat(game);
         if (actorAction3 != null)
         {
-                    m_Actor.Activity = Activity.IDLE;
+          m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
       }
       ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
       if (actorAction4 != null)
       {
-                m_Actor.Activity = Activity.IDLE;
+        m_Actor.Activity = Activity.IDLE;
         return actorAction4;
       }
-            m_Actor.Activity = Activity.IDLE;
-      return (ActorAction) new ActionWait(m_Actor, game);
+      m_Actor.Activity = Activity.IDLE;
+      return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecutePatrol(RogueGame game, Location location, List<Percept> percepts)
@@ -219,7 +219,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       if (!m_ReachedPatrolPoint)
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
@@ -271,7 +271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Inventory.IsEmpty) return null;
       Item it = m_Actor.Inventory[0];
       if (it.IsEquipped) game.DoUnequipItem(m_Actor, it);
-      return new ActionDropItem(m_Actor, game, it);
+      return new ActionDropItem(m_Actor, it);
     }
 
     private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)
@@ -280,35 +280,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       ActorAction actorAction = null;
       bool flag = false;
       switch (m_ReportStage)
       {
         case 0:
-          actorAction = m_LastRaidHeard == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No raids heard.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
+          actorAction = m_LastRaidHeard == null ? (ActorAction) new ActionSay(m_Actor, m_Actor.Leader, "No raids heard.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
           ++m_ReportStage;
           break;
         case 1:
-          actorAction = m_LastEnemySaw == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No enemies sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
+          actorAction = m_LastEnemySaw == null ? (ActorAction) new ActionSay(m_Actor, m_Actor.Leader, "No enemies sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
           ++m_ReportStage;
           break;
         case 2:
-          actorAction = m_LastItemsSaw == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No items sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
+          actorAction = m_LastItemsSaw == null ? (ActorAction) new ActionSay(m_Actor, m_Actor.Leader, "No items sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
           ++m_ReportStage;
           break;
         case 3:
-          actorAction = m_LastSoldierSaw == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No soldiers sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
+          actorAction = m_LastSoldierSaw == null ? (ActorAction) new ActionSay(m_Actor, m_Actor.Leader, "No soldiers sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
           ++m_ReportStage;
           break;
         case 4:
           flag = true;
-          actorAction = (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
+          actorAction = new ActionSay(m_Actor, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
           break;
       }
       if (flag) SetOrder(null);
-      return actorAction ?? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "Let me think...", RogueGame.Sayflags.NONE);
+      return actorAction ?? new ActionSay(m_Actor, m_Actor.Leader, "Let me think...", RogueGame.Sayflags.NONE);
     }
 
     private ActorAction ExecuteSleepNow(RogueGame game, List<Percept> percepts)
@@ -317,17 +317,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       string reason;
       if (game.Rules.CanActorSleep(m_Actor, out reason)) {
         if (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0)
-          return new ActionSleep(m_Actor, game);
-        return new ActionWait(m_Actor, game);
+          return new ActionSleep(m_Actor);
+        return new ActionWait(m_Actor);
       }
       SetOrder(null);
       game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", (object) reason));
-      return new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecuteToggleFollow(RogueGame game)
@@ -335,14 +335,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SetOrder(null);
       DontFollowLeader = !DontFollowLeader;
       game.DoEmote(m_Actor, DontFollowLeader ? "OK I'll do my stuff, see you soon!" : "I'm ready!");
-      return (ActorAction) new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecuteReportPosition(RogueGame game)
     {
       SetOrder(null);
       string text = string.Format("I'm in {0} at {1},{2}.", (object)m_Actor.Location.Map.Name, (object)m_Actor.Location.Position.X, (object)m_Actor.Location.Position.Y);
-      return (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
+      return new ActionSay(m_Actor, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
     }
 
     public void OnRaid(RaidType raid, Location location, int turn)
@@ -449,7 +449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemFood bestEdibleItem = GetBestEdibleItem();
       if (null == bestEdibleItem) return null;
       if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
-      return new ActionUseItem(m_Actor, game, bestEdibleItem);
+      return new ActionUseItem(m_Actor, bestEdibleItem);
     }
 
     protected ActorAction BehaviorEatProactively(RogueGame game)
@@ -457,7 +457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Item bestEdibleItem = GetBestPerishableItem(game);
       if (null == bestEdibleItem) return null;
       if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
-      return new ActionUseItem(m_Actor, game, bestEdibleItem);
+      return new ActionUseItem(m_Actor, bestEdibleItem);
     }
 
     protected void BehaviorUnequipLeftItem(RogueGame game)
@@ -571,7 +571,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null == nullable || !nullable.HasValue) return null;  // 2nd test probably redundant
       if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);
-      ActorAction actorAction = new ActionThrowGrenade(m_Actor, game, nullable.Value);
+      ActorAction actorAction = new ActionThrowGrenade(m_Actor, nullable.Value);
       if (!actorAction.IsLegal()) throw new ArgumentOutOfRangeException("created illegal ActionThrowGrenade");  // invariant failure
       return actorAction;
     }
@@ -620,7 +620,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           throw new InvalidOperationException("unhandled percept.Percepted type");
         text = string.Format("I heard {0} {1} {2}!", (object) (percept.Percepted as string), (object) str1, (object) str2);
       }
-      ActionSay actionSay = new ActionSay(m_Actor, game, actorAt1, text, RogueGame.Sayflags.NONE);
+      ActionSay actionSay = new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
       if (actionSay.IsLegal()) return actionSay;
       return null;
     }
@@ -651,12 +651,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (door != null) {
             if (door.IsOpen && game.Rules.IsClosableFor(m_Actor, door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return new ActionCloseDoor(m_Actor, game, door);
+                return new ActionCloseDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(game, door.Location.Position);
             }
             if (door.IsWindow && !door.IsBarricaded && game.Rules.CanActorBarricadeDoor(m_Actor, door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return new ActionBarricadeDoor(m_Actor, game, door);
+                return new ActionBarricadeDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(game, door.Location.Position);
             }
           }
@@ -668,13 +668,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorWarnFriends(RogueGame game, List<Percept> friends, Actor nearestEnemy)
     {
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
-      if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor, game);
+      if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor);
       foreach (Percept friend in friends) {
         Actor actor = friend.Percepted as Actor;
         if (actor == null) throw new ArgumentException("percept not an actor");
         if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
           string text = nearestEnemy == null ? string.Format("Wake up {0}!", (object) actor.Name) : string.Format("Wake up {0}! {1} sighted!", (object) actor.Name, (object) nearestEnemy.Name);
-          return new ActionShout(m_Actor, game, text);
+          return new ActionShout(m_Actor, text);
         }
       }
       return null;
@@ -707,7 +707,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor target1 = target.Percepted as Actor;
       if (!game.Rules.CanActorTakeLead(m_Actor, target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
-        return new ActionTakeLead(m_Actor, game, target1);
+        return new ActionTakeLead(m_Actor, target1);
       return BehaviorIntelligentBumpToward(game, target1.Location.Position);
     }
 
@@ -735,7 +735,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, true)) return null;
-      return new ActionBuildFortification(m_Actor, game, point1, true);
+      return new ActionBuildFortification(m_Actor, point1, true);
     }
 
     protected bool IsDoorwayOrCorridor(RogueGame game, Map map, Point pos)
@@ -778,7 +778,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, false)) return null;
-      return new ActionBuildFortification(m_Actor, game, point1, false);
+      return new ActionBuildFortification(m_Actor, point1, false);
     }
 
     protected ActorAction BehaviorSleep(RogueGame game)
@@ -795,7 +795,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }));
         if (actorAction != null) return actorAction;
       }
-      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor, game);
+      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor);
       Point? nullable = new Point?();
       float num1 = float.MaxValue;
       foreach (Point point in m_Actor.Controller.FOV) {
@@ -817,13 +817,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (game.Rules.IsItemBatteryPowered(it)) game.DoUnequipItem(m_Actor, it);
-      return new ActionSleep(m_Actor, game);
+      return new ActionSleep(m_Actor);
     }
 
     protected ActorAction BehaviorRestIfTired(RogueGame game)
     {
       if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
-      return new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     protected ActorAction BehaviorDropUselessItem(RogueGame game)
@@ -876,7 +876,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (itemSprayScent.IsUseless) return null;
       if ((itemSprayScent.Model as ItemSprayScentModel).Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
       if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) return null;
-      ActionUseItem actionUseItem = new ActionUseItem(m_Actor, game, itemSprayScent);
+      ActionUseItem actionUseItem = new ActionUseItem(m_Actor, itemSprayScent);
       if (actionUseItem.IsLegal()) return actionUseItem;
       return null;
     }
@@ -921,7 +921,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
       if (position == m_Actor.Location.Position) {
-        tmp = new ActionTakeItem(m_Actor, game, position, obj);
+        tmp = new ActionTakeItem(m_Actor, position, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
@@ -938,7 +938,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActionGetFromContainer tmp2 = (tmp as ActionGetFromContainer);
       if (null != tmp2 && tmp2.Item != obj) {
         // translate the desired action
-        tmp = new ActionTakeItem(m_Actor, game, position, obj);
+        tmp = new ActionTakeItem(m_Actor, position, obj);
       }
       return tmp;
     }

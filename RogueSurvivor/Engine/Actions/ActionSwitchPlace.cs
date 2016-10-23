@@ -13,22 +13,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Actor m_Target;
 
-    public ActionSwitchPlace(Actor actor, RogueGame game, Actor target)
-      : base(actor, game)
+    public ActionSwitchPlace(Actor actor, Actor target)
+      : base(actor)
     {
-      if (target == null)
-        throw new ArgumentNullException("target");
-            m_Target = target;
+      if (target == null) throw new ArgumentNullException("target");
+      m_Target = target;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorSwitchPlaceWith(m_Actor, m_Target);
+      return RogueForm.Game.Rules.CanActorSwitchPlaceWith(m_Actor, m_Target);
     }
 
     public override void Perform()
     {
-            m_Game.DoSwitchPlace(m_Actor, m_Target);
+      RogueForm.Game.DoSwitchPlace(m_Actor, m_Target);
     }
   }
 }
