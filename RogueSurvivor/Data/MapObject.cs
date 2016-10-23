@@ -327,6 +327,14 @@ namespace djack.RogueSurvivor.Data
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
+    public string ReasonNoPush()
+    {
+      if (!IsMovable) return  "cannot be moved";
+      if (Location.Map.GetActorAt(Location.Position) != null) return "someone is there";
+      if (IsOnFire) return "on fire";
+      return "";
+    }
+
     // flag handling
     private bool GetFlag(MapObject.Flags f)
     {

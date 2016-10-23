@@ -5582,34 +5582,28 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = player.Location.Map.GetActorAt(point);
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             string reason;
-            if (actorAt != null)
-            {
-              if (m_Rules.CanActorShove(player, actorAt, out reason))
-              {
-                if (HandlePlayerShoveActor(player, actorAt))
-                {
+            if (actorAt != null) {
+              if (m_Rules.CanActorShove(player, actorAt, out reason)) {
+                if (HandlePlayerShoveActor(player, actorAt)) {
                   flag1 = false;
                   flag2 = true;
                 }
               }
               else
-                                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
-            }
-            else if (mapObjectAt != null)
-            {
-              if (m_Rules.CanActorPush(player, mapObjectAt, out reason))
-              {
-                if (HandlePlayerPushObject(player, mapObjectAt))
-                {
+                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
+            } else if (mapObjectAt != null) {
+              reason = player.ReasonNoPush(mapObjectAt);
+              if (""==reason) {
+                if (HandlePlayerPushObject(player, mapObjectAt)) {
                   flag1 = false;
                   flag2 = true;
                 }
               }
               else
-                                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
             }
             else
-                            AddMessage(MakeErrorMessage("Nothing to push there."));
+              AddMessage(MakeErrorMessage("Nothing to push there."));
           }
         }
       }
@@ -6768,9 +6762,8 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-            if (mapObjectAt == null)
-              return false;
-            return m_Rules.CanActorPush(m_Player, mapObjectAt);
+            if (mapObjectAt == null) return false;
+            return ""==m_Player.ReasonNoPush(mapObjectAt);
           }));
         case AdvisorHint.OBJECT_BREAK:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>

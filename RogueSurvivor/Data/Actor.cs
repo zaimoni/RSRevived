@@ -837,6 +837,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public string ReasonNoPush(MapObject mapObj)
+    {
+      if (mapObj == null) throw new ArgumentNullException("mapObj");
+      if (!CanPush) return "cannot push objects";
+      if (IsTired) return "tired";
+      return mapObj.ReasonNoPush();
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {
