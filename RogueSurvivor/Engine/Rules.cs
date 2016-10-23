@@ -682,7 +682,7 @@ namespace djack.RogueSurvivor.Engine
       return IsWalkableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public ActorAction IsBumpableFor(Actor actor, RogueGame game, Map map, int x, int y, out string reason)
+    public ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
     {
       if (map == null) throw new ArgumentNullException("map");
       if (actor == null) throw new ArgumentNullException("actor");
@@ -757,15 +757,15 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    public ActorAction IsBumpableFor(Actor actor, RogueGame game, Location location)
+    public ActorAction IsBumpableFor(Actor actor, Location location)
     {
       string reason;
-      return IsBumpableFor(actor, game, location, out reason);
+      return IsBumpableFor(actor, location, out reason);
     }
 
-    public ActorAction IsBumpableFor(Actor actor, RogueGame game, Location location, out string reason)
+    public ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
     {
-      return IsBumpableFor(actor, game, location.Map, location.Position.X, location.Position.Y, out reason);
+      return IsBumpableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
     public bool IsSwitchableFor(Actor actor, PowerGenerator powGen, out string reason)
