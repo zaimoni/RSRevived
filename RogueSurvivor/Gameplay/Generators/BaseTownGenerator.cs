@@ -904,7 +904,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 shopBasement.DropItemAt(it, pt);
             }
           }
-          if (!m_Game.Session.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
+          if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           shopBasement.PlaceActorAt(CreateNewBasementRatZombie(0), pt);
         }));
         Point point1 = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
@@ -2292,7 +2292,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             throw new ArgumentOutOfRangeException("unhandled roll");
         }
       }));
-      if (m_Game.Session.HasZombiesInBasements)
+      if (Session.Get.HasZombiesInBasements)
         DoForEachTile(basement.Rect, (Action<Point>) (pt =>
         {
           if (!basement.IsWalkable(pt.X, pt.Y) || basement.GetExitAt(pt) != null || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
@@ -2591,12 +2591,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), "Tiles\\Decoration\\stairs_up", true);
       m_Params.District.AddUniqueMap(stationOfficesLevel);
       m_Params.District.AddUniqueMap(stationJailsLevel);
-      m_Game.Session.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap() {
         TheMap = stationOfficesLevel
       };
-      m_Game.Session.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap() {
         TheMap = stationJailsLevel
       };
     }
@@ -2771,8 +2769,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int index = 0; index < newCivilian1.Inventory.MaxCapacity; ++index)
         newCivilian1.Inventory.AddAll(MakeItemArmyRation());
       map.PlaceActorAt(newCivilian1, new Point(rectangle1.Left + 1, rectangle1.Top + 1));
-            m_Game.Session.UniqueActors.PoliceStationPrisonner = new UniqueActor()
-      {
+      Session.Get.UniqueActors.PoliceStationPrisonner = new UniqueActor() {
         TheActor = newCivilian1,
         IsSpawned = true
       };
@@ -2817,24 +2814,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             m_Params.District.AddUniqueMap(hospitalPatients);
             m_Params.District.AddUniqueMap(hospitalStorage);
             m_Params.District.AddUniqueMap(hospitalPower);
-            m_Game.Session.UniqueMaps.Hospital_Admissions = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.Hospital_Admissions = new UniqueMap() {
         TheMap = hospitalAdmissions
       };
-            m_Game.Session.UniqueMaps.Hospital_Offices = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.Hospital_Offices = new UniqueMap() {
         TheMap = hospitalOffices
       };
-            m_Game.Session.UniqueMaps.Hospital_Patients = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.Hospital_Patients = new UniqueMap() {
         TheMap = hospitalPatients
       };
-            m_Game.Session.UniqueMaps.Hospital_Storage = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.Hospital_Storage = new UniqueMap() {
         TheMap = hospitalStorage
       };
-            m_Game.Session.UniqueMaps.Hospital_Power = new UniqueMap()
-      {
+      Session.Get.UniqueMaps.Hospital_Power = new UniqueMap() {
         TheMap = hospitalPower
       };
     }
@@ -3073,7 +3065,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           IsUnique = true
       });
       map.PlaceActorAt(named, new Point(map.Width / 2, map.Height / 2));
-      m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
+      Session.Get.UniqueActors.JasonMyers = new UniqueActor()
       {
         TheActor = named,
         IsSpawned = true
@@ -3366,7 +3358,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewUndead(int spawnTime)
     {
       Actor actor;
-      if (m_Game.Session.HasAllZombies)
+      if (Session.Get.HasAllZombies)
       {
         int num = m_Rules.Roll(0, 100);
         actor = (num < RogueGame.Options.SpawnSkeletonChance ? m_Game.GameActors.Skeleton : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? m_Game.GameActors.Zombie : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? m_Game.GameActors.ZombieMaster : m_Game.GameActors.Skeleton))).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
@@ -3407,13 +3399,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewSewersUndead(int spawnTime)
     {
-      if (!m_Game.Session.HasAllZombies) return CreateNewUndead(spawnTime);
+      if (!Session.Get.HasAllZombies) return CreateNewUndead(spawnTime);
       return (m_DiceRoller.RollChance(80) ? m_Game.GameActors.RatZombie : m_Game.GameActors.Zombie).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewBasementRatZombie(int spawnTime)
     {
-      if (!m_Game.Session.HasAllZombies) return CreateNewUndead(spawnTime);
+      if (!Session.Get.HasAllZombies) return CreateNewUndead(spawnTime);
       return m_Game.GameActors.RatZombie.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
     }
 

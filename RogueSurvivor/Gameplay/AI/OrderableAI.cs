@@ -611,7 +611,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (inventory.IsEmpty) return null;
         Item it = inventory[game.Rules.Roll(0, inventory.CountItems)];
         if (!IsItemWorthTellingAbout(it)) return null;
-        int num = actorAt1.FOVrange(map.LocalTime, game.Session.World.Weather);
+        int num = actorAt1.FOVrange(map.LocalTime, Session.Get.World.Weather);
         if (percept.Location.Map == actorAt1.Location.Map && (double) Rules.StdDistance(percept.Location.Position, actorAt1.Location.Position) <= (double) (2 + num))
           return null;
         text = string.Format("I saw {0} {1} {2}.", (object) it.AName, (object) str1, (object) str2);
@@ -980,10 +980,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case Lighting.DARKNESS:
           return true;
         case Lighting.OUTSIDE:
-          if (!m_Actor.Location.Map.LocalTime.IsNight)
-            return false;
-          if (game.Session.World.Weather != Weather.HEAVY_RAIN)
-            return !m_Actor.IsInside;
+          if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
+          if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
           return true;
         case Lighting.LIT:
           return false;
@@ -991,6 +989,5 @@ namespace djack.RogueSurvivor.Gameplay.AI
           throw new ArgumentOutOfRangeException("unhandled lighting");
       }
     }
-
   }
 }
