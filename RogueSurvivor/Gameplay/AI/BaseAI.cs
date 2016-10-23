@@ -278,7 +278,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
-    protected List<Percept> SortByDate(RogueGame game, List<Percept> percepts)
+    protected List<Percept> SortByDate(List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = new List<Percept>((IEnumerable<Percept>) percepts);
