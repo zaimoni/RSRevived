@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null != current_enemies) {
         if (game.Rules.RollChance(50)) {
-          List<Percept> friends = FilterNonEnemies(game, percepts1);
+          List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
             tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
             if (null != tmpAction) {
@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
-        Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
+        Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
           tmpAction = BehaviorLeadActor(game, target);
           if (null != tmpAction) {

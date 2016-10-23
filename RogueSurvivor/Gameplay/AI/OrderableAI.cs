@@ -178,7 +178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteGuard(RogueGame game, Location location, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(game, percepts);
+      List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
@@ -215,7 +215,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecutePatrol(RogueGame game, Location location, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(game, percepts);
+      List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(game, percepts);
+      List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
@@ -313,7 +313,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private ActorAction ExecuteSleepNow(RogueGame game, List<Percept> percepts)
     {
-      List<Percept> enemies = FilterEnemies(game, percepts);
+      List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;

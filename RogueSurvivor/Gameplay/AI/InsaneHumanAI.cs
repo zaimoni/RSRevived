@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
-        List<Percept> enemies = FilterEnemies(game, percepts1);
+        List<Percept> enemies = FilterEnemies(percepts1);
         if (enemies != null)
         {
           List<Percept> current_enemies = FilterCurrent(enemies);

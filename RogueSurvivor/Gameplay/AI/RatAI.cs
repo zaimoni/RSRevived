@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = FilterEnemies(percepts1);
       ActorAction tmpAction;
       Actor tmpActor;
       if (enemies != null) {

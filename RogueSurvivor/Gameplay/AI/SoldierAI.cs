@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
 
       // throwing a grenade overrides normal weapon equipping choices
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // all free actions have to be before targeting enemies
       if (null != current_enemies) {
         if (game.Rules.RollChance(50)) {
-          List<Percept> friends = FilterNonEnemies(game, percepts1);
+          List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
             tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
             if (null != tmpAction) {

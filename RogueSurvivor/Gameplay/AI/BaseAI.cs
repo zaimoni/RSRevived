@@ -95,12 +95,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(percepts,(Predicate<Percept>) (p => p.Location.Map == map));
     }
 
-    protected List<Percept> FilterEnemies(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
       return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
     }
 
-    protected List<Percept> FilterNonEnemies(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterNonEnemies(List<Percept> percepts)
     {
       return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
     }

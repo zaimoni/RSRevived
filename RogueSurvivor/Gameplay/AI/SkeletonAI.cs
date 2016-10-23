@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       List<Percept> percepts1 = FilterSameMap(percepts);
-      Percept percept = FilterNearest(FilterEnemies(game, percepts1));
+      Percept percept = FilterNearest(FilterEnemies(percepts1));
       if (percept != null)
       {
         ActorAction actorAction = BehaviorStupidBumpToward(game, percept.Location.Position);

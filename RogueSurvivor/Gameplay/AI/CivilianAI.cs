@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ExpireTaboos();
 
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(game, percepts1));
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
       // civilians track how long since they've seen trouble
       if (null != enemies) m_SafeTurns = 0;
       else ++m_SafeTurns;
@@ -364,7 +364,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies)
       {
         if (game.Rules.RollChance(50)) {
-          List<Percept> friends = FilterNonEnemies(game, percepts1);
+          List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
             ActorAction actorAction2 = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
             if (actorAction2 != null) {
@@ -500,7 +500,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory))
         {
           List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
-          List<Percept> percepts2 = FilterOut(FilterNonEnemies(game, percepts1), (Predicate<Percept>) (p =>
+          List<Percept> percepts2 = FilterOut(FilterNonEnemies(percepts1), (Predicate<Percept>) (p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
               return true;
@@ -597,7 +597,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)))
       {
-        Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
+        Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
           tmpAction = BehaviorLeadActor(game, target);
           if (null != tmpAction) {

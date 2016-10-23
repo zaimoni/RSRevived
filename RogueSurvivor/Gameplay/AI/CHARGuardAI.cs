@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // All free actions go above the check for enemies.
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       if (current_enemies != null) {
         List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
-      List<Percept> perceptList2 = FilterNonEnemies(game, percepts1);
+      List<Percept> perceptList2 = FilterNonEnemies(percepts1);
       if (perceptList2 != null) {
         List<Percept> percepts3 = Filter(perceptList2, (Predicate<Percept>) (p =>
         {
