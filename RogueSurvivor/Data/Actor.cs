@@ -818,6 +818,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public string ReasonNoExit(Point exitPoint)
+    {
+      if (Location.Map.GetExitAt(exitPoint) == null) return "no exit there";
+      if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
+      if (IsSleeping) return "is sleeping";
+      return "";
+    }
+
     public List<Point> OneStepRange(Map m,Point p) {
       IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>Engine.Rules.IsWalkableFor(this,m,pt));
       return tmp.Any() ? new List<Point>(tmp) : null;

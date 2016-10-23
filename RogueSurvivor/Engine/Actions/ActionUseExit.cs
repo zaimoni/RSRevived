@@ -21,7 +21,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorUseExit(m_Actor, m_ExitPoint, out m_FailReason);
+      m_FailReason = m_Actor.ReasonNoExit(m_ExitPoint);
+      return ""==m_FailReason;
     }
 
     public override void Perform()

@@ -799,35 +799,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorUseExit(Actor actor, Point exitPoint)
-    {
-      string reason;
-      return CanActorUseExit(actor, exitPoint, out reason);
-    }
-
-    public bool CanActorUseExit(Actor actor, Point exitPoint, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (actor.Location.Map.GetExitAt(exitPoint) == null)
-      {
-        reason = "no exit there";
-        return false;
-      }
-      if (!actor.IsPlayer && !actor.Model.Abilities.AI_CanUseAIExits)
-      {
-        reason = "this AI can't use exits";
-        return false;
-      }
-      if (actor.IsSleeping)
-      {
-        reason = "is sleeping";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorChatWith(Actor speaker, Actor target, out string reason)
     {
       if (speaker == null)
