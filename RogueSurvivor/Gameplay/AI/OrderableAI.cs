@@ -830,10 +830,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item it in m_Actor.Inventory.Items) {
-        if (it.IsUseless) return BehaviorDropItem(game, it);
+        if (it.IsUseless) return BehaviorDropItem(it);
       }
       ItemBodyArmor armor = GetWorstBodyArmor();
-      if (null != armor) return BehaviorDropItem(game, armor); 
+      if (null != armor) return BehaviorDropItem(armor); 
       return null;
     }
 
