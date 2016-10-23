@@ -782,6 +782,18 @@ namespace djack.RogueSurvivor.Data
     }
 
     // map-related, loosely
+    public bool IsAdjacentToEnemy {
+      get {
+        Map map = Location.Map;
+        return map.HasAnyAdjacentInMap(Location.Position, (Predicate<Point>) (pt =>
+        {
+          Actor actorAt = map.GetActorAt(pt);
+          return null!= actorAt && IsEnemyOf(actorAt);
+        }));
+      }
+    }
+
+
     public bool IsBefore(Actor other)
     {
       Map map = Location.Map;

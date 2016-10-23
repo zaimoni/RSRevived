@@ -860,7 +860,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
-        if (actorAction1 == null && IsAdjacentToEnemy(enemy))
+        if (actorAction1 == null && enemy.IsAdjacentToEnemy)
         {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
@@ -1591,18 +1591,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (actorAt != null)
         return actorAt != m_Actor;
       return false;
-    }
-
-    protected bool IsAdjacentToEnemy(Actor actor)
-    {
-      if (actor == null) return false;
-      Map map = actor.Location.Map;
-      return map.HasAnyAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt =>
-      {
-        Actor actorAt = map.GetActorAt(pt);
-        if (actorAt == null) return false;
-        return actor.IsEnemyOf(actorAt);
-      }));
     }
 
     protected bool HasEquipedRangedWeapon(Actor actor)
