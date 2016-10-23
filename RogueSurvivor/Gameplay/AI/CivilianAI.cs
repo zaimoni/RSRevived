@@ -358,19 +358,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(m_Actor.Leader);
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
       if (null != enemies)
       {
-        if (game.Rules.RollChance(50))
-        {
+        if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(game, percepts1);
-          if (friends != null)
-          {
-            ActorAction actorAction2 = BehaviorWarnFriends(game, friends, FilterNearest(enemies).Percepted as Actor);
-            if (actorAction2 != null)
-            {
+          if (friends != null) {
+            ActorAction actorAction2 = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
+            if (actorAction2 != null) {
               m_Actor.Activity = Activity.IDLE;
               return actorAction2;
             }
@@ -378,15 +375,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
-        if (actorAction5 != null)
-          return actorAction5;
+        if (actorAction5 != null) return actorAction5;
       }
       tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      tmpAction = BehaviorRestIfTired(game);
+      tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -443,7 +439,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorDropUselessItem(game);
+      tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

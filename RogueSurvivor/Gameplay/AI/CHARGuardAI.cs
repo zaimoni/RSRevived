@@ -112,15 +112,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (null != enemies && perceptList2 != null) {
-        tmpAction = BehaviorWarnFriends(game, perceptList2, FilterNearest(enemies).Percepted as Actor);
+        tmpAction = BehaviorWarnFriends(perceptList2, FilterNearest(enemies).Percepted as Actor);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
       }
-      tmpAction = BehaviorRestIfTired(game);
-      if (null != tmpAction)
-      {
+      tmpAction = BehaviorRestIfTired();
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }

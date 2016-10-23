@@ -105,7 +105,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(game, percepts1);
           if (friends != null) {
-            tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(current_enemies).Percepted as Actor);
+            tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.IDLE;
               return tmpAction;
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorRestIfTired(game);
+      tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

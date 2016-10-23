@@ -134,7 +134,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.FOLLOW_TOGGLE:
           return ExecuteToggleFollow(game);
         case ActorTasks.WHERE_ARE_YOU:
-          return ExecuteReportPosition(game);
+          return ExecuteReportPosition();
         default:
           throw new NotImplementedException("order task not handled");
       }
@@ -338,7 +338,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
-    private ActorAction ExecuteReportPosition(RogueGame game)
+    private ActorAction ExecuteReportPosition()
     {
       SetOrder(null);
       string text = string.Format("I'm in {0} at {1},{2}.", (object)m_Actor.Location.Map.Name, (object)m_Actor.Location.Position.X, (object)m_Actor.Location.Position.Y);
@@ -665,7 +665,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorWarnFriends(RogueGame game, List<Percept> friends, Actor nearestEnemy)
+    protected ActorAction BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
     {
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
       if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor);
@@ -738,10 +738,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, point1, true);
     }
 
-    protected bool IsDoorwayOrCorridor(RogueGame game, Map map, Point pos)
+    protected bool IsDoorwayOrCorridor(Map map, Point pos)
     {
-      if (!map.GetTileAt(pos).Model.IsWalkable)
-        return false;
+      if (!map.GetTileAt(pos).Model.IsWalkable) return false;
       Point p1 = pos + Direction.N;
       bool flag1 = map.IsInBounds(p1) && !map.GetTileAt(p1).Model.IsWalkable;
       Point p2 = pos + Direction.S;
@@ -773,7 +772,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.GetExitAt(point) != null)
           return false;
-        return IsDoorwayOrCorridor(game, map, point);
+        return IsDoorwayOrCorridor(map, point);
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
@@ -820,13 +819,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSleep(m_Actor);
     }
 
-    protected ActorAction BehaviorRestIfTired(RogueGame game)
+    protected ActorAction BehaviorRestIfTired()
     {
       if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
       return new ActionWait(m_Actor);
     }
 
-    protected ActorAction BehaviorDropUselessItem(RogueGame game)
+    protected ActorAction BehaviorDropUselessItem()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item it in m_Actor.Inventory.Items) {

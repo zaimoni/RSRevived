@@ -411,9 +411,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Actor leader = m_Actor.Leader;
       bool flag = m_Actor.HasLeader && m_Actor.GetEquippedWeapon() is ItemRangedWeapon;
-      Actor actor = (Actor) null;
-      if (flag)
-        actor = GetNearestTargetFor(game, m_Actor.Leader);
+      Actor actor = null;
+      if (flag) actor = GetNearestTargetFor(m_Actor.Leader);
       bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
       List<Point> leaderLoF = (List<Point>) null;
       if (checkLeaderLoF)
@@ -767,7 +766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             doRun = true;
             break;
           case ActorCourage.CAUTIOUS:
-            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
             doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           case ActorCourage.COURAGEOUS:
@@ -776,7 +775,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               decideToFlee = false;
               break;
             }
-            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
             doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           default:
@@ -793,7 +792,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             break;
           case ActorCourage.CAUTIOUS:
           case ActorCourage.COURAGEOUS:
-            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
             doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           default:
@@ -861,7 +860,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
-        if (actorAction1 == null && IsAdjacentToEnemy(game, enemy))
+        if (actorAction1 == null && IsAdjacentToEnemy(enemy))
         {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
@@ -1594,16 +1593,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected bool IsAdjacentToEnemy(RogueGame game, Actor actor)
+    protected bool IsAdjacentToEnemy(Actor actor)
     {
-      if (actor == null)
-        return false;
+      if (actor == null) return false;
       Map map = actor.Location.Map;
       return map.HasAnyAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt =>
       {
         Actor actorAt = map.GetActorAt(pt);
-        if (actorAt == null)
-          return false;
+        if (actorAt == null) return false;
         return actor.IsEnemyOf(actorAt);
       }));
     }
@@ -1632,18 +1629,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return itemMeleeWeapon1;
     }
 
-    protected bool WantToEvadeMelee(RogueGame game, Actor actor, ActorCourage courage, Actor target)
+    protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
     {
       if (WillTireAfterAttack(actor)) return true;
       if (actor.Speed > target.Speed) {
         if (actor.WillActAgainBefore(target)) return false;
         if (target.TargetActor == actor) return true;
       }
-      Actor weakerInMelee = FindWeakerInMelee(game, m_Actor, target);
+      Actor weakerInMelee = FindWeakerInMelee(m_Actor, target);
       return weakerInMelee != target && (weakerInMelee == m_Actor || courage != ActorCourage.COURAGEOUS);
     }
 
-    protected Actor FindWeakerInMelee(RogueGame game, Actor a, Actor b)
+    protected Actor FindWeakerInMelee(Actor a, Actor b)
     {
       int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
       int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;
@@ -1680,18 +1677,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return !m_Actor.IsEnemyOf(other) && m_Actor.Faction == other.Faction;
     }
 
-    protected Actor GetNearestTargetFor(RogueGame game, Actor actor)
+    protected Actor GetNearestTargetFor(Actor actor)
     {
       Map map = actor.Location.Map;
-      Actor actor1 = (Actor) null;
+      Actor actor1 = null;
       int num1 = int.MaxValue;
-      foreach (Actor actor2 in map.Actors)
-      {
-        if (!actor2.IsDead && actor2 != actor && actor.IsEnemyOf(actor2))
-        {
+      foreach (Actor actor2 in map.Actors) {
+        if (!actor2.IsDead && actor2 != actor && actor.IsEnemyOf(actor2)) {
           int num2 = Rules.GridDistance(actor2.Location.Position, actor.Location.Position);
-          if (num2 < num1 && (num2 == 1 || LOS.CanTraceViewLine(actor.Location, actor2.Location.Position)))
-          {
+          if (num2 < num1 && (num2 == 1 || LOS.CanTraceViewLine(actor.Location, actor2.Location.Position))) {
             num1 = num2;
             actor1 = actor2;
           }
@@ -1700,17 +1694,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor1;
     }
 
-    protected List<Exit> ListAdjacentExits(RogueGame game, Location fromLocation)
+    protected List<Exit> ListAdjacentExits(Location fromLocation)
     {
-      List<Exit> exitList = (List<Exit>) null;
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      List<Exit> exitList = null;
+      foreach (Direction direction in Direction.COMPASS) {
         Point pos = fromLocation.Position + direction;
         Exit exitAt = fromLocation.Map.GetExitAt(pos);
-        if (exitAt != null)
-        {
-          if (exitList == null)
-            exitList = new List<Exit>(8);
+        if (exitAt != null) {
+          if (exitList == null) exitList = new List<Exit>(8);
           exitList.Add(exitAt);
         }
       }
@@ -1719,9 +1710,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Exit PickAnyAdjacentExit(RogueGame game, Location fromLocation)
     {
-      List<Exit> exitList = ListAdjacentExits(game, fromLocation);
-      if (exitList == null)
-        return (Exit) null;
+      List<Exit> exitList = ListAdjacentExits(fromLocation);
+      if (exitList == null) return null;
       return exitList[game.Rules.Roll(0, exitList.Count)];
     }
 

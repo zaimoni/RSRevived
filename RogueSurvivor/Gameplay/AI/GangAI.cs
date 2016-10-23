@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> enemies = FilterEnemies(game, percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(m_Actor.Leader);
 
       // all free actions must be above the enemies check
       if (null != current_enemies && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
@@ -108,7 +108,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(game, percepts1);
           if (friends != null) {
-            tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(current_enemies).Percepted as Actor);
+            tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.IDLE;
               return tmpAction;
@@ -123,7 +123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      tmpAction = BehaviorRestIfTired(game);
+      tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -168,7 +168,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorDropUselessItem(game);
+      tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
