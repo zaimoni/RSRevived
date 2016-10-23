@@ -35,14 +35,11 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemRangedWeapon(ItemModel model)
+    public ItemRangedWeapon(ItemRangedWeaponModel model)
       : base(model)
     {
-      if (!(model is ItemRangedWeaponModel))
-        throw new ArgumentException("model is not RangedWeaponModel");
-      ItemRangedWeaponModel rangedWeaponModel = model as ItemRangedWeaponModel;
-            m_Ammo = rangedWeaponModel.MaxAmmo;
-            m_AmmoType = rangedWeaponModel.AmmoType;
+      m_Ammo = model.MaxAmmo;
+      m_AmmoType = model.AmmoType;
     }
   }
 }

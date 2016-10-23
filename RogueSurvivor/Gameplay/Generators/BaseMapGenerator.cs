@@ -996,7 +996,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemHuntingCrossbow()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.HUNTING_CROSSBOW);
+      return new ItemRangedWeapon(m_Game.GameItems.HUNTING_CROSSBOW);
     }
 
     public Item MakeItemBoltsAmmo()
@@ -1006,7 +1006,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemHuntingRifle()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.HUNTING_RIFLE);
+      return new ItemRangedWeapon(m_Game.GameItems.HUNTING_RIFLE);
     }
 
     public Item MakeItemLightRifleAmmo()
@@ -1016,12 +1016,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemPistol()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.PISTOL);
+      return new ItemRangedWeapon(m_Game.GameItems.PISTOL);
     }
 
     public Item MakeItemKoltRevolver()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.KOLT_REVOLVER);
+      return new ItemRangedWeapon(m_Game.GameItems.KOLT_REVOLVER);
     }
 
     public Item MakeItemRandomPistol()
@@ -1038,7 +1038,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemShotgun()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.SHOTGUN);
+      return new ItemRangedWeapon(m_Game.GameItems.SHOTGUN);
     }
 
     public Item MakeItemShotgunAmmo()
@@ -1114,12 +1114,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemArmyRifle()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.ARMY_RIFLE);
+      return new ItemRangedWeapon(m_Game.GameItems.ARMY_RIFLE);
     }
 
     public Item MakeItemPrecisionRifle()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.PRECISION_RIFLE);
+      return new ItemRangedWeapon(m_Game.GameItems.PRECISION_RIFLE);
     }
 
     public Item MakeItemHeavyRifleAmmo()
@@ -1129,7 +1129,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeItemArmyPistol()
     {
-      return (Item) new ItemRangedWeapon((ItemModel)m_Game.GameItems.ARMY_PISTOL);
+      return new ItemRangedWeapon(m_Game.GameItems.ARMY_PISTOL);
     }
 
     public Item MakeItemHeavyPistolAmmo()
