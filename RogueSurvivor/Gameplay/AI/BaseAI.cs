@@ -295,7 +295,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorWander(RogueGame game, Predicate<Location> goodWanderLocFn)
     {
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         if (goodWanderLocFn != null && !goodWanderLocFn(location)) return false;
@@ -318,7 +318,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBumpToward(RogueGame game, Point goal, Func<Point, Point, float> distanceFn)
     {
-      BaseAI.ChoiceEval<ActorAction> choiceEval = ChooseExtended(game, Direction.COMPASS_LIST, (Func<Direction, ActorAction>) (dir =>
+      BaseAI.ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS_LIST, (Func<Direction, ActorAction>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         ActorAction a = game.Rules.IsBumpableFor(m_Actor, location);
@@ -421,7 +421,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemRangedWeapon itemRangedWeapon = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
         LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (itemRangedWeapon.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
       }
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         float num = SafetyFrom(location.Position, goals);
@@ -639,7 +639,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
       List<ItemMedicine> itemsByType = inventory.GetItemsByType<ItemMedicine>();
       if (itemsByType == null) return null;
-      BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(game, itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
+      BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
       {
         int num = 0;
         if (needHP) num += factorHealing * it.Healing;
@@ -792,7 +792,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
         if (m_Actor.Model.Abilities.CanUseMapObjects) {
-          BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
           {
             Point point = m_Actor.Location.Position + dir;
             DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
@@ -802,7 +802,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionCloseDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
         if (m_Actor.Model.Abilities.CanBarricade) {
-          BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
           {
             Point point = m_Actor.Location.Position + dir;
             DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
@@ -866,7 +866,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
       bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         if (exploration.HasExplored(location)) return false;
@@ -1466,7 +1466,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return num1 * num7;
     }
 
-    protected BaseAI.ChoiceEval<_T_> Choose<_T_>(RogueGame game, List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    protected BaseAI.ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
       bool flag = false;
@@ -1485,21 +1485,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (choiceEvalList1.Count == 0) return null;
       if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
-      List<BaseAI.ChoiceEval<_T_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_T_>>(choiceEvalList1.Count);
-      foreach(BaseAI.ChoiceEval<_T_> tmp in choiceEvalList1) {
-        if (tmp.Value == num) choiceEvalList2.Add(tmp);
-      }
-      return choiceEvalList2[game.Rules.Roll(0, choiceEvalList2.Count)];
+      List<BaseAI.ChoiceEval<_T_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_T_>>(choiceEvalList1.Where(tmp=>tmp.Value==num));
+      return choiceEvalList2[RogueForm.Game.Rules.Roll(0, choiceEvalList2.Count())];
     }
 
-    protected BaseAI.ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(RogueGame game, List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    protected BaseAI.ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
       bool flag = false;
       float num = 0.0f;
       List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_DATA_>>(listOfChoices.Count);
-      foreach(_T_ tmp in listOfChoices)
-      {
+      foreach(_T_ tmp in listOfChoices) {
         _DATA_ choice = isChoiceValidFn(tmp);
         if (null == choice) continue;
         float f = evalChoiceFn(tmp);
@@ -1512,12 +1508,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (choiceEvalList1.Count == 0) return null;
       if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
-      List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_DATA_>>(choiceEvalList1.Count);
-      foreach(BaseAI.ChoiceEval<_DATA_> tmp in choiceEvalList1) {
-        if (tmp.Value == num) choiceEvalList2.Add(tmp);
-      }
+      List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_DATA_>>(choiceEvalList1.Where(tmp=>tmp.Value==num));
       if (choiceEvalList2.Count == 0) return null;
-      return choiceEvalList2[game.Rules.Roll(0, choiceEvalList2.Count)];
+      return choiceEvalList2[RogueForm.Game.Rules.Roll(0, choiceEvalList2.Count)];
     }
 
     protected bool IsValidFleeingAction(ActorAction a)
