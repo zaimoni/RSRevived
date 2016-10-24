@@ -7606,7 +7606,7 @@ namespace djack.RogueSurvivor.Engine
       }
       stringList.Add(string.Format("Rise      : {0}.", (object) str3));
       stringList.Add(" ");
-      switch (Rules.CorpseRotLevel(c))
+      switch (c.RotLevel)
       {
         case 0:
           stringList.Add("The corpse looks fresh.");
@@ -11585,27 +11585,26 @@ namespace djack.RogueSurvivor.Engine
       gx += num1;
       gy += num1;
       if (deadGuy.Model.ImageID != null)
-                m_UI.UI_DrawImageTransform(deadGuy.Model.ImageID, gx, gy, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
-            DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
+        m_UI.UI_DrawImageTransform(deadGuy.Model.ImageID, gx, gy, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
+      DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
       gx -= num1;
       gy -= num1;
-      int num2 = Rules.CorpseRotLevel(c);
-      string str = (string) null;
+      int num2 = c.RotLevel;
+      string str = null;
       switch (num2)
       {
         case 0:
-          if (str == null)
-            break;
+          if (str == null) break;
           string imageID = str + (object) (1 + Session.Get.WorldTime.TurnCounter % 2);
           int num3 = Session.Get.WorldTime.TurnCounter % 5 - 2;
           int num4 = Session.Get.WorldTime.TurnCounter / 3 % 5 - 2;
-                    m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
+          m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
           break;
         case 1:
         case 2:

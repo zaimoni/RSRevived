@@ -1221,7 +1221,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "not there";
         return false;
       }
-      if (CorpseRotLevel(corpse) > 0)
+      if (corpse.RotLevel > 0)
       {
         reason = "corpse not fresh";
         return false;
@@ -1495,20 +1495,6 @@ namespace djack.RogueSurvivor.Engine
     public static int InfectionEffectTriggerChance1000(int infectionPercent)
     {
       return Rules.INFECTION_EFFECT_TRIGGER_CHANCE_1000 + infectionPercent / 5;
-    }
-
-    public int CorpseRotLevel(Corpse c)
-    {
-      int num = c.FreshnessPercent;
-      if (num < 5)
-        return 5;
-      if (num < 25)
-        return 4;
-      if (num < 50)
-        return 3;
-      if (num < 75)
-        return 2;
-      return num < 90 ? 1 : 0;
     }
 
     public static float CorpseDecayPerTurn(Corpse c)
