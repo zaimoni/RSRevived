@@ -1063,40 +1063,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanPushObjectTo(MapObject mapObj, Point toPos)
-    {
-      string reason;
-      return CanPushObjectTo(mapObj, toPos, out reason);
-    }
-
-    public bool CanPushObjectTo(MapObject mapObj, Point toPos, out string reason)
-    {
-      if (mapObj == null)
-        throw new ArgumentNullException("mapObj");
-      if (!mapObj.Location.Map.IsInBounds(toPos))
-      {
-        reason = "out of map";
-        return false;
-      }
-      if (!mapObj.Location.Map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable)
-      {
-        reason = "blocked by an obstacle";
-        return false;
-      }
-      if (mapObj.Location.Map.GetMapObjectAt(toPos) != null)
-      {
-        reason = "blocked by an object";
-        return false;
-      }
-      if (mapObj.Location.Map.GetActorAt(toPos) != null)
-      {
-        reason = "blocked by someone";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorShove(Actor actor, Actor other, out string reason)
     {
       if (actor == null) throw new ArgumentNullException("actor");

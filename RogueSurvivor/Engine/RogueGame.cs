@@ -5622,31 +5622,27 @@ namespace djack.RogueSurvivor.Engine
         string.Format(PUSH_OBJECT_MODE_TEXT, (object) mapObj.TheName)
       }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
-      do
-      {
-                RedrawPlayScreen();
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
+        if (direction == null) flag1 = false;
         else if (direction != Direction.NEUTRAL)
         {
           Point point = mapObj.Location.Position + direction;
           if (player.Location.Map.IsInBounds(point))
           {
-            string reason;
-            if (m_Rules.CanPushObjectTo(mapObj, point, out reason))
-            {
-                            DoPush(player, mapObj, point);
+            string reason = mapObj.ReasonNoPushTo(point);
+            if (""==reason) {
+              DoPush(player, mapObj, point);
               flag1 = false;
               flag2 = true;
-            }
-            else
-                            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 

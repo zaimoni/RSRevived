@@ -39,8 +39,10 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      if (""==m_Actor.ReasonNoPush(m_Object))
-        return RogueForm.Game.Rules.CanPushObjectTo(m_Object, m_To, out m_FailReason);
+      if (""==m_Actor.ReasonNoPush(m_Object)) {
+        m_FailReason = m_Object.ReasonNoPushTo(m_To);
+        return ""==m_FailReason;
+      }
       return false;
     }
 

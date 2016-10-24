@@ -335,6 +335,15 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+    public string ReasonNoPushTo(System.Drawing.Point toPos)
+    {
+      if (!Location.Map.IsInBounds(toPos)) return "out of map";
+      if (!Location.Map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) return "blocked by an obstacle";
+      if (Location.Map.GetMapObjectAt(toPos) != null) return "blocked by an object";
+      if (Location.Map.GetActorAt(toPos) != null) return "blocked by someone";
+      return "";
+    }
+
     // flag handling
     private bool GetFlag(MapObject.Flags f)
     {

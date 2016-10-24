@@ -327,7 +327,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(location.Position);
             if (mapObjectAt != null && ""==m_Actor.ReasonNoPush(mapObjectAt)) {
               Direction pushDir = game.Rules.RollDirection();
-              if (game.Rules.CanPushObjectTo(mapObjectAt, mapObjectAt.Location.Position + pushDir))
+              if (""==mapObjectAt.ReasonNoPushTo(mapObjectAt.Location.Position + pushDir))
                 return new ActionPush(m_Actor, mapObjectAt, pushDir);
             }
           }
