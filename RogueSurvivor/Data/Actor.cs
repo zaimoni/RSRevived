@@ -945,6 +945,18 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+    public string ReasonCantBarricade(Engine.MapObjects.DoorWindow door)
+    {
+      if (door == null) throw new ArgumentNullException("door");
+      if (!Model.Abilities.CanBarricade) return "no ability to barricade";
+      if (!door.IsClosed && !door.IsBroken) return "not closed or broken";
+      if (door.BarricadePoints >= Engine.Rules.BARRICADING_MAX) return "barricade limit reached";
+      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
+      if (Inventory == null || Inventory.IsEmpty) return "no items";
+      if (!Inventory.HasItemOfType(typeof (ItemBarricadeMaterial))) return "no barricading material";
+      return "";
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {

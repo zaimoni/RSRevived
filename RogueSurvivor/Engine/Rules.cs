@@ -787,50 +787,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorBarricadeDoor(Actor actor, DoorWindow door)
-    {
-      string reason;
-      return CanActorBarricadeDoor(actor, door, out reason);
-    }
-
-    public bool CanActorBarricadeDoor(Actor actor, DoorWindow door, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (door == null) throw new ArgumentNullException("door");
-      if (!actor.Model.Abilities.CanBarricade)
-      {
-        reason = "no ability to barricade";
-        return false;
-      }
-      if (!door.IsClosed && !door.IsBroken)
-      {
-        reason = "not closed or broken";
-        return false;
-      }
-      if (door.BarricadePoints >= BARRICADING_MAX)
-      {
-        reason = "barricade limit reached";
-        return false;
-      }
-      if (door.Location.Map.GetActorAt(door.Location.Position) != null)
-      {
-        reason = "someone is there";
-        return false;
-      }
-      if (actor.Inventory == null || actor.Inventory.IsEmpty)
-      {
-        reason = "no items";
-        return false;
-      }
-      if (!actor.Inventory.HasItemOfType(typeof (ItemBarricadeMaterial)))
-      {
-        reason = "no barricading material";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool IsBashableFor(Actor actor, DoorWindow door)
     {
       string reason;

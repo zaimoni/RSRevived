@@ -114,9 +114,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       switch (order.Task)
       {
         case ActorTasks.BARRICADE_ONE:
-          return ExecuteBarricading(game, order.Location, false);
+          return ExecuteBarricading(order.Location, false);
         case ActorTasks.BARRICADE_MAX:
-          return ExecuteBarricading(game, order.Location, true);
+          return ExecuteBarricading(order.Location, true);
         case ActorTasks.GUARD:
           return ExecuteGuard(game, order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.PATROL:
@@ -140,12 +140,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-    private ActorAction ExecuteBarricading(RogueGame game, Location location, bool toTheMax)
+    private ActorAction ExecuteBarricading(Location location, bool toTheMax)
     {
       if (m_Actor.Location.Map != location.Map) return null;
       DoorWindow door = location.Map.GetMapObjectAt(location.Position) as DoorWindow;
       if (door == null) return null;
-      if (!game.Rules.CanActorBarricadeDoor(m_Actor, door)) return null;
+      if (""!=m_Actor.ReasonCantBarricade(door)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
         tmpAction= new ActionBarricadeDoor(m_Actor, door);
@@ -631,7 +631,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    protected ActorAction BehaviorSecurePerimeter(RogueGame game)
+    protected ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
       foreach (Point position in m_Actor.Controller.FOV) {
@@ -644,7 +644,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 return new ActionCloseDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(door.Location.Position);
             }
-            if (door.IsWindow && !door.IsBarricaded && game.Rules.CanActorBarricadeDoor(m_Actor, door)) {
+            if (door.IsWindow && !door.IsBarricaded && ""==m_Actor.ReasonCantBarricade(door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
                 return new ActionBarricadeDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(door.Location.Position);

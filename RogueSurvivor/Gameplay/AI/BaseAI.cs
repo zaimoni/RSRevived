@@ -804,7 +804,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           {
             Point point = m_Actor.Location.Position + dir;
             DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
-            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && game.Rules.CanActorBarricadeDoor(m_Actor, door));
+            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && ""==m_Actor.ReasonCantBarricade(door));
           }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
           if (choiceEval != null)
             return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
