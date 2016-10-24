@@ -4478,60 +4478,51 @@ namespace djack.RogueSurvivor.Engine
 
     private bool OnLMBItem(Inventory inv, Item it)
     {
-      if (inv == m_Player.Inventory)
-      {
-        if (it.IsEquipped)
-        {
+      if (inv == m_Player.Inventory) {
+        if (it.IsEquipped) {
           string reason;
-          if (Rules.CanActorUnequipItem(m_Player, it, out reason))
-          {
-                        DoUnequipItem(m_Player, it);
+          if (Rules.CanActorUnequipItem(m_Player, it, out reason)) {
+            DoUnequipItem(m_Player, it);
             return false;
           }
-                    AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
+          AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
           return false;
         }
-        if (it.Model.IsEquipable)
-        {
+        if (it.Model.IsEquipable) {
           string reason;
-          if (m_Rules.CanActorEquipItem(m_Player, it, out reason))
-          {
-                        DoEquipItem(m_Player, it);
+          if (m_Rules.CanActorEquipItem(m_Player, it, out reason)) {
+            DoEquipItem(m_Player, it);
             return false;
           }
-                    AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
+          AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
           return false;
         }
-        string reason1;
-        if (m_Rules.CanActorUseItem(m_Player, it, out reason1))
-        {
-                    DoUseItem(m_Player, it);
+        string reason1 = m_Player.ReasonNotUsing(it);
+        if (""== reason1) {
+          DoUseItem(m_Player, it);
           return true;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
         return false;
       }
       string reason2;
-      if (m_Rules.CanActorGetItem(m_Player, it, out reason2))
-      {
-                DoTakeItem(m_Player, m_Player.Location.Position, it);
+      if (m_Rules.CanActorGetItem(m_Player, it, out reason2)) {
+        DoTakeItem(m_Player, m_Player.Location.Position, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason2)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason2)));
       return false;
     }
 
     private bool OnRMBItem(Inventory inv, Item it)
     {
-      if (inv != m_Player.Inventory)
-        return false;
+      if (inv != m_Player.Inventory) return false;
       string reason;
-      if (m_Rules.CanActorDropItem(m_Player, it, out reason))
-      {
-                DoDropItem(m_Player, it);
+      if (m_Rules.CanActorDropItem(m_Player, it, out reason)) {
+        DoDropItem(m_Player, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
       return false;
     }
 
@@ -4790,40 +4781,35 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotUse(Actor player, int slot)
     {
       Item it = player.Inventory[slot];
-      if (it == null)
-      {
-                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
+      if (it == null) {
+        AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
         return false;
       }
-      if (it.IsEquipped)
-      {
+      if (it.IsEquipped) {
         string reason;
-        if (Rules.CanActorUnequipItem(player, it, out reason))
-        {
-                    DoUnequipItem(player, it);
+        if (Rules.CanActorUnequipItem(player, it, out reason)) {
+          DoUnequipItem(player, it);
           return false;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
         return false;
       }
       if (it.Model.IsEquipable)
       {
         string reason;
-        if (m_Rules.CanActorEquipItem(player, it, out reason))
-        {
-                    DoEquipItem(player, it);
+        if (m_Rules.CanActorEquipItem(player, it, out reason)) {
+          DoEquipItem(player, it);
           return false;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
         return false;
       }
-      string reason1;
-      if (m_Rules.CanActorUseItem(player, it, out reason1))
-      {
-                DoUseItem(player, it);
+      string reason1 = player.ReasonNotUsing(it);
+      if (""==reason1) {
+        DoUseItem(player, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
       return false;
     }
 
@@ -5686,29 +5672,25 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerUseSpray(Actor player)
     {
       Item equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
-      if (equippedItem == null)
-      {
-                AddMessage(MakeErrorMessage("No spray equipped."));
-                RedrawPlayScreen();
+      if (equippedItem == null) {
+        AddMessage(MakeErrorMessage("No spray equipped."));
+        RedrawPlayScreen();
         return false;
       }
-      if (equippedItem is ItemSprayPaint)
-        return HandlePlayerTag(player);
+      if (equippedItem is ItemSprayPaint) return HandlePlayerTag(player);
       ItemSprayScent spray = equippedItem as ItemSprayScent;
-      if (spray != null)
-      {
-        string reason;
-        if (!m_Rules.CanActorUseItem(player, (Item) spray, out reason))
-        {
-                    AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", (object) reason)));
-                    RedrawPlayScreen();
+      if (spray != null) {
+        string reason = player.ReasonNotUsing(spray);
+        if (""!=reason) {
+          AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", (object) reason)));
+          RedrawPlayScreen();
           return false;
         }
-                DoUseSprayScentItem(player, spray);
+        DoUseSprayScentItem(player, spray);
         return true;
       }
-            AddMessage(MakeErrorMessage("No spray equipped."));
-            RedrawPlayScreen();
+      AddMessage(MakeErrorMessage("No spray equipped."));
+      RedrawPlayScreen();
       return false;
     }
 
@@ -5717,10 +5699,9 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ItemSprayPaint spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
-      if (spray == null)
-      {
-                AddMessage(MakeErrorMessage("No spray paint equipped."));
-                RedrawPlayScreen();
+      if (spray == null) {
+        AddMessage(MakeErrorMessage("No spray paint equipped."));
+        RedrawPlayScreen();
         return false;
       }
       if (spray.PaintQuantity <= 0)

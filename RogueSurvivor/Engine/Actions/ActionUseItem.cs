@@ -22,7 +22,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorUseItem(m_Actor, m_Item, out m_FailReason);
+      m_FailReason = m_Actor.ReasonNotUsing(m_Item);
+      return ""==m_FailReason;
     }
 
     public override void Perform()
