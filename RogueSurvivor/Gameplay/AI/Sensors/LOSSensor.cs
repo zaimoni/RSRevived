@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Diagnostics.Contracts;
 
@@ -72,23 +73,33 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           }
         }
         // ensure fact what is in sight is current, is recorded
-        foreach (Point pt in m_FOV) {
-          if (!has_threat.Contains(pt)) threats.Cleared(new Location(actor.Location.Map, pt));
-        }        
-      }
-      if ((m_Filters & LOSSensor.SensingFilter.ITEMS) != LOSSensor.SensingFilter.NONE)
-      {
-        foreach (Point position in m_FOV)
-        {
-          Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
-          if (itemsAt != null && !itemsAt.IsEmpty)
-            perceptList.Add(new Percept((object) itemsAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));
+        if (null!=has_threat) {
+          foreach (Point pt in m_FOV) {
+            if (!has_threat.Contains(pt)) threats.Cleared(new Location(actor.Location.Map, pt));
+          }
         }
       }
-      if ((m_Filters & LOSSensor.SensingFilter.CORPSES) != LOSSensor.SensingFilter.NONE)
-      {
-        foreach (Point position in m_FOV)
-        {
+      if ((m_Filters & LOSSensor.SensingFilter.ITEMS) != LOSSensor.SensingFilter.NONE) {
+        Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items = actor.Controller.ItemMemory;
+        Dictionary<Location,HashSet< Gameplay.GameItems.IDs >> seen_items = (null==items ? null : new Dictionary<Location, HashSet<Gameplay.GameItems.IDs>>());
+
+        foreach (Point position in m_FOV) {
+          Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
+          if (null==itemsAt) continue;
+          if (itemsAt.IsEmpty) continue;
+          perceptList.Add(new Percept((object) itemsAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));
+          if (null==seen_items) continue;
+          seen_items[new Location(actor.Location.Map, position)] = new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID));
+        }
+        if (null!=seen_items) {
+          foreach(Point tmp2 in FOV) {
+            Location tmp3 = new Location(actor.Location.Map,tmp2);
+            items.Set(tmp3, (seen_items.ContainsKey(tmp3) ? seen_items[tmp3] : null), actor.Location.Map.LocalTime.TurnCounter);
+          }
+        }
+      }
+      if ((m_Filters & LOSSensor.SensingFilter.CORPSES) != LOSSensor.SensingFilter.NONE) {
+        foreach (Point position in m_FOV) {
           List<Corpse> corpsesAt = actor.Location.Map.GetCorpsesAt(position.X, position.Y);
           if (corpsesAt != null)
             perceptList.Add(new Percept((object) corpsesAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));

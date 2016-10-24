@@ -121,29 +121,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override List<Percept> _UpdateSensors()
     {
-      List<Percept> tmp = m_LOSSensor.Sense(m_Actor);
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) {
-        // police report the items they see to other police.
-        // \todo This implementation is too powerful; it should be a mutual-update between police
-        // in the same district
-        Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = Session.Get.PoliceItemMemory;
-
-        // update the enhanced item memory here
-        Dictionary<Location,HashSet< Gameplay.GameItems.IDs >> seen_items = new Dictionary<Location, HashSet<Gameplay.GameItems.IDs>>();
-        foreach(Engine.AI.Percept p in tmp) {
-          Inventory tmp3 = p.Percepted as Inventory;
-          if (null == tmp3 || 0 >= tmp3.CountItems) continue;
-          seen_items[p.Location] = new HashSet<Gameplay.GameItems.IDs>(tmp3.Items.Select(x => x.Model.ID));
-        }
-        // ensure fact what is in sight is current, is recorded
-        foreach (Point pt in FOV) {
-          Location tmp3 = new Location(m_Actor.Location.Map, pt);
-          if (seen_items.ContainsKey(tmp3)) { ItemMemory.Set(tmp3, seen_items[tmp3], m_Actor.Location.Map.LocalTime.TurnCounter); }
-          else { ItemMemory.Set(tmp3, null, m_Actor.Location.Map.LocalTime.TurnCounter); }
-        }        
-      }
-
-      return tmp;
+      return m_LOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }

@@ -23,6 +23,12 @@ namespace djack.RogueSurvivor.Data
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
+    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory {
+       get { 
+         return m_itemMemory;
+       }
+    }
+
     public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
@@ -55,23 +61,7 @@ namespace djack.RogueSurvivor.Data
 
     protected override List<Engine.AI.Percept> _UpdateSensors()
     {
-      List<Engine.AI.Percept> tmp = m_LOSSensor.Sense(m_Actor);
-
-      // update the enhanced item memory here
-      Dictionary<Location,HashSet< Gameplay.GameItems.IDs >> seen_items = new Dictionary<Location, HashSet<Gameplay.GameItems.IDs>>();
-      foreach(Engine.AI.Percept tmp2 in tmp) {
-        Inventory tmp3 = tmp2.Percepted as Inventory;
-        if (null == tmp3) continue;
-        if (0 >= tmp3.CountItems) continue;
-        seen_items[tmp2.Location] = new HashSet<Gameplay.GameItems.IDs>(tmp3.Items.Select(x => x.Model.ID));
-      }
-      foreach(Point tmp2 in FOV) {
-        Location tmp3 = new Location(m_Actor.Location.Map,tmp2);
-        if (seen_items.ContainsKey(tmp3)) { m_itemMemory.Set(tmp3, seen_items[tmp3], m_Actor.Location.Map.LocalTime.TurnCounter); }
-        else { m_itemMemory.Set(tmp3, null, m_Actor.Location.Map.LocalTime.TurnCounter); }
-      }
-
-      return tmp;
+      return m_LOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
