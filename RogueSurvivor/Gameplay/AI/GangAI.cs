@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // handle food after enemies checks
-      tmpAction = BehaviorEatProactively(game);
+      tmpAction = BehaviorEatProactively();
       if (null != tmpAction) return tmpAction;
 
       if (m_Actor.IsHungry) {

@@ -411,7 +411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // This is more pro-active.  We might want to flag whether
     // an AI uses the behavior based on this
-    protected ItemFood GetBestPerishableItem(RogueGame game)
+    protected ItemFood GetBestPerishableItem()
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
@@ -423,7 +423,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == food) continue;
         if (!food.IsPerishable) continue;
         if (food.IsSpoiledAt(turnCounter)) continue;
-        int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
+        int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
         if (num4 > need) continue; // more work needed
         int num3 = need-num4;
         if (num3 > rating) {
@@ -442,9 +442,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, bestEdibleItem);
     }
 
-    protected ActorAction BehaviorEatProactively(RogueGame game)
+    protected ActorAction BehaviorEatProactively()
     {
-      Item bestEdibleItem = GetBestPerishableItem(game);
+      Item bestEdibleItem = GetBestPerishableItem();
       if (null == bestEdibleItem) return null;
       if (""!=m_Actor.ReasonNotUsing(bestEdibleItem)) return null;
       return new ActionUseItem(m_Actor, bestEdibleItem);

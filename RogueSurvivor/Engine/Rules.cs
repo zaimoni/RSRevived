@@ -1315,7 +1315,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public int ActorItemNutritionValue(Actor actor, int baseValue)
+    public static int ActorItemNutritionValue(Actor actor, int baseValue)
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
       return baseValue + num;

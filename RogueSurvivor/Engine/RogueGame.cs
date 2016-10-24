@@ -7858,7 +7858,7 @@ namespace djack.RogueSurvivor.Engine
       else
         stringList.Add("Always fresh.");
       int baseValue = f.NutritionAt(Session.Get.WorldTime.TurnCounter);
-      int num = m_Player == null ? baseValue : m_Rules.ActorItemNutritionValue(m_Player, baseValue);
+      int num = m_Player == null ? baseValue : Rules.ActorItemNutritionValue(m_Player, baseValue);
       if (num == itemFoodModel.Nutrition)
         stringList.Add(string.Format("Nutrition   : +{0}", (object) baseValue));
       else
@@ -9602,7 +9602,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-      actor.LivingEat(m_Rules.ActorItemNutritionValue(actor, baseValue));
+      actor.LivingEat(Rules.ActorItemNutritionValue(actor, baseValue));
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
       bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -9620,7 +9620,7 @@ namespace djack.RogueSurvivor.Engine
       } else {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-        actor.LivingEat(m_Rules.ActorItemNutritionValue(actor, baseValue));
+        actor.LivingEat(Rules.ActorItemNutritionValue(actor, baseValue));
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)

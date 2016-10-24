@@ -837,6 +837,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // explain what won't work; convention is that empty string "" is legal, others aren't
     public string ReasonNoPush(MapObject mapObj)
     {
       if (mapObj == null) throw new ArgumentNullException("mapObj");
