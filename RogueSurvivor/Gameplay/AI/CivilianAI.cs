@@ -127,17 +127,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // \todo This implementation is too powerful; it should be a mutual-update between police
         // in the same district
         Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory = Session.Get.PoliceItemMemory;
-        // police report threat (or lack thereof) to other police
-        ThreatTracking inferred_threat = Session.Get.PoliceThreatTracking;
-        HashSet<Point> has_threat = new HashSet<Point>();
 
-        // report actually seen threat
-        foreach(Engine.AI.Percept p in tmp) {
-          Actor tmp3 = p.Percepted as Actor;
-          if (null == tmp3 || tmp3.IsDead || !m_Actor.IsEnemyOf(tmp3)) continue;
-          inferred_threat.Sighted(tmp3,p.Location);
-          has_threat.Add(p.Location.Position);
-        }
         // update the enhanced item memory here
         Dictionary<Location,HashSet< Gameplay.GameItems.IDs >> seen_items = new Dictionary<Location, HashSet<Gameplay.GameItems.IDs>>();
         foreach(Engine.AI.Percept p in tmp) {
@@ -148,7 +138,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ensure fact what is in sight is current, is recorded
         foreach (Point pt in FOV) {
           Location tmp3 = new Location(m_Actor.Location.Map, pt);
-          if (!has_threat.Contains(pt)) inferred_threat.Cleared(tmp3);
           if (seen_items.ContainsKey(tmp3)) { ItemMemory.Set(tmp3, seen_items[tmp3], m_Actor.Location.Map.LocalTime.TurnCounter); }
           else { ItemMemory.Set(tmp3, null, m_Actor.Location.Map.LocalTime.TurnCounter); }
         }        

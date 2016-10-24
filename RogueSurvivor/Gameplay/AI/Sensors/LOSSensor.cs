@@ -43,25 +43,38 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_FOV = LOS.ComputeFOVFor(actor, actor.Location.Map.LocalTime, Session.Get.World.Weather);
       int num = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
       List<Percept> perceptList = new List<Percept>();
-      if ((m_Filters & LOSSensor.SensingFilter.ACTORS) != LOSSensor.SensingFilter.NONE)
-      {
-        if (num * num < actor.Location.Map.CountActors)
-        {
-          foreach (Point point in m_FOV)
-          {
+      if ((m_Filters & LOSSensor.SensingFilter.ACTORS) != LOSSensor.SensingFilter.NONE) {
+        ThreatTracking threats = actor.Threats;
+        HashSet<Point> has_threat = (null==threats ? null : new HashSet<Point>());
+        if (num * num < actor.Location.Map.CountActors) {
+          foreach (Point point in m_FOV) {
             Actor actorAt = actor.Location.Map.GetActorAt(point.X, point.Y);
-            if (actorAt != null && actorAt != actor)
-              perceptList.Add(new Percept((object) actorAt, actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
+            if (null==actorAt) continue;
+            if (actorAt==actor) continue;
+            if (actorAt.IsDead) continue;
+            perceptList.Add(new Percept((object) actorAt, actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
+            if (null==threats) continue;
+            if (!actor.IsEnemyOf(actorAt)) continue;
+            threats.Sighted(actorAt, actorAt.Location);
+            has_threat.Add(point);
+          }
+        } else {
+          foreach (Actor actor1 in actor.Location.Map.Actors) {
+            if (actor1==actor) continue;
+            if (actor1.IsDead) continue;
+            if ((double)Rules.LOSDistance(actor.Location.Position, actor1.Location.Position) > (double)num) continue;
+            if (!m_FOV.Contains(actor1.Location.Position)) continue;
+            perceptList.Add(new Percept((object) actor1, actor.Location.Map.LocalTime.TurnCounter, actor1.Location));
+            if (null==threats) continue;
+            if (!actor.IsEnemyOf(actor1)) continue;
+            threats.Sighted(actor1, actor1.Location);
+            has_threat.Add(actor1.Location.Position);
           }
         }
-        else
-        {
-          foreach (Actor actor1 in actor.Location.Map.Actors)
-          {
-            if (actor1 != actor && (double) Rules.LOSDistance(actor.Location.Position, actor1.Location.Position) <= (double) num && m_FOV.Contains(actor1.Location.Position))
-              perceptList.Add(new Percept((object) actor1, actor.Location.Map.LocalTime.TurnCounter, actor1.Location));
-          }
-        }
+        // ensure fact what is in sight is current, is recorded
+        foreach (Point pt in m_FOV) {
+          if (!has_threat.Contains(pt)) threats.Cleared(new Location(actor.Location.Map, pt));
+        }        
       }
       if ((m_Filters & LOSSensor.SensingFilter.ITEMS) != LOSSensor.SensingFilter.NONE)
       {
