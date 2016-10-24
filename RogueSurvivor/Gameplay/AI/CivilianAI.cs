@@ -411,7 +411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.IsHungry)
       {
-        tmpAction = BehaviorEat(game);
+        tmpAction = BehaviorEat();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

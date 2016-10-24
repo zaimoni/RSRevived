@@ -386,12 +386,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorUseItem(Actor actor, Item it)
-    {
-      string reason;
-      return CanActorUseItem(actor, it, out reason);
-    }
-
     public bool CanActorUseItem(Actor actor, Item it, out string reason)
     {
       if (actor == null)

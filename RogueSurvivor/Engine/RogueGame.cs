@@ -6677,37 +6677,27 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.ITEM_EQUIP:
           Inventory inventory2 = m_Player.Inventory;
-          if (inventory2 == null || inventory2.IsEmpty)
-            return false;
-          foreach (Item it in inventory2.Items)
-          {
-            if (!it.IsEquipped && m_Rules.CanActorEquipItem(m_Player, it))
-              return true;
+          if (inventory2 == null || inventory2.IsEmpty) return false;
+          foreach (Item it in inventory2.Items) {
+            if (!it.IsEquipped && m_Rules.CanActorEquipItem(m_Player, it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
           Inventory inventory3 = m_Player.Inventory;
-          if (inventory3 == null || inventory3.IsEmpty)
-            return false;
+          if (inventory3 == null || inventory3.IsEmpty) return false;
           return inventory3.HasItemOfType(typeof (ItemBarricadeMaterial));
         case AdvisorHint.ITEM_DROP:
           Inventory inventory4 = m_Player.Inventory;
-          if (inventory4 == null || inventory4.IsEmpty)
-            return false;
-          foreach (Item it in inventory4.Items)
-          {
-            if (m_Rules.CanActorDropItem(m_Player, it))
-              return true;
+          if (inventory4 == null || inventory4.IsEmpty) return false;
+          foreach (Item it in inventory4.Items) {
+            if (m_Rules.CanActorDropItem(m_Player, it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_USE:
           Inventory inventory5 = m_Player.Inventory;
-          if (inventory5 == null || inventory5.IsEmpty)
-            return false;
-          foreach (Item it in inventory5.Items)
-          {
-            if (m_Rules.CanActorUseItem(m_Player, it))
-              return true;
+          if (inventory5 == null || inventory5.IsEmpty) return false;
+          foreach (Item it in inventory5.Items) {
+            if (""==m_Player.ReasonNotUsing(it)) return true;
           }
           return false;
         case AdvisorHint.FLASHLIGHT:
@@ -6724,14 +6714,11 @@ namespace djack.RogueSurvivor.Engine
             return false;
           return itemRangedWeapon.Ammo >= 0;
         case AdvisorHint.WEAPON_RELOAD:
-          if (!(m_Player.GetEquippedWeapon() is ItemRangedWeapon))
-            return false;
+          if (!(m_Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
           Inventory inventory6 = m_Player.Inventory;
-          if (inventory6 == null || inventory6.IsEmpty)
-            return false;
-          foreach (Item it in inventory6.Items)
-          {
-            if (it is ItemAmmo && m_Rules.CanActorUseItem(m_Player, it))
+          if (inventory6 == null || inventory6.IsEmpty) return false;
+          foreach (Item it in inventory6.Items) {
+            if (it is ItemAmmo && ""==m_Player.ReasonNotUsing(it))
               return true;
           }
           return false;
@@ -6741,16 +6728,14 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null)
-              return false;
+            if (door == null) return false;
             return m_Rules.IsOpenableFor(m_Player, door);
           }));
         case AdvisorHint.DOORWINDOW_CLOSE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null)
-              return false;
+            if (door == null) return false;
             return m_Rules.IsClosableFor(m_Player, door);
           }));
         case AdvisorHint.OBJECT_PUSH:

@@ -185,27 +185,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
 
-      if (m_Actor.Location.Position != location.Position)
-      {
+      if (m_Actor.Location.Position != location.Position) {
         ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
-        if (actorAction3 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
+        if (actorAction3 != null) {
+          m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
       }
-      if (m_Actor.IsHungry)
-      {
-        ActorAction actorAction3 = BehaviorEat(game);
-        if (actorAction3 != null)
-        {
+      if (m_Actor.IsHungry) {
+        ActorAction actorAction3 = BehaviorEat();
+        if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
       }
       ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (actorAction4 != null)
-      {
+      if (actorAction4 != null) {
         m_Actor.Activity = Activity.IDLE;
         return actorAction4;
       }
@@ -227,25 +222,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_ReachedPatrolPoint)
       {
         ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
-        if (actorAction3 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
+        if (actorAction3 != null) {
+          m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
       }
       if (m_Actor.IsHungry)
       {
-        ActorAction actorAction3 = BehaviorEat(game);
-        if (actorAction3 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
+        ActorAction actorAction3 = BehaviorEat();
+        if (actorAction3 != null) {
+          m_Actor.Activity = Activity.IDLE;
           return actorAction3;
         }
       }
       ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (actorAction4 != null)
-      {
-                m_Actor.Activity = Activity.IDLE;
+      if (actorAction4 != null) {
+        m_Actor.Activity = Activity.IDLE;
         return actorAction4;
       }
       List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position.X, Order.Location.Position.Y);
@@ -444,11 +436,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
-    protected ActorAction BehaviorEat(RogueGame game)
+    protected ActorAction BehaviorEat()
     {
       ItemFood bestEdibleItem = GetBestEdibleItem();
       if (null == bestEdibleItem) return null;
-      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
+      if (""!=m_Actor.ReasonNotUsing(bestEdibleItem)) return null;
       return new ActionUseItem(m_Actor, bestEdibleItem);
     }
 
@@ -456,7 +448,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Item bestEdibleItem = GetBestPerishableItem(game);
       if (null == bestEdibleItem) return null;
-      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
+      if (""!=m_Actor.ReasonNotUsing(bestEdibleItem)) return null;
       return new ActionUseItem(m_Actor, bestEdibleItem);
     }
 

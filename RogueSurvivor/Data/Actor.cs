@@ -874,6 +874,38 @@ namespace djack.RogueSurvivor.Data
       if (target.IsDead) return "already dead!";
       return "";
     }
+    public string ReasonNotUsing(Item it)
+    {
+      if (it == null) throw new ArgumentNullException("item");
+      if (!Model.Abilities.CanUseItems) return "no ability to use items";
+      if (it is ItemWeapon) return "to use a weapon, equip it";
+      if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
+      if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
+      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
+      if (it is ItemAmmo)
+      {
+        ItemAmmo itemAmmo = it as ItemAmmo;
+        ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+        if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
+        if (itemRangedWeapon.Ammo >= (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo) return "weapon already fully loaded";
+      }
+      else if (it is ItemSprayScent)
+      {
+        if ((it as ItemSprayScent).SprayQuantity <= 0) return "no spray left.";
+      }
+      else if (it is ItemTrap)
+      {
+        if (!(it as ItemTrap).TrapModel.UseToActivate) return "does not activate manually";
+      }
+      else if (it is ItemEntertainment)
+      {
+        if (!Model.Abilities.IsIntelligent) return "not intelligent";
+        if (IsBoredOf(it)) return "bored by this";
+      }
+      Inventory inv = Inventory;
+      if (inv == null || !inv.Contains(it)) return "not in inventory";
+      return "";
+    }
 
     // event timing
     public void SpendActionPoints(int actionCost)
