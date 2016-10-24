@@ -195,7 +195,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.CountFollowers > 0) {
         Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(game, 4, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(4, out target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
             if (target.IsSleeping)

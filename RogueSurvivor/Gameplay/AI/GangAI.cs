@@ -149,7 +149,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
-          tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+          tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
@@ -221,7 +221,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point position = m_Actor.Leader.Location.Position;
         bool isVisible = FOV.Contains(position);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(game, m_Actor.Leader, position, isVisible, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, position, isVisible, maxDist);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
@@ -241,7 +241,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.CountFollowers > 0) {
         Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(game, 3, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(3, out target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(50)) {
             if (target.IsSleeping)

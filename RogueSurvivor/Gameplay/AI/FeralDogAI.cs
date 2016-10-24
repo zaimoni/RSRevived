@@ -56,7 +56,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor targetActor = m_Actor.Leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
           game.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION);
-          ActorAction actorAction = BehaviorStupidBumpToward(game, targetActor.Location.Position);
+          ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location.Position);
           if (actorAction != null) {
             m_Actor.IsRunning = true;
             m_Actor.Activity = Activity.FIGHTING;
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (game.IsAlmostHungry(m_Actor)) {
-        ActorAction actorAction = BehaviorGoEatFoodOnGround(game, FilterStacks(percepts1));
+        ActorAction actorAction = BehaviorGoEatFoodOnGround(FilterStacks(percepts1));
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.IDLE;
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+        ActorAction actorAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.IDLE;
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader) {
         Point position = m_Actor.Leader.Location.Position;
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        ActorAction actorAction = BehaviorFollowActor(game, m_Actor.Leader, position, hasVisibleLeader, maxDist);
+        ActorAction actorAction = BehaviorFollowActor(m_Actor.Leader, position, hasVisibleLeader, maxDist);
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.FOLLOWING;

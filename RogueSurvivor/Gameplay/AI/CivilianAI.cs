@@ -418,7 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
-          tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+          tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
@@ -522,7 +522,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
                 return tmpAction;
               }
             } else {
-              tmpAction = BehaviorIntelligentBumpToward(game, actor.Location.Position);
+              tmpAction = BehaviorIntelligentBumpToward(actor.Location.Position);
               if (null != tmpAction) {
                 m_Actor.Activity = Activity.FOLLOWING;
                 m_Actor.TargetActor = actor;
@@ -588,7 +588,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         Point position1 = m_Actor.Leader.Location.Position;
         bool isVisible = m_LOSSensor.FOV.Contains(position1);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(game, m_Actor.Leader, position1, isVisible, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, position1, isVisible, maxDist);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
@@ -705,7 +705,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       if (m_Actor.CountFollowers > 0)
       {
         Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(game, 2, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
             if (target.IsSleeping) {
