@@ -92,7 +92,6 @@ namespace djack.RogueSurvivor.Engine
       m_WorldTime = (WorldTime) info.GetValue("WorldTime",typeof(WorldTime));
       m_Scoring = (Scoring) info.GetValue("Scoring",typeof(Scoring));
       m_Event_Raids = (int[,,]) info.GetValue("Event_Raids",typeof(int[,,]));
-
       GameMode = (GameMode) info.GetSByte("GameMode");
       ScriptStage_PoliceStationPrisonner = (ScriptStage) info.GetSByte("ScriptStage_PoliceStationPrisoner");
       Seed = info.GetInt32("Seed");
@@ -250,6 +249,13 @@ namespace djack.RogueSurvivor.Engine
       if (filepath == null)
         throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
+#if DEBUG
+        using (Stream stream = Session.CreateStream(filepath, false))
+        {
+          Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
+          stream.Close();
+        }
+#else
       try
       {
         using (Stream stream = Session.CreateStream(filepath, false))
@@ -265,6 +271,7 @@ namespace djack.RogueSurvivor.Engine
         Session.s_TheSession = (Session) null;
         return false;
       }
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
@@ -305,8 +312,8 @@ namespace djack.RogueSurvivor.Engine
         Session.s_TheSession = (Session) null;
         return false;
       }
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
-      return true;
+     Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
+     return true;
     }
 
     private static void SaveXml(Session session, string filepath)
