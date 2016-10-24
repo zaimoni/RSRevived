@@ -5242,20 +5242,18 @@ namespace djack.RogueSurvivor.Engine
       int index = 0;
       List<Point> LoF = new List<Point>(attack.Range);
       FireMode mode = FireMode.DEFAULT;
-      do
-      {
+      do {
         Actor actor = enemiesInFov[index];
-        LoF.Clear();
-        string reason;
-        bool flag3 = m_Rules.CanActorFireAt(player, actor, LoF, out reason);
+        string reason = actor.ReasonNoFireAt(actor, LoF);
+        bool flag3 = (""==reason);
         int num1 = Rules.GridDistance(player.Location.Position, actor.Location.Position);
-                ClearOverlays();
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\target"));
+        ClearOverlays();
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\target"));
         string imageID = flag3 ? (num1 <= attack.EfficientRange ? "Icons\\line_clear" : "Icons\\line_bad") : "Icons\\line_blocked";
         foreach (Point mapPosition in LoF)
-                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapPosition), imageID));
-                RedrawPlayScreen();
+          AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapPosition), imageID));
+        RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
         int num2 = (int) InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape)

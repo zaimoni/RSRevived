@@ -343,11 +343,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // all free actions must be above the enemies check
       if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
       {
-        List<Percept> percepts2 = FilterFireTargets(game, enemies);
+        List<Percept> percepts2 = FilterFireTargets(enemies);
         if (percepts2 != null)
         {
           Actor actor = FilterNearest(percepts2).Percepted as Actor;
-          ActorAction actorAction5 = BehaviorRangedAttack(game, actor);
+          ActorAction actorAction5 = BehaviorRangedAttack(actor);
           if (actorAction5 != null)
           {
             m_Actor.Activity = Activity.FIGHTING;

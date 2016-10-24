@@ -93,10 +93,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // all free actions must be above the enemies check
       if (null != current_enemies && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
-        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
+        List<Percept> percepts3 = FilterFireTargets(current_enemies);
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;
-          tmpAction = BehaviorRangedAttack(game, target);
+          tmpAction = BehaviorRangedAttack(target);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FIGHTING;
             m_Actor.TargetActor = target;

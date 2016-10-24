@@ -182,9 +182,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp.Any() ? new List<Percept>(tmp) : null;
     }
 
-    protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterFireTargets(List<Percept> percepts)
     {
-      return FilterActors(percepts, (Predicate<Actor>) (target => game.Rules.CanActorFireAt(m_Actor, target)));
+      return FilterActors(percepts, (Predicate<Actor>) (target => ""==m_Actor.ReasonNoFireAt(target)));
     }
 
     protected List<Percept> FilterStacks(List<Percept> percepts)
@@ -444,10 +444,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionMeleeAttack(m_Actor, target);
     }
 
-    protected ActorAction BehaviorRangedAttack(RogueGame game, Actor target)
+    protected ActorAction BehaviorRangedAttack(Actor target)
     {
       if (null == target) throw new ArgumentNullException("target");
-      if (!game.Rules.CanActorFireAt(m_Actor, target)) return null;
+      if (""!=m_Actor.ReasonNoFireAt(target)) return null;
       return new ActionRangedAttack(m_Actor, target);
     }
 

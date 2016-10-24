@@ -28,7 +28,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       m_LoF.Clear();
-      return RogueForm.Game.Rules.CanActorFireAt(m_Actor, m_Target, m_LoF, out m_FailReason);
+      m_FailReason = m_Actor.ReasonNoFireAt(m_Target, m_LoF);
+      return ""==m_FailReason;
     }
 
     public override void Perform()

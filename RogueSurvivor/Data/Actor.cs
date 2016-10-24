@@ -862,6 +862,19 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+    public string ReasonNoFireAt(Actor target, List<Point> LoF=null)
+    {
+      if (target == null) throw new ArgumentNullException("target");
+      if (LoF != null) LoF.Clear();
+      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      if (itemRangedWeapon == null) return "no ranged weapon equipped";
+      if (CurrentRangedAttack.Range < Engine.Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
+      if (!Engine.LOS.CanTraceFireLine(Location, target.Location.Position, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {
