@@ -132,14 +132,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null != enemies) {
         Percept target = FilterNearest(enemies);
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
           return tmpAction;
         }
       }
-      tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -163,7 +163,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;

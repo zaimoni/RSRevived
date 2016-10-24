@@ -627,7 +627,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUseMedecine(RogueGame game, int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
+    protected ActorAction BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory == null || inventory.IsEmpty) return null;
@@ -719,13 +719,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target)
+    protected ActorAction BehaviorChargeEnemy(Percept target)
     {
       Actor actor = target.Percepted as Actor;
       ActorAction tmpAction = BehaviorMeleeAttack(actor);
       if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
-        return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
+        return BehaviorUseMedecine(0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
       tmpAction = BehaviorIntelligentBumpToward(target.Location.Position);
       if (null == tmpAction) return null;
       if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
@@ -825,39 +825,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
-          ActorAction actorAction = BehaviorUseMedecine(game, 2, 2, 1, 0, 0);
+          ActorAction actorAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (actorAction != null) {
             m_Actor.Activity = Activity.FLEEING;
             return actorAction;
           }
         }
         ActorAction actorAction1 = BehaviorWalkAwayFrom(game, enemies);
-        if (actorAction1 != null)
-        {
+        if (actorAction1 != null) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
-        if (actorAction1 == null && enemy.IsAdjacentToEnemy)
-        {
+        if (actorAction1 == null && enemy.IsAdjacentToEnemy) {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
           return BehaviorMeleeAttack(target.Percepted as Actor);
         }
-      }
-      else
-      {
-        ActorAction actorAction = BehaviorChargeEnemy(game, target);
-        if (actorAction != null)
-        {
+      } else {
+        ActorAction actorAction = BehaviorChargeEnemy(target);
+        if (actorAction != null) {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
             game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
-                    m_Actor.Activity = Activity.FIGHTING;
-                    m_Actor.TargetActor = target.Percepted as Actor;
+          m_Actor.Activity = Activity.FIGHTING;
+          m_Actor.TargetActor = target.Percepted as Actor;
           return actorAction;
         }
       }
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration)

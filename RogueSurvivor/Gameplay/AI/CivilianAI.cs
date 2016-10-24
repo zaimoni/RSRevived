@@ -361,8 +361,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
-      if (null != enemies)
-      {
+      if (null != enemies) {
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
@@ -377,7 +376,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
         if (actorAction5 != null) return actorAction5;
       }
-      tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -387,10 +386,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (null != enemies && assistLeader)
-      {
+      if (null != enemies && assistLeader) {
         Percept target = FilterNearest(enemies);
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
@@ -409,15 +407,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorEatProactively();
       if (null != tmpAction) return tmpAction;
 
-      if (m_Actor.IsHungry)
-      {
+      if (m_Actor.IsHungry) {
         tmpAction = BehaviorEat();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
-        if (m_Actor.IsStarving || m_Actor.IsInsane)
-        {
+        if (m_Actor.IsStarving || m_Actor.IsInsane) {
           tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
@@ -536,17 +532,14 @@ retry:    Percept percept = FilterNearest(perceptList2);
       {
         Percept target = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a =>
         {
-          if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
-            return false;
-          if (a.Inventory.HasItemOfType(typeof (ItemFood)))
-            return true;
+          if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a)) return false;
+          if (a.Inventory.HasItemOfType(typeof (ItemFood))) return true;
           Inventory itemsAt = a.Location.Map.GetItemsAt(a.Location.Position);
-          if (itemsAt == null || itemsAt.IsEmpty)
-            return false;
+          if (itemsAt == null || itemsAt.IsEmpty) return false;
           return itemsAt.HasItemOfType(typeof (ItemFood));
         })));
         if (target != null) {
-          tmpAction = BehaviorChargeEnemy(game, target);
+          tmpAction = BehaviorChargeEnemy(target);
           if (null != tmpAction) {
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);

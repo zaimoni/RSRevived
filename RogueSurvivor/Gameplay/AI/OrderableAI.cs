@@ -199,7 +199,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
-      ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
+      ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
       if (actorAction4 != null) {
         m_Actor.Activity = Activity.IDLE;
         return actorAction4;
@@ -233,7 +233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction3;
         }
       }
-      ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
+      ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
       if (actorAction4 != null) {
         m_Actor.Activity = Activity.IDLE;
         return actorAction4;
@@ -242,14 +242,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorWander(game, (Predicate<Location>) (loc =>
       {
         List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position.X, loc.Position.Y);
-        if (zonesAt == null)
-          return false;
-        foreach (Zone zone1 in zonesAt)
-        {
-          foreach (Zone zone2 in patrolZones)
-          {
-            if (zone1 == zone2)
-              return true;
+        if (zonesAt == null) return false;
+        foreach (Zone zone1 in zonesAt) {
+          foreach (Zone zone2 in patrolZones) {
+            if (zone1 == zone2) return true;
           }
         }
         return false;
