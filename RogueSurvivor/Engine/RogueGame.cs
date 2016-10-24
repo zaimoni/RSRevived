@@ -4956,12 +4956,9 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerRunToggle(Actor player)
     {
       string reason;
-      if (!player.CanRun(out reason))
-      {
+      if (!player.CanRun(out reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", (object) reason)));
-      }
-      else
-      {
+      } else {
         player.IsRunning = !player.IsRunning;
         AddMessage(MakeMessage(player, string.Format("{0} running.", (object)Conjugate(player, player.IsRunning ? VERB_START : VERB_STOP))));
       }
@@ -4971,41 +4968,33 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      do
-      {
-                RedrawPlayScreen();
+      ClearOverlays();
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        if (direction == null) flag1 = false;
+        else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
-            if (mapObjectAt != null && mapObjectAt is DoorWindow)
-            {
+            if (mapObjectAt != null && mapObjectAt is DoorWindow) {
               DoorWindow door = mapObjectAt as DoorWindow;
-              string reason;
-              if (m_Rules.IsClosableFor(player, door, out reason))
-              {
-                                DoCloseDoor(player, door);
-                                RedrawPlayScreen();
+              string reason = player.ReasonNotClosing(door);
+              if (""==reason) {
+                DoCloseDoor(player, door);
+                RedrawPlayScreen();
                 flag1 = false;
                 flag2 = true;
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", (object) door.TheName, (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Nothing to close there."));
+              } else
+                AddMessage(MakeErrorMessage(string.Format("Can't close {0} : {1}.", (object) door.TheName, (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage("Nothing to close there."));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -5013,11 +5002,10 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      do
-      {
-                RedrawPlayScreen();
+      ClearOverlays();
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;
@@ -6717,7 +6705,7 @@ namespace djack.RogueSurvivor.Engine
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
             if (door == null) return false;
-            return m_Rules.IsClosableFor(m_Player, door);
+            return ""==m_Player.ReasonNotClosing(door);
           }));
         case AdvisorHint.OBJECT_PUSH:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>

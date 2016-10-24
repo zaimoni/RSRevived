@@ -563,7 +563,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return tmpAction;
         }
       }
-      tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);
+      tmpAction = BehaviorCloseDoorBehindMe(PrevLocation);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

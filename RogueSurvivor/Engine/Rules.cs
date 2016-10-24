@@ -785,37 +785,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsClosableFor(Actor actor, DoorWindow door)
-    {
-      string reason;
-      return IsClosableFor(actor, door, out reason);
-    }
-
-    public bool IsClosableFor(Actor actor, DoorWindow door, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (door == null)
-        throw new ArgumentNullException("door");
-      if (!actor.Model.Abilities.CanUseMapObjects)
-      {
-        reason = "can't use objects";
-        return false;
-      }
-      if (!door.IsOpen)
-      {
-        reason = "not open";
-        return false;
-      }
-      if (door.Location.Map.GetActorAt(door.Location.Position) != null)
-      {
-        reason = "someone is there";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorBarricadeDoor(Actor actor, DoorWindow door)
     {
       string reason;

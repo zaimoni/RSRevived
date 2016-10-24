@@ -641,7 +641,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (mapObjectAt != null) {
           DoorWindow door = mapObjectAt as DoorWindow;
           if (door != null) {
-            if (door.IsOpen && game.Rules.IsClosableFor(m_Actor, door)) {
+            if (door.IsOpen && ""==m_Actor.ReasonNotClosing(door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
                 return new ActionCloseDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(game, door.Location.Position);

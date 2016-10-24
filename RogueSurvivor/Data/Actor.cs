@@ -907,6 +907,15 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+    public string ReasonNotClosing(Engine.MapObjects.DoorWindow door)
+    {
+      if (door == null) throw new ArgumentNullException("door");
+      if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
+      if (!door.IsOpen) return "not open";
+      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
+      return "";
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {
