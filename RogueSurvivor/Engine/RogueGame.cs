@@ -5062,23 +5062,17 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      do
-      {
-                RedrawPlayScreen();
+      ClearOverlays();
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction == Direction.NEUTRAL)
-        {
+        if (direction == null) flag1 = false;
+        else if (direction == Direction.NEUTRAL) {
           Exit exitAt = player.Location.Map.GetExitAt(player.Location.Position);
-          if (exitAt == null)
-          {
-                        AddMessage(MakeErrorMessage("No exit there."));
-          }
-          else
-          {
+          if (exitAt == null) {
+            AddMessage(MakeErrorMessage("No exit there."));
+          } else {
             Actor actorAt = exitAt.Location.Actor;
             string reason;
             if (actorAt != null) {
@@ -5088,55 +5082,44 @@ namespace djack.RogueSurvivor.Engine
                   DoMeleeAttack(player, actorAt);
                   flag1 = false;
                   flag2 = true;
-                }
-                else
+                } else
                   AddMessage(MakeErrorMessage(string.Format("Cannot attack {0} : {1}.", (object) actorAt.Name, (object) reason)));
-              }
-              else
+              } else
                 AddMessage(MakeErrorMessage(string.Format("{0} is not your enemy.", (object) actorAt.Name)));
-            }
-            else {
+            } else {
               MapObject mapObjectAt = exitAt.Location.MapObject;
               if (mapObjectAt != null) {
-                if (m_Rules.IsBreakableFor(player, mapObjectAt, out reason)) {
+                reason = player.ReasonCantBreak(mapObjectAt);
+                if (""==reason) {
                   DoBreak(player, mapObjectAt);
                   flag1 = false;
                   flag2 = true;
-                }
-                else
+                } else
                   AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
-              }
-              else
+              } else
                 AddMessage(MakeErrorMessage("Nothing to break or attack on the other side."));
             }
           }
-        }
-        else
-        {
+        } else {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
-            if (mapObjectAt != null)
-            {
-              string reason;
-              if (m_Rules.IsBreakableFor(player, mapObjectAt, out reason))
-              {
-                                DoBreak(player, mapObjectAt);
-                                RedrawPlayScreen();
+            if (mapObjectAt != null) {
+              string reason = player.ReasonCantBreak(mapObjectAt);
+              if (""==reason) {
+                DoBreak(player, mapObjectAt);
+                RedrawPlayScreen();
                 flag1 = false;
                 flag2 = true;
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Nothing to break there."));
+              } else
+                AddMessage(MakeErrorMessage(string.Format("Cannot break {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage("Nothing to break there."));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -5147,9 +5130,8 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       int num = m_Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
-      if (m_Rules.CountBarricadingMaterial(player) < num)
-      {
-                AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", (object) num)));
+      if (m_Rules.CountBarricadingMaterial(player) < num) {
+        AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", (object) num)));
         return false;
       }
       bool flag1 = true;
@@ -6719,7 +6701,7 @@ namespace djack.RogueSurvivor.Engine
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
             if (mapObjectAt == null) return false;
-            return m_Rules.IsBreakableFor(m_Player, mapObjectAt);
+            return ""==m_Player.ReasonCantBreak(mapObjectAt);
           }));
         case AdvisorHint.BARRICADE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>

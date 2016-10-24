@@ -22,7 +22,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.IsBreakableFor(m_Actor, m_Obj, out m_FailReason);
+      m_FailReason = m_Actor.ReasonCantBreak(m_Obj);
+      return ""==m_FailReason;
     }
 
     public override void Perform()

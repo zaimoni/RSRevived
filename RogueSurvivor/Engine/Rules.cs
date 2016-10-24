@@ -588,8 +588,10 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         if (CanActorGetItemFromContainer(actor, point, out reason)) return new ActionGetFromContainer(actor, point);
-        if (actor.Model.Abilities.CanBashDoors && IsBreakableFor(actor, mapObjectAt, out reason))
-          return new ActionBreak(actor, mapObjectAt);
+        if (actor.Model.Abilities.CanBashDoors) {
+          reason = actor.ReasonCantBreak(mapObjectAt);
+          if (""==reason) return new ActionBreak(actor, mapObjectAt);
+        }
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
         if (powGen != null)
         {
@@ -849,38 +851,6 @@ namespace djack.RogueSurvivor.Engine
       }
       if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) {
         reason = "can't break this object";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public bool IsBreakableFor(Actor actor, MapObject mapObj)
-    {
-      string reason;
-      return IsBreakableFor(actor, mapObj, out reason);
-    }
-
-    public bool IsBreakableFor(Actor actor, MapObject mapObj, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (mapObj == null) throw new ArgumentNullException("mapObj");
-      if (!actor.Model.Abilities.CanBreakObjects) {
-        reason = "cannot break objects";
-        return false;
-      }
-      if (actor.IsTired) {
-        reason = "tired";
-        return false;
-      }
-      DoorWindow doorWindow = mapObj as DoorWindow;
-      bool flag = doorWindow != null && doorWindow.IsBarricaded;
-      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) {
-        reason = "can't break this object";
-        return false;
-      }
-      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) {
-        reason = "someone is there";
         return false;
       }
       reason = "";

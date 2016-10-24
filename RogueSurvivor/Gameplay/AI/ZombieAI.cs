@@ -93,48 +93,48 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
-        if (actorAction != null) {
+        tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
+        if (null != tmpAction) {
           m_MemLOSSensor.Clear();
           m_Actor.Activity = Activity.IDLE;
-          return actorAction;
+          return tmpAction;
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
         Percept percept = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
         if (percept != null) {
-          ActorAction actorAction = BehaviorStupidBumpToward(game, RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
-          if (actorAction != null) {
+          tmpAction = BehaviorStupidBumpToward(game, RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
+          if (null != tmpAction) {
             m_Actor.Activity = Activity.FOLLOWING;
             m_Actor.TargetActor = percept.Percepted as Actor;
-            return actorAction;
+            return tmpAction;
           }
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
-        ActorAction actorAction = BehaviorTrackScent(game, m_MasterSmellSensor.Scents);
-        if (actorAction != null) {
+        tmpAction = BehaviorTrackScent(game, m_MasterSmellSensor.Scents);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.TRACKING;
-          return actorAction;
+          return tmpAction;
         }
       }
-      ActorAction actorAction3 = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
-      if (actorAction3 != null) {
+      tmpAction = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.TRACKING;
-        return actorAction3;
+        return tmpAction;
       }
       if (m_Actor.CanPush && game.Rules.RollChance(PUSH_OBJECT_CHANCE)) {
-        ActorAction actorAction1 = BehaviorPushNonWalkableObject(game);
-        if (actorAction1 != null) {
+        tmpAction = BehaviorPushNonWalkableObject(game);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
-          return actorAction1;
+          return tmpAction;
         }
       }
       if (m_Actor.Model.Abilities.ZombieAI_Explore) {
-        ActorAction actorAction1 = BehaviorExplore(game, m_Exploration);
-        if (actorAction1 != null) {
+        tmpAction = BehaviorExplore(game, m_Exploration);
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
-          return actorAction1;
+          return tmpAction;
         }
       }
       m_Actor.Activity = Activity.IDLE;

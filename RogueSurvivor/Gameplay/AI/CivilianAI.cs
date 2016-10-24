@@ -615,8 +615,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
-        if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE))
-        {
+        if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
           tmpAction = BehaviorPushNonWalkableObjectForFood(game);
           if (null != tmpAction) {
             game.DoEmote(m_Actor, "Where is all the damn food?!");
@@ -631,7 +630,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         return tmpAction;
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.DONT_BACKTRACK);
+        tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

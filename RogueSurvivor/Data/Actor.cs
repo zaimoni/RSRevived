@@ -916,6 +916,18 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+    public string ReasonCantBreak(MapObject mapObj)
+    {
+      if (mapObj == null) throw new ArgumentNullException("mapObj");
+      if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
+      if (IsTired) return "tired";
+      Engine.MapObjects.DoorWindow doorWindow = mapObj as Engine.MapObjects.DoorWindow;
+      bool flag = doorWindow != null && doorWindow.IsBarricaded;
+      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
+      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
+      return "";
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {

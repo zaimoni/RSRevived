@@ -711,15 +711,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorTrackScent(RogueGame game, List<Percept> scents)
     {
-      if (scents == null || scents.Count == 0)
-        return (ActorAction) null;
+      if (scents == null || scents.Count == 0) return null;
       Percept percept = FilterStrongestScent(scents);
       Map map = m_Actor.Location.Map;
       if (!(m_Actor.Location.Position == percept.Location.Position))
-        return BehaviorIntelligentBumpToward(game, percept.Location.Position) ?? (ActorAction) null;
+        return BehaviorIntelligentBumpToward(game, percept.Location.Position) ?? null;
       if (map.GetExitAt(m_Actor.Location.Position) != null && m_Actor.Model.Abilities.AI_CanUseAIExits)
-        return BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-      return (ActorAction) null;
+        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      return null;
     }
 
     protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target)
@@ -789,12 +788,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             throw new ArgumentOutOfRangeException("unhandled courage");
         }
       }
-      if (decideToFlee)
-      {
+      if (decideToFlee) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
-        if (m_Actor.Model.Abilities.CanUseMapObjects)
-        {
+        if (m_Actor.Model.Abilities.CanUseMapObjects) {
           BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
           {
             Point point = m_Actor.Location.Position + dir;
@@ -804,8 +801,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (choiceEval != null)
             return new ActionCloseDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
-        if (m_Actor.Model.Abilities.CanBarricade)
-        {
+        if (m_Actor.Model.Abilities.CanBarricade) {
           BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
           {
             Point point = m_Actor.Location.Position + dir;
@@ -815,31 +811,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (choiceEval != null)
             return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))
-        {
-          ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);
-          if (actorAction != null)
-          {
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE)) {
+          ActorAction actorAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
+          if (actorAction != null) {
             bool flag3 = true;
-            if (m_Actor.HasLeader)
-            {
+            if (m_Actor.HasLeader) {
               Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
               if (exitAt != null)
                 flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
-            if (flag3)
-            {
-                            m_Actor.Activity = Activity.FLEEING;
+            if (flag3) {
+              m_Actor.Activity = Activity.FLEEING;
               return actorAction;
             }
           }
         }
-        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location))
-        {
+        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
           ActorAction actorAction = BehaviorUseMedecine(game, 2, 2, 1, 0, 0);
-          if (actorAction != null)
-          {
-                        m_Actor.Activity = Activity.FLEEING;
+          if (actorAction != null) {
+            m_Actor.Activity = Activity.FLEEING;
             return actorAction;
           }
         }
@@ -917,25 +907,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUseExit(RogueGame game, BaseAI.UseExitFlags useFlags)
+    protected ActorAction BehaviorUseExit(BaseAI.UseExitFlags useFlags)
     {
       Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-      if (exitAt == null)
-        return (ActorAction) null;
-      if (!exitAt.IsAnAIExit)
-        return (ActorAction) null;
-      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation)
-        return (ActorAction) null;
-      if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE)
-      {
+      if (exitAt == null) return null;
+      if (!exitAt.IsAnAIExit) return null;
+      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
+      if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;
         if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && ""==m_Actor.ReasonNoMeleeAttack(actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
-      if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE)
-      {
+      if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {
         MapObject mapObjectAt = exitAt.Location.MapObject;
-        if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
+        if (mapObjectAt != null && ""==m_Actor.ReasonCantBreak(mapObjectAt))
           return new ActionBreak(m_Actor, mapObjectAt);
       }
       if (""!=m_Actor.ReasonNoExit(m_Actor.Location.Position)) return null;

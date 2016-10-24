@@ -107,8 +107,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
         List<Percept> enemies = FilterEnemies(percepts1);
-        if (enemies != null)
-        {
+        if (enemies != null) {
           List<Percept> current_enemies = FilterCurrent(enemies);
           Actor tmpActor;
           if (current_enemies != null) {
@@ -130,22 +129,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (game.Rules.RollChance(SHOUT_CHANCE))
-      {
+      if (game.Rules.RollChance(SHOUT_CHANCE)) {
         string text = INSANITIES[game.Rules.Roll(0, INSANITIES.Length)];
-                m_Actor.Activity = Activity.IDLE;
+        m_Actor.Activity = Activity.IDLE;
         game.DoEmote(m_Actor, text);
       }
-      if (game.Rules.RollChance(USE_EXIT_CHANCE))
-      {
-        ActorAction actorAction2 = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
+      if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
+        ActorAction actorAction2 = BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        if (actorAction2 != null) {
+          m_Actor.Activity = Activity.IDLE;
           return actorAction2;
         }
       }
-            m_Actor.Activity = Activity.IDLE;
+      m_Actor.Activity = Activity.IDLE;
       return BehaviorWander(game);
     }
   }
