@@ -571,13 +571,13 @@ retry:    Percept percept = FilterNearest(perceptList2);
       if (m_Actor.Model.Abilities.HasSanity)
       {
         if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
-          tmpAction = BehaviorUseEntertainment(game);
+          tmpAction = BehaviorUseEntertainment();
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
         }
-        tmpAction = BehaviorDropBoringEntertainment(game);
+        tmpAction = BehaviorDropBoringEntertainment();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

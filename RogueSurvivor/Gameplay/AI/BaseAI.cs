@@ -630,8 +630,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorUseMedecine(RogueGame game, int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
     {
       Inventory inventory = m_Actor.Inventory;
-      if (inventory == null || inventory.IsEmpty)
-        return (ActorAction) null;
+      if (inventory == null || inventory.IsEmpty) return null;
       bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
       bool needSTA = m_Actor.IsTired;
       bool needSLP = m_Actor.WouldLikeToSleep;
@@ -654,7 +653,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, choiceEval.Choice);
     }
 
-    protected ActorAction BehaviorUseEntertainment(RogueGame game)
+    protected ActorAction BehaviorUseEntertainment()
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory.IsEmpty) return null;
@@ -664,7 +663,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, itemEntertainment);
     }
 
-    protected ActorAction BehaviorDropBoringEntertainment(RogueGame game)
+    protected ActorAction BehaviorDropBoringEntertainment()
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory.IsEmpty) return null;
