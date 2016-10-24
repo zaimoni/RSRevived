@@ -437,10 +437,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorMeleeAttack(RogueGame game, Actor target)
+    protected ActorAction BehaviorMeleeAttack(Actor target)
     {
       if (null == target) throw new ArgumentNullException("target");
-      if (!game.Rules.CanActorMeleeAttack(m_Actor, target)) return null;
+      if (""!=m_Actor.ReasonNoMeleeAttack(target)) return null;
       return new ActionMeleeAttack(m_Actor, target);
     }
 
@@ -734,7 +734,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target)
     {
       Actor actor = target.Percepted as Actor;
-      ActorAction tmpAction = BehaviorMeleeAttack(game, actor);
+      ActorAction tmpAction = BehaviorMeleeAttack(actor);
       if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
         return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
@@ -863,7 +863,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
-          return BehaviorMeleeAttack(game, target.Percepted as Actor);
+          return BehaviorMeleeAttack(target.Percepted as Actor);
         }
       }
       else
@@ -938,7 +938,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE)
       {
         Actor actorAt = exitAt.Location.Actor;
-        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
+        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && ""==m_Actor.ReasonNoMeleeAttack(actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE)

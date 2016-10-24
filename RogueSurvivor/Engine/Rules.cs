@@ -566,59 +566,6 @@ namespace djack.RogueSurvivor.Engine
       return CanActorGetItem(target, gift, out reason);
     }
 
-    public bool CanActorMeleeAttack(Actor actor, Actor target)
-    {
-      string reason;
-      return CanActorMeleeAttack(actor, target, out reason);
-    }
-
-    public bool CanActorMeleeAttack(Actor actor, Actor target, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (actor.Location.Map == target.Location.Map)
-      {
-        if (!Rules.IsAdjacent(actor.Location.Position, target.Location.Position))
-        {
-          reason = "not adjacent";
-          return false;
-        }
-      }
-      else
-      {
-        Exit exitAt = actor.Location.Map.GetExitAt(actor.Location.Position);
-        if (exitAt == null)
-        {
-          reason = "not reachable";
-          return false;
-        }
-        if (target.Location.Map.GetExitAt(target.Location.Position) == null)
-        {
-          reason = "not reachable";
-          return false;
-        }
-        if (exitAt.Location != target.Location)
-        {
-          reason = "not reachable";
-          return false;
-        }
-      }
-      if (actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
-      {
-        reason = "not enough stamina to attack";
-        return false;
-      }
-      if (target.IsDead)
-      {
-        reason = "already dead!";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public static bool IsWalkableFor(Actor actor, Map map, Point p)
     {
       string reason;
@@ -701,11 +648,10 @@ namespace djack.RogueSurvivor.Engine
       }
       reason = actionMoveStep.FailReason;
       Actor actorAt = map.GetActorAt(point);
-      if (actorAt != null)
-      {
-        if (actor.IsEnemyOf(actorAt))
-        {
-          if (CanActorMeleeAttack(actor, actorAt, out reason)) return new ActionMeleeAttack(actor, actorAt);
+      if (actorAt != null) {
+        if (actor.IsEnemyOf(actorAt)) {
+          reason = actor.ReasonNoMeleeAttack(actorAt);
+          if (""==reason) return new ActionMeleeAttack(actor, actorAt);
           return null;
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))

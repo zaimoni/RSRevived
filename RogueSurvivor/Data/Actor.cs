@@ -845,6 +845,23 @@ namespace djack.RogueSurvivor.Data
       return mapObj.ReasonNoPush();
     }
 
+    public string ReasonNoMeleeAttack(Actor target)
+    {
+      if (target == null) throw new ArgumentNullException("target");
+      if (Location.Map == target.Location.Map)
+      {
+        if (!Engine.Rules.IsAdjacent(Location.Position, target.Location.Position)) return "not adjacent";
+      } else {
+        Exit exitAt = Location.Map.GetExitAt(Location.Position);
+        if (exitAt == null) return "not reachable";
+        if (target.Location.Map.GetExitAt(target.Location.Position) == null) return "not reachable";
+        if (exitAt.Location != target.Location) return "not reachable";
+      }
+      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {
