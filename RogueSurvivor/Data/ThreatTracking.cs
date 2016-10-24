@@ -54,8 +54,8 @@ namespace djack.RogueSurvivor.Data
 
         public void Cleared(Location loc)
         { // some sort of race condition here ... a dead actor may be removed between _threats[a].Remove(loc)
-          // and _threats[a].Count
-          foreach (Actor a in _threats.Keys.ToList().Where(a=>!a.IsDead)) {
+          // and _threats[a].Count.  a may even be null in the Where clause.
+          foreach (Actor a in _threats.Keys.ToList().Where(a=>null!=a && !a.IsDead)) {
             if (_threats[a].Remove(loc) && 0 >= _threats[a].Count) _threats.Remove(a);
           }
         }

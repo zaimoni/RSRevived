@@ -5182,7 +5182,7 @@ namespace djack.RogueSurvivor.Engine
       FireMode mode = FireMode.DEFAULT;
       do {
         Actor actor = enemiesInFov[index];
-        string reason = actor.ReasonNoFireAt(actor, LoF);
+        string reason = player.ReasonNoFireAt(actor, LoF);
         bool flag3 = (""==reason);
         int num1 = Rules.GridDistance(player.Location.Position, actor.Location.Position);
         ClearOverlays();
@@ -13267,7 +13267,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (m_SimThread == null) return;
       m_SimThread.Abort();
-      m_SimThread = (Thread) null;
+      m_SimThread = null;
     }
 
     private void SimThreadProc()
