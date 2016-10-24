@@ -595,11 +595,11 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return tmpAction;
         }
       }
-      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)))
+      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < Rules.ActorMaxFollowers(m_Actor)))
       {
         Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
-          tmpAction = BehaviorLeadActor(game, target);
+          tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             m_Actor.TargetActor = target.Percepted as Actor;

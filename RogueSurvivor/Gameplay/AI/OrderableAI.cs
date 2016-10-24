@@ -692,10 +692,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(target.Location.Position);
     }
 
-    protected ActorAction BehaviorLeadActor(RogueGame game, Percept target)
+    protected ActorAction BehaviorLeadActor(Percept target)
     {
       Actor target1 = target.Percepted as Actor;
-      if (!game.Rules.CanActorTakeLead(m_Actor, target1)) return null;
+      if (""!=m_Actor.ReasonCantTakeLead(target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
         return new ActionTakeLead(m_Actor, target1);
       return BehaviorIntelligentBumpToward(target1.Location.Position);

@@ -5437,14 +5437,13 @@ namespace djack.RogueSurvivor.Engine
               }
               else
                                 AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Noone there."));
+            } else
+              AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -5452,56 +5451,42 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      do
-      {
-                RedrawPlayScreen();
+      ClearOverlays();
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        if (direction == null) flag1 = false;
+        else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
-            if (actorAt != null)
-            {
-              string reason;
-              if (m_Rules.CanActorTakeLead(player, actorAt, out reason))
-              {
+            if (actorAt != null) {
+              string reason = player.ReasonCantTakeLead(actorAt);
+              if (""==reason) {
                 flag2 = true;
                 flag1 = false;
                 DoTakeLead(player, actorAt);
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited {0}.", (object) actorAt.TheName));
                 AddMessage(new Data.Message("(you can now set directives and orders for your new follower).", Session.Get.WorldTime.TurnCounter, Color.White));
                 AddMessage(new Data.Message(string.Format("(to give order : press <{0}>).", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
-              }
-              else if (actorAt.Leader == player)
-              {
-                if (m_Rules.CanActorCancelLead(player, actorAt, out reason))
-                {
+              } else if (actorAt.Leader == player) {
+                if (m_Rules.CanActorCancelLead(player, actorAt, out reason)) {
                   AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", (object) actorAt.TheName)));
                   RedrawPlayScreen();
-                  if (WaitYesOrNo())
-                  {
+                  if (WaitYesOrNo()) {
                     flag2 = true;
                     flag1 = false;
                     DoCancelLead(player, actorAt);
                     Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired {0}.", (object) actorAt.TheName));
-                  }
-                  else
+                  } else
                     AddMessage(new Data.Message("Good, together you are strong.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-                }
-                else
+                } else
                   AddMessage(MakeErrorMessage(string.Format("{0} can't leave : {1}.", (object) actorAt.TheName, (object) reason)));
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", (object) actorAt.TheName, (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Noone there."));
+              } else
+                AddMessage(MakeErrorMessage(string.Format("Can't lead {0} : {1}.", (object) actorAt.TheName, (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
@@ -6758,9 +6743,8 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
-            if (actorAt == null)
-              return false;
-            return m_Rules.CanActorTakeLead(m_Player, actorAt);
+            if (actorAt == null) return false;
+            return ""==m_Player.ReasonCantTakeLead(actorAt);
           }));
         case AdvisorHint.LEADING_GIVE_ORDERS:
           return m_Player.CountFollowers > 0;
@@ -12034,7 +12018,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.IsUndead)
         m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), (object)m_Rules.ActorSmell(actor), (object) actor.KillsCount), gx, gy, new Color?());
       else
-        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), (object) actor.CountFollowers, (object)m_Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), (object) actor.CountFollowers, (object)Rules.ActorMaxFollowers(actor)), gx, gy, new Color?());
     }
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
