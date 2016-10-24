@@ -1074,7 +1074,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemMedicine stim2 = inv.GetBestDestackable(it) as ItemMedicine;
         if (null != stim2) {
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
+          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
           if (num4 <= need) {
             if (""==m_Actor.ReasonNotUsing(stim2)) return new ActionUseItem(m_Actor, stim2);
           }
@@ -1099,7 +1099,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemMedicine stim = inv.GetBestDestackable(game.GameItems[GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine;
       if (null != stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
+        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
         if (num4*stim.Quantity <= need) {
           if (""==m_Actor.ReasonNotUsing(stim)) return new ActionUseItem(m_Actor, stim);
         }
@@ -1201,7 +1201,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
       }
       game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", (object) target.Name));
-      int chance = game.Rules.ActorSpotMurdererChance(m_Actor, target);
+      int chance = Rules.ActorSpotMurdererChance(m_Actor, target);
       if (!game.Rules.RollChance(chance))
         return (ActorAction) null;
       game.DoMakeAggression(m_Actor, target);

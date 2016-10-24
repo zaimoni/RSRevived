@@ -531,7 +531,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>((Predicate<ItemGrenade>) (it => !IsItemTaboo(it)));
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model as ItemGrenadeModel;
-      int maxRange = game.Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
+      int maxRange = Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
       Point? nullable = null;
       int num1 = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
@@ -704,7 +704,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true))
+      if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true))
         return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
@@ -754,7 +754,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false))
+      if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false))
         return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>

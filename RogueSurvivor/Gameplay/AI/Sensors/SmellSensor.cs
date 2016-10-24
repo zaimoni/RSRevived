@@ -19,24 +19,22 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private Odor m_OdorToSmell;
     private List<Percept> m_List;
 
-    public List<Percept> Scents
-    {
-      get
-      {
+    public List<Percept> Scents {
+      get {
         return m_List;
       }
     }
 
     public SmellSensor(Odor odorToSmell)
     {
-            m_OdorToSmell = odorToSmell;
-            m_List = new List<Percept>(9);
+      m_OdorToSmell = odorToSmell;
+      m_List = new List<Percept>(9);
     }
 
     public override List<Percept> Sense(Actor actor)
     {
-            m_List.Clear();
-      int num = RogueForm.Game.Rules.ActorSmellThreshold(actor);
+      m_List.Clear();
+      int num = Rules.ActorSmellThreshold(actor);
       int x1 = actor.Location.Position.X - 1;
       int x2 = actor.Location.Position.X + 1;
       int y1 = actor.Location.Position.Y - 1;
@@ -45,15 +43,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       actor.Location.Map.TrimToBounds(ref x2, ref y2);
       int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
       Point position = new Point();
-      for (int index1 = x1; index1 <= x2; ++index1)
-      {
+      for (int index1 = x1; index1 <= x2; ++index1) {
         position.X = index1;
-        for (int index2 = y1; index2 <= y2; ++index2)
-        {
+        for (int index2 = y1; index2 <= y2; ++index2) {
           position.Y = index2;
           int scentByOdorAt = actor.Location.Map.GetScentByOdorAt(m_OdorToSmell, position);
           if (scentByOdorAt >= 0 && scentByOdorAt >= num)
-                        m_List.Add(new Percept((object) new SmellSensor.AIScent(m_OdorToSmell, scentByOdorAt), turnCounter, new Location(actor.Location.Map, position)));
+            m_List.Add(new Percept((object) new SmellSensor.AIScent(m_OdorToSmell, scentByOdorAt), turnCounter, new Location(actor.Location.Map, position)));
         }
       }
       return m_List;
