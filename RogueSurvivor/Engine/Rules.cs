@@ -940,13 +940,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsActorDisturbed(Actor a)
-    {
-      if (a.Model.Abilities.HasSanity)
-        return a.Sanity <= ActorDisturbedLevel(a);
-      return false;
-    }
-
     public int SanityToHoursUntilUnstable(Actor a)
     {
       int num = a.Sanity - ActorDisturbedLevel(a);

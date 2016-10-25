@@ -2708,7 +2708,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.Model.Abilities.HasToSleep) {
 #region sleep.
             if (actor.IsSleeping) {
-              if (m_Rules.IsActorDisturbed(actor) && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
+              if (actor.IsDisturbed && m_Rules.RollChance(Rules.SANITY_NIGHTMARE_CHANCE)) {
                 DoWakeUp(actor);
                 DoShout(actor, "NO! LEAVE ME ALONE!");
                 actor.Drowse(Rules.SANITY_NIGHTMARE_SLP_LOSS);
@@ -7409,7 +7409,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.HasSanity)
       {
         if (actor.IsInsane) stringList.Add("Insane!");
-        else if (m_Rules.IsActorDisturbed(actor)) stringList.Add("Disturbed.");
+        else if (actor.IsDisturbed) stringList.Add("Disturbed.");
       }
       stringList.Add(string.Format("Spd : {0:F2}", (object) ((double)actor.Speed / Rules.BASE_SPEED)));
       StringBuilder stringBuilder = new StringBuilder();
@@ -11456,7 +11456,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.Model.Abilities.HasSanity) {
             if (actor.IsInsane)
               m_UI.UI_DrawImage("Icons\\sanity_insane", gx2, gy2, tint);
-            else if (m_Rules.IsActorDisturbed(actor))
+            else if (actor.IsDisturbed)
               m_UI.UI_DrawImage("Icons\\sanity_disturbed", gx2, gy2, tint);
           }
           if (m_Player != null && m_Rules.CanActorInitiateTradeWith(m_Player, actor))
@@ -11903,7 +11903,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", (object) actor.Sanity), gx, gy, new Color?());
         DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (m_Rules.IsActorDisturbed(actor)) {
+        if (actor.IsDisturbed) {
           if (actor.IsInsane)
             m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
           else
