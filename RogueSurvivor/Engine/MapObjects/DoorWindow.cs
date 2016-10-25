@@ -86,13 +86,38 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       m_OpenImageID = openImageID;
       m_BrokenImageID = brokenImageID;
       m_BarricadePoints = 0;
-      SetState(STATE_CLOSED);
+      _SetState(STATE_CLOSED);
       if ("window" == name) m_IsWindow = true;  // XXX arguably should be a constructor parameter
     }
 
     public void Barricade(int delta)
     {
       BarricadePoints += delta;
+    }
+
+    private void _SetState(int newState)
+    {
+      switch (newState)
+      {
+        case STATE_CLOSED:
+          ImageID = m_ClosedImageID;
+          IsWalkable = false;
+          break;
+        case STATE_OPEN:
+          ImageID = m_OpenImageID;
+          IsWalkable = true;
+          break;
+        case STATE_BROKEN:
+          ImageID = m_BrokenImageID;
+          BreakState = MapObject.Break.BROKEN;
+          HitPoints = 0;
+          m_BarricadePoints = 0;
+          IsWalkable = true;
+          break;
+        default:
+          throw new ArgumentOutOfRangeException("newState unhandled");
+      }
+      base.SetState(newState);
     }
 
     public override void SetState(int newState)

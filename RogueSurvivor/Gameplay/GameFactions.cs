@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Gameplay
     };
     private Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
-    public override Faction this[int id] {
+    public Faction this[int id] {
       get {
         return m_Factions[id];
       }

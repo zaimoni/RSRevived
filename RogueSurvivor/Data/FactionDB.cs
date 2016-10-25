@@ -6,8 +6,8 @@
 
 namespace djack.RogueSurvivor.Data
 {
-  internal abstract class FactionDB
+  internal interface FactionDB
   {
-    public abstract Faction this[int id] { get; }
+    Faction this[int id] { get; }
   }
 }
