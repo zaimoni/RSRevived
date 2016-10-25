@@ -82,8 +82,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (ActorAction) new ActionWait(m_Actor, game);
     }
 
-    protected abstract List<Percept> UpdateSensors(RogueGame game);
-
     protected abstract ActorAction SelectAction(RogueGame game, List<Percept> percepts);
 
 /*
