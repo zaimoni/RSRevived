@@ -237,24 +237,26 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadBin(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
-      try
-      {
-        using (Stream stream = Session.CreateStream(filepath, false))
-        {
+#if DEBUG
+        using (Stream stream = Session.CreateStream(filepath, false)) {
           Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
           stream.Close();
         }
-      }
-      catch (Exception ex)
-      {
+#else
+      try {
+        using (Stream stream = Session.CreateStream(filepath, false)) {
+          Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
+          stream.Close();
+        }
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         Session.s_TheSession = (Session) null;
         return false;
       }
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
