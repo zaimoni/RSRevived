@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -35,35 +36,35 @@ namespace djack.RogueSurvivor.Data
 
     public ActorSheet(int baseHitPoints, int baseStaminaPoints, int baseFoodPoints, int baseSleepPoints, int baseSanity, Attack unarmedAttack, Defence baseDefence, int baseViewRange, int baseAudioRange, int smellRating, int inventoryCapacity)
     {
-            BaseHitPoints = baseHitPoints;
-            BaseStaminaPoints = baseStaminaPoints;
-            BaseFoodPoints = baseFoodPoints;
-            BaseSleepPoints = baseSleepPoints;
-            BaseSanity = baseSanity;
-            UnarmedAttack = unarmedAttack;
-            BaseDefence = baseDefence;
-            BaseViewRange = baseViewRange;
-            BaseAudioRange = baseAudioRange;
-            BaseSmellRating = (float) smellRating / 100f;
-            BaseInventoryCapacity = inventoryCapacity;
+      BaseHitPoints = baseHitPoints;
+      BaseStaminaPoints = baseStaminaPoints;
+      BaseFoodPoints = baseFoodPoints;
+      BaseSleepPoints = baseSleepPoints;
+      BaseSanity = baseSanity;
+      UnarmedAttack = unarmedAttack;
+      BaseDefence = baseDefence;
+      BaseViewRange = baseViewRange;
+      BaseAudioRange = baseAudioRange;
+      BaseSmellRating = (float) smellRating / 100f;
+      BaseInventoryCapacity = inventoryCapacity;
     }
 
     public ActorSheet(ActorSheet copyFrom)
     {
-      if (copyFrom == null) throw new ArgumentNullException("copyFrom");
-            BaseHitPoints = copyFrom.BaseHitPoints;
-            BaseStaminaPoints = copyFrom.BaseStaminaPoints;
-            BaseFoodPoints = copyFrom.BaseFoodPoints;
-            BaseSleepPoints = copyFrom.BaseSleepPoints;
-            BaseSanity = copyFrom.BaseSanity;
-            UnarmedAttack = copyFrom.UnarmedAttack;
-            BaseDefence = copyFrom.BaseDefence;
-            BaseViewRange = copyFrom.BaseViewRange;
-            BaseAudioRange = copyFrom.BaseAudioRange;
-            BaseSmellRating = copyFrom.BaseSmellRating;
-            BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
+      Contract.Requires(null!=copyFrom);
+      BaseHitPoints = copyFrom.BaseHitPoints;
+      BaseStaminaPoints = copyFrom.BaseStaminaPoints;
+      BaseFoodPoints = copyFrom.BaseFoodPoints;
+      BaseSleepPoints = copyFrom.BaseSleepPoints;
+      BaseSanity = copyFrom.BaseSanity;
+      UnarmedAttack = copyFrom.UnarmedAttack;
+      BaseDefence = copyFrom.BaseDefence;
+      BaseViewRange = copyFrom.BaseViewRange;
+      BaseAudioRange = copyFrom.BaseAudioRange;
+      BaseSmellRating = copyFrom.BaseSmellRating;
+      BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
       if (copyFrom.SkillTable.Skills == null) return;
-            m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
+      m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
     }
   }
 }

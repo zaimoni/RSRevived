@@ -12,16 +12,14 @@ namespace djack.RogueSurvivor.Engine
 {
   internal class WAVSoundManager : ISoundManager,IDisposable
     {
-    private Dictionary<string, SoundPlayer> m_Musics;
-    private Dictionary<string, SoundPlayer> m_PlayingMusics;
+    private readonly Dictionary<string, SoundPlayer> m_Musics = new Dictionary<string, SoundPlayer>();
+    private readonly Dictionary<string, SoundPlayer> m_PlayingMusics = new Dictionary<string, SoundPlayer>();
 
     public bool IsMusicEnabled { get; set; }
     public int Volume { get; set; }
 
     public WAVSoundManager()
     {
-      m_Musics = new Dictionary<string, SoundPlayer>();
-      m_PlayingMusics = new Dictionary<string, SoundPlayer>();
       Volume = 100;
     }
 
@@ -39,9 +37,7 @@ namespace djack.RogueSurvivor.Engine
         SoundPlayer tmp = new SoundPlayer(filename);
         tmp.LoadAsync();    // default timeout is 10 seconds
         m_Musics.Add(musicname, tmp);
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.INIT_SOUND, string.Format("failed to load music file {0} exception {1}.", (object) filename, (object) ex.ToString()));
       }
       return true;

@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -15,34 +16,26 @@ namespace djack.RogueSurvivor.Engine.Items
     private bool m_IsActivated;
     private bool m_IsTriggered;
 
-    public bool IsActivated
-    {
-      get
-      {
+    public bool IsActivated {
+      get {
         return m_IsActivated;
       }
-      set
-      {
-                m_IsActivated = value;
+      set {
+        m_IsActivated = value;
       }
     }
 
-    public bool IsTriggered
-    {
-      get
-      {
+    public bool IsTriggered {
+      get {
         return m_IsTriggered;
       }
-      set
-      {
-                m_IsTriggered = value;
+      set {
+        m_IsTriggered = value;
       }
     }
 
-    public ItemTrapModel TrapModel
-    {
-      get
-      {
+    public ItemTrapModel TrapModel {
+      get {
         return Model as ItemTrapModel;
       }
     }
@@ -50,8 +43,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrap(ItemModel model)
       : base(model)
     {
-      if (!(model is ItemTrapModel))
-        throw new ArgumentException("model is not a TrapModel");
+      Contract.Requires(model is ItemTrapModel);
     }
 
     public ItemTrap Clone()

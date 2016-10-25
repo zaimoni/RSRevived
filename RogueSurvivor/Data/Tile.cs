@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -18,28 +19,24 @@ namespace djack.RogueSurvivor.Data
 
     public TileModel Model
     {
-      get
-      {
+      get {
         return Models.Tiles[m_ModelID];
       }
-      set
-      {
-                m_ModelID = value.ID;
+      set {
+        Contract.Requires(null!=value);
+        m_ModelID = value.ID;
       }
     }
 
-    public bool IsInside
-    {
-      get
-      {
+    public bool IsInside {
+      get {
         return (m_Flags & Tile.Flags.IS_INSIDE) != Tile.Flags.NONE;
       }
-      set
-      {
+      set {
         if (value)
-                    m_Flags |= Tile.Flags.IS_INSIDE;
+          m_Flags |= Tile.Flags.IS_INSIDE;
         else
-                    m_Flags &= ~Tile.Flags.IS_INSIDE;
+          m_Flags &= ~Tile.Flags.IS_INSIDE;
       }
     }
 

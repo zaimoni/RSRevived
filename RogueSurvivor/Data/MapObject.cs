@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -295,22 +296,17 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int HitPoints
-    {
-      get
-      {
+    public int HitPoints {
+      get {
         return m_HitPoints;
       }
-      set
-      {
-                m_HitPoints = value;
+      set {
+        m_HitPoints = value;
       }
     }
 
-    public int MaxHitPoints
-    {
-      get
-      {
+    public int MaxHitPoints {
+      get {
         return m_MaxHitPoints;
       }
     }
@@ -322,17 +318,14 @@ namespace djack.RogueSurvivor.Data
 
     public MapObject(string aName, string hiddenImageID, MapObject.Break breakable, MapObject.Fire burnable, int hitPoints)
     {
-      if (aName == null)
-        throw new ArgumentNullException("aName");
-      if (hiddenImageID == null)
-        throw new ArgumentNullException("hiddenImageID");
-            m_Name = aName;
-            m_ImageID = m_HiddenImageID = hiddenImageID;
-            m_BreakState = breakable;
-            m_FireState = burnable;
-      if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE)
-        return;
-            m_HitPoints = m_MaxHitPoints = hitPoints;
+      Contract.Requires(null!=aName);
+      Contract.Requires(null!= hiddenImageID);
+      m_Name = aName;
+      m_ImageID = m_HiddenImageID = hiddenImageID;
+      m_BreakState = breakable;
+      m_FireState = burnable;
+      if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE) return;
+      m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
     private bool GetFlag(MapObject.Flags f)
@@ -343,9 +336,9 @@ namespace djack.RogueSurvivor.Data
     private void SetFlag(MapObject.Flags f, bool value)
     {
       if (value)
-                m_Flags |= f;
+        m_Flags |= f;
       else
-                m_Flags &= ~f;
+        m_Flags &= ~f;
     }
 
     private void OneFlag(MapObject.Flags f)
