@@ -7627,7 +7627,7 @@ namespace djack.RogueSurvivor.Engine
           stringList.Add("The corpse is about to crumble to dust.");
           break;
         default:
-          throw new Exception("unhandled rot level");
+          throw new ArgumentOutOfRangeException("c.RotLevel", c.RotLevel, "unhandled rot level");
       }
       string str4 = "???";
       if (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST) {
@@ -11614,7 +11614,7 @@ namespace djack.RogueSurvivor.Engine
           str = "rot" + (object) num2 + "_";
           goto case 0;
         default:
-          throw new Exception("unhandled rot level");
+          throw new ArgumentOutOfRangeException("c.RotLevel", c.RotLevel, "unhandled rot level");
       }
     }
 

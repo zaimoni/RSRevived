@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
-namespace zaimoni.Data
+namespace Zaimoni.Data
 {
     /// <summary>
     /// basic floodfill pathfinder

@@ -375,7 +375,7 @@ namespace djack.RogueSurvivor.Engine
         case GameMode.GM_VINTAGE:
           return "VTG - Vintage Zombies";
         default:
-          throw new Exception("unhandled game mode");
+          throw new ArgumentOutOfRangeException("mode",(int)mode,"unhandled game mode");
       }
     }
 
@@ -390,7 +390,7 @@ namespace djack.RogueSurvivor.Engine
         case GameMode.GM_VINTAGE:
           return "VTG";
         default:
-          throw new Exception("unhandled game mode");
+          throw new ArgumentOutOfRangeException("mode",(int)mode,"unhandled game mode");
       }
     }
 
