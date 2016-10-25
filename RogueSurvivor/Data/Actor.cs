@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Data
     private Actor m_Leader;
     private List<Actor> m_Followers;
     private int m_TrustInLeader;
-    private List<TrustRecord> m_TrustList;
+    private Dictionary<Actor,int> m_TrustDict;
     private int m_KillsCount;
     private List<Actor> m_AggressorOf;
     private List<Actor> m_SelfDefenceFrom;
@@ -638,28 +638,8 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTrustIn(Actor other, int trust)
     {
-      if (m_TrustList == null) {
-        m_TrustList = new List<TrustRecord>(1)
-        {
-          new TrustRecord()
-          {
-            Actor = other,
-            Trust = trust
-          }
-        };
-      } else {
-        foreach (TrustRecord mTrust in m_TrustList) {
-          if (mTrust.Actor == other) {
-            mTrust.Trust = trust;
-            return;
-          }
-        }
-        m_TrustList.Add(new TrustRecord()
-        {
-          Actor = other,
-          Trust = trust
-        });
-      }
+      if (null == m_TrustDict) m_TrustDict = new Dictionary<Actor,int>();
+      m_TrustDict[other] = trust;
     }
 
     public void AddTrustIn(Actor other, int amount)
@@ -669,10 +649,9 @@ namespace djack.RogueSurvivor.Data
 
     public int GetTrustIn(Actor other)
     {
-      if (m_TrustList == null) return 0;
-      foreach (TrustRecord mTrust in m_TrustList) {
-        if (mTrust.Actor == other) return mTrust.Trust;
-      }
+      if (null == m_TrustDict) return 0;
+      int trust = 0;
+      if (m_TrustDict.TryGetValue(other,out trust)) return trust;
       return 0;
     }
 
