@@ -2498,16 +2498,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakeCHARArmoryRoom(Map map, Rectangle roomRect)
     {
-            MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(20))
-          return (MapObject) null;
-        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo()) : (m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle())) : MakeItemGrenade()) : (m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : MakeItemCHARLightBodyArmor(), pt);
-        return MakeObjShelf("MapObjects\\shop_shelf");
+        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(20)) return null;
+        map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle())) : (Item)MakeItemGrenade()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : (Item)MakeItemCHARLightBodyArmor(), pt);
+        return MakeObjShelf(GameImages.OBJ_SHOP_SHELF);
       }));
     }
 
@@ -2690,7 +2687,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 break;
               case 2:
               case 3:
-                it = m_DiceRoller.RollChance(50) ? (m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : MakeItemPoliceRadio();
+                it = m_DiceRoller.RollChance(50) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : (Item)MakeItemPoliceRadio();
                 break;
               case 4:
               case 5:
@@ -2698,11 +2695,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 break;
               case 6:
               case 7:
-                it = m_DiceRoller.RollChance(30) ? MakeItemPistol() : MakeItemLightPistolAmmo();
+                it = m_DiceRoller.RollChance(30) ? (Item)MakeItemPistol() : (Item)MakeItemLightPistolAmmo();
                 break;
               case 8:
               case 9:
-                it = m_DiceRoller.RollChance(30) ? MakeItemShotgun() : MakeItemShotgunAmmo();
+                it = m_DiceRoller.RollChance(30) ? (Item)MakeItemShotgun() : (Item)MakeItemShotgunAmmo();
                 break;
               default:
                 throw new ArgumentOutOfRangeException("unhandled roll");
@@ -3501,7 +3498,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Controller = (ActorController) new GangAI();
-      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemRandomPistol() : MakeItemBaseballBat());
+      numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : (Item)MakeItemBaseballBat());
       int count = new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY;
       if (count > 0)
         GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);

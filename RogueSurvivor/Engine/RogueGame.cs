@@ -3259,7 +3259,7 @@ namespace djack.RogueSurvivor.Engine
         {
           if (IsSuitableDropSuppliesPoint(map, x3, y3))
           {
-            Item it = m_Rules.RollChance(80) ? m_TownGenerator.MakeItemArmyRation() : m_TownGenerator.MakeItemMedikit();
+            Item it = m_Rules.RollChance(80) ? (Item)m_TownGenerator.MakeItemArmyRation() : (Item)m_TownGenerator.MakeItemMedikit();
             map.DropItemAt(it, x3, y3);
           }
         }
