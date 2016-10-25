@@ -12464,7 +12464,6 @@ namespace djack.RogueSurvivor.Engine
       if (null == m_Player || map != m_Player.Location.Map) {
         if (0 >= map.PlayerCount) return false;
         foreach (Actor tmp in map.Players) { 
-          if (null == tmp.Controller.FOV) continue; // would prefer to recalculate
           if (tmp.Controller.FOV.Contains(position)) {
             PanViewportTo(tmp);
             return true;
@@ -12474,7 +12473,6 @@ namespace djack.RogueSurvivor.Engine
       if (m_Player.Controller.FOV.Contains(position)) return true;
       foreach (Actor tmp in map.Players) {
         if (tmp == m_Player) continue;
-        if (null == tmp.Controller.FOV) continue; // would prefer to recalculate
         if (tmp.Controller.FOV.Contains(position)) {
           PanViewportTo(tmp);
           return true;
