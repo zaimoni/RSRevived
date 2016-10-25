@@ -2,12 +2,13 @@
 using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
     [Serializable]
-    class ThreatTracking
+    class ThreatTracking : ISerializable
     {
         // an earlier iteration of this cost 39MB of savefile size.  Instead of attempting a full probability analysis,
         // we'll just do taint checking.
@@ -21,6 +22,21 @@ namespace djack.RogueSurvivor.Data
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
         }
+
+#region Implement ISerializable
+    // general idea is Plain Old Data before objects.
+    protected ThreatTracking(SerializationInfo info, StreamingContext context)
+    {
+      _threats = (Dictionary<Actor, HashSet<Location>>)info.GetValue("threats",typeof(Dictionary<Actor, HashSet<Location>>));
+      Actor.Dies += HandleDie;  // XXX removal would be in destructor
+      Actor.Moving += HandleMove;
+    }
+
+    void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("threats", _threats, typeof(Dictionary<Actor, HashSet<Location>>));
+    }
+#endregion
 
         public void Clear()
         {

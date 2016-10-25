@@ -191,12 +191,12 @@ namespace djack.RogueSurvivor.Data
 #region Implement ISerializable
     protected Map(SerializationInfo info, StreamingContext context)
     {
-      Seed = (int) info.GetValue("m_Seed", typeof (int));
+      Seed = info.GetInt32("m_Seed");
       m_District = (District) info.GetValue("m_District", typeof (District));
       Name = (string) info.GetValue("m_Name", typeof (string));
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
-      Width = (int) info.GetValue("m_Width", typeof (int));
-      Height = (int) info.GetValue("m_Height", typeof (int));
+      Width = info.GetInt32("m_Width");
+      Height = info.GetInt32("m_Height");
       Rect = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
       m_Tiles = (Tile[,]) info.GetValue("m_Tiles", typeof (Tile[,]));
       m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
