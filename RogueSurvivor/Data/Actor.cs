@@ -1467,13 +1467,9 @@ namespace djack.RogueSurvivor.Data
         m_CurrentDefence += (it.Model as ItemBodyArmorModel).ToDefence();
         return;
       }
-      if (it.Model is ItemTrackerModel) {
-        --(it as ItemTracker).Batteries;
-        return;
-      }
-      if (it.Model is ItemLightModel) {
-        --(it as ItemLight).Batteries;
-        if (IsPlayer) Controller.UpdateSensors();
+      if (it is BatteryPowered) { 
+        --(it as BatteryPowered).Batteries;
+        if (IsPlayer && it is ItemLight) Controller.UpdateSensors();
         return;
       }
     }

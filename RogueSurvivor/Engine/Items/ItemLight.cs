@@ -10,8 +10,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemLight : Item
-  {
+  internal class ItemLight : Item, BatteryPowered
+    {
     private int m_Batteries;
 
     public int Batteries
@@ -23,6 +23,12 @@ namespace djack.RogueSurvivor.Engine.Items
         if (value < 0) value = 0;
         m_Batteries = Math.Min(value, (Model as ItemLightModel).MaxBatteries);
       }
+    }
+
+     public int MaxBatteries {
+       get {
+         return (Model as ItemLightModel).MaxBatteries;
+       }
     }
 
     public int FovBonus {

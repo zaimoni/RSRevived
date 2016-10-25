@@ -2800,26 +2800,19 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 5. Check batteries : lights, trackers.
         // lights and normal trackers
-        foreach (Actor actor in map.Actors)
-        {
+        foreach (Actor actor in map.Actors) {
           Item equippedItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
           if (null == equippedItem) continue;
-          ItemLight itemLight = equippedItem as ItemLight;
-          if (itemLight != null && itemLight.Batteries > 0) {
-            --itemLight.Batteries;
-            if (itemLight.Batteries <= 0 && ForceVisibleToPlayer(actor))
-              AddMessage(MakeMessage(actor, string.Format(": {0} light goes off.", (object) itemLight.TheName)));
-          }
-          ItemTracker itemTracker = equippedItem as ItemTracker;
-          if (itemTracker != null && itemTracker.Batteries > 0) {
-            --itemTracker.Batteries;
-            if (itemTracker.Batteries <= 0 && ForceVisibleToPlayer(actor))
-              AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", (object) itemTracker.TheName)));
+          BatteryPowered tmp = equippedItem as BatteryPowered;
+          if (null == tmp) continue;
+          if (0 < tmp.Batteries) {
+            --tmp.Batteries;
+             if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
+               AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), (object) equippedItem.TheName)));
           }
         }
         // police radios
-        foreach (Actor actor in map.Actors)
-        {
+        foreach (Actor actor in map.Actors) {
           Item equippedItem = actor.GetEquippedItem(DollPart.HIP_HOLSTER);
           if (null == equippedItem) continue;
           ItemTracker itemTracker = equippedItem as ItemTracker;
@@ -7971,9 +7964,8 @@ namespace djack.RogueSurvivor.Engine
     private string[] DescribeItemLight(ItemLight lt)
     {
       List<string> stringList = new List<string>();
-      ItemLightModel itemLightModel = lt.Model as ItemLightModel;
       stringList.Add("> light");
-      stringList.Add(DescribeBatteries(lt.Batteries, itemLightModel.MaxBatteries));
+      stringList.Add(DescribeBatteries(lt));
       stringList.Add(string.Format("FOV       : +{0}", (object) lt.FovBonus));
       return stringList.ToArray();
     }
@@ -7981,9 +7973,8 @@ namespace djack.RogueSurvivor.Engine
     private string[] DescribeItemTracker(ItemTracker tr)
     {
       List<string> stringList = new List<string>();
-      ItemTrackerModel itemTrackerModel = tr.Model as ItemTrackerModel;
       stringList.Add("> tracker");
-      stringList.Add(DescribeBatteries(tr.Batteries, itemTrackerModel.MaxBatteries));
+      stringList.Add(DescribeBatteries(tr));
       return stringList.ToArray();
     }
 
@@ -8026,12 +8017,12 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string DescribeBatteries(int batteries, int maxBatteries)
+    private string DescribeBatteries(BatteryPowered it)
     {
-      int hours = BatteriesToHours(batteries);
-      if (batteries < maxBatteries)
-        return string.Format("Batteries : {0}/{1} ({2}h)", (object) batteries, (object) maxBatteries, (object) hours);
-      return string.Format("Batteries : {0} MAX ({1}h)", (object) batteries, (object) hours);
+      int hours = BatteriesToHours(it.Batteries);
+      if (it.Batteries < it.MaxBatteries)
+        return string.Format("Batteries : {0}/{1} ({2}h)", (object) it.Batteries, (object) it.MaxBatteries, (object) hours);
+      return string.Format("Batteries : {0} MAX ({1}h)", (object) it.Batteries, (object) hours);
     }
 
     private string DescribeSkillShort(Skills.IDs id)
@@ -9714,8 +9705,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoRechargeItemBattery(Actor actor, Item it)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      (it as ItemLight)?.Recharge();
-      (it as ItemTracker)?.Recharge();
+      (it as BatteryPowered).Recharge();
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
     }
@@ -11996,19 +11986,12 @@ namespace djack.RogueSurvivor.Engine
           ItemSprayScent itemSprayScent = it as ItemSprayScent;
                     DrawBar(itemSprayScent.SprayQuantity, itemSprayScent.SprayQuantity, (itemSprayScent.Model as ItemSprayScentModel).MaxSprayQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
         }
-        else if (it is ItemLight)
+        else if (it is BatteryPowered)
         {
-          ItemLight itemLight = it as ItemLight;
-          if (itemLight.Batteries <= 0)
-                        m_UI.UI_DrawImage("Icons\\out_of_batteries", gx2, gy2);
-                    DrawBar(itemLight.Batteries, itemLight.Batteries, (itemLight.Model as ItemLightModel).MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Yellow, Color.Yellow, Color.Yellow, Color.DarkGray);
-        }
-        else if (it is ItemTracker)
-        {
-          ItemTracker itemTracker = it as ItemTracker;
-          if (itemTracker.Batteries <= 0)
-                        m_UI.UI_DrawImage("Icons\\out_of_batteries", gx2, gy2);
-                    DrawBar(itemTracker.Batteries, itemTracker.Batteries, (itemTracker.Model as ItemTrackerModel).MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Pink, Color.Pink, Color.Pink, Color.DarkGray);
+          BatteryPowered tmp = it as BatteryPowered;
+          Color bar_color = (it is ItemLight ? Color.Yellow : Color.Pink);
+          if (0 >= tmp.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
+          DrawBar(tmp.Batteries, tmp.Batteries, tmp.MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, bar_color, bar_color, bar_color, Color.DarkGray);
         }
         else if (it is ItemFood)
         {

@@ -801,7 +801,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // all battery powered items other than the police radio are left hand, currently
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
-      if (game.Rules.IsItemBatteryPowered(it)) game.DoUnequipItem(m_Actor, it);
+      if (it is BatteryPowered) game.DoUnequipItem(m_Actor, it);
       return new ActionSleep(m_Actor);
     }
 

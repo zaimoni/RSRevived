@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRechargeItemBattery(Actor actor, Item it)
       : base(actor)
     {
-      if (it == null) throw new ArgumentNullException("item");
+      if (null == (it as BatteryPowered)) throw new ArgumentNullException("it");
       m_Item = it;
     }
 

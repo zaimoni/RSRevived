@@ -951,13 +951,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
         if (lhs.Quantity > rhs.Quantity) return false;
-        if (lhs is ItemLight)
+        if (lhs is BatteryPowered)
           {
-          return ((lhs as ItemLight).Batteries < (rhs as ItemLight).Batteries);
-          }
-        else if (lhs is ItemTracker)
-          {
-          return ((lhs as ItemTracker).Batteries < (rhs as ItemTracker).Batteries);
+          return ((lhs as BatteryPowered).Batteries < (rhs as BatteryPowered).Batteries);
           }
         else if (lhs is ItemFood && (lhs as ItemFood).IsPerishable)
           { // complicated

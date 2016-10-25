@@ -423,7 +423,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "item not equipped";
         return false;
       }
-      if (!IsItemBatteryPowered(it))
+      if (!(it is BatteryPowered))
       {
         reason = "not a battery powered item";
         return false;
@@ -432,21 +432,11 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsItemBatteryPowered(Item it)
-    {
-      if (it == null) return false;
-      return (it is ItemLight) || (it is ItemTracker);
-    }
-
     public bool IsItemBatteryFull(Item it)
     {
-      if (it == null)
-        return true;
-      ItemLight itemLight = it as ItemLight;
-      if (itemLight != null && itemLight.IsFullyCharged)
-        return true;
-      ItemTracker itemTracker = it as ItemTracker;
-      return itemTracker != null && itemTracker.IsFullyCharged;
+      if (it == null) return true;
+      BatteryPowered tmp = it as BatteryPowered;
+      return null!=tmp && tmp.IsFullyCharged;
     }
 
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)

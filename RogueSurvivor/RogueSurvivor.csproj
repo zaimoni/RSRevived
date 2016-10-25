@@ -147,6 +147,7 @@
     <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\BatteryPowered.cs" />
     <Compile Include="Data\ThreatTracking.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
     <Compile Include="RogueForm.cs">
