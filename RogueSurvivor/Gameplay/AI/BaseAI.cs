@@ -1681,12 +1681,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
-    protected Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
+    protected static Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
     {
-      int x = goal.X + rules.Roll(-range, range);
-      int y = goal.Y + rules.Roll(-range, range);
-      map.TrimToBounds(ref x, ref y);
-      return new Point(x, y);
+      Point top_left = new Point(goal.X-range,goal.Y-range);
+      Point bottom_right = new Point(goal.X+range,goal.Y+range);
+      map.TrimToBounds(ref top_left);
+      map.TrimToBounds(ref bottom_right);
+      return new Point(rules.Roll(top_left.X,bottom_right.X+1), rules.Roll(top_left.Y, bottom_right.Y + 1));
     }
 
     protected void MarkItemAsTaboo(Item it, int expiresTurn)
