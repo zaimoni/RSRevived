@@ -7360,7 +7360,7 @@ namespace djack.RogueSurvivor.Engine
             stringList.Add("Ordered to not follow you.");
           stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object)FoodToHoursUntilHungry(actor.FoodPoints)));
           stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, (object) actor.SleepToHoursUntilSleepy));
-          stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, (object)m_Rules.SanityToHoursUntilUnstable(actor)));
+          stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, (object)actor.HoursUntilUnstable));
           stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, (object)m_Rules.ActorInfectionPercent(actor)));
         }
         else
@@ -11909,7 +11909,7 @@ namespace djack.RogueSurvivor.Engine
           else
             m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
         } else
-          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)actor.HoursUntilUnstable), gx + 126 + 100, gy, new Color?());
       }
       if (Session.Get.HasInfection && !actor.Model.Abilities.IsUndead) {
         int maxValue2 = actor.InfectionHPs;
