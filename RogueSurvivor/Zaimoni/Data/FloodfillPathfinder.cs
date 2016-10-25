@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
-namespace zaimoni.Data
+namespace Zaimoni.Data
 {
     /// <summary>
     /// basic floodfill pathfinder
@@ -19,11 +20,10 @@ namespace zaimoni.Data
 
         public FloodfillPathfinder(Func<T, Dictionary<T,int>> Forward, Func<T,Dictionary<T, int>> Inverse, Func<T, bool> InDomain)
         {
-#if DEBUG
             if (null == Forward) throw new ArgumentNullException("Forward");
             if (null == Inverse) throw new ArgumentNullException("Inverse");
             if (null == InDomain) throw new ArgumentNullException("InDomain");
-#endif
+            Contract.EndContractBlock();
             _blacklist = new HashSet<T>();
             _inDomain = InDomain;   // required
             _map = new Dictionary<T, int>();
@@ -44,10 +44,9 @@ namespace zaimoni.Data
         // retain domain and blacklist, change specification of forward and inverse which invalidates the map itself
         public FloodfillPathfinder(FloodfillPathfinder<T> src, Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse)
         {
-#if DEBUG
             if (null == Forward) throw new ArgumentNullException("Forward");
             if (null == Inverse) throw new ArgumentNullException("Inverse");
-#endif
+            Contract.EndContractBlock();
             _blacklist = new HashSet<T>(src._blacklist);
             _inDomain = src._inDomain;
             _map = new Dictionary<T, int>();
@@ -74,11 +73,11 @@ namespace zaimoni.Data
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
         public void GoalDistance(IEnumerable<T> goals, int max_depth, T start)
         {
-#if DEBUG
             if (null == start) throw new ArgumentNullException("start");
             if (null == goals) throw new ArgumentNullException("goals");
+            Contract.EndContractBlock();
             if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
-#endif
+//          Contract.EndContractBlock();
             _map.Clear();
             Queue<T> gen0 = new Queue<T>();
             foreach(T tmp in goals) {
@@ -121,9 +120,8 @@ namespace zaimoni.Data
         }
 
         public Dictionary<T, int> Approach(T current_pos) {
-#if DEBUG
             if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
-#endif
+//          Contract.EndContractBlock();
             int current_cost = _map[current_pos];
             if (0 == current_cost) return null;   // already at a goal
             Dictionary<T, int> tmp = _inverse(current_pos);
@@ -136,9 +134,8 @@ namespace zaimoni.Data
         }
 
         public Dictionary<T, int> Flee(T current_pos) {
-#if DEBUG
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
-#endif
+            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos", "not in the cost map");
+//          Contract.EndContractBlock();
             int current_cost = _map[current_pos];
             Dictionary<T, int> tmp = _forward(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);

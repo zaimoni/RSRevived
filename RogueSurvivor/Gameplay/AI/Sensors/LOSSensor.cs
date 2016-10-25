@@ -21,6 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public HashSet<Point> FOV {
       get {
+//      Contract.Ensures(null!=Contract.Result<HashSet<Point>>());  // final fix for this breaks saveload
         return m_FOV;
       }
     }
