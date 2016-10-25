@@ -17,9 +17,9 @@ namespace djack.RogueSurvivor.Data
     private Tile.Flags m_Flags;
     private List<string> m_Decorations;
 
-    public TileModel Model
-    {
+    public TileModel Model {
       get {
+        Contract.Ensures(null!=Contract.Result<TileModel>());
         return Models.Tiles[m_ModelID];
       }
       set {

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -18,64 +19,52 @@ namespace djack.RogueSurvivor.Data
     private Rectangle m_Bounds;
     private Dictionary<string, object> m_Attributes;
 
-    public string Name
-    {
-      get
-      {
+    public string Name {
+      get {
         return m_Name;
       }
-      set
-      {
-                m_Name = value;
+      set {
+        m_Name = value;
       }
     }
 
-    public Rectangle Bounds
-    {
-      get
-      {
+    public Rectangle Bounds {
+      get {
         return m_Bounds;
       }
-      set
-      {
-                m_Bounds = value;
+      set {
+        m_Bounds = value;
       }
     }
 
     public Zone(string name, Rectangle bounds)
     {
-      if (name == null)
-        throw new ArgumentNullException("name");
-            m_Name = name;
-            m_Bounds = bounds;
+      Contract.Requires(null!=name);
+      m_Name = name;
+      m_Bounds = bounds;
     }
 
     public bool HasGameAttribute(string key)
     {
-      if (m_Attributes == null)
-        return false;
-      return m_Attributes.Keys.Contains<string>(key);
+      return (null== m_Attributes ? false : m_Attributes.Keys.Contains<string>(key));
     }
 
     public void SetGameAttribute<_T_>(string key, _T_ value)
     {
-      if (m_Attributes == null)
-                m_Attributes = new Dictionary<string, object>(1);
+      Contract.Requires(null!=key);
+      if (m_Attributes == null) m_Attributes = new Dictionary<string, object>(1);
       if (m_Attributes.Keys.Contains<string>(key))
-                m_Attributes[key] = (object) value;
+        m_Attributes[key] = value;
       else
-                m_Attributes.Add(key, (object) value);
+        m_Attributes.Add(key, value);
     }
 
     public _T_ GetGameAttribute<_T_>(string key)
     {
-      if (m_Attributes == null)
-        return default (_T_);
+      if (m_Attributes == null) return default (_T_);
       object obj;
-      if (!m_Attributes.TryGetValue(key, out obj))
-        return default (_T_);
-      if (!(obj is _T_))
-        throw new InvalidOperationException("game attribute is not of requested type");
+      if (!m_Attributes.TryGetValue(key, out obj)) return default (_T_);
+      if (!(obj is _T_)) throw new InvalidOperationException("game attribute is not of requested type");
       return (_T_) obj;
     }
   }
