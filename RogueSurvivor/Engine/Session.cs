@@ -230,16 +230,12 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveBin(Session session, string filepath)
     {
-      if (session == null)
-        throw new ArgumentNullException("session");
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (session == null) throw new ArgumentNullException("session");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = Session.CreateStream(filepath, true))
-      {
+      using (Stream stream = Session.CreateStream(filepath, true)) {
         Session.CreateFormatter().Serialize(stream, (object) session);
         stream.Flush();
-        stream.Close();
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
@@ -250,22 +246,15 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
 #if DEBUG
-        using (Stream stream = Session.CreateStream(filepath, false))
-        {
+        using (Stream stream = Session.CreateStream(filepath, false)) {
           Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
-          stream.Close();
         }
 #else
-      try
-      {
-        using (Stream stream = Session.CreateStream(filepath, false))
-        {
+      try {
+        using (Stream stream = Session.CreateStream(filepath, false)) {
           Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
-          stream.Close();
         }
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         Session.s_TheSession = (Session) null;
@@ -278,35 +267,25 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveSoap(Session session, string filepath)
     {
-      if (session == null)
-        throw new ArgumentNullException("session");
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (session == null) throw new ArgumentNullException("session");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = Session.CreateStream(filepath, true))
-      {
+      using (Stream stream = Session.CreateStream(filepath, true)) {
         Session.CreateSoapFormatter().Serialize(stream, (object) session);
         stream.Flush();
-        stream.Close();
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
     private static bool LoadSoap(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
-      try
-      {
-        using (Stream stream = Session.CreateStream(filepath, false))
-        {
+      try {
+        using (Stream stream = Session.CreateStream(filepath, false)) {
           Session.s_TheSession = (Session) Session.CreateSoapFormatter().Deserialize(stream);
-          stream.Close();
         }
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         Session.s_TheSession = (Session) null;
@@ -318,36 +297,26 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveXml(Session session, string filepath)
     {
-      if (session == null)
-        throw new ArgumentNullException("session");
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (session == null) throw new ArgumentNullException("session");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = Session.CreateStream(filepath, true))
-      {
+      using (Stream stream = Session.CreateStream(filepath, true)) {
         new XmlSerializer(typeof (Session)).Serialize(stream, (object) session);
         stream.Flush();
-        stream.Close();
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
     private static bool LoadXml(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
-      try
-      {
-        using (Stream stream = Session.CreateStream(filepath, false))
-        {
+      try {
+        using (Stream stream = Session.CreateStream(filepath, false)) {
           Session.s_TheSession = (Session) new XmlSerializer(typeof (Session)).Deserialize(stream);
           stream.Flush();
-          stream.Close();
         }
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         Session.s_TheSession = (Session) null;

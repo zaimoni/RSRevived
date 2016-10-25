@@ -35,8 +35,7 @@ namespace djack.RogueSurvivor
         if (File.Exists(Logger.LogFilePath()))
           File.Delete(Logger.LogFilePath());
         Directory.CreateDirectory(SetupConfig.DirPath);
-        using (StreamWriter text = File.CreateText(Logger.LogFilePath()))
-          text.Close();
+        using (StreamWriter text = File.CreateText(Logger.LogFilePath()));
       }
     }
 
@@ -49,7 +48,6 @@ namespace djack.RogueSurvivor
         using (StreamWriter streamWriter = File.AppendText(Logger.LogFilePath())) {
           streamWriter.WriteLine(str);
           streamWriter.Flush();
-          streamWriter.Close();
         }
       }
     }

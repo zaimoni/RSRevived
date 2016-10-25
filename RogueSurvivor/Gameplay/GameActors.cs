@@ -732,25 +732,20 @@ namespace djack.RogueSurvivor.Gameplay
 
     public bool LoadFromCSV(IRogueUI ui, string path)
     {
-            Notify(ui, "loading file...");
+      Notify(ui, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
-      using (StreamReader streamReader = File.OpenText(path))
-      {
-        while (!streamReader.EndOfStream)
-        {
+      using (StreamReader streamReader = File.OpenText(path)) {
+        while (!streamReader.EndOfStream) {
           string str = streamReader.ReadLine();
-          if (flag)
-            flag = false;
-          else
-            stringList.Add(str);
+          if (flag) flag = false;
+          else stringList.Add(str);
         }
-        streamReader.Close();
       }
-            Notify(ui, "parsing CSV...");
+      Notify(ui, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), 16);
-            Notify(ui, "reading data...");
-            DATA_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs._FIRST);
+      Notify(ui, "reading data...");
+      DATA_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs._FIRST);
             DATA_RED_EYED_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
             DATA_RED_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_RED_SKELETON);
             DATA_ZOMBIE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_ZOMBIE);
