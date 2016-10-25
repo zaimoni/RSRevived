@@ -95,17 +95,12 @@ namespace djack.RogueSurvivor.Gameplay
       Skills.Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
-      using (StreamReader streamReader = File.OpenText(path))
-      {
-        while (!streamReader.EndOfStream)
-        {
+      using (StreamReader streamReader = File.OpenText(path)) {
+        while (!streamReader.EndOfStream) {
           string str = streamReader.ReadLine();
-          if (flag)
-            flag = false;
-          else
-            stringList.Add(str);
+          if (flag) flag = false;
+          else stringList.Add(str);
         }
-        streamReader.Close();
       }
       Skills.Notify(ui, kind, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), fieldsCount);

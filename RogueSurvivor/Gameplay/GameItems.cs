@@ -1090,28 +1090,23 @@ namespace djack.RogueSurvivor.Gameplay
 
     private bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
-            Notify(ui, kind, "loading file...");
+      Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
-      using (StreamReader streamReader = File.OpenText(path))
-      {
-        while (!streamReader.EndOfStream)
-        {
+      using (StreamReader streamReader = File.OpenText(path)) {
+        while (!streamReader.EndOfStream) {
           string str = streamReader.ReadLine();
-          if (flag)
-            flag = false;
-          else
-            stringList.Add(str);
+          if (flag) flag = false;
+          else stringList.Add(str);
         }
-        streamReader.Close();
       }
-            Notify(ui, kind, "parsing CSV...");
+      Notify(ui, kind, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), fieldsCount);
-            Notify(ui, kind, "reading data...");
+      Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
         data[index] = GetDataFromCSVTable(ui, toTable, fn, idsToRead[index]);
-            Notify(ui, kind, "done!");
+      Notify(ui, kind, "done!");
       return true;
     }
 
