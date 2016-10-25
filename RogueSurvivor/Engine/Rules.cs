@@ -432,13 +432,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsItemBatteryFull(Item it)
-    {
-      if (it == null) return true;
-      BatteryPowered tmp = it as BatteryPowered;
-      return null!=tmp && tmp.IsFullyCharged;
-    }
-
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)
     {
       if (actor == null)

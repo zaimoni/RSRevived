@@ -37,12 +37,6 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public bool IsFullyCharged {
-      get {
-        return m_Batteries >= (Model as ItemLightModel).MaxBatteries;
-      }
-    }
-
     public override string ImageID {
       get {
         if (IsEquipped && Batteries > 0)

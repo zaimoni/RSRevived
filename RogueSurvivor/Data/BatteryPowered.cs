@@ -5,7 +5,6 @@ namespace djack.RogueSurvivor.Data
     {
         int Batteries { get; set; }
         int MaxBatteries { get; }
-        bool IsFullyCharged { get; }
         void Recharge();
     }
 }
