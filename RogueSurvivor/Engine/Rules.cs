@@ -602,13 +602,11 @@ namespace djack.RogueSurvivor.Engine
           return false;
         }
       }
-      if (actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
-      {
+      if (actor.StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
         reason = "not enough stamina to attack";
         return false;
       }
-      if (target.IsDead)
-      {
+      if (target.IsDead) {
         reason = "already dead!";
         return false;
       }
@@ -624,8 +622,8 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (actor == null) throw new ArgumentNullException("actor");
+      Contract.Requires(null!=map);
+      Contract.Requires(null!=actor);
       if (!map.IsInBounds(x, y)) {
         reason = "out of map";
         return false;

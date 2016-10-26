@@ -6,8 +6,8 @@
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
-using System.Drawing;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -99,6 +99,7 @@ namespace djack.RogueSurvivor.Data
     public ActorModel Model
     {
       get {
+        Contract.Ensures(null!=Contract.Result<ActorModel>());
         return Models.Actors[m_ModelID];
       }
       set {

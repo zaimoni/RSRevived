@@ -13,6 +13,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor
 {
@@ -133,6 +134,7 @@ namespace djack.RogueSurvivor
 #region IRogueUI implementation
     public KeyEventArgs UI_WaitKey()
     {
+      Contract.Ensures(null!=Contract.Result<KeyEventArgs>());
       while (true) {    // XXX no clean way to do this loop
         Application.DoEvents();
         if (null!= m_InKey) break;
