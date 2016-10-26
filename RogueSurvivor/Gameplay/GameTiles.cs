@@ -189,7 +189,7 @@ namespace djack.RogueSurvivor.Gameplay
     public GameTiles()
     {
       Models.Tiles = (TileModelDB) this;
-      this[GameTiles.IDs._FIRST] = TileModel.UNDEF;
+      this[GameTiles.IDs.UNDEF] = TileModel.UNDEF;
       this[GameTiles.IDs.FLOOR_ASPHALT] = new TileModel("Tiles\\floor_asphalt", GameTiles.LIT_GRAY1, true, true);
       this[GameTiles.IDs.FLOOR_CONCRETE] = new TileModel("Tiles\\floor_concrete", GameTiles.LIT_GRAY2, true, true);
       this[GameTiles.IDs.FLOOR_GRASS] = new TileModel("Tiles\\floor_grass", Color.Green, true, true);
@@ -224,7 +224,6 @@ namespace djack.RogueSurvivor.Gameplay
     public enum IDs
     {
       UNDEF = 0,
-      _FIRST = 0,
       FLOOR_ASPHALT = 1,
       FLOOR_CONCRETE = 2,
       FLOOR_GRASS = 3,

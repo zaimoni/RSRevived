@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -142,23 +143,22 @@ namespace djack.RogueSurvivor.Engine
     public const int GIVE_RARE_ITEM_CHANCE = 5;
     private readonly DiceRoller m_DiceRoller;
 
-    public DiceRoller DiceRoller
-    {
-      get
-      {
+    public DiceRoller DiceRoller {
+      get {
         return m_DiceRoller;
       }
     }
 
     public Rules(DiceRoller diceRoller)
     {
-      if (diceRoller == null)
-        throw new ArgumentNullException("diceRoller");
-            m_DiceRoller = diceRoller;
+      Contract.Requires(null != diceRoller);
+      m_DiceRoller = diceRoller;
     }
 
     public int Roll(int min, int max)
     {
+      Contract.Ensures(Contract.Result<int>()>=min);
+      Contract.Ensures(Contract.Result<int>()<max);
       return m_DiceRoller.Roll(min, max);
     }
 

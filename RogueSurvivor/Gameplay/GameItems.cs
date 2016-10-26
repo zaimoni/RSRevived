@@ -1088,6 +1088,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     private bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
+      Contract.Requires(null!=ui);
+      Contract.Requires(!string.IsNullOrEmpty(path));
       Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;

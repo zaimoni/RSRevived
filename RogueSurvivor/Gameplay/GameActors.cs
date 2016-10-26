@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -60,24 +61,21 @@ namespace djack.RogueSurvivor.Gameplay
     private GameActors.ActorData DATA_BLACKOPS_MAN;
     private GameActors.ActorData DATA_JASON_MYERS;
 
-    public override ActorModel this[int id]
-    {
-      get
-      {
+    public override ActorModel this[int id] {
+      get {
+        Contract.Ensures(null!=Contract.Result<ActorModel>().DollBody);
+        Contract.Ensures(null!=Contract.Result<ActorModel>().StartingSheet);
         return m_Models[id];
       }
     }
 
-    public ActorModel this[GameActors.IDs id]
-    {
-      get
-      {
+    public ActorModel this[GameActors.IDs id] {
+      get {
         return this[(int) id];
       }
-      private set
-      {
-                m_Models[(int) id] = value;
-                m_Models[(int) id].ID = (int) id;
+      private set {
+        m_Models[(int) id] = value;
+        m_Models[(int) id].ID = (int) id;
       }
     }
 
