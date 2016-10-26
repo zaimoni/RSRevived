@@ -858,24 +858,22 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    private string ReasonCantRun()
+    {
+      if (!Model.Abilities.CanRun) return "no ability to run";
+      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to run";
+      return "";
+    }
+
     public bool CanRun(out string reason)
     {
-      if (!Model.Abilities.CanRun) {
-        reason = "no ability to run";
-        return false;
-      }
-      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
-        reason = "not enough stamina to run";
-        return false;
-      }
-      reason = "";
-      return true;
+      reason = ReasonCantRun();
+      return string.IsNullOrEmpty(reason);
     }
 
     public bool CanRun()
     {
-      string reason;
-      return CanRun(out reason);
+      return string.IsNullOrEmpty(ReasonCantRun());
     }
 
     public bool CanJump {
