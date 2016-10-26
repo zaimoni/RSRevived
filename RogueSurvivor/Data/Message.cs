@@ -6,25 +6,27 @@
 
 using System;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   internal class Message
   {
-    public string Text { get; set; }
-    private Color m_Color;
+    private string m_Text;
+    public Color Color { get; set; }
     private readonly int m_Turn;
 
-    
-    public Color Color {
-      get {
-        return m_Color;
+    public string Text {
+      get { 
+        Contract.Ensures(null!=Contract.Result<string>());
+        return m_Text;
       }
-      set {
-        m_Color = value;
+      set { 
+        Contract.Requires(null!=value);
+        m_Text = value;
       }
     }
-
+    
     public int Turn {
       get {
         return m_Turn;
@@ -33,9 +35,9 @@ namespace djack.RogueSurvivor.Data
 
     public Message(string text, int turn, Color color)
     {
-      if (text == null) throw new ArgumentNullException("text");
-      Text = text;
-      m_Color = color;
+      Contract.Requires(null!=text);
+      m_Text = text;
+      Color = color;
       m_Turn = turn;
     }
 
