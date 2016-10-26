@@ -8,8 +8,6 @@
 
 #define STABLE_SIM_OPTIONAL
 
-#define ALPHA_SIM
-
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
@@ -707,34 +705,32 @@ namespace djack.RogueSurvivor.Engine
             m_MusicManager.Load(GameMusics.SLEEP, GameMusics.SLEEP_FILE);
             m_MusicManager.Load(GameMusics.SUBWAY, GameMusics.SUBWAY_FILE);
             m_MusicManager.Load(GameMusics.SURVIVORS, GameMusics.SURVIVORS_FILE);
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
-            m_UI.UI_Repaint();
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0, new Color?());
-            m_UI.UI_Repaint();
-            m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
-            m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
-            m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
-            m_UI.UI_Repaint();
-            LoadManual();
-            LoadHiScoreTable();
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Loading music... done!", 0, 0, new Color?());
+      m_UI.UI_Repaint();
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Loading sfxs...", 0, 0, new Color?());
+      m_UI.UI_Repaint();
+      m_MusicManager.Load(GameSounds.UNDEAD_EAT, GameSounds.UNDEAD_EAT_FILE);
+      m_MusicManager.Load(GameSounds.UNDEAD_RISE, GameSounds.UNDEAD_RISE_FILE);
+      m_MusicManager.Load(GameSounds.NIGHTMARE, GameSounds.NIGHTMARE_FILE);
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Loading sfxs... done!", 0, 0, new Color?());
+      m_UI.UI_Repaint();
+      LoadManual();
+      LoadHiScoreTable();
       while (m_IsGameRunning)
-                GameLoop();
-            m_MusicManager.StopAll();
-            m_MusicManager.Dispose();
-            m_UI.UI_DoQuit();
+        GameLoop();
+      m_MusicManager.StopAll();
+      m_MusicManager.Dispose();
+      m_UI.UI_DoQuit();
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void GameLoop()
     {
       HandleMainMenu();
-      while (m_Player != null && !m_Player.IsDead && m_IsGameRunning)
-      {
-#if ALPHA_SIM
+      while (m_Player != null && !m_Player.IsDead && m_IsGameRunning) {
         District d = m_Session.World.CurrentPlayerDistrict();
         if (null == d) {
           if (null == m_Session.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
@@ -748,41 +744,29 @@ namespace djack.RogueSurvivor.Engine
         if (!m_IsGameRunning) break;
         m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
         m_Session.World.ScheduleAdjacentForAdvancePlay(d);
-#else
-        List<District> tmp = m_Session.World.PlayerDistricts;
-        int lastDistrictTurn = tmp[tmp.Count-1].EntryMap.LocalTime.TurnCounter;
-        foreach (District d1 in tmp) { 
-          if (d1.EntryMap.LocalTime.TurnCounter > lastDistrictTurn) continue;
-          DateTime now = DateTime.Now;
-          m_HasLoadedGame = false;
-          AdvancePlay(d1, RogueGame.SimFlags.NOT_SIMULATING);
-          if (!m_IsGameRunning) break;
-          m_Session.Scoring.RealLifePlayingTime = m_Session.Scoring.RealLifePlayingTime.Add(DateTime.Now - now);
-        }
-#endif
       }
     }
 
     private void InitDirectories()
     {
       int gy1 = 0;
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy1, new Color?());
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.Yellow, "Checking user game directories...", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-            m_UI.UI_Repaint();
+      m_UI.UI_Repaint();
       if (!(false | CheckDirectory(RogueGame.GetUserBasePath(), "base user", ref gy2) | CheckDirectory(RogueGame.GetUserConfigPath(), "config", ref gy2) | CheckDirectory(RogueGame.GetUserDocsPath(), "docs", ref gy2) | CheckDirectory(RogueGame.GetUserGraveyardPath(), "graveyard", ref gy2) | CheckDirectory(RogueGame.GetUserSavesPath(), "saves", ref gy2) | CheckDirectory(RogueGame.GetUserScreenshotsPath(), "screenshots", ref gy2) | CheckCopyOfManual()))
         return;
-            m_UI.UI_DrawStringBold(Color.Yellow, "Directories and game manual created.", 0, gy2, new Color?());
+      m_UI.UI_DrawStringBold(Color.Yellow, "Directories and game manual created.", 0, gy2, new Color?());
       int gy3 = gy2 + 14;
-            m_UI.UI_DrawStringBold(Color.Yellow, "Your game data directory is in the game folder:", 0, gy3, new Color?());
+      m_UI.UI_DrawStringBold(Color.Yellow, "Your game data directory is in the game folder:", 0, gy3, new Color?());
       int gy4 = gy3 + 14;
-            m_UI.UI_DrawString(Color.LightGreen, RogueGame.GetUserBasePath(), 0, gy4, new Color?());
+      m_UI.UI_DrawString(Color.LightGreen, RogueGame.GetUserBasePath(), 0, gy4, new Color?());
       int gy5 = gy4 + 14;
-            m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy5, new Color?());
+      m_UI.UI_DrawStringBold(Color.Yellow, "When you uninstall the game you can delete this directory.", 0, gy5, new Color?());
       int num = gy5 + 14;
-            DrawFootnote(Color.White, "press ENTER");
-            m_UI.UI_Repaint();
-            WaitEnter();
+      DrawFootnote(Color.White, "press ENTER");
+      m_UI.UI_Repaint();
+      WaitEnter();
     }
 
     private void LogSaveScumStats() {
@@ -838,20 +822,17 @@ namespace djack.RogueSurvivor.Engine
         DateTime now = DateTime.Now;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26)
         {
-          for (int index = 0; index < 10; ++index)
-          {
+          for (int index = 0; index < 10; ++index) {
             int gx2 = m_Rules.Roll(0, 1024);
             int gy2 = m_Rules.Roll(0, 768);
-            m_UI.UI_DrawImage("Actors\\santaman", gx2, gy2);
+            m_UI.UI_DrawImage(GameImages.ACTOR_SANTAMAN, gx2, gy2);
             m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
         }
         m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode)
-        {
+        switch (m_UI.UI_WaitKey().KeyCode) {
           case Keys.Return:
-            switch (currentChoice)
-            {
+            switch (currentChoice) {
               case 0:
                 if (HandleNewCharacter()) {
                   StartNewGame();
@@ -861,16 +842,13 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case 1:
-                if (flag2)
-                {
+                if (flag2) {
                   gy1 += 28;
                   m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
                   m_UI.UI_Repaint();
                   LoadGame(RogueGame.GetUserSave());
                   LogSaveScumStats();
-#if ALPHA_SIM
                   RestartSimThread();
-#endif
                   flag1 = false;
                   break;
                 }
@@ -1565,62 +1543,59 @@ namespace djack.RogueSurvivor.Engine
                 WaitEnter();
       }
             ClearMessages();
-            ClearMessagesHistory();
-            string msg1 = "Welcome to " + SetupConfig.GAME_NAME;
-            string msg2 = "We hope you like Zombies";
-            int len = (msg1.Length < msg2.Length ? msg2.Length : msg1.Length);
-            int delta = msg2.Length-msg1.Length;
-            string header = "".PadRight(len+4, '*');
-            if (0<delta) {  // msg2 longer
-              int half_delta = delta / 2;
-              msg1 = msg1.PadLeft(msg1.Length+half_delta).PadRight(len);
-            }
-            else if (0>delta) { // msg1 longer
-              delta = -delta;
-              int half_delta = delta / 2;
-              msg2 = msg2.PadLeft(msg2.Length + half_delta).PadRight(len);
-            }
-            AddMessage(new Data.Message(header, 0, Color.LightGreen));
-            AddMessage(new Data.Message("* " + msg1 + " *", 0, Color.LightGreen));
-            AddMessage(new Data.Message("* " + msg2 + " *", 0, Color.LightGreen));
-            AddMessage(new Data.Message(header, 0, Color.LightGreen));
-            AddMessage(new Data.Message(string.Format("Press {0} for help", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
-            AddMessage(new Data.Message(string.Format("Press {0} to redefine keys", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
-            AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
-            RefreshPlayer();
-            RedrawPlayScreen();
-            WaitEnter();
-            ClearMessages();
-            AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", (object)m_Player.Name), 0, Color.White));
-            RedrawPlayScreen();
-#if ALPHA_SIM
-            m_Session.World.ScheduleForAdvancePlay();   // simulation starts at district A1
-#endif
-            RestartSimThread();
+      ClearMessagesHistory();
+      string msg1 = "Welcome to " + SetupConfig.GAME_NAME;
+      string msg2 = "We hope you like Zombies";
+      int len = (msg1.Length < msg2.Length ? msg2.Length : msg1.Length);
+      int delta = msg2.Length-msg1.Length;
+      string header = "".PadRight(len+4, '*');
+      if (0<delta) {  // msg2 longer
+        int half_delta = delta / 2;
+        msg1 = msg1.PadLeft(msg1.Length+half_delta).PadRight(len);
+      } else if (0>delta) { // msg1 longer
+        delta = -delta;
+        int half_delta = delta / 2;
+        msg2 = msg2.PadLeft(msg2.Length + half_delta).PadRight(len);
+      }
+      AddMessage(new Data.Message(header, 0, Color.LightGreen));
+      AddMessage(new Data.Message("* " + msg1 + " *", 0, Color.LightGreen));
+      AddMessage(new Data.Message("* " + msg2 + " *", 0, Color.LightGreen));
+      AddMessage(new Data.Message(header, 0, Color.LightGreen));
+      AddMessage(new Data.Message(string.Format("Press {0} for help", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE)), 0, Color.LightGreen));
+      AddMessage(new Data.Message(string.Format("Press {0} to redefine keys", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE)), 0, Color.LightGreen));
+      AddMessage(new Data.Message("<press ENTER>", 0, Color.Yellow));
+      RefreshPlayer();
+      RedrawPlayScreen();
+      WaitEnter();
+      ClearMessages();
+      AddMessage(new Data.Message(string.Format(isUndead ? "{0} rises..." : "{0} wakes up.", (object)m_Player.Name), 0, Color.White));
+      RedrawPlayScreen();
+      m_Session.World.ScheduleForAdvancePlay();   // simulation starts at district A1
+      RestartSimThread();
     }
 
     private void HandleCredits()
     {
-            m_MusicManager.StopAll();
-            m_MusicManager.PlayLooping(GameMusics.SLEEP);
-            m_UI.UI_Clear(Color.Black);
-            DrawHeader();
+      m_MusicManager.StopAll();
+      m_MusicManager.PlayLooping(GameMusics.SLEEP);
+      m_UI.UI_Clear(Color.Black);
+      DrawHeader();
       int gy1 = BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.Yellow, "Credits", 0, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.Yellow, "Credits", 0, gy1, new Color?());
       gy1 += 2*BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Programming, Graphics & Music by Jacques Ruiz (roguedjack)", 0, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Programming, Graphics & Music by Jacques Ruiz (roguedjack)", 0, gy1, new Color?());
       gy1 += 2*BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Programming", 0, gy1, new Color?());
-            m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2010 Express", 256, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Programming", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2010 Express", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "(zaimoni)", 0, gy1, new Color?());
-            m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2015 Community", 256, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "(zaimoni)", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2015 Community", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Graphics softwares", 0, gy1, new Color?());
-            m_UI.UI_DrawString(Color.White, "- Inkscape, Paint.NET", 256, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Graphics softwares", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- Inkscape, Paint.NET", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Sound & Music softwares", 0, gy1, new Color?());
-            m_UI.UI_DrawString(Color.White, "- GuitarPro 6, Audacity", 256, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Sound & Music softwares", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- GuitarPro 6, Audacity", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.White, "Sound samples", 0, gy1, new Color?());
             m_UI.UI_DrawString(Color.White, "- http://www.sound-fishing.net  http://www.soundsnap.com/", 256, gy1, new Color?());
@@ -2352,20 +2327,18 @@ namespace djack.RogueSurvivor.Engine
        }
        // check all maps in current district
        tmp = m_Session.CurrentMap.District.FindPlayer(m_Session.CurrentMap);
-       if (null != tmp)
-         {
+       if (null != tmp) {
          m_Player = tmp;
          return;
-         }
+       }
 
        // check all other districts
        foreach(District tmp2 in m_Session.World.PlayerDistricts) {
          tmp = tmp2.FindPlayer(null);
-         if (null != tmp)
-           {
+         if (null != tmp) {
            m_Player = tmp;
            return;
-           }
+         }
        }
     }
 
@@ -2380,12 +2353,8 @@ namespace djack.RogueSurvivor.Engine
 
       lock(district) {
       foreach(Map current in district.Maps) {
-#if ALPHA_SIM
         // not processing secret maps used to be a micro-optimization; now a hang bug
         while(!current.IsSecret && null != current.NextActorToAct) {
-#else
-        while(null != current.NextActorToAct) {
-#endif
           AdvancePlay(current, sim);
           if (district == m_Session.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
             if (m_Player.IsDead) HandleReincarnation();
@@ -2404,17 +2373,13 @@ namespace djack.RogueSurvivor.Engine
         ++m_Session.WorldTime.TurnCounter;
         bool isNight2 = m_Session.WorldTime.IsNight;
         DayPhase phase2 = m_Session.WorldTime.Phase;
-        if (isNight1 && !isNight2)
-        {
+        if (isNight1 && !isNight2) {
           AddMessage(new Data.Message("The sun is rising again for you...", m_Session.WorldTime.TurnCounter, DAY_COLOR));
           OnNewDay();
-        }
-        else if (!isNight1 && isNight2)
-        {
+        } else if (!isNight1 && isNight2) {
           AddMessage(new Data.Message("Night is falling upon you...", m_Session.WorldTime.TurnCounter, NIGHT_COLOR));
           OnNewNight();
-        }
-        else if (phase1 != phase2)
+        } else if (phase1 != phase2)
           AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", (object)DescribeDayPhase(phase2)), m_Session.WorldTime.TurnCounter, isNight2 ? NIGHT_COLOR : DAY_COLOR));
       }
 
@@ -13584,32 +13549,11 @@ namespace djack.RogueSurvivor.Engine
 
     private bool SimulateNearbyDistricts(District d)
     {
-#if ALPHA_SIM
       District d1 = m_Session.World.CurrentSimulationDistrict();
       if (null == d1) return false; 
       SimulateDistrict(d1);
       m_Session.World.ScheduleAdjacentForAdvancePlay(d1);
       return true;
-#else
-      bool flag = false;
-      int x1 = 0;
-      int x2 = m_Session.World.Size - 1;
-      int y1 = 0;
-      int y2 = m_Session.World.Size - 1;
-      m_Session.World.TrimToBounds(ref x1, ref y1);
-      m_Session.World.TrimToBounds(ref x2, ref y2);
-      for (int index1 = x1; index1 <= x2; ++index1) {
-        for (int index2 = y1; index2 <= y2; ++index2) {
-          if (index1 == d.WorldPosition.X && index2 == d.WorldPosition.Y) continue;
-          District d1 = m_Session.World[index1, index2];
-          if (0 < d1.PlayerCount) continue;
-          if (d.EntryMap.LocalTime.TurnCounter <= d1.EntryMap.LocalTime.TurnCounter) continue;
-          flag = true;
-          SimulateDistrict(d1);
-        }
-      }
-      return flag;
-#endif
     }
 
     private void RestartSimThread()
