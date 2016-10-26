@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -240,16 +241,16 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
       foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
-            CompletedAchievementsCount = 0;
-            m_VisitedMaps.Clear();
-            m_Events.Clear();
-            m_Sightings.Clear();
-            m_Kills.Clear();
-            m_Killer = (Actor) null;
-            m_FollowersWhenDied = (List<Actor>) null;
-            m_ZombifiedPlayer = (Actor) null;
-            m_KillPoints = 0;
-            m_StartScoringTurn = gameTurn;
+      CompletedAchievementsCount = 0;
+      m_VisitedMaps.Clear();
+      m_Events.Clear();
+      m_Sightings.Clear();
+      m_Kills.Clear();
+      m_Killer = null;
+      m_FollowersWhenDied = null;
+      m_ZombifiedPlayer = null;
+      m_KillPoints = 0;
+      m_StartScoringTurn = gameTurn;
     }
 
     public bool HasCompletedAchievement(Achievement.IDs id)
@@ -264,6 +265,7 @@ namespace djack.RogueSurvivor.Engine
 
     public Achievement GetAchievement(Achievement.IDs id)
     {
+      Contract.Ensures(null!=Contract.Result<Achievement>());
       return Achievements[(int) id];
     }
 

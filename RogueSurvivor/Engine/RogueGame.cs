@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
@@ -9694,29 +9695,24 @@ namespace djack.RogueSurvivor.Engine
             if (player1)
                             AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
             if (player2)
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), "Icons\\killed"));
-                        RedrawPlayScreen();
+              AddOverlay(new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), "Icons\\killed"));
+            RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
-          }
-          else
-          {
-                        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj));
+          } else {
+            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj));
             if (player1)
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
+              AddOverlay(new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
             if (player2)
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), "Icons\\melee_damage"));
-                        RedrawPlayScreen();
+              AddOverlay(new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), GameImages.ICON_MELEE_DAMAGE));
+            RedrawPlayScreen();
             AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
-        }
-        else if (flag)
-        {
+        } else if (flag) {
           if (m_Rules.RollChance(PLAYER_HEAR_BREAK_CHANCE))
-                        AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone breaking furniture", mapObj.Location.Position));
-        }
-        else if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
-                    AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone bashing furniture", mapObj.Location.Position));
-                ClearOverlays();
+            AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone breaking furniture", mapObj.Location.Position));
+        } else if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
+          AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone bashing furniture", mapObj.Location.Position));
+        ClearOverlays();
       }
     }
 
@@ -9726,17 +9722,10 @@ namespace djack.RogueSurvivor.Engine
       int staminaCost = mapObj.Weight;
       if (actor.CountFollowers > 0) {
         Location location = new Location(actor.Location.Map, mapObj.Location.Position);
-        List<Actor> actorList = null;
-        foreach (Actor follower in actor.Followers) {
-          if (!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location)) {
-            if (actorList == null)
-              actorList = new List<Actor>(actor.CountFollowers);
-            actorList.Add(follower);
-          }
-        }
-        if (actorList != null) {
-          staminaCost = mapObj.Weight / (1 + actorList.Count);
-          foreach (Actor actor1 in actorList) {
+        IEnumerable<Actor> tmp = actor.Followers.Where(follower=>!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location));
+        if (0<tmp.Count()) {
+          staminaCost = mapObj.Weight / (1 + tmp.Count());
+          foreach(Actor actor1 in tmp) {
             actor1.SpendActionPoints(Rules.BASE_ACTION_COST);
             actor1.SpendStaminaPoints(staminaCost);
             if (flag)
@@ -9748,7 +9737,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendStaminaPoints(staminaCost);
       Map map = mapObj.Location.Map;
       Point position = mapObj.Location.Position;
-      map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
+      map.RemoveMapObjectAt(position.X, position.Y);
       map.PlaceMapObjectAt(mapObj, toPos);
       if (!Rules.IsAdjacent(toPos, actor.Location.Position) && m_Rules.IsWalkableFor(actor, map, position.X, position.Y)) {
         map.RemoveActor(actor);
