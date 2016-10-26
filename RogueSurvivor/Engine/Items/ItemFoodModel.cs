@@ -10,30 +10,24 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemFoodModel : ItemModel
   {
-    private int m_Nutrition;
-    private bool m_IsPerishable;
-    private int m_BestBeforeDays;
+    private readonly int m_Nutrition;
+    private readonly bool m_IsPerishable;
+    private readonly int m_BestBeforeDays;
 
-    public int Nutrition
-    {
-      get
-      {
+    public int Nutrition {
+      get {
         return m_Nutrition;
       }
     }
 
-    public bool IsPerishable
-    {
-      get
-      {
+    public bool IsPerishable {
+      get {
         return m_IsPerishable;
       }
     }
 
-    public int BestBeforeDays
-    {
-      get
-      {
+    public int BestBeforeDays {
+      get {
         return m_BestBeforeDays;
       }
     }
@@ -41,15 +35,12 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemFoodModel(string aName, string theNames, string imageID, int nutrition, int bestBeforeDays)
       : base(aName, theNames, imageID)
     {
-            m_Nutrition = nutrition;
-      if (bestBeforeDays < 0)
-      {
-                m_IsPerishable = false;
-      }
-      else
-      {
-                m_IsPerishable = true;
-                m_BestBeforeDays = bestBeforeDays;
+      m_Nutrition = nutrition;
+      if (bestBeforeDays < 0) {
+        m_IsPerishable = false;
+      } else {
+        m_IsPerishable = true;
+        m_BestBeforeDays = bestBeforeDays;
       }
     }
   }

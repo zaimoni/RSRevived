@@ -919,7 +919,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemMedicine MakeItemPillsSAN()
     {
-      return new ItemMedicine((ItemModel)m_Game.GameItems.PILLS_SAN) {
+      return new ItemMedicine(m_Game.GameItems.PILLS_SAN) {
         Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SAN.StackingLimit)
       };
     }
@@ -941,14 +941,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemFood MakeItemCannedFood()
     {
-      return new ItemFood((ItemModel)m_Game.GameItems.CANNED_FOOD) {
+      return new ItemFood(m_Game.GameItems.CANNED_FOOD) {
         Quantity = m_Rules.Roll(1, m_Game.GameItems.CANNED_FOOD.StackingLimit)
       };
     }
 
     public ItemMeleeWeapon MakeItemCrowbar()
     {
-      return new ItemMeleeWeapon((ItemModel)m_Game.GameItems.CROWBAR) {
+      return new ItemMeleeWeapon(m_Game.GameItems.CROWBAR) {
         Quantity = m_Rules.Roll(1, m_Game.GameItems.CROWBAR.StackingLimit)
       };
     }
@@ -1189,7 +1189,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemGrenade MakeItemGrenade()
     {
-      return new ItemGrenade((ItemModel)m_Game.GameItems.GRENADE, (ItemModel)m_Game.GameItems.GRENADE_PRIMED) {
+      return new ItemGrenade(m_Game.GameItems.GRENADE, m_Game.GameItems.GRENADE_PRIMED) {
         Quantity = m_Rules.Roll(1, m_Game.GameItems.GRENADE.StackingLimit)
       };
     }

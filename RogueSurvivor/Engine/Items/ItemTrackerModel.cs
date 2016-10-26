@@ -10,21 +10,17 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemTrackerModel : ItemModel
   {
-    private ItemTrackerModel.TrackingFlags m_Tracking;
-    private int m_MaxBatteries;
+    private readonly ItemTrackerModel.TrackingFlags m_Tracking;
+    private readonly int m_MaxBatteries;
 
-    public ItemTrackerModel.TrackingFlags Tracking
-    {
-      get
-      {
+    public ItemTrackerModel.TrackingFlags Tracking {
+      get {
         return m_Tracking;
       }
     }
 
-    public int MaxBatteries
-    {
-      get
-      {
+    public int MaxBatteries {
+      get {
         return m_MaxBatteries;
       }
     }
@@ -32,9 +28,9 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries)
       : base(aName, theNames, imageID)
     {
-            m_Tracking = tracking;
-            m_MaxBatteries = maxBatteries;
-            DontAutoEquip = true;
+       m_Tracking = tracking;
+       m_MaxBatteries = maxBatteries;
+       DontAutoEquip = true;
     }
 
     [System.Flags]

@@ -12,11 +12,9 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemGrenade : ItemExplosive
   {
-    public ItemGrenade(ItemModel model, ItemModel primedModel)
+    public ItemGrenade(ItemGrenadeModel model, ItemGrenadePrimedModel primedModel)
       : base(model, primedModel)
     {
-      if (!(model is ItemGrenadeModel))
-        throw new ArgumentException("model is not ItemGrenadeModel");
     }
   }
 }
