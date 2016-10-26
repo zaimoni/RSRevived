@@ -1911,21 +1911,6 @@ namespace djack.RogueSurvivor.Engine
       return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location.Position, murderer.Location.Position);
     }
 
-    public bool IsWeatherRain(Weather weather)
-    {
-      switch (weather)
-      {
-        case Weather.CLEAR:
-        case Weather.CLOUDY:
-          return false;
-        case Weather.RAIN:
-        case Weather.HEAVY_RAIN:
-          return true;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled weather");
-      }
-    }
-
     public float ComputeMapPowerRatio(Map map)
     {
       int num1;

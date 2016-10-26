@@ -2858,7 +2858,7 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 7. Check fires.
         // \todo implement per-map weather, then use it here
-        if (m_Rules.IsWeatherRain(Session.Get.World.Weather) && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
+        if (Session.Get.World.Weather.IsRain() && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
           foreach (MapObject mapObject in map.MapObjects) {
             if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
               UnapplyOnFire(mapObject);
@@ -6381,7 +6381,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.NIGHT:
           return map.LocalTime.TurnCounter >= WorldTime.TURNS_PER_HOUR;
         case AdvisorHint.RAIN:
-          if (m_Rules.IsWeatherRain(Session.Get.World.Weather))
+          if (Session.Get.World.Weather.IsRain())
             return map.LocalTime.TurnCounter >= 2*WorldTime.TURNS_PER_HOUR;
           return false;
         case AdvisorHint.ACTOR_MELEE:
@@ -8755,7 +8755,7 @@ namespace djack.RogueSurvivor.Engine
       Attack attack = attacker.RangedAttack(distance, defender);
       Defence defence = m_Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendStaminaPoints(attack.StaminaPenalty);
-      if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(m_Rules.IsWeatherRain(Session.Get.World.Weather) ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
+      if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
       {
         AddMessage(MakeMessage(attacker, " : weapon jam!"));
       } else {
