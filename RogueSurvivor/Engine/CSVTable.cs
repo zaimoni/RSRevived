@@ -11,44 +11,38 @@ namespace djack.RogueSurvivor.Engine
 {
   public class CSVTable
   {
-    private int m_nbFields;
-    private List<CSVLine> m_Lines;
+    private readonly int m_nbFields;
+    private readonly List<CSVLine> m_Lines;
 
-    public CSVField this[int field, int line]
-    {
-      get
-      {
+    public CSVField this[int field, int line] {
+      get {
         return m_Lines[line][field];
       }
     }
 
-    public IEnumerable<CSVLine> Lines
-    {
-      get
-      {
-        return (IEnumerable<CSVLine>)m_Lines;
+    public IEnumerable<CSVLine> Lines {
+      get {
+        return m_Lines;
       }
     }
 
-    public int CountLines
-    {
-      get
-      {
+    public int CountLines {
+      get {
         return m_Lines.Count;
       }
     }
 
     public CSVTable(int nbFields)
     {
-            m_nbFields = nbFields;
-            m_Lines = new List<CSVLine>();
+      m_nbFields = nbFields;
+      m_Lines = new List<CSVLine>();
     }
 
     public void AddLine(CSVLine line)
     {
       if (line.FieldsCount != m_nbFields)
         throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", (object) line.FieldsCount, (object)m_nbFields));
-            m_Lines.Add(line);
+      m_Lines.Add(line);
     }
   }
 }

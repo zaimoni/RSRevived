@@ -4,15 +4,18 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System.Diagnostics.Contracts;
+
 namespace djack.RogueSurvivor.Engine
 {
   public class CSVField
   {
-    private string m_RawString;
+    private readonly string m_RawString;
 
     public CSVField(string rawString)
     {
-            m_RawString = rawString;
+      Contract.Requires(null!=rawString);
+      m_RawString = rawString;
     }
 
     public int ParseInt()
