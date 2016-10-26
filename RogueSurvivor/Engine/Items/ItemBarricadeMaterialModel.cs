@@ -12,12 +12,10 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemBarricadeMaterialModel : ItemModel
   {
-    private int m_BarricadingValue;
+    private readonly int m_BarricadingValue;
 
-    public int BarricadingValue
-    {
-      get
-      {
+    public int BarricadingValue {
+      get {
         return m_BarricadingValue;
       }
     }
@@ -25,7 +23,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemBarricadeMaterialModel(string aName, string theNames, string imageID, int barricadingValue)
       : base(aName, theNames, imageID)
     {
-            m_BarricadingValue = barricadingValue;
+      m_BarricadingValue = barricadingValue;
     }
   }
 }

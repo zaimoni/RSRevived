@@ -10012,21 +10012,16 @@ namespace djack.RogueSurvivor.Engine
       DoorWindow doorWindow = mapObj as DoorWindow;
       bool flag = doorWindow != null && doorWindow.IsWindow;
       mapObj.HitPoints = 0;
-      if (mapObj.GivesWood)
-      {
+      if (mapObj.GivesWood) {
         int val2 = 1 + mapObj.MaxHitPoints / 40;
-        while (val2 > 0)
-        {
-          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial((ItemModel)m_GameItems.WOODENPLANK);
-          barricadeMaterial.Quantity = Math.Min(m_GameItems.WOODENPLANK.StackingLimit, val2);
-          Item it = (Item) barricadeMaterial;
-          if (it.Quantity < 1)
-            it.Quantity = 1;
-          mapObj.Location.Map.DropItemAt(it, mapObj.Location.Position);
-          val2 -= it.Quantity;
+        while (val2 > 0) {
+          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(m_GameItems.WOODENPLANK) {
+            Quantity = Math.Min(m_GameItems.WOODENPLANK.StackingLimit, val2)
+          };
+          val2 -= barricadeMaterial.Quantity;
+          mapObj.Location.Map.DropItemAt(barricadeMaterial, mapObj.Location.Position);
         }
-        if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE))
-        {
+        if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
           ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon((ItemModel)m_GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon((ItemModel)m_GameItems.IMPROVISED_CLUB);
           mapObj.Location.Map.DropItemAt((Item) itemMeleeWeapon, mapObj.Location.Position);
         }
@@ -10035,7 +10030,7 @@ namespace djack.RogueSurvivor.Engine
         doorWindow.SetState(3);
       else
         mapObj.Location.Map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
-            OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
+      OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]

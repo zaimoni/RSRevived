@@ -16,22 +16,17 @@ namespace djack.RogueSurvivor.Data
     private readonly int m_Turn;
 
     
-    public Color Color
-    {
-      get
-      {
+    public Color Color {
+      get {
         return m_Color;
       }
-      set
-      {
-                m_Color = value;
+      set {
+        m_Color = value;
       }
     }
 
-    public int Turn
-    {
-      get
-      {
+    public int Turn {
+      get {
         return m_Turn;
       }
     }
