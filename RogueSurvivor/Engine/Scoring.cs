@@ -195,17 +195,17 @@ namespace djack.RogueSurvivor.Engine
 
     public Scoring()
     {
-            RealLifePlayingTime = new TimeSpan(0L);
-            Achievements = new Achievement[8];
-            InitAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]
+      RealLifePlayingTime = new TimeSpan(0L);
+      Achievements = new Achievement[(int) Achievement.IDs._COUNT];
+      InitAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]
       {
         "Now try not to die too soon..."
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
+      InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
       {
         "Now, where is the light switch?..."
       }, GameMusics.CHAR_UNDERGROUND_FACILITY, 2000));
-            InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
+      InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
       {
         "Personal message from the game developper : ",
         "Sorry, the rest of the plot is missing.",
@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Engine
       {
         "One less Thing to worry about!"
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs._FIRST, new Achievement(Achievement.IDs._FIRST, "Reached Day 7", "Did not reach XXX", new string[1]
+            InitAchievement(Achievement.IDs.REACHED_DAY_07, new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1]
       {
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
@@ -259,7 +259,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void SetCompletedAchievement(Achievement.IDs id)
     {
-            Achievements[(int) id].IsDone = true;
+      Achievements[(int) id].IsDone = true;
     }
 
     public Achievement GetAchievement(Achievement.IDs id)
@@ -269,7 +269,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void InitAchievement(Achievement.IDs id, Achievement a)
     {
-            Achievements[(int) id] = a;
+      Achievements[(int) id] = a;
     }
 
     public static float ComputeDifficultyRating(GameOptions options, DifficultySide side, int reincarnationNumber)

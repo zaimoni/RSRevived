@@ -10485,8 +10485,8 @@ namespace djack.RogueSurvivor.Engine
       CheckWeatherChange();
       if (m_Player.Model.Abilities.IsUndead) return;
       if (Session.Get.WorldTime.Day == 7) {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs._FIRST);
-        ShowNewAchievement(Achievement.IDs._FIRST);
+        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_07);
+        ShowNewAchievement(Achievement.IDs.REACHED_DAY_07);
       } else if (Session.Get.WorldTime.Day == 14) {
         Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_14);
         ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
