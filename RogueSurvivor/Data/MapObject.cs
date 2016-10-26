@@ -24,82 +24,62 @@ namespace djack.RogueSurvivor.Data
     private MapObject.Fire m_FireState;
     private Location m_Location;
 
-    public string AName
-    {
-      get
-      {
+    public string AName {
+      get {
         return (IsAn ? "an " : (IsPlural ? "some " : "a ")) + m_Name;
       }
     }
 
-    public string TheName
-    {
-      get
-      {
+    public string TheName {
+      get {
         return "the " + m_Name;
       }
     }
 
-    public bool IsAn
-    {
-      get
-      {
+    public bool IsAn {
+      get {
         return GetFlag(MapObject.Flags.IS_AN);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_AN, value);
+      set {
+        SetFlag(MapObject.Flags.IS_AN, value);
       }
     }
 
-    public bool IsPlural
-    {
-      get
-      {
+    public bool IsPlural {
+      get {
         return GetFlag(MapObject.Flags.IS_PLURAL);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_PLURAL, value);
+      set {
+        SetFlag(MapObject.Flags.IS_PLURAL, value);
       }
     }
 
-    public string ImageID
-    {
-      get
-      {
+    public string ImageID {
+      get {
         return m_ImageID;
       }
-      set
-      {
-                m_ImageID = value;
+      set {
+        m_ImageID = value;
       }
     }
 
-    public string HiddenImageID
-    {
-      get
-      {
+    public string HiddenImageID {
+      get {
         return m_HiddenImageID;
       }
     }
 
-    public Location Location
-    {
-      get
-      {
+    public Location Location {
+      get {
         return m_Location;
       }
-      set
-      {
-                m_Location = value;
+      set {
+        m_Location = value;
       }
     }
 
-    public virtual bool IsTransparent
-    {
-      get
-      {
+    public virtual bool IsTransparent {
+      get {
         if (m_FireState == MapObject.Fire.ONFIRE)
           return false;
         if (m_BreakState == MapObject.Break.BROKEN || m_FireState == MapObject.Fire.ASHES)
@@ -108,153 +88,116 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsMaterialTransparent
-    {
-      get
-      {
+    public bool IsMaterialTransparent {
+      get {
         return GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT, value);
+      set {
+        SetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT, value);
       }
     }
 
-    public bool IsWalkable
-    {
-      get
-      {
+    public bool IsWalkable {
+      get {
         return GetFlag(MapObject.Flags.IS_WALKABLE);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_WALKABLE, value);
+      set {
+        SetFlag(MapObject.Flags.IS_WALKABLE, value);
       }
     }
 
-    public int JumpLevel
-    {
-      get
-      {
+    public int JumpLevel {
+      get {
         return m_JumpLevel;
       }
-      set
-      {
-                m_JumpLevel = value;
+      set {
+        m_JumpLevel = value;
       }
     }
 
-    public bool IsJumpable
-    {
-      get
-      {
+    public bool IsJumpable {
+      get {
         return m_JumpLevel > 0;
       }
     }
 
-    public bool IsContainer
-    {
-      get
-      {
+    public bool IsContainer {
+      get {
         return GetFlag(MapObject.Flags.IS_CONTAINER);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_CONTAINER, value);
+      set {
+        SetFlag(MapObject.Flags.IS_CONTAINER, value);
       }
     }
 
-    public bool IsCouch
-    {
-      get
-      {
+    public bool IsCouch {
+      get {
         return GetFlag(MapObject.Flags.IS_COUCH);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_COUCH, value);
+      set {
+        SetFlag(MapObject.Flags.IS_COUCH, value);
       }
     }
 
-    public bool IsBreakable
-    {
-      get
-      {
+    public bool IsBreakable {
+      get {
         return m_BreakState == MapObject.Break.BREAKABLE;
       }
     }
 
-    public MapObject.Break BreakState
-    {
-      get
-      {
+    public MapObject.Break BreakState {
+      get {
         return m_BreakState;
       }
-      set
-      {
-                m_BreakState = value;
+      set {
+        m_BreakState = value;
       }
     }
 
-    public bool GivesWood
-    {
-      get
-      {
+    public bool GivesWood {
+      get {
         if (GetFlag(MapObject.Flags.GIVES_WOOD))
           return m_BreakState != MapObject.Break.BROKEN;
         return false;
       }
-      set
-      {
-                SetFlag(MapObject.Flags.GIVES_WOOD, value);
+      set {
+        SetFlag(MapObject.Flags.GIVES_WOOD, value);
       }
     }
 
-    public bool IsMovable
-    {
-      get
-      {
+    public bool IsMovable {
+      get {
         return GetFlag(MapObject.Flags.IS_MOVABLE);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_MOVABLE, value);
+      set {
+        SetFlag(MapObject.Flags.IS_MOVABLE, value);
       }
     }
 
-    public bool BreaksWhenFiredThrough
-    {
-      get
-      {
+    public bool BreaksWhenFiredThrough {
+      get {
         return GetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH, value);
+      set {
+        SetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH, value);
       }
     }
 
-    public bool StandOnFovBonus
-    {
-      get
-      {
+    public bool StandOnFovBonus {
+      get {
         return GetFlag(MapObject.Flags.STANDON_FOV_BONUS);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.STANDON_FOV_BONUS, value);
+      set {
+        SetFlag(MapObject.Flags.STANDON_FOV_BONUS, value);
       }
     }
 
-    public int Weight
-    {
-      get
-      {
+    public int Weight {
+      get {
         return m_Weight;
       }
-      set
-      {
-                m_Weight = Math.Max(1, value);
+      set {
+        m_Weight = Math.Max(1, value);
       }
     }
 
@@ -268,10 +211,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsOnFire
-    {
-      get
-      {
+    public bool IsOnFire {
+      get {
         return m_FireState == MapObject.Fire.ONFIRE;
       }
     }
@@ -284,15 +225,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public MapObject.Fire FireState
-    {
-      get
-      {
+    public MapObject.Fire FireState {
+      get {
         return m_FireState;
       }
-      set
-      {
-                m_FireState = value;
+      set {
+        m_FireState = value;
       }
     }
 
@@ -328,6 +266,7 @@ namespace djack.RogueSurvivor.Data
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
+    // flag handling
     private bool GetFlag(MapObject.Flags f)
     {
       return (m_Flags & f) != MapObject.Flags.NONE;
@@ -343,12 +282,25 @@ namespace djack.RogueSurvivor.Data
 
     private void OneFlag(MapObject.Flags f)
     {
-            m_Flags |= f;
+      m_Flags |= f;
     }
 
     private void ZeroFlag(MapObject.Flags f)
     {
-            m_Flags &= ~f;
+      m_Flags &= ~f;
+    }
+
+    // fire
+    public void Ignite()
+    {
+      m_FireState = MapObject.Fire.ONFIRE;
+      --m_JumpLevel;
+    }
+
+    public void Extinguish()
+    {
+      ++m_JumpLevel;
+      m_FireState = MapObject.Fire.BURNABLE;
     }
 
     [Serializable]

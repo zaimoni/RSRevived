@@ -2862,7 +2862,7 @@ namespace djack.RogueSurvivor.Engine
         if (Session.Get.World.Weather.IsRain() && m_Rules.RollChance(Rules.FIRE_RAIN_TEST_CHANCE)) {
           foreach (MapObject mapObject in map.MapObjects) {
             if (mapObject.IsOnFire && m_Rules.RollChance(Rules.FIRE_RAIN_PUT_OUT_CHANCE)) {
-              UnapplyOnFire(mapObject);
+              mapObject.Extinguish();;
               if (ForceVisibleToPlayer(mapObject))
                 AddMessage(new Data.Message("The rain has put out a fire.", map.LocalTime.TurnCounter));
             }
@@ -10840,35 +10840,22 @@ namespace djack.RogueSurvivor.Engine
 
     public Skills.IDs? ZombifySkill(Skills.IDs skill)
     {
-      switch (skill)
-      {
+      switch (skill) {
         case Skills.IDs._FIRST:
-          return new Skills.IDs?(Skills.IDs._FIRST_UNDEAD);
+          return Skills.IDs._FIRST_UNDEAD;
         case Skills.IDs.LIGHT_EATER:
-          return new Skills.IDs?(Skills.IDs.Z_LIGHT_EATER);
+          return Skills.IDs.Z_LIGHT_EATER;
         case Skills.IDs.LIGHT_FEET:
-          return new Skills.IDs?(Skills.IDs.Z_LIGHT_FEET);
+          return Skills.IDs.Z_LIGHT_FEET;
         case Skills.IDs.MEDIC:
-          return new Skills.IDs?(Skills.IDs.Z_INFECTOR);
+          return Skills.IDs.Z_INFECTOR;
         case Skills.IDs.STRONG:
-          return new Skills.IDs?(Skills.IDs.Z_STRONG);
+          return Skills.IDs.Z_STRONG;
         case Skills.IDs.TOUGH:
-          return new Skills.IDs?(Skills.IDs.Z_TOUGH);
+          return Skills.IDs.Z_TOUGH;
         default:
-          return new Skills.IDs?();
+          return null;
       }
-    }
-
-    public void ApplyOnFire(MapObject mapObj)
-    {
-      mapObj.FireState = MapObject.Fire.ONFIRE;
-      --mapObj.JumpLevel;
-    }
-
-    public void UnapplyOnFire(MapObject mapObj)
-    {
-      ++mapObj.JumpLevel;
-      mapObj.FireState = MapObject.Fire.BURNABLE;
     }
 
     public void ComputeViewRect(Point mapCenter)

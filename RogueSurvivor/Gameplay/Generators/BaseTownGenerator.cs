@@ -670,36 +670,29 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       int num = 0;
       Point point1 = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      foreach (Direction direction in Direction.COMPASS) {
         Point point2 = point1 + direction;
-        if (map.IsWalkable(point2.X, point2.Y))
-          ++num;
-        if (map.GetMapObjectAt(point2.X, point2.Y) is DoorWindow)
-          return false;
+        if (map.IsWalkable(point2.X, point2.Y)) ++num;
+        if (map.GetMapObjectAt(point2.X, point2.Y) is DoorWindow) return false;
       }
-      if (num < minAccessibility)
-        return false;
-            PlaceDoorIfNoObject(map, x, y, floor, door);
+      if (num < minAccessibility) return false;
+      PlaceDoorIfNoObject(map, x, y, floor, door);
       return true;
     }
 
     protected virtual void AddWreckedCarsOutside(Map map, Rectangle rect)
     {
-            MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
       {
-        if (m_DiceRoller.RollChance(m_Params.WreckedCarChance))
-        {
+        if (m_DiceRoller.RollChance(m_Params.WreckedCarChance)) {
           Tile tileAt = map.GetTileAt(pt.X, pt.Y);
-          if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != m_Game.GameTiles.FLOOR_GRASS)
-          {
+          if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != m_Game.GameTiles.FLOOR_GRASS) {
             MapObject mapObj = MakeObjWreckedCar(m_DiceRoller);
-            if (m_DiceRoller.RollChance(50))
-                      m_Game.ApplyOnFire(mapObj);
+            if (m_DiceRoller.RollChance(50)) mapObj.Ignite();
             return mapObj;
           }
         }
-        return (MapObject) null;
+        return null;
       }));
     }
 
