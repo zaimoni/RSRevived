@@ -859,13 +859,11 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanRun(out string reason)
     {
-      if (!Model.Abilities.CanRun)
-      {
+      if (!Model.Abilities.CanRun) {
         reason = "no ability to run";
         return false;
       }
-      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
-      {
+      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) {
         reason = "not enough stamina to run";
         return false;
       }
@@ -877,6 +875,14 @@ namespace djack.RogueSurvivor.Data
     {
       string reason;
       return CanRun(out reason);
+    }
+
+    public bool CanJump {
+      get {
+       return Model.Abilities.CanJump
+            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE)
+            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
+      }
     }
 
     // we do not roll these into a setter as no change requires both sets of checks

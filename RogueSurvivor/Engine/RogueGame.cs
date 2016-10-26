@@ -8737,8 +8737,7 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
       MapObject mapObjectAt = exitAt.Location.MapObject;
-      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !m_Rules.HasActorJumpAbility(actor)) && !mapObjectAt.IsCouch))
-      {
+      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !actor.CanJump) && !mapObjectAt.IsCouch)) {
         if (isPlayer)
           AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) mapObjectAt.AName)));
         return true;
@@ -8756,8 +8755,7 @@ namespace djack.RogueSurvivor.Engine
         exitAt.Location.AddCorpse(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer)
       AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
-      if (isPlayer)
-      {
+      if (isPlayer) {
         if (map.District != exitAt.ToMap.District) {
           m_Session.Scoring.AddEvent(m_Session.WorldTime.TurnCounter, string.Format("Entered district {0}.", (object) exitAt.ToMap.District.Name));
           actor.ActionPoints += actor.Speed;
