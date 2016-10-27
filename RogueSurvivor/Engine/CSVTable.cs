@@ -52,5 +52,16 @@ namespace djack.RogueSurvivor.Engine
       }
       throw new InvalidOperationException(string.Format("{0} {1} not found", typeof(_T_).ToString(), modelID.ToString()));
     }
+
+    public _DATA_TYPE_ GetDataFor<_DATA_TYPE_,_T_>(Func<CSVLine, _DATA_TYPE_> fn, _T_ modelID)
+    {
+      CSVLine lineForModel = FindLineFor(modelID);
+      try {
+        return fn(lineForModel);
+      } catch (Exception ex) {
+        throw new InvalidOperationException(string.Format("invalid data format for {0} {1}; exception : {2}", typeof(_T_).ToString(), modelID.ToString(), ex.ToString()));
+      }
+    }
+
   }
 }

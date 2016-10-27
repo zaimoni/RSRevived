@@ -727,6 +727,8 @@ namespace djack.RogueSurvivor.Gameplay
 
     public bool LoadFromCSV(IRogueUI ui, string path)
     {
+      Contract.Requires(null!=ui);
+      Contract.Requires(!string.IsNullOrEmpty(path));
       Notify(ui, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
@@ -740,46 +742,37 @@ namespace djack.RogueSurvivor.Gameplay
       Notify(ui, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), 16);
       Notify(ui, "reading data...");
-      DATA_SKELETON = GetDataFromCSVTable(toTable, GameActors.IDs._FIRST);
-      DATA_RED_EYED_SKELETON = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
-      DATA_RED_SKELETON = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_RED_SKELETON);
-      DATA_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE);
-      DATA_DARK_EYED_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE);
-      DATA_DARK_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_DARK_ZOMBIE);
-      DATA_MALE_ZOMBIFIED = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_MALE_ZOMBIFIED);
-      DATA_FEMALE_ZOMBIFIED = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED);
-      DATA_MALE_NEOPHYTE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_MALE_NEOPHYTE);
-      DATA_FEMALE_NEOPHYTE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE);
-      DATA_MALE_DISCIPLE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_MALE_DISCIPLE);
-      DATA_FEMALE_DISCIPLE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_FEMALE_DISCIPLE);
-      DATA_ZM = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE_MASTER);
-      DATA_ZL = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE_LORD);
-      DATA_ZP = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE_PRINCE);
-      DATA_RAT_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_RAT_ZOMBIE);
-      DATA_SEWERS_THING = GetDataFromCSVTable(toTable, GameActors.IDs.SEWERS_THING);
-      DATA_MALE_CIVILIAN = GetDataFromCSVTable(toTable, GameActors.IDs.MALE_CIVILIAN);
-      DATA_FEMALE_CIVILIAN = GetDataFromCSVTable(toTable, GameActors.IDs.FEMALE_CIVILIAN);
-      DATA_FERAL_DOG = GetDataFromCSVTable(toTable, GameActors.IDs.FERAL_DOG);
-      DATA_POLICEMAN = GetDataFromCSVTable(toTable, GameActors.IDs.POLICEMAN);
-      DATA_CHAR_GUARD = GetDataFromCSVTable(toTable, GameActors.IDs.CHAR_GUARD);
-      DATA_NATGUARD = GetDataFromCSVTable(toTable, GameActors.IDs.ARMY_NATIONAL_GUARD);
-      DATA_BIKER_MAN = GetDataFromCSVTable(toTable, GameActors.IDs.BIKER_MAN);
-      DATA_GANGSTA_MAN = GetDataFromCSVTable(toTable, GameActors.IDs.GANGSTA_MAN);
-      DATA_BLACKOPS_MAN = GetDataFromCSVTable(toTable, GameActors.IDs.BLACKOPS_MAN);
-      DATA_JASON_MYERS = GetDataFromCSVTable(toTable, GameActors.IDs.JASON_MYERS);
+      Func<CSVLine, GameActors.ActorData> parse_fn = new Func<CSVLine, GameActors.ActorData>(GameActors.ActorData.FromCSVLine);
+      DATA_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn, GameActors.IDs._FIRST);
+      DATA_RED_EYED_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
+      DATA_RED_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RED_SKELETON);
+      DATA_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE);
+      DATA_DARK_EYED_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE);
+      DATA_DARK_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_DARK_ZOMBIE);
+      DATA_MALE_ZOMBIFIED = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_ZOMBIFIED);
+      DATA_FEMALE_ZOMBIFIED = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED);
+      DATA_MALE_NEOPHYTE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_NEOPHYTE);
+      DATA_FEMALE_NEOPHYTE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE);
+      DATA_MALE_DISCIPLE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_DISCIPLE);
+      DATA_FEMALE_DISCIPLE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_DISCIPLE);
+      DATA_ZM = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_MASTER);
+      DATA_ZL = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_LORD);
+      DATA_ZP = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_PRINCE);
+      DATA_RAT_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RAT_ZOMBIE);
+      DATA_SEWERS_THING = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.SEWERS_THING);
+      DATA_MALE_CIVILIAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.MALE_CIVILIAN);
+      DATA_FEMALE_CIVILIAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.FEMALE_CIVILIAN);
+      DATA_FERAL_DOG = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.FERAL_DOG);
+      DATA_POLICEMAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.POLICEMAN);
+      DATA_CHAR_GUARD = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.CHAR_GUARD);
+      DATA_NATGUARD = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.ARMY_NATIONAL_GUARD);
+      DATA_BIKER_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.BIKER_MAN);
+      DATA_GANGSTA_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.GANGSTA_MAN);
+      DATA_BLACKOPS_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.BLACKOPS_MAN);
+      DATA_JASON_MYERS = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.JASON_MYERS);
       CreateModels();
       Notify(ui, "done!");
       return true;
-    }
-
-    private GameActors.ActorData GetDataFromCSVTable(CSVTable table, GameActors.IDs modelID)
-    {
-      CSVLine lineForModel = table.FindLineFor(modelID);
-      try {
-        return GameActors.ActorData.FromCSVLine(lineForModel);
-      } catch (Exception ex) {
-        throw new InvalidOperationException(string.Format("invalid data format for model {0}; exception : {1}", (object) modelID.ToString(), (object) ex.ToString()));
-      }
     }
 
     private void Notify(IRogueUI ui, string stage)

@@ -893,16 +893,6 @@ namespace djack.RogueSurvivor.Gameplay
       ui.UI_Repaint();
     }
 
-    private _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs modelID)
-    {
-      CSVLine lineForModel = table.FindLineFor(modelID);
-      try {
-        return fn(lineForModel);
-      } catch (Exception ex) {
-        throw new InvalidOperationException(string.Format("invalid data format for model {0}; exception : {1}", (object) modelID.ToString(), (object) ex.ToString()));
-      }
-    }
-
     private bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
       Contract.Requires(null!=ui);
@@ -922,7 +912,7 @@ namespace djack.RogueSurvivor.Gameplay
       Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
-        data[index] = GetDataFromCSVTable(toTable, fn, idsToRead[index]);
+        data[index] = toTable.GetDataFor<_DATA_TYPE_, GameItems.IDs>(fn, idsToRead[index]);
       Notify(ui, kind, "done!");
       return true;
     }

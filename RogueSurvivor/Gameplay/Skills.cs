@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -65,18 +66,10 @@ namespace djack.RogueSurvivor.Gameplay
       ui.UI_Repaint();
     }
 
-    private static _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs skillID)
-    {
-      CSVLine lineForModel = table.FindLineFor(skillID);
-      try {
-        return fn(lineForModel);
-      } catch (Exception ex) {
-        throw new InvalidOperationException(string.Format("invalid data format for skill {0}; exception : {1}", (object) skillID.ToString(), (object) ex.ToString()));
-      }
-    }
-
     private static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
+      Contract.Requires(null!=ui);
+      Contract.Requires(!string.IsNullOrEmpty(path));
       Skills.Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
@@ -92,7 +85,7 @@ namespace djack.RogueSurvivor.Gameplay
       Skills.Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
-        data[index] = Skills.GetDataFromCSVTable<_DATA_TYPE_>(toTable, fn, idsToRead[index]);
+        data[index] = toTable.GetDataFor<_DATA_TYPE_, Skills.IDs>(fn, idsToRead[index]);
       Skills.Notify(ui, kind, "done!");
       return true;
     }
