@@ -32,12 +32,14 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemSprayScentModel(string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength)
+    public ItemSprayScentModel(string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength, string flavor)
       : base(aName, theNames, imageID)
     {
       m_MaxSprayQuantity = sprayQuantity;
       m_Odor = odor;
       m_Strength = strength;
+      FlavorDescription = flavor;
+      EquipmentPart = DollPart.LEFT_HAND;
     }
   }
 }
