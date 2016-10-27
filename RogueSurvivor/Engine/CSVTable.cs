@@ -44,5 +44,13 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", (object) line.FieldsCount, (object)m_nbFields));
       m_Lines.Add(line);
     }
+
+    public CSVLine FindLineFor<_T_>(_T_ modelID)
+    {
+      foreach (CSVLine line in m_Lines) {
+        if (line[0].ParseText() == modelID.ToString()) return line;
+      }
+      throw new InvalidOperationException(string.Format("{0} {1} not found", typeof(_T_).ToString(), modelID.ToString()));
+    }
   }
 }

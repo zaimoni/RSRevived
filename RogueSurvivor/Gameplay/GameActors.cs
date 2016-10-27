@@ -739,60 +739,45 @@ namespace djack.RogueSurvivor.Gameplay
       }
       Notify(ui, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), 16);
-            Notify(ui, "reading data...");
-            DATA_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs._FIRST);
-            DATA_RED_EYED_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
-            DATA_RED_SKELETON = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_RED_SKELETON);
-            DATA_ZOMBIE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_ZOMBIE);
-            DATA_DARK_EYED_ZOMBIE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE);
-            DATA_DARK_ZOMBIE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_DARK_ZOMBIE);
-            DATA_MALE_ZOMBIFIED = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_MALE_ZOMBIFIED);
-            DATA_FEMALE_ZOMBIFIED = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED);
-            DATA_MALE_NEOPHYTE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_MALE_NEOPHYTE);
-            DATA_FEMALE_NEOPHYTE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE);
-            DATA_MALE_DISCIPLE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_MALE_DISCIPLE);
-            DATA_FEMALE_DISCIPLE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_FEMALE_DISCIPLE);
-            DATA_ZM = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_ZOMBIE_MASTER);
-            DATA_ZL = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_ZOMBIE_LORD);
-            DATA_ZP = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_ZOMBIE_PRINCE);
-            DATA_RAT_ZOMBIE = GetDataFromCSVTable(ui, toTable, GameActors.IDs.UNDEAD_RAT_ZOMBIE);
-            DATA_SEWERS_THING = GetDataFromCSVTable(ui, toTable, GameActors.IDs.SEWERS_THING);
-            DATA_MALE_CIVILIAN = GetDataFromCSVTable(ui, toTable, GameActors.IDs.MALE_CIVILIAN);
-            DATA_FEMALE_CIVILIAN = GetDataFromCSVTable(ui, toTable, GameActors.IDs.FEMALE_CIVILIAN);
-            DATA_FERAL_DOG = GetDataFromCSVTable(ui, toTable, GameActors.IDs.FERAL_DOG);
-            DATA_POLICEMAN = GetDataFromCSVTable(ui, toTable, GameActors.IDs.POLICEMAN);
-            DATA_CHAR_GUARD = GetDataFromCSVTable(ui, toTable, GameActors.IDs.CHAR_GUARD);
-            DATA_NATGUARD = GetDataFromCSVTable(ui, toTable, GameActors.IDs.ARMY_NATIONAL_GUARD);
-            DATA_BIKER_MAN = GetDataFromCSVTable(ui, toTable, GameActors.IDs.BIKER_MAN);
-            DATA_GANGSTA_MAN = GetDataFromCSVTable(ui, toTable, GameActors.IDs.GANGSTA_MAN);
-            DATA_BLACKOPS_MAN = GetDataFromCSVTable(ui, toTable, GameActors.IDs.BLACKOPS_MAN);
-            DATA_JASON_MYERS = GetDataFromCSVTable(ui, toTable, GameActors.IDs.JASON_MYERS);
-            CreateModels();
-            Notify(ui, "done!");
+      Notify(ui, "reading data...");
+      DATA_SKELETON = GetDataFromCSVTable(toTable, GameActors.IDs._FIRST);
+      DATA_RED_EYED_SKELETON = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
+      DATA_RED_SKELETON = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_RED_SKELETON);
+      DATA_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE);
+      DATA_DARK_EYED_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE);
+      DATA_DARK_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_DARK_ZOMBIE);
+      DATA_MALE_ZOMBIFIED = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_MALE_ZOMBIFIED);
+      DATA_FEMALE_ZOMBIFIED = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED);
+      DATA_MALE_NEOPHYTE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_MALE_NEOPHYTE);
+      DATA_FEMALE_NEOPHYTE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE);
+      DATA_MALE_DISCIPLE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_MALE_DISCIPLE);
+      DATA_FEMALE_DISCIPLE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_FEMALE_DISCIPLE);
+      DATA_ZM = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE_MASTER);
+      DATA_ZL = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE_LORD);
+      DATA_ZP = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_ZOMBIE_PRINCE);
+      DATA_RAT_ZOMBIE = GetDataFromCSVTable(toTable, GameActors.IDs.UNDEAD_RAT_ZOMBIE);
+      DATA_SEWERS_THING = GetDataFromCSVTable(toTable, GameActors.IDs.SEWERS_THING);
+      DATA_MALE_CIVILIAN = GetDataFromCSVTable(toTable, GameActors.IDs.MALE_CIVILIAN);
+      DATA_FEMALE_CIVILIAN = GetDataFromCSVTable(toTable, GameActors.IDs.FEMALE_CIVILIAN);
+      DATA_FERAL_DOG = GetDataFromCSVTable(toTable, GameActors.IDs.FERAL_DOG);
+      DATA_POLICEMAN = GetDataFromCSVTable(toTable, GameActors.IDs.POLICEMAN);
+      DATA_CHAR_GUARD = GetDataFromCSVTable(toTable, GameActors.IDs.CHAR_GUARD);
+      DATA_NATGUARD = GetDataFromCSVTable(toTable, GameActors.IDs.ARMY_NATIONAL_GUARD);
+      DATA_BIKER_MAN = GetDataFromCSVTable(toTable, GameActors.IDs.BIKER_MAN);
+      DATA_GANGSTA_MAN = GetDataFromCSVTable(toTable, GameActors.IDs.GANGSTA_MAN);
+      DATA_BLACKOPS_MAN = GetDataFromCSVTable(toTable, GameActors.IDs.BLACKOPS_MAN);
+      DATA_JASON_MYERS = GetDataFromCSVTable(toTable, GameActors.IDs.JASON_MYERS);
+      CreateModels();
+      Notify(ui, "done!");
       return true;
     }
 
-    private CSVLine FindLineForModel(CSVTable table, GameActors.IDs modelID)
+    private GameActors.ActorData GetDataFromCSVTable(CSVTable table, GameActors.IDs modelID)
     {
-      foreach (CSVLine line in table.Lines)
-      {
-        if (line[0].ParseText() == modelID.ToString())
-          return line;
-      }
-      return (CSVLine) null;
-    }
-
-    private GameActors.ActorData GetDataFromCSVTable(IRogueUI ui, CSVTable table, GameActors.IDs modelID)
-    {
-      CSVLine lineForModel = FindLineForModel(table, modelID);
-      if (lineForModel == null)
-        throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
-      try
-      {
+      CSVLine lineForModel = table.FindLineFor(modelID);
+      try {
         return GameActors.ActorData.FromCSVLine(lineForModel);
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         throw new InvalidOperationException(string.Format("invalid data format for model {0}; exception : {1}", (object) modelID.ToString(), (object) ex.ToString()));
       }
     }

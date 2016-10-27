@@ -893,27 +893,12 @@ namespace djack.RogueSurvivor.Gameplay
       ui.UI_Repaint();
     }
 
-    private CSVLine FindLineForModel(CSVTable table, GameItems.IDs modelID)
+    private _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs modelID)
     {
-      foreach (CSVLine line in table.Lines)
-      {
-        if (line[0].ParseText() == modelID.ToString())
-          return line;
-      }
-      return (CSVLine) null;
-    }
-
-    private _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(IRogueUI ui, CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs modelID)
-    {
-      CSVLine lineForModel = FindLineForModel(table, modelID);
-      if (lineForModel == null)
-        throw new InvalidOperationException(string.Format("model {0} not found", (object) modelID.ToString()));
-      try
-      {
+      CSVLine lineForModel = table.FindLineFor(modelID);
+      try {
         return fn(lineForModel);
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         throw new InvalidOperationException(string.Format("invalid data format for model {0}; exception : {1}", (object) modelID.ToString(), (object) ex.ToString()));
       }
     }
@@ -937,7 +922,7 @@ namespace djack.RogueSurvivor.Gameplay
       Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
-        data[index] = GetDataFromCSVTable(ui, toTable, fn, idsToRead[index]);
+        data[index] = GetDataFromCSVTable(toTable, fn, idsToRead[index]);
       Notify(ui, kind, "done!");
       return true;
     }
@@ -954,12 +939,12 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.MEDICINE_PILLS_SAN,
         GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL
       }, out data);
-            DATA_MEDICINE_BANDAGE = data[0];
-            DATA_MEDICINE_MEDIKIT = data[1];
-            DATA_MEDICINE_PILLS_SLP = data[2];
-            DATA_MEDICINE_PILLS_STA = data[3];
-            DATA_MEDICINE_PILLS_SAN = data[4];
-            DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
+      DATA_MEDICINE_BANDAGE = data[0];
+      DATA_MEDICINE_MEDIKIT = data[1];
+      DATA_MEDICINE_PILLS_SLP = data[2];
+      DATA_MEDICINE_PILLS_STA = data[3];
+      DATA_MEDICINE_PILLS_SAN = data[4];
+      DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
       return true;
     }
 

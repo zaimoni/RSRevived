@@ -65,27 +65,12 @@ namespace djack.RogueSurvivor.Gameplay
       ui.UI_Repaint();
     }
 
-    private static CSVLine FindLineForModel(CSVTable table, Skills.IDs skillID)
+    private static _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs skillID)
     {
-      foreach (CSVLine line in table.Lines)
-      {
-        if (line[0].ParseText() == skillID.ToString())
-          return line;
-      }
-      return (CSVLine) null;
-    }
-
-    private static _DATA_TYPE_ GetDataFromCSVTable<_DATA_TYPE_>(IRogueUI ui, CSVTable table, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs skillID)
-    {
-      CSVLine lineForModel = Skills.FindLineForModel(table, skillID);
-      if (lineForModel == null)
-        throw new InvalidOperationException(string.Format("skill {0} not found", (object) skillID.ToString()));
-      try
-      {
+      CSVLine lineForModel = table.FindLineFor(skillID);
+      try {
         return fn(lineForModel);
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         throw new InvalidOperationException(string.Format("invalid data format for skill {0}; exception : {1}", (object) skillID.ToString(), (object) ex.ToString()));
       }
     }
@@ -107,7 +92,7 @@ namespace djack.RogueSurvivor.Gameplay
       Skills.Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
-        data[index] = Skills.GetDataFromCSVTable<_DATA_TYPE_>(ui, toTable, fn, idsToRead[index]);
+        data[index] = Skills.GetDataFromCSVTable<_DATA_TYPE_>(toTable, fn, idsToRead[index]);
       Skills.Notify(ui, kind, "done!");
       return true;
     }
