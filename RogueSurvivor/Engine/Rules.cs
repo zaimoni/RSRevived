@@ -614,69 +614,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool IsWalkableFor(Actor actor, Map map, int x, int y)
-    {
-      string reason;
-      return IsWalkableFor(actor, map, x, y, out reason);
-    }
-
-    public bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
-    {
-      Contract.Requires(null!=map);
-      Contract.Requires(null!=actor);
-      if (!map.IsInBounds(x, y)) {
-        reason = "out of map";
-        return false;
-      }
-      if (!map.GetTileAt(x, y).Model.IsWalkable) {
-        reason = "blocked";
-        return false;
-      }
-      MapObject mapObjectAt = map.GetMapObjectAt(x, y);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
-        if (mapObjectAt.IsJumpable) {
-          if (!actor.CanJump) {
-            reason = "cannot jump";
-            return false;
-          }
-          if (actor.StaminaPoints < STAMINA_COST_JUMP) {
-            reason = "not enough stamina to jump";
-            return false;
-          }
-        } else if (actor.Model.Abilities.IsSmall) {
-          DoorWindow doorWindow = mapObjectAt as DoorWindow;
-          if (doorWindow != null && doorWindow.IsClosed) {
-            reason = "cannot slip through closed door";
-            return false;
-          }
-        } else {
-          reason = "blocked by object";
-          return false;
-        }
-      }
-      if (map.GetActorAt(x, y) != null) {
-        reason = "someone is there";
-        return false;
-      }
-      if (actor.DraggedCorpse != null && actor.IsTired) {
-        reason = "dragging a corpse when tired";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public bool IsWalkableFor(Actor actor, Location location)
-    {
-      string reason;
-      return IsWalkableFor(actor, location, out reason);
-    }
-
-    public bool IsWalkableFor(Actor actor, Location location, out string reason)
-    {
-      return IsWalkableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
-    }
-
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Map map, int x, int y, out string reason)
     {
       if (map == null)

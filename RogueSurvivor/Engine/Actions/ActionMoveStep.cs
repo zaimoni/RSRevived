@@ -16,23 +16,23 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionMoveStep(Actor actor, RogueGame game, Direction direction)
       : base(actor, game)
     {
-            m_NewLocation = actor.Location + direction;
+      m_NewLocation = actor.Location + direction;
     }
 
     public ActionMoveStep(Actor actor, RogueGame game, Point to)
       : base(actor, game)
     {
-            m_NewLocation = new Location(actor.Location.Map, to);
+      m_NewLocation = new Location(actor.Location.Map, to);
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.IsWalkableFor(m_Actor, m_NewLocation, out m_FailReason);
+      return m_NewLocation.IsWalkableFor(m_Actor, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoMoveActor(m_Actor, m_NewLocation);
+      m_Game.DoMoveActor(m_Actor, m_NewLocation);
     }
   }
 }

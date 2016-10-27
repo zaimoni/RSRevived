@@ -70,6 +70,8 @@ namespace djack.RogueSurvivor.Data
     public Actor Actor { get { return m_Map.GetActorAt(m_Position); } }
     public void AddCorpse(Corpse c) { m_Map.AddCorpseAt(c, m_Position); }
     public void PlaceActor(Actor actor) { m_Map.PlaceActorAt(actor, m_Position); }
+    public bool IsWalkableFor(Actor actor) { return m_Map.IsWalkableFor(m_Position, actor); }
+    public bool IsWalkableFor(Actor actor, out string reason) { return m_Map.IsWalkableFor(m_Position, actor, out reason); }
 
     public override int GetHashCode()
     {

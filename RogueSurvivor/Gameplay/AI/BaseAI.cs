@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -366,8 +367,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         if (ptA == ptB) return 0.0f;
         float num = Rules.StdDistance(ptA, ptB);
-        if (!game.Rules.IsWalkableFor(m_Actor, m_Actor.Location.Map, ptA.X, ptA.Y))
-          num += 0.42f;
+        if (!m_Actor.Location.Map.IsWalkableFor(ptA, m_Actor)) num += 0.42f;
         return num;
       }));
     }
@@ -422,13 +422,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Actor leader = m_Actor.Leader;
       bool flag = m_Actor.HasLeader && m_Actor.GetEquippedWeapon() is ItemRangedWeapon;
-      Actor actor = (Actor) null;
-      if (flag)
-        actor = GetNearestTargetFor(game, m_Actor.Leader);
+      Actor actor = (flag ? GetNearestTargetFor(game, m_Actor.Leader) : null);
       bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
-      List<Point> leaderLoF = (List<Point>) null;
-      if (checkLeaderLoF)
-      {
+      List<Point> leaderLoF = null;
+      if (checkLeaderLoF) {
         leaderLoF = new List<Point>(1);
         ItemRangedWeapon itemRangedWeapon = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
         LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (itemRangedWeapon.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
@@ -436,30 +433,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        float num = SafetyFrom(game.Rules, location.Position, goals);
-        if (m_Actor.HasLeader)
-        {
+        float num = SafetyFrom(location.Position, goals);
+        if (m_Actor.HasLeader) {
           num -= Rules.StdDistance(location.Position, m_Actor.Leader.Location.Position);
-          if (checkLeaderLoF && leaderLoF.Contains(location.Position))
-            --num;
+          if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
         }
         return num;
       }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      if (choiceEval != null)
-        return (ActorAction) new ActionBump(m_Actor, game, choiceEval.Choice);
-      return (ActorAction) null;
+      return ((choiceEval != null) ? new ActionBump(m_Actor, game, choiceEval.Choice) : null);
     }
 
     protected ActorAction BehaviorMeleeAttack(RogueGame game, Actor target)
     {
-      if (null == target) throw new ArgumentNullException("target");
+      Contract.Requires(null != target);
       if (!game.Rules.CanActorMeleeAttack(m_Actor, target)) return null;
       return new ActionMeleeAttack(m_Actor, game, target);
     }
 
     protected ActorAction BehaviorRangedAttack(RogueGame game, Actor target)
     {
-      if (null == target) throw new ArgumentNullException("target");
+      Contract.Requires(null != target);
       if (!game.Rules.CanActorFireAt(m_Actor, target)) return null;
       return new ActionRangedAttack(m_Actor, game, target);
     }
@@ -1499,41 +1492,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return num;
     }
 
-    protected float SafetyFrom(Rules rules, Point from, List<Percept> dangers)
+    protected float SafetyFrom(Point from, List<Percept> dangers)
     {
       Map map = m_Actor.Location.Map;
       float num1 = (float) (GridDistancesSum(from, dangers) / (1 + dangers.Count));
       int num2 = 0;
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      foreach (Direction direction in Direction.COMPASS) {
         Point point = from + direction;
-        if (point == m_Actor.Location.Position || rules.IsWalkableFor(m_Actor, map, point.X, point.Y))
+        if (point == m_Actor.Location.Position || map.IsWalkableFor(point, m_Actor))
           ++num2;
       }
       float num3 = (float) num2 * 0.1f;
       bool isInside = map.GetTileAt(from).IsInside;
       int num4 = 0;
-      foreach (Percept danger in dangers)
-      {
+      foreach (Percept danger in dangers) {
         if (map.GetTileAt(danger.Location.Position).IsInside)
           ++num4;
         else
           --num4;
       }
       float num5 = 0.0f;
-      if (isInside)
-      {
-        if (num4 < 0)
-          num5 = 1.25f;
+      if (isInside) {
+        if (num4 < 0) num5 = 1.25f;
       }
-      else if (num4 > 0)
-        num5 = 1.25f;
+      else if (num4 > 0) num5 = 1.25f;
       float num6 = 0.0f;
-      if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump)
-      {
+      if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
         MapObject mapObjectAt = map.GetMapObjectAt(from);
-        if (mapObjectAt != null && mapObjectAt.IsJumpable)
-          num6 = 0.1f;
+        if (mapObjectAt != null && mapObjectAt.IsJumpable) num6 = 0.1f;
       }
       float num7 = 1f + num3 + num5 - num6;
       return num1 * num7;

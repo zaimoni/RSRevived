@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.Serialization;
 using System.Linq;
+using System.Diagnostics.Contracts;
+
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -458,6 +461,37 @@ namespace djack.RogueSurvivor.Data
         }
         return null;
       }
+    }
+
+    private string ReasonNotWalkableFor(int x, int y, Actor actor)
+    {
+      Contract.Requires(null != actor);
+      if (!IsInBounds(x, y)) return "out of map";
+      if (!m_Tiles[x, y].Model.IsWalkable) return "blocked";
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
+        if (mapObjectAt.IsJumpable) {
+          if (!actor.CanJump) return "cannot jump";
+          if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP) return "not enough stamina to jump";
+        } else if (actor.Model.Abilities.IsSmall) {
+          DoorWindow doorWindow = mapObjectAt as DoorWindow;
+          if (doorWindow != null && doorWindow.IsClosed) return "cannot slip through closed door";
+        } else return "blocked by object";
+      }
+      if (GetActorAt(x, y) != null) return "someone is there";
+      if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
+      return "";
+    }
+
+    public bool IsWalkableFor(Point p, Actor actor)
+    {
+      return string.IsNullOrEmpty(ReasonNotWalkableFor(p.X, p.Y, actor));
+    }
+
+    public bool IsWalkableFor(Point p, Actor actor, out string reason)
+    {
+      reason = ReasonNotWalkableFor(p.X, p.Y, actor);
+      return string.IsNullOrEmpty(reason);
     }
 
     // tracking players on map
