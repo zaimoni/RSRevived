@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable)
+    public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
       : base(aName, theNames, imageID)
     {
       DontAutoEquip = true;
@@ -94,6 +94,7 @@ namespace djack.RogueSurvivor.Engine.Items
       m_BreakChance = breakChance;
       m_BlockChance = blockChance;
       m_BreakChanceWhenEscape = breakChanceWhenEscape;
+      FlavorDescription = flavor;
       m_Flags = ItemTrapModel.Flags.NONE;
       if (dropActivate) m_Flags |= ItemTrapModel.Flags.DROP_ACTIVATE;
       if (useToActivate) m_Flags |= ItemTrapModel.Flags.USE_TO_ACTIVATE;
