@@ -713,42 +713,24 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.RANGED_ARMY_RIFLE] = new ItemRangedWeaponModel(DATA_RANGED_ARMY_RIFLE.NAME, DATA_RANGED_ARMY_RIFLE.FLAVOR, GameImages.ITEM_ARMY_RIFLE, new Attack(AttackKind.FIREARM, new Verb("fire a salvo at", "fires a salvo at"), DATA_RANGED_ARMY_RIFLE.ATK, DATA_RANGED_ARMY_RIFLE.DMG, 0, DATA_RANGED_ARMY_RIFLE.RANGE), DATA_RANGED_ARMY_RIFLE.MAXAMMO, AmmoType.HEAVY_RIFLE, DATA_RANGED_ARMY_RIFLE.FLAVOR);
       this[GameItems.IDs.RANGED_HUNTING_CROSSBOW] = new ItemRangedWeaponModel(DATA_RANGED_HUNTING_CROSSBOW.NAME, DATA_RANGED_HUNTING_CROSSBOW.FLAVOR, GameImages.ITEM_HUNTING_CROSSBOW, new Attack(AttackKind.BOW, new Verb("shoot"), DATA_RANGED_HUNTING_CROSSBOW.ATK, DATA_RANGED_HUNTING_CROSSBOW.DMG, 0, DATA_RANGED_HUNTING_CROSSBOW.RANGE), DATA_RANGED_HUNTING_CROSSBOW.MAXAMMO, AmmoType.BOLT, DATA_RANGED_HUNTING_CROSSBOW.FLAVOR);
       this[GameItems.IDs.RANGED_HUNTING_RIFLE] = new ItemRangedWeaponModel(DATA_RANGED_HUNTING_RIFLE.NAME, DATA_RANGED_HUNTING_RIFLE.FLAVOR, GameImages.ITEM_HUNTING_RIFLE, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_HUNTING_RIFLE.ATK, DATA_RANGED_HUNTING_RIFLE.DMG, 0, DATA_RANGED_HUNTING_RIFLE.RANGE), DATA_RANGED_HUNTING_RIFLE.MAXAMMO, AmmoType.LIGHT_RIFLE, DATA_RANGED_HUNTING_RIFLE.FLAVOR);
-      this[GameItems.IDs.RANGED_PISTOL] = new ItemRangedWeaponModel(DATA_RANGED_PISTOL.NAME, DATA_RANGED_PISTOL.FLAVOR, GameImages.ITEM_PISTOL, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_PISTOL.ATK, DATA_RANGED_PISTOL.DMG, 0, DATA_RANGED_PISTOL.RANGE), DATA_RANGED_PISTOL.MAXAMMO, AmmoType._FIRST, DATA_RANGED_PISTOL.FLAVOR);
-      this[GameItems.IDs.RANGED_KOLT_REVOLVER] = new ItemRangedWeaponModel(DATA_RANGED_KOLT_REVOLVER.NAME, DATA_RANGED_KOLT_REVOLVER.FLAVOR, GameImages.ITEM_KOLT_REVOLVER, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_KOLT_REVOLVER.ATK, DATA_RANGED_KOLT_REVOLVER.DMG, 0, DATA_RANGED_KOLT_REVOLVER.RANGE), DATA_RANGED_KOLT_REVOLVER.MAXAMMO, AmmoType._FIRST, DATA_RANGED_KOLT_REVOLVER.FLAVOR);
+      this[GameItems.IDs.RANGED_PISTOL] = new ItemRangedWeaponModel(DATA_RANGED_PISTOL.NAME, DATA_RANGED_PISTOL.FLAVOR, GameImages.ITEM_PISTOL, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_PISTOL.ATK, DATA_RANGED_PISTOL.DMG, 0, DATA_RANGED_PISTOL.RANGE), DATA_RANGED_PISTOL.MAXAMMO, AmmoType.LIGHT_PISTOL, DATA_RANGED_PISTOL.FLAVOR);
+      this[GameItems.IDs.RANGED_KOLT_REVOLVER] = new ItemRangedWeaponModel(DATA_RANGED_KOLT_REVOLVER.NAME, DATA_RANGED_KOLT_REVOLVER.FLAVOR, GameImages.ITEM_KOLT_REVOLVER, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_KOLT_REVOLVER.ATK, DATA_RANGED_KOLT_REVOLVER.DMG, 0, DATA_RANGED_KOLT_REVOLVER.RANGE), DATA_RANGED_KOLT_REVOLVER.MAXAMMO, AmmoType.LIGHT_PISTOL, DATA_RANGED_KOLT_REVOLVER.FLAVOR);
       this[GameItems.IDs.RANGED_PRECISION_RIFLE] = new ItemRangedWeaponModel(DATA_RANGED_PRECISION_RIFLE.NAME, DATA_RANGED_PRECISION_RIFLE.FLAVOR, GameImages.ITEM_PRECISION_RIFLE, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_PRECISION_RIFLE.ATK, DATA_RANGED_PRECISION_RIFLE.DMG, 0, DATA_RANGED_PRECISION_RIFLE.RANGE), DATA_RANGED_PRECISION_RIFLE.MAXAMMO, AmmoType.HEAVY_RIFLE, DATA_RANGED_PRECISION_RIFLE.FLAVOR);
       this[GameItems.IDs.RANGED_SHOTGUN] = new ItemRangedWeaponModel(DATA_RANGED_SHOTGUN.NAME, DATA_RANGED_SHOTGUN.FLAVOR, GameImages.ITEM_SHOTGUN, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_RANGED_SHOTGUN.ATK, DATA_RANGED_SHOTGUN.DMG, 0, DATA_RANGED_SHOTGUN.RANGE), DATA_RANGED_SHOTGUN.MAXAMMO, AmmoType.SHOTGUN, DATA_RANGED_SHOTGUN.FLAVOR);
       this[GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN] = new ItemRangedWeaponModel(DATA_UNIQUE_SANTAMAN_SHOTGUN.NAME, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR, GameImages.ITEM_SANTAMAN_SHOTGUN, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_UNIQUE_SANTAMAN_SHOTGUN.ATK, DATA_UNIQUE_SANTAMAN_SHOTGUN.DMG, 0, DATA_UNIQUE_SANTAMAN_SHOTGUN.RANGE), DATA_UNIQUE_SANTAMAN_SHOTGUN.MAXAMMO, AmmoType.SHOTGUN, DATA_UNIQUE_SANTAMAN_SHOTGUN.FLAVOR);
       this[GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN].IsProper = true;
       this[GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN].IsUnbreakable = true;
-      this[GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL] = new ItemRangedWeaponModel(DATA_UNIQUE_HANS_VON_HANZ_PISTOL.NAME, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, GameImages.ITEM_HANS_VON_HANZ_PISTOL, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.ATK, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.DMG, 0, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RANGE), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.MAXAMMO, AmmoType._FIRST, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR);
+      this[GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL] = new ItemRangedWeaponModel(DATA_UNIQUE_HANS_VON_HANZ_PISTOL.NAME, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR, GameImages.ITEM_HANS_VON_HANZ_PISTOL, new Attack(AttackKind.FIREARM, new Verb("shoot"), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.ATK, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.DMG, 0, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.RANGE), DATA_UNIQUE_HANS_VON_HANZ_PISTOL.MAXAMMO, AmmoType.LIGHT_PISTOL, DATA_UNIQUE_HANS_VON_HANZ_PISTOL.FLAVOR);
       this[GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL].IsProper = true;
       this[GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL].IsUnbreakable = true;
 
       // Ammunition
-      ItemAmmoModel tmpAmmoModel = new ItemAmmoModel("light pistol bullets", "light pistol bullets", "Items\\item_ammo_light_pistol", AmmoType._FIRST, 20);
-      tmpAmmoModel.IsPlural = true;
-      tmpAmmoModel.FlavorDescription = "";
-      this[GameItems.IDs.AMMO_LIGHT_PISTOL] = (ItemModel) tmpAmmoModel;
-      tmpAmmoModel = new ItemAmmoModel("heavy pistol bullets", "heavy pistol bullets", "Items\\item_ammo_heavy_pistol", AmmoType.HEAVY_PISTOL, 12);
-      tmpAmmoModel.IsPlural = true;
-      tmpAmmoModel.FlavorDescription = "";
-      this[GameItems.IDs.AMMO_HEAVY_PISTOL] = (ItemModel) tmpAmmoModel;
-      tmpAmmoModel = new ItemAmmoModel("light rifle bullets", "light rifle bullets", "Items\\item_ammo_light_rifle", AmmoType.LIGHT_RIFLE, 14);
-      tmpAmmoModel.IsPlural = true;
-      tmpAmmoModel.FlavorDescription = "";
-      this[GameItems.IDs.AMMO_LIGHT_RIFLE] = (ItemModel) tmpAmmoModel;
-      tmpAmmoModel = new ItemAmmoModel("heavy rifle bullets", "heavy rifle bullets", "Items\\item_ammo_heavy_rifle", AmmoType.HEAVY_RIFLE, 20);
-      tmpAmmoModel.IsPlural = true;
-      tmpAmmoModel.FlavorDescription = "";
-      this[GameItems.IDs.AMMO_HEAVY_RIFLE] = (ItemModel) tmpAmmoModel;
-      tmpAmmoModel = new ItemAmmoModel("shotgun shells", "shotgun shells", "Items\\item_ammo_shotgun", AmmoType.SHOTGUN, 10);
-      tmpAmmoModel.IsPlural = true;
-      tmpAmmoModel.FlavorDescription = "";
-      this[GameItems.IDs.AMMO_SHOTGUN] = (ItemModel) tmpAmmoModel;
-      tmpAmmoModel = new ItemAmmoModel("crossbow bolts", "crossbow bolts", "Items\\item_ammo_bolts", AmmoType.BOLT, 30);
-      tmpAmmoModel.IsPlural = true;
-      tmpAmmoModel.FlavorDescription = "";
-      this[GameItems.IDs.AMMO_BOLTS] = (ItemModel) tmpAmmoModel;
+      this[GameItems.IDs.AMMO_LIGHT_PISTOL] = new ItemAmmoModel("light pistol bullet", "light pistol bullets", GameImages.ITEM_AMMO_LIGHT_PISTOL, AmmoType.LIGHT_PISTOL, 20);
+      this[GameItems.IDs.AMMO_HEAVY_PISTOL] = new ItemAmmoModel("heavy pistol bullet", "heavy pistol bullets", GameImages.ITEM_AMMO_HEAVY_PISTOL, AmmoType.HEAVY_PISTOL, 12);
+      this[GameItems.IDs.AMMO_LIGHT_RIFLE] = new ItemAmmoModel("light rifle bullet", "light rifle bullets", GameImages.ITEM_AMMO_LIGHT_RIFLE, AmmoType.LIGHT_RIFLE, 14);
+      this[GameItems.IDs.AMMO_HEAVY_RIFLE] = new ItemAmmoModel("heavy rifle bullet", "heavy rifle bullets", GameImages.ITEM_AMMO_HEAVY_RIFLE, AmmoType.HEAVY_RIFLE, 20);
+      this[GameItems.IDs.AMMO_SHOTGUN] = new ItemAmmoModel("shotgun shell", "shotgun shells", GameImages.ITEM_AMMO_SHOTGUN, AmmoType.SHOTGUN, 10);
+      this[GameItems.IDs.AMMO_BOLTS] = new ItemAmmoModel("crossbow bolt", "crossbow bolts", GameImages.ITEM_AMMO_BOLTS, AmmoType.BOLT, 30);
       
       // grenade, in its various states
       GameItems.ExplosiveData explosiveData = DATA_EXPLOSIVE_GRENADE;

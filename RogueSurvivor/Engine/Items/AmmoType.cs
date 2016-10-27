@@ -9,12 +9,11 @@ namespace djack.RogueSurvivor.Engine.Items
   internal enum AmmoType
   {
     LIGHT_PISTOL = 0,
-    _FIRST = 0,
     HEAVY_PISTOL = 1,
     SHOTGUN = 2,
     LIGHT_RIFLE = 3,
     HEAVY_RIFLE = 4,
     BOLT = 5,
-    _COUNT = 6,
+//  _COUNT = 6,
   }
 }

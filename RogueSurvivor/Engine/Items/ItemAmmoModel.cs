@@ -29,6 +29,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       m_AmmoType = ammoType;
       StackingLimit = maxQuantity;
+      FlavorDescription = "";
     }
   }
 }
