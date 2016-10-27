@@ -37,11 +37,13 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType)
+    public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType, string flavor)
       : base(aName, theNames, imageID, attack)
     {
       m_MaxAmmo = maxAmmo;
       m_AmmoType = ammoType;
+      EquipmentPart = DollPart.RIGHT_HAND;
+      FlavorDescription = flavor;
     }
   }
 }
