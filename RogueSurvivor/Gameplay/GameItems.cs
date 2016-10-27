@@ -725,12 +725,12 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL].IsUnbreakable = true;
 
       // Ammunition
-      this[GameItems.IDs.AMMO_LIGHT_PISTOL] = new ItemAmmoModel("light pistol bullet", "light pistol bullets", GameImages.ITEM_AMMO_LIGHT_PISTOL, AmmoType.LIGHT_PISTOL, 20);
-      this[GameItems.IDs.AMMO_HEAVY_PISTOL] = new ItemAmmoModel("heavy pistol bullet", "heavy pistol bullets", GameImages.ITEM_AMMO_HEAVY_PISTOL, AmmoType.HEAVY_PISTOL, 12);
-      this[GameItems.IDs.AMMO_LIGHT_RIFLE] = new ItemAmmoModel("light rifle bullet", "light rifle bullets", GameImages.ITEM_AMMO_LIGHT_RIFLE, AmmoType.LIGHT_RIFLE, 14);
-      this[GameItems.IDs.AMMO_HEAVY_RIFLE] = new ItemAmmoModel("heavy rifle bullet", "heavy rifle bullets", GameImages.ITEM_AMMO_HEAVY_RIFLE, AmmoType.HEAVY_RIFLE, 20);
-      this[GameItems.IDs.AMMO_SHOTGUN] = new ItemAmmoModel("shotgun shell", "shotgun shells", GameImages.ITEM_AMMO_SHOTGUN, AmmoType.SHOTGUN, 10);
-      this[GameItems.IDs.AMMO_BOLTS] = new ItemAmmoModel("crossbow bolt", "crossbow bolts", GameImages.ITEM_AMMO_BOLTS, AmmoType.BOLT, 30);
+      this[GameItems.IDs.AMMO_LIGHT_PISTOL] = new ItemAmmoModel(GameImages.ITEM_AMMO_LIGHT_PISTOL, AmmoType.LIGHT_PISTOL, 20);
+      this[GameItems.IDs.AMMO_HEAVY_PISTOL] = new ItemAmmoModel(GameImages.ITEM_AMMO_HEAVY_PISTOL, AmmoType.HEAVY_PISTOL, 12);
+      this[GameItems.IDs.AMMO_LIGHT_RIFLE] = new ItemAmmoModel(GameImages.ITEM_AMMO_LIGHT_RIFLE, AmmoType.LIGHT_RIFLE, 14);
+      this[GameItems.IDs.AMMO_HEAVY_RIFLE] = new ItemAmmoModel(GameImages.ITEM_AMMO_HEAVY_RIFLE, AmmoType.HEAVY_RIFLE, 20);
+      this[GameItems.IDs.AMMO_SHOTGUN] = new ItemAmmoModel(GameImages.ITEM_AMMO_SHOTGUN, AmmoType.SHOTGUN, 10);
+      this[GameItems.IDs.AMMO_BOLTS] = new ItemAmmoModel(GameImages.ITEM_AMMO_BOLTS, AmmoType.BOLT, 30);
       
       // grenade, in its various states
       GameItems.ExplosiveData explosiveData = DATA_EXPLOSIVE_GRENADE;
