@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -26,6 +27,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string[] Parse(string line)
     {
+      Contract.Ensures(null != Contract.Result<string[]>());
       if (line == null) return new string[0];
       line = line.TrimEnd();
       List<string> stringList = new List<string>((IEnumerable<string>) line.Split(m_Delimiter));
@@ -51,6 +53,7 @@ namespace djack.RogueSurvivor.Engine
 
     public List<string[]> Parse(string[] lines)
     {
+      Contract.Ensures(null != Contract.Result<List<string[]>>());
       List<string[]> strArrayList = new List<string[]>(1);
       if (lines == null) return strArrayList;
       foreach (string line in lines)
