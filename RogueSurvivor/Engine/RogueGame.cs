@@ -111,12 +111,15 @@ namespace djack.RogueSurvivor.Engine
     private readonly Color PLAYER_AUDIO_COLOR = Color.Green;
     private readonly Color NIGHT_COLOR = Color.Cyan;
     private readonly Color DAY_COLOR = Color.Gold;
+/*
+ * Used only by intentionally disabled function TintForDayPhase
     private readonly Color TINT_DAY = Color.White;
     private readonly Color TINT_SUNSET = Color.FromArgb(235, 235, 235);
     private readonly Color TINT_EVENING = Color.FromArgb(215, 215, 215);
     private readonly Color TINT_MIDNIGHT = Color.FromArgb(195, 195, 195);
     private readonly Color TINT_NIGHT = Color.FromArgb(205, 205, 205);
     private readonly Color TINT_SUNRISE = Color.FromArgb(225, 225, 225);
+*/
     private readonly Verb VERB_ACCEPT_THE_DEAL = new Verb("accept the deal", "accepts the deal");
     private readonly Verb VERB_ACTIVATE = new Verb("activate");
     private readonly Verb VERB_AVOID = new Verb("avoid");
@@ -10793,9 +10796,8 @@ namespace djack.RogueSurvivor.Engine
     {
             lock (m_UI) {
                 m_UI.UI_Clear(Color.Black);
-                Color white = Color.White;
                 m_UI.UI_DrawLine(Color.DarkGray, 676, 0, 676, 676);
-                DrawMap(Session.Get.CurrentMap, white);
+                DrawMap(Session.Get.CurrentMap);
                 m_UI.UI_DrawLine(Color.DarkGray, 676, 471, 1024, 471);
                 DrawMiniMap(Session.Get.CurrentMap);
                 m_UI.UI_DrawLine(Color.DarkGray, 4, 675, 1024, 675);
@@ -10858,6 +10860,8 @@ namespace djack.RogueSurvivor.Engine
       return stringBuilder.ToString();
     }
 
+ /*
+  * Intentionally disabled function in RS alpha 9
     private Color TintForDayPhase(DayPhase phase)
     {
       switch (phase)
@@ -10883,6 +10887,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawMap(Map map, Color tint)
     {
+*/
+    public void DrawMap(Map map)
+    {
+      Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
       int num1 = Math.Max(-1, m_MapViewRect.Left);
       int num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
       int num3 = Math.Max(-1, m_MapViewRect.Top);
