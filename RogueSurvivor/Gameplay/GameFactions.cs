@@ -33,10 +33,6 @@ namespace djack.RogueSurvivor.Gameplay
       get {
         return this[(int) id];
       }
-      private set {
-        m_Factions[(int) id] = value;
-        m_Factions[(int) id].ID = (int) id;
-      }
     }
 
     public Faction TheArmy {
@@ -108,19 +104,20 @@ namespace djack.RogueSurvivor.Gameplay
     public GameFactions()
     {
       Models.Factions = (FactionDB) this;
-      this[GameFactions.IDs.TheArmy] = new Faction("Army", "soldier", true);
-      this[GameFactions.IDs.TheBikers] = new Faction("Bikers", "biker", true);
-      this[GameFactions.IDs.TheBlackOps] = new Faction("BlackOps", "blackOp", true);
-      this[GameFactions.IDs.TheCHARCorporation] = new Faction("CHAR Corp.", "CHAR employee", true);
-      this[GameFactions.IDs.TheCivilians] = new Faction("Civilians", "civilian");
-      this[GameFactions.IDs.TheGangstas] = new Faction("Gangstas", "gangsta", true);
-      this[GameFactions.IDs.ThePolice] = new Faction("Police", "police officer", true);
-      this[GameFactions.IDs.TheUndeads] = new Faction("Undeads", "undead");
-      this[GameFactions.IDs.ThePsychopaths] = new Faction("Psychopaths", "psychopath");
-      this[GameFactions.IDs.TheSurvivors] = new Faction("Survivors", "survivor");
-      this[GameFactions.IDs.TheFerals] = new Faction("Ferals", "feral", true);
+      m_Factions[(int)GameFactions.IDs.TheArmy] = new Faction("Army", "soldier", (int)GameFactions.IDs.TheArmy, true);
+      m_Factions[(int)GameFactions.IDs.TheBikers] = new Faction("Bikers", "biker", (int)GameFactions.IDs.TheBikers, true);
+      m_Factions[(int)GameFactions.IDs.TheCHARCorporation] = new Faction("CHAR Corp.", "CHAR employee", (int)GameFactions.IDs.TheCHARCorporation, true);
+      m_Factions[(int)GameFactions.IDs.TheBlackOps] = new Faction("BlackOps", "blackOp", (int)GameFactions.IDs.TheBlackOps, true);
+      m_Factions[(int)GameFactions.IDs.TheCivilians] = new Faction("Civilians", "civilian", (int)GameFactions.IDs.TheCivilians);
+      m_Factions[(int)GameFactions.IDs.TheGangstas] = new Faction("Gangstas", "gangsta", (int)GameFactions.IDs.TheGangstas, true);
+      m_Factions[(int)GameFactions.IDs.ThePolice] = new Faction("Police", "police officer", (int)GameFactions.IDs.ThePolice, true);
+      m_Factions[(int)GameFactions.IDs.TheUndeads] = new Faction("Undeads", "undead", (int)GameFactions.IDs.TheUndeads);
+      m_Factions[(int)GameFactions.IDs.ThePsychopaths] = new Faction("Psychopaths", "psychopath", (int)GameFactions.IDs.ThePsychopaths);
+      m_Factions[(int)GameFactions.IDs.TheSurvivors] = new Faction("Survivors", "survivor", (int)GameFactions.IDs.TheSurvivors);
+      m_Factions[(int)GameFactions.IDs.TheFerals] = new Faction("Ferals", "feral", (int)GameFactions.IDs.TheFerals, true);
       
       // set up faction-level enemies
+      // XXX now we have a working reflexive AddEnemy we can simplify this considerably
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheBikers]);
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheBlackOps]);
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheGangstas]);

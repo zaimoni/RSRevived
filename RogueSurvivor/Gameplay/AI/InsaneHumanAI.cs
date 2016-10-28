@@ -106,9 +106,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
-        List<Percept> enemies = FilterEnemies(game, percepts1);
-        if (enemies != null)
-        {
+        List<Percept> enemies = FilterEnemies(percepts1);
+        if (enemies != null) {
           List<Percept> current_enemies = FilterCurrent(enemies);
           Actor tmpActor;
           if (current_enemies != null) {
@@ -130,10 +129,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (game.Rules.RollChance(SHOUT_CHANCE))
-      {
+      if (game.Rules.RollChance(SHOUT_CHANCE)) {
         string text = INSANITIES[game.Rules.Roll(0, INSANITIES.Length)];
-                m_Actor.Activity = Activity.IDLE;
+        m_Actor.Activity = Activity.IDLE;
         game.DoEmote(m_Actor, text);
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE))

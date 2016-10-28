@@ -76,11 +76,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 m_prevLocation = m_Actor.Location;
             m_Actor.TargetActor = (Actor) null;
       ActorAction actorAction = SelectAction(game, percepts);
-            m_prevLocation = m_Actor.Location;
-      if (actorAction != null)
-        return actorAction;
-            m_Actor.Activity = Activity.IDLE;
-      return (ActorAction) new ActionWait(m_Actor, game);
+      m_prevLocation = m_Actor.Location;
+      if (actorAction != null) return actorAction;
+      m_Actor.Activity = Activity.IDLE;
+      return new ActionWait(m_Actor, game);
     }
 
     protected abstract ActorAction SelectAction(RogueGame game, List<Percept> percepts);
@@ -98,14 +97,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(percepts,(Predicate<Percept>) (p => p.Location.Map == map));
     }
 
-    protected List<Percept> FilterEnemies(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
-      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && game.Rules.IsEnemyOf(m_Actor, target)));
+      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
     }
 
-    protected List<Percept> FilterNonEnemies(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterNonEnemies(List<Percept> percepts)
     {
-      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !game.Rules.IsEnemyOf(m_Actor, target)));
+      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
     }
 
     protected List<Percept> FilterCurrent(List<Percept> percepts)
@@ -422,7 +421,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Actor leader = m_Actor.Leader;
       bool flag = m_Actor.HasLeader && m_Actor.GetEquippedWeapon() is ItemRangedWeapon;
-      Actor actor = (flag ? GetNearestTargetFor(game, m_Actor.Leader) : null);
+      Actor actor = (flag ? GetNearestTargetFor(m_Actor.Leader) : null);
       bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
       List<Point> leaderLoF = null;
       if (checkLeaderLoF) {
@@ -883,7 +882,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
-        if (actorAction1 == null && IsAdjacentToEnemy(game, enemy))
+        if (actorAction1 == null && IsAdjacentToEnemy(enemy))
         {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
@@ -944,49 +943,40 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (float) (num + game.Rules.Roll(0, 10));
       }), (Func<float, float, bool>) ((a, b) =>
       {
-        if (!float.IsNaN(a))
-          return (double) a > (double) b;
+        if (!float.IsNaN(a)) return (double) a > (double) b;
         return false;
       }));
-      if (choiceEval != null)
-        return (ActorAction) new ActionBump(m_Actor, game, choiceEval.Choice);
-      return (ActorAction) null;
+      if (choiceEval != null) return new ActionBump(m_Actor, game, choiceEval.Choice);
+      return null;
     }
 
     protected ActorAction BehaviorCloseDoorBehindMe(RogueGame game, Location previousLocation)
     {
       DoorWindow door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
-      if (door == null)
-        return (ActorAction) null;
+      if (door == null) return null;
       if (game.Rules.IsClosableFor(m_Actor, door))
-        return (ActorAction) new ActionCloseDoor(m_Actor, game, door);
-      return (ActorAction) null;
+        return new ActionCloseDoor(m_Actor, game, door);
+      return null;
     }
 
     protected ActorAction BehaviorUseExit(RogueGame game, BaseAI.UseExitFlags useFlags)
     {
       Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-      if (exitAt == null)
-        return (ActorAction) null;
-      if (!exitAt.IsAnAIExit)
-        return (ActorAction) null;
-      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation)
-        return (ActorAction) null;
-      if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE)
-      {
+      if (exitAt == null) return null;
+      if (!exitAt.IsAnAIExit) return null;
+      if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
+      if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;
-        if (actorAt != null && game.Rules.IsEnemyOf(m_Actor, actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
-          return (ActorAction) new ActionMeleeAttack(m_Actor, game, actorAt);
+        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
+          return new ActionMeleeAttack(m_Actor, game, actorAt);
       }
-      if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE)
-      {
+      if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {
         MapObject mapObjectAt = exitAt.Location.MapObject;
         if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
-          return (ActorAction) new ActionBreak(m_Actor, game, mapObjectAt);
+          return new ActionBreak(m_Actor, game, mapObjectAt);
       }
-      if (!game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position))
-        return (ActorAction) null;
-      return (ActorAction) new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
+      if (!game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position)) return null;
+      return new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
     }
 
     protected ItemBodyArmor GetWorstBodyArmor()
@@ -1248,32 +1238,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts, out Actor target)
     {
-      target = (Actor) null;
-      if (!m_Actor.Model.Abilities.IsLawEnforcer)
-        return (ActorAction) null;
-      if (percepts == null)
-        return (ActorAction) null;
+      target = null;
+      if (!m_Actor.Model.Abilities.IsLawEnforcer) return null;
+      if (percepts == null) return null;
       List<Percept> percepts1 = FilterActors(percepts, (Predicate<Actor>) (a =>
       {
-        if (a.MurdersCounter > 0)
-          return !game.Rules.IsEnemyOf(m_Actor, a);
+        if (a.MurdersCounter > 0) return !m_Actor.IsEnemyOf(a);
         return false;
       }));
-      if (percepts1 == null || percepts1.Count == 0)
-        return (ActorAction) null;
+      if (percepts1 == null || percepts1.Count == 0) return null;
       Percept percept = FilterNearest(percepts1);
       target = percept.Percepted as Actor;
-      if (game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, target)))
-      {
+      if (game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, target))) {
         game.DoEmote(target, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
-        return (ActorAction) null;
+        return null;
       }
       game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", (object) target.Name));
       int chance = game.Rules.ActorSpotMurdererChance(m_Actor, target);
-      if (!game.Rules.RollChance(chance))
-        return (ActorAction) null;
+      if (!game.Rules.RollChance(chance)) return null;
       game.DoMakeAggression(m_Actor, target);
-      return (ActorAction) new ActionSay(m_Actor, game, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), RogueGame.Sayflags.IS_IMPORTANT);
+      return new ActionSay(m_Actor, game, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), RogueGame.Sayflags.IS_IMPORTANT);
     }
 
     protected ActorAction BehaviorGoEatFoodOnGround(RogueGame game, List<Percept> stacksPercepts)
@@ -1294,8 +1278,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanEatCorpse) return null;
       if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
       List<Corpse> corpsesAt = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
-      if (corpsesAt != null)
-      {
+      if (corpsesAt != null) {
         Corpse corpse = corpsesAt[0];
         return new ActionEatCorpse(m_Actor, game, corpse);
       }
@@ -1312,22 +1295,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.HasItemOfModel((ItemModel) game.GameItems.MEDIKIT)) return null;
       List<Percept> percepts = Filter(corpsesPercepts, (Predicate<Percept>) (p =>
       {
-        foreach (Corpse corpse in p.Percepted as List<Corpse>)
-        {
-          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !game.Rules.IsEnemyOf(m_Actor, corpse.DeadGuy))
+        foreach (Corpse corpse in p.Percepted as List<Corpse>) {
+          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return true;
         }
         return false;
       }));
-      if (percepts == null)
-        return (ActorAction) null;
+      if (percepts == null) return null;
       List<Corpse> corpsesAt = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
-      if (corpsesAt != null)
-      {
-        foreach (Corpse corpse in corpsesAt)
-        {
-          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !game.Rules.IsEnemyOf(m_Actor, corpse.DeadGuy))
-            return (ActorAction) new ActionReviveCorpse(m_Actor, game, corpse);
+      if (corpsesAt != null) {
+        foreach (Corpse corpse in corpsesAt) {
+          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
+            return new ActionReviveCorpse(m_Actor, game, corpse);
         }
       }
       Percept percept = FilterNearest(percepts);
@@ -1349,7 +1328,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Item GetBestRangedWeaponWithAmmo(Predicate<Item> fn)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      Item obj1 = (Item) null;
+      Item obj1 = null;
       int num1 = 0;
       foreach (Item obj2 in m_Actor.Inventory.Items)
       {
@@ -1614,30 +1593,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsSoldier(Actor actor)
     {
-      if (actor != null)
-        return actor.Controller is SoldierAI;
+      if (actor != null) return actor.Controller is SoldierAI;
       return false;
     }
 
     protected bool IsOccupiedByOther(Map map, Point position)
     {
       Actor actorAt = map.GetActorAt(position);
-      if (actorAt != null)
-        return actorAt != m_Actor;
+      if (actorAt != null) return actorAt != m_Actor;
       return false;
     }
 
-    protected bool IsAdjacentToEnemy(RogueGame game, Actor actor)
+    protected bool IsAdjacentToEnemy(Actor actor)
     {
-      if (actor == null)
-        return false;
+      if (actor == null) return false;
       Map map = actor.Location.Map;
       return map.HasAnyAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt =>
       {
         Actor actorAt = map.GetActorAt(pt);
-        if (actorAt == null)
-          return false;
-        return game.Rules.IsEnemyOf(actor, actorAt);
+        if (actorAt == null) return false;
+        return actor.IsEnemyOf(actorAt);
       }));
     }
 
@@ -1708,25 +1683,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (double) Rules.StdDistance(A, between) + (double) Rules.StdDistance(B, between) <= (double) Rules.StdDistance(A, B) + 0.25;
     }
 
-    protected bool IsFriendOf(RogueGame game, Actor other)
+    protected bool IsFriendOf(Actor other)
     {
-      if (!game.Rules.IsEnemyOf(m_Actor, other))
-        return m_Actor.Faction == other.Faction;
+      if (!m_Actor.IsEnemyOf(other)) return m_Actor.Faction == other.Faction;
       return false;
     }
 
-    protected Actor GetNearestTargetFor(RogueGame game, Actor actor)
+    protected Actor GetNearestTargetFor(Actor actor)
     {
       Map map = actor.Location.Map;
-      Actor actor1 = (Actor) null;
+      Actor actor1 = null;
       int num1 = int.MaxValue;
-      foreach (Actor actor2 in map.Actors)
-      {
-        if (!actor2.IsDead && actor2 != actor && game.Rules.IsEnemyOf(actor, actor2))
-        {
+      foreach (Actor actor2 in map.Actors) {
+        if (!actor2.IsDead && actor2 != actor && actor.IsEnemyOf(actor2)) {
           int num2 = Rules.GridDistance(actor2.Location.Position, actor.Location.Position);
-          if (num2 < num1 && (num2 == 1 || LOS.CanTraceViewLine(actor.Location, actor2.Location.Position)))
-          {
+          if (num2 < num1 && (num2 == 1 || LOS.CanTraceViewLine(actor.Location, actor2.Location.Position))) {
             num1 = num2;
             actor1 = actor2;
           }
@@ -1735,17 +1706,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor1;
     }
 
-    protected List<Exit> ListAdjacentExits(RogueGame game, Location fromLocation)
+    protected List<Exit> ListAdjacentExits(Location fromLocation)
     {
-      List<Exit> exitList = (List<Exit>) null;
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      List<Exit> exitList = null;
+      foreach (Direction direction in Direction.COMPASS) {
         Point pos = fromLocation.Position + direction;
         Exit exitAt = fromLocation.Map.GetExitAt(pos);
-        if (exitAt != null)
-        {
-          if (exitList == null)
-            exitList = new List<Exit>(8);
+        if (exitAt != null) {
+          if (exitList == null) exitList = new List<Exit>(8);
           exitList.Add(exitAt);
         }
       }
@@ -1754,9 +1722,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Exit PickAnyAdjacentExit(RogueGame game, Location fromLocation)
     {
-      List<Exit> exitList = ListAdjacentExits(game, fromLocation);
-      if (exitList == null)
-        return (Exit) null;
+      List<Exit> exitList = ListAdjacentExits(fromLocation);
+      if (exitList == null) return null;
       return exitList[game.Rules.Roll(0, exitList.Count)];
     }
 

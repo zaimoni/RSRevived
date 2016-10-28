@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = FilterEnemies(percepts1);
       ActorAction tmpAction;
       Actor tmpActor;
       if (enemies != null) {

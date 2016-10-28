@@ -6,7 +6,9 @@
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
+using System.Drawing;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
@@ -711,6 +713,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool IsEnemyOf(Actor target)
+    {
+      return target != null && (Faction.IsEnemyOf(target.Faction) || (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) || AreDirectEnemies(target) || AreIndirectEnemies(target));
+    }
+
+
     public bool AreDirectEnemies(Actor other)
     {
       return other != null && !other.IsDead && (m_AggressorOf != null && m_AggressorOf.Contains(other) || m_SelfDefenceFrom != null && m_SelfDefenceFrom.Contains(other) || (other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this)));
@@ -766,6 +774,11 @@ namespace djack.RogueSurvivor.Data
       get {
         return Location.Map.GetTileAt(Location.Position.X, Location.Position.Y).IsInside;
       }
+    }
+
+    public List<Point> OneStepRange(Map m,Point p) {
+      IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>m.IsWalkableFor(pt,this));
+      return tmp.Any() ? tmp.ToList() : null;
     }
 
     // event timing

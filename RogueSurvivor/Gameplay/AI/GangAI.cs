@@ -65,14 +65,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end item juggling check
 
       // OrderableAI specific: respond to orders
-      if (null != Order)
-      {
+      if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
-        if (null != actorAction)
-          {
+        if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
-          }
+        }
 
         SetOrder(null);
       }
@@ -86,10 +84,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      List<Percept> enemies = FilterEnemies(game, percepts1);
+      List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(m_Actor.Leader);
 
       // all free actions must be above the enemies check
       if (null != current_enemies && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
@@ -106,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null != current_enemies) {
         if (game.Rules.RollChance(50)) {
-          List<Percept> friends = FilterNonEnemies(game, percepts1);
+          List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
             tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(current_enemies).Percepted as Actor);
             if (null != tmpAction) {
@@ -195,7 +193,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Map map = m_Actor.Location.Map;
         List<Percept> percepts3 = FilterActors(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
         {
-          if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(game, a))
+          if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(a))
             return false;
           if (!game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, a)))
             return HasAnyInterestingItem(a.Inventory);
@@ -228,7 +226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
-        Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
+        Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
           tmpAction = BehaviorLeadActor(game, target);
           if (null != tmpAction) {

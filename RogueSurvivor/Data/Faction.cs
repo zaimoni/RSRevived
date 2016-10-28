@@ -4,44 +4,49 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
-  internal class Faction
+  internal sealed class Faction
   {
-    private List<Faction> m_Enemies = new List<Faction>(1);
+    private readonly List<Faction> m_Enemies = new List<Faction>(1);
 
-    public int ID { get; set; }
-    public string Name { get; private set; }
-    public string MemberName { get; private set; }
-    public bool LeadOnlyBySameFaction { get; private set; }
+    public readonly int ID;
+    public readonly string Name;
+    public readonly string MemberName;
+    public readonly bool LeadOnlyBySameFaction;
 
     public IEnumerable<Faction> Enemies {
       get {
-        return (IEnumerable<Faction>) m_Enemies;
+        return m_Enemies;
       }
     }
 
-    public Faction(string name, string memberName, bool leadOnlyBySameFaction = false)
+    public Faction(string name, string memberName, int id, bool leadOnlyBySameFaction = false)
     {
-      if (name == null) throw new ArgumentNullException("name");
-      if (memberName == null) throw new ArgumentNullException("memberName");
+      Contract.Requires(!string.IsNullOrEmpty(name));
+      Contract.Requires(!string.IsNullOrEmpty(memberName));
+      ID = id;
       Name = name;
       MemberName = memberName;
       LeadOnlyBySameFaction = leadOnlyBySameFaction;
     }
 
+    // This is supposed to be reflexive.
+    // if the contains tests are omitted, the list entries can duplicate in theory.
+    // In practice, we launch-block and fail during construction of GameFactions
     public void AddEnemy(Faction other)
     {
-      m_Enemies.Add(other);
+      Contract.Requires(null != other);
+      if (!m_Enemies.Contains(other)) m_Enemies.Add(other);
+      if (!other.m_Enemies.Contains(this)) other.m_Enemies.Add(this);
     }
 
-    public virtual bool IsEnemyOf(Faction other)
+    public bool IsEnemyOf(Faction other)
     {
-      if (other != this) return m_Enemies.Contains(other);
-      return false;
+      return other!=this && m_Enemies.Contains(other);
     }
   }
 }

@@ -161,14 +161,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end item juggling check
       
       // OrderableAI specific: respond to orders
-      if (null != Order)
-      {
+      if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
-        if (null != actorAction)
-          {
+        if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
-          }
+        }
 
         SetOrder(null);
       }
@@ -178,13 +176,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ExpireTaboos();
 
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(game, percepts1));
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
       // civilians track how long since they've seen trouble
       if (null != enemies) m_SafeTurns = 0;
       else ++m_SafeTurns;
 
-      if (null != enemies)
-        m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
+      if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
       if (!Directives.CanThrowGrenades) {
         ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
@@ -204,33 +201,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       Dictionary<Point,int> damage_field = (null != enemies ? VisibleMaximumDamage() : null);
       // \todo visible primed explosives also have a damage field that civilians and soldiers respect, CHAR and gang don't
-      List<Point> retreat = new List<Point>(8);
-      List<Actor> slow_threat = new List<Actor>(8);
-      if (null != damage_field && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        foreach(Direction tmp in Direction.COMPASS_LIST) {
-          Point tmp2 = m_Actor.Location.Position+tmp;
-          if (m_Actor.Location.Map.IsWalkableFor(tmp2, m_Actor) && !damage_field.ContainsKey(tmp2)) retreat.Add(tmp2);
-          Actor tmp3 = m_Actor.Location.Map.GetActorAt(tmp2);
-          if (null != tmp3 && game.Rules.IsEnemyOf(m_Actor, tmp3) && HasSpeedAdvantage(m_Actor, tmp3) && tmp3.CanActThisTurn && 1 >= tmp3.CurrentRangedAttack.Range) slow_threat.Add(tmp3);
-        }
-        if (0 == retreat.Count) {
-          foreach(Direction tmp in Direction.COMPASS_LIST) {
-           Point tmp2 = m_Actor.Location.Position+tmp;
-           if (m_Actor.Location.Map.IsWalkableFor(tmp2, m_Actor) && damage_field[tmp2]<damage_field[m_Actor.Location.Position]) retreat.Add(tmp2);
-          }
+      List<Point> retreat = null;
+      List<Actor> slow_threat = null;
+      IEnumerable<Point> tmp_point;
+      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
+        IEnumerable<Percept> tmp_percept = enemies.Where(p=>1==Rules.GridDistance(m_Actor.Location.Position,p.Location.Position));
+        if (tmp_percept.Any()) slow_threat = new List<Actor>(tmp_percept.Select(p=>(p.Percepted as Actor)));
+        tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
+        if (tmp_point.Any()) retreat = tmp_point.ToList();
+        // XXX we should be checking for running retreats before damaging ones
+        // that would allow handling grenades as a damage field source
+        if (null == retreat) {
+          tmp_point = legal_steps.Where(p=> damage_field[p] < damage_field[m_Actor.Location.Position]);
+          if (tmp_point.Any()) retreat = tmp_point.ToList();
         }
       }
-      if (0 == retreat.Count) retreat = null;
+      // XXX should not block line of fire to mutual enemies of a non-enemy
       // prefer not to jump
       if (null != retreat && 2 <= retreat.Count) {
-        int clear_squares = retreat.Count;
-        List<Point> no_jump = new List<Point>(retreat.Count);
-        foreach(Point tmp in retreat) {
-          MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(tmp);
-          if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) continue;
-          no_jump.Add(tmp);
-        }
-        if (0 < no_jump.Count && no_jump.Count < retreat.Count) retreat = no_jump;
+        tmp_point = retreat.Where(pt=> {
+          MapObject tmp = m_Actor.Location.Map.GetMapObjectAt(pt);
+          return null==tmp || tmp.IsWalkable || tmp.IsJumpable;
+        });
+        if (tmp_point.Count()<retreat.Count()) retreat = new List<Point>(tmp_point);
       }
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it
@@ -264,7 +258,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       // have slow enemies nearby
-      if (null != retreat && 0 < slow_threat.Count) {
+      if (null != retreat && null != slow_threat) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
         tmpAction = new ActionMoveStep(m_Actor, game, tmp);
         if (tmpAction.IsLegal()) {
@@ -333,15 +327,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // all free actions must be above the enemies check
-      if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon)
-      {
+      if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
         List<Percept> percepts2 = FilterFireTargets(game, enemies);
-        if (percepts2 != null)
-        {
+        if (percepts2 != null) {
           Actor actor = FilterNearest(percepts2).Percepted as Actor;
           ActorAction actorAction5 = BehaviorRangedAttack(game, actor);
-          if (actorAction5 != null)
-          {
+          if (actorAction5 != null) {
             m_Actor.Activity = Activity.FIGHTING;
             m_Actor.TargetActor = actor;
             return actorAction5;
@@ -350,19 +341,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(game, m_Actor.Leader);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(m_Actor.Leader);
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
-      if (null != enemies)
-      {
-        if (game.Rules.RollChance(50))
-        {
-          List<Percept> friends = FilterNonEnemies(game, percepts1);
-          if (friends != null)
-          {
+      if (null != enemies) {
+        if (game.Rules.RollChance(50)) {
+          List<Percept> friends = FilterNonEnemies(percepts1);
+          if (friends != null) {
             ActorAction actorAction2 = BehaviorWarnFriends(game, friends, FilterNearest(enemies).Percepted as Actor);
-            if (actorAction2 != null)
-            {
+            if (actorAction2 != null) {
               m_Actor.Activity = Activity.IDLE;
               return actorAction2;
             }
@@ -370,8 +357,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
-        if (actorAction5 != null)
-          return actorAction5;
+        if (actorAction5 != null) return actorAction5;
       }
       tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
       if (null != tmpAction) {
@@ -383,8 +369,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (null != enemies && assistLeader)
-      {
+      if (null != enemies && assistLeader) {
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(game, target);
         if (null != tmpAction) {
@@ -482,8 +467,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
               }
             }
           }
-          if (actorAction5 != null && actorAction5.IsLegal())
-          {
+          if (actorAction5 != null && actorAction5.IsLegal()) {
             m_Actor.Activity = Activity.IDLE;
             return actorAction5;
           }
@@ -493,10 +477,9 @@ retry:    Percept percept = FilterNearest(perceptList2);
           MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
-        if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory))
-        {
+        if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory)) {
           List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
-          List<Percept> percepts2 = FilterOut(FilterNonEnemies(game, percepts1), (Predicate<Percept>) (p =>
+          List<Percept> percepts2 = FilterOut(FilterNonEnemies(percepts1), (Predicate<Percept>) (p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
               return true;
@@ -507,8 +490,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
             if (!HasAnyInterestingItem(actor.Inventory)) return true;
             return !(actor.Controller as BaseAI).HasAnyInterestingItem(TradeableItems);
           }));
-          if (percepts2 != null)
-          {
+          if (percepts2 != null) {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
               tmpAction = new ActionTrade(m_Actor, game, actor);
@@ -564,8 +546,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (m_Actor.Model.Abilities.HasSanity)
-      {
+      if (m_Actor.Model.Abilities.HasSanity) {
         if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
           tmpAction = BehaviorUseEntertainment(game);
           if (null != tmpAction) {
@@ -579,8 +560,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return tmpAction;
         }
       }
-      if (m_Actor.HasLeader && !DontFollowLeader)
-      {
+      if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position1 = m_Actor.Leader.Location.Position;
         bool isVisible = m_LOSSensor.FOV.Contains(position1);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
@@ -593,7 +573,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)))
       {
-        Percept target = FilterNearest(FilterNonEnemies(game, percepts1));
+        Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
           tmpAction = BehaviorLeadActor(game, target);
           if (null != tmpAction) {
@@ -603,16 +583,14 @@ retry:    Percept percept = FilterNearest(perceptList2);
           }
         }
       }
-      if (m_Actor.IsHungry)
-      {
+      if (m_Actor.IsHungry) {
         tmpAction = BehaviorAttackBarricade(game);
         if (null != tmpAction) {
           game.DoEmote(m_Actor, "Open damn it! I know there is food there!");
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
-        if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE))
-        {
+        if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
           tmpAction = BehaviorPushNonWalkableObjectForFood(game);
           if (null != tmpAction) {
             game.DoEmote(m_Actor, "Where is all the damn food?!");

@@ -528,35 +528,27 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsItemBatteryFull(Item it)
     {
-      if (it == null)
-        return true;
+      if (it == null) return true;
       ItemLight itemLight = it as ItemLight;
-      if (itemLight != null && itemLight.IsFullyCharged)
-        return true;
+      if (itemLight != null && itemLight.IsFullyCharged) return true;
       ItemTracker itemTracker = it as ItemTracker;
       return itemTracker != null && itemTracker.IsFullyCharged;
     }
 
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (gift == null)
-        throw new ArgumentNullException("gift");
-      if (IsEnemyOf(actor, target))
-      {
+      Contract.Requires(null != actor);
+      Contract.Requires(null != target);
+      Contract.Requires(null != gift);
+      if (actor.IsEnemyOf(target)) {
         reason = "enemy";
         return false;
       }
-      if (gift.IsEquipped)
-      {
+      if (gift.IsEquipped) {
         reason = "equipped";
         return false;
       }
-      if (target.IsSleeping)
-      {
+      if (target.IsSleeping) {
         reason = "sleeping";
         return false;
       }
@@ -616,61 +608,51 @@ namespace djack.RogueSurvivor.Engine
 
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Map map, int x, int y, out string reason)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (actor == null)
-        throw new ArgumentNullException("actor");
+      Contract.Requires(null != map);
+      Contract.Requires(null != actor);
       reason = "";
       if (!map.IsInBounds(x, y))
       {
-        if (!CanActorLeaveMap(actor, out reason))
-          return (ActorAction) null;
+        if (!CanActorLeaveMap(actor, out reason)) return null;
         reason = "";
-        return (ActorAction) new ActionLeaveMap(actor, game, new Point(x, y));
+        return new ActionLeaveMap(actor, game, new Point(x, y));
       }
       Point point = new Point(x, y);
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, game, point);
-      if (actionMoveStep.IsLegal())
-      {
+      if (actionMoveStep.IsLegal()) {
         reason = "";
-        return (ActorAction) actionMoveStep;
+        return actionMoveStep;
       }
       reason = actionMoveStep.FailReason;
       Actor actorAt = map.GetActorAt(point);
-      if (actorAt != null)
-      {
-        if (IsEnemyOf(actor, actorAt))
-        {
+      if (actorAt != null) {
+        if (actor.IsEnemyOf(actorAt)) {
           if (CanActorMeleeAttack(actor, actorAt, out reason))
-            return (ActorAction) new ActionMeleeAttack(actor, game, actorAt);
-          return (ActorAction) null;
+            return new ActionMeleeAttack(actor, game, actorAt);
+          return null;
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
-          return (ActorAction) new ActionSwitchPlace(actor, game, actorAt);
+          return new ActionSwitchPlace(actor, game, actorAt);
         if (CanActorChatWith(actor, actorAt, out reason))
-          return (ActorAction) new ActionChat(actor, game, actorAt);
-        return (ActorAction) null;
+          return new ActionChat(actor, game, actorAt);
+        return null;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
-      if (mapObjectAt != null)
-      {
+      if (mapObjectAt != null) {
         DoorWindow door = mapObjectAt as DoorWindow;
-        if (door != null)
-        {
-          if (door.IsClosed)
-          {
+        if (door != null) {
+          if (door.IsClosed) {
             if (IsOpenableFor(actor, door, out reason))
-              return (ActorAction) new ActionOpenDoor(actor, game, door);
+              return new ActionOpenDoor(actor, game, door);
             if (IsBashableFor(actor, door, out reason))
-              return (ActorAction) new ActionBashDoor(actor, game, door);
-            return (ActorAction) null;
+              return new ActionBashDoor(actor, game, door);
+            return null;
           }
-          if (door.BarricadePoints > 0)
-          {
+          if (door.BarricadePoints > 0) {
             if (IsBashableFor(actor, door, out reason))
-              return (ActorAction) new ActionBashDoor(actor, game, door);
+              return new ActionBashDoor(actor, game, door);
             reason = "cannot bash the barricade";
-            return (ActorAction) null;
+            return null;
           }
         }
         if (CanActorGetItemFromContainer(actor, point, out reason))
@@ -811,42 +793,33 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorInitiateTradeWith(Actor speaker, Actor target, out string reason)
     {
-      if (speaker == null)
-        throw new ArgumentNullException("speaker");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (target.IsPlayer)
-      {
+      Contract.Requires(null != speaker);
+      Contract.Requires(null != target);
+      if (target.IsPlayer) {
         reason = "target is player";
         return false;
       }
-      if (!speaker.Model.Abilities.CanTrade && target.Leader != speaker)
-      {
+      if (!speaker.Model.Abilities.CanTrade && target.Leader != speaker) {
         reason = "can't trade";
         return false;
       }
-      if (!target.Model.Abilities.CanTrade && target.Leader != speaker)
-      {
+      if (!target.Model.Abilities.CanTrade && target.Leader != speaker) {
         reason = "target can't trade";
         return false;
       }
-      if (IsEnemyOf(speaker, target))
-      {
+      if (speaker.IsEnemyOf(target)) {
         reason = "is an enemy";
         return false;
       }
-      if (target.IsSleeping)
-      {
+      if (target.IsSleeping) {
         reason = "is sleeping";
         return false;
       }
-      if (speaker.Inventory == null || speaker.Inventory.IsEmpty)
-      {
+      if (speaker.Inventory == null || speaker.Inventory.IsEmpty) {
         reason = "nothing to offer";
         return false;
       }
-      if (target.Inventory == null || target.Inventory.IsEmpty)
-      {
+      if (target.Inventory == null || target.Inventory.IsEmpty) {
         reason = "has nothing to trade";
         return false;
       }
@@ -1140,19 +1113,16 @@ namespace djack.RogueSurvivor.Engine
         reason = "out of map";
         return false;
       }
-      if (!map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable)
-      {
+      if (!map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) {
         reason = "blocked";
         return false;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(toPos);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable)
-      {
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
         reason = "blocked by an object";
         return false;
       }
-      if (map.GetActorAt(toPos) != null)
-      {
+      if (map.GetActorAt(toPos) != null) {
         reason = "blocked by someone";
         return false;
       }
@@ -1162,16 +1132,12 @@ namespace djack.RogueSurvivor.Engine
 
     public List<Actor> GetEnemiesInFov(Actor actor, HashSet<Point> fov)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (fov == null)
-        throw new ArgumentNullException("fov");
+      Contract.Requires(null != actor);
+      Contract.Requires(null != fov);
       List<Actor> actorList = (List<Actor>) null;
-      foreach (Point position in fov)
-      {
+      foreach (Point position in fov) {
         Actor actorAt = actor.Location.Map.GetActorAt(position);
-        if (actorAt != null && actorAt != actor && IsEnemyOf(actor, actorAt))
-        {
+        if (actorAt != null && actorAt != actor && actor.IsEnemyOf(actorAt)) {
           if (actorList == null)
             actorList = new List<Actor>(3);
           actorList.Add(actorAt);
@@ -1321,49 +1287,39 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorTakeLead(Actor actor, Actor target, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (target.Model.Abilities.IsUndead)
-      {
+      Contract.Requires(null != actor);
+      Contract.Requires(null != target);
+      if (target.Model.Abilities.IsUndead) {
         reason = "undead";
         return false;
       }
-      if (IsEnemyOf(actor, target))
-      {
+      if (actor.IsEnemyOf(target)) {
         reason = "enemy";
         return false;
       }
-      if (target.IsSleeping)
-      {
+      if (target.IsSleeping) {
         reason = "sleeping";
         return false;
       }
-      if (target.HasLeader)
-      {
+      if (target.HasLeader) {
         reason = "has already a leader";
         return false;
       }
-      if (target.CountFollowers > 0)
-      {
+      if (target.CountFollowers > 0) {
         reason = "is a leader";
         return false;
       }
       int num = ActorMaxFollowers(actor);
-      if (num == 0)
-      {
+      if (num == 0) {
         reason = "can't lead";
         return false;
       }
-      if (actor.CountFollowers >= num)
-      {
+      if (actor.CountFollowers >= num) {
         reason = "too many followers";
         return false;
       }
       // to support savefile hacking.  AI in charge of player is a problem.
-      if (target.IsPlayer && !actor.IsPlayer)
-      {
+      if (target.IsPlayer && !actor.IsPlayer) {
         reason = "is player";
         return false;
       }
@@ -1696,11 +1652,6 @@ namespace djack.RogueSurvivor.Engine
       return other.ActionPoints + other.Speed > BASE_ACTION_COST;
     }
 
-    public bool IsEnemyOf(Actor actor, Actor target)
-    {
-      return actor != null && target != null && (actor.Faction.IsEnemyOf(target.Faction) || actor.Faction == target.Faction && actor.IsInAGang && (target.IsInAGang && actor.GangID != target.GangID) || (actor.AreDirectEnemies(target) || actor.AreIndirectEnemies(target)));
-    }
-
     public bool IsMurder(Actor killer, Actor victim)
     {
       if (null == killer) return false;
@@ -1711,7 +1662,7 @@ namespace djack.RogueSurvivor.Engine
       if (killer.IsSelfDefenceFrom(victim)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
-      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && IsEnemyOf(killer.Leader,victim)) return false;
+      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && killer.Leader.IsEnemyOf(victim)) return false;
       if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && victim.IsSelfDefenceFrom(killer.Leader)) return false;
 
       // resume old definition
