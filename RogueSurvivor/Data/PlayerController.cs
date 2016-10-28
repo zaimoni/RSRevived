@@ -27,7 +27,6 @@ namespace djack.RogueSurvivor.Data
     {
       base.TakeControl(actor);
       Actor.Says += HandleSay;
-      if (null == Actor.Says) throw new ArgumentNullException("Actor.Says", "failed to set up event handling");
       if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) {
         // use police item memory rather than ours
         m_itemMemory = Session.Get.PoliceItemMemory;

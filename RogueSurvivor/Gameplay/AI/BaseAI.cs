@@ -113,6 +113,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(percepts,(Predicate<Percept>) (p => p.Turn == turnCounter));
     }
 
+    // GangAI's mugging target selection triggered a race condition 
+    // that allowed a non-null non-empty percepts
+    // to be seen as returning null from FilterNearest anyway, from
+    // the outside (Contracts saw a non-null return)
     protected Percept FilterNearest(List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
@@ -221,17 +225,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        if (predicateFn(percept)) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
+      IEnumerable<Percept> tmp = percepts.Where(p=> predicateFn(p));
+      return tmp.Any() ? tmp.ToList() : null;
     }
 
-    protected Percept FilterFirst(RogueGame game, List<Percept> percepts, Predicate<Percept> predicateFn)
+    protected Percept FilterFirst(List<Percept> percepts, Predicate<Percept> predicateFn)
     {
       if (null == percepts || 0 == percepts.Count) return null;
       foreach (Percept percept in percepts) {

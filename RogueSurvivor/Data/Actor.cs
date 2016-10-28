@@ -1351,7 +1351,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public static EventHandler<SayArgs> Says;
+    public static event EventHandler<SayArgs> Says;
 
     // experimental...testing an event approach to this
     public void Say(Actor target, string text, Engine.RogueGame.Sayflags flags)
