@@ -916,18 +916,16 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorBarricadeDoor(Actor actor, DoorWindow door, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (door == null)
-        throw new ArgumentNullException("door");
+      Contract.Requires(null != actor);
+      Contract.Requires(null != door);
       if (!actor.Model.Abilities.CanBarricade)
       {
         reason = "no ability to barricade";
         return false;
       }
-      if (door.State != 1 && door.State != 3)
+      if (!door.IsClosed && !door.IsBroken)
       {
-        reason = "not open or broken";
+        reason = "not closed or broken";
         return false;
       }
       if (door.BarricadePoints >= 80)
