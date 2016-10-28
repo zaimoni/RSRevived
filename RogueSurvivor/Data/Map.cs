@@ -1059,13 +1059,13 @@ namespace djack.RogueSurvivor.Data
         }
       }
       if (0>=inv_data.Count && 0>=actor_data.Count) return;
-      if (0<actor_data.Count()) {
+      if (0<actor_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=left>");
         dest.WriteLine("<tr><th>pos</th><th>name</th><th>AP</th><th>HP</th></tr>");
         foreach(string s in actor_data) dest.WriteLine(s);
         dest.WriteLine("</table>");
       }
-      if (0<inv_data.Count()) {
+      if (0<inv_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=right>");
         foreach(string s in inv_data) dest.WriteLine(s);
         dest.WriteLine("</table>");

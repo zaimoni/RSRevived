@@ -178,7 +178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor a = p.Percepted as Actor;
         return null != a && predicateFn(a);
       }));
-      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
+      return tmp.Any() ? tmp.ToList() : null;
     }
 
     protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
@@ -199,7 +199,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Inventory i = p.Percepted as Inventory;
         return null != i && predicateFn(i);
       }));
-      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
+      return tmp.Any() ? tmp.ToList() : null;
     }
 
     protected List<Percept> FilterCorpses(List<Percept> percepts)
@@ -216,7 +216,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Corpse> i = p.Percepted as List<Corpse>;
         return null != i && predicateFn(i);
       }));
-      return 0<tmp.Count() ? new List<Percept>(tmp) : null;
+      return tmp.Any() ? tmp.ToList() : null;
     }
 
     protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)

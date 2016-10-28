@@ -9688,7 +9688,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.CountFollowers > 0) {
         Location location = new Location(actor.Location.Map, mapObj.Location.Position);
         IEnumerable<Actor> tmp = actor.Followers.Where(follower=>!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location));
-        if (0<tmp.Count()) {
+        if (tmp.Any()) {
           staminaCost = mapObj.Weight / (1 + tmp.Count());
           foreach(Actor actor1 in tmp) {
             actor1.SpendActionPoints(Rules.BASE_ACTION_COST);

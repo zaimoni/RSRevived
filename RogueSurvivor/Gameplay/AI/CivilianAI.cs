@@ -240,7 +240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
       IEnumerable<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != GetCompatibleAmmoItem(rw));
-      List<ItemRangedWeapon> available_ranged_weapons = (null!=tmp_rw && 0<tmp_rw.Count() ? new List<ItemRangedWeapon>(tmp_rw) : null);
+      List<ItemRangedWeapon> available_ranged_weapons = (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
 
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
