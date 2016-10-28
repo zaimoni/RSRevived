@@ -8429,7 +8429,6 @@ namespace djack.RogueSurvivor.Engine
     public bool DoPlayerBump(Actor player, Direction direction)
     {
       ActionBump actionBump = new ActionBump(player, this, direction);
-      if (actionBump == null) return false;
       if (actionBump.IsLegal()) {
         actionBump.Perform();
         return true;
