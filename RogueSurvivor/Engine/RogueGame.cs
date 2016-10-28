@@ -9533,7 +9533,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (flag)
-        doorWindow.SetState(3);
+        doorWindow.SetState(DoorWindow.STATE_BROKEN);
       else
         mapObj.Location.Map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
       OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
