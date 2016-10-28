@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
@@ -707,11 +708,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual bool MakeShopBuilding(Map map, BaseTownGenerator.Block b)
     {
-      if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5)
-        return false;
-            TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
-            TileRectangle(map, m_Game.GameTiles.WALL_STONE, b.BuildingRect);
-            TileFill(map, m_Game.GameTiles.FLOOR_TILES, b.InsideRect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) => tile.IsInside = true));
+      Contract.Requires(null!=map.District);
+      if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5) return false;
+      TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
+      TileRectangle(map, m_Game.GameTiles.WALL_STONE, b.BuildingRect);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, b.InsideRect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) => tile.IsInside = true));
       BaseTownGenerator.ShopType shopType = (BaseTownGenerator.ShopType)m_DiceRoller.Roll(0, 7);
       int left1 = b.InsideRect.Left;
       int top1 = b.InsideRect.Top;
@@ -719,20 +720,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int bottom = b.InsideRect.Bottom;
       bool horizontalAlleys = b.Rectangle.Width >= b.Rectangle.Height;
       int centralAlley;
-      if (horizontalAlleys)
-      {
+      if (horizontalAlleys) {
         ++left1;
         --right;
         centralAlley = b.InsideRect.Left + b.InsideRect.Width / 2;
-      }
-      else
-      {
+      } else {
         ++top1;
         --bottom;
         centralAlley = b.InsideRect.Top + b.InsideRect.Height / 2;
       }
       Rectangle alleysRect = Rectangle.FromLTRB(left1, top1, right, bottom);
-            MapObjectFill(map, alleysRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, alleysRect, (Func<Point, MapObject>) (pt =>
       {
         if (!horizontalAlleys ? (pt.X - alleysRect.Left) % 2 == 1 && pt.Y != centralAlley : (pt.Y - alleysRect.Top) % 2 == 1 && pt.X != centralAlley)
           return MakeObjShelf("MapObjects\\shop_shelf");
@@ -740,98 +738,82 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
       int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
-      if (horizontalAlleys)
-      {
-        if (m_DiceRoller.RollChance(50))
-        {
-                    PlaceDoor(map, b.BuildingRect.Left, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-          if (b.InsideRect.Height >= 8)
-          {
-                        PlaceDoor(map, b.BuildingRect.Left, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+      if (horizontalAlleys) {
+        if (m_DiceRoller.RollChance(50)) {
+          PlaceDoor(map, b.BuildingRect.Left, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+          if (b.InsideRect.Height >= 8) {
+            PlaceDoor(map, b.BuildingRect.Left, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
             if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Left, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+              PlaceDoor(map, b.BuildingRect.Left, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+          }
+        } else {
+          PlaceDoor(map, b.BuildingRect.Right - 1, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+          if (b.InsideRect.Height >= 8) {
+            PlaceDoor(map, b.BuildingRect.Right - 1, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+            if (b.InsideRect.Height >= 12)
+              PlaceDoor(map, b.BuildingRect.Right - 1, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           }
         }
-        else
-        {
-                    PlaceDoor(map, b.BuildingRect.Right - 1, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-          if (b.InsideRect.Height >= 8)
-          {
-                        PlaceDoor(map, b.BuildingRect.Right - 1, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-            if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Right - 1, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-          }
-        }
-      }
-      else if (m_DiceRoller.RollChance(50))
-      {
-                PlaceDoor(map, x1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-        if (b.InsideRect.Width >= 8)
-        {
-                    PlaceDoor(map, x1 - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+      } else if (m_DiceRoller.RollChance(50)) {
+        PlaceDoor(map, x1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+        if (b.InsideRect.Width >= 8) {
+          PlaceDoor(map, x1 - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           if (b.InsideRect.Width >= 12)
-                        PlaceDoor(map, x1 + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+            PlaceDoor(map, x1 + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
         }
-      }
-      else
-      {
-                PlaceDoor(map, x1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-        if (b.InsideRect.Width >= 8)
-        {
-                    PlaceDoor(map, x1 - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+      } else {
+        PlaceDoor(map, x1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+        if (b.InsideRect.Width >= 8) {
+          PlaceDoor(map, x1 - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           if (b.InsideRect.Width >= 12)
-                        PlaceDoor(map, x1 + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+            PlaceDoor(map, x1 + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
         }
       }
       string basename;
       string shopImage;
-      switch (shopType)
-      {
+      switch (shopType) {
         case BaseTownGenerator.ShopType._FIRST:
-          shopImage = "Tiles\\Decoration\\shop_general_store";
+          shopImage = GameImages.DECO_SHOP_GENERAL_STORE;
           basename = "GeneralStore";
           break;
         case BaseTownGenerator.ShopType.GROCERY:
-          shopImage = "Tiles\\Decoration\\shop_grocery";
+          shopImage = GameImages.DECO_SHOP_GROCERY;
           basename = "Grocery";
           break;
         case BaseTownGenerator.ShopType.SPORTSWEAR:
-          shopImage = "Tiles\\Decoration\\shop_sportswear";
+          shopImage = GameImages.DECO_SHOP_SPORTSWEAR;
           basename = "Sportswear";
           break;
         case BaseTownGenerator.ShopType.PHARMACY:
-          shopImage = "Tiles\\Decoration\\shop_pharmacy";
+          shopImage = GameImages.DECO_SHOP_PHARMACY;
           basename = "Pharmacy";
           break;
         case BaseTownGenerator.ShopType.CONSTRUCTION:
-          shopImage = "Tiles\\Decoration\\shop_construction";
+          shopImage = GameImages.DECO_SHOP_CONSTRUCTION;
           basename = "Construction";
           break;
         case BaseTownGenerator.ShopType.GUNSHOP:
-          shopImage = "Tiles\\Decoration\\shop_gunshop";
+          shopImage = GameImages.DECO_SHOP_GUNSHOP;
           basename = "Gunshop";
           break;
         case BaseTownGenerator.ShopType.HUNTING:
-          shopImage = "Tiles\\Decoration\\shop_hunting";
+          shopImage = GameImages.DECO_SHOP_HUNTING;
           basename = "Hunting Shop";
           break;
         default:
           throw new ArgumentOutOfRangeException("unhandled shoptype");
       }
-            DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
+      DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
-        if (map.GetMapObjectAt(x, y) != null || CountAdjDoors(map, x, y) < 1)
-          return (string) null;
+        if (map.GetMapObjectAt(x, y) != null || CountAdjDoors(map, x, y) < 1) return null;
         return shopImage;
       }));
       Rectangle rectangle;
-      if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE))
-      {
+      if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE)) {
         int x2;
         int y2;
         rectangle = b.BuildingRect;
-        switch (m_DiceRoller.Roll(0, 4))
-        {
+        switch (m_DiceRoller.Roll(0, 4)) {
           case 0:
             x2 = rectangle.Left + rectangle.Width / 2;
             y2 = rectangle.Top;
@@ -844,32 +826,33 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             x2 = rectangle.Left;
             y2 = rectangle.Top + rectangle.Height / 2;
             break;
+#if DEBUG
           case 3:
+#else
+          default:
+#endif
             x2 = rectangle.Right - 1;
             y2 = rectangle.Top + rectangle.Height / 2;
             break;
+#if DEBUG
           default:
             throw new ArgumentOutOfRangeException("unhandled side");
+#endif
         }
-        bool flag = true;
-        if (map.GetTileAt(x2, y2).Model.IsWalkable)
-          flag = false;
-        if (flag)
-                    PlaceDoor(map, x2, y2, m_Game.GameTiles.FLOOR_TILES, MakeObjWindow());
+        if (!map.GetTileAt(x2, y2).Model.IsWalkable)
+          PlaceDoor(map, x2, y2, m_Game.GameTiles.FLOOR_TILES, MakeObjWindow());
       }
       if (shopType == BaseTownGenerator.ShopType.GUNSHOP)
-                BarricadeDoors(map, b.BuildingRect, 80);
-            ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
+        BarricadeDoors(map, b.BuildingRect, 80);
+      ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
-        if (mapObjectAt == null || !(mapObjectAt.ImageID == "MapObjects\\shop_shelf"))
-          return false;
+        if (mapObjectAt == null || !(mapObjectAt.ImageID == "MapObjects\\shop_shelf")) return false;    // XXX leave unconverted as a red flag for ImageID abuse
         return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
       }), (Func<Point, Item>) (pt => MakeRandomShopItem(shopType)));
       map.AddZone(MakeUniqueZone(basename, b.BuildingRect));
-            MakeWalkwayZones(map, b);
-      if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE))
-      {
+      MakeWalkwayZones(map, b);
+      if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
         int seed = map.Seed << 1 ^ basename.GetHashCode();
         string name = "basement-" + basename;
         rectangle = b.BuildingRect;
@@ -877,7 +860,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int height = rectangle.Height;
         Map shopBasement = new Map(seed, name, width, height)
         {
-          Lighting = Lighting.DARKNESS
+          Lighting = Lighting.DARKNESS,
+          District = map.District
         };
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt => shopBasement.GetTileAt(pt).IsInside = true));
         TileFill(shopBasement, m_Game.GameTiles.FLOOR_CONCRETE);
@@ -885,16 +869,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
-          if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.GetExitAt(pt) != null)
-            return;
-          if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE))
-          {
+          if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.GetExitAt(pt) != null) return;
+          if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceMapObjectAt(MakeObjShelf("MapObjects\\shop_shelf"), pt);
-            if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF))
-            {
+            if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
               Item it = MakeRandomShopItem(shopType);
-              if (it != null)
-                shopBasement.DropItemAt(it, pt);
+              if (it != null) shopBasement.DropItemAt(it, pt);
             }
           }
           if (!m_Game.Session.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
@@ -903,11 +883,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Point point1 = new Point((m_DiceRoller.RollChance(50) ? 1 : shopBasement.Width - 2),(m_DiceRoller.RollChance(50) ? 1 : shopBasement.Height - 2));
         rectangle = b.InsideRect;
         Point point2 = new Point(point1.X - 1 + rectangle.Left, point1.Y - 1 + rectangle.Top);
-                AddExit(shopBasement, point1, map, point2, "Tiles\\Decoration\\stairs_up", true);
-                AddExit(map, point2, shopBasement, point1, "Tiles\\Decoration\\stairs_down", true);
-        if (map.GetMapObjectAt(point2) != null)
-          map.RemoveMapObjectAt(point2.X, point2.Y);
-                m_Params.District.AddUniqueMap(shopBasement);
+        AddExit(shopBasement, point1, map, point2, GameImages.DECO_STAIRS_UP, true);
+        AddExit(map, point2, shopBasement, point1, GameImages.DECO_STAIRS_DOWN, true);
+        if (map.GetMapObjectAt(point2) != null) map.RemoveMapObjectAt(point2.X, point2.Y);
+        m_Params.District.AddUniqueMap(shopBasement);
       }
       return true;
     }
@@ -2219,36 +2198,36 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual void DecorateOutsideWallsWithTags(Map map, Rectangle rect, int chancePerWall)
     {
-            DecorateOutsideWalls(map, rect, (Func<int, int, string>) ((x, y) =>
+      DecorateOutsideWalls(map, rect, (Func<int, int, string>) ((x, y) =>
       {
         if (m_DiceRoller.RollChance(chancePerWall))
           return BaseTownGenerator.TAGS[m_DiceRoller.Roll(0, BaseTownGenerator.TAGS.Length)];
-        return (string) null;
+        return null;
       }));
     }
 
     protected virtual void PopulateCHAROfficeBuilding(Map map, BaseTownGenerator.Block b)
     {
-      for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index)
-      {
+      for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
         Actor newCharGuard = CreateNewCHARGuard(0);
-                ActorPlace(m_DiceRoller, 100, map, newCharGuard, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+        ActorPlace(m_DiceRoller, 100, map, newCharGuard, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       }
     }
 
     private Map GenerateHouseBasementMap(Map map, BaseTownGenerator.Block houseBlock)
     {
+      Contract.Requires(null!=map.District);
       Rectangle buildingRect = houseBlock.BuildingRect;
       Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), buildingRect.Width, buildingRect.Height)
       {
-        Lighting = Lighting.DARKNESS
+        Lighting = Lighting.DARKNESS,
+        District = map.District
       };
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
-            TileFill(basement, m_Game.GameTiles.FLOOR_CONCRETE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.IsInside = true));
-            TileRectangle(basement, m_Game.GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
+      TileFill(basement, m_Game.GameTiles.FLOOR_CONCRETE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.IsInside = true));
+      TileRectangle(basement, m_Game.GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
       Point point = new Point();
-      do
-      {
+      do {
         point.X = m_DiceRoller.Roll(buildingRect.Left, buildingRect.Right);
         point.Y = m_DiceRoller.Roll(buildingRect.Top, buildingRect.Bottom);
       }
@@ -2258,19 +2237,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddExit(basement, basementStairs, map, point, "Tiles\\Decoration\\stairs_up", true);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
       {
-        if (!m_DiceRoller.RollChance(20) || pt == basementStairs) return;
+        if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
         basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
       }));
-            MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
-        if (!m_DiceRoller.RollChance(10))
-          return (MapObject) null;
-        if (basement.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!basement.IsWalkable(pt.X, pt.Y))
-          return (MapObject) null;
-        switch (m_DiceRoller.Roll(0, 5))
-        {
+        if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
+        if (basement.GetExitAt(pt) != null) return null;
+        if (!basement.IsWalkable(pt.X, pt.Y)) return null;
+        switch (m_DiceRoller.Roll(0, 5)) {
           case 0:
             return MakeObjJunk("MapObjects\\junk");
           case 1:
@@ -2293,8 +2268,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (!basement.IsWalkable(pt.X, pt.Y) || basement.GetExitAt(pt) != null || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           basement.PlaceActorAt(CreateNewBasementRatZombie(0), pt);
         }));
-      if (m_DiceRoller.RollChance(20))
-                MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => basement.GetExitAt(pt) == null && basement.IsWalkable(pt.X, pt.Y) && (basement.GetMapObjectAt(pt) == null && basement.GetItemsAt(pt) == null)), m_DiceRoller, (Func<Point, MapObject>) (pt =>
+      if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
+        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => basement.GetExitAt(pt) == null && basement.IsWalkable(pt.X, pt.Y) && (basement.GetMapObjectAt(pt) == null && basement.GetItemsAt(pt) == null)), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           basement.DropItemAt(MakeItemGrenade(), pt);
           basement.DropItemAt(MakeItemGrenade(), pt);
@@ -2307,29 +2282,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Map GenerateUniqueMap_CHARUnderground(Map surfaceMap, Zone officeZone)
     {
+      Contract.Requires(null != surfaceMap);
       Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, "CHAR Underground Facility", 100, 100)
       {
         Lighting = Lighting.DARKNESS,
-        IsSecret = true
+        IsSecret = true,
+        District = surfaceMap.District
       };
-            TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.IsInside = true));
-            TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
-      Zone zone1 = (Zone) null;
+      TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.IsInside = true));
+      TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
+      Zone zone1 = null;
       Point point1 = new Point();
       bool flag;
-      do
-      {
-        do
-        {
+      do {
+        do {
           int x = m_DiceRoller.Roll(officeZone.Bounds.Left, officeZone.Bounds.Right);
           int y = m_DiceRoller.Roll(officeZone.Bounds.Top, officeZone.Bounds.Bottom);
           List<Zone> zonesAt = surfaceMap.GetZonesAt(x, y);
-          if (zonesAt != null && zonesAt.Count != 0)
-          {
-            foreach (Zone zone2 in zonesAt)
-            {
-              if (zone2.Name.Contains("room"))
-              {
+          if (zonesAt != null && zonesAt.Count != 0) {
+            foreach (Zone zone2 in zonesAt) {
+              if (zone2.Name.Contains("room")) {
                 zone1 = zone2;
                 break;
               }
@@ -2338,8 +2310,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
         while (zone1 == null);
         int num = 0;
-        do
-        {
+        do {
           point1.X = m_DiceRoller.Roll(zone1.Bounds.Left, zone1.Bounds.Right);
           point1.Y = m_DiceRoller.Roll(zone1.Bounds.Top, zone1.Bounds.Bottom);
           flag = surfaceMap.IsWalkable(point1.X, point1.Y);
@@ -2358,19 +2329,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
       underground.SetExitAt(point2, new Exit(surfaceMap, point1));
-      underground.GetTileAt(point2.X, point2.Y).AddDecoration("Tiles\\Decoration\\stairs_up");
+      underground.GetTileAt(point2.X, point2.Y).AddDecoration(GameImages.DECO_STAIRS_UP);
       surfaceMap.SetExitAt(point1, new Exit(underground, point2));
-      surfaceMap.GetTileAt(point1.X, point1.Y).AddDecoration("Tiles\\Decoration\\stairs_down");
-            ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.GetTileAt(pt).AddDecoration("Tiles\\Decoration\\char_floor_logo")));
+      surfaceMap.GetTileAt(point1.X, point1.Y).AddDecoration(GameImages.DECO_STAIRS_DOWN);
+      ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.GetTileAt(pt).AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
       Rectangle rect3 = Rectangle.FromLTRB(0, underground.Height / 2 + 1 + 1, rect1.Right, underground.Height);
       Rectangle rect4 = Rectangle.FromLTRB(rect2.Left, rect3.Top, underground.Width, underground.Height);
       List<Rectangle> list = new List<Rectangle>();
-            MakeRoomsPlan(underground, ref list, rect3, 6);
-            MakeRoomsPlan(underground, ref list, rect4, 6);
-            MakeRoomsPlan(underground, ref list, rect1, 6);
-            MakeRoomsPlan(underground, ref list, rect2, 6);
+      MakeRoomsPlan(underground, ref list, rect3, 6);
+      MakeRoomsPlan(underground, ref list, rect4, 6);
+      MakeRoomsPlan(underground, ref list, rect1, 6);
+      MakeRoomsPlan(underground, ref list, rect2, 6);
       foreach (Rectangle rect5 in list)
                 TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, rect5);
       foreach (Rectangle rectangle in list)
@@ -2790,55 +2761,56 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakeHospital(Map map, List<BaseTownGenerator.Block> freeBlocks, out BaseTownGenerator.Block hospitalBlock)
     {
+      Contract.Requires(null!=map.District);
       hospitalBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
-            GenerateHospitalEntryHall(map, hospitalBlock);
-      Map hospitalAdmissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed);
-      Map hospitalOffices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed);
-      Map hospitalPatients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed);
+      GenerateHospitalEntryHall(map, hospitalBlock);
+      Map hospitalAdmissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
+      Map hospitalOffices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
+      Map hospitalPatients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, map.District);
       Map hospitalStorage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed);
-      Map hospitalPower = GenerateHospital_Power(map.Seed << 5 ^ map.Seed);
+      Map hospitalPower = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, map.District);
       Point point1 = new Point(hospitalBlock.InsideRect.Left + hospitalBlock.InsideRect.Width / 2, hospitalBlock.InsideRect.Top);
       Point point2 = new Point(hospitalAdmissions.Width / 2, 1);
-            AddExit(map, point1, hospitalAdmissions, point2, "Tiles\\Decoration\\stairs_down", true);
-            AddExit(hospitalAdmissions, point2, map, point1, "Tiles\\Decoration\\stairs_up", true);
+      AddExit(map, point1, hospitalAdmissions, point2, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(hospitalAdmissions, point2, map, point1, GameImages.DECO_STAIRS_UP, true);
       Point point3 = new Point(hospitalAdmissions.Width / 2, hospitalAdmissions.Height - 2);
       Point point4 = new Point(hospitalOffices.Width / 2, 1);
-            AddExit(hospitalAdmissions, point3, hospitalOffices, point4, "Tiles\\Decoration\\stairs_down", true);
-            AddExit(hospitalOffices, point4, hospitalAdmissions, point3, "Tiles\\Decoration\\stairs_up", true);
+      AddExit(hospitalAdmissions, point3, hospitalOffices, point4, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(hospitalOffices, point4, hospitalAdmissions, point3, GameImages.DECO_STAIRS_UP, true);
       Point point5 = new Point(hospitalOffices.Width / 2, hospitalOffices.Height - 2);
       Point point6 = new Point(hospitalPatients.Width / 2, 1);
-            AddExit(hospitalOffices, point5, hospitalPatients, point6, "Tiles\\Decoration\\stairs_down", true);
-            AddExit(hospitalPatients, point6, hospitalOffices, point5, "Tiles\\Decoration\\stairs_up", true);
+      AddExit(hospitalOffices, point5, hospitalPatients, point6, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(hospitalPatients, point6, hospitalOffices, point5, GameImages.DECO_STAIRS_UP, true);
       Point point7 = new Point(hospitalPatients.Width / 2, hospitalPatients.Height - 2);
       Point point8 = new Point(1, 1);
-            AddExit(hospitalPatients, point7, hospitalStorage, point8, "Tiles\\Decoration\\stairs_down", true);
-            AddExit(hospitalStorage, point8, hospitalPatients, point7, "Tiles\\Decoration\\stairs_up", true);
+      AddExit(hospitalPatients, point7, hospitalStorage, point8, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(hospitalStorage, point8, hospitalPatients, point7, GameImages.DECO_STAIRS_UP, true);
       Point point9 = new Point(hospitalStorage.Width - 2, 1);
       Point point10 = new Point(1, 1);
-            AddExit(hospitalStorage, point9, hospitalPower, point10, "Tiles\\Decoration\\stairs_down", true);
-            AddExit(hospitalPower, point10, hospitalStorage, point9, "Tiles\\Decoration\\stairs_up", true);
-            m_Params.District.AddUniqueMap(hospitalAdmissions);
-            m_Params.District.AddUniqueMap(hospitalOffices);
-            m_Params.District.AddUniqueMap(hospitalPatients);
-            m_Params.District.AddUniqueMap(hospitalStorage);
-            m_Params.District.AddUniqueMap(hospitalPower);
-            m_Game.Session.UniqueMaps.Hospital_Admissions = new UniqueMap()
+      AddExit(hospitalStorage, point9, hospitalPower, point10, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(hospitalPower, point10, hospitalStorage, point9, GameImages.DECO_STAIRS_UP, true);
+      m_Params.District.AddUniqueMap(hospitalAdmissions);
+      m_Params.District.AddUniqueMap(hospitalOffices);
+      m_Params.District.AddUniqueMap(hospitalPatients);
+      m_Params.District.AddUniqueMap(hospitalStorage);
+      m_Params.District.AddUniqueMap(hospitalPower);
+      m_Game.Session.UniqueMaps.Hospital_Admissions = new UniqueMap()
       {
         TheMap = hospitalAdmissions
       };
-            m_Game.Session.UniqueMaps.Hospital_Offices = new UniqueMap()
+      m_Game.Session.UniqueMaps.Hospital_Offices = new UniqueMap()
       {
         TheMap = hospitalOffices
       };
-            m_Game.Session.UniqueMaps.Hospital_Patients = new UniqueMap()
+      m_Game.Session.UniqueMaps.Hospital_Patients = new UniqueMap()
       {
         TheMap = hospitalPatients
       };
-            m_Game.Session.UniqueMaps.Hospital_Storage = new UniqueMap()
+      m_Game.Session.UniqueMaps.Hospital_Storage = new UniqueMap()
       {
         TheMap = hospitalStorage
       };
-            m_Game.Session.UniqueMaps.Hospital_Power = new UniqueMap()
+      m_Game.Session.UniqueMaps.Hospital_Power = new UniqueMap()
       {
         TheMap = hospitalPower
       };
@@ -2867,11 +2839,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MakeWalkwayZones(surfaceMap, block);
     }
 
-    private Map GenerateHospital_Admissions(int seed)
+    private Map GenerateHospital_Admissions(int seed, District d)
     {
       Map map = new Map(seed, "Hospital - Admissions", 13, 33)
       {
-        Lighting = Lighting.DARKNESS
+        Lighting = Lighting.DARKNESS,
+        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2881,43 +2854,39 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       map.AddZone(MakeUniqueZone("corridor", rect));
       Rectangle rectangle1 = new Rectangle(0, 0, 5, map.Height);
       int y1 = 0;
-      while (y1 <= map.Height - 5)
-      {
+      while (y1 <= map.Height - 5) {
         Rectangle room = new Rectangle(rectangle1.Left, y1, 5, 5);
         MakeHospitalPatientRoom(map, "patient room", room, true);
         y1 += 4;
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - 5, 0, 5, map.Height);
       int y2 = 0;
-      while (y2 <= map.Height - 5)
-      {
+      while (y2 <= map.Height - 5) {
         Rectangle room = new Rectangle(rectangle2.Left, y2, 5, 5);
-                MakeHospitalPatientRoom(map, "patient room", room, false);
+        MakeHospitalPatientRoom(map, "patient room", room, false);
         y2 += 4;
       }
-      for (int index = 0; index < 10; ++index)
-      {
+      for (int index = 0; index < 10; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
       }
-      for (int index = 0; index < 4; ++index)
-      {
+      for (int index = 0; index < 4; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
       }
-      for (int index = 0; index < 1; ++index)
-      {
+      for (int index = 0; index < 1; ++index) {
         Actor newHospitalDoctor = CreateNewHospitalDoctor(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
       }
       return map;
     }
 
-    private Map GenerateHospital_Offices(int seed)
+    private Map GenerateHospital_Offices(int seed, District d)
     {
       Map map = new Map(seed, "Hospital - Offices", 13, 33)
       {
-        Lighting = Lighting.DARKNESS
+        Lighting = Lighting.DARKNESS,
+        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2934,30 +2903,28 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - 5, 0, 5, map.Height);
       int y2 = 0;
-      while (y2 <= map.Height - 5)
-      {
+      while (y2 <= map.Height - 5) {
         Rectangle room = new Rectangle(rectangle2.Left, y2, 5, 5);
-                MakeHospitalOfficeRoom(map, "office", room, false);
+        MakeHospitalOfficeRoom(map, "office", room, false);
         y2 += 4;
       }
-      for (int index = 0; index < 5; ++index)
-      {
+      for (int index = 0; index < 5; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "office")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "office")));
       }
-      for (int index = 0; index < 2; ++index)
-      {
+      for (int index = 0; index < 2; ++index) {
         Actor newHospitalDoctor = CreateNewHospitalDoctor(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "office")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "office")));
       }
       return map;
     }
 
-    private Map GenerateHospital_Patients(int seed)
+    private Map GenerateHospital_Patients(int seed, District d)
     {
       Map map = new Map(seed, "Hospital - Patients", 13, 49)
       {
-        Lighting = Lighting.DARKNESS
+        Lighting = Lighting.DARKNESS,
+        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2967,34 +2934,29 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       map.AddZone(MakeUniqueZone("corridor", rect));
       Rectangle rectangle1 = new Rectangle(0, 0, 5, map.Height);
       int y1 = 0;
-      while (y1 <= map.Height - 5)
-      {
+      while (y1 <= map.Height - 5) {
         Rectangle room = new Rectangle(rectangle1.Left, y1, 5, 5);
-                MakeHospitalPatientRoom(map, "patient room", room, true);
+        MakeHospitalPatientRoom(map, "patient room", room, true);
         y1 += 4;
       }
       Rectangle rectangle2 = new Rectangle(map.Rect.Right - 5, 0, 5, map.Height);
       int y2 = 0;
-      while (y2 <= map.Height - 5)
-      {
+      while (y2 <= map.Height - 5) {
         Rectangle room = new Rectangle(rectangle2.Left, y2, 5, 5);
-                MakeHospitalPatientRoom(map, "patient room", room, false);
+        MakeHospitalPatientRoom(map, "patient room", room, false);
         y2 += 4;
       }
-      for (int index = 0; index < 20; ++index)
-      {
+      for (int index = 0; index < 20; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
       }
-      for (int index = 0; index < 8; ++index)
-      {
+      for (int index = 0; index < 8; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
       }
-      for (int index = 0; index < 2; ++index)
-      {
+      for (int index = 0; index < 2; ++index) {
         Actor newHospitalDoctor = CreateNewHospitalDoctor(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
       }
       return map;
     }
@@ -3041,7 +3003,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return map;
     }
 
-    private Map GenerateHospital_Power(int seed)
+    private Map GenerateHospital_Power(int seed, District d)
     {
       Map map = new Map(seed, "Hospital - Power", 10, 10)
       {
@@ -3079,7 +3041,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
       named.Inventory.AddAll(MakeItemJasonMyersAxe());
       map.PlaceActorAt(named, new Point(map.Width / 2, map.Height / 2));
-            m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
+      m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
       {
         TheActor = named,
         IsSpawned = true
