@@ -4328,20 +4328,10 @@ namespace djack.RogueSurvivor.Engine
         int num = 1 + FindLongestLine(lines);
         int x = itemPos.X - 7 * num;
         int y = itemPos.Y + TILE_SIZE;
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
-        if (mouseButtons.HasValue)
-        {
-          MouseButtons? nullable1 = mouseButtons;
-          if ((nullable1.GetValueOrDefault() != MouseButtons.Left ? 0 : (nullable1.HasValue ? 1 : 0)) != 0)
-          {
-            hasDoneAction = OnLMBItem(inv, inventoryItem);
-          }
-          else
-          {
-            MouseButtons? nullable2 = mouseButtons;
-            if ((nullable2.GetValueOrDefault() != MouseButtons.Right ? 0 : (nullable2.HasValue ? 1 : 0)) != 0)
-              hasDoneAction = OnRMBItem(inv, inventoryItem);
-          }
+        AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
+        if (mouseButtons.HasValue) {
+          if (mouseButtons.GetValueOrDefault() == MouseButtons.Left) hasDoneAction = OnLMBItem(inv, inventoryItem);
+          else if (mouseButtons.GetValueOrDefault() == MouseButtons.Right) hasDoneAction = OnRMBItem(inv, inventoryItem);
         }
       }
       return true;
@@ -4349,15 +4339,13 @@ namespace djack.RogueSurvivor.Engine
 
     private Item MouseToInventoryItem(Point screen, out Inventory inv, out Point itemPos)
     {
-      inv = (Inventory) null;
+      inv = null;
       itemPos = Point.Empty;
-      if (m_Player == null)
-        return (Item) null;
+      if (m_Player == null) return null;
       Inventory inventory = m_Player.Inventory;
       Point inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
-      if (index1 >= 0 && index1 < inventory.MaxCapacity)
-      {
+      if (index1 >= 0 && index1 < inventory.MaxCapacity) {
         inv = inventory;
         itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1.X, inventorySlot1.Y);
         return inventory[index1];
@@ -4365,11 +4353,9 @@ namespace djack.RogueSurvivor.Engine
       Inventory itemsAt = m_Player.Location.Map.GetItemsAt(m_Player.Location.Position);
       Point inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
       itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2.X, inventorySlot2.Y);
-      if (itemsAt == null)
-        return (Item) null;
+      if (itemsAt == null) return null;
       int index2 = inventorySlot2.X + inventorySlot2.Y * 10;
-      if (index2 < 0 || index2 >= itemsAt.MaxCapacity)
-        return (Item) null;
+      if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
       inv = itemsAt;
       return itemsAt[index2];
     }
@@ -4406,30 +4392,27 @@ namespace djack.RogueSurvivor.Engine
                     DoUseItem(m_Player, it);
           return true;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
         return false;
       }
       string reason2;
-      if (m_Rules.CanActorGetItem(m_Player, it, out reason2))
-      {
-                DoTakeItem(m_Player, m_Player.Location.Position, it);
+      if (m_Rules.CanActorGetItem(m_Player, it, out reason2)) {
+        DoTakeItem(m_Player, m_Player.Location.Position, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason2)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason2)));
       return false;
     }
 
     private bool OnRMBItem(Inventory inv, Item it)
     {
-      if (inv != m_Player.Inventory)
-        return false;
+      if (inv != m_Player.Inventory) return false;
       string reason;
-      if (m_Rules.CanActorDropItem(m_Player, it, out reason))
-      {
-                DoDropItem(m_Player, it);
+      if (m_Rules.CanActorDropItem(m_Player, it, out reason)) {
+        DoDropItem(m_Player, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
       return false;
     }
 
@@ -4461,26 +4444,21 @@ namespace djack.RogueSurvivor.Engine
     private Corpse MouseToCorpse(Point screen, out Point corpsePos)
     {
       corpsePos = Point.Empty;
-      if (m_Player == null)
-        return (Corpse) null;
+      if (m_Player == null) return null;
       List<Corpse> corpsesAt = m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position);
-      if (corpsesAt == null)
-        return (Corpse) null;
+      if (corpsesAt == null) return null;
       Point inventorySlot = MouseToInventorySlot(INVENTORYPANEL_X, CORPSESPANEL_Y, screen.X, screen.Y);
       corpsePos = InventorySlotToScreen(INVENTORYPANEL_X, CORPSESPANEL_Y, inventorySlot.X, inventorySlot.Y);
       int index = inventorySlot.X + inventorySlot.Y * 10;
-      if (index >= 0 && index < corpsesAt.Count)
-        return corpsesAt[index];
-      return (Corpse) null;
+      if (index >= 0 && index < corpsesAt.Count) return corpsesAt[index];
+      return null;
     }
 
     private bool OnLMBCorpse(Corpse c)
     {
-      if (c.IsDragged)
-      {
+      if (c.IsDragged) {
         string reason;
-        if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason))
-        {
+        if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason)) {
           DoStopDragCorpse(m_Player, c);
           return false;
         }
