@@ -13,6 +13,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -652,13 +653,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorWarnFriends(RogueGame game, List<Percept> friends, Actor nearestEnemy)
     {
+      Contract.Requires(null != nearestEnemy);
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
       if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor, game);
       foreach (Percept friend in friends) {
         Actor actor = friend.Percepted as Actor;
         if (actor == null) throw new ArgumentException("percept not an actor");
         if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
-          string text = nearestEnemy == null ? string.Format("Wake up {0}!", (object) actor.Name) : string.Format("Wake up {0}! {1} sighted!", (object) actor.Name, (object) nearestEnemy.Name);
+          string text = string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name);
           return new ActionShout(m_Actor, game, text);
         }
       }
