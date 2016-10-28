@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor.Engine
 
     public IEnumerable<CSVLine> Lines {
       get {
+        Contract.Ensures(null != Contract.Result<IEnumerable<CSVLine>>());
         return m_Lines;
       }
     }
@@ -60,6 +61,7 @@ namespace djack.RogueSurvivor.Engine
 
     public _DATA_TYPE_ GetDataFor<_DATA_TYPE_,_T_>(Func<CSVLine, _DATA_TYPE_> fn, _T_ modelID)
     {
+      Contract.Requires(null != fn);
       CSVLine lineForModel = FindLineFor(modelID);
       try {
         return fn(lineForModel);
