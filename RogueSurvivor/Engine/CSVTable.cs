@@ -17,6 +17,8 @@ namespace djack.RogueSurvivor.Engine
 
     public CSVField this[int field, int line] {
       get {
+        Contract.Requires(0<=field);
+        Contract.Requires(0<=line);
         return m_Lines[line][field];
       }
     }
