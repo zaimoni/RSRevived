@@ -4434,35 +4434,22 @@ namespace djack.RogueSurvivor.Engine
     {
       Point corpsePos;
       Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
-      if (corpse == null)
-      {
-        hasDoneAction = false;
-        return false;
-      }
       hasDoneAction = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, 32, 32)));
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, 30, 30)));
-      if (corpse != null)
-      {
-        string[] lines = DescribeCorpseLong(corpse, true);
-        int num = 1 + FindLongestLine(lines);
-        int x = corpsePos.X - 7 * num;
-        int y = corpsePos.Y + TILE_SIZE;
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
-        if (mouseButtons.HasValue)
-        {
-          MouseButtons? nullable1 = mouseButtons;
-          if ((nullable1.GetValueOrDefault() != MouseButtons.Left ? 0 : (nullable1.HasValue ? 1 : 0)) != 0)
-          {
-            hasDoneAction = OnLMBCorpse(corpse);
-          }
-          else
-          {
-            MouseButtons? nullable2 = mouseButtons;
-            if ((nullable2.GetValueOrDefault() != MouseButtons.Right ? 0 : (nullable2.HasValue ? 1 : 0)) != 0)
-              hasDoneAction = OnRMBCorpse(corpse);
-          }
+      if (corpse == null)  return false;
+      ClearOverlays();
+      AddOverlay(new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, 32, 32)));
+      AddOverlay(new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, 30, 30)));
+
+      string[] lines = DescribeCorpseLong(corpse, true);
+      int num = 1 + FindLongestLine(lines);
+      int x = corpsePos.X - 7 * num;
+      int y = corpsePos.Y + TILE_SIZE;
+      AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
+      if (mouseButtons.HasValue) {
+        if (mouseButtons.GetValueOrDefault() == MouseButtons.Left) {
+          hasDoneAction = OnLMBCorpse(corpse);
+        } else if (mouseButtons.GetValueOrDefault() == MouseButtons.Right) {
+          hasDoneAction = OnRMBCorpse(corpse);
         }
       }
       return true;
