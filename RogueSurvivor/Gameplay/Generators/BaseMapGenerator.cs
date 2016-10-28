@@ -609,45 +609,45 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected DoorWindow MakeObjWoodenDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("wooden door", "MapObjects\\wooden_door_closed", "MapObjects\\wooden_door_open", "MapObjects\\wooden_door_broken", 40);
-      doorWindow.GivesWood = true;
-      return doorWindow;
+      return new DoorWindow("wooden door", GameImages.OBJ_WOODEN_DOOR_CLOSED, GameImages.OBJ_WOODEN_DOOR_OPEN, GameImages.OBJ_WOODEN_DOOR_BROKEN, 40) {
+        GivesWood = true
+      };
     }
 
     protected DoorWindow MakeObjHospitalDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("door", "MapObjects\\hospital_door_closed", "MapObjects\\hospital_door_open", "MapObjects\\hospital_door_broken", 40);
-      doorWindow.GivesWood = true;
-      return doorWindow;
+      return new DoorWindow("door", GameImages.OBJ_HOSPITAL_DOOR_CLOSED, GameImages.OBJ_HOSPITAL_DOOR_OPEN, GameImages.OBJ_HOSPITAL_DOOR_BROKEN, 40) {
+        GivesWood = true
+      };
     }
 
     protected DoorWindow MakeObjCharDoor()
     {
-      return new DoorWindow("CHAR door", "MapObjects\\dark_door_closed", "MapObjects\\dark_door_open", "MapObjects\\dark_door_broken", 160);
+      return new DoorWindow("CHAR door", GameImages.OBJ_CHAR_DOOR_CLOSED, GameImages.OBJ_CHAR_DOOR_OPEN, GameImages.OBJ_CHAR_DOOR_BROKEN, 160);
     }
 
     protected DoorWindow MakeObjGlassDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("glass door", "MapObjects\\glass_door_closed", "MapObjects\\glass_door_open", "MapObjects\\glass_door_broken", 10);
-      doorWindow.IsMaterialTransparent = true;
-      doorWindow.BreaksWhenFiredThrough = true;
-      return doorWindow;
+      return new DoorWindow("glass door", GameImages.OBJ_GLASS_DOOR_CLOSED, GameImages.OBJ_GLASS_DOOR_OPEN, GameImages.OBJ_GLASS_DOOR_BROKEN, 10) {
+        IsMaterialTransparent = true,
+        BreaksWhenFiredThrough = true
+      };
     }
 
     protected DoorWindow MakeObjIronDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("iron door", "MapObjects\\iron_door_closed", "MapObjects\\iron_door_open", "MapObjects\\iron_door_broken", 320);
-      doorWindow.IsAn = true;
-      return doorWindow;
+      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 320) {
+        IsAn = true
+      };
     }
 
     protected DoorWindow MakeObjWindow()
     {
-      DoorWindow doorWindow = new DoorWindow("window", "MapObjects\\window_closed", "MapObjects\\window_open", "MapObjects\\window_broken", 10);
-      doorWindow.IsMaterialTransparent = true;
-      doorWindow.GivesWood = true;
-      doorWindow.BreaksWhenFiredThrough = true;
-      return doorWindow;
+      return new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, 10) {
+        IsMaterialTransparent = true,
+        GivesWood = true,
+        BreaksWhenFiredThrough = true
+      };
     }
 
     protected MapObject MakeObjFence(string fenceImageID)
