@@ -1985,45 +1985,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Item MakeHuntingShopItem()
     {
-      if (m_DiceRoller.RollChance(50))
-      {
-        if (m_DiceRoller.RollChance(40))
-        {
-          switch (m_DiceRoller.Roll(0, 2))
-          {
-            case 0:
-              return MakeItemHuntingRifle();
-            case 1:
-              return MakeItemHuntingCrossbow();
-            default:
-              return (Item) null;
-          }
-        }
-        else
-        {
-          switch (m_DiceRoller.Roll(0, 2))
-          {
-            case 0:
-              return MakeItemLightRifleAmmo();
-            case 1:
-              return MakeItemBoltsAmmo();
-            default:
-              return (Item) null;
-          }
-        }
+      if (m_DiceRoller.RollChance(50)) {
+        if (m_DiceRoller.RollChance(40)) return (0 == m_DiceRoller.Roll(0, 2) ? MakeItemHuntingRifle() : MakeItemHuntingCrossbow());
+        return (0 == m_DiceRoller.Roll(0, 2) ? MakeItemLightRifleAmmo() : MakeItemBoltsAmmo());
       }
-      else
-      {
-        switch (m_DiceRoller.Roll(0, 2))
-        {
-          case 0:
-            return MakeItemHunterVest();
-          case 1:
-            return MakeItemBearTrap();
-          default:
-            return (Item) null;
-        }
-      }
+      return (0 == m_DiceRoller.Roll(0, 2) ? (Item)MakeItemHunterVest() : (Item)MakeItemBearTrap());
     }
 
     public Item MakeShopGeneralItem()
