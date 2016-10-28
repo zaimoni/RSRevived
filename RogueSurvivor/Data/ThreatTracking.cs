@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -35,10 +37,8 @@ namespace djack.RogueSurvivor.Data
 
         public void RecordTaint(Actor a, Location loc)
         {
-          if (!_threats.ContainsKey(a)) {
-            _threats[a] = new HashSet<Location>();
-            _threats[a].Add(loc);
-          } else _threats[a].Add(loc);
+          if (!_threats.ContainsKey(a))  _threats[a] = new HashSet<Location>();
+          _threats[a].Add(loc);
         }
 
         public void Sighted(Actor a, Location loc)
@@ -48,8 +48,9 @@ namespace djack.RogueSurvivor.Data
         }
 
         public void Cleared(Location loc)
-        {
-          foreach (Actor a in new List<Actor>(_threats.Keys)) {
+        { // some sort of race condition here ... a dead actor may be removed between _threats[a].Remove(loc)
+          // and _threats[a].Count
+          foreach (Actor a in _threats.Keys.ToList().Where(a=>!a.IsDead)) {
             if (_threats[a].Remove(loc) && 0 >= _threats[a].Count) _threats.Remove(a);
           }
         }
@@ -62,16 +63,15 @@ namespace djack.RogueSurvivor.Data
         // cheating die handler
         private void HandleDie(object sender, Actor.DieArgs e)
         {
-           Actor fatality = (sender as Actor);
-           if (null == fatality) throw new ArgumentNullException("fatality");
-           _threats.Remove(fatality);
+          Contract.Requires(null!=(sender as Actor));
+          _threats.Remove(sender as Actor);
         }
 
         // cheating move handler
         private void HandleMove(object sender, EventArgs e)
         {
+          Contract.Requires(null != (sender as Actor));
           Actor moving = (sender as Actor);
-          if (null == moving) throw new ArgumentNullException("moving");
           if (!_threats.ContainsKey(moving)) return;
           List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
           foreach(Point pt in tmp) {
