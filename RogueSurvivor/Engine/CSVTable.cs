@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -40,13 +41,15 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddLine(CSVLine line)
     {
+      Contract.Requires(null != line);
       if (line.FieldsCount != m_nbFields)
-        throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", (object) line.FieldsCount, (object)m_nbFields));
+        throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", line.FieldsCount, m_nbFields));
       m_Lines.Add(line);
     }
 
     public CSVLine FindLineFor<_T_>(_T_ modelID)
     {
+      Contract.Ensures(null!=Contract.Result<CSVLine>());
       foreach (CSVLine line in m_Lines) {
         if (line[0].ParseText() == modelID.ToString()) return line;
       }
