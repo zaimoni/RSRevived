@@ -11,6 +11,8 @@ namespace djack.RogueSurvivor.Data
     {
         // an earlier iteration of this cost 39MB of savefile size.  Instead of attempting a full probability analysis,
         // we'll just do taint checking.
+
+        // As we actually have to iterate over the keys of _threats in a multi-threaded situation, just lock it when using.
         private Dictionary<Actor, HashSet<Location>> _threats;  // simpler taint tracking
 
         public ThreatTracking()
@@ -22,7 +24,7 @@ namespace djack.RogueSurvivor.Data
 
         public void Clear()
         {
-          _threats.Clear();
+          lock(_threats) { _threats.Clear(); }
         }
 
         public bool IsThreat(Actor a)
@@ -43,28 +45,31 @@ namespace djack.RogueSurvivor.Data
 
         public void Sighted(Actor a, Location loc)
         {
-          _threats[a] = new HashSet<Location>();
-          _threats[a].Add(loc);
+          lock(_threats) { 
+            _threats[a] = new HashSet<Location>();
+            _threats[a].Add(loc);
+          }
         }
 
         public void Cleared(Location loc)
-        { // some sort of race condition here ... a dead actor may be removed between _threats[a].Remove(loc)
-          // and _threats[a].Count
-          foreach (Actor a in _threats.Keys.ToList().Where(a=>!a.IsDead)) {
-            if (_threats[a].Remove(loc) && 0 >= _threats[a].Count) _threats.Remove(a);
+        {
+          lock(_threats) { 
+            foreach (Actor a in _threats.Keys.ToList()) {
+              if (_threats[a].Remove(loc) && 0 >= _threats[a].Count) _threats.Remove(a);
+            }
           }
         }
 
         public void Cleared(Actor a)
         {
-          _threats.Remove(a);
+          lock(_threats) {  _threats.Remove(a); }
         }
 
         // cheating die handler
         private void HandleDie(object sender, Actor.DieArgs e)
         {
           Contract.Requires(null!=(sender as Actor));
-          _threats.Remove(sender as Actor);
+          lock(_threats) { _threats.Remove(sender as Actor); }
         }
 
         // cheating move handler
@@ -72,10 +77,12 @@ namespace djack.RogueSurvivor.Data
         {
           Contract.Requires(null != (sender as Actor));
           Actor moving = (sender as Actor);
-          if (!_threats.ContainsKey(moving)) return;
-          List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
-          foreach(Point pt in tmp) {
-            _threats[moving].Add(new Location(moving.Location.Map,pt));
+          lock (_threats) {
+            if (!_threats.ContainsKey(moving)) return;
+            List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
+            foreach(Point pt in tmp) {
+              _threats[moving].Add(new Location(moving.Location.Map,pt));
+            }
           }
         }
     }
