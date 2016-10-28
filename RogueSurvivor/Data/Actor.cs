@@ -668,6 +668,7 @@ namespace djack.RogueSurvivor.Data
       if (m_AggressorOf == null) m_AggressorOf = new List<Actor>(1);
       else if (m_AggressorOf.Contains(other)) return;
       m_AggressorOf.Add(other);
+      Threats?.RecordTaint(other, other.Location);
     }
 
     public void MarkAsSelfDefenceFrom(Actor other)
@@ -676,6 +677,7 @@ namespace djack.RogueSurvivor.Data
       if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>(1);
       else if (m_SelfDefenceFrom.Contains(other)) return;
       m_SelfDefenceFrom.Add(other);
+      Threats?.RecordTaint(other, other.Location);
     }
 
     public bool IsAggressorOf(Actor other)
