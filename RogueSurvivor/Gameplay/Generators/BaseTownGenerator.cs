@@ -2270,7 +2270,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (!(surfaceMap.GetMapObjectAt(pt) is DoorWindow)) return;
         surfaceMap.RemoveMapObjectAt(pt.X, pt.Y);
         DoorWindow doorWindow = MakeObjIronDoor();
-        doorWindow.BarricadePoints = 80;
+        doorWindow.Barricade(Rules.BARRICADING_MAX);
         surfaceMap.PlaceMapObjectAt((MapObject) doorWindow, pt);
       }));
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);

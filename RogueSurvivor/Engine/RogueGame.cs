@@ -8914,7 +8914,7 @@ namespace djack.RogueSurvivor.Engine
             int val2 = num1;
             if (doorWindow != null && doorWindow.IsBarricaded) {
               int num2 = Math.Min(doorWindow.BarricadePoints, val2);
-              doorWindow.BarricadePoints -= num2;
+              doorWindow.Barricade(-num2);
               val2 -= num2;
             }
             if (val2 > 0) {
@@ -9471,7 +9471,7 @@ namespace djack.RogueSurvivor.Engine
       ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
       actor.Inventory.Consume(barricadeMaterial);
-      door.BarricadePoints = Math.Min(door.BarricadePoints + m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue), 80);
+      door.Barricade(m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue));
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BARRICADE), door));
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -9546,7 +9546,7 @@ namespace djack.RogueSurvivor.Engine
       if (doorWindow != null && doorWindow.IsBarricaded) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
-        doorWindow.BarricadePoints -= attack.DamageValue;
+        doorWindow.Barricade(-attack.DamageValue);
         OnLoudNoise(doorWindow.Location.Map, doorWindow.Location.Position, "A loud *BASH*");
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(doorWindow)) {
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
@@ -9554,9 +9554,7 @@ namespace djack.RogueSurvivor.Engine
           if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;
           AddMessageIfAudibleForPlayer(doorWindow.Location, MakePlayerCentricMessage("You hear someone bashing barricades", doorWindow.Location.Position));
         }
-      }
-      else
-      {
+      } else {
         mapObj.HitPoints -= attack.DamageValue;
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
@@ -9569,19 +9567,13 @@ namespace djack.RogueSurvivor.Engine
         bool player1 = ForceVisibleToPlayer(actor);
         bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
         bool isPlayer = actor.IsPlayer;
-        if (player1 || player2)
-        {
-          if (player1)
-                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
-          if (player2)
-                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
-          if (flag)
-          {
-                        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj));
-            if (player1)
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\melee_attack"));
-            if (player2)
-              AddOverlay(new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), "Icons\\killed"));
+        if (player1 || player2) {
+          if (player1) AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
+          if (player2) AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
+          if (flag) {
+            AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj));
+            if (player1) AddOverlay(new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
+            if (player2) AddOverlay(new RogueGame.OverlayImage(MapToScreen(mapObj.Location.Position), GameImages.ICON_KILLED));
             RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
           } else {

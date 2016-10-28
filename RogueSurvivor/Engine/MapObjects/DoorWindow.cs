@@ -59,16 +59,16 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       get {
         return m_BarricadePoints;
       }
-      set {
+      private set {
         if (value > 0 && m_BarricadePoints <= 0) {
           --JumpLevel;
           IsWalkable = false;
         }
         else if (value <= 0 && m_BarricadePoints > 0)
           SetState(State);
+        if (0>value) value = 0;
+        if (Rules.BARRICADING_MAX < value) value = Rules.BARRICADING_MAX;
         m_BarricadePoints = value;
-        if (m_BarricadePoints >= 0) return;
-        m_BarricadePoints = 0;
       }
     }
 
@@ -87,6 +87,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       m_BarricadePoints = 0;
       SetState(STATE_CLOSED);
       if ("window" == name) m_IsWindow = true;  // XXX arguably should be a constructor parameter
+    }
+
+    public void Barricade(int delta)
+    {
+      BarricadePoints += delta;
     }
 
     public override void SetState(int newState)
