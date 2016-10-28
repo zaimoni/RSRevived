@@ -8875,76 +8875,63 @@ namespace djack.RogueSurvivor.Engine
 
     private int ApplyExplosionDamage(Location location, int distanceFromBlast, BlastAttack blast)
     {
+      Contract.Requires(!blast.CanDestroyWalls);    // not implemented
       Map map = location.Map;
       int num1 = m_Rules.BlastDamage(distanceFromBlast, blast);
-      if (num1 <= 0)
-        return 0;
+      if (num1 <= 0) return 0;
       Actor actorAt = map.GetActorAt(location.Position);
-      if (actorAt != null)
-      {
-                ExplosionChainReaction(actorAt.Inventory, location);
+      if (actorAt != null) {
+        ExplosionChainReaction(actorAt.Inventory, location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
-        if (dmg > 0)
-        {
-                    InflictDamage(actorAt, dmg);
+        if (dmg > 0) {
+          InflictDamage(actorAt, dmg);
           if (ForceVisibleToPlayer(actorAt))
-                        AddMessage(new Data.Message(string.Format("{0} is hit for {1} damage!", (object) actorAt.Name, (object) dmg), map.LocalTime.TurnCounter, Color.Crimson));
-          if (actorAt.HitPoints <= 0 && !actorAt.IsDead)
-          {
-                        KillActor((Actor) null, actorAt, string.Format("explosion {0} damage", (object) dmg));
+            AddMessage(new Data.Message(string.Format("{0} is hit for {1} damage!", (object) actorAt.Name, (object) dmg), map.LocalTime.TurnCounter, Color.Crimson));
+          if (actorAt.HitPoints <= 0 && !actorAt.IsDead) {
+            KillActor(null, actorAt, string.Format("explosion {0} damage", (object) dmg));
             if (ForceVisibleToPlayer(actorAt))
-                            AddMessage(new Data.Message(string.Format("{0} dies in the explosion!", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));
+              AddMessage(new Data.Message(string.Format("{0} dies in the explosion!", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.Crimson));
           }
-        }
-        else
-                    AddMessage(new Data.Message(string.Format("{0} is hit for no damage.", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.White));
+        } else
+          AddMessage(new Data.Message(string.Format("{0} is hit for no damage.", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.White));
       }
       Inventory itemsAt = map.GetItemsAt(location.Position);
-      if (itemsAt != null)
-      {
-                ExplosionChainReaction(itemsAt, location);
+      if (itemsAt != null) {
+        ExplosionChainReaction(itemsAt, location);
         int chance = num1;
         List<Item> objList = new List<Item>(itemsAt.CountItems);
-        foreach (Item obj in itemsAt.Items)
-        {
+        foreach (Item obj in itemsAt.Items) {
           if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance))
             objList.Add(obj);
         }
         foreach (Item it in objList)
           map.RemoveItemAt(it, location.Position);
       }
-      if (blast.CanDamageObjects)
-      {
+      if (blast.CanDamageObjects) {
         MapObject mapObjectAt = map.GetMapObjectAt(location.Position);
-        if (mapObjectAt != null)
-        {
+        if (mapObjectAt != null) {
           DoorWindow doorWindow = mapObjectAt as DoorWindow;
-          if (mapObjectAt.IsBreakable || doorWindow != null && doorWindow.IsBarricaded)
-          {
+          if (mapObjectAt.IsBreakable || doorWindow != null && doorWindow.IsBarricaded) {
             int val2 = num1;
-            if (doorWindow != null && doorWindow.IsBarricaded)
-            {
+            if (doorWindow != null && doorWindow.IsBarricaded) {
               int num2 = Math.Min(doorWindow.BarricadePoints, val2);
               doorWindow.BarricadePoints -= num2;
               val2 -= num2;
             }
-            if (val2 >= 0)
-            {
+            if (val2 > 0) {
               mapObjectAt.HitPoints -= val2;
               if (mapObjectAt.HitPoints <= 0)
-                                DoDestroyObject(mapObjectAt);
+                DoDestroyObject(mapObjectAt);
             }
           }
         }
       }
       List<Corpse> corpsesAt = map.GetCorpsesAt(location.Position);
-      if (corpsesAt != null)
-      {
+      if (corpsesAt != null) {
         foreach (Corpse c in corpsesAt)
-                    InflictDamageToCorpse(c, (float) num1);
+           InflictDamageToCorpse(c, (float) num1);
       }
-      if (blast.CanDestroyWalls)
-        throw new NotImplementedException("blast.destroyWalls");
+      // XXX implementation of blast.CanDestroyWalls goes here
       return num1;
     }
 
@@ -11131,7 +11118,7 @@ namespace djack.RogueSurvivor.Engine
         case Activity.CHASING:
         case Activity.FIGHTING:
           if (!actor.IsPlayer && actor.TargetActor != null) {
-            if (actor.TargetActor != null && actor.TargetActor == m_Player) {
+            if (actor.TargetActor == m_Player) {
               m_UI.UI_DrawImage(GameImages.ACTIVITY_CHASING_PLAYER, gx2, gy2, tint);
               goto case Activity.IDLE;
             } else {
@@ -11411,7 +11398,6 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (m_Player == null) return;
       if (!m_Player.IsSleeping)
       { // normal detectors/lights
         ItemTracker itemTracker1 = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
