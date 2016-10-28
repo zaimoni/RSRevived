@@ -28,6 +28,14 @@ namespace djack.RogueSurvivor.Data
       m_Actor = null;
     }
 
+    public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory {
+       get { 
+         if (null == m_Actor) return null;
+         if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return Session.Get.PoliceItemMemory;
+         return null;
+       }
+    }
+
     protected abstract List<Engine.AI.Percept> UpdateSensors(RogueGame game);
     public void UpdateSensors() { UpdateSensors(RogueForm.Game); }
 
