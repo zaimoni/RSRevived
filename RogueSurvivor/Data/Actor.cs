@@ -1424,6 +1424,12 @@ namespace djack.RogueSurvivor.Data
       m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
     }
 
+    public void AfterSpawn()
+    {
+      Controller.UpdateSensors();
+      Engine.Session.Get.PoliceTrackingThroughExitSpawn(this); // XXX overprecise
+    }
+
     public void AfterAction()
     {
       m_previousHitPoints = m_HitPoints;
