@@ -19,6 +19,7 @@ namespace djack.RogueSurvivor.Engine
       get {
         Contract.Requires(0<=field);
         Contract.Requires(0<=line);
+        Contract.Ensures(null != Contract.Result<CSVField>());
         return m_Lines[line][field];
       }
     }
