@@ -71,10 +71,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override ActorAction GetAction(RogueGame game)
     {
+      Contract.Ensures(null != Contract.Result<ActorAction>());
+      Contract.Ensures(Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts = UpdateSensors(game);
-      if (m_prevLocation.Map == null)
-                m_prevLocation = m_Actor.Location;
-            m_Actor.TargetActor = (Actor) null;
+      if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
+      m_Actor.TargetActor = null;
       ActorAction actorAction = SelectAction(game, percepts);
       m_prevLocation = m_Actor.Location;
       if (actorAction != null) return actorAction;

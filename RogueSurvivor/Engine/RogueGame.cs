@@ -6208,17 +6208,16 @@ namespace djack.RogueSurvivor.Engine
         if (insaneAction != null && insaneAction.IsLegal())
           actorAction = insaneAction;
       }
-      if (actorAction == null)
-        throw new InvalidOperationException("AI returned null action.");
+      // we need to know if this got past internal testing.
+#if DEBUG
+#else
+      if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
+      if (!actorAction.IsLegal()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
+#endif
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
 #endif
-      if (actorAction.IsLegal()) {
-        actorAction.Perform();
-      } else {
-        aiActor.SpendActionPoints(Rules.BASE_ACTION_COST);
-        throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", (object) actorAction.GetType().ToString(), (object) aiActor.Controller.GetType().ToString(), (object) actorAction.FailReason));
-      }
+      actorAction.Perform();
     }
 
     private void HandleAdvisor(Actor player)
