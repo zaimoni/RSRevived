@@ -6330,8 +6330,7 @@ namespace djack.RogueSurvivor.Engine
           Inventory inventory2 = m_Player.Inventory;
           if (inventory2 == null || inventory2.IsEmpty)
             return false;
-          foreach (Item it in inventory2.Items)
-          {
+          foreach (Item it in inventory2.Items) {
             if (!it.IsEquipped && m_Rules.CanActorEquipItem(m_Player, it))
               return true;
           }
@@ -6340,7 +6339,7 @@ namespace djack.RogueSurvivor.Engine
           Inventory inventory3 = m_Player.Inventory;
           if (inventory3 == null || inventory3.IsEmpty)
             return false;
-          return inventory3.HasItemOfType(typeof (ItemBarricadeMaterial));
+          return inventory3.Has<ItemBarricadeMaterial>();
         case AdvisorHint.ITEM_DROP:
           Inventory inventory4 = m_Player.Inventory;
           if (inventory4 == null || inventory4.IsEmpty)
@@ -6362,13 +6361,13 @@ namespace djack.RogueSurvivor.Engine
           }
           return false;
         case AdvisorHint.FLASHLIGHT:
-          return m_Player.Inventory.HasItemOfType(typeof (ItemLight));
+          return m_Player.Inventory.Has<ItemLight>();
         case AdvisorHint.CELLPHONES:
           return m_Player.Inventory.GetFirstByModel((ItemModel)GameItems.CELL_PHONE) != null;
         case AdvisorHint.SPRAYS_PAINT:
-          return m_Player.Inventory.HasItemOfType(typeof (ItemSprayPaint));
+          return m_Player.Inventory.Has<ItemSprayPaint>();
         case AdvisorHint.SPRAYS_SCENT:
-          return m_Player.Inventory.HasItemOfType(typeof (ItemSprayScent));
+          return m_Player.Inventory.Has<ItemSprayScent>();
         case AdvisorHint.WEAPON_FIRE:
           ItemRangedWeapon itemRangedWeapon = m_Player.GetEquippedWeapon() as ItemRangedWeapon;
           if (itemRangedWeapon == null)
@@ -6387,7 +6386,7 @@ namespace djack.RogueSurvivor.Engine
           }
           return false;
         case AdvisorHint.GRENADE:
-          return m_Player.HasItemOfType(typeof(ItemGrenade));
+          return m_Player.Has<ItemGrenade>();
         case AdvisorHint.DOORWINDOW_OPEN:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
@@ -9421,7 +9420,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)
     {
-      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
+      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
       ItemBarricadeMaterialModel barricadeMaterialModel = barricadeMaterial.Model as ItemBarricadeMaterialModel;
       actor.Inventory.Consume(barricadeMaterial);
       door.Barricade(m_Rules.ActorBarricadingPoints(actor, barricadeMaterialModel.BarricadingValue));
@@ -9435,7 +9434,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = m_Rules.ActorBarricadingMaterialNeedForFortification(actor, isLarge);
       for (int index = 0; index < num; ++index) {
-        Item firstByType = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial));
+        ItemBarricadeMaterial firstByType = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
         actor.Inventory.Consume(firstByType);
       }
       Fortification fortification = isLarge ? m_TownGenerator.MakeObjLargeFortification("MapObjects\\wooden_large_fortification") : m_TownGenerator.MakeObjSmallFortification("MapObjects\\wooden_small_fortification");
@@ -9448,7 +9447,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoRepairFortification(Actor actor, Fortification fort)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirstByType(typeof (ItemBarricadeMaterial)) as ItemBarricadeMaterial;
+      ItemBarricadeMaterial barricadeMaterial = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
       if (barricadeMaterial == null) throw new InvalidOperationException("no material");
       actor.Inventory.Consume(barricadeMaterial);
       fort.HitPoints = Math.Min(fort.MaxHitPoints, fort.HitPoints + m_Rules.ActorBarricadingPoints(actor, (barricadeMaterial.Model as ItemBarricadeMaterialModel).BarricadingValue));

@@ -503,30 +503,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected int ComputeTrapsMaxDamage(Map map, Point pos)
     {
       Inventory itemsAt = map.GetItemsAt(pos);
-      if (itemsAt == null)
-        return 0;
+      if (itemsAt == null) return 0;
       int num = 0;
-      foreach (Item obj in itemsAt.Items)
-      {
+      foreach (Item obj in itemsAt.Items) {
         ItemTrap itemTrap = obj as ItemTrap;
-        if (itemTrap != null)
-          num += itemTrap.TrapModel.Damage;
+        if (itemTrap != null) num += itemTrap.TrapModel.Damage;
       }
       return num;
     }
 
     protected ActorAction BehaviorBuildTrap(RogueGame game)
     {
-      ItemTrap itemTrap = m_Actor.Inventory.GetFirstByType(typeof(ItemTrap)) as ItemTrap;
-      if (itemTrap == null)
-        return (ActorAction) null;
+      ItemTrap itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
+      if (itemTrap == null) return null;
       string reason;
-      if (!IsGoodTrapSpot(game, m_Actor.Location.Map, m_Actor.Location.Position, out reason))
-        return (ActorAction) null;
+      if (!IsGoodTrapSpot(game, m_Actor.Location.Map, m_Actor.Location.Position, out reason)) return null;
       if (!itemTrap.IsActivated && !itemTrap.TrapModel.ActivatesWhenDropped)
-        return (ActorAction) new ActionUseItem(m_Actor, game, (Item) itemTrap);
+        return new ActionUseItem(m_Actor, game, (Item) itemTrap);
       game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) reason, (object) itemTrap.AName));
-      return (ActorAction) new ActionDropItem(m_Actor, game, (Item) itemTrap);
+      return new ActionDropItem(m_Actor, game, (Item) itemTrap);
     }
 
     protected bool IsGoodTrapSpot(RogueGame game, Map map, Point pos, out string reason)
@@ -677,10 +672,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory.IsEmpty) return null;
-      ItemEntertainment itemEntertainment = (ItemEntertainment) inventory.GetFirstByType(typeof (ItemEntertainment));
+      ItemEntertainment itemEntertainment = inventory.GetFirst<ItemEntertainment>();
       if (itemEntertainment == null) return null;
       if (!game.Rules.CanActorUseItem(m_Actor, itemEntertainment)) return null;
-      return (ActorAction) new ActionUseItem(m_Actor, game, (Item) itemEntertainment);
+      return new ActionUseItem(m_Actor, game, itemEntertainment);
     }
 
     protected ActorAction BehaviorDropBoringEntertainment(RogueGame game)
@@ -1251,10 +1246,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorGoEatFoodOnGround(RogueGame game, List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;
-      List<Percept> percepts = Filter(stacksPercepts, (Predicate<Percept>) (p => (p.Percepted as Inventory).HasItemOfType(typeof (ItemFood))));
+      List<Percept> percepts = Filter(stacksPercepts, (Predicate<Percept>) (p => (p.Percepted as Inventory).Has<ItemFood>()));
       if (percepts == null) return null;
       Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
-      ItemFood firstByType = itemsAt?.GetFirstByType(typeof (ItemFood)) as ItemFood;
+      ItemFood firstByType = itemsAt?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, game, firstByType);
       Percept percept = FilterNearest(percepts);
       return BehaviorStupidBumpToward(game, percept.Location.Position);

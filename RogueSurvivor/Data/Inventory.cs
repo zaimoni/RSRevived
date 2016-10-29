@@ -205,19 +205,17 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public bool HasItemOfType(Type tt)
+    public bool Has<_T_>() where _T_ : Item
     {
-      return GetFirstByType(tt) != null;
+      return null != GetFirst<_T_>();
     }
 
-    public Item GetFirstByType(Type tt)
+    public _T_ GetFirst<_T_>() where _T_ : Item
     {
-      foreach (Item mItem in m_Items)
-      {
-        if (mItem.GetType() == tt)
-          return mItem;
+      foreach (Item it in m_Items) {
+        if (it is _T_) return it as _T_;
       }
-      return (Item) null;
+      return null;
     }
 
     public List<_T_> GetItemsByType<_T_>() where _T_ : Item

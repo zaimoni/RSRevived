@@ -943,7 +943,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "no items";
         return false;
       }
-      if (!actor.Inventory.HasItemOfType(typeof (ItemBarricadeMaterial)))
+      if (!actor.Inventory.Has<ItemBarricadeMaterial>())
       {
         reason = "no barricading material";
         return false;

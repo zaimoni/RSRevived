@@ -487,18 +487,16 @@ retry:    Percept percept = FilterNearest(perceptList2);
           }
         }
       }
-      if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.HasItemOfType(typeof(ItemFood))))
+      if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.Has<ItemFood>()))
       {
         Percept target = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a =>
         {
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;
-          if (a.Inventory.HasItemOfType(typeof (ItemFood)))
-            return true;
+          if (a.Inventory.Has<ItemFood>()) return true;
           Inventory itemsAt = a.Location.Map.GetItemsAt(a.Location.Position);
-          if (itemsAt == null || itemsAt.IsEmpty)
-            return false;
-          return itemsAt.HasItemOfType(typeof (ItemFood));
+          if (itemsAt == null || itemsAt.IsEmpty) return false;
+          return itemsAt.Has<ItemFood>();
         })));
         if (target != null) {
           tmpAction = BehaviorChargeEnemy(game, target);
