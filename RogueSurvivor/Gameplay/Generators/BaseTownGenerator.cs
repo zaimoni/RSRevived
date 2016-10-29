@@ -1213,16 +1213,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           return MakeObjTree("MapObjects\\tree");
         return null;
       }));
-            MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
-        if (m_DiceRoller.RollChance(PARK_BENCH_CHANCE))
-          return MakeObjBench("MapObjects\\bench");
-        return null;
+        return (m_DiceRoller.RollChance(PARK_BENCH_CHANCE) ? MakeObjBench() : null);
       }));
       int x;
       int y;
-      switch (m_DiceRoller.Roll(0, 4))
-      {
+      switch (m_DiceRoller.Roll(0, 4)) {
         case 0:
           x = b.BuildingRect.Left;
           y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
@@ -1242,7 +1239,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       map.RemoveMapObjectAt(x, y);
       map.SetTileModelAt(x, y, m_Game.GameTiles.FLOOR_WALKWAY);
-            ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
+      ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
       {
         if (map.GetMapObjectAt(pt) == null)
           return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
@@ -1506,7 +1503,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, rect1);
         for (int left2 = rect1.Left; left2 < rect1.Right; ++left2) {
           if (CountAdjWalls(map, left2, y) >= 3)
-            map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), new Point(left2, y));
+            map.PlaceMapObjectAt(MakeObjIronBench(), new Point(left2, y));
         }
         map.AddZone(MakeUniqueZone("platform", rect1));
         Point point1 = direction != Direction.S ? new Point(x1, rect1.Bottom) : new Point(x1, rect1.Top - 1);
@@ -1540,7 +1537,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
           if (CountAdjWalls(map, left, y) >= 2 && CountAdjDoors(map, left, y) <= 0 && Rules.GridDistance(new Point(left, y), new Point(x1, num)) >= 2)
-            map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), new Point(left, y));
+            map.PlaceMapObjectAt(MakeObjIronBench(), new Point(left, y));
         }
       }
       if (isSurface) {
@@ -1562,14 +1559,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle topRight;
       Rectangle bottomLeft;
       Rectangle bottomRight;
-            QuadSplit(rect, minRoomsSize, minRoomsSize, out splitX, out splitY, out topLeft, out topRight, out bottomLeft, out bottomRight);
-      if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty)
-      {
+      QuadSplit(rect, minRoomsSize, minRoomsSize, out splitX, out splitY, out topLeft, out topRight, out bottomLeft, out bottomRight);
+      if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         list.Add(rect);
-      }
-      else
-      {
-                MakeRoomsPlan(map, ref list, topLeft, minRoomsSize);
+      } else {
+        MakeRoomsPlan(map, ref list, topLeft, minRoomsSize);
         if (!topRight.IsEmpty)
         {
           topRight.Offset(-1, 0);
@@ -2511,7 +2505,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (!surfaceMap.IsWalkable(pt.X, pt.Y) || CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || CountAdjDoors(surfaceMap, pt.X, pt.Y) > 0)
           return;
-        surfaceMap.PlaceMapObjectAt(MakeObjBench("MapObjects\\bench"), pt);
+        surfaceMap.PlaceMapObjectAt(MakeObjBench(), pt);
       }));
       stairsToLevel1 = new Point(point.X, policeBlock.InsideRect.Top);
       surfaceMap.AddZone(MakeUniqueZone("Police Station", policeBlock.BuildingRect));
@@ -2569,29 +2563,21 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             map.DropItemAt(it, pt);
           }));
           map.AddZone(MakeUniqueZone("security", rect3));
-        }
-        else
-        {
-                    TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, rect2);
-                    TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, rect2);
-                    PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-                    MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
+        } else {
+          TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, rect2);
+          TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, rect2);
+          PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, m_Game.GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
+          MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
           {
-            if (map.IsWalkable(pt.X, pt.Y))
-              return CountAdjDoors(map, pt.X, pt.Y) == 0;
-            return false;
+            return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjTable("MapObjects\\table")));
-                    MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
+          MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
           {
-            if (map.IsWalkable(pt.X, pt.Y))
-              return CountAdjDoors(map, pt.X, pt.Y) == 0;
-            return false;
+            return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjChair("MapObjects\\chair")));
-                    MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
+          MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
           {
-            if (map.IsWalkable(pt.X, pt.Y))
-              return CountAdjDoors(map, pt.X, pt.Y) == 0;
-            return false;
+            return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjChair("MapObjects\\chair")));
           map.AddZone(MakeUniqueZone("office", rect3));
         }
@@ -2600,15 +2586,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3)
           return;
-        map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), pt);
+        map.PlaceMapObjectAt(MakeObjIronBench(), pt);
       }));
-      for (int index = 0; index < 5; ++index)
-      {
+      for (int index = 0; index < 5; ++index) {
         Actor newPoliceman = CreateNewPoliceman(0);
-                ActorPlace(m_DiceRoller, map.Width * map.Height, map, newPoliceman);
+        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newPoliceman);
       }
       DoForEachTile(map.Rect, (Action<Point>)(pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));
+        Session.Get.ForcePoliceKnown(new Location(map, pt));
       }));
       return map;
     }
@@ -2631,7 +2616,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, rect);
         TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, rect);
         Point position1 = new Point(x + 1, 4);
-        map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), position1);
+        map.PlaceMapObjectAt(MakeObjIronBench(), position1);
         Point position2 = new Point(x + 1, 3);
         map.SetTileModelAt(position2.X, position2.Y, m_Game.GameTiles.FLOOR_CONCRETE);
         map.PlaceMapObjectAt(MakeObjIronGate(), position2);
@@ -2740,7 +2725,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || CountAdjDoors(surfaceMap, pt.X, pt.Y) > 0)))
           return;
-        surfaceMap.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), pt);
+        surfaceMap.PlaceMapObjectAt(MakeObjIronBench(), pt);
       }));
       surfaceMap.AddZone(MakeUniqueZone("Hospital", block.BuildingRect));
       MakeWalkwayZones(surfaceMap, block);

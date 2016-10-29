@@ -725,8 +725,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjShelf()
     {
-      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
-      {
+      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40) {
         IsContainer = true,
         GivesWood = true,
         IsMovable = true,
@@ -734,10 +733,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjBench(string benchImageID)
+    protected MapObject MakeObjBench()
     {
-      return new MapObject("bench", benchImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80)
-      {
+      return new MapObject("bench", GameImages.OBJ_BENCH, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80) {
         IsMaterialTransparent = true,
         JumpLevel = 1,
         IsCouch = true,
@@ -745,10 +743,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjIronBench(string benchImageID)
+    protected MapObject MakeObjIronBench()
     {
-      return new MapObject("iron bench", benchImageID)
-      {
+      return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH) {
         IsMaterialTransparent = true,
         JumpLevel = 1,
         IsCouch = true,
