@@ -723,9 +723,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjShelf(string shelfImageID)
+    protected MapObject MakeObjShelf()
     {
-      return new MapObject("shelf", shelfImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
+      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
       {
         IsContainer = true,
         GivesWood = true,
