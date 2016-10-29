@@ -215,8 +215,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int y2;
         do {
           int num = m_DiceRoller.Roll(0, 4);
-          switch (num)
-          {
+          switch (num) {
             case 0:
             case 1:
               x1 = m_DiceRoller.Roll(block.Rectangle.Left, block.Rectangle.Right - 1);
@@ -238,8 +237,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             flag = true;
         }
         while (!flag);
-        MapObjectPlace(sewers, x1, y1, MakeObjIronFence("MapObjects\\iron_fence"));
-        MapObjectPlace(sewers, x2, y2, MakeObjIronFence("MapObjects\\iron_fence"));
+        MapObjectPlace(sewers, x1, y1, MakeObjIronFence());
+        MapObjectPlace(sewers, x2, y2, MakeObjIronFence());
       }
 #endregion
 
@@ -1516,9 +1515,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
         map.AddZone(MakeUniqueZone("platform", rect1));
         Point point1 = direction != Direction.S ? new Point(x1, rect1.Bottom) : new Point(x1, rect1.Top - 1);
-        map.PlaceMapObjectAt(MakeObjIronGate("MapObjects\\gate_closed"), new Point(point1.X, point1.Y));
-        map.PlaceMapObjectAt(MakeObjIronGate("MapObjects\\gate_closed"), new Point(point1.X + 1, point1.Y));
-        map.PlaceMapObjectAt(MakeObjIronGate("MapObjects\\gate_closed"), new Point(point1.X - 1, point1.Y));
+        map.PlaceMapObjectAt(MakeObjIronGate(), new Point(point1.X, point1.Y));
+        map.PlaceMapObjectAt(MakeObjIronGate(), new Point(point1.X + 1, point1.Y));
+        map.PlaceMapObjectAt(MakeObjIronGate(), new Point(point1.X - 1, point1.Y));
         Point point2;
         Rectangle rect2;
         if (x1 > map.Width / 2) {
@@ -2654,7 +2653,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         map.PlaceMapObjectAt(MakeObjIronBench("MapObjects\\iron_bench"), position1);
         Point position2 = new Point(x + 1, 3);
         map.SetTileModelAt(position2.X, position2.Y, m_Game.GameTiles.FLOOR_CONCRETE);
-        map.PlaceMapObjectAt(MakeObjIronGate("MapObjects\\gate_closed"), position2);
+        map.PlaceMapObjectAt(MakeObjIronGate(), position2);
         map.AddZone(MakeUniqueZone("jail", rect));
         x += 2;
       }
@@ -2903,27 +2902,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle rect2 = Rectangle.FromLTRB(0, rect1.Bottom - 1, map.Width, rect1.Bottom - 1 + 4);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect2);
       map.SetTileModelAt(1, rect2.Top, m_Game.GameTiles.FLOOR_TILES);
-      map.PlaceMapObjectAt(MakeObjIronGate("MapObjects\\gate_closed"), new Point(1, rect2.Top));
+      map.PlaceMapObjectAt(MakeObjIronGate(), new Point(1, rect2.Top));
       map.AddZone(MakeUniqueZone("central corridor", rect2));
       Rectangle rectangle1 = new Rectangle(2, rect2.Bottom - 1, map.Width - 2, 4);
       int left1 = rectangle1.Left;
-      while (left1 <= map.Width - 5)
-      {
+      while (left1 <= map.Width - 5) {
         Rectangle room = new Rectangle(left1, rectangle1.Top, 5, 4);
-                MakeHospitalStorageRoom(map, "storage", room);
+        MakeHospitalStorageRoom(map, "storage", room);
         left1 += 4;
       }
       map.SetTileModelAt(1, rectangle1.Top, m_Game.GameTiles.FLOOR_TILES);
       Rectangle rect3 = Rectangle.FromLTRB(0, rectangle1.Bottom - 1, map.Width, rectangle1.Bottom - 1 + 4);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect3);
+      TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect3);
       map.SetTileModelAt(1, rect3.Top, m_Game.GameTiles.FLOOR_TILES);
       map.AddZone(MakeUniqueZone("south corridor", rect3));
       Rectangle rectangle2 = new Rectangle(2, rect3.Bottom - 1, map.Width - 2, 4);
       int left2 = rectangle2.Left;
-      while (left2 <= map.Width - 5)
-      {
+      while (left2 <= map.Width - 5) {
         Rectangle room = new Rectangle(left2, rectangle2.Top, 5, 4);
-                MakeHospitalStorageRoom(map, "storage", room);
+        MakeHospitalStorageRoom(map, "storage", room);
         left2 += 4;
       }
       map.SetTileModelAt(1, rectangle2.Top, m_Game.GameTiles.FLOOR_TILES);
@@ -2943,7 +2940,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle rect = Rectangle.FromLTRB(1, 1, 3, map.Height);
       map.AddZone(MakeUniqueZone("corridor", rect));
       for (int y = 1; y < map.Height - 2; ++y)
-        map.PlaceMapObjectAt(MakeObjIronFence("MapObjects\\iron_fence"), new Point(2, y));
+        map.PlaceMapObjectAt(MakeObjIronFence(), new Point(2, y));
       Rectangle room = Rectangle.FromLTRB(3, 0, map.Width, map.Height);
       map.AddZone(MakeUniqueZone("power room", room));
       DoForEachTile(room, (Action<Point>) (pt =>

@@ -661,18 +661,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjIronFence(string fenceImageID)
+    protected MapObject MakeObjIronFence()
     {
-      return new MapObject("iron fence", fenceImageID)
+      return new MapObject("iron fence", GameImages.OBJ_IRON_FENCE)
       {
         IsMaterialTransparent = true,
         IsAn = true
       };
     }
 
-    protected MapObject MakeObjIronGate(string gateImageID)
+    protected MapObject MakeObjIronGate()
     {
-      return new MapObject("iron gate", gateImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 800)
+      return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 800)
       {
         IsMaterialTransparent = true,
         IsAn = true
