@@ -12376,10 +12376,10 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.AWAKE,5);
       named.StartingSkill(Skills.IDs.FIREARMS,5);
-      ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel)GameItems.UNIQUE_SANTAMAN_SHOTGUN);
-      itemRangedWeapon.IsUnique = true;
-      Item it = (Item) itemRangedWeapon;
-      named.Inventory.AddAll(it);
+      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN)
+      {
+          IsUnique = true
+      });
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
@@ -12454,10 +12454,10 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.FIREARMS,5);
       named.StartingSkill(Skills.IDs.LEADERSHIP,5);
       named.StartingSkill(Skills.IDs.NECROLOGY,5);
-      ItemRangedWeapon itemRangedWeapon = new ItemRangedWeapon((ItemModel)GameItems.UNIQUE_HANS_VON_HANZ_PISTOL);
-      itemRangedWeapon.IsUnique = true;
-      Item it = (Item) itemRangedWeapon;
-      named.Inventory.AddAll(it);
+      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_HANS_VON_HANZ_PISTOL)
+      {
+          IsUnique = true
+      });
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());

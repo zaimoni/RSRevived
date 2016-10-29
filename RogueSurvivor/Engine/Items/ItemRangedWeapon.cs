@@ -13,36 +13,28 @@ namespace djack.RogueSurvivor.Engine.Items
   internal class ItemRangedWeapon : ItemWeapon
   {
     private int m_Ammo;
-    private AmmoType m_AmmoType;
+    private readonly AmmoType m_AmmoType;   // assuming this is a trade memory for speed issue
 
-    public int Ammo
-    {
-      get
-      {
+    public int Ammo {
+      get {
         return m_Ammo;
       }
-      set
-      {
-                m_Ammo = value;
+      set {
+        m_Ammo = value;
       }
     }
 
-    public AmmoType AmmoType
-    {
-      get
-      {
+    public AmmoType AmmoType {
+      get {
         return m_AmmoType;
       }
     }
 
-    public ItemRangedWeapon(ItemModel model)
+    public ItemRangedWeapon(ItemRangedWeaponModel model)
       : base(model)
     {
-      if (!(model is ItemRangedWeaponModel))
-        throw new ArgumentException("model is not RangedWeaponModel");
-      ItemRangedWeaponModel rangedWeaponModel = model as ItemRangedWeaponModel;
-            m_Ammo = rangedWeaponModel.MaxAmmo;
-            m_AmmoType = rangedWeaponModel.AmmoType;
+      m_Ammo = model.MaxAmmo;
+      m_AmmoType = model.AmmoType;
     }
   }
 }
