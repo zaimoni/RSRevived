@@ -246,7 +246,7 @@ namespace djack.RogueSurvivor.Engine
     private const int SEWERS_INVASION_CHANCE = 1;
     public const float SEWERS_UNDEADS_FACTOR = 0.5f;
     private const float REFUGEES_WAVE_SIZE = 0.2f;
-    private const int REFUGEES_WAVE_ITEMS = 3;
+    public const int REFUGEES_WAVE_ITEMS = 3;
     private const int REFUGEE_SURFACE_SPAWN_CHANCE = 80;
     private const int UNIQUE_REFUGEE_CHECK_CHANCE = 10;
     private const int NATGUARD_DAY = 3;

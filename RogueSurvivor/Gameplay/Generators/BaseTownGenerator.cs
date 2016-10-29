@@ -1367,9 +1367,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int index = 0; index < num; ++index)
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          if (CountAdjWalls(map, pt.X, pt.Y) >= 3)
-            return CountAdjDoors(map, pt.X, pt.Y) == 0;
-          return false;
+          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeShopConstructionItem(), pt);
@@ -1378,23 +1376,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (m_DiceRoller.RollChance(33)) {
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          if (CountAdjWalls(map, pt.X, pt.Y) >= 3)
-            return CountAdjDoors(map, pt.X, pt.Y) == 0;
-          return false;
+          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
         }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjBed("MapObjects\\bed")));
-                MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
+        MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          if (CountAdjWalls(map, pt.X, pt.Y) >= 3)
-            return CountAdjDoors(map, pt.X, pt.Y) == 0;
-          return false;
+          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeItemCannedFood(), pt);
-          return MakeObjFridge("MapObjects\\fridge");
+          return MakeObjFridge();
         }));
       }
-      Actor newCivilian = CreateNewCivilian(0, 3, 1);
-            ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+      Actor newCivilian = CreateNewCivilian(0, RogueGame.REFUGEES_WAVE_ITEMS, 1);
+      ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       map.AddZone(MakeUniqueZone("Sewers Maintenance", b.BuildingRect));
     }
 
@@ -1654,44 +1648,34 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 4:
           int num1 = m_DiceRoller.Roll(1, 3);
           for (int index = 0; index < num1; ++index)
-                        MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
+            MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              if (CountAdjWalls(map, pt.X, pt.Y) >= 3)
-                return CountAdjDoors(map, pt.X, pt.Y) == 0;
-              return false;
+              return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
               rect.Intersect(insideRoom);
-                MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
+              MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                if (pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0)
-                  return CountAdjWalls(map, pt2.X, pt2.Y) > 0;
-                return false;
+                return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 Item it = MakeRandomBedroomItem();
-                if (it != null)
-                  map.DropItemAt(it, pt2);
+                if (it != null) map.DropItemAt(it, pt2);
                 return MakeObjNightTable("MapObjects\\nighttable");
               }));
               return MakeObjBed("MapObjects\\bed");
             }));
           int num2 = m_DiceRoller.Roll(1, 4);
           for (int index = 0; index < num2; ++index)
-                        MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
+            MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              if (CountAdjWalls(map, pt.X, pt.Y) >= 2)
-                return CountAdjDoors(map, pt.X, pt.Y) == 0;
-              return false;
+              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               Item it = MakeRandomBedroomItem();
-              if (it != null)
-                map.DropItemAt(it, pt);
-              if (m_DiceRoller.RollChance(50))
-                return MakeObjWardrobe("MapObjects\\wardrobe");
-              return MakeObjDrawer("MapObjects\\drawer");
+              if (it != null) map.DropItemAt(it, pt);
+              return (m_DiceRoller.RollChance(50) ? MakeObjWardrobe("MapObjects\\wardrobe") : MakeObjDrawer());
             }));
           break;
         case 5:
@@ -1699,75 +1683,57 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 7:
           int num3 = m_DiceRoller.Roll(1, 3);
           for (int index1 = 0; index1 < num3; ++index1)
-                        MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
+            MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              if (CountAdjWalls(map, pt.X, pt.Y) == 0)
-                return CountAdjDoors(map, pt.X, pt.Y) == 0;
-              return false;
+              return CountAdjWalls(map, pt.X, pt.Y) == 0 &&  CountAdjDoors(map, pt.X, pt.Y) == 0;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
-              for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index)
-              {
+              for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
                 Item it = MakeRandomKitchenItem();
-                if (it != null)
-                  map.DropItemAt(it, pt);
+                if (it != null) map.DropItemAt(it, pt);
               }
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
               rect.Intersect(insideRoom);
-                MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
+              MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                if (pt2 != pt)
-                  return CountAdjDoors(map, pt2.X, pt2.Y) == 0;
-                return false;
+                return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 => MakeObjChair("MapObjects\\chair")));
               return MakeObjTable("MapObjects\\table");
             }));
           int num4 = m_DiceRoller.Roll(1, 3);
           for (int index = 0; index < num4; ++index)
-                        MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
+            MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              if (CountAdjWalls(map, pt.X, pt.Y) >= 2)
-                return CountAdjDoors(map, pt.X, pt.Y) == 0;
-              return false;
-            }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer("MapObjects\\drawer")));
+              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+            }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer()));
           break;
         case 8:
         case 9:
-                    MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
+          MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            if (CountAdjWalls(map, pt.X, pt.Y) == 0)
-              return CountAdjDoors(map, pt.X, pt.Y) == 0;
-            return false;
+            return CountAdjWalls(map, pt.X, pt.Y) == 0 && CountAdjDoors(map, pt.X, pt.Y) == 0;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
-            for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index)
-            {
+            for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
               Item it = MakeRandomKitchenItem();
-              if (it != null)
-                map.DropItemAt(it, pt);
+              if (it != null) map.DropItemAt(it, pt);
             }
-              MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
+            MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
             {
-              if (pt2 != pt)
-                return CountAdjDoors(map, pt2.X, pt2.Y) == 0;
-              return false;
+              return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt2 => MakeObjChair("MapObjects\\chair")));
             return MakeObjTable("MapObjects\\table");
           }));
-                    MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
+          MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            if (CountAdjWalls(map, pt.X, pt.Y) >= 2)
-              return CountAdjDoors(map, pt.X, pt.Y) == 0;
-            return false;
+            return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
-            for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index)
-            {
+            for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
               Item it = MakeRandomKitchenItem();
-              if (it != null)
-                map.DropItemAt(it, pt);
+              if (it != null) map.DropItemAt(it, pt);
             }
-            return MakeObjFridge("MapObjects\\fridge");
+            return MakeObjFridge();
           }));
           break;
         default:
@@ -2173,7 +2139,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             return MakeObjTable("MapObjects\\table");
           case 3:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
-            return MakeObjDrawer("MapObjects\\drawer");
+            return MakeObjDrawer();
           case 4:
             return MakeObjBed("MapObjects\\bed");
           default:
@@ -2400,28 +2366,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private void MakeCHARLivingRoom(Map map, Rectangle roomRect)
     {
       TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, roomRect, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration("Tiles\\Decoration\\char_floor_logo")));
-            MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) < 3)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(30))
-          return (MapObject) null;
-        if (m_DiceRoller.RollChance(50))
-          return MakeObjBed("MapObjects\\bed");
-        return MakeObjFridge("MapObjects\\fridge");
+        if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(30)) return null;
+        if (m_DiceRoller.RollChance(50)) return MakeObjBed("MapObjects\\bed");
+        return MakeObjFridge();
       }));
-            MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
+      MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
-        if (CountAdjWalls(map, pt.X, pt.Y) > 0)
-          return (MapObject) null;
-        if (map.GetExitAt(pt) != null)
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(30))
-          return (MapObject) null;
-        if (!m_DiceRoller.RollChance(30))
-          return MakeObjChair("MapObjects\\char_chair");
+        if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
+        if (map.GetExitAt(pt) != null) return null;
+        if (!m_DiceRoller.RollChance(30)) return null;
+        if (!m_DiceRoller.RollChance(30)) return MakeObjChair("MapObjects\\char_chair");
         MapObject mapObject = MakeObjTable("MapObjects\\char_table");
         map.DropItemAt(MakeItemCannedFood(), pt);
         return mapObject;

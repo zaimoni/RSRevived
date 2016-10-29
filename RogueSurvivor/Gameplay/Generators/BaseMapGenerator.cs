@@ -778,10 +778,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjDrawer(string drawerImageID)
+    protected MapObject MakeObjDrawer()
     {
-      return new MapObject("drawer", drawerImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
-      {
+      return new MapObject("drawer", GameImages.OBJ_DRAWER, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40) {
         IsMaterialTransparent = true,
         IsContainer = true,
         GivesWood = true,
@@ -826,9 +825,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjFridge(string fridgeImageID)
+    protected MapObject MakeObjFridge()
     {
-      return new MapObject("fridge", fridgeImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 240)
+      return new MapObject("fridge", GameImages.OBJ_FRIDGE, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 240)
       {
         IsContainer = true,
         IsMovable = true,
