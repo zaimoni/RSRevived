@@ -15,10 +15,12 @@ namespace djack.RogueSurvivor.Engine
     public CSVField this[int field] {
       get {
         Contract.Requires(0 <= field);
+        Contract.Ensures(null != Contract.Result<CSVField>());
         return m_Fields[field];
       }
       set {
         Contract.Requires(0 <= field);
+        Contract.Requires(null != value);
         m_Fields[field] = value;
       }
     }
