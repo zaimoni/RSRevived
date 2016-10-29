@@ -3237,8 +3237,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewCHARGuard(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.CHARGuard.CreateNumberedName(m_Game.GameFactions.TheCHARCorporation, spawnTime);
-            DressCHARGuard(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressCHARGuard(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Gd. " + numberedName.Name;
       numberedName.Inventory.AddAll(MakeItemShotgun());
       numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
@@ -3249,8 +3249,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
     {
       Actor numberedName = m_Game.GameActors.NationalGuard.CreateNumberedName(m_Game.GameFactions.TheArmy, spawnTime);
-            DressArmy(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      DressArmy(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = rankName + " " + numberedName.Name;
       numberedName.Inventory.AddAll(MakeItemArmyRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
@@ -3259,11 +3259,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.Inventory.AddAll(MakeItemArmyBodyArmor());
       ItemBarricadeMaterial barricadeMaterial = MakeItemWoodenPlank();
       barricadeMaterial.Quantity = m_Game.GameItems.WOODENPLANK.StackingLimit;
-      numberedName.Inventory.AddAll((Item) barricadeMaterial);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.CARPENTRY);
-      int count = new WorldTime(spawnTime).Day - 3;
+      numberedName.Inventory.AddAll(barricadeMaterial);
+      // National Guard training includes firing range and construction.
+      // The minimum physical fitness standards slide off with age.
+      // If we had a melee weapons skill it would be here.
+      // Maximum acceptable fat % 23%, discharged at 26%
+      GiveStartingSkillToActor(numberedName, Skills.IDs.CARPENTRY);
+      GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
+      int count = new WorldTime(spawnTime).Day - RogueGame.NATGUARD_DAY;
       if (count > 0)
-                GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+        GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
       return numberedName;
     }
 
@@ -3273,7 +3278,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.GangID = (int) gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Controller = (ActorController) new GangAI();
+      numberedName.Controller = new GangAI();
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : MakeItemBaseballBat());
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
       int count = new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY;
@@ -3313,7 +3318,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewFeralDog(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.FeralDog.CreateNumberedName(m_Game.GameFactions.TheFerals, spawnTime);
-            SkinDog(m_DiceRoller, numberedName);
+      SkinDog(m_DiceRoller, numberedName);
       return numberedName;
     }
 
