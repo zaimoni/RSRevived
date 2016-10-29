@@ -374,7 +374,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         if (!m_DiceRoller.RollChance(SEWERS_JUNK_CHANCE)) return null;
         if (!sewers.IsWalkable(pt.X, pt.Y)) return null;
-        return MakeObjJunk("MapObjects\\junk");
+        return MakeObjJunk();
       }));
 #endregion
 
@@ -2131,19 +2131,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (!basement.IsWalkable(pt.X, pt.Y)) return null;
         switch (m_DiceRoller.Roll(0, 5)) {
           case 0:
-            return MakeObjJunk("MapObjects\\junk");
+            return MakeObjJunk();
           case 1:
-            return MakeObjBarrels("MapObjects\\barrels");
+            return MakeObjBarrels();
           case 2:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
             return MakeObjTable("MapObjects\\table");
           case 3:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
             return MakeObjDrawer();
+#if DEBUG
           case 4:
+#else
+          default:
+#endif
             return MakeObjBed("MapObjects\\bed");
+#if DEBUG
           default:
             throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
         }
       }));
       if (m_Game.Session.HasZombiesInBasements)
@@ -2351,9 +2357,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
         if (map.GetExitAt(pt) != null) return null;
         if (!m_DiceRoller.RollChance(50)) return null;
-        if (!m_DiceRoller.RollChance(50))
-          return MakeObjBarrels("MapObjects\\barrels");
-        return MakeObjJunk("MapObjects\\junk");
+        return (m_DiceRoller.RollChance(50) ? MakeObjJunk() : MakeObjBarrels());
       }));
       for (int left = roomRect.Left; left < roomRect.Right; ++left) {
         for (int top = roomRect.Top; top < roomRect.Bottom; ++top) {

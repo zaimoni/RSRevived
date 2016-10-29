@@ -835,10 +835,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjJunk(string junkImageID)
+    protected MapObject MakeObjJunk()
     {
-      return new MapObject("junk", junkImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
-      {
+      return new MapObject("junk", GameImages.OBJ_JUNK, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40) {
         IsPlural = true,
         IsMaterialTransparent = true,
         IsMovable = true,
@@ -847,10 +846,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjBarrels(string barrelsImageID)
+    protected MapObject MakeObjBarrels()
     {
-      return new MapObject("barrels", barrelsImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80)
-      {
+      return new MapObject("barrels", GameImages.OBJ_BARRELS, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80) {
         IsPlural = true,
         IsMaterialTransparent = true,
         IsMovable = true,
