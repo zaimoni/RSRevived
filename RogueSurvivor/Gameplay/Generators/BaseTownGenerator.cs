@@ -843,7 +843,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           PlaceDoor(map, x2, y2, m_Game.GameTiles.FLOOR_TILES, MakeObjWindow());
       }
       if (shopType == BaseTownGenerator.ShopType.GUNSHOP)
-        BarricadeDoors(map, b.BuildingRect, 80);
+        BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
@@ -1011,44 +1011,36 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           {
                         PlaceDoor(map, b.BuildingRect.Right - 1, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
             if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Right - 1, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+              PlaceDoor(map, b.BuildingRect.Right - 1, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           }
         }
-      }
-      else if (m_DiceRoller.RollChance(50))
-      {
+      } else if (m_DiceRoller.RollChance(50)) {
         direction = Direction.N;
-                PlaceDoor(map, x1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-        if (b.InsideRect.Width >= 8)
-        {
-                    PlaceDoor(map, x1 - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+        PlaceDoor(map, x1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+        if (b.InsideRect.Width >= 8) {
+          PlaceDoor(map, x1 - 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           if (b.InsideRect.Width >= 12)
-                        PlaceDoor(map, x1 + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+            PlaceDoor(map, x1 + 1, b.BuildingRect.Top, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
         }
-      }
-      else
-      {
+      } else {
         direction = Direction.S;
-                PlaceDoor(map, x1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-        if (b.InsideRect.Width >= 8)
-        {
-                    PlaceDoor(map, x1 - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+        PlaceDoor(map, x1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+        if (b.InsideRect.Width >= 8) {
+          PlaceDoor(map, x1 - 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           if (b.InsideRect.Width >= 12)
-                        PlaceDoor(map, x1 + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+            PlaceDoor(map, x1 + 1, b.BuildingRect.Bottom - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
         }
       }
       string officeImage = "Tiles\\Decoration\\char_office";
             DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
-        if (map.GetMapObjectAt(x, y) != null || CountAdjDoors(map, x, y) < 1)
-          return (string) null;
+        if (map.GetMapObjectAt(x, y) != null || CountAdjDoors(map, x, y) < 1) return null;
         return officeImage;
       }));
-            BarricadeDoors(map, b.BuildingRect, 80);
+      BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       if (direction == Direction.N)
-                TileHLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + 3, b.InsideRect.Width);
-      else if (direction == Direction.S)
-      {
+        TileHLine(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + 3, b.InsideRect.Width);
+      else if (direction == Direction.S) {
         Map map1 = map;
         TileModel wallCharOffice = m_Game.GameTiles.WALL_CHAR_OFFICE;
         int left = b.InsideRect.Left;
@@ -1056,9 +1048,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         rectangle1 = b.InsideRect;
         int width = rectangle1.Width;
                 TileHLine(map1, wallCharOffice, left, top, width);
-      }
-      else if (direction == Direction.E)
-      {
+      } else if (direction == Direction.E) {
         Map map1 = map;
         TileModel wallCharOffice = m_Game.GameTiles.WALL_CHAR_OFFICE;
         rectangle1 = b.InsideRect;
@@ -1068,11 +1058,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         rectangle1 = b.InsideRect;
         int height = rectangle1.Height;
                 TileVLine(map1, wallCharOffice, left, top, height);
-      }
-      else
-      {
-        if (direction != Direction.W)
-          throw new InvalidOperationException("unhandled door side");
+      } else {
+        if (direction != Direction.W) throw new InvalidOperationException("unhandled door side");
         Map map1 = map;
         TileModel wallCharOffice = m_Game.GameTiles.WALL_CHAR_OFFICE;
         rectangle1 = b.InsideRect;
@@ -1371,25 +1358,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         default:
           throw new ArgumentOutOfRangeException("unhandled roll");
       }
-            PlaceDoor(map, x, y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-            BarricadeDoors(map, b.BuildingRect, 80);
+      PlaceDoor(map, x, y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
+      BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       map.GetTileAt(exitPosition.X, exitPosition.Y).AddDecoration(isSurface ? "Tiles\\Decoration\\sewer_hole" : "Tiles\\Decoration\\sewer_ladder");
       map.SetExitAt(exitPosition, new Exit(linkedMap, exitPosition)
       {
         IsAnAIExit = true
       });
-      if (!isSurface)
-      {
+      if (!isSurface) {
         Point p = new Point(x, y) + direction;
-        while (map.IsInBounds(p) && !map.GetTileAt(p.X, p.Y).Model.IsWalkable)
-        {
+        while (map.IsInBounds(p) && !map.GetTileAt(p.X, p.Y).Model.IsWalkable) {
           map.SetTileModelAt(p.X, p.Y, m_Game.GameTiles.FLOOR_CONCRETE);
           p += direction;
         }
       }
       int num = m_DiceRoller.Roll(Math.Max(b.InsideRect.Width, b.InsideRect.Height), 2 * Math.Max(b.InsideRect.Width, b.InsideRect.Height));
       for (int index = 0; index < num; ++index)
-                MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
+        MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
           if (CountAdjWalls(map, pt.X, pt.Y) >= 3)
             return CountAdjDoors(map, pt.X, pt.Y) == 0;
@@ -1399,9 +1384,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           map.DropItemAt(MakeShopConstructionItem(), pt);
           return MakeObjTable("MapObjects\\table");
         }));
-      if (m_DiceRoller.RollChance(33))
-      {
-                MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
+      if (m_DiceRoller.RollChance(33)) {
+        MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
           if (CountAdjWalls(map, pt.X, pt.Y) >= 3)
             return CountAdjDoors(map, pt.X, pt.Y) == 0;

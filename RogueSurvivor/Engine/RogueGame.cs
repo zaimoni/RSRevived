@@ -7323,48 +7323,40 @@ namespace djack.RogueSurvivor.Engine
       else if (obj.FireState == MapObject.Fire.ASHES)
         stringBuilder.Append("Burnt to ashes! ");
       stringList.Add(stringBuilder.ToString());
-      if (obj is PowerGenerator)
-      {
+      if (obj is PowerGenerator) {
         if ((obj as PowerGenerator).IsOn)
           stringList.Add("Currently ON.");
         else
           stringList.Add("Currently OFF.");
         float mapPowerRatio = m_Rules.ComputeMapPowerRatio(obj.Location.Map);
         stringList.Add(string.Format("The power gauge reads {0}%.", (object) (int) (100.0 * (double) mapPowerRatio)));
-      }
-      else if (obj is Board)
-      {
+      } else if (obj is Board) {
         stringList.Add("The text reads : ");
-        stringList.AddRange((IEnumerable<string>) (obj as Board).Text);
+        stringList.AddRange((obj as Board).Text);
       }
-      if (obj.MaxHitPoints > 0)
-      {
+      if (obj.MaxHitPoints > 0) {
         if (obj.HitPoints < obj.MaxHitPoints)
           stringList.Add(string.Format("HP        : {0}/{1}", (object) obj.HitPoints, (object) obj.MaxHitPoints));
         else
           stringList.Add(string.Format("HP        : {0} MAX", (object) obj.HitPoints));
         DoorWindow doorWindow = obj as DoorWindow;
-        if (doorWindow != null)
-        {
-          if (doorWindow.BarricadePoints < 80)
-            stringList.Add(string.Format("Barricades: {0}/{1}", (object) doorWindow.BarricadePoints, (object) 80));
+        if (doorWindow != null) {
+          if (doorWindow.BarricadePoints < Rules.BARRICADING_MAX)
+            stringList.Add(string.Format("Barricades: {0}/{1}", (object) doorWindow.BarricadePoints, (object)Rules.BARRICADING_MAX));
           else
             stringList.Add(string.Format("Barricades: {0} MAX", (object) doorWindow.BarricadePoints));
         }
       }
-      if (obj.Weight > 0)
-        stringList.Add(string.Format("Weight    : {0}", (object) obj.Weight));
+      if (obj.Weight > 0) stringList.Add(string.Format("Weight    : {0}", (object) obj.Weight));
       Inventory itemsAt = map.GetItemsAt(mapPos);
-      if (itemsAt != null && !itemsAt.IsEmpty)
-        stringList.AddRange((IEnumerable<string>)DescribeInventory(itemsAt));
+      if (itemsAt != null && !itemsAt.IsEmpty) stringList.AddRange(DescribeInventory(itemsAt));
       return stringList.ToArray();
     }
 
     private string[] DescribeInventory(Inventory inv)
     {
       List<string> stringList = new List<string>(inv.CountItems);
-      foreach (Item it in inv.Items)
-      {
+      foreach (Item it in inv.Items) {
         if (it.IsEquipped)
           stringList.Add(string.Format("- {0} (equipped)", (object)DescribeItemShort(it)));
         else
@@ -11014,8 +11006,8 @@ namespace djack.RogueSurvivor.Engine
           DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
         DoorWindow doorWindow = mapObj as DoorWindow;
         if (doorWindow == null || doorWindow.BarricadePoints <= 0) return;
-        DrawMapHealthBar(doorWindow.BarricadePoints, 80, screen.X, screen.Y, Color.Green);
-        m_UI.UI_DrawImage("Effects\\barricaded", screen.X, screen.Y, tint);
+        DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
+        m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else {
         if (!(m_Player.Controller as PlayerController).IsKnown(mapObj.Location) || IsPlayerSleeping()) return;
         DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));

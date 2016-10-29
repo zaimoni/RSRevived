@@ -928,7 +928,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "not closed or broken";
         return false;
       }
-      if (door.BarricadePoints >= 80)
+      if (door.BarricadePoints >= BARRICADING_MAX)
       {
         reason = "barricade limit reached";
         return false;
