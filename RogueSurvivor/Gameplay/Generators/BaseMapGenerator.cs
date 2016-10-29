@@ -17,129 +17,129 @@ namespace djack.RogueSurvivor.Gameplay.Generators
   {
     private static readonly string[] MALE_SKINS = new string[5]
     {
-      "Actors\\Decoration\\male_skin1",
-      "Actors\\Decoration\\male_skin2",
-      "Actors\\Decoration\\male_skin3",
-      "Actors\\Decoration\\male_skin4",
-      "Actors\\Decoration\\male_skin5"
+      GameImages.MALE_SKIN1,
+      GameImages.MALE_SKIN2,
+      GameImages.MALE_SKIN3,
+      GameImages.MALE_SKIN4,
+      GameImages.MALE_SKIN5
     };
     private static readonly string[] MALE_HEADS = new string[8]
     {
-      "Actors\\Decoration\\male_hair1",
-      "Actors\\Decoration\\male_hair2",
-      "Actors\\Decoration\\male_hair3",
-      "Actors\\Decoration\\male_hair4",
-      "Actors\\Decoration\\male_hair5",
-      "Actors\\Decoration\\male_hair6",
-      "Actors\\Decoration\\male_hair7",
-      "Actors\\Decoration\\male_hair8"
+      GameImages.MALE_HAIR1,
+      GameImages.MALE_HAIR2,
+      GameImages.MALE_HAIR3,
+      GameImages.MALE_HAIR4,
+      GameImages.MALE_HAIR5,
+      GameImages.MALE_HAIR6,
+      GameImages.MALE_HAIR7,
+      GameImages.MALE_HAIR8
     };
     private static readonly string[] MALE_TORSOS = new string[5]
     {
-      "Actors\\Decoration\\male_shirt1",
-      "Actors\\Decoration\\male_shirt2",
-      "Actors\\Decoration\\male_shirt3",
-      "Actors\\Decoration\\male_shirt4",
-      "Actors\\Decoration\\male_shirt5"
+      GameImages.MALE_SHIRT1,
+      GameImages.MALE_SHIRT2,
+      GameImages.MALE_SHIRT3,
+      GameImages.MALE_SHIRT4,
+      GameImages.MALE_SHIRT5
     };
     private static readonly string[] MALE_LEGS = new string[5]
     {
-      "Actors\\Decoration\\male_pants1",
-      "Actors\\Decoration\\male_pants2",
-      "Actors\\Decoration\\male_pants3",
-      "Actors\\Decoration\\male_pants4",
-      "Actors\\Decoration\\male_pants5"
+      GameImages.MALE_PANTS1,
+      GameImages.MALE_PANTS2,
+      GameImages.MALE_PANTS3,
+      GameImages.MALE_PANTS4,
+      GameImages.MALE_PANTS5
     };
     private static readonly string[] MALE_SHOES = new string[3]
     {
-      "Actors\\Decoration\\male_shoes1",
-      "Actors\\Decoration\\male_shoes2",
-      "Actors\\Decoration\\male_shoes3"
+      GameImages.MALE_SHOES1,
+      GameImages.MALE_SHOES2,
+      GameImages.MALE_SHOES3
     };
     private static readonly string[] MALE_EYES = new string[6]
     {
-      "Actors\\Decoration\\male_eyes1",
-      "Actors\\Decoration\\male_eyes2",
-      "Actors\\Decoration\\male_eyes3",
-      "Actors\\Decoration\\male_eyes4",
-      "Actors\\Decoration\\male_eyes5",
-      "Actors\\Decoration\\male_eyes6"
+      GameImages.MALE_EYES1,
+      GameImages.MALE_EYES2,
+      GameImages.MALE_EYES3,
+      GameImages.MALE_EYES4,
+      GameImages.MALE_EYES5,
+      GameImages.MALE_EYES6
     };
     private static readonly string[] FEMALE_SKINS = new string[5]
     {
-      "Actors\\Decoration\\female_skin1",
-      "Actors\\Decoration\\female_skin2",
-      "Actors\\Decoration\\female_skin3",
-      "Actors\\Decoration\\female_skin4",
-      "Actors\\Decoration\\female_skin5"
+      GameImages.FEMALE_SKIN1,
+      GameImages.FEMALE_SKIN2,
+      GameImages.FEMALE_SKIN3,
+      GameImages.FEMALE_SKIN4,
+      GameImages.FEMALE_SKIN5
     };
     private static readonly string[] FEMALE_HEADS = new string[7]
     {
-      "Actors\\Decoration\\female_hair1",
-      "Actors\\Decoration\\female_hair2",
-      "Actors\\Decoration\\female_hair3",
-      "Actors\\Decoration\\female_hair4",
-      "Actors\\Decoration\\female_hair5",
-      "Actors\\Decoration\\female_hair6",
-      "Actors\\Decoration\\female_hair7"
+      GameImages.FEMALE_HAIR1,
+      GameImages.FEMALE_HAIR2,
+      GameImages.FEMALE_HAIR3,
+      GameImages.FEMALE_HAIR4,
+      GameImages.FEMALE_HAIR5,
+      GameImages.FEMALE_HAIR6,
+      GameImages.FEMALE_HAIR7
     };
     private static readonly string[] FEMALE_TORSOS = new string[4]
     {
-      "Actors\\Decoration\\female_shirt1",
-      "Actors\\Decoration\\female_shirt2",
-      "Actors\\Decoration\\female_shirt3",
-      "Actors\\Decoration\\female_shirt4"
+      GameImages.FEMALE_SHIRT1,
+      GameImages.FEMALE_SHIRT2,
+      GameImages.FEMALE_SHIRT3,
+      GameImages.FEMALE_SHIRT4
     };
     private static readonly string[] FEMALE_LEGS = new string[5]
     {
-      "Actors\\Decoration\\female_pants1",
-      "Actors\\Decoration\\female_pants2",
-      "Actors\\Decoration\\female_pants3",
-      "Actors\\Decoration\\female_pants4",
-      "Actors\\Decoration\\female_pants5"
+      GameImages.FEMALE_PANTS1,
+      GameImages.FEMALE_PANTS2,
+      GameImages.FEMALE_PANTS3,
+      GameImages.FEMALE_PANTS4,
+      GameImages.FEMALE_PANTS5
     };
     private static readonly string[] FEMALE_SHOES = new string[3]
     {
-      "Actors\\Decoration\\female_shoes1",
-      "Actors\\Decoration\\female_shoes2",
-      "Actors\\Decoration\\female_shoes3"
+      GameImages.FEMALE_SHOES1,
+      GameImages.FEMALE_SHOES2,
+      GameImages.FEMALE_SHOES3
     };
     private static readonly string[] FEMALE_EYES = new string[6]
     {
-      "Actors\\Decoration\\female_eyes1",
-      "Actors\\Decoration\\female_eyes2",
-      "Actors\\Decoration\\female_eyes3",
-      "Actors\\Decoration\\female_eyes4",
-      "Actors\\Decoration\\female_eyes5",
-      "Actors\\Decoration\\female_eyes6"
+      GameImages.FEMALE_EYES1,
+      GameImages.FEMALE_EYES2,
+      GameImages.FEMALE_EYES3,
+      GameImages.FEMALE_EYES4,
+      GameImages.FEMALE_EYES5,
+      GameImages.FEMALE_EYES6
     };
     private static readonly string[] BIKER_HEADS = new string[3]
     {
-      "Actors\\Decoration\\biker_hair1",
-      "Actors\\Decoration\\biker_hair2",
-      "Actors\\Decoration\\biker_hair3"
+      GameImages.BIKER_HAIR1,
+      GameImages.BIKER_HAIR2,
+      GameImages.BIKER_HAIR3
     };
     private static readonly string[] BIKER_LEGS = new string[1]
     {
-      "Actors\\Decoration\\biker_pants"
+      GameImages.BIKER_PANTS
     };
     private static readonly string[] BIKER_SHOES = new string[1]
     {
-      "Actors\\Decoration\\biker_shoes"
+      GameImages.BIKER_SHOES
     };
     private static readonly string[] CHARGUARD_HEADS = new string[1]
     {
-      "Actors\\Decoration\\charguard_hair"
+      GameImages.CHARGUARD_HAIR
     };
     private static readonly string[] CHARGUARD_LEGS = new string[1]
     {
-      "Actors\\Decoration\\charguard_pants"
+      GameImages.CHARGUARD_PANTS
     };
     private static readonly string[] DOG_SKINS = new string[3]
     {
-      "Actors\\Decoration\\dog_skin1",
-      "Actors\\Decoration\\dog_skin2",
-      "Actors\\Decoration\\dog_skin3"
+      GameImages.DOG_SKIN1,
+      GameImages.DOG_SKIN2,
+      GameImages.DOG_SKIN3
     };
     private static readonly string[] MALE_FIRST_NAMES = new string[139]
     {
@@ -452,10 +452,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     };
     private static string[] CARS = new string[4]
     {
-      "MapObjects\\car1",
-      "MapObjects\\car2",
-      "MapObjects\\car3",
-      "MapObjects\\car4"
+      GameImages.OBJ_CAR1,
+      GameImages.OBJ_CAR2,
+      GameImages.OBJ_CAR3,
+      GameImages.OBJ_CAR4
     };
     protected readonly RogueGame m_Game;
 
