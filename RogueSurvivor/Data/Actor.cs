@@ -1322,7 +1322,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (it.Model is ItemLightModel) {
         --(it as ItemLight).Batteries;
-        if (IsPlayer) game.UpdatePlayerFOV(this);
+        if (IsPlayer) Controller.UpdateSensors();
         return;
       }
     }
