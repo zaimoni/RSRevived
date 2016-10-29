@@ -34,14 +34,14 @@ namespace djack.RogueSurvivor.Engine
       int index1 = 0;
       do {
         string str1 = stringList[index1];
-        if ((int) str1[0] == 34 && (int) str1[str1.Length - 1] != 34) {
+        if ('"' == str1[0] && '"' != str1[str1.Length - 1]) {
           string str2 = str1;
           int index2 = index1 + 1;
           while (index2 < stringList.Count) {
             string str3 = stringList[index2];
             str2 = str2 + "," + str3;
             stringList.RemoveAt(index2);
-            if ((int) str3[str3.Length - 1] == 34) break;
+            if ('"' == str3[str3.Length - 1]) break;
           }
           stringList[index1] = str2;
         } else
