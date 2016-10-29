@@ -983,7 +983,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemMeleeWeapon MakeItemJasonMyersAxe()
     {
-      return new ItemMeleeWeapon((ItemModel)m_Game.GameItems.UNIQUE_JASON_MYERS_AXE) {
+      return new ItemMeleeWeapon(m_Game.GameItems.UNIQUE_JASON_MYERS_AXE) {
         IsUnique = true
       };
     }

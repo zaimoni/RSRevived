@@ -12,19 +12,15 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemMeleeWeapon : ItemWeapon
   {
-    public bool IsFragile
-    {
-      get
-      {
+    public bool IsFragile {
+      get {
         return (Model as ItemMeleeWeaponModel).IsFragile;
       }
     }
 
-    public ItemMeleeWeapon(ItemModel model)
+    public ItemMeleeWeapon(ItemMeleeWeaponModel model)
       : base(model)
     {
-      if (!(model is ItemMeleeWeaponModel))
-        throw new ArgumentException("model is not a MeleeWeaponModel");
     }
   }
 }

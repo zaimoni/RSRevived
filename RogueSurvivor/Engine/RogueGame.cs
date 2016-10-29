@@ -9513,8 +9513,8 @@ namespace djack.RogueSurvivor.Engine
           mapObj.Location.Map.DropItemAt(barricadeMaterial, mapObj.Location.Position);
         }
         if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon((ItemModel)m_GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon((ItemModel)m_GameItems.IMPROVISED_CLUB);
-          mapObj.Location.Map.DropItemAt((Item) itemMeleeWeapon, mapObj.Location.Position);
+          ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon(m_GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon(m_GameItems.IMPROVISED_CLUB);
+          mapObj.Location.Map.DropItemAt(itemMeleeWeapon, mapObj.Location.Position);
         }
       }
       if (flag)
@@ -12369,10 +12369,10 @@ namespace djack.RogueSurvivor.Engine
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)GameItems.UNIQUE_BIGBEAR_BAT);
-      itemMeleeWeapon.IsUnique = true;
-      Item it = (Item) itemMeleeWeapon;
-      named.Inventory.AddAll(it);
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT)
+      {
+          IsUnique = true
+      });
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
@@ -12411,17 +12411,16 @@ namespace djack.RogueSurvivor.Engine
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)GameItems.UNIQUE_FAMU_FATARU_KATANA);
-      itemMeleeWeapon.IsUnique = true;
-      Item it = (Item) itemMeleeWeapon;
-      named.Inventory.AddAll(it);
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor()
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA)
       {
+          IsUnique = true
+      });
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      return new UniqueActor() {
         TheActor = named,
         IsSpawned = false,
         IsWithRefugees = true,
@@ -12462,8 +12461,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor()
-      {
+      return new UniqueActor() {
         TheActor = named,
         IsSpawned = false,
         IsWithRefugees = true,
@@ -12495,17 +12493,16 @@ namespace djack.RogueSurvivor.Engine
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
             m_TownGenerator.GiveStartingSkillToActor(named, Skills.IDs.CHARISMATIC);
-      ItemMeleeWeapon itemMeleeWeapon = new ItemMeleeWeapon((ItemModel)GameItems.UNIQUE_ROGUEDJACK_KEYBOARD);
-      itemMeleeWeapon.IsUnique = true;
-      Item it = (Item) itemMeleeWeapon;
-      named.Inventory.AddAll(it);
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor()
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD)
       {
+          IsUnique = true
+      });
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
+      return new UniqueActor() {
         TheActor = named,
         IsSpawned = false,
         IsWithRefugees = true,
