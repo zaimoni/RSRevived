@@ -8540,14 +8540,14 @@ namespace djack.RogueSurvivor.Engine
             }
           } else if (player2 || player1) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) num3)));
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
+            AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
+            AddOverlay(new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
             RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (player2 || player1) {
           AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
-          AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+          AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
           RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
@@ -8561,7 +8561,7 @@ namespace djack.RogueSurvivor.Engine
       ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
       if (itemMeleeWeapon != null && !(itemMeleeWeapon.Model as ItemMeleeWeaponModel).IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
-        attacker.OnUnequipItem(this, itemMeleeWeapon);
+        attacker.OnUnequipItem(itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
           --itemMeleeWeapon.Quantity;
         else
@@ -8578,8 +8578,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, FireMode mode)
     {
       if (!attacker.IsEnemyOf(defender)) DoMakeAggression(attacker, defender);
-      switch (mode)
-      {
+      switch (mode) {
         case FireMode.DEFAULT:
           attacker.SpendActionPoints(Rules.BASE_ACTION_COST);
           DoSingleRangedAttack(attacker, defender, LoF, 1f);
@@ -9174,7 +9173,7 @@ namespace djack.RogueSurvivor.Engine
       Item equippedItem = actor.GetEquippedItem(it.Model.EquipmentPart);
       if (equippedItem != null) DoUnequipItem(actor, equippedItem);
       it.Equip();
-      actor.OnEquipItem(this, it);
+      actor.OnEquipItem(it);
 #if FAIL
       // postcondition: item is unequippable (but this breaks on merge)
       if (!Rules.CanActorUnequipItem(actor,it)) throw new ArgumentOutOfRangeException("equipped item cannot be unequipped","item type value: "+it.Model.ID.ToString());
@@ -9186,7 +9185,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoUnequipItem(Actor actor, Item it)
     {
       it.Unequip();
-      actor.OnUnequipItem(this, it);
+      actor.OnUnequipItem(it);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_UNEQUIP), it));
     }
@@ -9673,19 +9672,14 @@ namespace djack.RogueSurvivor.Engine
       int y2 = noisePosition.Y + Rules.LOUD_NOISE_RADIUS;
       map.TrimToBounds(ref x1, ref y1);
       map.TrimToBounds(ref x2, ref y2);
-      for (int index1 = x1; index1 <= x2; ++index1)
-      {
-        for (int index2 = y1; index2 <= y2; ++index2)
-        {
+      for (int index1 = x1; index1 <= x2; ++index1) {
+        for (int index2 = y1; index2 <= y2; ++index2) {
           Actor actorAt = map.GetActorAt(index1, index2);
-          if (actorAt != null && actorAt.IsSleeping)
-          {
+          if (actorAt != null && actorAt.IsSleeping) {
             int noiseDistance = Rules.GridDistance(noisePosition, index1, index2);
-            if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(m_Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance)))
-            {
+            if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(m_Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance))) {
               DoWakeUp(actorAt);
-              if (ForceVisibleToPlayer(actorAt))
-              {
+              if (ForceVisibleToPlayer(actorAt)) {
                 AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", (object) noiseName, (object) actorAt.TheName), map.LocalTime.TurnCounter, actorAt == m_Player ? Color.Red : Color.White));
                 RedrawPlayScreen();
               }
@@ -9693,8 +9687,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !ForceVisibleToPlayer(map, noisePosition)))
-        return;
+      if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !ForceVisibleToPlayer(map, noisePosition))) return;
       m_IsPlayerLongWaitForcedStop = true;
     }
 
@@ -9704,19 +9697,16 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.Abilities.CanTire)
         actor.StaminaPoints -= dmg;
       Item equippedItem = actor.GetEquippedItem(DollPart.TORSO);
-      if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE))
-      {
-        actor.OnUnequipItem(this, equippedItem);
+      if (equippedItem != null && equippedItem is ItemBodyArmor && m_Rules.RollChance(Rules.BODY_ARMOR_BREAK_CHANCE)) {
+        actor.OnUnequipItem(equippedItem);
         actor.Inventory.RemoveAllQuantity(equippedItem);
-        if (ForceVisibleToPlayer(actor))
-        {
+        if (ForceVisibleToPlayer(actor)) {
           AddMessage(MakeMessage(actor, string.Format(": {0} breaks and is now useless!", (object) equippedItem.TheName)));
           RedrawPlayScreen();
           AnimDelay(actor.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
-      if (!actor.IsSleeping) return;
-      DoWakeUp(actor);
+      if (actor.IsSleeping) DoWakeUp(actor);
     }
 
     public void KillActor(Actor killer, Actor deadGuy, string reason)
