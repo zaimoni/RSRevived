@@ -551,11 +551,9 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
-      if (mapObj == null)
-        throw new ArgumentNullException("actor");
+      Contract.Requires(null != mapObj);
       MapObject mapObjectAt = GetMapObjectAt(position);
-      if (mapObjectAt == mapObj)
-        return;
+      if (mapObjectAt == mapObj) return;
       if (mapObjectAt == mapObj)
         throw new InvalidOperationException("mapObject already at position");
       if (mapObjectAt != null)
@@ -565,30 +563,36 @@ namespace djack.RogueSurvivor.Data
       if (!GetTileAt(position.X, position.Y).Model.IsWalkable)
         throw new InvalidOperationException("cannot place map objects on unwalkable tiles");
       if (HasMapObject(mapObj))
-                m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
+        m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
       else
-                m_MapObjectsList.Add(mapObj);
-            m_aux_MapObjectsByPosition.Add(position, mapObj);
+        m_MapObjectsList.Add(mapObj);
+      m_aux_MapObjectsByPosition.Add(position, mapObj);
       mapObj.Location = new Location(this, position);
     }
 
     public void RemoveMapObjectAt(int x, int y)
     {
       MapObject mapObjectAt = GetMapObjectAt(x, y);
-      if (mapObjectAt == null)
-        return;
-            m_MapObjectsList.Remove(mapObjectAt);
-            m_aux_MapObjectsByPosition.Remove(new Point(x, y));
+      if (mapObjectAt == null) return;
+      m_MapObjectsList.Remove(mapObjectAt);
+      m_aux_MapObjectsByPosition.Remove(new Point(x, y));
     }
 
+    public void OpenAllGates()
+    {
+      foreach(MapObject mapObject in MapObjects.Where(obj=>Gameplay.GameImages.OBJ_GATE_CLOSED==obj.ImageID)) {
+        mapObject.IsWalkable = true;
+        mapObject.ImageID = Gameplay.GameImages.OBJ_GATE_OPEN;
+      }
+    }
+ 
     public Inventory GetItemsAt(Point position)
     {
-      if (!IsInBounds(position))
-        return (Inventory) null;
+      if (!IsInBounds(position)) return null;
       Inventory inventory;
       if (m_GroundItemsByPosition.TryGetValue(position, out inventory))
         return inventory;
-      return (Inventory) null;
+      return null;
     }
 
     public Inventory GetItemsAt(int x, int y)

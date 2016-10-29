@@ -13506,7 +13506,7 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(new Data.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
                 RedrawPlayScreen();
               }
-              DoOpenSubwayGates(map);
+              map.OpenAllGates();
             }
           } else if (map.Lighting != Lighting.DARKNESS) {
             if (m_Player.Location.Map == map) {
@@ -13516,7 +13516,7 @@ namespace djack.RogueSurvivor.Engine
               RedrawPlayScreen();
             }
             map.Lighting = Lighting.DARKNESS;
-            DoCloseSubwayGates(map);
+            CloseAllGates(map,"gates");
           }
         }
       }
@@ -13528,14 +13528,14 @@ namespace djack.RogueSurvivor.Engine
               AddMessage(new Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
               RedrawPlayScreen();
             }
-            DoOpenPoliceJailCells(map);
+            map.OpenAllGates();
           } else {
             if (m_Player.Location.Map == map) {
               ClearMessages();
               AddMessage(new Data.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
               RedrawPlayScreen();
             }
-            DoClosePoliceJailCells(map);
+            CloseAllGates(map,"cells");
           }
         }
       }
@@ -13560,64 +13560,17 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DoOpenSubwayGates(Map map)
+    private void CloseAllGates(Map map,string gate_name)
     {
-      foreach (MapObject mapObject in map.MapObjects) {
-        if (mapObject.ImageID == "MapObjects\\gate_closed") {
-          mapObject.IsWalkable = true;
-          mapObject.ImageID = "MapObjects\\gate_open";
-        }
-      }
-    }
-
-    private void DoCloseSubwayGates(Map map)
-    {
-      foreach (MapObject mapObject in map.MapObjects)
-      {
-        if (mapObject.ImageID == "MapObjects\\gate_open")
-        {
-          mapObject.IsWalkable = false;
-          mapObject.ImageID = "MapObjects\\gate_closed";
-          Actor actorAt = map.GetActorAt(mapObject.Location.Position);
-          if (actorAt != null)
-          {
-            KillActor((Actor) null, actorAt, "crushed");
-            if (m_Player.Location.Map == map)
-            {
-              AddMessage(new Data.Message("Someone got crushed between the closing gates!", map.LocalTime.TurnCounter, Color.Red));
-              RedrawPlayScreen();
-            }
-          }
-        }
-      }
-    }
-
-    private void DoOpenPoliceJailCells(Map map)
-    {
-      foreach (MapObject mapObject in map.MapObjects)
-      {
-        if (mapObject.ImageID == "MapObjects\\gate_closed")
-        {
-          mapObject.IsWalkable = true;
-          mapObject.ImageID = "MapObjects\\gate_open";
-        }
-      }
-    }
-
-    private void DoClosePoliceJailCells(Map map)
-    {
-      foreach (MapObject mapObject in map.MapObjects) {
-        if (mapObject.ImageID == "MapObjects\\gate_open") {
-          mapObject.IsWalkable = false;
-          mapObject.ImageID = "MapObjects\\gate_closed";
-          Actor actorAt = map.GetActorAt(mapObject.Location.Position);
-          if (actorAt != null) {
-            KillActor(null, actorAt, "crushed");
-            if (m_Player.Location.Map == map) {
-              AddMessage(new Data.Message("Someone got crushed between the closing cells!", map.LocalTime.TurnCounter, Color.Red));
-              RedrawPlayScreen();
-            }
-          }
+      foreach (MapObject mapObject in map.MapObjects.Where(obj=>GameImages.OBJ_GATE_OPEN==obj.ImageID)) {
+        mapObject.IsWalkable = false;
+        mapObject.ImageID = GameImages.OBJ_GATE_CLOSED;
+        Actor actorAt = map.GetActorAt(mapObject.Location.Position);
+        if (null == actorAt) continue;
+        KillActor(null, actorAt, "crushed");
+        if (0<map.PlayerCount) {
+          AddMessage(new Data.Message("Someone got crushed between the closing "+gate_name+"!", map.LocalTime.TurnCounter, Color.Red));
+          RedrawPlayScreen();
         }
       }
     }
@@ -13629,12 +13582,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting.LIT;
       Session.Get.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.LIT;
       Session.Get.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.LIT;
-      foreach (MapObject mapObject in Session.Get.UniqueMaps.Hospital_Storage.TheMap.MapObjects) {
-        if (mapObject.ImageID == "MapObjects\\gate_closed") {
-          mapObject.IsWalkable = true;
-          mapObject.ImageID = "MapObjects\\gate_open";
-        }
-      }
+      Session.Get.UniqueMaps.Hospital_Storage.TheMap.OpenAllGates();    // other hospital maps do not have gates so no-op
     }
 
     private void DoHospitalPowerOff()
@@ -13645,20 +13593,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.DARKNESS;
       Session.Get.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.DARKNESS;
       Map theMap = Session.Get.UniqueMaps.Hospital_Storage.TheMap;
-      foreach (MapObject mapObject in theMap.MapObjects) {
-        if (mapObject.ImageID == "MapObjects\\gate_open") {
-          mapObject.IsWalkable = false;
-          mapObject.ImageID = "MapObjects\\gate_closed";
-          Actor actorAt = theMap.GetActorAt(mapObject.Location.Position);
-          if (actorAt != null) {
-            KillActor(null, actorAt, "crushed");
-            if (m_Player.Location.Map == theMap) {
-              AddMessage(new Data.Message("Someone got crushed between the closing gate!", theMap.LocalTime.TurnCounter, Color.Red));
-              RedrawPlayScreen();
-            }
-          }
-        }
-      }
+      CloseAllGates(Session.Get.UniqueMaps.Hospital_Storage.TheMap,"gate");
     }
 
     private void DoTurnAllGeneratorsOn(Map map)
