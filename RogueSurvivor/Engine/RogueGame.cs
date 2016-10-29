@@ -13476,7 +13476,7 @@ namespace djack.RogueSurvivor.Engine
           if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
             if (map.Lighting != Lighting.LIT) {
               map.Lighting = Lighting.LIT;
-              if (m_Player.Location.Map == map) {
+              if (0 < map.PlayerCount) {
                 ClearMessages();
                 AddMessage(new Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
                 RedrawPlayScreen();
@@ -13488,7 +13488,7 @@ namespace djack.RogueSurvivor.Engine
             }
           } else if (map.Lighting != Lighting.DARKNESS) {
             map.Lighting = Lighting.DARKNESS;
-            if (m_Player.Location.Map == map) {
+            if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
               RedrawPlayScreen();
@@ -13501,7 +13501,7 @@ namespace djack.RogueSurvivor.Engine
           if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
             if (map.Lighting != Lighting.LIT) {
               map.Lighting = Lighting.LIT;
-              if (m_Player.Location.Map == map) {
+              if (0 < map.PlayerCount) {
                 ClearMessages();
                 AddMessage(new Data.Message("The station power turns on!", map.LocalTime.TurnCounter, Color.Green));
                 AddMessage(new Data.Message("You hear the gates opening.", map.LocalTime.TurnCounter, Color.Green));
@@ -13510,7 +13510,7 @@ namespace djack.RogueSurvivor.Engine
               map.OpenAllGates();
             }
           } else if (map.Lighting != Lighting.DARKNESS) {
-            if (m_Player.Location.Map == map) {
+            if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The station power turns off!", map.LocalTime.TurnCounter, Color.Red));
               AddMessage(new Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
@@ -13524,14 +13524,14 @@ namespace djack.RogueSurvivor.Engine
       if (map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) {
         lock (Session.Get) {
           if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
-            if (m_Player.Location.Map == map) {
+            if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
               RedrawPlayScreen();
             }
             map.OpenAllGates();
           } else {
-            if (m_Player.Location.Map == map) {
+            if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The cells are closing.", map.LocalTime.TurnCounter, Color.Green));
               RedrawPlayScreen();
@@ -13540,10 +13540,11 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+      // XXX multi-PC, or NPC operation of the generators, needs more work for the messaging to work here
       if (map != Session.Get.UniqueMaps.Hospital_Power.TheMap) return;
       lock (Session.Get) {
         if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
-          if (m_Player.Location.Map == map) {
+          if (0 < map.PlayerCount) {
             ClearMessages();
             AddMessage(new Data.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));
             RedrawPlayScreen();
@@ -13551,7 +13552,7 @@ namespace djack.RogueSurvivor.Engine
           DoHospitalPowerOn();
         } else {
           if (map.Lighting == Lighting.DARKNESS) return;
-          if (m_Player.Location.Map == map) {
+          if (0 < map.PlayerCount) {
             ClearMessages();
             AddMessage(new Data.Message("The lights turn off and you hear something closing upstairs.", map.LocalTime.TurnCounter, Color.Green));
             RedrawPlayScreen();
