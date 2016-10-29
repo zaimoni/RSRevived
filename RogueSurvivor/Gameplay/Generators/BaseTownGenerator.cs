@@ -2878,23 +2878,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       Actor named = m_Game.GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
       named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, "Actors\\jason_myers");
-            GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(named, Skills.IDs.TOUGH);
-            GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(named, Skills.IDs.STRONG);
-            GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-            GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-            GiveStartingSkillToActor(named, Skills.IDs._FIRST);
-            GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
-            GiveStartingSkillToActor(named, Skills.IDs.HIGH_STAMINA);
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
+      named.StartingSkill(Skills.IDs.TOUGH,3);
+      named.StartingSkill(Skills.IDs.STRONG,3);
+      named.StartingSkill(Skills.IDs._FIRST,3);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Inventory.AddAll(MakeItemJasonMyersAxe());
       map.PlaceActorAt(named, new Point(map.Width / 2, map.Height / 2));
-      m_Game.Session.UniqueActors.JasonMyers = new UniqueActor()
-      {
+      m_Game.Session.UniqueActors.JasonMyers = new UniqueActor() {
         TheActor = named,
         IsSpawned = true
       };
@@ -2904,10 +2895,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
       Actor numberedName = (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
-            SkinNakedHuman(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      SkinNakedHuman(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Patient " + numberedName.Name;
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_patient_uniform");
       return numberedName;
     }
@@ -2915,12 +2906,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Actor CreateNewHospitalNurse(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
-            SkinNakedHuman(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      SkinNakedHuman(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Nurse " + numberedName.Name;
-      numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_nurse_uniform");
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
+      numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      numberedName.StartingSkill(Skills.IDs.MEDIC);
       numberedName.Inventory.AddAll(MakeItemBandages());
       return numberedName;
     }
@@ -2928,15 +2919,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Actor CreateNewHospitalDoctor(int spawnTime)
     {
       Actor numberedName = m_Game.GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
-            SkinNakedHuman(m_DiceRoller, numberedName);
-            GiveNameToActor(m_DiceRoller, numberedName);
+      SkinNakedHuman(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Doctor " + numberedName.Name;
-      numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_doctor_uniform");
-            GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.MEDIC);
-            GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
+      numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_DOCTOR_UNIFORM);
+      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      numberedName.StartingSkill(Skills.IDs.MEDIC,3);
+      numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       numberedName.Inventory.AddAll(MakeItemMedikit());
       numberedName.Inventory.AddAll(MakeItemBandages());
       return numberedName;
@@ -2944,21 +2933,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakeHospitalPatientRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
     {
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
+      TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
       int x = isFacingEast ? room.Right - 1 : room.Left;
-            PlaceDoor(map, x, room.Top + 1, m_Game.GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
+      PlaceDoor(map, x, room.Top + 1, m_Game.GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
       Point position1 = new Point(room.Left + room.Width / 2, room.Bottom - 2);
       map.PlaceMapObjectAt(MakeObjBed("MapObjects\\hospital_bed"), position1);
       map.PlaceMapObjectAt(MakeObjChair("MapObjects\\hospital_chair"), new Point(isFacingEast ? position1.X + 1 : position1.X - 1, position1.Y));
       Point position2 = new Point(isFacingEast ? position1.X - 1 : position1.X + 1, position1.Y);
       map.PlaceMapObjectAt(MakeObjNightTable("MapObjects\\hospital_nighttable"), position2);
-      if (m_DiceRoller.RollChance(50))
-      {
+      if (m_DiceRoller.RollChance(50)) {
         int num = m_DiceRoller.Roll(0, 3);
-        Item it = (Item) null;
-        switch (num)
-        {
+        Item it = null;
+        switch (num) {
           case 0:
             it = MakeShopPharmacyItem();
             break;
@@ -3159,8 +3146,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Name = "Cop " + numberedName.Name;
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-      GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
-      GiveStartingSkillToActor(numberedName, Skills.IDs.LEADERSHIP);
+      numberedName.StartingSkill(Skills.IDs.FIREARMS);
+      numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       if (m_DiceRoller.RollChance(50)) {
         numberedName.Inventory.AddAll(MakeItemPistol());
         numberedName.Inventory.AddAll(MakeItemLightPistolAmmo());
@@ -3172,10 +3159,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.Inventory.AddAll(MakeItemFlashlight());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
-        if (m_DiceRoller.RollChance(80))
-          numberedName.Inventory.AddAll(MakeItemPoliceJacket());
-        else
-          numberedName.Inventory.AddAll(MakeItemPoliceRiotArmor());
+        numberedName.Inventory.AddAll(m_DiceRoller.RollChance(80) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor());
       }
       return numberedName;
     }
@@ -3183,14 +3167,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewUndead(int spawnTime)
     {
       Actor actor;
-      if (m_Game.Session.HasAllZombies)
-      {
+      if (m_Game.Session.HasAllZombies) {
         int num = m_Rules.Roll(0, 100);
         actor = (num < RogueGame.Options.SpawnSkeletonChance ? m_Game.GameActors.Skeleton : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? m_Game.GameActors.Zombie : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? m_Game.GameActors.ZombieMaster : m_Game.GameActors.Skeleton))).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
-      }
-      else
-      {
-        actor = MakeZombified((Actor) null, CreateNewCivilian(spawnTime, 0, 0), spawnTime);
+      } else {
+        actor = MakeZombified(null, CreateNewCivilian(spawnTime, 0, 0), spawnTime);
         int num = new WorldTime(spawnTime).Day / 2;
         if (num > 0)
         {
@@ -3264,8 +3245,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // The minimum physical fitness standards slide off with age.
       // If we had a melee weapons skill it would be here.
       // Maximum acceptable fat % 23%, discharged at 26%
-      GiveStartingSkillToActor(numberedName, Skills.IDs.CARPENTRY);
-      GiveStartingSkillToActor(numberedName, Skills.IDs.FIREARMS);
+      numberedName.StartingSkill(Skills.IDs.CARPENTRY);
+      numberedName.StartingSkill(Skills.IDs.FIREARMS);
       int count = new WorldTime(spawnTime).Day - RogueGame.NATGUARD_DAY;
       if (count > 0)
         GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);

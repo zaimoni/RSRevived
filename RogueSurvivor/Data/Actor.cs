@@ -1410,6 +1410,15 @@ namespace djack.RogueSurvivor.Data
     }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
+    public void StartingSkill(Gameplay.Skills.IDs skillID,int n=1)
+    {
+      while(0< n--) { 
+        if (Sheet.SkillTable.GetSkillLevel(skillID) >= Gameplay.Skills.MaxSkillLevel(skillID)) return;
+        Sheet.SkillTable.AddOrIncreaseSkill(skillID);
+        RecomputeStartingStats();
+      }
+    }
+
     public void RecomputeStartingStats()
     {
       m_HitPoints = MaxHPs;
