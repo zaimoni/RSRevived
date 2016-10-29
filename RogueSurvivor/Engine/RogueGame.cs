@@ -11788,6 +11788,7 @@ namespace djack.RogueSurvivor.Engine
             return true;
           }
         }
+        return false;
       }
       if (m_Player.Controller.FOV.Contains(position)) return true;
       foreach (Actor tmp in map.Players) {
