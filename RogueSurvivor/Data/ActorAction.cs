@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Engine;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -15,15 +16,9 @@ namespace djack.RogueSurvivor.Data
     protected readonly Actor m_Actor;
     protected string m_FailReason;
 
-    public string FailReason
-    {
-      get
-      {
+    public string FailReason {
+      get {
         return m_FailReason;
-      }
-      set
-      {
-                m_FailReason = value;
       }
     }
 
@@ -35,6 +30,13 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentNullException("game");
             m_Actor = actor;
             m_Game = game;
+    }
+
+    protected ActorAction(Actor actor)
+    {
+      Contract.Requires(null != actor);
+      m_Actor = actor;
+      m_Game = RogueForm.Game;
     }
 
     public abstract bool IsLegal();

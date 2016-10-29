@@ -205,8 +205,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return actorAction4;
       }
-      m_Actor.Activity = Activity.IDLE;
-      return new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecutePatrol(RogueGame game, Location location, List<Percept> percepts)
@@ -310,11 +309,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (game.Rules.CanActorSleep(m_Actor, out reason)) {
         if (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0)
           return new ActionSleep(m_Actor, game);
-        return new ActionWait(m_Actor, game);
+        return new ActionWait(m_Actor);
       }
       SetOrder(null);
       game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", (object) reason));
-      return new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecuteToggleFollow(RogueGame game)
@@ -322,7 +321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       SetOrder(null);
       DontFollowLeader = !DontFollowLeader;
       game.DoEmote(m_Actor, DontFollowLeader ? "OK I'll do my stuff, see you soon!" : "I'm ready!");
-      return (ActorAction) new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     private ActorAction ExecuteReportPosition(RogueGame game)
@@ -807,10 +806,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSleep(m_Actor, game);
     }
 
-    protected ActorAction BehaviorRestIfTired(RogueGame game)
+    protected ActorAction BehaviorRestIfTired()
     {
       if (m_Actor.StaminaPoints >= Actor.STAMINA_MIN_FOR_ACTIVITY) return null;
-      return new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     protected ActorAction BehaviorDropUselessItem(RogueGame game)

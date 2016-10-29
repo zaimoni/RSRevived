@@ -118,12 +118,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorRestIfTired(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      tmpAction = BehaviorRestIfTired();
+      if (null != tmpAction) return tmpAction;
       if (enemies != null) {
         Percept target = FilterNearest(enemies);
         if (m_Actor.Location == target.Location) {

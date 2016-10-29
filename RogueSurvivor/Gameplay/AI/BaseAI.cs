@@ -79,8 +79,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction actorAction = SelectAction(game, percepts);
       m_prevLocation = m_Actor.Location;
       if (actorAction != null) return actorAction;
-      m_Actor.Activity = Activity.IDLE;
-      return new ActionWait(m_Actor, game);
+      return new ActionWait(m_Actor);
     }
 
     protected abstract ActorAction SelectAction(RogueGame game, List<Percept> percepts);
@@ -677,41 +676,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorUseEntertainment(RogueGame game)
     {
       Inventory inventory = m_Actor.Inventory;
-      if (inventory.IsEmpty)
-        return (ActorAction) null;
+      if (inventory.IsEmpty) return null;
       ItemEntertainment itemEntertainment = (ItemEntertainment) inventory.GetFirstByType(typeof (ItemEntertainment));
-      if (itemEntertainment == null)
-        return (ActorAction) null;
-      if (!game.Rules.CanActorUseItem(m_Actor, (Item) itemEntertainment))
-        return (ActorAction) null;
+      if (itemEntertainment == null) return null;
+      if (!game.Rules.CanActorUseItem(m_Actor, itemEntertainment)) return null;
       return (ActorAction) new ActionUseItem(m_Actor, game, (Item) itemEntertainment);
     }
 
     protected ActorAction BehaviorDropBoringEntertainment(RogueGame game)
     {
       Inventory inventory = m_Actor.Inventory;
-      if (inventory.IsEmpty)
-        return (ActorAction) null;
-      foreach (Item it in inventory.Items)
-      {
+      if (inventory.IsEmpty) return null;
+      foreach (Item it in inventory.Items) {
         if (it is ItemEntertainment && m_Actor.IsBoredOf(it))
-          return (ActorAction) new ActionDropItem(m_Actor, game, it);
+          return new ActionDropItem(m_Actor, game, it);
       }
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorFollowActor(RogueGame game, Actor other, Point otherPosition, bool isVisible, int maxDist)
     {
-      if (other == null || other.IsDead)
-        return (ActorAction) null;
+      if (other == null || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location.Position, otherPosition);
-      if (isVisible && num <= maxDist)
-        return (ActorAction) new ActionWait(m_Actor, game);
-      if (other.Location.Map != m_Actor.Location.Map)
-      {
+      if (isVisible && num <= maxDist) return new ActionWait(m_Actor);
+      if (other.Location.Map != m_Actor.Location.Map) {
         Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exitAt.ToMap == other.Location.Map && game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position))
-          return (ActorAction) new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
+          return new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(game, otherPosition);
       if (actorAction == null || !actorAction.IsLegal()) return null;
@@ -721,12 +712,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, Point otherPosition, int minDist, int maxDist)
     {
-      if (other == null || other.IsDead)
-        return (ActorAction) null;
+      if (other == null || other.IsDead) return null;
       int num = 0;
       Point p;
-      do
-      {
+      do {
         p = otherPosition;
         p.X += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
         p.Y += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
@@ -759,7 +748,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorMeleeAttack(game, actor);
       if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
-        return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor, game);
+        return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
       tmpAction = BehaviorIntelligentBumpToward(game, target.Location.Position);
       if (null == tmpAction) return null;
       if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();

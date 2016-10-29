@@ -344,11 +344,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      tmpAction = BehaviorRestIfTired(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      tmpAction = BehaviorRestIfTired();
+      if (null != tmpAction) return tmpAction;
       if (null != enemies && assistLeader) {
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(game, target);

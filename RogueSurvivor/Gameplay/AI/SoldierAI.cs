@@ -125,11 +125,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorRestIfTired(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      tmpAction = BehaviorRestIfTired();
+      if (null != tmpAction) return tmpAction;
       if (null != enemies) {
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(game, target);
