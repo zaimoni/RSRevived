@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.IsSleepy) {
         m_Actor.Activity = Activity.SLEEPING;
-        return new ActionSleep(m_Actor, game);
+        return new ActionSleep(m_Actor);
       }
       if (m_Actor.HasLeader)
       {

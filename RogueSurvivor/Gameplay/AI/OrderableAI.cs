@@ -301,9 +301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       string reason;
       if (game.Rules.CanActorSleep(m_Actor, out reason)) {
-        if (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0)
-          return new ActionSleep(m_Actor, game);
-        return new ActionWait(m_Actor);
+        return (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0 ? (ActorAction)(new ActionSleep(m_Actor)) : new ActionWait(m_Actor));
       }
       SetOrder(null);
       game.DoEmote(m_Actor, string.Format("I can't sleep now : {0}.", (object) reason));
@@ -767,7 +765,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }));
         if (actorAction != null) return actorAction;
       }
-      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor, game);
+      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor);
       Point? nullable = new Point?();
       float num1 = float.MaxValue;
       foreach (Point point in m_Actor.Controller.FOV) {
@@ -789,7 +787,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (game.Rules.IsItemBatteryPowered(it)) game.DoUnequipItem(m_Actor, it);
-      return new ActionSleep(m_Actor, game);
+      return new ActionSleep(m_Actor);
     }
 
     protected ActorAction BehaviorRestIfTired()
