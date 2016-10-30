@@ -637,7 +637,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
+    protected ActionShout BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
     {
       Contract.Requires(null != nearestEnemy);
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;

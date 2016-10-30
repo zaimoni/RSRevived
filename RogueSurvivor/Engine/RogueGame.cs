@@ -3314,25 +3314,6 @@ namespace djack.RogueSurvivor.Engine
       return DistanceToPlayer(map, pos.X, pos.Y);
     }
 
-    private bool IsAdjacentToEnemy(Map map, Point pos, Actor actor)
-    {
-      int x1 = pos.X - 1;
-      int x2 = pos.X + 1;
-      int y1 = pos.Y - 1;
-      int y2 = pos.Y + 1;
-      map.TrimToBounds(ref x1, ref y1);
-      map.TrimToBounds(ref x2, ref y2);
-      for (int x3 = x1; x3 <= x2; ++x3) {
-        for (int y3 = y1; y3 <= y2; ++y3) {
-          if (x3 != pos.X || y3 != pos.Y) {
-            Actor actorAt = map.GetActorAt(x3, y3);
-            if (actorAt != null && actor.IsEnemyOf(actorAt)) return true;
-          }
-        }
-      }
-      return false;
-    }
-
     private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer, bool mustBeOutside)
     {
       int num1 = 4 * (map.Width + map.Height);
@@ -3349,7 +3330,7 @@ namespace djack.RogueSurvivor.Engine
         if (mustBeOutside && map.GetTileAt(point.X, point.Y).IsInside) continue;
         if (!map.IsWalkableFor(point, actorToSpawn)) continue;
         if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
-        if (IsAdjacentToEnemy(map, point, actorToSpawn)) continue;
+        if (actorToSpawn.WouldBeAdjacentToEnemy(map, point)) continue;
         map.PlaceActorAt(actorToSpawn, point);
         OnActorEnterTile(actorToSpawn);
         return true;
@@ -3370,7 +3351,7 @@ namespace djack.RogueSurvivor.Engine
         p.X = num3;
         p.Y = num4;
         map.TrimToBounds(ref p);
-        if (!map.GetTileAt(p.X, p.Y).IsInside && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !IsAdjacentToEnemy(map, p, actorToSpawn))) {
+        if (!map.GetTileAt(p.X, p.Y).IsInside && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceActorAt(actorToSpawn, p);
           return true;
         }
@@ -6292,7 +6273,7 @@ namespace djack.RogueSurvivor.Engine
             return map.LocalTime.TurnCounter >= 2*WorldTime.TURNS_PER_HOUR;
           return false;
         case AdvisorHint.ACTOR_MELEE:
-          return IsAdjacentToEnemy(map, position, m_Player);
+          return m_Player.IsAdjacentToEnemy;
         case AdvisorHint.MOVE_RUN:
           if (map.LocalTime.TurnCounter >= 5)
             return m_Player.CanRun();

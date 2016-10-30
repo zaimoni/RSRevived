@@ -318,7 +318,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && IsAdjacentToEnemy(m_Actor.Leader);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
       if (null != enemies) {
