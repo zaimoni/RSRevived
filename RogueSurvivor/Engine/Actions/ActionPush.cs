@@ -5,8 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,42 +16,25 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Direction m_Direction;
     private readonly Point m_To;
 
-    public Direction Direction
+    public ActionPush(Actor actor, MapObject pushObj, Direction pushDir)
+      : base(actor)
     {
-      get
-      {
-        return m_Direction;
-      }
-    }
-
-    public Point To
-    {
-      get
-      {
-        return m_To;
-      }
-    }
-
-    public ActionPush(Actor actor, RogueGame game, MapObject pushObj, Direction pushDir)
-      : base(actor, game)
-    {
-      if (pushObj == null)
-        throw new ArgumentNullException("pushObj");
-            m_Object = pushObj;
-            m_Direction = pushDir;
-            m_To = pushObj.Location.Position + pushDir;
+      Contract.Requires(null != pushObj);
+      m_Object = pushObj;
+      m_Direction = pushDir;
+      m_To = pushObj.Location.Position + pushDir;
     }
 
     public override bool IsLegal()
     {
-      if (m_Game.Rules.CanActorPush(m_Actor, m_Object))
-        return m_Game.Rules.CanPushObjectTo(m_Object, m_To, out m_FailReason);
+      if (RogueForm.Game.Rules.CanActorPush(m_Actor, m_Object))
+        return RogueForm.Game.Rules.CanPushObjectTo(m_Object, m_To, out m_FailReason);
       return false;
     }
 
     public override void Perform()
     {
-            m_Game.DoPush(m_Actor, m_Object, m_To);
+      RogueForm.Game.DoPush(m_Actor, m_Object, m_To);
     }
   }
 }

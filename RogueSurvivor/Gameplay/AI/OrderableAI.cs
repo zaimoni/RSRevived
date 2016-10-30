@@ -623,7 +623,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (door != null) {
             if (door.IsOpen && game.Rules.IsClosableFor(m_Actor, door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return new ActionCloseDoor(m_Actor, game, door);
+                return new ActionCloseDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(game, door.Location.Position);
             }
             if (door.IsWindow && !door.IsBarricaded && game.Rules.CanActorBarricadeDoor(m_Actor, door)) {

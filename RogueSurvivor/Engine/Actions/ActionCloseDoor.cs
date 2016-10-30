@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private DoorWindow m_Door;
 
-    public ActionCloseDoor(Actor actor, RogueGame game, DoorWindow door)
-      : base(actor, game)
+    public ActionCloseDoor(Actor actor, DoorWindow door)
+      : base(actor)
     {
       Contract.Requires(null != door);
       m_Door = door;

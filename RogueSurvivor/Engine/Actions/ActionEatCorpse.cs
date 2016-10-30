@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -13,22 +13,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Corpse m_Target;
 
-    public ActionEatCorpse(Actor actor, RogueGame game, Corpse target)
-      : base(actor, game)
+    public ActionEatCorpse(Actor actor, Corpse target)
+      : base(actor)
     {
-      if (target == null)
-        throw new ArgumentNullException("target");
-            m_Target = target;
+      Contract.Requires(null != target);
+      m_Target = target;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorEatCorpse(m_Actor, m_Target, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorEatCorpse(m_Actor, m_Target, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoEatCorpse(m_Actor, m_Target);
+      RogueForm.Game.DoEatCorpse(m_Actor, m_Target);
     }
   }
 }

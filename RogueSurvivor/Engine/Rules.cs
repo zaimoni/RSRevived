@@ -615,7 +615,7 @@ namespace djack.RogueSurvivor.Engine
       {
         if (!CanActorLeaveMap(actor, out reason)) return null;
         reason = "";
-        return new ActionLeaveMap(actor, game, new Point(x, y));
+        return new ActionLeaveMap(actor, new Point(x, y));
       }
       Point point = new Point(x, y);
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
@@ -634,7 +634,7 @@ namespace djack.RogueSurvivor.Engine
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
         if (CanActorChatWith(actor, actorAt, out reason))
-          return new ActionChat(actor, game, actorAt);
+          return new ActionChat(actor, actorAt);
         return null;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
@@ -643,20 +643,20 @@ namespace djack.RogueSurvivor.Engine
         if (door != null) {
           if (door.IsClosed) {
             if (IsOpenableFor(actor, door, out reason))
-              return new ActionOpenDoor(actor, game, door);
+              return new ActionOpenDoor(actor, door);
             if (IsBashableFor(actor, door, out reason))
-              return new ActionBashDoor(actor, game, door);
+              return new ActionBashDoor(actor, door);
             return null;
           }
           if (door.BarricadePoints > 0) {
             if (IsBashableFor(actor, door, out reason))
-              return new ActionBashDoor(actor, game, door);
+              return new ActionBashDoor(actor, door);
             reason = "cannot bash the barricade";
             return null;
           }
         }
         if (CanActorGetItemFromContainer(actor, point, out reason))
-          return (ActorAction) new ActionGetFromContainer(actor, game, point);
+          return new ActionGetFromContainer(actor, point);
         if (actor.Model.Abilities.CanBashDoors && IsBreakableFor(actor, mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
@@ -664,13 +664,13 @@ namespace djack.RogueSurvivor.Engine
           if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
-              return new ActionRechargeItemBattery(actor, game, tmp);
+              return new ActionRechargeItemBattery(actor, tmp);
             tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
-              return new ActionRechargeItemBattery(actor, game, tmp);
+              return new ActionRechargeItemBattery(actor, tmp);
             tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
-              return new ActionRechargeItemBattery(actor, game, tmp);
+              return new ActionRechargeItemBattery(actor, tmp);
           }
           return (IsSwitchableFor(actor, powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
         }

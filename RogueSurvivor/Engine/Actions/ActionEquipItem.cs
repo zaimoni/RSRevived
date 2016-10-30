@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -13,22 +13,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Item m_Item;
 
-    public ActionEquipItem(Actor actor, RogueGame game, Item it)
-      : base(actor, game)
+    public ActionEquipItem(Actor actor, Item it)
+      : base(actor)
     {
-      if (it == null)
-        throw new ArgumentNullException("item");
-            m_Item = it;
+      Contract.Requires(null != it);
+      m_Item = it;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorEquipItem(m_Actor, m_Item, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorEquipItem(m_Actor, m_Item, out m_FailReason);
     }
 
     public override void Perform()
     {
-      m_Game.DoEquipItem(m_Actor, m_Item);
+      RogueForm.Game.DoEquipItem(m_Actor, m_Item);
     }
 
     public override string ToString()

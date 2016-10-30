@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -14,22 +14,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private DoorWindow m_Door;
 
-    public ActionOpenDoor(Actor actor, RogueGame game, DoorWindow door)
-      : base(actor, game)
+    public ActionOpenDoor(Actor actor, DoorWindow door)
+      : base(actor)
     {
-      if (door == null)
-        throw new ArgumentNullException("door");
-            m_Door = door;
+      Contract.Requires(null != door);
+      m_Door = door;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.IsOpenableFor(m_Actor, m_Door, out m_FailReason);
+      return RogueForm.Game.Rules.IsOpenableFor(m_Actor, m_Door, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoOpenDoor(m_Actor, m_Door);
+      RogueForm.Game.DoOpenDoor(m_Actor, m_Door);
     }
   }
 }

@@ -12,7 +12,6 @@ namespace djack.RogueSurvivor.Data
 {
   internal abstract class ActorAction
   {
-    protected readonly RogueGame m_Game;
     protected readonly Actor m_Actor;
     protected string m_FailReason;
 
@@ -22,21 +21,10 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    protected ActorAction(Actor actor, RogueGame game)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (game == null)
-        throw new ArgumentNullException("game");
-            m_Actor = actor;
-            m_Game = game;
-    }
-
     protected ActorAction(Actor actor)
     {
       Contract.Requires(null != actor);
       m_Actor = actor;
-      m_Game = RogueForm.Game;
     }
 
     public abstract bool IsLegal();

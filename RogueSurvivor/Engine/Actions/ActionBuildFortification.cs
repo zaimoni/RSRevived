@@ -23,12 +23,12 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.CanActorBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
+      return RogueForm.Game.Rules.CanActorBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
     }
 
     public override void Perform()
     {
-      m_Game.DoBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
+      RogueForm.Game.DoBuildFortification(m_Actor, m_BuildPos, m_IsLarge);
     }
   }
 }
