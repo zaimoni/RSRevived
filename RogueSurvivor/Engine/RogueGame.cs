@@ -5276,7 +5276,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPush(Actor player)
     {
-      if (!m_Rules.HasActorPushAbility(player)) {
+      if (!player.CanPush) {
         AddMessage(MakeErrorMessage("Cannot push objects."));
         return false;
       }

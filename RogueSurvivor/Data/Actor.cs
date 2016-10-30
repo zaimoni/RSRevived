@@ -805,6 +805,12 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+    public bool CanPush {
+      get {
+        return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
+      }
+    }
+
     // event timing
     public void SpendActionPoints(int actionCost)
     {

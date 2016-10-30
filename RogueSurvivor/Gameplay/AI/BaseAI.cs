@@ -324,7 +324,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = m_Actor.Location + dir;
         ActorAction a = game.Rules.IsBumpableFor(m_Actor, location);
         if (a == null) {
-          if (m_Actor.Model.Abilities.IsUndead && game.Rules.HasActorPushAbility(m_Actor)) {
+          if (m_Actor.Model.Abilities.IsUndead && m_Actor.CanPush) {
             MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(location.Position);
             if (mapObjectAt != null && game.Rules.CanActorPush(m_Actor, mapObjectAt)) {
               Direction pushDir = game.Rules.RollDirection();
@@ -582,7 +582,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionPush BehaviorPushNonWalkableObject(RogueGame game)
     {
-      if (!game.Rules.HasActorPushAbility(m_Actor)) return null;
+      if (!m_Actor.CanPush) return null;
       Map map = m_Actor.Location.Map;
       List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {
@@ -599,7 +599,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionPush BehaviorPushNonWalkableObjectForFood(RogueGame game)
     {
-      if (!game.Rules.HasActorPushAbility(m_Actor)) return null;
+      if (!m_Actor.CanPush) return null;
       Map map = m_Actor.Location.Map;
       List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {

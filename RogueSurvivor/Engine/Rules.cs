@@ -1006,13 +1006,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool HasActorPushAbility(Actor actor)
-    {
-      if (!actor.Model.Abilities.CanPush && actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) <= 0)
-        return actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG) > 0;
-      return true;
-    }
-
     public bool CanActorPush(Actor actor, MapObject mapObj)
     {
       string reason;
@@ -1023,7 +1016,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == null) throw new ArgumentNullException("actor");
       if (mapObj == null) throw new ArgumentNullException("mapObj");
-      if (!HasActorPushAbility(actor)) {
+      if (!actor.CanPush) {
         reason = "cannot push objects";
         return false;
       }
@@ -1085,7 +1078,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == null) throw new ArgumentNullException("actor");
       if (other == null) throw new ArgumentNullException("other");
-      if (!HasActorPushAbility(actor)) {
+      if (!actor.CanPush) {
         reason = "cannot shove people";
         return false;
       }
