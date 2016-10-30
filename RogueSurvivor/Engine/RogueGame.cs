@@ -13282,7 +13282,7 @@ namespace djack.RogueSurvivor.Engine
           Item it = inventory[m_Rules.Roll(0, inventory.CountItems)];
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsLegal()) return actionUseItem;
-          if (it.IsEquipped) return new ActionUnequipItem(actor, this, it);
+          if (it.IsEquipped) return new ActionUnequipItem(actor, it);
           return new ActionDropItem(actor, this, it);
         case 4:
           int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
