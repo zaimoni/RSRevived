@@ -550,7 +550,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null == nullable || !nullable.HasValue) return null;  // 2nd test probably redundant
       if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);
-      ActorAction actorAction = new ActionThrowGrenade(m_Actor, game, nullable.Value);
+      ActorAction actorAction = new ActionThrowGrenade(m_Actor, nullable.Value);
       if (!actorAction.IsLegal()) throw new ArgumentOutOfRangeException("created illegal ActionThrowGrenade");  // invariant failure
       return actorAction;
     }
