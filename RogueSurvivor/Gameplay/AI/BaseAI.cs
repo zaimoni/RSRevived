@@ -803,7 +803,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && game.Rules.CanActorBarricadeDoor(m_Actor, door));
           }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
           if (choiceEval != null)
-            return (ActorAction) new ActionBarricadeDoor(m_Actor, game, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
+            return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE)) {
           ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);

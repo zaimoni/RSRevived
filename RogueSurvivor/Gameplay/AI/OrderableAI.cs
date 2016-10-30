@@ -149,7 +149,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorBarricadeDoor(m_Actor, door)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
-        tmpAction= new ActionBarricadeDoor(m_Actor, game, door);
+        tmpAction= new ActionBarricadeDoor(m_Actor, door);
         if (!tmpAction.IsLegal()) return null;
         if (!toTheMax) SetOrder(null);
         return tmpAction;
@@ -634,7 +634,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             if (door.IsWindow && !door.IsBarricaded && game.Rules.CanActorBarricadeDoor(m_Actor, door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return new ActionBarricadeDoor(m_Actor, game, door);
+                return new ActionBarricadeDoor(m_Actor, door);
               return BehaviorIntelligentBumpToward(game, door.Location.Position);
             }
           }
