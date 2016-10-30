@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      m_Game.DoUnequipItem(m_Actor, m_Item);
+      RogueForm.Game.DoUnequipItem(m_Actor, m_Item);
     }
   }
 }

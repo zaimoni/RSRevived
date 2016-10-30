@@ -464,7 +464,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           if (percepts2 != null) {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
-              tmpAction = new ActionTrade(m_Actor, game, actor);
+              tmpAction = new ActionTrade(m_Actor, actor);
               if (tmpAction.IsLegal()) {
                 MarkActorAsRecentTrade(actor);
                 game.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
