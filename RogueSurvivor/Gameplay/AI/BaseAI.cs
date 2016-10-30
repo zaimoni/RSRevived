@@ -301,7 +301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Location location = m_Actor.Location + dir;
         if (goodWanderLocFn != null && !goodWanderLocFn(location)) return false;
-        return isValidWanderAction(game.Rules.IsBumpableFor(m_Actor, game, location));
+        return isValidWanderAction(game.Rules.IsBumpableFor(m_Actor, location));
       }), (Func<Direction, float>) (dir =>
       {
         int num = game.Rules.Roll(0, 666);
@@ -322,7 +322,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<ActorAction> choiceEval = ChooseExtended(game, Direction.COMPASS_LIST, (Func<Direction, ActorAction>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        ActorAction a = game.Rules.IsBumpableFor(m_Actor, game, location);
+        ActorAction a = game.Rules.IsBumpableFor(m_Actor, location);
         if (a == null) {
           if (m_Actor.Model.Abilities.IsUndead && game.Rules.HasActorPushAbility(m_Actor)) {
             MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(location.Position);
@@ -419,7 +419,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemRangedWeapon itemRangedWeapon = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
         LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (itemRangedWeapon.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
       }
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, game, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         float num = SafetyFrom(location.Position, goals);
@@ -825,22 +825,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
         }
-        if (actorAction1 == null && IsAdjacentToEnemy(enemy))
-        {
+        if (actorAction1 == null && IsAdjacentToEnemy(enemy)) {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
           return BehaviorMeleeAttack(target.Percepted as Actor);
         }
-      }
-      else
-      {
+      } else {
         ActorAction actorAction = BehaviorChargeEnemy(game, target);
-        if (actorAction != null)
-        {
+        if (actorAction != null) {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
             game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
-                    m_Actor.Activity = Activity.FIGHTING;
-                    m_Actor.TargetActor = target.Percepted as Actor;
+          m_Actor.Activity = Activity.FIGHTING;
+          m_Actor.TargetActor = target.Percepted as Actor;
           return actorAction;
         }
       }
@@ -855,7 +851,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Location location = m_Actor.Location + dir;
         if (exploration.HasExplored(location)) return false;
-        return IsValidMoveTowardGoalAction(game.Rules.IsBumpableFor(m_Actor, game, location));
+        return IsValidMoveTowardGoalAction(game.Rules.IsBumpableFor(m_Actor, location));
       }), (Func<Direction, float>) (dir =>
       {
         Location loc = m_Actor.Location + dir;

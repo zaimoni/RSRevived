@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       m_Direction = direction;
       m_NewLocation = actor.Location + direction;
-      m_ConcreteAction = RogueForm.Game.Rules.IsBumpableFor(m_Actor, RogueForm.Game, m_NewLocation, out m_FailReason);
+      m_ConcreteAction = RogueForm.Game.Rules.IsBumpableFor(m_Actor, m_NewLocation, out m_FailReason);
     }
 
     public override bool IsLegal()
