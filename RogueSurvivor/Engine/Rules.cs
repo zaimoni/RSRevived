@@ -618,7 +618,7 @@ namespace djack.RogueSurvivor.Engine
         return new ActionLeaveMap(actor, game, new Point(x, y));
       }
       Point point = new Point(x, y);
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, game, point);
+      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
       if (actionMoveStep.IsLegal()) {
         reason = "";
         return actionMoveStep;

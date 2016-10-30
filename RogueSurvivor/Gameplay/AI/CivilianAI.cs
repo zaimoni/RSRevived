@@ -221,7 +221,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX we also want to be close enough to fire at all
       if (null != retreat && null!=available_ranged_weapons) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        tmpAction = new ActionMoveStep(m_Actor, tmp);
         if (tmpAction.IsLegal()) {
           RunIfAdvisable(tmp);
           m_Actor.Activity = Activity.FLEEING;
@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // need stamina to melee: slow retreat ok
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        tmpAction = new ActionMoveStep(m_Actor, tmp);
         if (tmpAction.IsLegal()) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -240,7 +240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // have slow enemies nearby
       if (null != retreat && null != slow_threat) {
         Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, game, tmp);
+        tmpAction = new ActionMoveStep(m_Actor, tmp);
         if (tmpAction.IsLegal()) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
