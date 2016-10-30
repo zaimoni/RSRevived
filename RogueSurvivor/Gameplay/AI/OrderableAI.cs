@@ -898,7 +898,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
       if (position == m_Actor.Location.Position) {
-        tmp = new ActionTakeItem(m_Actor, game, position, obj);
+        tmp = new ActionTakeItem(m_Actor, position, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
@@ -915,7 +915,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActionGetFromContainer tmp2 = (tmp as ActionGetFromContainer);
       if (null != tmp2 && tmp2.Item != obj) {
         // translate the desired action
-        tmp = new ActionTakeItem(m_Actor, game, position, obj);
+        tmp = new ActionTakeItem(m_Actor, position, obj);
       }
       return tmp;
     }
