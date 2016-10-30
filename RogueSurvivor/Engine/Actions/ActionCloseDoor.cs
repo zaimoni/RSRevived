@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,19 +17,18 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionCloseDoor(Actor actor, RogueGame game, DoorWindow door)
       : base(actor, game)
     {
-      if (door == null)
-        throw new ArgumentNullException("door");
-            m_Door = door;
+      Contract.Requires(null != door);
+      m_Door = door;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.IsClosableFor(m_Actor, m_Door, out m_FailReason);
+      return RogueForm.Game.Rules.IsClosableFor(m_Actor, m_Door, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoCloseDoor(m_Actor, m_Door);
+      RogueForm.Game.DoCloseDoor(m_Actor, m_Door);
     }
   }
 }
