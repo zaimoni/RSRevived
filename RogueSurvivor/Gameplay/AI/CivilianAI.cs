@@ -325,11 +325,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
-            ActorAction actorAction2 = BehaviorWarnFriends(game, friends, FilterNearest(enemies).Percepted as Actor);
-            if (actorAction2 != null) {
-              m_Actor.Activity = Activity.IDLE;
-              return actorAction2;
-            }
+            ActorAction actorAction2 = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
+            if (actorAction2 != null) return actorAction2;
           }
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee

@@ -16,6 +16,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
       m_Text = text;
+      actor.Activity = Activity.IDLE;
     }
 
     public override bool IsLegal()

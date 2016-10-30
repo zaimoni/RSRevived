@@ -743,7 +743,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             doRun = true;
             break;
           case ActorCourage.CAUTIOUS:
-            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
             doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           case ActorCourage.COURAGEOUS:
@@ -752,7 +752,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               decideToFlee = false;
               break;
             }
-            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
             doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           default:
@@ -766,7 +766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             break;
           case ActorCourage.CAUTIOUS:
           case ActorCourage.COURAGEOUS:
-            decideToFlee = WantToEvadeMelee(game, m_Actor, courage, enemy);
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
             doRun = !HasSpeedAdvantage(m_Actor, enemy);
             break;
           default:
@@ -1567,18 +1567,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return itemMeleeWeapon1;
     }
 
-    protected bool WantToEvadeMelee(RogueGame game, Actor actor, ActorCourage courage, Actor target)
+    protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
     {
       if (WillTireAfterAttack(actor)) return true;
       if (actor.Speed > target.Speed) {
         if (actor.WillActAgainBefore(target)) return false;
         if (target.TargetActor == actor) return true;
       }
-      Actor weakerInMelee = FindWeakerInMelee(game, m_Actor, target);
+      Actor weakerInMelee = FindWeakerInMelee(m_Actor, target);
       return weakerInMelee != target && (weakerInMelee == m_Actor || courage != ActorCourage.COURAGEOUS);
     }
 
-    protected Actor FindWeakerInMelee(RogueGame game, Actor a, Actor b)
+    protected Actor FindWeakerInMelee(Actor a, Actor b)
     {
       int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
       int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;

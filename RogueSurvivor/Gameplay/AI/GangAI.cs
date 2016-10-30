@@ -106,11 +106,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
-            tmpAction = BehaviorWarnFriends(game, friends, FilterNearest(current_enemies).Percepted as Actor);
-            if (null != tmpAction) {
-              m_Actor.Activity = Activity.IDLE;
-              return tmpAction;
-            }
+            tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+            if (null != tmpAction) return tmpAction;
           }
         }
         tmpAction = BehaviorFightOrFlee(game, current_enemies, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);

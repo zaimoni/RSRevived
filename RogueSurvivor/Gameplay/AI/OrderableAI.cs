@@ -135,7 +135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.FOLLOW_TOGGLE:
           return ExecuteToggleFollow(game);
         case ActorTasks.WHERE_ARE_YOU:
-          return ExecuteReportPosition(game);
+          return ExecuteReportPosition();
         default:
           throw new NotImplementedException("order task not handled");
       }
@@ -316,7 +316,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
-    private ActorAction ExecuteReportPosition(RogueGame game)
+    private ActorAction ExecuteReportPosition()
     {
       SetOrder(null);
       string text = string.Format("I'm in {0} at {1},{2}.", (object)m_Actor.Location.Map.Name, (object)m_Actor.Location.Position.X, (object)m_Actor.Location.Position.Y);
@@ -637,7 +637,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorWarnFriends(RogueGame game, List<Percept> friends, Actor nearestEnemy)
+    protected ActorAction BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
     {
       Contract.Requires(null != nearestEnemy);
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
