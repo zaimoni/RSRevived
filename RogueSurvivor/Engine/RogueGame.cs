@@ -13268,7 +13268,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (m_Rules.Roll(0, 5)) {
         case 0:
-          return new ActionShout(actor, this, "AAAAAAAAAAA!!!");
+          return new ActionShout(actor, "AAAAAAAAAAA!!!");
         case 1:
           return new ActionBump(actor, m_Rules.RollDirection());
         case 2:

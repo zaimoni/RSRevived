@@ -183,7 +183,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
 
       if (m_Actor.Location.Position != location.Position) {
@@ -211,7 +211,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       if (!m_ReachedPatrolPoint)
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
@@ -260,7 +260,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       ActorAction actorAction = null;
       bool flag = false;
@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         SetOrder(null);
         Actor actor = FilterNearest(enemies).Percepted as Actor;
-        return new ActionShout(m_Actor, game, string.Format("{0} sighted!!", (object) actor.Name));
+        return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       string reason;
       if (game.Rules.CanActorSleep(m_Actor, out reason)) {
@@ -643,13 +643,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Requires(null != nearestEnemy);
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
-      if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor, game);
+      if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor);
       foreach (Percept friend in friends) {
         Actor actor = friend.Percepted as Actor;
         if (actor == null) throw new ArgumentException("percept not an actor");
         if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
           string text = string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name);
-          return new ActionShout(m_Actor, game, text);
+          return new ActionShout(m_Actor, text);
         }
       }
       return null;
