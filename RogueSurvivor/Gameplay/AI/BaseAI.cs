@@ -1198,7 +1198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int chance = game.Rules.ActorSpotMurdererChance(m_Actor, target);
       if (!game.Rules.RollChance(chance)) return null;
       game.DoMakeAggression(m_Actor, target);
-      return new ActionSay(m_Actor, game, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), RogueGame.Sayflags.IS_IMPORTANT);
+      return new ActionSay(m_Actor, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), RogueGame.Sayflags.IS_IMPORTANT);
     }
 
     protected ActorAction BehaviorGoEatFoodOnGround(RogueGame game, List<Percept> stacksPercepts)

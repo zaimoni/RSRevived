@@ -267,28 +267,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       switch (m_ReportStage)
       {
         case 0:
-          actorAction = m_LastRaidHeard == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No raids heard.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
+          actorAction = m_LastRaidHeard == null ? new ActionSay(m_Actor, m_Actor.Leader, "No raids heard.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
           ++m_ReportStage;
           break;
         case 1:
-          actorAction = m_LastEnemySaw == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No enemies sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
+          actorAction = m_LastEnemySaw == null ? new ActionSay(m_Actor, m_Actor.Leader, "No enemies sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
           ++m_ReportStage;
           break;
         case 2:
-          actorAction = m_LastItemsSaw == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No items sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
+          actorAction = m_LastItemsSaw == null ? new ActionSay(m_Actor, m_Actor.Leader, "No items sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
           ++m_ReportStage;
           break;
         case 3:
-          actorAction = m_LastSoldierSaw == null ? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "No soldiers sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
+          actorAction = m_LastSoldierSaw == null ? new ActionSay(m_Actor, m_Actor.Leader, "No soldiers sighted.", RogueGame.Sayflags.NONE) : BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
           ++m_ReportStage;
           break;
         case 4:
           flag = true;
-          actorAction = (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
+          actorAction = new ActionSay(m_Actor, m_Actor.Leader, "That's it.", RogueGame.Sayflags.NONE);
           break;
       }
       if (flag) SetOrder(null);
-      return actorAction ?? (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, "Let me think...", RogueGame.Sayflags.NONE);
+      return actorAction ?? new ActionSay(m_Actor, m_Actor.Leader, "Let me think...", RogueGame.Sayflags.NONE);
     }
 
     private ActorAction ExecuteSleepNow(RogueGame game, List<Percept> percepts)
@@ -322,15 +322,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       SetOrder(null);
       string text = string.Format("I'm in {0} at {1},{2}.", (object)m_Actor.Location.Map.Name, (object)m_Actor.Location.Position.X, (object)m_Actor.Location.Position.Y);
-      return (ActorAction) new ActionSay(m_Actor, game, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
+      return new ActionSay(m_Actor, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
     }
 
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
       string str;
-      switch (raid)
-      {
+      switch (raid) {
         case RaidType.BIKERS:
           str = "motorcycles coming";
           break;
@@ -594,13 +593,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return null;
         text = string.Format("I saw {0} {1} {2}.", (object) it.AName, (object) str1, (object) str2);
       } else {
-        if (!(percept.Percepted is string))
-          throw new InvalidOperationException("unhandled percept.Percepted type");
+        if (!(percept.Percepted is string)) throw new InvalidOperationException("unhandled percept.Percepted type");
         text = string.Format("I heard {0} {1} {2}!", (object) (percept.Percepted as string), (object) str1, (object) str2);
       }
-      ActionSay actionSay = new ActionSay(m_Actor, game, actorAt1, text, RogueGame.Sayflags.NONE);
-      if (actionSay.IsLegal()) return actionSay;
-      return null;
+      return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
     protected ActorAction BehaviorFleeFromExplosives(RogueGame game, List<Percept> itemStacks)

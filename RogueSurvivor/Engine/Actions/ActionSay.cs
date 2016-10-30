@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -15,10 +15,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     private string m_Text;
     private RogueGame.Sayflags m_Flags;
 
-    public ActionSay(Actor actor, RogueGame game, Actor target, string text, RogueGame.Sayflags flags)
-      : base(actor, game)
+    public ActionSay(Actor actor, Actor target, string text, RogueGame.Sayflags flags)
+      : base(actor)
     {
-      if (target == null) throw new ArgumentNullException("target");
+      Contract.Requires(null != target);
       m_Target = target;
       m_Text = text;
       m_Flags = flags;
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      m_Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
+      RogueForm.Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
     }
   }
 }
