@@ -314,12 +314,6 @@ namespace djack.RogueSurvivor.Engine
     private WorldTime m_PlayerLongWaitEnd;
     private Thread m_SimThread;
 
-    public Session Session {
-      get {
-        return Session.Get;
-      }
-    }
-
     public Rules Rules {
       get {
         return m_Rules;
@@ -4215,13 +4209,13 @@ namespace djack.RogueSurvivor.Engine
       if (!Session.Get.CMDoptionExists("socrates-daimon")) return;
       AddMessage(new Data.Message("You pray for wisdom.", Session.Get.WorldTime.TurnCounter, Color.Green));
       Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
-      Session.CurrentMap.District.DaimonMap(dest);
+      Session.Get.CurrentMap.District.DaimonMap(dest);
       int x = 0;
       int y = 0;
-      for(x = 0; x<Session.World.Size; x++) {
-        for(y = 0; y<Session.World.Size; y++) {
-          if (x==Session.CurrentMap.District.WorldPosition.X && y == Session.Get.CurrentMap.District.WorldPosition.Y) continue;
-          District d = Session.World[x,y];
+      for(x = 0; x<Session.Get.World.Size; x++) {
+        for(y = 0; y<Session.Get.World.Size; y++) {
+          if (x== Session.Get.CurrentMap.District.WorldPosition.X && y == Session.Get.CurrentMap.District.WorldPosition.Y) continue;
+          District d = Session.Get.World[x,y];
 //        lock(d) { // this is causing a deadlock
             d.DaimonMap(dest);
 //        }
@@ -13459,7 +13453,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsInCHARProperty(Location location)
     {
-      if (location.Map != Session.UniqueMaps.CHARUndergroundFacility.TheMap)
+      if (location.Map != Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap)
         return RogueGame.IsInCHAROffice(location);
       return true;
     }

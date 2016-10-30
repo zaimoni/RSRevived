@@ -425,7 +425,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
               foreach (Item it in inv.Items) {
                 if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
                 if (RHSMoreInteresting(tmp, it)) {  // we have a wrong stack
-                  MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
+                  MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
                   perceptList2.Remove(percept);
                   goto retry;
                 }
@@ -439,7 +439,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
 #if DATAFLOW_TRACE
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
-          MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
+          MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory)) {
