@@ -669,7 +669,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (isVisible && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
         Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-        if (exitAt != null && exitAt.ToMap == other.Location.Map && game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position))
+        if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
           return new ActionUseExit(m_Actor, m_Actor.Location.Position);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(game, otherPosition);
@@ -904,7 +904,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
           return new ActionBreak(m_Actor, mapObjectAt);
       }
-      return (game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
+      return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
     }
 
     protected ItemBodyArmor GetWorstBodyArmor()

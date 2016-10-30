@@ -927,6 +927,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    private string ReasonCantUseExit(Point exitPoint)
+    {
+      if (Location.Map.GetExitAt(exitPoint) == null) return "no exit there";
+      if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
+      if (IsSleeping) return "is sleeping";
+      return "";
+    }
+
+    public bool CanUseExit(Point exitPoint)
+    {
+      return string.IsNullOrEmpty(ReasonCantUseExit(exitPoint));
+    }
+
+    public bool CanUseExit(Point exitPoint, out string reason)
+    {
+      reason = ReasonCantUseExit(exitPoint);
+      return string.IsNullOrEmpty(reason);
+    }
+
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {
