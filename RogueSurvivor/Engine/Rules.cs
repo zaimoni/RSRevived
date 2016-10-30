@@ -632,7 +632,7 @@ namespace djack.RogueSurvivor.Engine
           return null;
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
-          return new ActionSwitchPlace(actor, game, actorAt);
+          return new ActionSwitchPlace(actor, actorAt);
         if (CanActorChatWith(actor, actorAt, out reason))
           return new ActionChat(actor, game, actorAt);
         return null;
