@@ -454,7 +454,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <returns>true if and only if light should be equipped</returns>
     protected bool BehaviorEquipLight(RogueGame game)
     {
-      if (!NeedsLight(game)) return false;
+      if (!NeedsLight()) return false;
       ItemLight tmp = GetEquippedLight();
       if (null != tmp && !tmp.IsUseless) return true;
       tmp = m_Actor.GetFirstMatching<ItemLight>((Predicate<ItemLight>)(it =>
@@ -941,17 +941,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected bool NeedsLight(RogueGame game)
+    protected bool NeedsLight()
     {
       switch (m_Actor.Location.Map.Lighting)
       {
         case Lighting.DARKNESS:
           return true;
         case Lighting.OUTSIDE:
-          if (!m_Actor.Location.Map.LocalTime.IsNight)
-            return false;
-          if (game.Session.World.Weather != Weather.HEAVY_RAIN)
-            return !m_Actor.IsInside;
+          if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
+          if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
           return true;
         case Lighting.LIT:
           return false;
