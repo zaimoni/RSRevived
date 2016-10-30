@@ -283,11 +283,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept> SortByDate(RogueGame game, List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = new List<Percept>((IEnumerable<Percept>) percepts);
+      List<Percept> perceptList = new List<Percept>(percepts);
       perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
       {
-        if (pA.Turn < pB.Turn)
-          return 1;
+        if (pA.Turn < pB.Turn) return 1;
         return pA.Turn <= pB.Turn ? 0 : -1;
       }));
       return perceptList;
@@ -301,8 +300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        if (goodWanderLocFn != null && !goodWanderLocFn(location))
-          return false;
+        if (goodWanderLocFn != null && !goodWanderLocFn(location)) return false;
         return isValidWanderAction(game.Rules.IsBumpableFor(m_Actor, game, location));
       }), (Func<Direction, float>) (dir =>
       {
@@ -311,9 +309,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           num -= 1000;
         return (float) num;
       }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      if (choiceEval != null)
-        return (ActorAction) new ActionBump(m_Actor, game, choiceEval.Choice);
-      return (ActorAction) null;
+      return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
     protected ActorAction BehaviorWander(RogueGame game)
@@ -437,7 +433,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return num;
       }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      return ((choiceEval != null) ? new ActionBump(m_Actor, game, choiceEval.Choice) : null);
+      return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
     protected ActorAction BehaviorMeleeAttack(Actor target)
@@ -866,8 +862,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        if (exploration.HasExplored(location))
-          return false;
+        if (exploration.HasExplored(location)) return false;
         return IsValidMoveTowardGoalAction(game.Rules.IsBumpableFor(m_Actor, game, location));
       }), (Func<Direction, float>) (dir =>
       {
@@ -877,31 +872,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && ComputeTrapsMaxDamage(map, position) >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;
-        if (!exploration.HasExplored(map.GetZonesAt(position.X, position.Y)))
-          num += 1000;
-        if (!exploration.HasExplored(loc))
-          num += 500;
+        if (!exploration.HasExplored(map.GetZonesAt(position.X, position.Y))) num += 1000;
+        if (!exploration.HasExplored(loc)) num += 500;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow))
-          num += 100;
-        if (null != map.GetActivatedTrapAt(position))
-          num += -50;
-        if (map.GetTileAt(position.X, position.Y).IsInside)
-        {
-          if (map.LocalTime.IsNight)
-            num += 50;
+        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
+        if (null != map.GetActivatedTrapAt(position)) num += -50;
+        if (map.GetTileAt(position.X, position.Y).IsInside) {
+          if (map.LocalTime.IsNight) num += 50;
         }
-        else if (!map.LocalTime.IsNight)
-          num += 50;
-        if (dir == prevDirection)
-          num += 25;
+        else if (!map.LocalTime.IsNight) num += 50;
+        if (dir == prevDirection) num += 25;
         return (float) (num + game.Rules.Roll(0, 10));
       }), (Func<float, float, bool>) ((a, b) =>
       {
         if (!float.IsNaN(a)) return (double) a > (double) b;
         return false;
       }));
-      if (choiceEval != null) return new ActionBump(m_Actor, game, choiceEval.Choice);
+      if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
     }
 

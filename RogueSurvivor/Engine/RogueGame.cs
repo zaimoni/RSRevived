@@ -8381,7 +8381,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool DoPlayerBump(Actor player, Direction direction)
     {
-      ActionBump actionBump = new ActionBump(player, this, direction);
+      ActionBump actionBump = new ActionBump(player, direction);
       if (actionBump.IsLegal()) {
         actionBump.Perform();
         return true;
@@ -13270,7 +13270,7 @@ namespace djack.RogueSurvivor.Engine
         case 0:
           return new ActionShout(actor, this, "AAAAAAAAAAA!!!");
         case 1:
-          return new ActionBump(actor, this, m_Rules.RollDirection());
+          return new ActionBump(actor, m_Rules.RollDirection());
         case 2:
           Direction direction = m_Rules.RollDirection();
           MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
