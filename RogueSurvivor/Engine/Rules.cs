@@ -672,12 +672,10 @@ namespace djack.RogueSurvivor.Engine
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
               return new ActionRechargeItemBattery(actor, game, tmp);
           }
-          if (IsSwitchableFor(actor, powGen, out reason))
-            return (ActorAction) new ActionSwitchPowerGenerator(actor, game, powGen);
-          return (ActorAction) null;
+          return (IsSwitchableFor(actor, powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
         }
       }
-      return (ActorAction) null;
+      return null;
     }
 
     public ActorAction IsBumpableFor(Actor actor, RogueGame game, Location location)

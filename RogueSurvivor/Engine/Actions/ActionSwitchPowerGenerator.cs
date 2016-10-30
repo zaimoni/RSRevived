@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -14,22 +14,21 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private PowerGenerator m_PowGen;
 
-    public ActionSwitchPowerGenerator(Actor actor, RogueGame game, PowerGenerator powGen)
-      : base(actor, game)
+    public ActionSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
+      : base(actor)
     {
-      if (powGen == null)
-        throw new ArgumentNullException("powGen");
-            m_PowGen = powGen;
+      Contract.Requires(null != powGen);
+      m_PowGen = powGen;
     }
 
     public override bool IsLegal()
     {
-      return m_Game.Rules.IsSwitchableFor(m_Actor, m_PowGen, out m_FailReason);
+      return RogueForm.Game.Rules.IsSwitchableFor(m_Actor, m_PowGen, out m_FailReason);
     }
 
     public override void Perform()
     {
-            m_Game.DoSwitchPowerGenerator(m_Actor, m_PowGen);
+      RogueForm.Game.DoSwitchPowerGenerator(m_Actor, m_PowGen);
     }
   }
 }
