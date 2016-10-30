@@ -82,10 +82,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // Bikers and gangsters don't throw grenades
       ActorAction tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
+
       List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
@@ -140,11 +138,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (m_Actor.IsHungry) {
-        tmpAction = BehaviorEat(game);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        tmpAction = BehaviorEat();
+        if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
           tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
           if (null != tmpAction) {

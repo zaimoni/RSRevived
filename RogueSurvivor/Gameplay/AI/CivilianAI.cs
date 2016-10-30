@@ -301,10 +301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
 
       // all free actions must be above the enemies check
       if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
@@ -369,11 +366,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.IsHungry)
       {
-        tmpAction = BehaviorEat(game);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        tmpAction = BehaviorEat();
+        if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane)
         {
           tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
@@ -510,11 +504,8 @@ retry:    Percept percept = FilterNearest(perceptList2);
         }
       }
       if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {
-        tmpAction = BehaviorUseStenchKiller(game);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        tmpAction = BehaviorUseStenchKiller();
+        if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);
       if (null != tmpAction) {
@@ -523,11 +514,8 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (m_Actor.Model.Abilities.HasSanity) {
         if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
-          tmpAction = BehaviorUseEntertainment(game);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
+          tmpAction = BehaviorUseEntertainment();
+          if (null != tmpAction)  return tmpAction;
         }
         tmpAction = BehaviorDropBoringEntertainment(game);
         if (null != tmpAction) {

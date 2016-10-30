@@ -194,11 +194,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction3 = BehaviorEat(game);
-        if (actorAction3 != null) {
-          m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
-        }
+        ActorAction actorAction3 = BehaviorEat();
+        if (actorAction3 != null) return actorAction3;
       }
       ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
       if (actorAction4 != null) {
@@ -227,11 +224,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction3 = BehaviorEat(game);
-        if (actorAction3 != null) {
-          m_Actor.Activity = Activity.IDLE;
-          return actorAction3;
-        }
+        ActorAction actorAction3 = BehaviorEat();
+        if (actorAction3 != null) return actorAction3;
       }
       ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
       if (actorAction4 != null) {
@@ -430,20 +424,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
-    protected ActorAction BehaviorEat(RogueGame game)
+    protected ActorAction BehaviorEat()
     {
       ItemFood bestEdibleItem = GetBestEdibleItem();
       if (null == bestEdibleItem) return null;
-      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
-      return new ActionUseItem(m_Actor, game, bestEdibleItem);
+      ActionUseItem tmp = new ActionUseItem(m_Actor, bestEdibleItem);
+      return (tmp.IsLegal() ? tmp  : null);
     }
 
     protected ActorAction BehaviorEatProactively(RogueGame game)
     {
       Item bestEdibleItem = GetBestPerishableItem(game);
       if (null == bestEdibleItem) return null;
-      if (!game.Rules.CanActorUseItem(m_Actor, bestEdibleItem)) return null;
-      return new ActionUseItem(m_Actor, game, bestEdibleItem);
+      return (game.Rules.CanActorUseItem(m_Actor, bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
 
     protected void BehaviorUnequipLeftItem(RogueGame game)
@@ -825,12 +818,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // stench killer support -- don't want to lock down to the only user, CivilianAI
     // actually, this particular heuristic is *bad* because it causes the z to lose tracking too close to shelter.
-    protected bool IsGoodStenchKillerSpot(RogueGame game, Map map, Point pos)
+    protected bool IsGoodStenchKillerSpot(Map map, Point pos)
     {
-      if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0)
-        return false;
-      if (PrevLocation.Map.GetTileAt(PrevLocation.Position).IsInside != map.GetTileAt(pos).IsInside)
-        return true;
+      if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
+      if (PrevLocation.Map.GetTileAt(PrevLocation.Position).IsInside != map.GetTileAt(pos).IsInside) return true;
       MapObject mapObjectAt = map.GetMapObjectAt(pos);
       return mapObjectAt != null && mapObjectAt is DoorWindow || map.GetExitAt(pos) != null;
     }
@@ -842,7 +833,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (obj.IsEquipped && obj is ItemSprayScent && ((obj as ItemSprayScent).Model as ItemSprayScentModel).Odor == Odor.PERFUME_LIVING_SUPRESSOR)
           return obj as ItemSprayScent;
       }
-      return (ItemSprayScent) null;
+      return null;
     }
 
     protected ItemSprayScent GetFirstStenchKiller(Predicate<ItemSprayScent> fn)
@@ -855,21 +846,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorUseStenchKiller(RogueGame game)
+    protected ActorAction BehaviorUseStenchKiller()
     {
       ItemSprayScent itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
       if (itemSprayScent == null) return null;
       if (itemSprayScent.IsUseless) return null;
       if ((itemSprayScent.Model as ItemSprayScentModel).Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
-      if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) return null;
-      ActionUseItem actionUseItem = new ActionUseItem(m_Actor, game, itemSprayScent);
+      if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return null;
+      ActionUseItem actionUseItem = new ActionUseItem(m_Actor, itemSprayScent);
       if (actionUseItem.IsLegal()) return actionUseItem;
       return null;
     }
 
     protected bool BehaviorEquipStenchKiller(RogueGame game)
     {
-      if (!IsGoodStenchKillerSpot(game, m_Actor.Location.Map, m_Actor.Location.Position)) return false;
+      if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return false;
       if (GetEquippedStenchKiller() != null) return true;
       ItemSprayScent firstStenchKiller = GetFirstStenchKiller((Predicate<ItemSprayScent>)(it =>
       {

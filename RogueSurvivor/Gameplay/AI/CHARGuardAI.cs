@@ -69,10 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
 
       ActorAction tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
 
       // All free actions go above the check for enemies.
       List<Percept> enemies = FilterEnemies(percepts1);

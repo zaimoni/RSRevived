@@ -13280,7 +13280,7 @@ namespace djack.RogueSurvivor.Engine
           Inventory inventory = actor.Inventory;
           if (inventory == null || inventory.CountItems == 0) return null;
           Item it = inventory[m_Rules.Roll(0, inventory.CountItems)];
-          ActionUseItem actionUseItem = new ActionUseItem(actor, this, it);
+          ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsLegal()) return actionUseItem;
           if (it.IsEquipped) return new ActionUnequipItem(actor, this, it);
           return new ActionDropItem(actor, this, it);

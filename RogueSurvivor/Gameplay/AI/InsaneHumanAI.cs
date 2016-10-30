@@ -102,10 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(percepts);
       ActorAction tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
       if (game.Rules.RollChance(ATTACK_CHANCE))
       {
         List<Percept> enemies = FilterEnemies(percepts1);
