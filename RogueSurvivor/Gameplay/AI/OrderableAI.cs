@@ -251,7 +251,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Inventory.IsEmpty) return null;
       Item it = m_Actor.Inventory[0];
       if (it.IsEquipped) game.DoUnequipItem(m_Actor, it);
-      return new ActionDropItem(m_Actor, game, it);
+      return new ActionDropItem(m_Actor, it);
     }
 
     private ActorAction ExecuteReport(RogueGame game, List<Percept> percepts)

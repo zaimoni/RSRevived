@@ -518,10 +518,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           if (null != tmpAction)  return tmpAction;
         }
         tmpAction = BehaviorDropBoringEntertainment(game);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        if (null != tmpAction) return tmpAction;
       }
       if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position1 = m_Actor.Leader.Location.Position;
@@ -571,10 +568,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        if (null != tmpAction) return tmpAction;
       }
       if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
         tmpAction = BehaviorBuildLargeFortification(game, 1);

@@ -472,8 +472,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoUnequipItem(m_Actor, equippedWeapon);
         equippedWeapon = null;
       }
-      if (Directives.CanFireWeapons)
-      {
+      if (Directives.CanFireWeapons) {
         Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo(it => !IsItemTaboo(it));
         if (rangedWeaponWithAmmo != null && game.Rules.CanActorEquipItem(m_Actor, rangedWeaponWithAmmo)) {
           game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
@@ -492,12 +491,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorDropItem(RogueGame game, Item it)
     {
       if (it == null) return null;
-      if (Rules.CanActorUnequipItem(m_Actor, it)) {
-        game.DoUnequipItem(m_Actor,it);
-      }
+      if (Rules.CanActorUnequipItem(m_Actor, it)) game.DoUnequipItem(m_Actor,it);
       MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
-      if (!game.Rules.CanActorDropItem(m_Actor, it)) return null;
-      return new ActionDropItem(m_Actor, game, it);
+      return (game.Rules.CanActorDropItem(m_Actor, it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
     protected int ComputeTrapsMaxDamage(Map map, Point pos)
@@ -521,7 +517,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!itemTrap.IsActivated && !itemTrap.TrapModel.ActivatesWhenDropped)
         return new ActionUseItem(m_Actor, itemTrap);
       game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) reason, (object) itemTrap.AName));
-      return new ActionDropItem(m_Actor, game, (Item) itemTrap);
+      return new ActionDropItem(m_Actor, itemTrap);
     }
 
     protected bool IsGoodTrapSpot(RogueGame game, Map map, Point pos, out string reason)
@@ -529,38 +525,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       reason = "";
       bool flag = false;
       bool isInside = map.GetTileAt(pos).IsInside;
-      if (!isInside && map.GetCorpsesAt(pos) != null)
-      {
+      if (!isInside && map.GetCorpsesAt(pos) != null) {
         reason = "that corpse will serve as a bait for";
         flag = true;
-      }
-      else if (m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside != isInside)
-      {
+      } else if (m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside != isInside) {
         reason = "protecting the building with";
         flag = true;
-      }
-      else
-      {
+      } else {
         MapObject mapObjectAt = map.GetMapObjectAt(pos);
-        if (mapObjectAt != null && mapObjectAt is DoorWindow)
-        {
+        if (mapObjectAt != null && mapObjectAt is DoorWindow) {
           reason = "protecting the doorway with";
           flag = true;
-        }
-        else if (map.GetExitAt(pos) != null)
-        {
+        } else if (map.GetExitAt(pos) != null) {
           reason = "protecting the exit with";
           flag = true;
         }
       }
-      if (!flag)
-        return false;
+      if (!flag) return false;
       Inventory itemsAt = map.GetItemsAt(pos);
       return itemsAt == null || itemsAt.CountItemsMatching((Predicate<Item>) (it =>
       {
         ItemTrap itemTrap = it as ItemTrap;
-        if (itemTrap == null)
-          return false;
+        if (itemTrap == null) return false;
         return itemTrap.IsActivated;
       })) <= 3;
     }
@@ -680,7 +666,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (inventory.IsEmpty) return null;
       foreach (Item it in inventory.Items) {
         if (it is ItemEntertainment && m_Actor.IsBoredOf(it))
-          return new ActionDropItem(m_Actor, game, it);
+          return new ActionDropItem(m_Actor, it);
       }
       return null;
     }
