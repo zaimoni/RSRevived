@@ -480,12 +480,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorDropItem(RogueGame game, Item it)
+    protected ActionDropItem BehaviorDropItem(Item it)
     {
       if (it == null) return null;
-      if (Rules.CanActorUnequipItem(m_Actor, it)) game.DoUnequipItem(m_Actor,it);
-      MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+game.Session.CurrentMap.LocalTime.TurnCounter);
-      return (game.Rules.CanActorDropItem(m_Actor, it) ? new ActionDropItem(m_Actor, it) : null);
+      if (Rules.CanActorUnequipItem(m_Actor, it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
+      MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
+      ActionDropItem tmp = new ActionDropItem(m_Actor, it);
+      return (tmp.IsLegal() ? tmp : null);
     }
 
     protected int ComputeTrapsMaxDamage(Map map, Point pos)
@@ -1030,14 +1031,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // not-best body armor can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
         ItemBodyArmor armor = GetWorstBodyArmor();
-        if (null != armor) return BehaviorDropItem(game, armor);  
+        if (null != armor) return BehaviorDropItem(armor);  
       }
 
       // not-best melee weapon can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon))) {
         ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
         // ok to drop if either the weapon won't become interesting, or is less interesting that the other item
-        if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || (it is ItemMeleeWeapon && RHSMoreInteresting(weapon, it)))) return BehaviorDropItem(game, weapon);  
+        if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || (it is ItemMeleeWeapon && RHSMoreInteresting(weapon, it)))) return BehaviorDropItem(weapon);  
       }
 
       // another behavior is responsible for pre-emptively eating perishable food
@@ -1109,7 +1110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // ditch an unwanted tracker if possible
       ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it2 => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it2.Model.ID));
-      if (null != tmpTracker) return BehaviorDropItem(game, tmpTracker);
+      if (null != tmpTracker) return BehaviorDropItem(tmpTracker);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemLight) return null;
@@ -1120,15 +1121,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // ditch unimportant items
       ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>(null);
-      if (null != tmpBarricade) return BehaviorDropItem(game, tmpBarricade);
+      if (null != tmpBarricade) return BehaviorDropItem(tmpBarricade);
       ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>(null);
-      if (null != tmpTrap) return BehaviorDropItem(game, tmpTrap);
+      if (null != tmpTrap) return BehaviorDropItem(tmpTrap);
       ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>(null);
-      if (null != tmpEntertainment) return BehaviorDropItem(game, tmpEntertainment);
+      if (null != tmpEntertainment) return BehaviorDropItem(tmpEntertainment);
       ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>(null);
-      if (null != tmpMedicine) return BehaviorDropItem(game, tmpMedicine);
+      if (null != tmpMedicine) return BehaviorDropItem(tmpMedicine);
       ItemLight tmpLight = inv.GetFirstMatching<ItemLight>(null);
-      if (null != tmpLight) return BehaviorDropItem(game, tmpLight);
+      if (null != tmpLight) return BehaviorDropItem(tmpLight);
 
       // uninteresting ammo
       ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>((Predicate<ItemAmmo>) (ammo => !IsInterestingItem(ammo)));
@@ -1138,7 +1139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
           if (game.Rules.CanActorUseItem(m_Actor, tmpAmmo)) return new ActionUseItem(m_Actor, tmpAmmo);
         }
-        return BehaviorDropItem(game, tmpAmmo);
+        return BehaviorDropItem(tmpAmmo);
       }
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
@@ -1146,13 +1147,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpRw2)
       {
          bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
-         if (!reloadable) return BehaviorDropItem(game, tmpRw2);
+         if (!reloadable) return BehaviorDropItem(tmpRw2);
       }
 
       // grenades next
       if (it is ItemGrenade) return null;
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>(null);
-      if (null != tmpGrenade) return BehaviorDropItem(game, tmpGrenade);
+      if (null != tmpGrenade) return BehaviorDropItem(tmpGrenade);
 
       // do not pick up trackers if it means dropping body armor or higher priority
       if (it is ItemTracker) return null;
@@ -1161,7 +1162,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX dropping body armor to get a better one should be ok
       if (it is ItemBodyArmor) return null;
       ItemBodyArmor tmpBodyArmor = inv.GetFirstMatching<ItemBodyArmor>(null);
-      if (null != tmpBodyArmor) return BehaviorDropItem(game, tmpBodyArmor);
+      if (null != tmpBodyArmor) return BehaviorDropItem(tmpBodyArmor);
 
       // give up
       return null;

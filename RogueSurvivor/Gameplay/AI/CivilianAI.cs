@@ -391,11 +391,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorDropUselessItem(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      tmpAction = BehaviorDropUselessItem();
+      if (null != tmpAction) return tmpAction;
 
       if (null == enemies && Directives.CanTakeItems)
       {
