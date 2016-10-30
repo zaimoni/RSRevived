@@ -220,7 +220,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (target != null) {
           tmpAction = BehaviorLeadActor(game, target);
           if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
             m_Actor.TargetActor = target.Percepted as Actor;
             return tmpAction;
           }
