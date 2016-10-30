@@ -266,14 +266,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (en.HitPoints>tmp_attack.DamageValue/2) continue;
               // can one-shot
               if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
-                tmpAction = BehaviorMeleeAttack(game,en);
+                tmpAction = BehaviorMeleeAttack(en);
                 if (null != tmpAction) {
                   game.DoEquipItem(m_Actor, tmp_melee);
                   return tmpAction;
                 }
               }
               if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
-                tmpAction = BehaviorMeleeAttack(game,en);
+                tmpAction = BehaviorMeleeAttack(en);
                 if (null != tmpAction) {
                   game.DoEquipItem(m_Actor, tmp_melee);
                   return tmpAction;
@@ -288,11 +288,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (en.HitPoints>tmp_attack.DamageValue/2) continue;
               // can one-shot
               if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {
-                tmpAction = BehaviorMeleeAttack(game,en);
+                tmpAction = BehaviorMeleeAttack(en);
                 if (null != tmpAction) return tmpAction;
               }
               if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
-                tmpAction = BehaviorMeleeAttack(game,en);
+                tmpAction = BehaviorMeleeAttack(en);
                 if (null != tmpAction) return tmpAction;
               }
             }
@@ -568,10 +568,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.DONT_BACKTRACK);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        if (null != tmpAction) return tmpAction;
       }
       if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);

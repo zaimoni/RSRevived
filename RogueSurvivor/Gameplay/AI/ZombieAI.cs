@@ -98,7 +98,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (actorAction != null) {
           m_MemLOSSensor.Clear();
-          m_Actor.Activity = Activity.IDLE;
           return actorAction;
         }
       }

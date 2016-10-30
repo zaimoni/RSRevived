@@ -133,16 +133,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.IDLE;
         game.DoEmote(m_Actor, text);
       }
-      if (game.Rules.RollChance(USE_EXIT_CHANCE))
-      {
+      if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
         ActorAction actorAction2 = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-        if (actorAction2 != null)
-        {
-                    m_Actor.Activity = Activity.IDLE;
-          return actorAction2;
-        }
+        if (actorAction2 != null) return actorAction2;
       }
-            m_Actor.Activity = Activity.IDLE;
+      m_Actor.Activity = Activity.IDLE;
       return BehaviorWander(game);
     }
   }

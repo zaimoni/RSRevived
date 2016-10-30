@@ -440,11 +440,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((choiceEval != null) ? new ActionBump(m_Actor, game, choiceEval.Choice) : null);
     }
 
-    protected ActorAction BehaviorMeleeAttack(RogueGame game, Actor target)
+    protected ActorAction BehaviorMeleeAttack(Actor target)
     {
       Contract.Requires(null != target);
-      if (!game.Rules.CanActorMeleeAttack(m_Actor, target)) return null;
-      return new ActionMeleeAttack(m_Actor, game, target);
+      ActionMeleeAttack tmp = new ActionMeleeAttack(m_Actor, target);
+      return (tmp.IsLegal() ? tmp : null);
     }
 
     protected ActorAction BehaviorRangedAttack(RogueGame game, Actor target)
@@ -735,7 +735,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target)
     {
       Actor actor = target.Percepted as Actor;
-      ActorAction tmpAction = BehaviorMeleeAttack(game, actor);
+      ActorAction tmpAction = BehaviorMeleeAttack(actor);
       if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
         return BehaviorUseMedecine(game, 0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
@@ -803,8 +803,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
-        if (m_Actor.Model.Abilities.CanUseMapObjects)
-        {
+        if (m_Actor.Model.Abilities.CanUseMapObjects) {
           BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
           {
             Point point = m_Actor.Location.Position + dir;
@@ -814,8 +813,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (choiceEval != null)
             return (ActorAction) new ActionCloseDoor(m_Actor, game, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
-        if (m_Actor.Model.Abilities.CanBarricade)
-        {
+        if (m_Actor.Model.Abilities.CanBarricade) {
           BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
           {
             Point point = m_Actor.Location.Position + dir;
@@ -825,37 +823,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (choiceEval != null)
             return (ActorAction) new ActionBarricadeDoor(m_Actor, game, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))
-        {
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE)) {
           ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);
-          if (actorAction != null)
-          {
+          if (actorAction != null) {
             bool flag3 = true;
-            if (m_Actor.HasLeader)
-            {
+            if (m_Actor.HasLeader) {
               Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
               if (exitAt != null)
                 flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
-            if (flag3)
-            {
-                            m_Actor.Activity = Activity.FLEEING;
+            if (flag3) {
+              m_Actor.Activity = Activity.FLEEING;
               return actorAction;
             }
           }
         }
-        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location))
-        {
+        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
           ActorAction actorAction = BehaviorUseMedecine(game, 2, 2, 1, 0, 0);
-          if (actorAction != null)
-          {
-                        m_Actor.Activity = Activity.FLEEING;
+          if (actorAction != null) {
+            m_Actor.Activity = Activity.FLEEING;
             return actorAction;
           }
         }
         ActorAction actorAction1 = BehaviorWalkAwayFrom(game, enemies);
-        if (actorAction1 != null)
-        {
+        if (actorAction1 != null) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
           return actorAction1;
@@ -864,7 +855,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
-          return BehaviorMeleeAttack(game, target.Percepted as Actor);
+          return BehaviorMeleeAttack(target.Percepted as Actor);
         }
       }
       else
@@ -946,7 +937,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;
         if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
-          return new ActionMeleeAttack(m_Actor, game, actorAt);
+          return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {
         MapObject mapObjectAt = exitAt.Location.MapObject;

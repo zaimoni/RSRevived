@@ -628,7 +628,7 @@ namespace djack.RogueSurvivor.Engine
       if (actorAt != null) {
         if (actor.IsEnemyOf(actorAt)) {
           if (CanActorMeleeAttack(actor, actorAt, out reason))
-            return new ActionMeleeAttack(actor, game, actorAt);
+            return new ActionMeleeAttack(actor, actorAt);
           return null;
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
