@@ -38,11 +38,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LOSSensor.Forget(m_Actor);
     }
 
-    protected override List<Percept> UpdateSensors(RogueGame game)
+    public override List<Percept> UpdateSensors()
     {
-      List<Percept> perceptList = m_LOSSensor.Sense(game, m_Actor);
-      perceptList.AddRange((IEnumerable<Percept>)m_LivingSmellSensor.Sense(game, m_Actor));
-      perceptList.AddRange((IEnumerable<Percept>)m_MasterSmellSensor.Sense(game, m_Actor));
+      List<Percept> perceptList = m_LOSSensor.Sense(m_Actor);
+      perceptList.AddRange(m_LivingSmellSensor.Sense(m_Actor));
+      perceptList.AddRange(m_MasterSmellSensor.Sense(m_Actor));
       return perceptList;
     }
 

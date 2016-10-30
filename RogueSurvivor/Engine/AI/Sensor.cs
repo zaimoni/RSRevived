@@ -13,6 +13,6 @@ namespace djack.RogueSurvivor.Engine.AI
   [Serializable]
   internal abstract class Sensor
   {
-    public abstract List<Percept> Sense(RogueGame game, Actor actor);
+    public abstract List<Percept> Sense(Actor actor);
   }
 }

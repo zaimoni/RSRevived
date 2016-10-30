@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     public virtual void TakeControl(Actor actor)
     {
       m_Actor = actor;
-      if (null!=actor.Location.Map) UpdateSensors(RogueForm.Game);
+      if (null!=actor.Location.Map) UpdateSensors();
     }
 
     public virtual void LeaveControl()
@@ -36,8 +36,7 @@ namespace djack.RogueSurvivor.Data
        }
     }
 
-    protected abstract List<Engine.AI.Percept> UpdateSensors(RogueGame game);
-    public void UpdateSensors() { UpdateSensors(RogueForm.Game); }
+    public abstract List<Engine.AI.Percept> UpdateSensors();
 
     // vision
     public abstract HashSet<Point> FOV { get; }

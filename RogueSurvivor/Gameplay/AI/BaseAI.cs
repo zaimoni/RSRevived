@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Ensures(null != Contract.Result<ActorAction>());
       Contract.Ensures(Contract.Result<ActorAction>().IsLegal());
-      List<Percept> percepts = UpdateSensors(game);
+      List<Percept> percepts = UpdateSensors();
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       ActorAction actorAction = SelectAction(game, percepts);

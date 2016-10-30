@@ -59,9 +59,9 @@ namespace djack.RogueSurvivor.Data
     public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return m_itemMemory.WhatHaveISeen(); }
     public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return m_itemMemory.WhereIs(x); }
 
-    protected override List<Engine.AI.Percept> UpdateSensors(RogueGame game)
+    public override List<Engine.AI.Percept> UpdateSensors()
     {
-      return m_LOSSensor.Sense(game, m_Actor);
+      return m_LOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }

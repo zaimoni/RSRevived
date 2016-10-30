@@ -49,9 +49,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor.Forget(m_Actor);
     }
 
-    protected override List<Percept> UpdateSensors(RogueGame game)
+    public override List<Percept> UpdateSensors()
     {
-      return m_MemLOSSensor.Sense(game, m_Actor);
+      return m_MemLOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }

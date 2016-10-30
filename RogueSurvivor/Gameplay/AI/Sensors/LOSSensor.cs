@@ -38,10 +38,10 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_Filters = filters;
     }
 
-    public override List<Percept> Sense(RogueGame game, Actor actor)
+    public override List<Percept> Sense(Actor actor)
     {
-      m_FOV = LOS.ComputeFOVFor(actor, actor.Location.Map.LocalTime, game.Session.World.Weather);
-      int num = actor.FOVrange(actor.Location.Map.LocalTime, game.Session.World.Weather);
+      m_FOV = LOS.ComputeFOVFor(actor, actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      int num = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
       List<Percept> perceptList = new List<Percept>();
       if ((m_Filters & LOSSensor.SensingFilter.ACTORS) != LOSSensor.SensingFilter.NONE) {
         ThreatTracking threats = actor.Threats;

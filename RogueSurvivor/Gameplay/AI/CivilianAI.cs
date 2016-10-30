@@ -120,9 +120,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Emotes = (m_Actor != tmp.BigBear.TheActor ? (m_Actor != tmp.FamuFataru.TheActor ? (m_Actor != tmp.Santaman.TheActor ? (m_Actor != tmp.Roguedjack.TheActor ? (m_Actor != tmp.Duckman.TheActor ? (m_Actor != tmp.HansVonHanz.TheActor ? CivilianAI.FIGHT_EMOTES : CivilianAI.HANS_VON_HANZ_EMOTES) : CivilianAI.DUCKMAN_EMOTES) : CivilianAI.ROGUEDJACK_EMOTES) : CivilianAI.SANTAMAN_EMOTES) : CivilianAI.FAMU_FATARU_EMOTES) : CivilianAI.BIG_BEAR_EMOTES);
     }
 
-    protected override List<Percept> UpdateSensors(RogueGame game)
+    public override List<Percept> UpdateSensors()
     {
-      return m_LOSSensor.Sense(game, m_Actor);
+      return m_LOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
