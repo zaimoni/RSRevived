@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorBuildFortification(m_Actor, location.Position, isLarge)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
-        tmpAction = new ActionBuildFortification(m_Actor, game, location.Position, isLarge);
+        tmpAction = new ActionBuildFortification(m_Actor, location.Position, isLarge);
         if (!tmpAction.IsLegal()) return null;
         SetOrder(null);
         return tmpAction;
@@ -693,8 +693,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true))
-        return null;
+      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
@@ -705,59 +704,57 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int num2 = map.CountAdjacentInMap(point, (Predicate<Point>) (ptAdj =>
         {
           Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
-          if (fortification != null)
-            return !fortification.IsTransparent;
-          return false;
+          return fortification != null && !fortification.IsTransparent;
         }));
         return num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance) || num1 == 0 && num2 == 1;
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, true)) return null;
-      return new ActionBuildFortification(m_Actor, game, point1, true);
+      return new ActionBuildFortification(m_Actor, point1, true);
     }
 
-    protected bool IsDoorwayOrCorridor(RogueGame game, Map map, Point pos)
+    protected bool IsDoorwayOrCorridor(Map map, Point pos)
     {
-      if (!map.GetTileAt(pos).Model.IsWalkable)
-        return false;
-      Point p1 = pos + Direction.N;
-      bool flag1 = map.IsInBounds(p1) && !map.GetTileAt(p1).Model.IsWalkable;
-      Point p2 = pos + Direction.S;
-      bool flag2 = map.IsInBounds(p2) && !map.GetTileAt(p2).Model.IsWalkable;
-      Point p3 = pos + Direction.E;
-      bool flag3 = map.IsInBounds(p3) && !map.GetTileAt(p3).Model.IsWalkable;
-      Point p4 = pos + Direction.W;
-      bool flag4 = map.IsInBounds(p4) && !map.GetTileAt(p4).Model.IsWalkable;
+      if (!map.GetTileAt(pos).Model.IsWalkable) return false;
       Point p5 = pos + Direction.NE;
-      bool flag5 = map.IsInBounds(p5) && !map.GetTileAt(p5).Model.IsWalkable;
+      bool flag_ne = map.IsInBounds(p5) && !map.GetTileAt(p5).Model.IsWalkable;
       Point p6 = pos + Direction.NW;
-      bool flag6 = map.IsInBounds(p6) && !map.GetTileAt(p6).Model.IsWalkable;
+      bool flag_nw = map.IsInBounds(p6) && !map.GetTileAt(p6).Model.IsWalkable;
       Point p7 = pos + Direction.SE;
-      bool flag7 = map.IsInBounds(p7) && !map.GetTileAt(p7).Model.IsWalkable;
+      bool flag_se = map.IsInBounds(p7) && !map.GetTileAt(p7).Model.IsWalkable;
       Point p8 = pos + Direction.SW;
-      bool flag8 = map.IsInBounds(p8) && !map.GetTileAt(p8).Model.IsWalkable;
-      bool flag9 = !flag5 && !flag7 && !flag6 && !flag8;
-      return flag9 && flag1 && (flag2 && !flag3) && !flag4 || flag9 && flag3 && (flag4 && !flag1) && !flag2;
+      bool flag_sw = map.IsInBounds(p8) && !map.GetTileAt(p8).Model.IsWalkable;
+      bool no_corner = !flag_ne && !flag_se && !flag_nw && !flag_sw;
+      if (!no_corner) return false;
+
+      Point p1 = pos + Direction.N;
+      bool flag_n = map.IsInBounds(p1) && !map.GetTileAt(p1).Model.IsWalkable;
+      Point p2 = pos + Direction.S;
+      bool flag_s = map.IsInBounds(p2) && !map.GetTileAt(p2).Model.IsWalkable;
+      Point p3 = pos + Direction.E;
+      bool flag_e = map.IsInBounds(p3) && !map.GetTileAt(p3).Model.IsWalkable;
+      Point p4 = pos + Direction.W;
+      bool flag_w = map.IsInBounds(p4) && !map.GetTileAt(p4).Model.IsWalkable;
+      return (flag_n && flag_s && !flag_e && !flag_w) || (flag_e && flag_w && !flag_n && !flag_s);
     }
 
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false))
-        return null;
+      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.GetExitAt(point) != null)
           return false;
-        return IsDoorwayOrCorridor(game, map, point);
+        return IsDoorwayOrCorridor(map, point);
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, false)) return null;
-      return new ActionBuildFortification(m_Actor, game, point1, false);
+      return new ActionBuildFortification(m_Actor, point1, false);
     }
 
     protected ActorAction BehaviorSleep(RogueGame game)
