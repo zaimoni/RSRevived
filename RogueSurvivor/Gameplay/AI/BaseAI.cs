@@ -696,7 +696,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (other.Location.Map != m_Actor.Location.Map) {
         Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exitAt.ToMap == other.Location.Map && game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position))
-          return new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
+          return new ActionUseExit(m_Actor, m_Actor.Location.Position);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(game, otherPosition);
       if (actorAction == null || !actorAction.IsLegal()) return null;
@@ -725,15 +725,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorTrackScent(RogueGame game, List<Percept> scents)
     {
-      if (scents == null || scents.Count == 0)
-        return (ActorAction) null;
+      if (scents == null || scents.Count == 0) return null;
       Percept percept = FilterStrongestScent(scents);
       Map map = m_Actor.Location.Map;
       if (!(m_Actor.Location.Position == percept.Location.Position))
-        return BehaviorIntelligentBumpToward(game, percept.Location.Position) ?? (ActorAction) null;
+        return BehaviorIntelligentBumpToward(game, percept.Location.Position);
       if (map.GetExitAt(m_Actor.Location.Position) != null && m_Actor.Model.Abilities.AI_CanUseAIExits)
         return BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorChargeEnemy(RogueGame game, Percept target)
@@ -957,8 +956,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
           return new ActionBreak(m_Actor, game, mapObjectAt);
       }
-      if (!game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position)) return null;
-      return new ActionUseExit(m_Actor, m_Actor.Location.Position, game);
+      return (game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
     }
 
     protected ItemBodyArmor GetWorstBodyArmor()
