@@ -550,7 +550,6 @@ retry:    Percept percept = FilterNearest(perceptList2);
         tmpAction = BehaviorAttackBarricade(game);
         if (null != tmpAction) {
           game.DoEmote(m_Actor, "Open damn it! I know there is food there!");
-          m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
         if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {

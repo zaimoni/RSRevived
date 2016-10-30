@@ -575,15 +575,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return doorWindow.IsBarricaded;
         return false;
       }));
-      if (pointList == null)
-        return (ActorAction) null;
+      if (pointList == null) return null;
       DoorWindow doorWindow1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]) as DoorWindow;
-      ActionBreak actionBreak = new ActionBreak(m_Actor, game, (MapObject) doorWindow1);
-      if (actionBreak.IsLegal())
-        return (ActorAction) actionBreak;
-      return (ActorAction) null;
+      ActionBreak actionBreak = new ActionBreak(m_Actor, doorWindow1);
+      return (actionBreak.IsLegal() ? actionBreak : null);
     }
 
+    // intentionally disabled in alpha 9; for ZM AI
     protected ActorAction BehaviorAssaultBreakables(RogueGame game, HashSet<Point> fov)
     {
       Map map = m_Actor.Location.Map;
@@ -599,9 +597,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Percept percept = FilterNearest(percepts);
       if (!Rules.IsAdjacent(m_Actor.Location.Position, percept.Location.Position))
         return BehaviorIntelligentBumpToward(game, percept.Location.Position);
-      ActionBreak actionBreak = new ActionBreak(m_Actor, game, percept.Percepted as MapObject);
-      if (actionBreak.IsLegal()) return actionBreak;
-      return null;
+      ActionBreak actionBreak = new ActionBreak(m_Actor, percept.Percepted as MapObject);
+      return (actionBreak.IsLegal() ? actionBreak : null);
     }
 
     protected ActorAction BehaviorPushNonWalkableObject(RogueGame game)
@@ -954,7 +951,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {
         MapObject mapObjectAt = exitAt.Location.MapObject;
         if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
-          return new ActionBreak(m_Actor, game, mapObjectAt);
+          return new ActionBreak(m_Actor, mapObjectAt);
       }
       return (game.Rules.CanActorUseExit(m_Actor, m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
     }

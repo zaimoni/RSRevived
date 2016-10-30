@@ -658,12 +658,10 @@ namespace djack.RogueSurvivor.Engine
         if (CanActorGetItemFromContainer(actor, point, out reason))
           return (ActorAction) new ActionGetFromContainer(actor, game, point);
         if (actor.Model.Abilities.CanBashDoors && IsBreakableFor(actor, mapObjectAt, out reason))
-          return (ActorAction) new ActionBreak(actor, game, mapObjectAt);
+          return new ActionBreak(actor, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
-        if (powGen != null)
-        {
-          if (powGen.IsOn)
-          {
+        if (powGen != null) {
+          if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
               return new ActionRechargeItemBattery(actor, game, tmp);

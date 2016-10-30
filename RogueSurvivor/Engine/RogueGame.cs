@@ -13275,7 +13275,7 @@ namespace djack.RogueSurvivor.Engine
           Direction direction = m_Rules.RollDirection();
           MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(actor.Location.Position + direction);
           if (mapObjectAt == null) return null;
-          return new ActionBreak(actor, this, mapObjectAt);
+          return new ActionBreak(actor, mapObjectAt);
         case 3:
           Inventory inventory = actor.Inventory;
           if (inventory == null || inventory.CountItems == 0) return null;

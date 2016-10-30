@@ -203,10 +203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       tmpAction = BehaviorAttackBarricade(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
       if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position = m_Actor.Leader.Location.Position;
         bool isVisible = FOV.Contains(position);
