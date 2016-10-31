@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.IsClosableFor(m_Actor, m_Door, out m_FailReason);
+      return m_Actor.CanClose(m_Door, out m_FailReason);
     }
 
     public override void Perform()

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics.Contracts;
 
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
 
@@ -885,6 +886,26 @@ namespace djack.RogueSurvivor.Data
     public bool CanPush(MapObject mapObj)
     {
       return string.IsNullOrEmpty(ReasonCantPush(mapObj));
+    }
+
+    private string ReasonCantClose(DoorWindow door)
+    {
+      Contract.Requires(null != door);
+      if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
+      if (!door.IsOpen) return "not open";
+      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
+      return "";
+    }
+
+    public bool CanClose(DoorWindow door, out string reason)
+    {
+      reason = ReasonCantClose(door);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanClose(DoorWindow door)
+    {
+      return string.IsNullOrEmpty(ReasonCantClose(door));
     }
 
     // event timing

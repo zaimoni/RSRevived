@@ -767,7 +767,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           {
             Point point = m_Actor.Location.Position + dir;
             DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
-            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && game.Rules.IsClosableFor(m_Actor, door)) && (Rules.GridDistance(point, enemy.Location.Position) != 1 || !game.Rules.IsClosableFor(enemy, door));
+            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanClose(door)) && (Rules.GridDistance(point, enemy.Location.Position) != 1 || !enemy.CanClose(door));
           }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
           if (choiceEval != null)
             return new ActionCloseDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
@@ -869,8 +869,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       DoorWindow door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
       if (door == null) return null;
-      ActionCloseDoor tmp = new ActionCloseDoor(m_Actor, door);
-      return (tmp.IsLegal() ? tmp : null);
+      return (m_Actor.CanClose(door) ? new ActionCloseDoor(m_Actor, door) : null);
     }
 
     protected ActorAction BehaviorUseExit(RogueGame game, BaseAI.UseExitFlags useFlags)
