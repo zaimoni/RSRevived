@@ -506,35 +506,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemTrap itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
       if (itemTrap == null) return null;
       string reason;
-      if (!IsGoodTrapSpot(game, m_Actor.Location.Map, m_Actor.Location.Position, out reason)) return null;
+      if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out reason)) return null;
       if (!itemTrap.IsActivated && !itemTrap.TrapModel.ActivatesWhenDropped)
         return new ActionUseItem(m_Actor, itemTrap);
       game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) reason, (object) itemTrap.AName));
       return new ActionDropItem(m_Actor, itemTrap);
     }
 
-    protected bool IsGoodTrapSpot(RogueGame game, Map map, Point pos, out string reason)
+    protected bool IsGoodTrapSpot(Map map, Point pos, out string reason)
     {
       reason = "";
-      bool flag = false;
       bool isInside = map.GetTileAt(pos).IsInside;
-      if (!isInside && map.GetCorpsesAt(pos) != null) {
-        reason = "that corpse will serve as a bait for";
-        flag = true;
-      } else if (m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside != isInside) {
-        reason = "protecting the building with";
-        flag = true;
-      } else {
+      if (!isInside && map.GetCorpsesAt(pos) != null) reason = "that corpse will serve as a bait for";
+      else if (m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside != isInside) reason = "protecting the building with";
+      else {
         MapObject mapObjectAt = map.GetMapObjectAt(pos);
-        if (mapObjectAt != null && mapObjectAt is DoorWindow) {
-          reason = "protecting the doorway with";
-          flag = true;
-        } else if (map.GetExitAt(pos) != null) {
-          reason = "protecting the exit with";
-          flag = true;
-        }
+        if (mapObjectAt != null && mapObjectAt is DoorWindow) reason = "protecting the doorway with";
+        else if (map.GetExitAt(pos) != null) reason = "protecting the exit with";
       }
-      if (!flag) return false;
+      if (string.IsNullOrEmpty(reason)) return false;
       Inventory itemsAt = map.GetItemsAt(pos);
       return itemsAt == null || itemsAt.CountItemsMatching((Predicate<Item>) (it =>
       {
