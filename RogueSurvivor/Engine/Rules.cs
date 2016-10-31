@@ -992,47 +992,6 @@ namespace djack.RogueSurvivor.Engine
       return actorList;
     }
 
-    public bool CanActorFireAt(Actor actor, Actor target)   // must be public
-    {
-      string reason;
-      return CanActorFireAt(actor, target, null, out reason);
-    }
-
-    public bool CanActorFireAt(Actor actor, Actor target, List<Point> LoF, out string reason)  // must be public
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (target == null) throw new ArgumentNullException("target");
-      if (LoF != null) LoF.Clear();
-      ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
-      if (itemRangedWeapon == null)
-      {
-        reason = "no ranged weapon equipped";
-        return false;
-      }
-      if (actor.CurrentRangedAttack.Range < Rules.GridDistance(actor.Location.Position, target.Location.Position))
-      {
-        reason = "out of range";
-        return false;
-      }
-      if (itemRangedWeapon.Ammo <= 0)
-      {
-        reason = "no ammo left";
-        return false;
-      }
-      if (!LOS.CanTraceFireLine(actor.Location, target.Location.Position, actor.CurrentRangedAttack.Range, LoF))
-      {
-        reason = "no line of fire";
-        return false;
-      }
-      if (target.IsDead)
-      {
-        reason = "already dead!";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF)
     {
       string reason;

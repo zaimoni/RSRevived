@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
     {
-      return FilterActors(percepts, (Predicate<Actor>) (target => game.Rules.CanActorFireAt(m_Actor, target)));
+      return FilterActors(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
     }
 
     protected List<Percept> FilterStacks(List<Percept> percepts)
@@ -441,8 +441,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionRangedAttack BehaviorRangedAttack(Actor target)
     {
       Contract.Requires(null != target);
-      ActionRangedAttack tmp = new ActionRangedAttack(m_Actor, target);
-      return (tmp.IsLegal() ? tmp : null);
+      return (m_Actor.CanFireAt(target) ? new ActionRangedAttack(m_Actor, target) : null);
     }
 
     /// <returns>null, or a non-free action</returns>

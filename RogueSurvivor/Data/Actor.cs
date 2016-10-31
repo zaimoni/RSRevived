@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics.Contracts;
 
+using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
 
 namespace djack.RogueSurvivor.Data
@@ -553,6 +554,30 @@ namespace djack.RogueSurvivor.Data
       get {
         return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.NECROLOGY);
       }
+    }
+
+    private string ReasonCantFireAt(Actor target, List<Point> LoF)
+    {
+      Contract.Requires(null != target);
+      if (LoF != null) LoF.Clear();
+      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      if (itemRangedWeapon == null) return "no ranged weapon equipped";
+      if (CurrentRangedAttack.Range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
+      if (!LOS.CanTraceFireLine(Location, target.Location.Position, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CanFireAt(Actor target, List<Point> LoF, out string reason)
+    {
+      reason = ReasonCantFireAt(target,LoF);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanFireAt(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantFireAt(target, null));
     }
 
     public string ReasonCantMeleeAttack(Actor target)

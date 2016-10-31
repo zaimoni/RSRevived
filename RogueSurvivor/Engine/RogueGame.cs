@@ -5016,7 +5016,7 @@ namespace djack.RogueSurvivor.Engine
         Actor actor = enemiesInFov[index];
         LoF.Clear();
         string reason;
-        bool flag3 = m_Rules.CanActorFireAt(player, actor, LoF, out reason);
+        bool flag3 = player.CanFireAt(actor, LoF, out reason);
         int num1 = Rules.GridDistance(player.Location.Position, actor.Location.Position);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
