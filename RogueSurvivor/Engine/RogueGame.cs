@@ -5327,32 +5327,26 @@ namespace djack.RogueSurvivor.Engine
       {
         string.Format(PUSH_OBJECT_MODE_TEXT, (object) mapObj.TheName)
       }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
-      do
-      {
-                RedrawPlayScreen();
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), new Size(32, 32))));
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        if (direction == null) flag1 = false;
+        else if (direction != Direction.NEUTRAL) {
           Point point = mapObj.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             string reason;
-            if (m_Rules.CanPushObjectTo(mapObj, point, out reason))
-            {
-                            DoPush(player, mapObj, point);
+            if (mapObj.CanPushTo(point, out reason)) {
+              DoPush(player, mapObj, point);
               flag1 = false;
               flag2 = true;
-            }
-            else
-                            AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -5360,15 +5354,14 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
+      ClearOverlays();
+      AddOverlay(new RogueGame.OverlayPopup(new string[1]
       {
         string.Format(SHOVE_ACTOR_MODE_TEXT, (object) other.TheName)
       }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(32, 32))));
-      do
-      {
-                RedrawPlayScreen();
+      AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), new Size(32, 32))));
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
         if (direction == null)
           flag1 = false;

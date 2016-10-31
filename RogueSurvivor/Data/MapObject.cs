@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics.Contracts;
+using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -264,6 +265,27 @@ namespace djack.RogueSurvivor.Data
       m_FireState = burnable;
       if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
+    }
+
+    private string ReasonCantPushTo(Point toPos)
+    {
+      Map tmp = Location.Map;
+      if (!tmp.IsInBounds(toPos)) return "out of map";
+      if (!tmp.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) return "blocked by an obstacle";
+      if (tmp.GetMapObjectAt(toPos) != null) return "blocked by an object";
+      if (tmp.GetActorAt(toPos) != null) return "blocked by someone";
+      return "";
+    }
+
+    public bool CanPushTo(Point toPos, out string reason)
+    { 
+      reason = ReasonCantPushTo(toPos);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPushTo(Point toPos)
+    { 
+      return string.IsNullOrEmpty(ReasonCantPushTo(toPos));
     }
 
     // flag handling
