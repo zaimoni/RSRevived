@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics.Contracts;
 
+using Rules = djack.RogueSurvivor.Engine.Rules;
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -551,6 +553,33 @@ namespace djack.RogueSurvivor.Data
       get {
         return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.NECROLOGY);
       }
+    }
+
+    public string ReasonCantMeleeAttack(Actor target)
+    {
+      Contract.Requires(null != target);
+      if (Location.Map == target.Location.Map) {
+        if (!Rules.IsAdjacent(Location.Position, target.Location.Position)) return "not adjacent";
+      } else {
+        Exit exitAt = Location.Map.GetExitAt(Location.Position);
+        if (exitAt == null) return "not reachable";
+        if (target.Location.Map.GetExitAt(target.Location.Position) == null) return "not reachable";
+        if (exitAt.Location != target.Location) return "not reachable";
+      }
+      if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CanMeleeAttack(Actor target, out string reason)
+    {
+      reason = ReasonCantMeleeAttack(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanMeleeAttack(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
     }
 
     public Attack HypotheticalMeleeAttack(Attack baseAttack, Actor target = null)

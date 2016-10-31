@@ -435,8 +435,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionMeleeAttack BehaviorMeleeAttack(Actor target)
     {
       Contract.Requires(null != target);
-      ActionMeleeAttack tmp = new ActionMeleeAttack(m_Actor, target);
-      return (tmp.IsLegal() ? tmp : null);
+      return (m_Actor.CanMeleeAttack(target) ? new ActionMeleeAttack(m_Actor, target) : null);
     }
 
     protected ActionRangedAttack BehaviorRangedAttack(Actor target)
@@ -884,7 +883,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;
-        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && game.Rules.CanActorMeleeAttack(m_Actor, actorAt))
+        if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && m_Actor.CanMeleeAttack(actorAt))
           return new ActionMeleeAttack(m_Actor, actorAt);
       }
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {

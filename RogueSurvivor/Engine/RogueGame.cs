@@ -4893,7 +4893,7 @@ namespace djack.RogueSurvivor.Engine
             string reason;
             if (actorAt != null) {
               if (player.IsEnemyOf(actorAt)) {
-                if (m_Rules.CanActorMeleeAttack(player, actorAt, out reason)) {
+                if (player.CanMeleeAttack(actorAt, out reason)) {
                   DoMeleeAttack(player, actorAt);
                   flag1 = false;
                   flag2 = true;
