@@ -977,40 +977,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorPush(Actor actor, MapObject mapObj)
-    {
-      string reason;
-      return CanActorPush(actor, mapObj, out reason);
-    }
-
-    public bool CanActorPush(Actor actor, MapObject mapObj, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (mapObj == null) throw new ArgumentNullException("mapObj");
-      if (!actor.CanPush) {
-        reason = "cannot push objects";
-        return false;
-      }
-      if (actor.IsTired) {
-        reason = "tired";
-        return false;
-      }
-      if (!mapObj.IsMovable) {
-        reason = "cannot be moved";
-        return false;
-      }
-      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) {
-        reason = "someone is there";
-        return false;
-      }
-      if (mapObj.IsOnFire) {
-        reason = "on fire";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanPushObjectTo(MapObject mapObj, Point toPos)
     {
       string reason;
@@ -1049,7 +1015,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == null) throw new ArgumentNullException("actor");
       if (other == null) throw new ArgumentNullException("other");
-      if (!actor.CanPush) {
+      if (!actor.AbleToPush) {
         reason = "cannot shove people";
         return false;
       }

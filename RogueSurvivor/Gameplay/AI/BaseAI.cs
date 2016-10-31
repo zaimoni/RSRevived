@@ -324,9 +324,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = m_Actor.Location + dir;
         ActorAction a = game.Rules.IsBumpableFor(m_Actor, location);
         if (a == null) {
-          if (m_Actor.Model.Abilities.IsUndead && m_Actor.CanPush) {
+          if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(location.Position);
-            if (mapObjectAt != null && game.Rules.CanActorPush(m_Actor, mapObjectAt)) {
+            if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
               Direction pushDir = game.Rules.RollDirection();
               if (game.Rules.CanPushObjectTo(mapObjectAt, mapObjectAt.Location.Position + pushDir))
                 return new ActionPush(m_Actor, mapObjectAt, pushDir);
@@ -582,14 +582,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionPush BehaviorPushNonWalkableObject(RogueGame game)
     {
-      if (!m_Actor.CanPush) return null;
+      if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
       List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
-        if (mapObjectAt == null || mapObjectAt.IsWalkable)
-          return false;
-        return game.Rules.CanActorPush(m_Actor, mapObjectAt);
+        if (mapObjectAt == null || mapObjectAt.IsWalkable) return false;
+        return m_Actor.CanPush(mapObjectAt);
       }));
       if (pointList == null) return null;
       MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);
@@ -599,15 +598,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionPush BehaviorPushNonWalkableObjectForFood(RogueGame game)
     {
-      if (!m_Actor.CanPush) return null;
+      if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
       List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         // Wrecked cars are very tiring to push, and are jumpable so they don't need to be pushed.
-        if (mapObjectAt == null || mapObjectAt.IsWalkable || mapObjectAt.IsJumpable)
-          return false;
-        return game.Rules.CanActorPush(m_Actor, mapObjectAt);
+        if (mapObjectAt == null || mapObjectAt.IsWalkable || mapObjectAt.IsJumpable) return false;
+        return m_Actor.CanPush(mapObjectAt);
       }));
       if (pointList == null) return null;
       MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);

@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_Actor.Activity = Activity.TRACKING;
         return actorAction3;
       }
-      if (m_Actor.CanPush && game.Rules.RollChance(PUSH_OBJECT_CHANCE)) {
+      if (m_Actor.AbleToPush && game.Rules.RollChance(PUSH_OBJECT_CHANCE)) {
         ActorAction actorAction1 = BehaviorPushNonWalkableObject(game);
         if (actorAction1 != null) {
           m_Actor.Activity = Activity.IDLE;

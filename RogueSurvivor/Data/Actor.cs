@@ -805,10 +805,32 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public bool CanPush {
+    public bool AbleToPush {
       get {
         return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
       }
+    }
+
+    private string ReasonCantPush(MapObject mapObj)
+    {
+      Contract.Requires(null != mapObj);
+      if (!AbleToPush) return "cannot push objects";
+      if (IsTired) return "tired";
+      if (!mapObj.IsMovable) return "cannot be moved";
+      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
+      if (mapObj.IsOnFire) return "on fire";
+      return "";
+    }
+
+    public bool CanPush(MapObject mapObj, out string reason)
+    {
+      reason = ReasonCantPush(mapObj);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPush(MapObject mapObj)
+    {
+      return string.IsNullOrEmpty(ReasonCantPush(mapObj));
     }
 
     // event timing

@@ -5270,7 +5270,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerPush(Actor player)
     {
-      if (!player.CanPush) {
+      if (!player.AbleToPush) {
         AddMessage(MakeErrorMessage("Cannot push objects."));
         return false;
       }
@@ -5281,53 +5281,40 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
-      do
-      {
+      do {
         AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
         if (direction == null) flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             string reason;
-            if (actorAt != null)
-            {
-              if (m_Rules.CanActorShove(player, actorAt, out reason))
-              {
-                if (HandlePlayerShoveActor(player, actorAt))
-                {
+            if (actorAt != null) {
+              if (m_Rules.CanActorShove(player, actorAt, out reason)) {
+                if (HandlePlayerShoveActor(player, actorAt)) {
                   flag1 = false;
                   flag2 = true;
                 }
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
-            }
-            else if (mapObjectAt != null)
-            {
-              if (m_Rules.CanActorPush(player, mapObjectAt, out reason))
-              {
-                if (HandlePlayerPushObject(player, mapObjectAt))
-                {
+              } else
+                AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
+            } else if (mapObjectAt != null) {
+              if (player.CanPush(mapObjectAt, out reason)) {
+                if (HandlePlayerPushObject(player, mapObjectAt)) {
                   flag1 = false;
                   flag2 = true;
                 }
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Nothing to push there."));
+              } else
+                AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage("Nothing to push there."));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -5335,8 +5322,8 @@ namespace djack.RogueSurvivor.Engine
     {
       bool flag1 = true;
       bool flag2 = false;
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
+      ClearOverlays();
+      AddOverlay(new RogueGame.OverlayPopup(new string[1]
       {
         string.Format(PUSH_OBJECT_MODE_TEXT, (object) mapObj.TheName)
       }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
@@ -6366,25 +6353,22 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null)
-              return false;
+            if (door == null) return false;
             return m_Rules.IsOpenableFor(m_Player, door);
           }));
         case AdvisorHint.DOORWINDOW_CLOSE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null)
-              return false;
+            if (door == null) return false;
             return m_Rules.IsClosableFor(m_Player, door);
           }));
         case AdvisorHint.OBJECT_PUSH:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-            if (mapObjectAt == null)
-              return false;
-            return m_Rules.CanActorPush(m_Player, mapObjectAt);
+            if (mapObjectAt == null) return false;
+            return m_Player.CanPush(mapObjectAt);
           }));
         case AdvisorHint.OBJECT_BREAK:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
