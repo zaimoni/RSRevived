@@ -633,8 +633,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (inventory.IsEmpty) return null;
       ItemEntertainment itemEntertainment = inventory.GetFirst<ItemEntertainment>();
       if (itemEntertainment == null) return null;
-      ActionUseItem tmp = new ActionUseItem(m_Actor, itemEntertainment);
-      return (tmp.IsLegal() ? tmp  : null);
+      return (m_Actor.CanUse(itemEntertainment) ? new ActionUseItem(m_Actor, itemEntertainment) : null);
     }
 
     protected ActorAction BehaviorDropBoringEntertainment(RogueGame game)
@@ -1033,7 +1032,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
           int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4 <= need) {
-            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, food);
+            if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
           }
         }
       }
@@ -1044,7 +1043,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
           int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
           if (num4 <= need) {
-            if (game.Rules.CanActorUseItem(m_Actor, stim2)) return new ActionUseItem(m_Actor, stim2);
+            if (m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
           }
         }
       }
@@ -1058,7 +1057,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
           int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4*food.Quantity <= need) {
-            if (game.Rules.CanActorUseItem(m_Actor, food)) return new ActionUseItem(m_Actor, food);
+            if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
           }
         }
       }
@@ -1069,7 +1068,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
         int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
         if (num4*stim.Quantity <= need) {
-          if (game.Rules.CanActorUseItem(m_Actor, stim)) return new ActionUseItem(m_Actor, stim);
+          if (m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
         }
       }
 
@@ -1119,7 +1118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemRangedWeapon tmpRw = GetCompatibleRangedWeapon(tmpAmmo);
         if (null != tmpRw) {
           tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
-          if (game.Rules.CanActorUseItem(m_Actor, tmpAmmo)) return new ActionUseItem(m_Actor, tmpAmmo);
+          if (m_Actor.CanUse(tmpAmmo)) return new ActionUseItem(m_Actor, tmpAmmo);
         }
         return BehaviorDropItem(tmpAmmo);
       }

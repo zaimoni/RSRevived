@@ -4300,34 +4300,28 @@ namespace djack.RogueSurvivor.Engine
 
     private bool OnLMBItem(Inventory inv, Item it)
     {
-      if (inv == m_Player.Inventory)
-      {
-        if (it.IsEquipped)
-        {
+      if (inv == m_Player.Inventory) {
+        if (it.IsEquipped) {
           string reason;
-          if (Rules.CanActorUnequipItem(m_Player, it, out reason))
-          {
-                        DoUnequipItem(m_Player, it);
+          if (Rules.CanActorUnequipItem(m_Player, it, out reason)) {
+            DoUnequipItem(m_Player, it);
             return false;
           }
-                    AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
+          AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
           return false;
         }
-        if (it.Model.IsEquipable)
-        {
+        if (it.Model.IsEquipable) {
           string reason;
-          if (m_Rules.CanActorEquipItem(m_Player, it, out reason))
-          {
-                        DoEquipItem(m_Player, it);
+          if (m_Rules.CanActorEquipItem(m_Player, it, out reason)) {
+            DoEquipItem(m_Player, it);
             return false;
           }
-                    AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
+          AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
           return false;
         }
         string reason1;
-        if (m_Rules.CanActorUseItem(m_Player, it, out reason1))
-        {
-                    DoUseItem(m_Player, it);
+        if (m_Player.CanUse(it, out reason1)) {
+          DoUseItem(m_Player, it);
           return true;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
@@ -4590,64 +4584,55 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotUse(Actor player, int slot)
     {
       Item it = player.Inventory[slot];
-      if (it == null)
-      {
-                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
+      if (it == null) {
+        AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
         return false;
       }
-      if (it.IsEquipped)
-      {
+      if (it.IsEquipped) {
         string reason;
-        if (Rules.CanActorUnequipItem(player, it, out reason))
-        {
-                    DoUnequipItem(player, it);
+        if (Rules.CanActorUnequipItem(player, it, out reason)) {
+          DoUnequipItem(player, it);
           return false;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", (object) it.TheName, (object) reason)));
         return false;
       }
-      if (it.Model.IsEquipable)
-      {
+      if (it.Model.IsEquipable) {
         string reason;
-        if (m_Rules.CanActorEquipItem(player, it, out reason))
-        {
-                    DoEquipItem(player, it);
+        if (m_Rules.CanActorEquipItem(player, it, out reason)) {
+          DoEquipItem(player, it);
           return false;
         }
-                AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
+        AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", (object) it.TheName, (object) reason)));
         return false;
       }
       string reason1;
-      if (m_Rules.CanActorUseItem(player, it, out reason1))
-      {
-                DoUseItem(player, it);
+      if (player.CanUse(it, out reason1)) {
+        DoUseItem(player, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", (object) it.TheName, (object) reason1)));
       return false;
     }
 
     private bool DoPlayerItemSlotTake(Actor player, int slot)
     {
       Inventory itemsAt = player.Location.Map.GetItemsAt(player.Location.Position);
-      if (itemsAt == null || itemsAt.IsEmpty)
-      {
-                AddMessage(MakeErrorMessage("No items on ground."));
+      if (itemsAt == null || itemsAt.IsEmpty) {
+        AddMessage(MakeErrorMessage("No items on ground."));
         return false;
       }
       Item it = itemsAt[slot];
-      if (it == null)
-      {
-                AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", (object) (slot + 1))));
+      if (it == null) {
+        AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", (object) (slot + 1))));
         return false;
       }
       string reason;
-      if (m_Rules.CanActorGetItem(player, it, out reason))
-      {
-                DoTakeItem(player, player.Location.Position, it);
+      if (m_Rules.CanActorGetItem(player, it, out reason)) {
+        DoTakeItem(player, player.Location.Position, it);
         return true;
       }
-            AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason)));
+      AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", (object) it.TheName, (object) reason)));
       return false;
     }
 
@@ -5390,29 +5375,26 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerUseSpray(Actor player)
     {
       Item equippedItem = player.GetEquippedItem(DollPart.LEFT_HAND);
-      if (equippedItem == null)
-      {
-                AddMessage(MakeErrorMessage("No spray equipped."));
-                RedrawPlayScreen();
+      if (equippedItem == null) {
+        AddMessage(MakeErrorMessage("No spray equipped."));
+        RedrawPlayScreen();
         return false;
       }
       if (equippedItem is ItemSprayPaint)
         return HandlePlayerTag(player);
       ItemSprayScent spray = equippedItem as ItemSprayScent;
-      if (spray != null)
-      {
+      if (spray != null) {
         string reason;
-        if (!m_Rules.CanActorUseItem(player, (Item) spray, out reason))
-        {
-                    AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", (object) reason)));
-                    RedrawPlayScreen();
+        if (!player.CanUse(spray, out reason)) {
+          AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", (object) reason)));
+          RedrawPlayScreen();
           return false;
         }
-                DoUseSprayScentItem(player, spray);
+        DoUseSprayScentItem(player, spray);
         return true;
       }
-            AddMessage(MakeErrorMessage("No spray equipped."));
-            RedrawPlayScreen();
+      AddMessage(MakeErrorMessage("No spray equipped."));
+      RedrawPlayScreen();
       return false;
     }
 
@@ -6307,12 +6289,9 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.ITEM_USE:
           Inventory inventory5 = m_Player.Inventory;
-          if (inventory5 == null || inventory5.IsEmpty)
-            return false;
-          foreach (Item it in inventory5.Items)
-          {
-            if (m_Rules.CanActorUseItem(m_Player, it))
-              return true;
+          if (inventory5 == null || inventory5.IsEmpty) return false;
+          foreach (Item it in inventory5.Items) {
+            if (m_Player.CanUse(it)) return true;
           }
           return false;
         case AdvisorHint.FLASHLIGHT:
@@ -6329,15 +6308,11 @@ namespace djack.RogueSurvivor.Engine
             return false;
           return itemRangedWeapon.Ammo >= 0;
         case AdvisorHint.WEAPON_RELOAD:
-          if (!(m_Player.GetEquippedWeapon() is ItemRangedWeapon))
-            return false;
+          if (!(m_Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
           Inventory inventory6 = m_Player.Inventory;
-          if (inventory6 == null || inventory6.IsEmpty)
-            return false;
-          foreach (Item it in inventory6.Items)
-          {
-            if (it is ItemAmmo && m_Rules.CanActorUseItem(m_Player, it))
-              return true;
+          if (inventory6 == null || inventory6.IsEmpty) return false;
+          foreach (Item it in inventory6.Items) {
+            if (it is ItemAmmo && m_Player.CanUse(it)) return true;
           }
           return false;
         case AdvisorHint.GRENADE:

@@ -425,15 +425,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       ItemFood bestEdibleItem = GetBestEdibleItem();
       if (null == bestEdibleItem) return null;
-      ActionUseItem tmp = new ActionUseItem(m_Actor, bestEdibleItem);
-      return (tmp.IsLegal() ? tmp  : null);
+      return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
 
     protected ActorAction BehaviorEatProactively(RogueGame game)
     {
       Item bestEdibleItem = GetBestPerishableItem(game);
       if (null == bestEdibleItem) return null;
-      return (game.Rules.CanActorUseItem(m_Actor, bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
+      return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
 
     protected void BehaviorUnequipLeftItem(RogueGame game)
@@ -844,9 +843,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (itemSprayScent.IsUseless) return null;
       if ((itemSprayScent.Model as ItemSprayScentModel).Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
       if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return null;
-      ActionUseItem actionUseItem = new ActionUseItem(m_Actor, itemSprayScent);
-      if (actionUseItem.IsLegal()) return actionUseItem;
-      return null;
+      return (m_Actor.CanUse(itemSprayScent) ? new ActionUseItem(m_Actor, itemSprayScent) : null);
     }
 
     protected bool BehaviorEquipStenchKiller(RogueGame game)
