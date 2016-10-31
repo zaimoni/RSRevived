@@ -129,11 +129,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != tmpAction) return tmpAction;
+
       if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
         tmpAction = BehaviorSecurePerimeter(game);
         if (null != tmpAction) {

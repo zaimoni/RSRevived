@@ -197,11 +197,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction3 = BehaviorEat();
         if (actorAction3 != null) return actorAction3;
       }
-      ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (actorAction4 != null) {
-        m_Actor.Activity = Activity.IDLE;
-        return actorAction4;
-      }
+
+      ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (actorAction4 != null) return actorAction4;
+
       return new ActionWait(m_Actor);
     }
 
@@ -227,11 +226,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction3 = BehaviorEat();
         if (actorAction3 != null) return actorAction3;
       }
-      ActorAction actorAction4 = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (actorAction4 != null) {
-        m_Actor.Activity = Activity.IDLE;
-        return actorAction4;
-      }
+
+      ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (actorAction4 != null) return actorAction4;
+
       List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position.X, Order.Location.Position.Y);
       return BehaviorWander(game, (Predicate<Location>) (loc =>
       {
@@ -688,7 +686,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
       Map map = m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.GetExitAt(point) != null || map.GetTileAt(point.X, point.Y).IsInside))
@@ -737,7 +735,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
       Map map = m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(game, Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.GetExitAt(point) != null)

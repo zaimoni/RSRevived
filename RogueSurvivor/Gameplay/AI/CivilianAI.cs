@@ -333,13 +333,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
         if (actorAction5 != null) return actorAction5;
       }
-      tmpAction = BehaviorUseMedecine(game, 2, 1, 2, 4, 2);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) return tmpAction;
+
       if (null != enemies && assistLeader) {
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(game, target);
