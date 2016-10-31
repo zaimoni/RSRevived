@@ -544,8 +544,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
       if (pointList == null) return null;
       DoorWindow doorWindow1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]) as DoorWindow;
-      ActionBreak actionBreak = new ActionBreak(m_Actor, doorWindow1);
-      return (actionBreak.IsLegal() ? actionBreak : null);
+      return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
     }
 
     // intentionally disabled in alpha 9; for ZM AI
@@ -564,8 +563,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Percept percept = FilterNearest(percepts);
       if (!Rules.IsAdjacent(m_Actor.Location.Position, percept.Location.Position))
         return BehaviorIntelligentBumpToward(game, percept.Location.Position);
-      ActionBreak actionBreak = new ActionBreak(m_Actor, percept.Percepted as MapObject);
-      return (actionBreak.IsLegal() ? actionBreak : null);
+      return (m_Actor.CanBreak(percept.Percepted as MapObject) ? new ActionBreak(m_Actor, percept.Percepted as MapObject) : null);
     }
 
     protected ActionPush BehaviorPushNonWalkableObject(RogueGame game)
@@ -885,7 +883,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if ((useFlags & BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS) != BaseAI.UseExitFlags.NONE) {
         MapObject mapObjectAt = exitAt.Location.MapObject;
-        if (mapObjectAt != null && game.Rules.IsBreakableFor(m_Actor, mapObjectAt))
+        if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
           return new ActionBreak(m_Actor, mapObjectAt);
       }
       return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);

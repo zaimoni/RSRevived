@@ -860,6 +860,29 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+    private string ReasonCantBreak(MapObject mapObj)
+    { 
+      Contract.Requires(null != mapObj);
+      if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
+      if (IsTired) return "tired";
+      DoorWindow doorWindow = mapObj as DoorWindow;
+      bool flag = doorWindow != null && doorWindow.IsBarricaded;
+      if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
+      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
+      return "";
+    }
+
+    public bool CanBreak(MapObject mapObj, out string reason)
+    {
+      reason = ReasonCantBreak(mapObj);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBreak(MapObject mapObj)
+    {
+      return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
+    }
+
     public bool AbleToPush {
       get {
         return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
