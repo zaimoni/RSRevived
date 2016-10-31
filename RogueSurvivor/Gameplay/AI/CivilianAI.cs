@@ -341,7 +341,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null != enemies && assistLeader) {
         Percept target = FilterNearest(enemies);
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
@@ -360,21 +360,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorEatProactively(game);
       if (null != tmpAction) return tmpAction;
 
-      if (m_Actor.IsHungry)
-      {
+      if (m_Actor.IsHungry) {
         tmpAction = BehaviorEat();
         if (null != tmpAction) return tmpAction;
-        if (m_Actor.IsStarving || m_Actor.IsInsane)
-        {
-          tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+        if (m_Actor.IsStarving || m_Actor.IsInsane) {
+          tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
         }
       }
-      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(m_Actor))
-      {
+      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(m_Actor)) {
         tmpAction = BehaviorSecurePerimeter(game);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
@@ -390,8 +387,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorDropUselessItem();
       if (null != tmpAction) return tmpAction;
 
-      if (null == enemies && Directives.CanTakeItems)
-      {
+      if (null == enemies && Directives.CanTakeItems) {
         Map map = m_Actor.Location.Map;
         List<Percept> perceptList2 = SortByDistance(FilterOut(FilterStacks(percepts1), (Predicate<Percept>) (p =>
         {
@@ -464,7 +460,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
                 return tmpAction;
               }
             } else {
-              tmpAction = BehaviorIntelligentBumpToward(game, actor.Location.Position);
+              tmpAction = BehaviorIntelligentBumpToward(actor.Location.Position);
               if (null != tmpAction) {
                 m_Actor.Activity = Activity.FOLLOWING;
                 m_Actor.TargetActor = actor;
@@ -486,7 +482,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return itemsAt.Has<ItemFood>();
         })));
         if (target != null) {
-          tmpAction = BehaviorChargeEnemy(game, target);
+          tmpAction = BehaviorChargeEnemy(target);
           if (null != tmpAction) {
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
@@ -517,7 +513,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         Point position1 = m_Actor.Leader.Location.Position;
         bool isVisible = m_LOSSensor.FOV.Contains(position1);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(game, m_Actor.Leader, position1, isVisible, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, position1, isVisible, maxDist);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
@@ -624,7 +620,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       if (m_Actor.CountFollowers > 0)
       {
         Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(game, 2, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
             if (target.IsSleeping) {

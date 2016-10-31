@@ -112,14 +112,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction ExecuteOrder(RogueGame game, ActorOrder order, List<Percept> percepts)
     {
       if (!m_Actor.HasLeader) return null;
-      switch (order.Task)
-      {
+      switch (order.Task) {
         case ActorTasks.BARRICADE_ONE:
           return ExecuteBarricading(game, order.Location, false);
         case ActorTasks.BARRICADE_MAX:
           return ExecuteBarricading(game, order.Location, true);
         case ActorTasks.GUARD:
-          return ExecuteGuard(game, order.Location, percepts);  // cancelled by enamies sighted
+          return ExecuteGuard(order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.PATROL:
           return ExecutePatrol(game, order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.DROP_ALL_ITEMS:
@@ -154,7 +153,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!toTheMax) SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(game, location.Position);
+      tmpAction = BehaviorIntelligentBumpToward(location.Position);
       if (null == tmpAction) return null;
       RunIfPossible();
       return tmpAction;
@@ -171,13 +170,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(game, location.Position);
+      tmpAction = BehaviorIntelligentBumpToward(location.Position);
       if (null == tmpAction) return null;
       RunIfPossible();
       return tmpAction;
     }
 
-    private ActorAction ExecuteGuard(RogueGame game, Location location, List<Percept> percepts)
+    private ActorAction ExecuteGuard(Location location, List<Percept> percepts)
     {
       List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
@@ -187,7 +186,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.Location.Position != location.Position) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location.Position);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -216,7 +215,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
 
       if (!m_ReachedPatrolPoint) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(game, location.Position);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location.Position);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -621,12 +620,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (door.IsOpen && m_Actor.CanClose(door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
                 return new ActionCloseDoor(m_Actor, door);
-              return BehaviorIntelligentBumpToward(game, door.Location.Position);
+              return BehaviorIntelligentBumpToward(door.Location.Position);
             }
             if (door.IsWindow && !door.IsBarricaded && game.Rules.CanActorBarricadeDoor(m_Actor, door)) {
               if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
                 return new ActionBarricadeDoor(m_Actor, door);
-              return BehaviorIntelligentBumpToward(game, door.Location.Position);
+              return BehaviorIntelligentBumpToward(door.Location.Position);
             }
           }
         }
@@ -650,7 +649,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorDontLeaveFollowersBehind(RogueGame game, int distance, out Actor target)
+    protected ActorAction BehaviorDontLeaveFollowersBehind(int distance, out Actor target)
     {
       target = null;
       int num1 = int.MinValue;
@@ -669,7 +668,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (target == null) return null;
-      return BehaviorIntelligentBumpToward(game, target.Location.Position);
+      return BehaviorIntelligentBumpToward(target.Location.Position);
     }
 
     protected ActorAction BehaviorLeadActor(RogueGame game, Percept target)
@@ -678,7 +677,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!game.Rules.CanActorTakeLead(m_Actor, target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
         return new ActionTakeLead(m_Actor, target1);
-      return BehaviorIntelligentBumpToward(game, target1.Location.Position);
+      return BehaviorIntelligentBumpToward(target1.Location.Position);
     }
 
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
@@ -763,7 +762,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (actorAction != null) return actorAction;
       }
       if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor);
-      Point? nullable = new Point?();
+      Point? nullable = null;
       float num1 = float.MaxValue;
       foreach (Point point in m_Actor.Controller.FOV) {
         MapObject mapObjectAt = map.GetMapObjectAt(point);
@@ -771,12 +770,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           float num2 = Rules.StdDistance(m_Actor.Location.Position, point);
           if ((double) num2 < (double) num1) {
             num1 = num2;
-            nullable = new Point?(point);
+            nullable = point;
           }
         }
       }
       if (nullable.HasValue) {
-        ActorAction actorAction = BehaviorIntelligentBumpToward(game, nullable.Value);
+        ActorAction actorAction = BehaviorIntelligentBumpToward(nullable.Value);
         if (actorAction != null) return actorAction;
       }
 
@@ -897,7 +896,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Inventory.IsFull) { 
         if (null != recover && recover.IsLegal()) return recover;
       }
-      tmp = BehaviorIntelligentBumpToward(game, position);
+      tmp = BehaviorIntelligentBumpToward(position);
       ActionGetFromContainer tmp2 = (tmp as ActionGetFromContainer);
       if (null != tmp2 && tmp2.Item != obj) {
         // translate the desired action

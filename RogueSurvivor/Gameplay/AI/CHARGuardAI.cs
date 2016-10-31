@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position = m_Actor.Leader.Location.Position;
         bool isVisible = FOV.Contains(m_Actor.Leader.Location.Position);
-        tmpAction = BehaviorFollowActor(game, m_Actor.Leader, position, isVisible, 1);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, position, isVisible, 1);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;

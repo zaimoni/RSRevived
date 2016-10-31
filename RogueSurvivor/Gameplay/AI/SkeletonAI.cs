@@ -43,7 +43,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> percepts1 = FilterSameMap(percepts);
       Percept percept = FilterNearest(FilterEnemies(percepts1));
       if (percept != null) {
-        ActorAction actorAction = BehaviorStupidBumpToward(game, percept.Location.Position);
+        ActorAction actorAction = BehaviorStupidBumpToward(percept.Location.Position);
         if (actorAction != null) {
           m_Actor.Activity = Activity.CHASING;
           m_Actor.TargetActor = percept.Percepted as Actor;

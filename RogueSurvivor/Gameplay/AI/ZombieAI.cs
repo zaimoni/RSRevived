@@ -72,7 +72,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         List<Percept> current_enemies = FilterCurrent(enemies);
         if (current_enemies != null) {
-          tmpAction = TargetGridMelee(game, current_enemies, out tmpActor);
+          tmpAction = TargetGridMelee(current_enemies, out tmpActor);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.CHASING;
             m_Actor.TargetActor = tmpActor;
@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         List<Percept> perceptList2 = Filter(enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
         if (perceptList2 != null) {
-          tmpAction = TargetGridMelee(game, perceptList2, out tmpActor);
+          tmpAction = TargetGridMelee(perceptList2, out tmpActor);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.CHASING;
             m_Actor.TargetActor = tmpActor;
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      tmpAction = BehaviorGoEatCorpse(game, FilterCorpses(percepts1));
+      tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -104,7 +104,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
         Percept percept = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
         if (percept != null) {
-          ActorAction actorAction = BehaviorStupidBumpToward(game, RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
+          ActorAction actorAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
           if (actorAction != null) {
             m_Actor.Activity = Activity.FOLLOWING;
             m_Actor.TargetActor = percept.Percepted as Actor;

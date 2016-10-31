@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
       if (null != enemies) {
         Percept target = FilterNearest(enemies);
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = target.Percepted as Actor;
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
-        tmpAction = BehaviorChargeEnemy(game, target);
+        tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
@@ -184,7 +184,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (m_Actor.CountFollowers > 0) {
         Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(game, 4, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(4, out target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
             if (target.IsSleeping)

@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         List<Percept> current_enemies = FilterCurrent(enemies);
         if (current_enemies != null) {
-          tmpAction = TargetGridMelee(game, current_enemies, out tmpActor);
+          tmpAction = TargetGridMelee(current_enemies, out tmpActor);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.CHASING;
             m_Actor.TargetActor = tmpActor;
@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         List<Percept> perceptList2 = Filter(enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
         if (perceptList2 != null) {
-          tmpAction = TargetGridMelee(game, perceptList2, out tmpActor);
+          tmpAction = TargetGridMelee(perceptList2, out tmpActor);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.CHASING;
             m_Actor.TargetActor = tmpActor;
