@@ -127,6 +127,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
 
+    // return value must contain a {0} placeholder for the target name
+    private string LeaderText_NotLeavingBehind(Actor target)
+    {
+      if (target.IsSleeping) return "patiently waits for {0} to wake up.";
+      else if (FOV.Contains(target.Location.Position)) return "Come on {0}! Hurry up!";
+      else return "Where the hell is {0}?";
+    }
+
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
       Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
@@ -622,16 +630,8 @@ retry:    Percept percept = FilterNearest(perceptList2);
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
         if (null != tmpAction) {
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
-            if (target.IsSleeping) {
-              game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));
-            } else {
-              if (m_LOSSensor.FOV.Contains(target.Location.Position))
-                game.DoEmote(m_Actor, string.Format("Come on {0}! Hurry up!", (object) target.Name));
-              else
-                game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", (object) target.Name));
-            }
-          }
+          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
+            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
