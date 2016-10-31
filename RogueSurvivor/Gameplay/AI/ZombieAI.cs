@@ -68,26 +68,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> enemies = FilterEnemies(percepts1);
       ActorAction tmpAction;
-      Actor tmpActor;
       if (enemies != null) {
-        List<Percept> current_enemies = FilterCurrent(enemies);
-        if (current_enemies != null) {
-          tmpAction = TargetGridMelee(current_enemies, out tmpActor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = tmpActor;
-            return tmpAction;
-          }
-        }
-        List<Percept> perceptList2 = Filter(enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
-        if (perceptList2 != null) {
-          tmpAction = TargetGridMelee(perceptList2, out tmpActor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = tmpActor;
-            return tmpAction;
-          }
-        }
+        tmpAction = TargetGridMelee(FilterCurrent(enemies));
+        if (null != tmpAction) return tmpAction;
+        tmpAction = TargetGridMelee(Filter(enemies, (Predicate<Percept>)(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter)));
+        if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
       if (null != tmpAction) {

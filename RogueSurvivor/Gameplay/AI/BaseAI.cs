@@ -383,9 +383,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // A number of the melee enemy targeting sequences not only work on grid distance,
     // they need to return a coordinated action/target pair.
-    protected ActorAction TargetGridMelee(List<Percept> perceptList, out Actor target)
+    protected ActorAction TargetGridMelee(List<Percept> perceptList)
     {
-      target = null;
+      if (null == perceptList) return null; // inefficient, but reduces lines of code elsewhere
       ActorAction ret = null;
       int num1 = int.MaxValue;
       foreach (Percept percept in perceptList) {
@@ -394,8 +394,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ActorAction tmp = BehaviorStupidBumpToward(percept.Location.Position);
           if (null != tmp) {
             num1 = num2;
-            target = percept.Percepted as Actor;
             ret = tmp;
+            m_Actor.Activity = Activity.CHASING;
+            m_Actor.TargetActor = percept.Percepted as Actor;
           }
         }
       }
