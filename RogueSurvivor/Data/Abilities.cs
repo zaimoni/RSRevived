@@ -8,13 +8,10 @@ using System;
 
 namespace djack.RogueSurvivor.Data
 {
-  [Serializable]
   internal class Abilities
   {
-    [NonSerialized]
     public static readonly Abilities NONE = new Abilities(Flags.NONE);
-
-    private Flags m_Flags;
+    private readonly Flags m_Flags;
 
     public bool IsUndead { get { return Flags.NONE!=(m_Flags & Flags.UNDEAD); } }
 
