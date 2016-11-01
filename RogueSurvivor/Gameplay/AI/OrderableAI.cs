@@ -406,7 +406,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == food) continue;
         if (!food.IsPerishable) continue;
         if (food.IsSpoiledAt(turnCounter)) continue;
-        int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
+        int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
         if (num4 > need) continue; // more work needed
         int num3 = need-num4;
         if (num3 > rating) {
@@ -493,8 +493,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!wantCellPhone) return false;
       ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it =>
       {
-        if (it.CanTrackFollowersOrLeader && 0 < it.Batteries)
-          return !IsItemTaboo(it);
+        if (it.CanTrackFollowersOrLeader && 0 < it.Batteries) return !IsItemTaboo(it);
         return false;
       }));
       if (firstTracker != null && game.Rules.CanActorEquipItem(m_Actor, firstTracker)) {
@@ -512,7 +511,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>((Predicate<ItemGrenade>) (it => !IsItemTaboo(it)));
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model as ItemGrenadeModel;
-      int maxRange = game.Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
+      int maxRange = Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
       Point? nullable = null;
       int num1 = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
@@ -682,7 +681,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
+      if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
@@ -731,7 +730,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < game.Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
+      if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {

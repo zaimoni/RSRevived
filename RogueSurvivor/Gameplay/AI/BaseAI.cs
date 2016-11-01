@@ -1027,7 +1027,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+          int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4 <= need) {
             if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
           }
@@ -1038,7 +1038,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemMedicine stim2 = inv.GetBestDestackable(it) as ItemMedicine;
         if (null != stim2) {
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
+          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
           if (num4 <= need) {
             if (m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
           }
@@ -1052,7 +1052,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = game.Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+          int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4*food.Quantity <= need) {
             if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
           }
@@ -1063,7 +1063,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemMedicine stim = inv.GetBestDestackable(game.GameItems[GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine;
       if (null != stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = game.Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
+        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
         if (num4*stim.Quantity <= need) {
           if (m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
         }
@@ -1164,7 +1164,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
       }
       game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", (object) target.Name));
-      int chance = game.Rules.ActorSpotMurdererChance(m_Actor, target);
+      int chance = Rules.ActorSpotMurdererChance(m_Actor, target);
       if (!game.Rules.RollChance(chance)) return null;
       game.DoMakeAggression(m_Actor, target);
       return new ActionSay(m_Actor, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), RogueGame.Sayflags.IS_IMPORTANT);
