@@ -920,59 +920,6 @@ namespace djack.RogueSurvivor.Engine
       return num / WorldTime.TURNS_PER_HOUR;
     }
 
-    public bool CanActorTakeLead(Actor actor, Actor target)
-    {
-      string reason;
-      return CanActorTakeLead(actor, target, out reason);
-    }
-
-    public bool CanActorTakeLead(Actor actor, Actor target, out string reason)
-    {
-      Contract.Requires(null != actor);
-      Contract.Requires(null != target);
-      if (target.Model.Abilities.IsUndead) {
-        reason = "undead";
-        return false;
-      }
-      if (actor.IsEnemyOf(target)) {
-        reason = "enemy";
-        return false;
-      }
-      if (target.IsSleeping) {
-        reason = "sleeping";
-        return false;
-      }
-      if (target.HasLeader) {
-        reason = "has already a leader";
-        return false;
-      }
-      if (target.CountFollowers > 0) {
-        reason = "is a leader";
-        return false;
-      }
-      int num = actor.MaxFollowers;
-      if (num == 0) {
-        reason = "can't lead";
-        return false;
-      }
-      if (actor.CountFollowers >= num) {
-        reason = "too many followers";
-        return false;
-      }
-      // to support savefile hacking.  AI in charge of player is a problem.
-      if (target.IsPlayer && !actor.IsPlayer) {
-        reason = "is player";
-        return false;
-      }
-      if (actor.Faction != target.Faction && target.Faction.LeadOnlyBySameFaction)
-      {
-        reason = string.Format("{0} can't lead {1}", (object) actor.Faction.Name, (object) target.Faction.Name);
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorCancelLead(Actor actor, Actor target, out string reason)
     {
       if (actor == null)

@@ -5177,15 +5177,14 @@ namespace djack.RogueSurvivor.Engine
                 DoSwitchPlace(player, actorAt);
               }
               else
-                                AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", (object) reason)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Noone there."));
+                AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", (object) reason)));
+            } else
+              AddMessage(MakeErrorMessage("Noone there."));
           }
         }
       }
       while (flag1);
-            ClearOverlays();
+      ClearOverlays();
       return flag2;
     }
 
@@ -5205,7 +5204,7 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
               string reason;
-              if (m_Rules.CanActorTakeLead(player, actorAt, out reason)) {
+              if (player.CanTakeLeadOf(actorAt, out reason)) {
                 flag2 = true;
                 flag1 = false;
                 DoTakeLead(player, actorAt);
@@ -6382,7 +6381,7 @@ namespace djack.RogueSurvivor.Engine
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null) return false;
-            return m_Rules.CanActorTakeLead(m_Player, actorAt);
+            return m_Player.CanTakeLeadOf(actorAt);
           }));
         case AdvisorHint.LEADING_GIVE_ORDERS:
           return m_Player.CountFollowers > 0;

@@ -532,7 +532,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       {
         Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
-          tmpAction = BehaviorLeadActor(game, target);
+          tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {
             m_Actor.TargetActor = target.Percepted as Actor;
             return tmpAction;
