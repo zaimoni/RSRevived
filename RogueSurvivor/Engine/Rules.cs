@@ -434,15 +434,6 @@ namespace djack.RogueSurvivor.Engine
       return (it is ItemLight) || (it is ItemTracker);
     }
 
-    public bool IsItemBatteryFull(Item it)
-    {
-      if (it == null) return true;
-      ItemLight itemLight = it as ItemLight;
-      if (itemLight != null && itemLight.IsFullyCharged) return true;
-      ItemTracker itemTracker = it as ItemTracker;
-      return itemTracker != null && itemTracker.IsFullyCharged;
-    }
-
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)
     {
       Contract.Requires(null != actor);
