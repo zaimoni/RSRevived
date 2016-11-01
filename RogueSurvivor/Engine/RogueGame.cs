@@ -4797,49 +4797,36 @@ namespace djack.RogueSurvivor.Engine
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        if (direction == null) flag1 = false;
+        else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
-            if (mapObjectAt != null)
-            {
-              if (mapObjectAt is DoorWindow)
-              {
+            if (mapObjectAt != null) {
+              if (mapObjectAt is DoorWindow) {
                 DoorWindow door = mapObjectAt as DoorWindow;
                 string reason;
-                if (m_Rules.CanActorBarricadeDoor(player, door, out reason))
-                {
-                                    DoBarricadeDoor(player, door);
-                                    RedrawPlayScreen();
+                if (player.CanBarricade(door, out reason)) {
+                  DoBarricadeDoor(player, door);
+                  RedrawPlayScreen();
                   flag1 = false;
                   flag2 = true;
-                }
-                else
-                                    AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", (object) door.TheName, (object) reason)));
-              }
-              else if (mapObjectAt is Fortification)
-              {
+                } else
+                  AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", (object) door.TheName, (object) reason)));
+              } else if (mapObjectAt is Fortification) {
                 Fortification fort = mapObjectAt as Fortification;
                 string reason;
-                if (m_Rules.CanActorRepairFortification(player, fort, out reason))
-                {
-                                    DoRepairFortification(player, fort);
-                                    RedrawPlayScreen();
+                if (m_Rules.CanActorRepairFortification(player, fort, out reason)) {
+                  DoRepairFortification(player, fort);
+                  RedrawPlayScreen();
                   flag1 = false;
                   flag2 = true;
-                }
-                else
-                                    AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", (object) fort.TheName, (object) reason)));
-              }
-              else
-                                AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", (object) mapObjectAt.TheName)));
-            }
-            else
-                            AddMessage(MakeErrorMessage("Nothing to barricade there."));
+                } else
+                  AddMessage(MakeErrorMessage(string.Format("Cannot repair {0} : {1}.", (object) fort.TheName, (object) reason)));
+              } else
+                AddMessage(MakeErrorMessage(string.Format("{0} cannot be repaired or barricaded.", (object) mapObjectAt.TheName)));
+            } else
+              AddMessage(MakeErrorMessage("Nothing to barricade there."));
           }
         }
       }
@@ -5802,7 +5789,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
-      Point? nullable = new Point?();
+      Point? nullable = null;
       Color color = Color.White;
       do {
         ClearOverlays();
@@ -5826,8 +5813,8 @@ namespace djack.RogueSurvivor.Engine
               DoorWindow door = map1.GetMapObjectAt(map2) as DoorWindow;
               if (door != null) {
                 string reason;
-                if (m_Rules.CanActorBarricadeDoor(follower, door, out reason)) {
-                  nullable = new Point?(map2);
+                if (follower.CanBarricade(door, out reason)) {
+                  nullable = map2;
                   color = Color.LightGreen;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                     DoGiveOrderTo(player, follower, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
@@ -5835,22 +5822,19 @@ namespace djack.RogueSurvivor.Engine
                     flag2 = true;
                   }
                 } else {
-                  nullable = new Point?(map2);
+                  nullable = map2;
                   color = Color.Red;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                     AddMessage(MakeErrorMessage(string.Format("Can't barricade {0} : {1}.", (object) door.TheName, (object) reason)));
                     AddMessagePressEnter();
                   }
                 }
-              }
-              else
-              {
-                nullable = new Point?(map2);
+              } else {
+                nullable = map2;
                 color = Color.Red;
               }
-            }
-            else {
-              nullable = new Point?(map2);
+            } else {
+              nullable = map2;
               color = Color.Red;
             }
           }
@@ -6333,7 +6317,7 @@ namespace djack.RogueSurvivor.Engine
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
             if (door == null) return false;
-            return m_Rules.CanActorBarricadeDoor(m_Player, door);
+            return m_Player.CanBarricade(door);
           }));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.GetExitAt(position) != null;
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
