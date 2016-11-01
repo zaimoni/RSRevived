@@ -419,19 +419,13 @@ namespace djack.RogueSurvivor.Engine
         reason = "item not equipped";
         return false;
       }
-      if (!IsItemBatteryPowered(it))
+      if (!(it is BatteryPowered))
       {
         reason = "not a battery powered item";
         return false;
       }
       reason = "";
       return true;
-    }
-
-    public bool IsItemBatteryPowered(Item it)
-    {
-      if (it == null) return false;
-      return (it is ItemLight) || (it is ItemTracker);
     }
 
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)

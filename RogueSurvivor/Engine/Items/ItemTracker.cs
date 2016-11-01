@@ -10,8 +10,8 @@ using System;
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
-  internal class ItemTracker : Item
-  {
+  internal class ItemTracker : Item, BatteryPowered
+    {
     private int m_Batteries;
 
     public ItemTrackerModel.TrackingFlags Tracking { get; private set; }
@@ -50,10 +50,10 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public bool IsFullyCharged {
-      get {
-        return m_Batteries >= (Model as ItemTrackerModel).MaxBatteries;
-      }
+    public int MaxBatteries {
+       get {
+         return (Model as ItemTrackerModel).MaxBatteries;
+       }
     }
 
     public override bool IsUseless { 

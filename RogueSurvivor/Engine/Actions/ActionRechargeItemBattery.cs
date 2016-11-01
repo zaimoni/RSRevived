@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRechargeItemBattery(Actor actor, Item it)
       : base(actor)
     {
-      Contract.Requires(null != it);
+      Contract.Requires(null != (it as BatteryPowered));
       m_Item = it;
     }
 
