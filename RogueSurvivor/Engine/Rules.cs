@@ -37,7 +37,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
-    public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
@@ -951,7 +950,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "is a leader";
         return false;
       }
-      int num = ActorMaxFollowers(actor);
+      int num = actor.MaxFollowers;
       if (num == 0) {
         reason = "can't lead";
         return false;
@@ -1373,11 +1372,6 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = (int) ((double) baseBarricadingPoints * (double) Rules.SKILL_CARPENTRY_BARRICADING_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY));
       return baseBarricadingPoints + num;
-    }
-
-    public int ActorMaxFollowers(Actor actor)
-    {
-      return Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
     }
 
     public float ActorSmell(Actor actor)

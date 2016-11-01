@@ -216,7 +216,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < game.Rules.ActorMaxFollowers(m_Actor)) {
+      if (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         Percept target = FilterNearest(FilterNonEnemies(percepts1));
         if (target != null) {
           tmpAction = BehaviorLeadActor(game, target);

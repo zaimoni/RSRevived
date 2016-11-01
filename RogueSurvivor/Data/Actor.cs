@@ -14,6 +14,7 @@ using System.Diagnostics.Contracts;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
+using Skills = djack.RogueSurvivor.Gameplay.Skills;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -44,6 +45,7 @@ namespace djack.RogueSurvivor.Data
     public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
+    public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_TOUGH_HP_BONUS = 3;
@@ -449,6 +451,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int MaxFollowers {
+      get {
+        return SKILL_LEADERSHIP_FOLLOWER_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+      }
+    }
+
+    // aggression statistics, etc.
     public int KillsCount {
       get {
         return m_KillsCount;
@@ -553,7 +562,7 @@ namespace djack.RogueSurvivor.Data
 
     public int DamageBonusVsUndeads {
       get {
-        return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.NECROLOGY);
+        return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       }
     }
 
@@ -610,12 +619,12 @@ namespace djack.RogueSurvivor.Data
 
     public Attack HypotheticalMeleeAttack(Attack baseAttack, Actor target = null)
     {
-      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
-      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
+      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (GetEquippedWeapon() == null)
       {
-        num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.MARTIAL_ARTS);
-        num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.MARTIAL_ARTS);
+        num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       }
       if (target != null && target.Model.Abilities.IsUndead)
         num4 += DamageBonusVsUndeads;
@@ -637,12 +646,12 @@ namespace djack.RogueSurvivor.Data
       switch (baseAttack.Kind)
       {
         case AttackKind.FIREARM:
-          num1 = Actor.SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.FIREARMS);
-          num2 = Actor.SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.FIREARMS);
+          num1 = Actor.SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          num2 = Actor.SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
           break;
         case AttackKind.BOW:
-          num1 = Actor.SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.BOWS);
-          num2 = Actor.SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.BOWS);
+          num1 = Actor.SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          num2 = Actor.SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
           break;
       }
       if (target != null && target.Model.Abilities.IsUndead)
@@ -885,7 +894,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool AbleToPush {
       get {
-        return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
+        return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
       }
     }
 
@@ -987,7 +996,7 @@ namespace djack.RogueSurvivor.Data
     // health
     public int MaxHPs {
       get {
-        int num = SKILL_TOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_TOUGH);
+        int num = SKILL_TOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TOUGH);
         return Sheet.BaseHitPoints + num;
       }
     }
@@ -1009,7 +1018,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSTA {
       get {
-        int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HIGH_STAMINA);
+        int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
         return Sheet.BaseStaminaPoints + num;
       }
     }
@@ -1042,8 +1051,8 @@ namespace djack.RogueSurvivor.Data
     public bool CanJump {
       get {
        return Model.Abilities.CanJump
-            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE)
-            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
+            || 0 < Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE)
+            || 0 < Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
       }
     }
 
@@ -1145,14 +1154,14 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxFood {
       get {
-        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_EATER));
+        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
         return Sheet.BaseFoodPoints + num;
       }
     }
 
     public int MaxRot {
       get {
-        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_EATER));
+        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER));
         return Sheet.BaseFoodPoints + num;
       }
     }
@@ -1214,7 +1223,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSleep {
       get {
-        int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AWAKE));
+        int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
         return Sheet.BaseSleepPoints + num;
       }
     }
@@ -1248,7 +1257,7 @@ namespace djack.RogueSurvivor.Data
     // use this to prevent accidental overwriting of MaxCapacity by bugs.
     public int MaxInv {
       get {
-        int num = SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HAULER);
+        int num = SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
         return Sheet.BaseInventoryCapacity + num;
       }
     }
@@ -1391,11 +1400,11 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantUseItem(it));
     }
 
-    public Skill SkillUpgrade(djack.RogueSurvivor.Gameplay.Skills.IDs id)
+    public Skill SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);
       Skill skill = Sheet.SkillTable.GetSkill(id);
-      if (id == djack.RogueSurvivor.Gameplay.Skills.IDs.HAULER && Inventory != null)
+      if (id == Skills.IDs.HAULER && Inventory != null)
         Inventory.MaxCapacity = MaxInv;
       return skill;
     }
@@ -1614,10 +1623,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
-    public void StartingSkill(Gameplay.Skills.IDs skillID,int n=1)
+    public void StartingSkill(Skills.IDs skillID,int n=1)
     {
       while(0< n--) { 
-        if (Sheet.SkillTable.GetSkillLevel(skillID) >= Gameplay.Skills.MaxSkillLevel(skillID)) return;
+        if (Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
         Sheet.SkillTable.AddOrIncreaseSkill(skillID);
         RecomputeStartingStats();
       }
