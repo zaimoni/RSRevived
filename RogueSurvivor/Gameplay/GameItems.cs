@@ -652,7 +652,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public GameItems()
     {
-      Models.Items = (ItemModelDB) this;
+      Models.Items = this;
     }
 
     public void CreateModels()

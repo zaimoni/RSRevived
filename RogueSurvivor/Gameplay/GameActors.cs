@@ -297,7 +297,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public GameActors()
     {
-      Models.Actors = (ActorModelDB) this;
+      Models.Actors = this;
     }
 
     public void CreateModels()

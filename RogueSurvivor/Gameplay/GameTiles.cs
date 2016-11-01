@@ -188,7 +188,7 @@ namespace djack.RogueSurvivor.Gameplay
     // * use this to implement a smoke grenade, or thick smoke from a fire
     public GameTiles()
     {
-      Models.Tiles = (TileModelDB) this;
+      Models.Tiles = this;
       this[GameTiles.IDs.UNDEF] = TileModel.UNDEF;
       this[GameTiles.IDs.FLOOR_ASPHALT] = new TileModel("Tiles\\floor_asphalt", GameTiles.LIT_GRAY1, true, true);
       this[GameTiles.IDs.FLOOR_CONCRETE] = new TileModel("Tiles\\floor_concrete", GameTiles.LIT_GRAY2, true, true);
