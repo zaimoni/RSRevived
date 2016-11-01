@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Color LIT_BROWN = Color.BurlyWood;
     private readonly TileModel[] m_Models = new TileModel[(int) IDs._COUNT];
 
-    public override TileModel this[int id] {
+    public TileModel this[int id] {
       get {
         return m_Models[id];
       }

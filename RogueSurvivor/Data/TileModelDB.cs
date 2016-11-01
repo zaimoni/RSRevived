@@ -6,8 +6,8 @@
 
 namespace djack.RogueSurvivor.Data
 {
-  internal abstract class TileModelDB
+  internal interface TileModelDB
   {
-    public abstract TileModel this[int id] { get; }
+    TileModel this[int id] { get; }
   }
 }

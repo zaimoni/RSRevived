@@ -61,7 +61,7 @@ namespace djack.RogueSurvivor.Gameplay
     private GameActors.ActorData DATA_BLACKOPS_MAN;
     private GameActors.ActorData DATA_JASON_MYERS;
 
-    public override ActorModel this[int id] {
+    public ActorModel this[int id] {
       get {
         Contract.Ensures(null!=Contract.Result<ActorModel>().DollBody);
         Contract.Ensures(null!=Contract.Result<ActorModel>().StartingSheet);

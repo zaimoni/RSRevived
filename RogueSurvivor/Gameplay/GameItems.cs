@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay
     private GameItems.EntData DATA_ENT_BOOK;
     private GameItems.EntData DATA_ENT_MAGAZINE;
 
-    public override ItemModel this[int id] {
+    public ItemModel this[int id] {
       get {
         return m_Models[id];
       }

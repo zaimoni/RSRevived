@@ -6,8 +6,8 @@
 
 namespace djack.RogueSurvivor.Data
 {
-  internal abstract class ItemModelDB
+  internal interface ItemModelDB
   {
-    public abstract ItemModel this[int id] { get; }
+    ItemModel this[int id] { get; }
   }
 }
