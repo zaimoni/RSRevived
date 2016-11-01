@@ -232,7 +232,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "nothing to take there";
         return false;
       }
-      if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || (actor.Inventory == null || !CanActorGetItem(actor, itemsAt.TopItem)))
+      if (!actor.CanGet(itemsAt.TopItem))
       {
         reason = "cannot take an item";
         return false;
@@ -266,36 +266,6 @@ namespace djack.RogueSurvivor.Engine
       if (null != itemsAt && itemsAt.IsFull) 
       {
         reason = "container is full";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-
-    public bool CanActorGetItem(Actor actor, Item it)
-    {
-      string reason;
-      return CanActorGetItem(actor, it, out reason);
-    }
-
-    public bool CanActorGetItem(Actor actor, Item it, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (it == null) throw new ArgumentNullException("item");
-      if (!actor.Model.Abilities.HasInventory || !actor.Model.Abilities.CanUseMapObjects || actor.Inventory == null)
-      {
-        reason = "no inventory";
-        return false;
-      }
-      if (actor.Inventory.IsFull && !actor.Inventory.CanAddAtLeastOne(it))
-      {
-        reason = "inventory is full";
-        return false;
-      }
-      if (it is ItemTrap && (it as ItemTrap).IsTriggered)
-      {
-        reason = "triggered trap";
         return false;
       }
       reason = "";
@@ -445,7 +415,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "sleeping";
         return false;
       }
-      return CanActorGetItem(target, gift, out reason);
+      return target.CanGet(gift, out reason);
     }
 
     public ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)

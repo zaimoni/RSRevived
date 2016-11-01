@@ -1465,6 +1465,26 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantUseItem(it));
     }
 
+    private string ReasonCantGet(Item it)
+    {
+      Contract.Requires(null != it); 
+      if (!Model.Abilities.HasInventory || !Model.Abilities.CanUseMapObjects || Inventory == null) return "no inventory";
+      if (Inventory.IsFull && !Inventory.CanAddAtLeastOne(it)) return "inventory is full";
+      if (it is ItemTrap && (it as ItemTrap).IsTriggered) return "triggered trap";
+      return "";
+    }
+
+    public bool CanGet(Item it, out string reason)
+    {
+      reason = ReasonCantGet(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanGet(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantGet(it));
+    }
+
     public Skill SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);

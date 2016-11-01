@@ -4316,7 +4316,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       string reason2;
-      if (m_Rules.CanActorGetItem(m_Player, it, out reason2)) {
+      if (m_Player.CanGet(it, out reason2)) {
         DoTakeItem(m_Player, m_Player.Location.Position, it);
         return true;
       }
@@ -4616,7 +4616,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       string reason;
-      if (m_Rules.CanActorGetItem(player, it, out reason)) {
+      if (player.CanGet(it, out reason)) {
         DoTakeItem(player, player.Location.Position, it);
         return true;
       }
@@ -4627,15 +4627,13 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotDrop(Actor player, int slot)
     {
       Item it = player.Inventory[slot];
-      if (it == null)
-      {
-                AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
+      if (it == null) {
+        AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", (object) (slot + 1))));
         return false;
       }
       string reason;
-      if (m_Rules.CanActorDropItem(player, it, out reason))
-      {
-                DoDropItem(player, it);
+      if (m_Rules.CanActorDropItem(player, it, out reason)) {
+        DoDropItem(player, it);
         return true;
       }
       AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", (object) it.TheName, (object) reason)));
@@ -6072,7 +6070,7 @@ namespace djack.RogueSurvivor.Engine
           int index = num1 + choiceNumber - 1;
           Item obj = inv[index];
           string reason;
-          if (m_Rules.CanActorGetItem(player, obj, out reason)) {
+          if (player.CanGet(obj, out reason)) {
             DoTakeItem(player, src, obj);
             flag1 = false;
           } else {
@@ -6089,8 +6087,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleAiActor(Actor aiActor)
     {
       ActorAction actorAction = aiActor.Controller.GetAction(this);
-      if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE))
-      {
+      if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);
         if (insaneAction != null && insaneAction.IsLegal())
           actorAction = insaneAction;
@@ -6201,7 +6198,7 @@ namespace djack.RogueSurvivor.Engine
           Inventory itemsAt = map.GetItemsAt(position);
           if (itemsAt == null) return false;
           foreach (Item it in itemsAt.Items) {
-            if (m_Rules.CanActorGetItem(m_Player, it)) return true;
+            if (m_Player.CanGet(it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
