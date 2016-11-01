@@ -1397,14 +1397,9 @@ namespace djack.RogueSurvivor.Engine
       return Rules.INFECTION_EFFECT_TRIGGER_CHANCE_1000 + infectionPercent / 5;
     }
 
-    public int CorpseFreshnessPercent(Corpse c)
-    {
-      return (int) (100.0 * (double) c.HitPoints / (double)c.DeadGuy.MaxHPs);
-    }
-
     public int CorpseRotLevel(Corpse c)
     {
-      int num = CorpseFreshnessPercent(c);
+      int num = c.FreshnessPercent;
       if (num < 5)
         return 5;
       if (num < 25)
@@ -1439,9 +1434,8 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseReviveChance(Actor actor, Corpse corpse)
     {
-      if (!CanActorReviveCorpse(actor, corpse))
-        return 0;
-      return CorpseFreshnessPercent(corpse) / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
+      if (!CanActorReviveCorpse(actor, corpse)) return 0;
+      return corpse.FreshnessPercent / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
     }
 
     public static int CorpseReviveHPs(Actor actor, Corpse corpse)
@@ -1451,8 +1445,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapTriggers(ItemTrap trap, Actor a)
     {
-      if (a.Model.Abilities.IsSmall && RollChance(90))
-        return false;
+      if (a.Model.Abilities.IsSmall && RollChance(90)) return false;
       int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
       return RollChance(trap.TrapModel.TriggerChance * trap.Quantity - num);
     }

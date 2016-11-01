@@ -125,5 +125,11 @@ namespace djack.RogueSurvivor.Data
             m_Scale = scale;
             m_DraggedBy = (Actor) null;
     }
+
+    public int FreshnessPercent {
+      get {
+        return (int) (100.0 * (double) HitPoints / (double)DeadGuy.MaxHPs);
+      }
+    }
   }
 }
