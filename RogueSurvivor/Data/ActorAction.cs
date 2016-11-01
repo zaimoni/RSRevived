@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Engine;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -22,7 +23,7 @@ namespace djack.RogueSurvivor.Data
 
     protected ActorAction(Actor actor)
     {
-      if (actor == null) throw new ArgumentNullException("actor");
+      Contract.Requires(null != actor);
       m_Actor = actor;
     }
 

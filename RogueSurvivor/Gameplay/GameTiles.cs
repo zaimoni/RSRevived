@@ -20,18 +20,17 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Color LIT_BROWN = Color.BurlyWood;
     private readonly TileModel[] m_Models = new TileModel[(int) IDs._COUNT];
 
-    public override TileModel this[int id] {
+    public TileModel this[int id] {
       get {
         return m_Models[id];
       }
     }
 
-    public TileModel this[IDs id]
-    {
+    public TileModel this[GameTiles.IDs id] {
       get {
         return this[(int) id];
       }
-      private set {
+      set {
         m_Models[(int) id] = value;
         m_Models[(int) id].ID = (int) id;
       }
@@ -189,7 +188,7 @@ namespace djack.RogueSurvivor.Gameplay
     // * use this to implement a smoke grenade, or thick smoke from a fire
     public GameTiles()
     {
-      Models.Tiles = (TileModelDB) this;
+      Models.Tiles = this;
       this[GameTiles.IDs.UNDEF] = TileModel.UNDEF;
       this[GameTiles.IDs.FLOOR_ASPHALT] = new TileModel("Tiles\\floor_asphalt", GameTiles.LIT_GRAY1, true, true);
       this[GameTiles.IDs.FLOOR_CONCRETE] = new TileModel("Tiles\\floor_concrete", GameTiles.LIT_GRAY2, true, true);

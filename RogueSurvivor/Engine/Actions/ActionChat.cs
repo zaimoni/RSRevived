@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -22,8 +22,8 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionChat(Actor actor, Actor target)
       : base(actor)
     {
-      if (target == null) throw new ArgumentNullException("target");
-       m_Target = target;
+      Contract.Requires(null != target);
+      m_Target = target;
     }
 
     public override bool IsLegal()

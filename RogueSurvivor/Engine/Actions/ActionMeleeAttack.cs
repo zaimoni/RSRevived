@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,13 +16,14 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionMeleeAttack(Actor actor, Actor target)
       : base(actor)
     {
-      if (target == null) throw new ArgumentNullException("target");
+      Contract.Requires(null != target);
       m_Target = target;
+      actor.Activity = Activity.IDLE;   // transition to fighting is in DoMeleeAttack
     }
 
     public override bool IsLegal()
     {
-      return true;
+      return m_Actor.CanMeleeAttack(m_Target);
     }
 
     public override void Perform()

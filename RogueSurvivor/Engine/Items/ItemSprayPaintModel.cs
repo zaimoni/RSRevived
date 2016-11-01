@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -29,8 +29,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemSprayPaintModel(string aName, string theNames, string imageID, int paintQuantity, string tagImageID)
       : base(aName, theNames, imageID)
     {
-      if (tagImageID == null)
-        throw new ArgumentNullException("tagImageID");
+      Contract.Requires(null != tagImageID);
       m_MaxPaintQuantity = paintQuantity;
       m_TagImageID = tagImageID;
     }

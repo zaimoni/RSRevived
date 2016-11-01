@@ -17,12 +17,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
       m_ExitPoint = exitPoint;
+      actor.Activity = Activity.IDLE;
     }
 
     public override bool IsLegal()
     {
-      m_FailReason = m_Actor.ReasonNoExit(m_ExitPoint);
-      return ""==m_FailReason;
+      return m_Actor.CanUseExit(m_ExitPoint, out m_FailReason);
     }
 
     public override void Perform()

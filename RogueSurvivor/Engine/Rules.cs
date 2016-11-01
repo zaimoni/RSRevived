@@ -37,7 +37,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
-    public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
@@ -143,19 +142,16 @@ namespace djack.RogueSurvivor.Engine
     public const int GIVE_RARE_ITEM_CHANCE = 5;
     private readonly DiceRoller m_DiceRoller;
 
-    public DiceRoller DiceRoller
-    {
-      get
-      {
+    public DiceRoller DiceRoller {
+      get {
         return m_DiceRoller;
       }
     }
 
     public Rules(DiceRoller diceRoller)
     {
-      if (diceRoller == null)
-        throw new ArgumentNullException("diceRoller");
-            m_DiceRoller = diceRoller;
+      Contract.Requires(null != diceRoller);
+      m_DiceRoller = diceRoller;
     }
 
     public int Roll(int min, int max)
@@ -434,102 +430,33 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (gift == null)
-        throw new ArgumentNullException("gift");
-      if (actor.IsEnemyOf(target))
-      {
+      Contract.Requires(null != actor);
+      Contract.Requires(null != target);
+      Contract.Requires(null != gift);
+      if (actor.IsEnemyOf(target)) {
         reason = "enemy";
         return false;
       }
-      if (gift.IsEquipped)
-      {
+      if (gift.IsEquipped) {
         reason = "equipped";
         return false;
       }
-      if (target.IsSleeping)
-      {
+      if (target.IsSleeping) {
         reason = "sleeping";
         return false;
       }
       return CanActorGetItem(target, gift, out reason);
     }
 
-    public static bool IsWalkableFor(Actor actor, Map map, Point p)
-    {
-      string reason;
-      return IsWalkableFor(actor, map, p.X, p.Y, out reason);
-    }
-
-    public static bool IsWalkableFor(Actor actor, Map map, int x, int y, out string reason)
-    {
-      Contract.Requires(null!=map);
-      Contract.Requires(null!=actor);
-      if (!map.IsInBounds(x, y)) {
-        reason = "out of map";
-        return false;
-      }
-      if (!map.GetTileAt(x, y).Model.IsWalkable) {
-        reason = "blocked";
-        return false;
-      }
-      MapObject mapObjectAt = map.GetMapObjectAt(x, y);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
-        if (mapObjectAt.IsJumpable) {
-          if (!actor.CanJump) {
-            reason = "cannot jump";
-            return false;
-          }
-          if (actor.StaminaPoints < STAMINA_COST_JUMP) {
-            reason = "not enough stamina to jump";
-            return false;
-          }
-        } else if (actor.Model.Abilities.IsSmall) {
-          DoorWindow doorWindow = mapObjectAt as DoorWindow;
-          if (doorWindow != null && doorWindow.IsClosed) {
-            reason = "cannot slip through closed door";
-            return false;
-          }
-        } else {
-          reason = "blocked by object";
-          return false;
-        }
-      }
-      if (map.GetActorAt(x, y) != null) {
-        reason = "someone is there";
-        return false;
-      }
-      if (actor.DraggedCorpse != null && actor.IsTired) {
-        reason = "dragging a corpse when tired";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public static bool IsWalkableFor(Actor actor, Location location)
-    {
-      string reason;
-      return IsWalkableFor(actor, location, out reason);
-    }
-
-    public static bool IsWalkableFor(Actor actor, Location location, out string reason)
-    {
-      return IsWalkableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
-    }
-
     public ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (actor == null) throw new ArgumentNullException("actor");
+      Contract.Requires(null != map);
+      Contract.Requires(null != actor);
       reason = "";
       if (!map.IsInBounds(x, y))
       {
         if (!CanActorLeaveMap(actor, out reason)) return null;
-        reason = "";    // XXX currently redundant
+        reason = "";
         return new ActionLeaveMap(actor, new Point(x, y));
       }
       Point point = new Point(x, y);
@@ -542,44 +469,39 @@ namespace djack.RogueSurvivor.Engine
       Actor actorAt = map.GetActorAt(point);
       if (actorAt != null) {
         if (actor.IsEnemyOf(actorAt)) {
-          reason = actor.ReasonNoMeleeAttack(actorAt);
-          if (""==reason) return new ActionMeleeAttack(actor, actorAt);
-          return null;
+          return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
-        if (CanActorChatWith(actor, actorAt, out reason)) return new ActionChat(actor, actorAt);
+        if (CanActorChatWith(actor, actorAt, out reason))
+          return new ActionChat(actor, actorAt);
         return null;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
-      if (mapObjectAt != null)
-      {
+      if (mapObjectAt != null) {
         DoorWindow door = mapObjectAt as DoorWindow;
-        if (door != null)
-        {
-          if (door.IsClosed)
-          {
-            if (IsOpenableFor(actor, door, out reason)) return new ActionOpenDoor(actor, door);
-            if (IsBashableFor(actor, door, out reason)) return new ActionBashDoor(actor, door);
+        if (door != null) {
+          if (door.IsClosed) {
+            if (IsOpenableFor(actor, door, out reason))
+              return new ActionOpenDoor(actor, door);
+            if (IsBashableFor(actor, door, out reason))
+              return new ActionBashDoor(actor, door);
             return null;
           }
-          if (door.BarricadePoints > 0)
-          {
-            if (IsBashableFor(actor, door, out reason)) return new ActionBashDoor(actor, door);
+          if (door.BarricadePoints > 0) {
+            if (IsBashableFor(actor, door, out reason))
+              return new ActionBashDoor(actor, door);
             reason = "cannot bash the barricade";
             return null;
           }
         }
-        if (CanActorGetItemFromContainer(actor, point, out reason)) return new ActionGetFromContainer(actor, point);
-        if (actor.Model.Abilities.CanBashDoors) {
-          reason = actor.ReasonCantBreak(mapObjectAt);
-          if (""==reason) return new ActionBreak(actor, mapObjectAt);
-        }
+        if (CanActorGetItemFromContainer(actor, point, out reason))
+          return new ActionGetFromContainer(actor, point);
+        if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
+          return new ActionBreak(actor, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
-        if (powGen != null)
-        {
-          if (powGen.IsOn)
-          {
+        if (powGen != null) {
+          if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
@@ -590,8 +512,7 @@ namespace djack.RogueSurvivor.Engine
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
           }
-          if (IsSwitchableFor(actor, powGen, out reason)) return new ActionSwitchPowerGenerator(actor, powGen);
-          return null;
+          return (IsSwitchableFor(actor, powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
         }
       }
       return null;
@@ -630,8 +551,10 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorLeaveMap(Actor actor, out string reason)
     {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (!actor.IsPlayer) {
+      if (actor == null)
+        throw new ArgumentNullException("actor");
+      if (!actor.IsPlayer)
+      {
         reason = "can't leave maps";
         return false;
       }
@@ -677,42 +600,33 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorInitiateTradeWith(Actor speaker, Actor target, out string reason)
     {
-      if (speaker == null)
-        throw new ArgumentNullException("speaker");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (target.IsPlayer)
-      {
+      Contract.Requires(null != speaker);
+      Contract.Requires(null != target);
+      if (target.IsPlayer) {
         reason = "target is player";
         return false;
       }
-      if (!speaker.Model.Abilities.CanTrade && target.Leader != speaker)
-      {
+      if (!speaker.Model.Abilities.CanTrade && target.Leader != speaker) {
         reason = "can't trade";
         return false;
       }
-      if (!target.Model.Abilities.CanTrade && target.Leader != speaker)
-      {
+      if (!target.Model.Abilities.CanTrade && target.Leader != speaker) {
         reason = "target can't trade";
         return false;
       }
-      if (speaker.IsEnemyOf(target))
-      {
+      if (speaker.IsEnemyOf(target)) {
         reason = "is an enemy";
         return false;
       }
-      if (target.IsSleeping)
-      {
+      if (target.IsSleeping) {
         reason = "is sleeping";
         return false;
       }
-      if (speaker.Inventory == null || speaker.Inventory.IsEmpty)
-      {
+      if (speaker.Inventory == null || speaker.Inventory.IsEmpty) {
         reason = "nothing to offer";
         return false;
       }
-      if (target.Inventory == null || target.Inventory.IsEmpty)
-      {
+      if (target.Inventory == null || target.Inventory.IsEmpty) {
         reason = "has nothing to trade";
         return false;
       }
@@ -800,7 +714,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == null) throw new ArgumentNullException("actor");
       if (other == null) throw new ArgumentNullException("other");
-      if (!actor.CanPush) {
+      if (!actor.AbleToPush) {
         reason = "cannot shove people";
         return false;
       }
@@ -822,19 +736,16 @@ namespace djack.RogueSurvivor.Engine
         reason = "out of map";
         return false;
       }
-      if (!map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable)
-      {
+      if (!map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) {
         reason = "blocked";
         return false;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(toPos);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable)
-      {
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
         reason = "blocked by an object";
         return false;
       }
-      if (map.GetActorAt(toPos) != null)
-      {
+      if (map.GetActorAt(toPos) != null) {
         reason = "blocked by someone";
         return false;
       }
@@ -844,16 +755,12 @@ namespace djack.RogueSurvivor.Engine
 
     public List<Actor> GetEnemiesInFov(Actor actor, HashSet<Point> fov)
     {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (fov == null)
-        throw new ArgumentNullException("fov");
+      Contract.Requires(null != actor);
+      Contract.Requires(null != fov);
       List<Actor> actorList = (List<Actor>) null;
-      foreach (Point position in fov)
-      {
+      foreach (Point position in fov) {
         Actor actorAt = actor.Location.Map.GetActorAt(position);
-        if (actorAt != null && actorAt != actor && actor.IsEnemyOf(actorAt))
-        {
+        if (actorAt != null && actorAt != actor && actor.IsEnemyOf(actorAt)) {
           if (actorList == null)
             actorList = new List<Actor>(3);
           actorList.Add(actorAt);
@@ -1341,11 +1248,6 @@ namespace djack.RogueSurvivor.Engine
       return baseBarricadingPoints + num;
     }
 
-    public static int ActorMaxFollowers(Actor actor)
-    {
-      return Rules.SKILL_LEADERSHIP_FOLLOWER_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
-    }
-
     public static float ActorSmell(Actor actor)
     {
       return (float) (1.0 + (double) Rules.SKILL_ZTRACKER_SMELL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * actor.Model.StartingSheet.BaseSmellRating;
@@ -1489,8 +1391,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseReviveChance(Actor actor, Corpse corpse)
     {
-      if (!CanActorReviveCorpse(actor, corpse))
-        return 0;
+      if (!CanActorReviveCorpse(actor, corpse)) return 0;
       return corpse.FreshnessPercent / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
     }
 
@@ -1501,8 +1402,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapTriggers(ItemTrap trap, Actor a)
     {
-      if (a.Model.Abilities.IsSmall && RollChance(90))
-        return false;
+      if (a.Model.Abilities.IsSmall && RollChance(90)) return false;
       int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
       return RollChance(trap.TrapModel.TriggerChance * trap.Quantity - num);
     }

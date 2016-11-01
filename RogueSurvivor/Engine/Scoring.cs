@@ -202,11 +202,11 @@ namespace djack.RogueSurvivor.Engine
       {
         "Now try not to die too soon..."
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
+      InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
       {
         "Now, where is the light switch?..."
       }, GameMusics.CHAR_UNDERGROUND_FACILITY, 2000));
-            InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
+      InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
       {
         "Personal message from the game developper : ",
         "Sorry, the rest of the plot is missing.",
@@ -241,16 +241,16 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
       foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
-            CompletedAchievementsCount = 0;
-            m_VisitedMaps.Clear();
-            m_Events.Clear();
-            m_Sightings.Clear();
-            m_Kills.Clear();
-            m_Killer = (Actor) null;
-            m_FollowersWhenDied = (List<Actor>) null;
-            m_ZombifiedPlayer = (Actor) null;
-            m_KillPoints = 0;
-            m_StartScoringTurn = gameTurn;
+      CompletedAchievementsCount = 0;
+      m_VisitedMaps.Clear();
+      m_Events.Clear();
+      m_Sightings.Clear();
+      m_Kills.Clear();
+      m_Killer = null;
+      m_FollowersWhenDied = null;
+      m_ZombifiedPlayer = null;
+      m_KillPoints = 0;
+      m_StartScoringTurn = gameTurn;
     }
 
     public bool HasCompletedAchievement(Achievement.IDs id)

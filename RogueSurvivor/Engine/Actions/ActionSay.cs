@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionSay(Actor actor, Actor target, string text, RogueGame.Sayflags flags)
       : base(actor)
     {
-      if (target == null) throw new ArgumentNullException("target");
+      Contract.Requires(null != target);
       m_Target = target;
       m_Text = text;
       m_Flags = flags;

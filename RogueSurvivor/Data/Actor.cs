@@ -11,6 +11,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics.Contracts;
 
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
+using LOS = djack.RogueSurvivor.Engine.LOS;
+using Rules = djack.RogueSurvivor.Engine.Rules;
+using Skills = djack.RogueSurvivor.Gameplay.Skills;
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -40,6 +45,7 @@ namespace djack.RogueSurvivor.Data
     public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
+    public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_TOUGH_HP_BONUS = 3;
@@ -445,6 +451,41 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int MaxFollowers {
+      get {
+        return SKILL_LEADERSHIP_FOLLOWER_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP);
+      }
+    }
+
+    private string ReasonCantTakeLeadOf(Actor target)
+    {
+      Contract.Requires(null != target);
+      if (target.Model.Abilities.IsUndead) return "undead";
+      if (IsEnemyOf(target)) return "enemy";
+      if (target.IsSleeping) return "sleeping";
+      if (target.HasLeader) return "already has a leader";
+      if (target.CountFollowers > 0) return "is a leader";  // XXX organized force would have a chain of command
+      int num = MaxFollowers;
+      if (num == 0) return "can't lead";
+      if (CountFollowers >= num) return "too many followers";
+      // to support savefile hacking.  AI in charge of player is a problem.
+      if (target.IsPlayer && !IsPlayer) return "is player";
+      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", Faction.Name, target.Faction.Name);
+      return "";
+    }
+
+    public bool CanTakeLeadOf(Actor target, out string reason)
+    {
+      reason = ReasonCantTakeLeadOf(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanTakeLeadOf(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
+    }
+
+    // aggression statistics, etc.
     public int KillsCount {
       get {
         return m_KillsCount;
@@ -549,18 +590,69 @@ namespace djack.RogueSurvivor.Data
 
     public int DamageBonusVsUndeads {
       get {
-        return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.NECROLOGY);
+        return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       }
+    }
+
+    private string ReasonCantFireAt(Actor target, List<Point> LoF)
+    {
+      Contract.Requires(null != target);
+      if (LoF != null) LoF.Clear();
+      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      if (itemRangedWeapon == null) return "no ranged weapon equipped";
+      if (CurrentRangedAttack.Range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
+      if (!LOS.CanTraceFireLine(Location, target.Location.Position, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CanFireAt(Actor target, List<Point> LoF, out string reason)
+    {
+      reason = ReasonCantFireAt(target,LoF);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanFireAt(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantFireAt(target, null));
+    }
+
+    public string ReasonCantMeleeAttack(Actor target)
+    {
+      Contract.Requires(null != target);
+      if (Location.Map == target.Location.Map) {
+        if (!Rules.IsAdjacent(Location.Position, target.Location.Position)) return "not adjacent";
+      } else {
+        Exit exitAt = Location.Map.GetExitAt(Location.Position);
+        if (exitAt == null) return "not reachable";
+        if (target.Location.Map.GetExitAt(target.Location.Position) == null) return "not reachable";
+        if (exitAt.Location != target.Location) return "not reachable";
+      }
+      if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CanMeleeAttack(Actor target, out string reason)
+    {
+      reason = ReasonCantMeleeAttack(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanMeleeAttack(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
     }
 
     public Attack HypotheticalMeleeAttack(Attack baseAttack, Actor target = null)
     {
-      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
-      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
+      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
       if (GetEquippedWeapon() == null)
       {
-        num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.MARTIAL_ARTS);
-        num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.MARTIAL_ARTS);
+        num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       }
       if (target != null && target.Model.Abilities.IsUndead)
         num4 += DamageBonusVsUndeads;
@@ -582,12 +674,12 @@ namespace djack.RogueSurvivor.Data
       switch (baseAttack.Kind)
       {
         case AttackKind.FIREARM:
-          num1 = Actor.SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.FIREARMS);
-          num2 = Actor.SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.FIREARMS);
+          num1 = Actor.SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          num2 = Actor.SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
           break;
         case AttackKind.BOW:
-          num1 = Actor.SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.BOWS);
-          num2 = Actor.SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.BOWS);
+          num1 = Actor.SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          num2 = Actor.SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
           break;
       }
       if (target != null && target.Model.Abilities.IsUndead)
@@ -761,17 +853,20 @@ namespace djack.RogueSurvivor.Data
     }
 
     // map-related, loosely
-    public bool IsAdjacentToEnemy {
-      get {
-        Map map = Location.Map;
-        return map.HasAnyAdjacentInMap(Location.Position, (Predicate<Point>) (pt =>
-        {
+    public bool WouldBeAdjacentToEnemy(Map map,Point p)
+    {
+      return map.HasAnyAdjacentInMap(p, (Predicate<Point>) (pt =>
+      {
           Actor actorAt = map.GetActorAt(pt);
           return null!= actorAt && IsEnemyOf(actorAt);
-        }));
-      }
+      }));  
     }
 
+    public bool IsAdjacentToEnemy {
+      get {
+        return WouldBeAdjacentToEnemy(Location.Map,Location.Position);
+      }
+    }
 
     public bool IsBefore(Actor other)
     {
@@ -797,144 +892,103 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public string ReasonNoExit(Point exitPoint)
-    {
-      if (Location.Map.GetExitAt(exitPoint) == null) return "no exit there";
-      if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
-      if (IsSleeping) return "is sleeping";
-      return "";
-    }
-
     public List<Point> OneStepRange(Map m,Point p) {
-      IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>Engine.Rules.IsWalkableFor(this,m,pt));
-      return tmp.Any() ? new List<Point>(tmp) : null;
+      IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>m.IsWalkableFor(pt,this));
+      return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public bool CanPush {
-      get {
-        return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_STRONG);
-      }
-    }
-
-    // explain what won't work; convention is that empty string "" is legal, others aren't
-    public string ReasonNoPush(MapObject mapObj)
-    {
-      if (mapObj == null) throw new ArgumentNullException("mapObj");
-      if (!CanPush) return "cannot push objects";
-      if (IsTired) return "tired";
-      return mapObj.ReasonNoPush();
-    }
-
-    public string ReasonNoMeleeAttack(Actor target)
-    {
-      if (target == null) throw new ArgumentNullException("target");
-      if (Location.Map == target.Location.Map)
-      {
-        if (!Engine.Rules.IsAdjacent(Location.Position, target.Location.Position)) return "not adjacent";
-      } else {
-        Exit exitAt = Location.Map.GetExitAt(Location.Position);
-        if (exitAt == null) return "not reachable";
-        if (target.Location.Map.GetExitAt(target.Location.Position) == null) return "not reachable";
-        if (exitAt.Location != target.Location) return "not reachable";
-      }
-      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
-      if (target.IsDead) return "already dead!";
-      return "";
-    }
-
-    public string ReasonNoFireAt(Actor target, List<Point> LoF=null)
-    {
-      if (target == null) throw new ArgumentNullException("target");
-      if (LoF != null) LoF.Clear();
-      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
-      if (itemRangedWeapon == null) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range < Engine.Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
-      if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
-      if (!Engine.LOS.CanTraceFireLine(Location, target.Location.Position, CurrentRangedAttack.Range, LoF)) return "no line of fire";
-      if (target.IsDead) return "already dead!";
-      return "";
-    }
-    public string ReasonNotUsing(Item it)
-    {
-      if (it == null) throw new ArgumentNullException("item");
-      if (!Model.Abilities.CanUseItems) return "no ability to use items";
-      if (it is ItemWeapon) return "to use a weapon, equip it";
-      if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
-      if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
-      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
-      if (it is ItemAmmo)
-      {
-        ItemAmmo itemAmmo = it as ItemAmmo;
-        ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
-        if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
-        if (itemRangedWeapon.Ammo >= (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo) return "weapon already fully loaded";
-      }
-      else if (it is ItemSprayScent)
-      {
-        if ((it as ItemSprayScent).SprayQuantity <= 0) return "no spray left.";
-      }
-      else if (it is ItemTrap)
-      {
-        if (!(it as ItemTrap).TrapModel.UseToActivate) return "does not activate manually";
-      }
-      else if (it is ItemEntertainment)
-      {
-        if (!Model.Abilities.IsIntelligent) return "not intelligent";
-        if (IsBoredOf(it)) return "bored by this";
-      }
-      Inventory inv = Inventory;
-      if (inv == null || !inv.Contains(it)) return "not in inventory";
-      return "";
-    }
-
-    public string ReasonNotClosing(Engine.MapObjects.DoorWindow door)
-    {
-      if (door == null) throw new ArgumentNullException("door");
-      if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
-      if (!door.IsOpen) return "not open";
-      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
-      return "";
-    }
-
-    public string ReasonCantBreak(MapObject mapObj)
-    {
-      if (mapObj == null) throw new ArgumentNullException("mapObj");
+    private string ReasonCantBreak(MapObject mapObj)
+    { 
+      Contract.Requires(null != mapObj);
       if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
       if (IsTired) return "tired";
-      Engine.MapObjects.DoorWindow doorWindow = mapObj as Engine.MapObjects.DoorWindow;
+      DoorWindow doorWindow = mapObj as DoorWindow;
       bool flag = doorWindow != null && doorWindow.IsBarricaded;
       if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
       if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
       return "";
     }
 
-    public string ReasonCantTakeLead(Actor target)
+    public bool CanBreak(MapObject mapObj, out string reason)
     {
-      if (target == null) throw new ArgumentNullException("target");
-      if (target.Model.Abilities.IsUndead) return "undead";
-      if (IsEnemyOf(target)) return "enemy";
-      if (target.IsSleeping) return "sleeping";
-      if (target.HasLeader) return "already has a leader";
-      if (target.CountFollowers > 0) return "is a leader";
-      int num = Engine.Rules.ActorMaxFollowers(this);
-      if (num == 0) return "can't lead";
-      if (CountFollowers >= num) return "too many followers";
-      // to support savefile hacking.  AI in charge of player is a problem.
-      if (target.IsPlayer && !IsPlayer) return "is player";
-      if (Faction != target.Faction && target.Faction.LeadOnlyBySameFaction) return string.Format("{0} can't lead {1}", (object) Faction.Name, (object) target.Faction.Name);
+      reason = ReasonCantBreak(mapObj);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBreak(MapObject mapObj)
+    {
+      return string.IsNullOrEmpty(ReasonCantBreak(mapObj));
+    }
+
+    public bool AbleToPush {
+      get {
+        return Model.Abilities.CanPush || 0<Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) || 0<Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      }
+    }
+
+    private string ReasonCantPush(MapObject mapObj)
+    {
+      Contract.Requires(null != mapObj);
+      if (!AbleToPush) return "cannot push objects";
+      if (IsTired) return "tired";
+      if (!mapObj.IsMovable) return "cannot be moved";
+      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
+      if (mapObj.IsOnFire) return "on fire";
       return "";
     }
 
-    public string ReasonCantBarricade(Engine.MapObjects.DoorWindow door)
+    public bool CanPush(MapObject mapObj, out string reason)
     {
-      if (door == null) throw new ArgumentNullException("door");
+      reason = ReasonCantPush(mapObj);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPush(MapObject mapObj)
+    {
+      return string.IsNullOrEmpty(ReasonCantPush(mapObj));
+    }
+
+    private string ReasonCantClose(DoorWindow door)
+    {
+      Contract.Requires(null != door);
+      if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
+      if (!door.IsOpen) return "not open";
+      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
+      return "";
+    }
+
+    public bool CanClose(DoorWindow door, out string reason)
+    {
+      reason = ReasonCantClose(door);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanClose(DoorWindow door)
+    {
+      return string.IsNullOrEmpty(ReasonCantClose(door));
+    }
+
+    private string ReasonCantBarricade(DoorWindow door)
+    {
+      Contract.Requires(null != door);
       if (!Model.Abilities.CanBarricade) return "no ability to barricade";
       if (!door.IsClosed && !door.IsBroken) return "not closed or broken";
-      if (door.BarricadePoints >= Engine.Rules.BARRICADING_MAX) return "barricade limit reached";
+      if (door.BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
       if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
       if (Inventory == null || Inventory.IsEmpty) return "no items";
-      if (!Inventory.HasItemOfType(typeof (ItemBarricadeMaterial))) return "no barricading material";
+      if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
       return "";
+    }
+
+    public bool CanBarricade(DoorWindow door, out string reason)
+    {
+      reason = ReasonCantBarricade(door);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBarricade(DoorWindow door)
+    {
+      return string.IsNullOrEmpty(ReasonCantBarricade(door));
     }
 
     // event timing
@@ -993,7 +1047,7 @@ namespace djack.RogueSurvivor.Data
     // health
     public int MaxHPs {
       get {
-        int num = SKILL_TOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_TOUGH);
+        int num = SKILL_TOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.TOUGH) + SKILL_ZTOUGH_HP_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TOUGH);
         return Sheet.BaseHitPoints + num;
       }
     }
@@ -1015,7 +1069,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSTA {
       get {
-        int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HIGH_STAMINA);
+        int num = SKILL_HIGH_STAMINA_STA_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HIGH_STAMINA);
         return Sheet.BaseStaminaPoints + num;
       }
     }
@@ -1027,34 +1081,49 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    private string ReasonCantRun()
+    {
+      if (!Model.Abilities.CanRun) return "no ability to run";
+      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to run";
+      return "";
+    }
+
     public bool CanRun(out string reason)
     {
-      if (!Model.Abilities.CanRun)
-      {
-        reason = "no ability to run";
-        return false;
-      }
-      if (StaminaPoints < Actor.STAMINA_MIN_FOR_ACTIVITY)
-      {
-        reason = "not enough stamina to run";
-        return false;
-      }
-      reason = "";
-      return true;
+      reason = ReasonCantRun();
+      return string.IsNullOrEmpty(reason);
     }
 
     public bool CanRun()
     {
-      string reason;
-      return CanRun(out reason);
+      return string.IsNullOrEmpty(ReasonCantRun());
     }
 
     public bool CanJump {
       get {
        return Model.Abilities.CanJump
-            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AGILE)
-            || 0 < Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_AGILE);
+            || 0 < Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE)
+            || 0 < Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
       }
+    }
+
+    private string ReasonCantUseExit(Point exitPoint)
+    {
+      if (Location.Map.GetExitAt(exitPoint) == null) return "no exit there";
+      if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
+      if (IsSleeping) return "is sleeping";
+      return "";
+    }
+
+    public bool CanUseExit(Point exitPoint)
+    {
+      return string.IsNullOrEmpty(ReasonCantUseExit(exitPoint));
+    }
+
+    public bool CanUseExit(Point exitPoint, out string reason)
+    {
+      reason = ReasonCantUseExit(exitPoint);
+      return string.IsNullOrEmpty(reason);
     }
 
     // we do not roll these into a setter as no change requires both sets of checks
@@ -1150,14 +1219,14 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxFood {
       get {
-        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.LIGHT_EATER));
+        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
         return Sheet.BaseFoodPoints + num;
       }
     }
 
     public int MaxRot {
       get {
-        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.Z_LIGHT_EATER));
+        int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_ZLIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER));
         return Sheet.BaseFoodPoints + num;
       }
     }
@@ -1219,7 +1288,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSleep {
       get {
-        int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.AWAKE));
+        int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
         return Sheet.BaseSleepPoints + num;
       }
     }
@@ -1253,7 +1322,7 @@ namespace djack.RogueSurvivor.Data
     // use this to prevent accidental overwriting of MaxCapacity by bugs.
     public int MaxInv {
       get {
-        int num = SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Gameplay.Skills.IDs.HAULER);
+        int num = SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
         return Sheet.BaseInventoryCapacity + num;
       }
     }
@@ -1303,10 +1372,10 @@ namespace djack.RogueSurvivor.Data
       return num;
     }    
 
-    public bool HasItemOfType(Type tt)
+    public bool Has<_T_>() where _T_ : Item
     {
       if (Inventory == null || Inventory.IsEmpty) return false;
-      return Inventory.HasItemOfType(tt);
+      return Inventory.Has<_T_>();
     }
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
@@ -1352,11 +1421,55 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public Skill SkillUpgrade(djack.RogueSurvivor.Gameplay.Skills.IDs id)
+    private string ReasonCantUseItem(Item it)
+    {
+      Contract.Requires(null != it);
+      if (!Model.Abilities.CanUseItems) return "no ability to use items";
+      if (it is ItemWeapon) return "to use a weapon, equip it";
+      if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
+      if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
+      if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
+      if (it is ItemAmmo)
+      {
+        ItemAmmo itemAmmo = it as ItemAmmo;
+        ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+        if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
+        if (itemRangedWeapon.Ammo >= (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo) return "weapon already fully loaded";
+      }
+      else if (it is ItemSprayScent)
+      {
+        if (it.IsUseless) return "no spray left.";
+      }
+      else if (it is ItemTrap)
+      {
+        if (!(it as ItemTrap).TrapModel.UseToActivate) return "does not activate manually";
+      }
+      else if (it is ItemEntertainment)
+      {
+        if (!Model.Abilities.IsIntelligent) return "not intelligent";
+        if (IsBoredOf(it)) return "bored by this";
+      }
+      Inventory inventory = Inventory;
+      if (inventory == null || !inventory.Contains(it)) return "not in inventory";
+      return "";
+    }
+
+    public bool CanUse(Item it, out string reason)
+    {
+      reason = ReasonCantUseItem(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanUse(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantUseItem(it));
+    }
+
+    public Skill SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);
       Skill skill = Sheet.SkillTable.GetSkill(id);
-      if (id == djack.RogueSurvivor.Gameplay.Skills.IDs.HAULER && Inventory != null)
+      if (id == Skills.IDs.HAULER && Inventory != null)
         Inventory.MaxCapacity = MaxInv;
       return skill;
     }
@@ -1571,10 +1684,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
-    public void StartingSkill(Gameplay.Skills.IDs skillID,int n=1)
+    public void StartingSkill(Skills.IDs skillID,int n=1)
     {
       while(0< n--) { 
-        if (Sheet.SkillTable.GetSkillLevel(skillID) >= Gameplay.Skills.MaxSkillLevel(skillID)) return;
+        if (Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
         Sheet.SkillTable.AddOrIncreaseSkill(skillID);
         RecomputeStartingStats();
       }
@@ -1594,6 +1707,12 @@ namespace djack.RogueSurvivor.Data
     public void CreateCivilianDeductFoodSleep(Engine.Rules r) { 
       m_FoodPoints -= r.Roll(0, m_FoodPoints / 4);
       m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
+    }
+
+    public void AfterSpawn()
+    {
+      Controller.UpdateSensors();
+      Engine.Session.Get.PoliceTrackingThroughExitSpawn(this); // XXX overprecise
     }
 
     public void AfterAction()

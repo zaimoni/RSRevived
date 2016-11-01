@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -48,25 +49,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor.Forget(m_Actor);
     }
 
-    protected override List<Percept> _UpdateSensors()
+    public override List<Percept> UpdateSensors()
     {
       return m_MemLOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }
 
+    // return value must contain a {0} placeholder for the target name
+    private string LeaderText_NotLeavingBehind(Actor target)
+    {
+      if (target.IsSleeping) return "patiently waits for {0} to wake up.";
+      else if (FOV.Contains(target.Location.Position)) return "{0}! Don't lag behind!";
+      else return "Where the hell is {0}?";
+    }
+
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
+      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(percepts);
 
       BehaviorEquipBodyArmor(game);
       
       // OrderableAI specific: respond to orders
-      if (null != Order)
-      {
+      if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
-        if (null != actorAction)
-          {
+        if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
           }
@@ -94,11 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction)
-      {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
 
       // all free actions have to be before targeting enemies
       if (null != current_enemies) {
@@ -106,13 +110,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           List<Percept> friends = FilterNonEnemies(percepts1);
           if (friends != null) {
             tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
-            if (null != tmpAction) {
-              m_Actor.Activity = Activity.IDLE;
-              return tmpAction;
-            }
+            if (null != tmpAction) return tmpAction;
           }
         }
-        List<Percept> percepts3 = FilterFireTargets(current_enemies);
+        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;
           tmpAction = BehaviorRangedAttack(target);
@@ -126,10 +127,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorRestIfTired();
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
       if (null != enemies) {
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(target);
@@ -139,11 +137,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
+
       if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
@@ -197,14 +194,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(4, out target);
         if (null != tmpAction) {
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE)) {
-            if (target.IsSleeping)
-              game.DoEmote(m_Actor, string.Format("patiently waits for {0} to wake up.", (object) target.Name));
-            else if (FOV.Contains(target.Location.Position))
-              game.DoEmote(m_Actor, string.Format("{0}! Don't lag behind!", (object) target.Name));
-            else
-              game.DoEmote(m_Actor, string.Format("Where the hell is {0}?", (object) target.Name));
-          }
+          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
+            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }

@@ -11,6 +11,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -28,10 +29,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     }
 
-    protected override List<Percept> _UpdateSensors()
+    public override List<Percept> UpdateSensors()
     {
       List<Percept> perceptList = m_LOSSensor.Sense(m_Actor);
-      perceptList.AddRange((IEnumerable<Percept>)m_LivingSmellSensor.Sense(m_Actor));
+      perceptList.AddRange(m_LivingSmellSensor.Sense(m_Actor));
       return perceptList;
     }
 
@@ -39,36 +40,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
+      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(percepts);
       List<Percept> enemies = FilterEnemies(percepts1);
       ActorAction tmpAction;
-      Actor tmpActor;
       if (enemies != null) {
-        List<Percept> current_enemies = FilterCurrent(enemies);
-        if (current_enemies != null) {
-          tmpAction = TargetGridMelee(current_enemies, out tmpActor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = tmpActor;
-            return tmpAction;
-          }
-        }
-        List<Percept> perceptList2 = Filter(enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
-        if (perceptList2 != null) {
-          tmpAction = TargetGridMelee(perceptList2, out tmpActor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = tmpActor;
-            return tmpAction;
-          }
-        }
+        tmpAction = TargetGridMelee(FilterCurrent(enemies));
+        if (null != tmpAction) return tmpAction;
+        tmpAction = TargetGridMelee(Filter(enemies, (Predicate<Percept>)(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter)));
+        if (null != tmpAction) return tmpAction;
       }
       ActorAction actorAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
       if (actorAction != null) {
         m_Actor.Activity = Activity.IDLE;
         return actorAction;
       }
-      ActorAction actorAction3 = BehaviorTrackScent(m_LivingSmellSensor.Scents);
+      ActorAction actorAction3 = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
       if (actorAction3 != null) {
         m_Actor.Activity = Activity.TRACKING;
         return actorAction3;

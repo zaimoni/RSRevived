@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionBashDoor(Actor actor, DoorWindow door)
       : base(actor)
     {
-      if (door == null) throw new ArgumentNullException("door");
+      Contract.Requires(null != door);
       m_Door = door;
     }
 
@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoBreak(m_Actor, m_Door);
+      RogueForm.Game.DoBreak(m_Actor, (MapObject)m_Door);
     }
   }
 }

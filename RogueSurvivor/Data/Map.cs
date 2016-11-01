@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.Serialization;
 using System.Linq;
+using System.Diagnostics.Contracts;
+
+using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -191,12 +194,12 @@ namespace djack.RogueSurvivor.Data
 #region Implement ISerializable
     protected Map(SerializationInfo info, StreamingContext context)
     {
-      Seed = info.GetInt32("m_Seed");
+      Seed = (int) info.GetValue("m_Seed", typeof (int));
       m_District = (District) info.GetValue("m_District", typeof (District));
       Name = (string) info.GetValue("m_Name", typeof (string));
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
-      Width = info.GetInt32("m_Width");
-      Height = info.GetInt32("m_Height");
+      Width = (int) info.GetValue("m_Width", typeof (int));
+      Height = (int) info.GetValue("m_Height", typeof (int));
       Rect = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
       m_Tiles = (Tile[,]) info.GetValue("m_Tiles", typeof (Tile[,]));
       m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
@@ -424,10 +427,7 @@ namespace djack.RogueSurvivor.Data
         if (actor.IsPlayer) m_aux_Players = null;
       }
       m_aux_ActorsByPosition.Add(position, actor);
-      bool new_map = (null==actor.Location.Map);
       actor.Location = new Location(this, position);
-      if (new_map) actor.Controller.UpdateSensors();
-      Engine.Session.Get.PoliceTrackingThroughExitSpawn(actor); // XXX overprecise
       m_iCheckNextActorIndex = 0;
     }
 
@@ -461,6 +461,37 @@ namespace djack.RogueSurvivor.Data
         }
         return null;
       }
+    }
+
+    private string ReasonNotWalkableFor(int x, int y, Actor actor)
+    {
+      Contract.Requires(null != actor);
+      if (!IsInBounds(x, y)) return "out of map";
+      if (!m_Tiles[x, y].Model.IsWalkable) return "blocked";
+      MapObject mapObjectAt = GetMapObjectAt(x, y);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
+        if (mapObjectAt.IsJumpable) {
+          if (!actor.CanJump) return "cannot jump";
+          if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP) return "not enough stamina to jump";
+        } else if (actor.Model.Abilities.IsSmall) {
+          DoorWindow doorWindow = mapObjectAt as DoorWindow;
+          if (doorWindow != null && doorWindow.IsClosed) return "cannot slip through closed door";
+        } else return "blocked by object";
+      }
+      if (GetActorAt(x, y) != null) return "someone is there";
+      if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
+      return "";
+    }
+
+    public bool IsWalkableFor(Point p, Actor actor)
+    {
+      return string.IsNullOrEmpty(ReasonNotWalkableFor(p.X, p.Y, actor));
+    }
+
+    public bool IsWalkableFor(Point p, Actor actor, out string reason)
+    {
+      reason = ReasonNotWalkableFor(p.X, p.Y, actor);
+      return string.IsNullOrEmpty(reason);
     }
 
     // tracking players on map
@@ -520,11 +551,9 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
-      if (mapObj == null)
-        throw new ArgumentNullException("actor");
+      Contract.Requires(null != mapObj);
       MapObject mapObjectAt = GetMapObjectAt(position);
-      if (mapObjectAt == mapObj)
-        return;
+      if (mapObjectAt == mapObj) return;
       if (mapObjectAt == mapObj)
         throw new InvalidOperationException("mapObject already at position");
       if (mapObjectAt != null)
@@ -556,7 +585,7 @@ namespace djack.RogueSurvivor.Data
         mapObject.ImageID = Gameplay.GameImages.OBJ_GATE_OPEN;
       }
     }
-
+ 
     public Inventory GetItemsAt(Point position)
     {
       if (!IsInBounds(position)) return null;
@@ -874,7 +903,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!IsInBounds(position)) return null;
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
-      return tmp.Any() ? new List<Point>(tmp) : null;
+      return (0<tmp.Count() ? new List<Point>(tmp) : null);
     }
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)
@@ -1037,13 +1066,13 @@ namespace djack.RogueSurvivor.Data
         }
       }
       if (0>=inv_data.Count && 0>=actor_data.Count) return;
-      if (0<actor_data.Count()) {
+      if (0<actor_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=left>");
         dest.WriteLine("<tr><th>pos</th><th>name</th><th>AP</th><th>HP</th></tr>");
         foreach(string s in actor_data) dest.WriteLine(s);
         dest.WriteLine("</table>");
       }
-      if (0<inv_data.Count()) {
+      if (0<inv_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=right>");
         foreach(string s in inv_data) dest.WriteLine(s);
         dest.WriteLine("</table>");

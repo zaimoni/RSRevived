@@ -20,19 +20,15 @@ namespace djack.RogueSurvivor.Engine
     private readonly List<Message> m_History;
     private readonly int m_HistorySize;
 
-    public int Count
-    {
-      get
-      {
+    public int Count {
+      get {
         return m_Messages.Count;
       }
     }
 
-    public IEnumerable<Message> History
-    {
-      get
-      {
-        return (IEnumerable<Message>)m_History;
+    public IEnumerable<Message> History {
+      get {
+        return m_History;
       }
     }
 
@@ -49,21 +45,20 @@ namespace djack.RogueSurvivor.Engine
 
     public void Clear()
     {
-            m_Messages.Clear();
+      m_Messages.Clear();
     }
 
     public void ClearHistory()
     {
-            m_History.Clear();
+      m_History.Clear();
     }
 
     public void Add(Message msg)
     {
-            m_Messages.Add(msg);
-            m_History.Add(msg);
-      if (m_History.Count <= m_HistorySize)
-        return;
-            m_History.RemoveAt(0);
+      m_Messages.Add(msg);
+      m_History.Add(msg);
+      if (m_History.Count <= m_HistorySize) return;
+      m_History.RemoveAt(0);
     }
 
     public void RemoveLastMessage()

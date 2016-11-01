@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -29,7 +30,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LOSSensor = new LOSSensor(VISION_SEES);
     }
 
-    protected override List<Percept> _UpdateSensors()
+    public override List<Percept> UpdateSensors()
     {
       return m_LOSSensor.Sense(m_Actor);
     }
@@ -38,6 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
+      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(percepts);
       Percept percept = FilterNearest(FilterEnemies(percepts1));
       if (percept != null) {
@@ -48,10 +50,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction;
         }
       }
-      if (game.Rules.RollChance(IDLE_CHANCE)) {
-        m_Actor.Activity = Activity.IDLE;
-        return new ActionWait(m_Actor);
-      }
+      if (game.Rules.RollChance(IDLE_CHANCE)) return new ActionWait(m_Actor);
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander(game);
     }

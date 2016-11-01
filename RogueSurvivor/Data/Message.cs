@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Data
         m_Text = value;
       }
     }
-
+    
     public int Turn {
       get {
         return m_Turn;

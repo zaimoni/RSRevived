@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 {
@@ -23,7 +22,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public HashSet<Point> FOV {
       get {
-        Contract.Ensures(null!=Contract.Result<HashSet<Point>>());
+//      Contract.Ensures(null!=Contract.Result<HashSet<Point>>());  // final fix for this breaks saveload
         return m_FOV;
       }
     }
@@ -49,7 +48,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         HashSet<Point> has_threat = (null==threats ? null : new HashSet<Point>());
         if (num * num < actor.Location.Map.CountActors) {
           foreach (Point point in m_FOV) {
-            Actor actorAt = actor.Location.Map.GetActorAt(point.X, point.Y);
+             Actor actorAt = actor.Location.Map.GetActorAt(point.X, point.Y);
             if (null==actorAt) continue;
             if (actorAt==actor) continue;
             if (actorAt.IsDead) continue;
@@ -70,8 +69,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
             if (!actor.IsEnemyOf(actor1)) continue;
             threats.Sighted(actor1, actor1.Location);
             has_threat.Add(actor1.Location.Position);
-          }
-        }
+           }
+         }
         // ensure fact what is in sight is current, is recorded
         if (null!=has_threat) {
           foreach (Point pt in m_FOV) {

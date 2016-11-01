@@ -5,9 +5,9 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=FireMode.DEFAULT)
       : base(actor)
     {
-      if (target == null) throw new ArgumentNullException("target");
+      Contract.Requires(null != target);
       m_Target = target;
       m_Mode = mode;
     }
@@ -28,8 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       m_LoF.Clear();
-      m_FailReason = m_Actor.ReasonNoFireAt(m_Target, m_LoF);
-      return ""==m_FailReason;
+      return m_Actor.CanFireAt(m_Target, m_LoF, out m_FailReason);
     }
 
     public override void Perform()

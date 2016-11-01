@@ -12,11 +12,11 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class DiceRoller
   {
-    private Random m_Rng;
+    private readonly Random m_Rng;
 
     public DiceRoller(int seed)
     {
-            m_Rng = new Random(seed);
+      m_Rng = new Random(seed);
     }
 
     public DiceRoller()

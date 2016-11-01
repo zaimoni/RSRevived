@@ -21,17 +21,44 @@ namespace djack.RogueSurvivor.Engine.Items
 
   static internal class ExtensionAmmoType
   {
-    static internal string Describe(this AmmoType at)  // morally PluralName
+    static internal string Singular(this AmmoType at)
     {
       switch (at) {
-        case AmmoType.LIGHT_PISTOL: return "light pistol bullets";
-        case AmmoType.HEAVY_PISTOL: return "heavy pistol bullets";
-        case AmmoType.SHOTGUN: return "shotgun cartridge";
-        case AmmoType.LIGHT_RIFLE: return "light rifle bullets";
-        case AmmoType.HEAVY_RIFLE: return "heavy rifle bullets";
-        case AmmoType.BOLT: return "bolts";
+        case AmmoType.LIGHT_PISTOL: return "light pistol bullet";
+        case AmmoType.HEAVY_PISTOL: return "heavy pistol bullet";
+        case AmmoType.SHOTGUN: return "shotgun shell";
+        case AmmoType.LIGHT_RIFLE: return "light rifle bullet";
+        case AmmoType.HEAVY_RIFLE: return "heavy rifle bullet";
+        case AmmoType.BOLT: return "bolt";
+#if DEBUG
         default: throw new ArgumentOutOfRangeException("unhandled ammo type");
-      }
+#else
+        default: return "buggy bolt";
+#endif
+     }
    }
+ 
+    static internal string Aggregate(this AmmoType at)  // morally PluralName
+    {
+      switch (at) {
+        case AmmoType.LIGHT_PISTOL: return "light pistol clip";
+        case AmmoType.HEAVY_PISTOL: return "heavy pistol clip";
+        case AmmoType.SHOTGUN: return "shotgun cartridge";
+        case AmmoType.LIGHT_RIFLE: return "light rifle clip";
+        case AmmoType.HEAVY_RIFLE: return "heavy rifle clip";
+        case AmmoType.BOLT: return "crossbow quiver";
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException("unhandled ammo type");
+#else
+        default: return "buggy clip";
+#endif
+      }
+    }
+ 
+    static internal string Describe(this AmmoType at, bool plural=false)
+    {
+      if (AmmoType.SHOTGUN == at) return at.Aggregate();
+      return at.Singular()+(plural ? "s" : ""); // regular plural in English
+    }
   }
 }

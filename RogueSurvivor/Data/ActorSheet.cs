@@ -36,17 +36,17 @@ namespace djack.RogueSurvivor.Data
 
     public ActorSheet(int baseHitPoints, int baseStaminaPoints, int baseFoodPoints, int baseSleepPoints, int baseSanity, Attack unarmedAttack, Defence baseDefence, int baseViewRange, int baseAudioRange, int smellRating, int inventoryCapacity)
     {
-            BaseHitPoints = baseHitPoints;
-            BaseStaminaPoints = baseStaminaPoints;
-            BaseFoodPoints = baseFoodPoints;
-            BaseSleepPoints = baseSleepPoints;
-            BaseSanity = baseSanity;
-            UnarmedAttack = unarmedAttack;
-            BaseDefence = baseDefence;
-            BaseViewRange = baseViewRange;
-            BaseAudioRange = baseAudioRange;
-            BaseSmellRating = (float) smellRating / 100f;
-            BaseInventoryCapacity = inventoryCapacity;
+      BaseHitPoints = baseHitPoints;
+      BaseStaminaPoints = baseStaminaPoints;
+      BaseFoodPoints = baseFoodPoints;
+      BaseSleepPoints = baseSleepPoints;
+      BaseSanity = baseSanity;
+      UnarmedAttack = unarmedAttack;
+      BaseDefence = baseDefence;
+      BaseViewRange = baseViewRange;
+      BaseAudioRange = baseAudioRange;
+      BaseSmellRating = (float) smellRating / 100f;
+      BaseInventoryCapacity = inventoryCapacity;
     }
 
     public ActorSheet(ActorSheet copyFrom)

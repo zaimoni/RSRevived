@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine
   {
     public static int COMMAND_LINE_SEED = 0;
     public static Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
-    private static Session s_TheSession;
+    private static Session s_TheSession = null;
 
     private readonly WorldTime m_WorldTime;
     private Scoring m_Scoring;
@@ -242,8 +242,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadBin(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+      if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
 #if DEBUG
         using (Stream stream = Session.CreateStream(filepath, false)) {
@@ -257,7 +256,6 @@ namespace djack.RogueSurvivor.Engine
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        Session.s_TheSession = (Session) null;
         return false;
       }
 #endif
@@ -288,7 +286,6 @@ namespace djack.RogueSurvivor.Engine
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        Session.s_TheSession = (Session) null;
         return false;
       }
      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
@@ -319,7 +316,6 @@ namespace djack.RogueSurvivor.Engine
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        Session.s_TheSession = (Session) null;
         return false;
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");

@@ -63,9 +63,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTracker(ItemTrackerModel model)
       : base(model)
     {
-      ItemTrackerModel itemTrackerModel = model;
-      Tracking = itemTrackerModel.Tracking;
-      Batteries = itemTrackerModel.MaxBatteries;
+      Tracking = model.Tracking;
+      Batteries = model.MaxBatteries;
     }
 
     public void Recharge()

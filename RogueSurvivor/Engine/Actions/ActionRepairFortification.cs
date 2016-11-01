@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRepairFortification(Actor actor, Fortification fort)
       : base(actor)
     {
-      if (fort == null) throw new ArgumentNullException("fort");
+      Contract.Requires(null != fort);
       m_Fort = fort;
     }
 

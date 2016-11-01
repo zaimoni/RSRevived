@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
       : base(actor)
     {
-      if (powGen == null) throw new ArgumentNullException("powGen");
+      Contract.Requires(null != powGen);
       m_PowGen = powGen;
     }
 

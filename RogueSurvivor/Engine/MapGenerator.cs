@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -184,15 +185,13 @@ namespace djack.RogueSurvivor.Engine
     // Las Vegas algorithm for efficiency reasons.  A temporary array of 10,000 int is unreasonable.
     public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, int left, int top, int width, int height, Predicate<Point> goodPositionFn)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (actor == null) throw new ArgumentNullException("actor");
+      Contract.Requires(null != map);
+      Contract.Requires(null != actor);
       Point position = new Point();
-      for (int index = 0; index < maxTries; ++index)
-      {
+      for (int index = 0; index < maxTries; ++index) {
         position.X = roller.Roll(left, left + width);
         position.Y = roller.Roll(top, top + height);
-        if (Rules.IsWalkableFor(actor, map, position) && (goodPositionFn == null || goodPositionFn(position)))
-        {
+        if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
           map.PlaceActorAt(actor, position);
           return true;
         }
@@ -266,17 +265,13 @@ namespace djack.RogueSurvivor.Engine
     public void ItemsDrop(Map map, Rectangle rect, Func<Point, bool> isGoodPositionFn, Func<Point, Item> createFn)
     {
       Point position = new Point();
-      for (int left = rect.Left; left < rect.Left + rect.Width; ++left)
-      {
+      for (int left = rect.Left; left < rect.Left + rect.Width; ++left) {
         position.X = left;
-        for (int top = rect.Top; top < rect.Top + rect.Height; ++top)
-        {
+        for (int top = rect.Top; top < rect.Top + rect.Height; ++top) {
           position.Y = top;
-          if (isGoodPositionFn(position))
-          {
+          if (isGoodPositionFn(position)) {
             Item it = createFn(position);
-            if (it != null)
-              map.DropItemAt(it, position);
+            if (it != null) map.DropItemAt(it, position);
           }
         }
       }

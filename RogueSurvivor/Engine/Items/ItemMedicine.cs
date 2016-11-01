@@ -25,12 +25,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemMedicine(ItemMedicineModel model)
       : base(model)
     {
-      ItemMedicineModel itemMedicineModel = model;
-      Healing = itemMedicineModel.Healing;
-      StaminaBoost = itemMedicineModel.StaminaBoost;
-      SleepBoost = itemMedicineModel.SleepBoost;
-      InfectionCure = itemMedicineModel.InfectionCure;
-      SanityCure = itemMedicineModel.SanityCure;
+      Healing = model.Healing;
+      StaminaBoost = model.StaminaBoost;
+      SleepBoost = model.SleepBoost;
+      InfectionCure = model.InfectionCure;
+      SanityCure = model.SanityCure;
     }
   }
 }

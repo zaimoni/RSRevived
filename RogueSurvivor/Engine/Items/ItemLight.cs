@@ -14,8 +14,7 @@ namespace djack.RogueSurvivor.Engine.Items
     {
     private int m_Batteries;
 
-    public int Batteries
-    {
+    public int Batteries {
       get {
         return m_Batteries;
       }
@@ -39,8 +38,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public override string ImageID {
       get {
-        if (IsEquipped && Batteries > 0)
-          return base.ImageID;
+        if (IsEquipped && Batteries > 0) return base.ImageID;
         return (Model as ItemLightModel).OutOfBatteriesImageID;
       }
     }
@@ -52,7 +50,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemLight(ItemLightModel model)
       : base(model)
     {
-      Batteries = (model as ItemLightModel).MaxBatteries;
+      Batteries = model.MaxBatteries;
     }
 
     public void Recharge()

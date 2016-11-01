@@ -11,6 +11,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -48,7 +49,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemLOSSensor.Forget(m_Actor);
     }
 
-    protected override List<Percept> _UpdateSensors()
+    public override List<Percept> UpdateSensors()
     {
       List<Percept> perceptList = m_MemLOSSensor.Sense(m_Actor);
       perceptList.AddRange(m_LivingSmellSensor.Sense(m_Actor));
@@ -60,32 +61,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
+      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(percepts);
 
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
 
       List<Percept> enemies = FilterEnemies(percepts1);
       ActorAction tmpAction;
-      Actor tmpActor;
       if (enemies != null) {
-        List<Percept> current_enemies = FilterCurrent(enemies);
-        if (current_enemies != null) {
-          tmpAction = TargetGridMelee(current_enemies, out tmpActor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = tmpActor;
-            return tmpAction;
-          }
-        }
-        List<Percept> perceptList2 = Filter(enemies, (Predicate<Percept>) (p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
-        if (perceptList2 != null) {
-          tmpAction = TargetGridMelee(perceptList2, out tmpActor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.CHASING;
-            m_Actor.TargetActor = tmpActor;
-            return tmpAction;
-          }
-        }
+        tmpAction = TargetGridMelee(FilterCurrent(enemies));
+        if (null != tmpAction) return tmpAction;
+        tmpAction = TargetGridMelee(Filter(enemies, (Predicate<Percept>)(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter)));
+        if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
       if (null != tmpAction) {
@@ -93,48 +80,47 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
-        if (null != tmpAction) {
+        ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
+        if (actorAction != null) {
           m_MemLOSSensor.Clear();
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+          return actorAction;
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
         Percept percept = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
         if (percept != null) {
-          tmpAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
-          if (null != tmpAction) {
+          ActorAction actorAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
+          if (actorAction != null) {
             m_Actor.Activity = Activity.FOLLOWING;
             m_Actor.TargetActor = percept.Percepted as Actor;
-            return tmpAction;
+            return actorAction;
           }
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
-        tmpAction = BehaviorTrackScent(m_MasterSmellSensor.Scents);
-        if (null != tmpAction) {
+        ActorAction actorAction = BehaviorTrackScent(game, m_MasterSmellSensor.Scents);
+        if (actorAction != null) {
           m_Actor.Activity = Activity.TRACKING;
-          return tmpAction;
+          return actorAction;
         }
       }
-      tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
-      if (null != tmpAction) {
+      ActorAction actorAction3 = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
+      if (actorAction3 != null) {
         m_Actor.Activity = Activity.TRACKING;
-        return tmpAction;
+        return actorAction3;
       }
-      if (m_Actor.CanPush && game.Rules.RollChance(PUSH_OBJECT_CHANCE)) {
-        tmpAction = BehaviorPushNonWalkableObject(game);
-        if (null != tmpAction) {
+      if (m_Actor.AbleToPush && game.Rules.RollChance(PUSH_OBJECT_CHANCE)) {
+        ActorAction actorAction1 = BehaviorPushNonWalkableObject(game);
+        if (actorAction1 != null) {
           m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+          return actorAction1;
         }
       }
       if (m_Actor.Model.Abilities.ZombieAI_Explore) {
-        tmpAction = BehaviorExplore(game, m_Exploration);
-        if (null != tmpAction) {
+        ActorAction actorAction1 = BehaviorExplore(game, m_Exploration);
+        if (actorAction1 != null) {
           m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+          return actorAction1;
         }
       }
       m_Actor.Activity = Activity.IDLE;

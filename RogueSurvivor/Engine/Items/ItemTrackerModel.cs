@@ -28,9 +28,9 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries)
       : base(aName, theNames, imageID)
     {
-      m_Tracking = tracking;
-      m_MaxBatteries = maxBatteries;
-      DontAutoEquip = true;
+       m_Tracking = tracking;
+       m_MaxBatteries = maxBatteries;
+       DontAutoEquip = true;
     }
 
     [System.Flags]

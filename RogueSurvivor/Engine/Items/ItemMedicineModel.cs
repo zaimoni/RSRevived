@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure, string flavor, int stackingLimit=0)
+    public ItemMedicineModel(string aName, string theNames, string imageID, int healing, int staminaBoost, int sleepBoost, int infectionCure, int sanityCure, string flavor, int stackingLimit = 0)
       : base(aName, theNames, imageID)
     {
       m_Healing = healing;

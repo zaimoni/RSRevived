@@ -40,11 +40,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-    public override bool IsTransparent {
+    public override bool IsTransparent
+    {
       get {
         if (m_BarricadePoints > 0) return false;
-        if (State != STATE_OPEN)
-          return base.IsTransparent;
+        if (State != STATE_OPEN) return base.IsTransparent;
         return FireState != MapObject.Fire.ONFIRE;
       }
     }
@@ -55,8 +55,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-    public int BarricadePoints
-    {
+    public int BarricadePoints {
       get {
         return m_BarricadePoints;
       }
@@ -97,8 +96,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     private void _SetState(int newState)
     {
-      switch (newState)
-      {
+      switch (newState) {
         case STATE_CLOSED:
           ImageID = m_ClosedImageID;
           IsWalkable = false;
@@ -120,29 +118,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       base.SetState(newState);
     }
 
-    public override void SetState(int newState)
-    {
-      switch (newState)
-      {
-        case STATE_CLOSED:
-          ImageID = m_ClosedImageID;
-          IsWalkable = false;
-          break;
-        case STATE_OPEN:
-          ImageID = m_OpenImageID;
-          IsWalkable = true;
-          break;
-        case STATE_BROKEN:
-          ImageID = m_BrokenImageID;
-          BreakState = MapObject.Break.BROKEN;
-          HitPoints = 0;
-          m_BarricadePoints = 0;
-          IsWalkable = true;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("newState unhandled");
-      }
-      base.SetState(newState);
-    }
+    public override void SetState(int newState) { _SetState(newState); }
   }
 }

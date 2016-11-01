@@ -134,7 +134,7 @@ namespace Zaimoni.Data
         }
 
         public Dictionary<T, int> Flee(T current_pos) {
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
+            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos", "not in the cost map");
 //          Contract.EndContractBlock();
             int current_cost = _map[current_pos];
             Dictionary<T, int> tmp = _forward(current_pos);

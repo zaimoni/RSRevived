@@ -34,8 +34,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public override void SetState(int newState)
     {
-      switch (newState)
-      {
+      switch (newState) {
         case STATE_OFF:
           ImageID = m_OffImageID;
           break;

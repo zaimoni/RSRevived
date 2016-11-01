@@ -17,10 +17,8 @@ namespace djack.RogueSurvivor.Data
     private Tile.Flags m_Flags;
     private List<string> m_Decorations;
 
-    public TileModel Model
-    {
+    public TileModel Model {
       get {
-        Contract.Requires(null!=Models.Tiles);
         Contract.Ensures(null!=Contract.Result<TileModel>());
         return Models.Tiles[m_ModelID];
       }
@@ -30,18 +28,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsInside
-    {
-      get
-      {
+    public bool IsInside {
+      get {
         return (m_Flags & Tile.Flags.IS_INSIDE) != Tile.Flags.NONE;
       }
-      set
-      {
+      set {
         if (value)
-                    m_Flags |= Tile.Flags.IS_INSIDE;
+          m_Flags |= Tile.Flags.IS_INSIDE;
         else
-                    m_Flags &= ~Tile.Flags.IS_INSIDE;
+          m_Flags &= ~Tile.Flags.IS_INSIDE;
       }
     }
 

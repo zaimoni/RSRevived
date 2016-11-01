@@ -13,6 +13,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionWait(Actor actor)
       : base(actor)
     {
+      actor.Activity = Activity.IDLE;   // normal state of a waiting actor
     }
 
     public override bool IsLegal()

@@ -16,18 +16,14 @@ namespace djack.RogueSurvivor.Data
     private List<Item> m_Items;
     public int MaxCapacity { get; set; }    // Actor requires a public setter
 
-    public IEnumerable<Item> Items
-    {
-      get
-      {
-        return (IEnumerable<Item>) m_Items;
+    public IEnumerable<Item> Items {
+      get {
+        return m_Items;
       }
     }
 
-    public int CountItems
-    {
-      get
-      {
+    public int CountItems {
+      get {
         return m_Items.Count;
       }
     }
@@ -57,19 +53,15 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Item TopItem
-    {
-      get
-      {
+    public Item TopItem {
+      get {
         if (m_Items.Count == 0) return null;
         return m_Items[m_Items.Count - 1];
       }
     }
 
-    public Item BottomItem
-    {
-      get
-      {
+    public Item BottomItem {
+      get {
         if (m_Items.Count == 0) return null;
         return m_Items[0];
       }
@@ -87,11 +79,9 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null!=it);
       int stackedQuantity;
       List<Item> itemsStackableWith = GetItemsStackableWith(it, out stackedQuantity);
-      if (stackedQuantity == it.Quantity)
-      {
+      if (stackedQuantity == it.Quantity) {
         int quantity = it.Quantity;
-        foreach (Item to in itemsStackableWith)
-        {
+        foreach (Item to in itemsStackableWith) {
           int addThis = Math.Min(to.Model.StackingLimit - to.Quantity, quantity);
           AddToStack(it, addThis, to);
           quantity -= addThis;
@@ -110,34 +100,28 @@ namespace djack.RogueSurvivor.Data
       int quantity = it.Quantity;
       int stackedQuantity;
       List<Item> itemsStackableWith = GetItemsStackableWith(it, out stackedQuantity);
-      if (itemsStackableWith != null)
-      {
+      if (itemsStackableWith != null) {
         quantityAdded = 0;
-        foreach (Item to in itemsStackableWith)
-        {
+        foreach (Item to in itemsStackableWith) {
           int stack = AddToStack(it, it.Quantity - quantityAdded, to);
           quantityAdded += stack;
         }
-        if (quantityAdded < it.Quantity)
-        {
+        if (quantityAdded < it.Quantity) {
           it.Quantity -= quantityAdded;
-          if (!IsFull)
-          {
-                        m_Items.Add(it);
+          if (!IsFull) {
+            m_Items.Add(it);
             quantityAdded = quantity;
           }
-        }
-        else
+        } else
           it.Quantity = 0;
         return true;
       }
-      if (IsFull)
-      {
+      if (IsFull) {
         quantityAdded = 0;
         return false;
       }
       quantityAdded = it.Quantity;
-            m_Items.Add(it);
+      m_Items.Add(it);
       return true;
     }
 
@@ -164,8 +148,7 @@ namespace djack.RogueSurvivor.Data
     private int AddToStack(Item from, int addThis, Item to)
     {
       int num = 0;
-      for (; addThis > 0 && to.Quantity < to.Model.StackingLimit; --addThis)
-      {
+      for (; addThis > 0 && to.Quantity < to.Model.StackingLimit; --addThis) {
         ++to.Quantity;
         ++num;
       }
@@ -176,21 +159,16 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null!=it);
       stackedQuantity = 0;
-      if (!it.Model.IsStackable)
-        return (List<Item>) null;
-      List<Item> objList = (List<Item>) null;
-      foreach (Item mItem in m_Items)
-      {
-        if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped)
-        {
-          if (objList == null)
-            objList = new List<Item>(m_Items.Count);
+      if (!it.Model.IsStackable) return null;
+      List<Item> objList = null;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped) {
+          if (objList == null) objList = new List<Item>(m_Items.Count);
           objList.Add(mItem);
           int val2 = mItem.Model.StackingLimit - mItem.Quantity;
           int num = Math.Min(it.Quantity - stackedQuantity, val2);
           stackedQuantity += num;
-          if (stackedQuantity == it.Quantity)
-            break;
+          if (stackedQuantity == it.Quantity) break;
         }
       }
       return objList;
@@ -199,7 +177,6 @@ namespace djack.RogueSurvivor.Data
     public Item GetBestDestackable(ItemModel it)
     {
       Contract.Requires(null!=it);
-      if (!it.IsStackable) return null;
       Item obj = null;
       foreach (Item mItem in m_Items) {
         if (mItem.Model == it && (obj == null || mItem.Quantity < obj.Quantity))
@@ -222,27 +199,23 @@ namespace djack.RogueSurvivor.Data
 
     public Item GetFirstByModel(ItemModel model)
     {
-      foreach (Item mItem in m_Items)
-      {
-        if (mItem.Model == model)
-          return mItem;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == model) return mItem;
       }
-      return (Item) null;
+      return null;
     }
 
-    public bool HasItemOfType(Type tt)
+    public bool Has<_T_>() where _T_ : Item
     {
-      return GetFirstByType(tt) != null;
+      return null != GetFirst<_T_>();
     }
 
-    public Item GetFirstByType(Type tt)
+    public _T_ GetFirst<_T_>() where _T_ : Item
     {
-      foreach (Item mItem in m_Items)
-      {
-        if (mItem.GetType() == tt)
-          return mItem;
+      foreach (Item it in m_Items) {
+        if (it is _T_) return it as _T_;
       }
-      return (Item) null;
+      return null;
     }
 
     public List<_T_> GetItemsByType<_T_>() where _T_ : Item

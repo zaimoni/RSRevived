@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,8 +16,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionDropItem(Actor actor, Item it)
       : base(actor)
     {
-      if (it == null) throw new ArgumentNullException("item");
+      Contract.Requires(null != it);
       m_Item = it;
+      actor.Activity = Activity.IDLE;
     }
 
     public override bool IsLegal()

@@ -30,6 +30,7 @@ namespace djack.RogueSurvivor.Engine
 
     public string ParseText()
     {
+      Contract.Ensures(null != Contract.Result<string>());
       return m_RawString.Trim('"');
     }
 

@@ -23,11 +23,17 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_Name;
       }
+      set {
+        m_Name = value;
+      }
     }
 
     public Rectangle Bounds {
       get {
         return m_Bounds;
+      }
+      set {
+        m_Bounds = value;
       }
     }
 
@@ -57,8 +63,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (m_Attributes == null) return default (_T_);
       object obj;
-      if (!m_Attributes.TryGetValue(key, out obj))
-        return default (_T_);
+      if (!m_Attributes.TryGetValue(key, out obj)) return default (_T_);
       if (!(obj is _T_)) throw new InvalidOperationException("game attribute is not of requested type");
       return (_T_) obj;
     }

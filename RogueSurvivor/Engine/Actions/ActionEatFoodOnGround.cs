@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionEatFoodOnGround(Actor actor, ItemFood it)
       : base(actor)
     {
-      if (it == null) throw new ArgumentNullException("item");
+      Contract.Requires(null != it);
       m_Item = it;
     }
 

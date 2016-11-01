@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -39,7 +40,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_MemorizedSensor.Forget(m_Actor);
     }
 
-    protected override List<Percept> _UpdateSensors()
+    public override List<Percept> UpdateSensors()
     {
       return m_MemorizedSensor.Sense(m_Actor);
     }
@@ -48,19 +49,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
     {
+      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(percepts);
 
       BehaviorEquipBodyArmor(game);
       
       // OrderableAI specific: respond to orders
-      if (null != Order)
-      {
+      if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
-        if (null != actorAction)
-          {
+        if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
-          }
+        }
 
         SetOrder(null);
       }
@@ -69,16 +69,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
 
       ActorAction tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
 
       // All free actions go above the check for enemies.
       List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       if (current_enemies != null) {
-        List<Percept> percepts3 = FilterFireTargets(current_enemies);
+        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
         if (percepts3 != null) {
           Actor actor = FilterNearest(percepts3).Percepted as Actor;
           tmpAction = BehaviorRangedAttack(actor);
@@ -113,16 +110,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null != enemies && perceptList2 != null) {
         tmpAction = BehaviorWarnFriends(perceptList2, FilterNearest(enemies).Percepted as Actor);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
+        if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorRestIfTired();
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
       if (enemies != null) {
         Percept target = FilterNearest(enemies);
         if (m_Actor.Location == target.Location) {

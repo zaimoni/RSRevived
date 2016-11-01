@@ -16,34 +16,26 @@ namespace djack.RogueSurvivor.Engine.Items
     private bool m_IsActivated;
     private bool m_IsTriggered;
 
-    public bool IsActivated
-    {
-      get
-      {
+    public bool IsActivated {
+      get {
         return m_IsActivated;
       }
-      set
-      {
-                m_IsActivated = value;
+      set {
+        m_IsActivated = value;
       }
     }
 
-    public bool IsTriggered
-    {
-      get
-      {
+    public bool IsTriggered {
+      get {
         return m_IsTriggered;
       }
-      set
-      {
-                m_IsTriggered = value;
+      set {
+        m_IsTriggered = value;
       }
     }
 
-    public ItemTrapModel TrapModel
-    {
-      get
-      {
+    public ItemTrapModel TrapModel {
+      get {
         return Model as ItemTrapModel;
       }
     }

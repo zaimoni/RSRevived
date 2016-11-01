@@ -24,9 +24,8 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    // for English, these are all regular nouns
     public ItemAmmoModel(string imageID, AmmoType ammoType, int maxQuantity)
-      : base(ammoType.Describe().Substring(0, ammoType.Describe().Length-1), ammoType.Describe(), imageID)
+      : base(ammoType.Describe(), ammoType.Describe(true), imageID)
     {
       m_AmmoType = ammoType;
       StackingLimit = maxQuantity;

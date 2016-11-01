@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics.Contracts;
+using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -24,82 +25,62 @@ namespace djack.RogueSurvivor.Data
     private MapObject.Fire m_FireState;
     private Location m_Location;
 
-    public string AName
-    {
-      get
-      {
+    public string AName {
+      get {
         return (IsAn ? "an " : (IsPlural ? "some " : "a ")) + m_Name;
       }
     }
 
-    public string TheName
-    {
-      get
-      {
+    public string TheName {
+      get {
         return "the " + m_Name;
       }
     }
 
-    public bool IsAn
-    {
-      get
-      {
+    public bool IsAn {
+      get {
         return GetFlag(MapObject.Flags.IS_AN);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_AN, value);
+      set {
+        SetFlag(MapObject.Flags.IS_AN, value);
       }
     }
 
-    public bool IsPlural
-    {
-      get
-      {
+    public bool IsPlural {
+      get {
         return GetFlag(MapObject.Flags.IS_PLURAL);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_PLURAL, value);
+      set {
+        SetFlag(MapObject.Flags.IS_PLURAL, value);
       }
     }
 
-    public string ImageID
-    {
-      get
-      {
+    public string ImageID {
+      get {
         return m_ImageID;
       }
-      set
-      {
-                m_ImageID = value;
+      set {
+        m_ImageID = value;
       }
     }
 
-    public string HiddenImageID
-    {
-      get
-      {
+    public string HiddenImageID {
+      get {
         return m_HiddenImageID;
       }
     }
 
-    public Location Location
-    {
-      get
-      {
+    public Location Location {
+      get {
         return m_Location;
       }
-      set
-      {
-                m_Location = value;
+      set {
+        m_Location = value;
       }
     }
 
-    public virtual bool IsTransparent
-    {
-      get
-      {
+    public virtual bool IsTransparent {
+      get {
         if (m_FireState == MapObject.Fire.ONFIRE)
           return false;
         if (m_BreakState == MapObject.Break.BROKEN || m_FireState == MapObject.Fire.ASHES)
@@ -108,32 +89,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsMaterialTransparent
-    {
-      get
-      {
+    public bool IsMaterialTransparent {
+      get {
         return GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT, value);
+      set {
+        SetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT, value);
       }
     }
 
-    public bool IsWalkable
-    {
-      get
-      {
+    public bool IsWalkable {
+      get {
         return GetFlag(MapObject.Flags.IS_WALKABLE);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_WALKABLE, value);
+      set {
+        SetFlag(MapObject.Flags.IS_WALKABLE, value);
       }
     }
 
-    public int JumpLevel
-    {
+    public int JumpLevel {
       get {
         return m_JumpLevel;
       }
@@ -142,117 +116,89 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsJumpable
-    {
-      get
-      {
+    public bool IsJumpable {
+      get {
         return m_JumpLevel > 0;
       }
     }
 
-    public bool IsContainer
-    {
-      get
-      {
+    public bool IsContainer {
+      get {
         return GetFlag(MapObject.Flags.IS_CONTAINER);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_CONTAINER, value);
+      set {
+        SetFlag(MapObject.Flags.IS_CONTAINER, value);
       }
     }
 
-    public bool IsCouch
-    {
-      get
-      {
+    public bool IsCouch {
+      get {
         return GetFlag(MapObject.Flags.IS_COUCH);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_COUCH, value);
+      set {
+        SetFlag(MapObject.Flags.IS_COUCH, value);
       }
     }
 
-    public bool IsBreakable
-    {
-      get
-      {
+    public bool IsBreakable {
+      get {
         return m_BreakState == MapObject.Break.BREAKABLE;
       }
     }
 
-    public MapObject.Break BreakState
-    {
-      get
-      {
+    public MapObject.Break BreakState {
+      get {
         return m_BreakState;
       }
-      set
-      {
-                m_BreakState = value;
+      set {
+        m_BreakState = value;
       }
     }
 
-    public bool GivesWood
-    {
-      get
-      {
+    public bool GivesWood {
+      get {
         if (GetFlag(MapObject.Flags.GIVES_WOOD))
           return m_BreakState != MapObject.Break.BROKEN;
         return false;
       }
-      set
-      {
-                SetFlag(MapObject.Flags.GIVES_WOOD, value);
+      set {
+        SetFlag(MapObject.Flags.GIVES_WOOD, value);
       }
     }
 
-    public bool IsMovable
-    {
-      get
-      {
+    public bool IsMovable {
+      get {
         return GetFlag(MapObject.Flags.IS_MOVABLE);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.IS_MOVABLE, value);
+      set {
+        SetFlag(MapObject.Flags.IS_MOVABLE, value);
       }
     }
 
-    public bool BreaksWhenFiredThrough
-    {
-      get
-      {
+    public bool BreaksWhenFiredThrough {
+      get {
         return GetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH, value);
+      set {
+        SetFlag(MapObject.Flags.BREAKS_WHEN_FIRED_THROUGH, value);
       }
     }
 
-    public bool StandOnFovBonus
-    {
-      get
-      {
+    public bool StandOnFovBonus {
+      get {
         return GetFlag(MapObject.Flags.STANDON_FOV_BONUS);
       }
-      set
-      {
-                SetFlag(MapObject.Flags.STANDON_FOV_BONUS, value);
+      set {
+        SetFlag(MapObject.Flags.STANDON_FOV_BONUS, value);
       }
     }
 
-    public int Weight
-    {
-      get
-      {
+    public int Weight {
+      get {
         return m_Weight;
       }
-      set
-      {
-                m_Weight = Math.Max(1, value);
+      set {
+        m_Weight = Math.Max(1, value);
       }
     }
 
@@ -266,10 +212,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsOnFire
-    {
-      get
-      {
+    public bool IsOnFire {
+      get {
         return m_FireState == MapObject.Fire.ONFIRE;
       }
     }
@@ -282,29 +226,26 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public MapObject.Fire FireState
-    {
+    public MapObject.Fire FireState {
       get {
         return m_FireState;
       }
+      set {
+        m_FireState = value;
+      }
     }
 
-    public int HitPoints
-    {
-      get
-      {
+    public int HitPoints {
+      get {
         return m_HitPoints;
       }
-      set
-      {
-                m_HitPoints = value;
+      set {
+        m_HitPoints = value;
       }
     }
 
-    public int MaxHitPoints
-    {
-      get
-      {
+    public int MaxHitPoints {
+      get {
         return m_MaxHitPoints;
       }
     }
@@ -322,26 +263,29 @@ namespace djack.RogueSurvivor.Data
       m_ImageID = m_HiddenImageID = hiddenImageID;
       m_BreakState = breakable;
       m_FireState = burnable;
-      if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE)
-        return;
+      if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
-    public string ReasonNoPush()
+    private string ReasonCantPushTo(Point toPos)
     {
-      if (!IsMovable) return  "cannot be moved";
-      if (Location.Map.GetActorAt(Location.Position) != null) return "someone is there";
-      if (IsOnFire) return "on fire";
+      Map tmp = Location.Map;
+      if (!tmp.IsInBounds(toPos)) return "out of map";
+      if (!tmp.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) return "blocked by an obstacle";
+      if (tmp.GetMapObjectAt(toPos) != null) return "blocked by an object";
+      if (tmp.GetActorAt(toPos) != null) return "blocked by someone";
       return "";
     }
 
-    public string ReasonNoPushTo(System.Drawing.Point toPos)
-    {
-      if (!Location.Map.IsInBounds(toPos)) return "out of map";
-      if (!Location.Map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) return "blocked by an obstacle";
-      if (Location.Map.GetMapObjectAt(toPos) != null) return "blocked by an object";
-      if (Location.Map.GetActorAt(toPos) != null) return "blocked by someone";
-      return "";
+    public bool CanPushTo(Point toPos, out string reason)
+    { 
+      reason = ReasonCantPushTo(toPos);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanPushTo(Point toPos)
+    { 
+      return string.IsNullOrEmpty(ReasonCantPushTo(toPos));
     }
 
     // flag handling
@@ -353,19 +297,19 @@ namespace djack.RogueSurvivor.Data
     private void SetFlag(MapObject.Flags f, bool value)
     {
       if (value)
-                m_Flags |= f;
+        m_Flags |= f;
       else
-                m_Flags &= ~f;
+        m_Flags &= ~f;
     }
 
     private void OneFlag(MapObject.Flags f)
     {
-            m_Flags |= f;
+      m_Flags |= f;
     }
 
     private void ZeroFlag(MapObject.Flags f)
     {
-            m_Flags &= ~f;
+      m_Flags &= ~f;
     }
 
     // fire
@@ -380,7 +324,6 @@ namespace djack.RogueSurvivor.Data
       ++m_JumpLevel;
       m_FireState = MapObject.Fire.BURNABLE;
     }
-
 
     [Serializable]
     public enum Break : byte

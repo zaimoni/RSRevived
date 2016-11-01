@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,14 +16,14 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionBreak(Actor actor, MapObject obj)
       : base(actor)
     {
-      if (obj == null) throw new ArgumentNullException("obj");
+      Contract.Requires(null != obj);
       m_Obj = obj;
+      actor.Activity = Activity.IDLE;
     }
 
     public override bool IsLegal()
     {
-      m_FailReason = m_Actor.ReasonCantBreak(m_Obj);
-      return ""==m_FailReason;
+      return m_Actor.CanBreak(m_Obj, out m_FailReason);
     }
 
     public override void Perform()

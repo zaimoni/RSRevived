@@ -88,9 +88,7 @@ namespace djack.RogueSurvivor.Engine.Items
       : base(aName, theNames, imageID)
     {
       DontAutoEquip = true;
-      if (stackLimit > 1) {
-        StackingLimit = stackLimit;
-      }
+      if (stackLimit > 1) StackingLimit = stackLimit;
       m_TriggerChance = triggerChance;
       m_Damage = damage;
       m_BreakChance = breakChance;

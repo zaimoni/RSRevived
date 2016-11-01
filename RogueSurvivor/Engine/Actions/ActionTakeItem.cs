@@ -5,8 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionTakeItem(Actor actor, Point position, Item it)
       : base(actor)
     {
-      if (it == null) throw new ArgumentNullException("item");
+      Contract.Requires(null != it);
       m_Position = position;
       m_Item = it;
     }

@@ -17,129 +17,129 @@ namespace djack.RogueSurvivor.Gameplay.Generators
   {
     private static readonly string[] MALE_SKINS = new string[5]
     {
-      "Actors\\Decoration\\male_skin1",
-      "Actors\\Decoration\\male_skin2",
-      "Actors\\Decoration\\male_skin3",
-      "Actors\\Decoration\\male_skin4",
-      "Actors\\Decoration\\male_skin5"
+      GameImages.MALE_SKIN1,
+      GameImages.MALE_SKIN2,
+      GameImages.MALE_SKIN3,
+      GameImages.MALE_SKIN4,
+      GameImages.MALE_SKIN5
     };
     private static readonly string[] MALE_HEADS = new string[8]
     {
-      "Actors\\Decoration\\male_hair1",
-      "Actors\\Decoration\\male_hair2",
-      "Actors\\Decoration\\male_hair3",
-      "Actors\\Decoration\\male_hair4",
-      "Actors\\Decoration\\male_hair5",
-      "Actors\\Decoration\\male_hair6",
-      "Actors\\Decoration\\male_hair7",
-      "Actors\\Decoration\\male_hair8"
+      GameImages.MALE_HAIR1,
+      GameImages.MALE_HAIR2,
+      GameImages.MALE_HAIR3,
+      GameImages.MALE_HAIR4,
+      GameImages.MALE_HAIR5,
+      GameImages.MALE_HAIR6,
+      GameImages.MALE_HAIR7,
+      GameImages.MALE_HAIR8
     };
     private static readonly string[] MALE_TORSOS = new string[5]
     {
-      "Actors\\Decoration\\male_shirt1",
-      "Actors\\Decoration\\male_shirt2",
-      "Actors\\Decoration\\male_shirt3",
-      "Actors\\Decoration\\male_shirt4",
-      "Actors\\Decoration\\male_shirt5"
+      GameImages.MALE_SHIRT1,
+      GameImages.MALE_SHIRT2,
+      GameImages.MALE_SHIRT3,
+      GameImages.MALE_SHIRT4,
+      GameImages.MALE_SHIRT5
     };
     private static readonly string[] MALE_LEGS = new string[5]
     {
-      "Actors\\Decoration\\male_pants1",
-      "Actors\\Decoration\\male_pants2",
-      "Actors\\Decoration\\male_pants3",
-      "Actors\\Decoration\\male_pants4",
-      "Actors\\Decoration\\male_pants5"
+      GameImages.MALE_PANTS1,
+      GameImages.MALE_PANTS2,
+      GameImages.MALE_PANTS3,
+      GameImages.MALE_PANTS4,
+      GameImages.MALE_PANTS5
     };
     private static readonly string[] MALE_SHOES = new string[3]
     {
-      "Actors\\Decoration\\male_shoes1",
-      "Actors\\Decoration\\male_shoes2",
-      "Actors\\Decoration\\male_shoes3"
+      GameImages.MALE_SHOES1,
+      GameImages.MALE_SHOES2,
+      GameImages.MALE_SHOES3
     };
     private static readonly string[] MALE_EYES = new string[6]
     {
-      "Actors\\Decoration\\male_eyes1",
-      "Actors\\Decoration\\male_eyes2",
-      "Actors\\Decoration\\male_eyes3",
-      "Actors\\Decoration\\male_eyes4",
-      "Actors\\Decoration\\male_eyes5",
-      "Actors\\Decoration\\male_eyes6"
+      GameImages.MALE_EYES1,
+      GameImages.MALE_EYES2,
+      GameImages.MALE_EYES3,
+      GameImages.MALE_EYES4,
+      GameImages.MALE_EYES5,
+      GameImages.MALE_EYES6
     };
     private static readonly string[] FEMALE_SKINS = new string[5]
     {
-      "Actors\\Decoration\\female_skin1",
-      "Actors\\Decoration\\female_skin2",
-      "Actors\\Decoration\\female_skin3",
-      "Actors\\Decoration\\female_skin4",
-      "Actors\\Decoration\\female_skin5"
+      GameImages.FEMALE_SKIN1,
+      GameImages.FEMALE_SKIN2,
+      GameImages.FEMALE_SKIN3,
+      GameImages.FEMALE_SKIN4,
+      GameImages.FEMALE_SKIN5
     };
     private static readonly string[] FEMALE_HEADS = new string[7]
     {
-      "Actors\\Decoration\\female_hair1",
-      "Actors\\Decoration\\female_hair2",
-      "Actors\\Decoration\\female_hair3",
-      "Actors\\Decoration\\female_hair4",
-      "Actors\\Decoration\\female_hair5",
-      "Actors\\Decoration\\female_hair6",
-      "Actors\\Decoration\\female_hair7"
+      GameImages.FEMALE_HAIR1,
+      GameImages.FEMALE_HAIR2,
+      GameImages.FEMALE_HAIR3,
+      GameImages.FEMALE_HAIR4,
+      GameImages.FEMALE_HAIR5,
+      GameImages.FEMALE_HAIR6,
+      GameImages.FEMALE_HAIR7
     };
     private static readonly string[] FEMALE_TORSOS = new string[4]
     {
-      "Actors\\Decoration\\female_shirt1",
-      "Actors\\Decoration\\female_shirt2",
-      "Actors\\Decoration\\female_shirt3",
-      "Actors\\Decoration\\female_shirt4"
+      GameImages.FEMALE_SHIRT1,
+      GameImages.FEMALE_SHIRT2,
+      GameImages.FEMALE_SHIRT3,
+      GameImages.FEMALE_SHIRT4
     };
     private static readonly string[] FEMALE_LEGS = new string[5]
     {
-      "Actors\\Decoration\\female_pants1",
-      "Actors\\Decoration\\female_pants2",
-      "Actors\\Decoration\\female_pants3",
-      "Actors\\Decoration\\female_pants4",
-      "Actors\\Decoration\\female_pants5"
+      GameImages.FEMALE_PANTS1,
+      GameImages.FEMALE_PANTS2,
+      GameImages.FEMALE_PANTS3,
+      GameImages.FEMALE_PANTS4,
+      GameImages.FEMALE_PANTS5
     };
     private static readonly string[] FEMALE_SHOES = new string[3]
     {
-      "Actors\\Decoration\\female_shoes1",
-      "Actors\\Decoration\\female_shoes2",
-      "Actors\\Decoration\\female_shoes3"
+      GameImages.FEMALE_SHOES1,
+      GameImages.FEMALE_SHOES2,
+      GameImages.FEMALE_SHOES3
     };
     private static readonly string[] FEMALE_EYES = new string[6]
     {
-      "Actors\\Decoration\\female_eyes1",
-      "Actors\\Decoration\\female_eyes2",
-      "Actors\\Decoration\\female_eyes3",
-      "Actors\\Decoration\\female_eyes4",
-      "Actors\\Decoration\\female_eyes5",
-      "Actors\\Decoration\\female_eyes6"
+      GameImages.FEMALE_EYES1,
+      GameImages.FEMALE_EYES2,
+      GameImages.FEMALE_EYES3,
+      GameImages.FEMALE_EYES4,
+      GameImages.FEMALE_EYES5,
+      GameImages.FEMALE_EYES6
     };
     private static readonly string[] BIKER_HEADS = new string[3]
     {
-      "Actors\\Decoration\\biker_hair1",
-      "Actors\\Decoration\\biker_hair2",
-      "Actors\\Decoration\\biker_hair3"
+      GameImages.BIKER_HAIR1,
+      GameImages.BIKER_HAIR2,
+      GameImages.BIKER_HAIR3
     };
     private static readonly string[] BIKER_LEGS = new string[1]
     {
-      "Actors\\Decoration\\biker_pants"
+      GameImages.BIKER_PANTS
     };
     private static readonly string[] BIKER_SHOES = new string[1]
     {
-      "Actors\\Decoration\\biker_shoes"
+      GameImages.BIKER_SHOES
     };
     private static readonly string[] CHARGUARD_HEADS = new string[1]
     {
-      "Actors\\Decoration\\charguard_hair"
+      GameImages.CHARGUARD_HAIR
     };
     private static readonly string[] CHARGUARD_LEGS = new string[1]
     {
-      "Actors\\Decoration\\charguard_pants"
+      GameImages.CHARGUARD_PANTS
     };
     private static readonly string[] DOG_SKINS = new string[3]
     {
-      "Actors\\Decoration\\dog_skin1",
-      "Actors\\Decoration\\dog_skin2",
-      "Actors\\Decoration\\dog_skin3"
+      GameImages.DOG_SKIN1,
+      GameImages.DOG_SKIN2,
+      GameImages.DOG_SKIN3
     };
     private static readonly string[] MALE_FIRST_NAMES = new string[139]
     {
@@ -596,21 +596,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public void GiveRandomSkillToActor(DiceRoller roller, Actor actor)
     {
-      actor.StartingSkill(actor.Model.Abilities.IsUndead ? Skills.RollUndead(roller) : Skills.RollLiving(roller));
+      Skills.IDs skillID = !actor.Model.Abilities.IsUndead ? Skills.RollLiving(roller) : Skills.RollUndead(roller);
+      actor.StartingSkill(skillID);
     }
 
     protected DoorWindow MakeObjWoodenDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("wooden door", GameImages.OBJ_WOODEN_DOOR_CLOSED, GameImages.OBJ_WOODEN_DOOR_OPEN, GameImages.OBJ_WOODEN_DOOR_BROKEN, 40);
-      doorWindow.GivesWood = true;
-      return doorWindow;
+      return new DoorWindow("wooden door", GameImages.OBJ_WOODEN_DOOR_CLOSED, GameImages.OBJ_WOODEN_DOOR_OPEN, GameImages.OBJ_WOODEN_DOOR_BROKEN, 40) {
+        GivesWood = true
+      };
     }
 
     protected DoorWindow MakeObjHospitalDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("door", GameImages.OBJ_HOSPITAL_DOOR_CLOSED, GameImages.OBJ_HOSPITAL_DOOR_OPEN, GameImages.OBJ_HOSPITAL_DOOR_BROKEN, 40);
-      doorWindow.GivesWood = true;
-      return doorWindow;
+      return new DoorWindow("door", GameImages.OBJ_HOSPITAL_DOOR_CLOSED, GameImages.OBJ_HOSPITAL_DOOR_OPEN, GameImages.OBJ_HOSPITAL_DOOR_BROKEN, 40) {
+        GivesWood = true
+      };
     }
 
     protected DoorWindow MakeObjCharDoor()
@@ -620,26 +621,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected DoorWindow MakeObjGlassDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("glass door", GameImages.OBJ_GLASS_DOOR_CLOSED, GameImages.OBJ_GLASS_DOOR_OPEN, GameImages.OBJ_GLASS_DOOR_BROKEN, 10);
-      doorWindow.IsMaterialTransparent = true;
-      doorWindow.BreaksWhenFiredThrough = true;
-      return doorWindow;
+      return new DoorWindow("glass door", GameImages.OBJ_GLASS_DOOR_CLOSED, GameImages.OBJ_GLASS_DOOR_OPEN, GameImages.OBJ_GLASS_DOOR_BROKEN, 10) {
+        IsMaterialTransparent = true,
+        BreaksWhenFiredThrough = true
+      };
     }
 
     protected DoorWindow MakeObjIronDoor()
     {
-      DoorWindow doorWindow = new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 320);
-      doorWindow.IsAn = true;
-      return doorWindow;
+      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 320) {
+        IsAn = true
+      };
     }
 
     protected DoorWindow MakeObjWindow()
     {
-      DoorWindow doorWindow = new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, 10);
-      doorWindow.IsMaterialTransparent = true;
-      doorWindow.GivesWood = true;
-      doorWindow.BreaksWhenFiredThrough = true;
-      return doorWindow;
+      return new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, 10) {
+        IsMaterialTransparent = true,
+        GivesWood = true,
+        BreaksWhenFiredThrough = true
+      };
     }
 
     protected MapObject MakeObjFence(string fenceImageID)
@@ -717,8 +718,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjShelf()
     {
-      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
-      {
+      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40) {
         IsContainer = true,
         GivesWood = true,
         IsMovable = true,
@@ -728,8 +728,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjBench()
     {
-      return new MapObject("bench", GameImages.OBJ_BENCH, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80)
-      {
+      return new MapObject("bench", GameImages.OBJ_BENCH, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80) {
         IsMaterialTransparent = true,
         JumpLevel = 1,
         IsCouch = true,
@@ -739,8 +738,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjIronBench()
     {
-      return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH)
-      {
+      return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH) {
         IsMaterialTransparent = true,
         JumpLevel = 1,
         IsCouch = true,
@@ -775,8 +773,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjDrawer()
     {
-      return new MapObject("drawer", GameImages.OBJ_DRAWER, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
-      {
+      return new MapObject("drawer", GameImages.OBJ_DRAWER, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40) {
         IsMaterialTransparent = true,
         IsContainer = true,
         GivesWood = true,
@@ -833,8 +830,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjJunk()
     {
-      return new MapObject("junk", GameImages.OBJ_JUNK, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40)
-      {
+      return new MapObject("junk", GameImages.OBJ_JUNK, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 40) {
         IsPlural = true,
         IsMaterialTransparent = true,
         IsMovable = true,
@@ -845,8 +841,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjBarrels()
     {
-      return new MapObject("barrels", GameImages.OBJ_BARRELS, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80)
-      {
+      return new MapObject("barrels", GameImages.OBJ_BARRELS, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 80) {
         IsPlural = true,
         IsMaterialTransparent = true,
         IsMovable = true,
@@ -882,47 +877,47 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public Item MakeItemBandages()
+    public ItemMedicine MakeItemBandages()
     {
-      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.BANDAGE);
-      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.BANDAGE.StackingLimit);
-      return itemMedicine;
+      return new ItemMedicine(m_Game.GameItems.BANDAGE) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.BANDAGE.StackingLimit)
+      };
     }
 
-    public Item MakeItemMedikit()
+    public ItemMedicine MakeItemMedikit()
     {
       return new ItemMedicine(m_Game.GameItems.MEDIKIT);
     }
 
-    public Item MakeItemPillsSTA()
+    public ItemMedicine MakeItemPillsSTA()
     {
-      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_STA);
-      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_STA.StackingLimit);
-      return itemMedicine;
+      return new ItemMedicine(m_Game.GameItems.PILLS_STA) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_STA.StackingLimit)
+      };
     }
 
-    public Item MakeItemPillsSLP()
+    public ItemMedicine MakeItemPillsSLP()
     {
-      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_SLP);
-      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SLP.StackingLimit);
-      return itemMedicine;
+      return new ItemMedicine(m_Game.GameItems.PILLS_SLP) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SLP.StackingLimit)
+      };
     }
 
-    public Item MakeItemPillsSAN()
+    public ItemMedicine MakeItemPillsSAN()
     {
-      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_SAN);
-      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SAN.StackingLimit);
-      return itemMedicine;
+      return new ItemMedicine(m_Game.GameItems.PILLS_SAN) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_SAN.StackingLimit)
+      };
     }
 
-    public Item MakeItemPillsAntiviral()
+    public ItemMedicine MakeItemPillsAntiviral()
     {
-      ItemMedicine itemMedicine = new ItemMedicine(m_Game.GameItems.PILLS_ANTIVIRAL);
-      itemMedicine.Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_ANTIVIRAL.StackingLimit);
-      return itemMedicine;
+      return new ItemMedicine(m_Game.GameItems.PILLS_ANTIVIRAL) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.PILLS_ANTIVIRAL.StackingLimit)
+      };
     }
 
-    public Item MakeItemGroceries()
+    public ItemFood MakeItemGroceries()
     {
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       int max = WorldTime.TURNS_PER_DAY * m_Game.GameItems.GROCERIES.BestBeforeDays;
@@ -930,61 +925,68 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemFood(m_Game.GameItems.GROCERIES, turnCounter + m_Rules.Roll(min, max));
     }
 
-    public Item MakeItemCannedFood()
+    public ItemFood MakeItemCannedFood()
     {
-      ItemFood itemFood = new ItemFood(m_Game.GameItems.CANNED_FOOD);
-      itemFood.Quantity = m_Rules.Roll(1, m_Game.GameItems.CANNED_FOOD.StackingLimit);
-      return itemFood;
+      return new ItemFood(m_Game.GameItems.CANNED_FOOD) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.CANNED_FOOD.StackingLimit)
+      };
     }
 
-    public Item MakeItemCrowbar()
+    public ItemMeleeWeapon MakeItemCrowbar()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.CROWBAR) {
         Quantity = m_Rules.Roll(1, m_Game.GameItems.CROWBAR.StackingLimit)
       };
     }
 
-    public Item MakeItemBaseballBat()
+    public ItemMeleeWeapon MakeItemBaseballBat()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.BASEBALLBAT);
     }
 
-    public Item MakeItemCombatKnife()
+    public ItemMeleeWeapon MakeItemCombatKnife()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.COMBAT_KNIFE);
     }
 
-    public Item MakeItemTruncheon()
+    public ItemMeleeWeapon MakeItemTruncheon()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.TRUNCHEON);
     }
 
-    public Item MakeItemGolfClub()
+    public ItemMeleeWeapon MakeItemGolfClub()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.GOLFCLUB);
     }
 
-    public Item MakeItemIronGolfClub()
+    public ItemMeleeWeapon MakeItemIronGolfClub()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.IRON_GOLFCLUB);
     }
 
-    public Item MakeItemHugeHammer()
+    public ItemMeleeWeapon MakeItemHugeHammer()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.HUGE_HAMMER);
     }
 
-    public Item MakeItemSmallHammer()
+    public ItemMeleeWeapon MakeItemSmallHammer()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.SMALL_HAMMER);
     }
 
-    public Item MakeItemShovel()
+    public ItemMeleeWeapon MakeItemJasonMyersAxe()
+    {
+      return new ItemMeleeWeapon(m_Game.GameItems.UNIQUE_JASON_MYERS_AXE) {
+        IsUnique = true
+      };
+    }
+
+    public ItemMeleeWeapon MakeItemShovel()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.SHOVEL);
     }
 
-    public Item MakeItemShortShovel()
+    public ItemMeleeWeapon MakeItemShortShovel()
     {
       return new ItemMeleeWeapon(m_Game.GameItems.SHORT_SHOVEL);
     }
@@ -994,97 +996,96 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemBarricadeMaterial(m_Game.GameItems.WOODENPLANK);
     }
 
-    public Item MakeItemHuntingCrossbow()
+    public ItemRangedWeapon MakeItemHuntingCrossbow()
     {
       return new ItemRangedWeapon(m_Game.GameItems.HUNTING_CROSSBOW);
     }
 
-    public Item MakeItemBoltsAmmo()
+    public ItemAmmo MakeItemBoltsAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_BOLTS);
+      return new ItemAmmo(m_Game.GameItems.AMMO_BOLTS);
     }
 
-    public Item MakeItemHuntingRifle()
+    public ItemRangedWeapon MakeItemHuntingRifle()
     {
       return new ItemRangedWeapon(m_Game.GameItems.HUNTING_RIFLE);
     }
 
-    public Item MakeItemLightRifleAmmo()
+    public ItemAmmo MakeItemLightRifleAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_LIGHT_RIFLE);
+      return new ItemAmmo(m_Game.GameItems.AMMO_LIGHT_RIFLE);
     }
 
-    public Item MakeItemPistol()
+    public ItemRangedWeapon MakeItemPistol()
     {
       return new ItemRangedWeapon(m_Game.GameItems.PISTOL);
     }
 
-    public Item MakeItemKoltRevolver()
+    public ItemRangedWeapon MakeItemKoltRevolver()
     {
       return new ItemRangedWeapon(m_Game.GameItems.KOLT_REVOLVER);
     }
 
-    public Item MakeItemRandomPistol()
+    public ItemRangedWeapon MakeItemRandomPistol()
     {
       if (!m_Game.Rules.RollChance(50))
         return MakeItemKoltRevolver();
       return MakeItemPistol();
     }
 
-    public Item MakeItemLightPistolAmmo()
+    public ItemAmmo MakeItemLightPistolAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_LIGHT_PISTOL);
+      return new ItemAmmo(m_Game.GameItems.AMMO_LIGHT_PISTOL);
     }
 
-    public Item MakeItemShotgun()
+    public ItemRangedWeapon MakeItemShotgun()
     {
       return new ItemRangedWeapon(m_Game.GameItems.SHOTGUN);
     }
 
-    public Item MakeItemShotgunAmmo()
+    public ItemAmmo MakeItemShotgunAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_SHOTGUN);
+      return new ItemAmmo(m_Game.GameItems.AMMO_SHOTGUN);
     }
 
-    public Item MakeItemCHARLightBodyArmor()
+    public ItemBodyArmor MakeItemCHARLightBodyArmor()
     {
-      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.CHAR_LT_BODYARMOR);
+      return new ItemBodyArmor(m_Game.GameItems.CHAR_LT_BODYARMOR);
     }
 
-    public Item MakeItemBikerGangJacket(GameGangs.IDs gangId)
+    public ItemBodyArmor MakeItemBikerGangJacket(GameGangs.IDs gangId)
     {
-      switch (gangId)
-      {
+      switch (gangId) {
         case GameGangs.IDs.BIKER_HELLS_SOULS:
-          return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.HELLS_SOULS_JACKET);
+          return new ItemBodyArmor(m_Game.GameItems.HELLS_SOULS_JACKET);
         case GameGangs.IDs.BIKER_FREE_ANGELS:
-          return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.FREE_ANGELS_JACKET);
+          return new ItemBodyArmor(m_Game.GameItems.FREE_ANGELS_JACKET);
         default:
           throw new ArgumentException("unhandled biker gang");
       }
     }
 
-    public Item MakeItemPoliceJacket()
+    public ItemBodyArmor MakeItemPoliceJacket()
     {
-      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.POLICE_JACKET);
+      return new ItemBodyArmor(m_Game.GameItems.POLICE_JACKET);
     }
 
-    public Item MakeItemPoliceRiotArmor()
+    public ItemBodyArmor MakeItemPoliceRiotArmor()
     {
-      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.POLICE_RIOT);
+      return new ItemBodyArmor(m_Game.GameItems.POLICE_RIOT);
     }
 
-    public Item MakeItemHunterVest()
+    public ItemBodyArmor MakeItemHunterVest()
     {
-      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.HUNTER_VEST);
+      return new ItemBodyArmor(m_Game.GameItems.HUNTER_VEST);
     }
 
-    public Item MakeItemCellPhone()
+    public ItemTracker MakeItemCellPhone()
     {
       return new ItemTracker(m_Game.GameItems.CELL_PHONE);
     }
 
-    public Item MakeItemSprayPaint()
+    public ItemSprayPaint MakeItemSprayPaint()
     {
       ItemSprayPaintModel itemSprayPaintModel;
       switch (m_Game.Rules.Roll(0, 4))
@@ -1107,119 +1108,115 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemSprayPaint(itemSprayPaintModel);
     }
 
-    public Item MakeItemStenchKiller()
+    public ItemSprayScent MakeItemStenchKiller()
     {
-      return (Item) new ItemSprayScent(m_Game.GameItems.STENCH_KILLER);
+      return new ItemSprayScent(m_Game.GameItems.STENCH_KILLER);
     }
 
-    public Item MakeItemArmyRifle()
+    public ItemRangedWeapon MakeItemArmyRifle()
     {
       return new ItemRangedWeapon(m_Game.GameItems.ARMY_RIFLE);
     }
 
-    public Item MakeItemPrecisionRifle()
+    public ItemRangedWeapon MakeItemPrecisionRifle()
     {
       return new ItemRangedWeapon(m_Game.GameItems.PRECISION_RIFLE);
     }
 
-    public Item MakeItemHeavyRifleAmmo()
+    public ItemAmmo MakeItemHeavyRifleAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_HEAVY_RIFLE);
+      return new ItemAmmo(m_Game.GameItems.AMMO_HEAVY_RIFLE);
     }
 
-    public Item MakeItemArmyPistol()
+    public ItemRangedWeapon MakeItemArmyPistol()
     {
       return new ItemRangedWeapon(m_Game.GameItems.ARMY_PISTOL);
     }
 
-    public Item MakeItemHeavyPistolAmmo()
+    public ItemAmmo MakeItemHeavyPistolAmmo()
     {
-      return (Item) new ItemAmmo((ItemModel)m_Game.GameItems.AMMO_HEAVY_PISTOL);
+      return new ItemAmmo(m_Game.GameItems.AMMO_HEAVY_PISTOL);
     }
 
-    public Item MakeItemArmyBodyArmor()
+    public ItemBodyArmor MakeItemArmyBodyArmor()
     {
-      return (Item) new ItemBodyArmor((ItemModel)m_Game.GameItems.ARMY_BODYARMOR);
+      return new ItemBodyArmor(m_Game.GameItems.ARMY_BODYARMOR);
     }
 
-    public Item MakeItemArmyRation()
+    public ItemFood MakeItemArmyRation()
     {
       return new ItemFood(m_Game.GameItems.ARMY_RATION, Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_DAY * m_Game.GameItems.ARMY_RATION.BestBeforeDays);
     }
 
-    public Item MakeItemFlashlight()
+    public ItemLight MakeItemFlashlight()
     {
       return new ItemLight(m_Game.GameItems.FLASHLIGHT);
     }
 
-    public Item MakeItemBigFlashlight()
+    public ItemLight MakeItemBigFlashlight()
     {
       return new ItemLight(m_Game.GameItems.BIG_FLASHLIGHT);
     }
 
-    public Item MakeItemZTracker()
+    public ItemTracker MakeItemZTracker()
     {
       return new ItemTracker(m_Game.GameItems.ZTRACKER);
     }
 
-    public Item MakeItemBlackOpsGPS()
+    public ItemTracker MakeItemBlackOpsGPS()
     {
       return new ItemTracker(m_Game.GameItems.BLACKOPS_GPS);
     }
 
-    public Item MakeItemPoliceRadio()
+    public ItemTracker MakeItemPoliceRadio()
     {
       return new ItemTracker(m_Game.GameItems.POLICE_RADIO);
     }
 
-    public Item MakeItemGrenade()
+    public ItemGrenade MakeItemGrenade()
     {
-      ItemGrenade itemGrenade = new ItemGrenade(m_Game.GameItems.GRENADE, m_Game.GameItems.GRENADE_PRIMED);
-      itemGrenade.Quantity = m_Rules.Roll(1, m_Game.GameItems.GRENADE.StackingLimit);
-      return itemGrenade;
+      return new ItemGrenade(m_Game.GameItems.GRENADE, m_Game.GameItems.GRENADE_PRIMED) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.GRENADE.StackingLimit)
+      };
     }
 
-    public Item MakeItemBearTrap()
+    public ItemTrap MakeItemBearTrap()
     {
-      return (Item) new ItemTrap(m_Game.GameItems.BEAR_TRAP);
+      return new ItemTrap(m_Game.GameItems.BEAR_TRAP);
     }
 
-    public Item MakeItemSpikes()
+    public ItemTrap MakeItemSpikes()
     {
-      ItemTrap itemTrap = new ItemTrap(m_Game.GameItems.SPIKES);
-      itemTrap.Quantity = m_Rules.Roll(1, m_Game.GameItems.BARBED_WIRE.StackingLimit);
-      return (Item) itemTrap;
+      return new ItemTrap(m_Game.GameItems.SPIKES) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.BARBED_WIRE.StackingLimit)
+      };
     }
 
-    public Item MakeItemBarbedWire()
+    public ItemTrap MakeItemBarbedWire()
     {
-      ItemTrap itemTrap = new ItemTrap(m_Game.GameItems.BARBED_WIRE);
-      itemTrap.Quantity = m_Rules.Roll(1, m_Game.GameItems.BARBED_WIRE.StackingLimit);
-      return (Item) itemTrap;
+      return new ItemTrap(m_Game.GameItems.BARBED_WIRE) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.BARBED_WIRE.StackingLimit)
+      };
     }
 
-    public Item MakeItemBook()
+    public ItemEntertainment MakeItemBook()
     {
-      return (Item) new ItemEntertainment(m_Game.GameItems.BOOK);
+      return new ItemEntertainment(m_Game.GameItems.BOOK);
     }
 
-    public Item MakeItemMagazines()
+    public ItemEntertainment MakeItemMagazines()
     {
-      ItemEntertainment itemEntertainment = new ItemEntertainment(m_Game.GameItems.MAGAZINE);
-      itemEntertainment.Quantity = m_Rules.Roll(1, m_Game.GameItems.MAGAZINE.StackingLimit);
-      return (Item) itemEntertainment;
+      return new ItemEntertainment(m_Game.GameItems.MAGAZINE) {
+        Quantity = m_Rules.Roll(1, m_Game.GameItems.MAGAZINE.StackingLimit)
+      };
     }
 
     protected void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {
-      barricadeLevel = Math.Min(Rules.BARRICADING_MAX, barricadeLevel);
-      for (int left = rect.Left; left < rect.Right; ++left)
-      {
-        for (int top = rect.Top; top < rect.Bottom; ++top)
-        {
+      for (int left = rect.Left; left < rect.Right; ++left) {
+        for (int top = rect.Top; top < rect.Bottom; ++top) {
           DoorWindow doorWindow = map.GetMapObjectAt(left, top) as DoorWindow;
-          if (doorWindow != null)
-            doorWindow.Barricade(barricadeLevel);
+          if (doorWindow != null) doorWindow.Barricade(barricadeLevel);
         }
       }
     }

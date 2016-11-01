@@ -6,7 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Items;
-using System.Collections.Generic;
 using System.Drawing;
 
 namespace djack.RogueSurvivor.Engine.Actions
@@ -23,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorThrowTo(m_Actor, m_ThrowPos, (List<Point>) null, out m_FailReason);
+      return RogueForm.Game.Rules.CanActorThrowTo(m_Actor, m_ThrowPos, null, out m_FailReason);
     }
 
     public override void Perform()

@@ -41,8 +41,7 @@ namespace djack.RogueSurvivor
       SetupConfig.Load();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup : " + SetupConfig.toString(SetupConfig.Video) + ", " + SetupConfig.toString(SetupConfig.Sound));
 #if DEBUG
-      using (RogueForm rogueForm = new RogueForm())
-      {
+      using (RogueForm rogueForm = new RogueForm()) {
         Application.Run((Form)rogueForm);
       }
 #else
