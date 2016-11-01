@@ -1180,6 +1180,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int HoursUntilUnstable {
+      get {
+        int num = Sanity - Engine.Rules.ActorDisturbedLevel(this);
+        if (num <= 0) return 0;
+        return num / WorldTime.TURNS_PER_HOUR;
+      }
+    }
+
     // hunger
     public bool IsHungry {
       get {

@@ -6980,24 +6980,20 @@ namespace djack.RogueSurvivor.Engine
     private string[] DescribeActor(Actor actor)
     {
       List<string> stringList = new List<string>(10);
-      if (actor.Faction != null)
-      {
+      if (actor.Faction != null) {
         if (actor.IsInAGang)
           stringList.Add(string.Format("{0}, {1}-{2}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName, (object) GameGangs.NAMES[actor.GangID]));
         else
           stringList.Add(string.Format("{0}, {1}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName));
-      }
-      else
+      } else
         stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Name)));
       stringList.Add(string.Format("{0}.", (object)Capitalize(actor.Model.Name)));
       stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? (object) "Undead" : (object) "Staying alive", (object) new WorldTime(actor.SpawnTime).ToString()));
       OrderableAI aiController = actor.Controller as OrderableAI;
       if (aiController?.Order != null)
         stringList.Add(string.Format("Order : {0}.", (object) aiController.Order.ToString()));
-      if (actor.HasLeader)
-      {
-        if (actor.Leader.IsPlayer)
-        {
+      if (actor.HasLeader) {
+        if (actor.Leader.IsPlayer) {
           if (actor.TrustInLeader >= Rules.TRUST_BOND_THRESHOLD)
             stringList.Add(string.Format("Trust : BOND."));
           else if (actor.TrustInLeader >= Rules.TRUST_MAX)
@@ -7008,20 +7004,16 @@ namespace djack.RogueSurvivor.Engine
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
           stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object)FoodToHoursUntilHungry(actor.FoodPoints)));
-          stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, (object) actor.SleepToHoursUntilSleepy));
-          stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, (object)m_Rules.SanityToHoursUntilUnstable(actor)));
+          stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, actor.SleepToHoursUntilSleepy));
+          stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, actor.HoursUntilUnstable));
           stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, (object)m_Rules.ActorInfectionPercent(actor)));
-        }
-        else
+        } else
           stringList.Add(string.Format("Leader : {0}.", (object)Capitalize(actor.Leader.Name)));
       }
-      if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer)
-      {
+      if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer) {
         stringList.Add("WANTED FOR MURDER!");
         stringList.Add(string.Format("{0} murder{1}!", (object) actor.MurdersCounter, actor.MurdersCounter > 1 ? (object) "s" : (object) ""));
-      }
-      else if (actor.HasLeader && actor.Leader.IsPlayer && m_Rules.IsActorTrustingLeader(actor))
-      {
+      } else if (actor.HasLeader && actor.Leader.IsPlayer && m_Rules.IsActorTrustingLeader(actor)) {
         if (actor.MurdersCounter > 0)
           stringList.Add(string.Format("* Confess {0} murder{1}! *", (object) actor.MurdersCounter, actor.MurdersCounter > 1 ? (object) "s" : (object) ""));
         else
@@ -11302,7 +11294,7 @@ namespace djack.RogueSurvivor.Engine
           else
             m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
         } else
-          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)m_Rules.SanityToHoursUntilUnstable(actor)), gx + 126 + 100, gy, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", actor.HoursUntilUnstable), gx + 126 + 100, gy, new Color?());
       }
       if (Session.Get.HasInfection && !actor.Model.Abilities.IsUndead) {
         int maxValue2 = actor.InfectionHPs;
