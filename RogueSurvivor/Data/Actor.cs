@@ -1174,6 +1174,12 @@ namespace djack.RogueSurvivor.Data
       m_Sanity = Math.Min(MaxSanity, m_Sanity + sanRegen);
     }
 
+    public bool IsDisturbed {
+      get {
+        return Model.Abilities.HasSanity && Sanity <= Engine.Rules.ActorDisturbedLevel(this);
+      }
+    }
+
     // hunger
     public bool IsHungry {
       get {
