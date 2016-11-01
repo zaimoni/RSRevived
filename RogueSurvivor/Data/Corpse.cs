@@ -131,5 +131,16 @@ namespace djack.RogueSurvivor.Data
         return (int) (100.0 * (double) HitPoints / (double)DeadGuy.MaxHPs);
       }
     }
+
+    public int RotLevel {
+      get {
+        int num = FreshnessPercent;
+        if (num < 5) return 5;
+        if (num < 25) return 4;
+        if (num < 50) return 3;
+        if (num < 75) return 2;
+        return num < 90 ? 1 : 0;
+      }
+    }
   }
 }

@@ -7244,7 +7244,7 @@ namespace djack.RogueSurvivor.Engine
       }
       stringList.Add(string.Format("Rise      : {0}.", (object) str3));
       stringList.Add(" ");
-      switch (Rules.CorpseRotLevel(c))
+      switch (c.RotLevel)
       {
         case 0:
           stringList.Add("The corpse looks fresh.");
@@ -10996,7 +10996,7 @@ namespace djack.RogueSurvivor.Engine
       DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
       gx -= num1;
       gy -= num1;
-      int num2 = Rules.CorpseRotLevel(c);
+      int num2 = c.RotLevel;
       string str = null;
       switch (num2) {
         case 0:
