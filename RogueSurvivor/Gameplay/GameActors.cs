@@ -302,424 +302,203 @@ namespace djack.RogueSurvivor.Gameplay
 
     public void CreateModels()
     {
-      this[GameActors.IDs._FIRST] = new ActorModel("Actors\\skeleton", DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, new DollBody(true, DATA_SKELETON.SPD), new Abilities()
-      {
-        IsUndead = true
-      }, new ActorSheet(DATA_SKELETON.HP, DATA_SKELETON.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("claw"), DATA_SKELETON.ATK, DATA_SKELETON.DMG), new Defence(DATA_SKELETON.DEF, DATA_SKELETON.PRO_HIT, DATA_SKELETON.PRO_SHOT), DATA_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI))
+      this[GameActors.IDs._FIRST] = new ActorModel("Actors\\skeleton", DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
+          Abilities.Flags.UNDEAD),
+          new ActorSheet(DATA_SKELETON.HP, DATA_SKELETON.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("claw"), DATA_SKELETON.ATK, DATA_SKELETON.DMG), new Defence(DATA_SKELETON.DEF, DATA_SKELETON.PRO_HIT, DATA_SKELETON.PRO_SHOT), DATA_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI))
       {
         FlavorDescription = DATA_SKELETON.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_RED_EYED_SKELETON] = new ActorModel("Actors\\red_eyed_skeleton", DATA_RED_EYED_SKELETON.NAME, DATA_RED_EYED_SKELETON.PLURAL, DATA_RED_EYED_SKELETON.SCORE, new DollBody(true, DATA_RED_EYED_SKELETON.SPD), new Abilities()
-      {
-        IsUndead = true
-      }, new ActorSheet(DATA_RED_EYED_SKELETON.HP, DATA_RED_EYED_SKELETON.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("claw"), DATA_RED_EYED_SKELETON.ATK, DATA_RED_EYED_SKELETON.DMG), new Defence(DATA_RED_EYED_SKELETON.DEF, DATA_RED_EYED_SKELETON.PRO_HIT, DATA_RED_EYED_SKELETON.PRO_SHOT), DATA_RED_EYED_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI))
+      this[GameActors.IDs.UNDEAD_RED_EYED_SKELETON] = new ActorModel("Actors\\red_eyed_skeleton", DATA_RED_EYED_SKELETON.NAME, DATA_RED_EYED_SKELETON.PLURAL, DATA_RED_EYED_SKELETON.SCORE, new DollBody(true, DATA_RED_EYED_SKELETON.SPD), new Abilities(
+          Abilities.Flags.UNDEAD),
+          new ActorSheet(DATA_RED_EYED_SKELETON.HP, DATA_RED_EYED_SKELETON.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("claw"), DATA_RED_EYED_SKELETON.ATK, DATA_RED_EYED_SKELETON.DMG), new Defence(DATA_RED_EYED_SKELETON.DEF, DATA_RED_EYED_SKELETON.PRO_HIT, DATA_RED_EYED_SKELETON.PRO_SHOT), DATA_RED_EYED_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI))
       {
         FlavorDescription = DATA_RED_EYED_SKELETON.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_RED_SKELETON] = new ActorModel("Actors\\red_skeleton", DATA_RED_SKELETON.NAME, DATA_RED_SKELETON.PLURAL, DATA_RED_SKELETON.SCORE, new DollBody(true, DATA_RED_SKELETON.SPD), new Abilities()
-      {
-        IsUndead = true
-      }, new ActorSheet(DATA_RED_SKELETON.HP, DATA_RED_SKELETON.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("claw"), DATA_RED_SKELETON.ATK, DATA_RED_SKELETON.DMG), new Defence(DATA_RED_SKELETON.DEF, DATA_RED_SKELETON.PRO_HIT, DATA_RED_SKELETON.PRO_SHOT), DATA_RED_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI))
+      this[GameActors.IDs.UNDEAD_RED_SKELETON] = new ActorModel("Actors\\red_skeleton", DATA_RED_SKELETON.NAME, DATA_RED_SKELETON.PLURAL, DATA_RED_SKELETON.SCORE, new DollBody(true, DATA_RED_SKELETON.SPD), new Abilities(
+          Abilities.Flags.UNDEAD),
+          new ActorSheet(DATA_RED_SKELETON.HP, DATA_RED_SKELETON.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("claw"), DATA_RED_SKELETON.ATK, DATA_RED_SKELETON.DMG), new Defence(DATA_RED_SKELETON.DEF, DATA_RED_SKELETON.PRO_HIT, DATA_RED_SKELETON.PRO_SHOT), DATA_RED_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI))
       {
         FlavorDescription = DATA_RED_SKELETON.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_ZOMBIE] = new ActorModel("Actors\\zombie", DATA_ZOMBIE.NAME, DATA_ZOMBIE.PLURAL, DATA_ZOMBIE.SCORE, new DollBody(true, DATA_ZOMBIE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_ZOMBIE.HP, DATA_ZOMBIE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZOMBIE.ATK, DATA_ZOMBIE.DMG), new Defence(DATA_ZOMBIE.DEF, DATA_ZOMBIE.PRO_HIT, DATA_ZOMBIE.PRO_SHOT), DATA_ZOMBIE.FOV, NO_AUDIO, DATA_ZOMBIE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_ZOMBIE] = new ActorModel("Actors\\zombie", DATA_ZOMBIE.NAME, DATA_ZOMBIE.PLURAL, DATA_ZOMBIE.SCORE, new DollBody(true, DATA_ZOMBIE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_ZOMBIE.HP, DATA_ZOMBIE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZOMBIE.ATK, DATA_ZOMBIE.DMG), new Defence(DATA_ZOMBIE.DEF, DATA_ZOMBIE.PRO_HIT, DATA_ZOMBIE.PRO_SHOT), DATA_ZOMBIE.FOV, NO_AUDIO, DATA_ZOMBIE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_ZOMBIE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE] = new ActorModel("Actors\\dark_eyed_zombie", DATA_DARK_EYED_ZOMBIE.NAME, DATA_DARK_EYED_ZOMBIE.PLURAL, DATA_DARK_EYED_ZOMBIE.SCORE, new DollBody(true, DATA_DARK_EYED_ZOMBIE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_DARK_EYED_ZOMBIE.HP, DATA_DARK_EYED_ZOMBIE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_DARK_EYED_ZOMBIE.ATK, DATA_DARK_EYED_ZOMBIE.DMG), new Defence(DATA_DARK_EYED_ZOMBIE.DEF, DATA_DARK_EYED_ZOMBIE.PRO_HIT, DATA_DARK_EYED_ZOMBIE.PRO_SHOT), DATA_DARK_EYED_ZOMBIE.FOV, NO_AUDIO, DATA_DARK_EYED_ZOMBIE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE] = new ActorModel("Actors\\dark_eyed_zombie", DATA_DARK_EYED_ZOMBIE.NAME, DATA_DARK_EYED_ZOMBIE.PLURAL, DATA_DARK_EYED_ZOMBIE.SCORE, new DollBody(true, DATA_DARK_EYED_ZOMBIE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_DARK_EYED_ZOMBIE.HP, DATA_DARK_EYED_ZOMBIE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_DARK_EYED_ZOMBIE.ATK, DATA_DARK_EYED_ZOMBIE.DMG), new Defence(DATA_DARK_EYED_ZOMBIE.DEF, DATA_DARK_EYED_ZOMBIE.PRO_HIT, DATA_DARK_EYED_ZOMBIE.PRO_SHOT), DATA_DARK_EYED_ZOMBIE.FOV, NO_AUDIO, DATA_DARK_EYED_ZOMBIE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_DARK_EYED_ZOMBIE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_DARK_ZOMBIE] = new ActorModel("Actors\\dark_zombie", DATA_DARK_ZOMBIE.NAME, DATA_DARK_ZOMBIE.PLURAL, DATA_DARK_ZOMBIE.SCORE, new DollBody(true, DATA_DARK_ZOMBIE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_DARK_ZOMBIE.HP, DATA_DARK_ZOMBIE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_DARK_ZOMBIE.ATK, DATA_DARK_ZOMBIE.DMG), new Defence(DATA_DARK_ZOMBIE.DEF, DATA_DARK_ZOMBIE.PRO_HIT, DATA_DARK_ZOMBIE.PRO_SHOT), DATA_DARK_ZOMBIE.FOV, NO_AUDIO, DATA_DARK_ZOMBIE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_DARK_ZOMBIE] = new ActorModel("Actors\\dark_zombie", DATA_DARK_ZOMBIE.NAME, DATA_DARK_ZOMBIE.PLURAL, DATA_DARK_ZOMBIE.SCORE, new DollBody(true, DATA_DARK_ZOMBIE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_DARK_ZOMBIE.HP, DATA_DARK_ZOMBIE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_DARK_ZOMBIE.ATK, DATA_DARK_ZOMBIE.DMG), new Defence(DATA_DARK_ZOMBIE.DEF, DATA_DARK_ZOMBIE.PRO_HIT, DATA_DARK_ZOMBIE.PRO_SHOT), DATA_DARK_ZOMBIE.FOV, NO_AUDIO, DATA_DARK_ZOMBIE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_DARK_ZOMBIE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_MALE_ZOMBIFIED] = new ActorModel((string) null, DATA_MALE_ZOMBIFIED.NAME, DATA_MALE_ZOMBIFIED.PLURAL, DATA_MALE_ZOMBIFIED.SCORE, new DollBody(true, DATA_MALE_ZOMBIFIED.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_MALE_ZOMBIFIED.HP, DATA_MALE_ZOMBIFIED.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_MALE_ZOMBIFIED.ATK, DATA_MALE_ZOMBIFIED.DMG), new Defence(DATA_MALE_ZOMBIFIED.DEF, DATA_MALE_ZOMBIFIED.PRO_HIT, DATA_MALE_ZOMBIFIED.PRO_SHOT), DATA_MALE_ZOMBIFIED.FOV, NO_AUDIO, DATA_MALE_ZOMBIFIED.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_MALE_ZOMBIFIED] = new ActorModel((string) null, DATA_MALE_ZOMBIFIED.NAME, DATA_MALE_ZOMBIFIED.PLURAL, DATA_MALE_ZOMBIFIED.SCORE, new DollBody(true, DATA_MALE_ZOMBIFIED.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_MALE_ZOMBIFIED.HP, DATA_MALE_ZOMBIFIED.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_MALE_ZOMBIFIED.ATK, DATA_MALE_ZOMBIFIED.DMG), new Defence(DATA_MALE_ZOMBIFIED.DEF, DATA_MALE_ZOMBIFIED.PRO_HIT, DATA_MALE_ZOMBIFIED.PRO_SHOT), DATA_MALE_ZOMBIFIED.FOV, NO_AUDIO, DATA_MALE_ZOMBIFIED.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_MALE_ZOMBIFIED.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED] = new ActorModel((string) null, DATA_FEMALE_ZOMBIFIED.NAME, DATA_FEMALE_ZOMBIFIED.PLURAL, DATA_FEMALE_ZOMBIFIED.SCORE, new DollBody(true, DATA_FEMALE_ZOMBIFIED.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_FEMALE_ZOMBIFIED.HP, DATA_FEMALE_ZOMBIFIED.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_FEMALE_ZOMBIFIED.ATK, DATA_FEMALE_ZOMBIFIED.DMG), new Defence(DATA_FEMALE_ZOMBIFIED.DEF, DATA_FEMALE_ZOMBIFIED.PRO_HIT, DATA_FEMALE_ZOMBIFIED.PRO_SHOT), DATA_FEMALE_ZOMBIFIED.FOV, NO_AUDIO, DATA_FEMALE_ZOMBIFIED.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED] = new ActorModel((string) null, DATA_FEMALE_ZOMBIFIED.NAME, DATA_FEMALE_ZOMBIFIED.PLURAL, DATA_FEMALE_ZOMBIFIED.SCORE, new DollBody(true, DATA_FEMALE_ZOMBIFIED.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_FEMALE_ZOMBIFIED.HP, DATA_FEMALE_ZOMBIFIED.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_FEMALE_ZOMBIFIED.ATK, DATA_FEMALE_ZOMBIFIED.DMG), new Defence(DATA_FEMALE_ZOMBIFIED.DEF, DATA_FEMALE_ZOMBIFIED.PRO_HIT, DATA_FEMALE_ZOMBIFIED.PRO_SHOT), DATA_FEMALE_ZOMBIFIED.FOV, NO_AUDIO, DATA_FEMALE_ZOMBIFIED.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_FEMALE_ZOMBIFIED.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_MALE_NEOPHYTE] = new ActorModel("Actors\\male_neophyte", DATA_MALE_NEOPHYTE.NAME, DATA_MALE_NEOPHYTE.PLURAL, DATA_MALE_NEOPHYTE.SCORE, new DollBody(true, DATA_MALE_NEOPHYTE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanPush = true,
-        ZombieAI_AssaultBreakables = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_MALE_NEOPHYTE.HP, DATA_MALE_NEOPHYTE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_MALE_NEOPHYTE.ATK, DATA_MALE_NEOPHYTE.DMG), new Defence(DATA_MALE_NEOPHYTE.DEF, DATA_MALE_NEOPHYTE.PRO_HIT, DATA_MALE_NEOPHYTE.PRO_SHOT), DATA_MALE_NEOPHYTE.FOV, NO_AUDIO, DATA_MALE_NEOPHYTE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_MALE_NEOPHYTE] = new ActorModel("Actors\\male_neophyte", DATA_MALE_NEOPHYTE.NAME, DATA_MALE_NEOPHYTE.PLURAL, DATA_MALE_NEOPHYTE.SCORE, new DollBody(true, DATA_MALE_NEOPHYTE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.CAN_PUSH | Abilities.Flags.ZOMBIEAI_ASSAULT_BREAKABLES |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_MALE_NEOPHYTE.HP, DATA_MALE_NEOPHYTE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_MALE_NEOPHYTE.ATK, DATA_MALE_NEOPHYTE.DMG), new Defence(DATA_MALE_NEOPHYTE.DEF, DATA_MALE_NEOPHYTE.PRO_HIT, DATA_MALE_NEOPHYTE.PRO_SHOT), DATA_MALE_NEOPHYTE.FOV, NO_AUDIO, DATA_MALE_NEOPHYTE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_MALE_NEOPHYTE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE] = new ActorModel("Actors\\female_neophyte", DATA_FEMALE_NEOPHYTE.NAME, DATA_FEMALE_NEOPHYTE.PLURAL, DATA_FEMALE_NEOPHYTE.SCORE, new DollBody(true, DATA_FEMALE_NEOPHYTE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanPush = true,
-        ZombieAI_AssaultBreakables = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_FEMALE_NEOPHYTE.HP, DATA_FEMALE_NEOPHYTE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_FEMALE_NEOPHYTE.ATK, DATA_FEMALE_NEOPHYTE.DMG), new Defence(DATA_FEMALE_NEOPHYTE.DEF, DATA_FEMALE_NEOPHYTE.PRO_HIT, DATA_FEMALE_NEOPHYTE.PRO_SHOT), DATA_FEMALE_NEOPHYTE.FOV, NO_AUDIO, DATA_FEMALE_NEOPHYTE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE] = new ActorModel("Actors\\female_neophyte", DATA_FEMALE_NEOPHYTE.NAME, DATA_FEMALE_NEOPHYTE.PLURAL, DATA_FEMALE_NEOPHYTE.SCORE, new DollBody(true, DATA_FEMALE_NEOPHYTE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.CAN_PUSH | Abilities.Flags.ZOMBIEAI_ASSAULT_BREAKABLES |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_FEMALE_NEOPHYTE.HP, DATA_FEMALE_NEOPHYTE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_FEMALE_NEOPHYTE.ATK, DATA_FEMALE_NEOPHYTE.DMG), new Defence(DATA_FEMALE_NEOPHYTE.DEF, DATA_FEMALE_NEOPHYTE.PRO_HIT, DATA_FEMALE_NEOPHYTE.PRO_SHOT), DATA_FEMALE_NEOPHYTE.FOV, NO_AUDIO, DATA_FEMALE_NEOPHYTE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_FEMALE_NEOPHYTE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_MALE_DISCIPLE] = new ActorModel("Actors\\male_disciple", DATA_MALE_DISCIPLE.NAME, DATA_MALE_DISCIPLE.PLURAL, DATA_MALE_DISCIPLE.SCORE, new DollBody(true, DATA_MALE_DISCIPLE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanPush = true,
-        ZombieAI_AssaultBreakables = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_MALE_DISCIPLE.HP, DATA_MALE_DISCIPLE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_MALE_DISCIPLE.ATK, DATA_MALE_DISCIPLE.DMG), new Defence(DATA_MALE_DISCIPLE.DEF, DATA_MALE_DISCIPLE.PRO_HIT, DATA_MALE_DISCIPLE.PRO_SHOT), DATA_MALE_DISCIPLE.FOV, NO_AUDIO, DATA_MALE_DISCIPLE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_MALE_DISCIPLE] = new ActorModel("Actors\\male_disciple", DATA_MALE_DISCIPLE.NAME, DATA_MALE_DISCIPLE.PLURAL, DATA_MALE_DISCIPLE.SCORE, new DollBody(true, DATA_MALE_DISCIPLE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.CAN_PUSH | Abilities.Flags.ZOMBIEAI_ASSAULT_BREAKABLES |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_MALE_DISCIPLE.HP, DATA_MALE_DISCIPLE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_MALE_DISCIPLE.ATK, DATA_MALE_DISCIPLE.DMG), new Defence(DATA_MALE_DISCIPLE.DEF, DATA_MALE_DISCIPLE.PRO_HIT, DATA_MALE_DISCIPLE.PRO_SHOT), DATA_MALE_DISCIPLE.FOV, NO_AUDIO, DATA_MALE_DISCIPLE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_MALE_DISCIPLE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_FEMALE_DISCIPLE] = new ActorModel("Actors\\female_disciple", DATA_FEMALE_DISCIPLE.NAME, DATA_FEMALE_DISCIPLE.PLURAL, DATA_FEMALE_DISCIPLE.SCORE, new DollBody(true, DATA_FEMALE_DISCIPLE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanPush = true,
-        ZombieAI_AssaultBreakables = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_FEMALE_DISCIPLE.HP, DATA_FEMALE_DISCIPLE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_FEMALE_DISCIPLE.ATK, DATA_FEMALE_DISCIPLE.DMG), new Defence(DATA_FEMALE_DISCIPLE.DEF, DATA_FEMALE_DISCIPLE.PRO_HIT, DATA_FEMALE_DISCIPLE.PRO_SHOT), DATA_FEMALE_DISCIPLE.FOV, NO_AUDIO, DATA_FEMALE_DISCIPLE.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_FEMALE_DISCIPLE] = new ActorModel("Actors\\female_disciple", DATA_FEMALE_DISCIPLE.NAME, DATA_FEMALE_DISCIPLE.PLURAL, DATA_FEMALE_DISCIPLE.SCORE, new DollBody(true, DATA_FEMALE_DISCIPLE.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.CAN_PUSH | Abilities.Flags.ZOMBIEAI_ASSAULT_BREAKABLES |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_FEMALE_DISCIPLE.HP, DATA_FEMALE_DISCIPLE.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_FEMALE_DISCIPLE.ATK, DATA_FEMALE_DISCIPLE.DMG), new Defence(DATA_FEMALE_DISCIPLE.DEF, DATA_FEMALE_DISCIPLE.PRO_HIT, DATA_FEMALE_DISCIPLE.PRO_SHOT), DATA_FEMALE_DISCIPLE.FOV, NO_AUDIO, DATA_FEMALE_DISCIPLE.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_FEMALE_DISCIPLE.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_ZOMBIE_MASTER] = new ActorModel("Actors\\zombie_master", DATA_ZM.NAME, DATA_ZM.PLURAL, DATA_ZM.SCORE, new DollBody(true, DATA_ZM.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsUndeadMaster = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanUseMapObjects = true,
-        CanJump = true,
-        CanJumpStumble = true,
-        CanPush = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_ZM.HP, DATA_ZM.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZM.ATK, DATA_ZM.DMG), new Defence(DATA_ZM.DEF, DATA_ZM.PRO_HIT, DATA_ZM.PRO_SHOT), DATA_ZM.FOV, NO_AUDIO, DATA_ZM.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_ZOMBIE_MASTER] = new ActorModel("Actors\\zombie_master", DATA_ZM.NAME, DATA_ZM.PLURAL, DATA_ZM.SCORE, new DollBody(true, DATA_ZM.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.UNDEAD_MASTER | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_JUMP_STUMBLE | Abilities.Flags.CAN_PUSH |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_ZM.HP, DATA_ZM.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZM.ATK, DATA_ZM.DMG), new Defence(DATA_ZM.DEF, DATA_ZM.PRO_HIT, DATA_ZM.PRO_SHOT), DATA_ZM.FOV, NO_AUDIO, DATA_ZM.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_ZM.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_ZOMBIE_LORD] = new ActorModel("Actors\\zombie_lord", DATA_ZL.NAME, DATA_ZL.PLURAL, DATA_ZL.SCORE, new DollBody(true, DATA_ZL.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsUndeadMaster = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanUseMapObjects = true,
-        CanJump = true,
-        CanJumpStumble = true,
-        CanPush = true,
-        ZombieAI_AssaultBreakables = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_ZL.HP, DATA_ZL.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZL.ATK, DATA_ZL.DMG), new Defence(DATA_ZL.DEF, DATA_ZL.PRO_HIT, DATA_ZL.PRO_SHOT), DATA_ZL.FOV, NO_AUDIO, DATA_ZL.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_ZOMBIE_LORD] = new ActorModel("Actors\\zombie_lord", DATA_ZL.NAME, DATA_ZL.PLURAL, DATA_ZL.SCORE, new DollBody(true, DATA_ZL.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.UNDEAD_MASTER | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_JUMP_STUMBLE | Abilities.Flags.CAN_PUSH |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.ZOMBIEAI_ASSAULT_BREAKABLES),
+          new ActorSheet(DATA_ZL.HP, DATA_ZL.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZL.ATK, DATA_ZL.DMG), new Defence(DATA_ZL.DEF, DATA_ZL.PRO_HIT, DATA_ZL.PRO_SHOT), DATA_ZL.FOV, NO_AUDIO, DATA_ZL.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_ZL.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_ZOMBIE_PRINCE] = new ActorModel("Actors\\zombie_prince", DATA_ZP.NAME, DATA_ZP.PLURAL, DATA_ZP.SCORE, new DollBody(true, DATA_ZP.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsUndeadMaster = true,
-        IsRotting = true,
-        CanZombifyKilled = true,
-        CanBashDoors = true,
-        CanBreakObjects = true,
-        CanUseMapObjects = true,
-        CanJump = true,
-        CanJumpStumble = true,
-        CanPush = true,
-        ZombieAI_AssaultBreakables = true,
-        ZombieAI_Explore = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_ZP.HP, DATA_ZP.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZP.ATK, DATA_ZP.DMG), new Defence(DATA_ZP.DEF, DATA_ZP.PRO_HIT, DATA_ZP.PRO_SHOT), DATA_ZP.FOV, NO_AUDIO, DATA_ZP.SMELL, NO_INVENTORY), typeof (ZombieAI))
+      this[GameActors.IDs.UNDEAD_ZOMBIE_PRINCE] = new ActorModel("Actors\\zombie_prince", DATA_ZP.NAME, DATA_ZP.PLURAL, DATA_ZP.SCORE, new DollBody(true, DATA_ZP.SPD), new Abilities(
+          Abilities.Flags.UNDEAD | Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS |
+          Abilities.Flags.UNDEAD_MASTER | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_JUMP_STUMBLE | Abilities.Flags.CAN_PUSH |
+          Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.ZOMBIEAI_ASSAULT_BREAKABLES),
+          new ActorSheet(DATA_ZP.HP, DATA_ZP.STA, UNDEAD_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_ZP.ATK, DATA_ZP.DMG), new Defence(DATA_ZP.DEF, DATA_ZP.PRO_HIT, DATA_ZP.PRO_SHOT), DATA_ZP.FOV, NO_AUDIO, DATA_ZP.SMELL, NO_INVENTORY), typeof (ZombieAI))
       {
         FlavorDescription = DATA_ZP.FLAVOR
       };
-      this[GameActors.IDs.UNDEAD_RAT_ZOMBIE] = new ActorModel("Actors\\rat_zombie", DATA_RAT_ZOMBIE.NAME, DATA_RAT_ZOMBIE.PLURAL, DATA_RAT_ZOMBIE.SCORE, new DollBody(true, DATA_RAT_ZOMBIE.SPD), new Abilities()
-      {
-        IsUndead = true,
-        IsSmall = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_RAT_ZOMBIE.HP, DATA_RAT_ZOMBIE.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_RAT_ZOMBIE.ATK, DATA_RAT_ZOMBIE.DMG), new Defence(DATA_RAT_ZOMBIE.DEF, DATA_RAT_ZOMBIE.PRO_HIT, DATA_RAT_ZOMBIE.PRO_SHOT), DATA_RAT_ZOMBIE.FOV, NO_AUDIO, DATA_RAT_ZOMBIE.SMELL, NO_INVENTORY), typeof (RatAI))
+      this[GameActors.IDs.UNDEAD_RAT_ZOMBIE] = new ActorModel("Actors\\rat_zombie", DATA_RAT_ZOMBIE.NAME, DATA_RAT_ZOMBIE.PLURAL, DATA_RAT_ZOMBIE.SCORE, new DollBody(true, DATA_RAT_ZOMBIE.SPD), new Abilities(
+        Abilities.Flags.UNDEAD | Abilities.Flags.IS_SMALL | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+        new ActorSheet(DATA_RAT_ZOMBIE.HP, DATA_RAT_ZOMBIE.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_RAT_ZOMBIE.ATK, DATA_RAT_ZOMBIE.DMG), new Defence(DATA_RAT_ZOMBIE.DEF, DATA_RAT_ZOMBIE.PRO_HIT, DATA_RAT_ZOMBIE.PRO_SHOT), DATA_RAT_ZOMBIE.FOV, NO_AUDIO, DATA_RAT_ZOMBIE.SMELL, NO_INVENTORY), typeof (RatAI))
       {
         FlavorDescription = DATA_RAT_ZOMBIE.FLAVOR
       };
-      this[GameActors.IDs.SEWERS_THING] = new ActorModel("Actors\\sewers_thing", DATA_SEWERS_THING.NAME, DATA_SEWERS_THING.PLURAL, DATA_SEWERS_THING.SCORE, new DollBody(true, DATA_SEWERS_THING.SPD), new Abilities()
-      {
-        IsUndead = true,
-        CanBashDoors = true,
-        CanBreakObjects = true
-      }, new ActorSheet(DATA_SEWERS_THING.HP, DATA_SEWERS_THING.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_SEWERS_THING.ATK, DATA_SEWERS_THING.DMG), new Defence(DATA_SEWERS_THING.DEF, DATA_SEWERS_THING.PRO_HIT, DATA_SEWERS_THING.PRO_SHOT), DATA_SEWERS_THING.FOV, NO_AUDIO, DATA_SEWERS_THING.SMELL, NO_INVENTORY), typeof (SewersThingAI))
+      this[GameActors.IDs.SEWERS_THING] = new ActorModel("Actors\\sewers_thing", DATA_SEWERS_THING.NAME, DATA_SEWERS_THING.PLURAL, DATA_SEWERS_THING.SCORE, new DollBody(true, DATA_SEWERS_THING.SPD), new Abilities(
+        Abilities.Flags.UNDEAD | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS),
+        new ActorSheet(DATA_SEWERS_THING.HP, DATA_SEWERS_THING.STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), DATA_SEWERS_THING.ATK, DATA_SEWERS_THING.DMG), new Defence(DATA_SEWERS_THING.DEF, DATA_SEWERS_THING.PRO_HIT, DATA_SEWERS_THING.PRO_SHOT), DATA_SEWERS_THING.FOV, NO_AUDIO, DATA_SEWERS_THING.SMELL, NO_INVENTORY), typeof (SewersThingAI))
       {
         FlavorDescription = DATA_SEWERS_THING.FLAVOR
       };
-      this[GameActors.IDs.MALE_CIVILIAN] = new ActorModel((string) null, DATA_MALE_CIVILIAN.NAME, DATA_MALE_CIVILIAN.PLURAL, DATA_MALE_CIVILIAN.SCORE, new DollBody(true, DATA_MALE_CIVILIAN.SPD), new Abilities()
-      {
-        HasInventory = true,
-        HasToEat = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanTalk = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        CanTrade = true,
-        CanBarricade = true,
-        CanPush = true,
-        IsIntelligent = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_MALE_CIVILIAN.HP, DATA_MALE_CIVILIAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_MALE_CIVILIAN.ATK, DATA_MALE_CIVILIAN.DMG), new Defence(DATA_MALE_CIVILIAN.DEF, DATA_MALE_CIVILIAN.PRO_HIT, DATA_MALE_CIVILIAN.PRO_SHOT), DATA_MALE_CIVILIAN.FOV, DATA_MALE_CIVILIAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI))
+      this[GameActors.IDs.MALE_CIVILIAN] = new ActorModel((string) null, DATA_MALE_CIVILIAN.NAME, DATA_MALE_CIVILIAN.PLURAL, DATA_MALE_CIVILIAN.SCORE, new DollBody(true, DATA_MALE_CIVILIAN.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY | Abilities.Flags.CAN_TRADE |
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_INTELLIGENT),
+          new ActorSheet(DATA_MALE_CIVILIAN.HP, DATA_MALE_CIVILIAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_MALE_CIVILIAN.ATK, DATA_MALE_CIVILIAN.DMG), new Defence(DATA_MALE_CIVILIAN.DEF, DATA_MALE_CIVILIAN.PRO_HIT, DATA_MALE_CIVILIAN.PRO_SHOT), DATA_MALE_CIVILIAN.FOV, DATA_MALE_CIVILIAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI))
       {
         FlavorDescription = DATA_MALE_CIVILIAN.FLAVOR
       };
-      this[GameActors.IDs.FEMALE_CIVILIAN] = new ActorModel((string) null, DATA_FEMALE_CIVILIAN.NAME, DATA_FEMALE_CIVILIAN.PLURAL, DATA_FEMALE_CIVILIAN.SCORE, new DollBody(false, DATA_FEMALE_CIVILIAN.SPD), new Abilities()
-      {
-        HasInventory = true,
-        HasToEat = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanTalk = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        CanTrade = true,
-        CanBarricade = true,
-        CanPush = true,
-        IsIntelligent = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_FEMALE_CIVILIAN.HP, DATA_FEMALE_CIVILIAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_FEMALE_CIVILIAN.ATK, DATA_FEMALE_CIVILIAN.DMG), new Defence(DATA_FEMALE_CIVILIAN.DEF, DATA_FEMALE_CIVILIAN.PRO_HIT, DATA_FEMALE_CIVILIAN.PRO_SHOT), DATA_FEMALE_CIVILIAN.FOV, DATA_FEMALE_CIVILIAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI))
+      this[GameActors.IDs.FEMALE_CIVILIAN] = new ActorModel((string) null, DATA_FEMALE_CIVILIAN.NAME, DATA_FEMALE_CIVILIAN.PLURAL, DATA_FEMALE_CIVILIAN.SCORE, new DollBody(false, DATA_FEMALE_CIVILIAN.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY | Abilities.Flags.CAN_TRADE |
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_INTELLIGENT), new ActorSheet(DATA_FEMALE_CIVILIAN.HP, DATA_FEMALE_CIVILIAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_FEMALE_CIVILIAN.ATK, DATA_FEMALE_CIVILIAN.DMG), new Defence(DATA_FEMALE_CIVILIAN.DEF, DATA_FEMALE_CIVILIAN.PRO_HIT, DATA_FEMALE_CIVILIAN.PRO_SHOT), DATA_FEMALE_CIVILIAN.FOV, DATA_FEMALE_CIVILIAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI))
       {
         FlavorDescription = DATA_FEMALE_CIVILIAN.FLAVOR
       };
-      this[GameActors.IDs.CHAR_GUARD] = new ActorModel((string) null, DATA_CHAR_GUARD.NAME, DATA_CHAR_GUARD.PLURAL, DATA_CHAR_GUARD.SCORE, new DollBody(true, DATA_CHAR_GUARD.SPD), new Abilities()
-      {
-        HasInventory = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanTalk = true,
-        CanPush = true,
-        CanBarricade = true,
-        IsIntelligent = true
-      }, new ActorSheet(DATA_CHAR_GUARD.HP, DATA_CHAR_GUARD.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_CHAR_GUARD.ATK, DATA_CHAR_GUARD.DMG), new Defence(DATA_CHAR_GUARD.DEF, DATA_CHAR_GUARD.PRO_HIT, DATA_CHAR_GUARD.PRO_SHOT), DATA_CHAR_GUARD.FOV, DATA_CHAR_GUARD.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CHARGuardAI))
+      this[GameActors.IDs.CHAR_GUARD] = new ActorModel((string) null, DATA_CHAR_GUARD.NAME, DATA_CHAR_GUARD.PLURAL, DATA_CHAR_GUARD.SCORE, new DollBody(true, DATA_CHAR_GUARD.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY |
+          Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT),
+          new ActorSheet(DATA_CHAR_GUARD.HP, DATA_CHAR_GUARD.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_CHAR_GUARD.ATK, DATA_CHAR_GUARD.DMG), new Defence(DATA_CHAR_GUARD.DEF, DATA_CHAR_GUARD.PRO_HIT, DATA_CHAR_GUARD.PRO_SHOT), DATA_CHAR_GUARD.FOV, DATA_CHAR_GUARD.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CHARGuardAI))
       {
         FlavorDescription = DATA_CHAR_GUARD.FLAVOR
       };
-      this[GameActors.IDs.ARMY_NATIONAL_GUARD] = new ActorModel((string) null, DATA_NATGUARD.NAME, DATA_NATGUARD.PLURAL, DATA_NATGUARD.SCORE, new DollBody(true, DATA_NATGUARD.SPD), new Abilities()
-      {
-        HasInventory = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        CanTalk = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanPush = true,
-        CanBarricade = true,
-        IsIntelligent = true
-      }, new ActorSheet(DATA_NATGUARD.HP, DATA_NATGUARD.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_NATGUARD.ATK, DATA_NATGUARD.DMG), new Defence(DATA_NATGUARD.DEF, DATA_NATGUARD.PRO_HIT, DATA_NATGUARD.PRO_SHOT), DATA_NATGUARD.FOV, DATA_NATGUARD.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (SoldierAI))
+      this[GameActors.IDs.ARMY_NATIONAL_GUARD] = new ActorModel((string) null, DATA_NATGUARD.NAME, DATA_NATGUARD.PLURAL, DATA_NATGUARD.SCORE, new DollBody(true, DATA_NATGUARD.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY |
+          Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT),
+          new ActorSheet(DATA_NATGUARD.HP, DATA_NATGUARD.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_NATGUARD.ATK, DATA_NATGUARD.DMG), new Defence(DATA_NATGUARD.DEF, DATA_NATGUARD.PRO_HIT, DATA_NATGUARD.PRO_SHOT), DATA_NATGUARD.FOV, DATA_NATGUARD.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (SoldierAI))
       {
         FlavorDescription = DATA_NATGUARD.FLAVOR
       };
-      this[GameActors.IDs.BIKER_MAN] = new ActorModel((string) null, DATA_BIKER_MAN.NAME, DATA_BIKER_MAN.PLURAL, DATA_BIKER_MAN.SCORE, new DollBody(true, DATA_BIKER_MAN.SPD), new Abilities()
-      {
-        HasInventory = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        HasToEat = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanTalk = true,
-        CanPush = true,
-        CanBarricade = true,
-        CanTrade = true,
-        IsIntelligent = true,
-        AI_NotInterestedInRangedWeapons = true
-      }, new ActorSheet(DATA_BIKER_MAN.HP, DATA_BIKER_MAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_BIKER_MAN.ATK, DATA_BIKER_MAN.DMG), new Defence(DATA_BIKER_MAN.DEF, DATA_BIKER_MAN.PRO_HIT, DATA_BIKER_MAN.PRO_SHOT), DATA_BIKER_MAN.FOV, DATA_BIKER_MAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (GangAI))
+      this[GameActors.IDs.BIKER_MAN] = new ActorModel((string) null, DATA_BIKER_MAN.NAME, DATA_BIKER_MAN.PLURAL, DATA_BIKER_MAN.SCORE, new DollBody(true, DATA_BIKER_MAN.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY | Abilities.Flags.CAN_TRADE |
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT | Abilities.Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS),
+          new ActorSheet(DATA_BIKER_MAN.HP, DATA_BIKER_MAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_BIKER_MAN.ATK, DATA_BIKER_MAN.DMG), new Defence(DATA_BIKER_MAN.DEF, DATA_BIKER_MAN.PRO_HIT, DATA_BIKER_MAN.PRO_SHOT), DATA_BIKER_MAN.FOV, DATA_BIKER_MAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (GangAI))
       {
         FlavorDescription = DATA_BIKER_MAN.FLAVOR
       };
-      this[GameActors.IDs.GANGSTA_MAN] = new ActorModel((string) null, DATA_GANGSTA_MAN.NAME, DATA_GANGSTA_MAN.PLURAL, DATA_GANGSTA_MAN.SCORE, new DollBody(true, DATA_GANGSTA_MAN.SPD), new Abilities()
-      {
-        HasInventory = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        HasToEat = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanTalk = true,
-        CanPush = true,
-        CanBarricade = true,
-        CanTrade = true,
-        IsIntelligent = true
-      }, new ActorSheet(DATA_GANGSTA_MAN.HP, DATA_GANGSTA_MAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_GANGSTA_MAN.ATK, DATA_GANGSTA_MAN.DMG), new Defence(DATA_GANGSTA_MAN.DEF, DATA_GANGSTA_MAN.PRO_HIT, DATA_GANGSTA_MAN.PRO_SHOT), DATA_GANGSTA_MAN.FOV, DATA_GANGSTA_MAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (GangAI))
+      this[GameActors.IDs.GANGSTA_MAN] = new ActorModel((string) null, DATA_GANGSTA_MAN.NAME, DATA_GANGSTA_MAN.PLURAL, DATA_GANGSTA_MAN.SCORE, new DollBody(true, DATA_GANGSTA_MAN.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY | Abilities.Flags.CAN_TRADE |
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT),
+          new ActorSheet(DATA_GANGSTA_MAN.HP, DATA_GANGSTA_MAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_GANGSTA_MAN.ATK, DATA_GANGSTA_MAN.DMG), new Defence(DATA_GANGSTA_MAN.DEF, DATA_GANGSTA_MAN.PRO_HIT, DATA_GANGSTA_MAN.PRO_SHOT), DATA_GANGSTA_MAN.FOV, DATA_GANGSTA_MAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (GangAI))
       {
         FlavorDescription = DATA_GANGSTA_MAN.FLAVOR
       };
-      this[GameActors.IDs.POLICEMAN] = new ActorModel((string) null, DATA_POLICEMAN.NAME, DATA_POLICEMAN.PLURAL, DATA_POLICEMAN.SCORE, new DollBody(true, DATA_POLICEMAN.SPD), new Abilities()
-      {
-        HasInventory = true,
-        HasToEat = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanTalk = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        CanTrade = true,
-        CanBarricade = true,
-        CanPush = true,
-        AI_CanUseAIExits = true,
-        IsLawEnforcer = true,
-        IsIntelligent = true
-      }, new ActorSheet(DATA_POLICEMAN.HP, DATA_POLICEMAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_POLICEMAN.ATK, DATA_POLICEMAN.DMG), new Defence(DATA_POLICEMAN.DEF, DATA_POLICEMAN.PRO_HIT, DATA_POLICEMAN.PRO_SHOT), DATA_POLICEMAN.FOV, DATA_POLICEMAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI))
+      this[GameActors.IDs.POLICEMAN] = new ActorModel((string) null, DATA_POLICEMAN.NAME, DATA_POLICEMAN.PLURAL, DATA_POLICEMAN.SCORE, new DollBody(true, DATA_POLICEMAN.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY | Abilities.Flags.CAN_TRADE |
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_INTELLIGENT | Abilities.Flags.IS_LAW_ENFORCER),
+          new ActorSheet(DATA_POLICEMAN.HP, DATA_POLICEMAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_POLICEMAN.ATK, DATA_POLICEMAN.DMG), new Defence(DATA_POLICEMAN.DEF, DATA_POLICEMAN.PRO_HIT, DATA_POLICEMAN.PRO_SHOT), DATA_POLICEMAN.FOV, DATA_POLICEMAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI))
       {
         FlavorDescription = DATA_POLICEMAN.FLAVOR
       };
-      this[GameActors.IDs.BLACKOPS_MAN] = new ActorModel((string) null, DATA_BLACKOPS_MAN.NAME, DATA_BLACKOPS_MAN.PLURAL, DATA_BLACKOPS_MAN.SCORE, new DollBody(true, DATA_BLACKOPS_MAN.SPD), new Abilities()
-      {
-        HasInventory = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        CanTalk = true,
-        HasToSleep = true,
-        HasSanity = true,
-        CanPush = true,
-        CanBarricade = true,
-        IsIntelligent = true
-      }, new ActorSheet(DATA_BLACKOPS_MAN.HP, DATA_BLACKOPS_MAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_BLACKOPS_MAN.ATK, DATA_BLACKOPS_MAN.DMG), new Defence(DATA_BLACKOPS_MAN.DEF, DATA_BLACKOPS_MAN.PRO_HIT, DATA_BLACKOPS_MAN.PRO_SHOT), DATA_BLACKOPS_MAN.FOV, DATA_BLACKOPS_MAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (SoldierAI))
+      this[GameActors.IDs.BLACKOPS_MAN] = new ActorModel((string) null, DATA_BLACKOPS_MAN.NAME, DATA_BLACKOPS_MAN.PLURAL, DATA_BLACKOPS_MAN.SCORE, new DollBody(true, DATA_BLACKOPS_MAN.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE | Abilities.Flags.HAS_SANITY |
+          Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT),
+          new ActorSheet(DATA_BLACKOPS_MAN.HP, DATA_BLACKOPS_MAN.STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_BLACKOPS_MAN.ATK, DATA_BLACKOPS_MAN.DMG), new Defence(DATA_BLACKOPS_MAN.DEF, DATA_BLACKOPS_MAN.PRO_HIT, DATA_BLACKOPS_MAN.PRO_SHOT), DATA_BLACKOPS_MAN.FOV, DATA_BLACKOPS_MAN.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (SoldierAI))
       {
         FlavorDescription = DATA_BLACKOPS_MAN.FLAVOR
       };
       GameActors.ActorData actorData = DATA_FERAL_DOG;
-      this[GameActors.IDs.FERAL_DOG] = new ActorModel((string) null, actorData.NAME, actorData.PLURAL, actorData.SCORE, new DollBody(true, actorData.SPD), new Abilities()
-      {
-        HasInventory = true,
-        HasToEat = true,
-        HasToSleep = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(actorData.HP, actorData.STA, DOG_HUN, DOG_SLP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), actorData.ATK, actorData.DMG), new Defence(actorData.DEF, actorData.PRO_HIT, actorData.PRO_SHOT), actorData.FOV, actorData.AUDIO, actorData.SMELL, DOG_INVENTORY), typeof (FeralDogAI))
+      this[GameActors.IDs.FERAL_DOG] = new ActorModel((string) null, actorData.NAME, actorData.PLURAL, actorData.SCORE, new DollBody(true, actorData.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.HAS_TO_EAT | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(actorData.HP, actorData.STA, DOG_HUN, DOG_SLP, NO_SANITY, new Attack(AttackKind.PHYSICAL, new Verb("bite"), actorData.ATK, actorData.DMG), new Defence(actorData.DEF, actorData.PRO_HIT, actorData.PRO_SHOT), actorData.FOV, actorData.AUDIO, actorData.SMELL, DOG_INVENTORY), typeof (FeralDogAI))
       {
         FlavorDescription = actorData.FLAVOR
       };
-      this[GameActors.IDs.JASON_MYERS] = new ActorModel((string) null, DATA_JASON_MYERS.NAME, DATA_JASON_MYERS.PLURAL, DATA_JASON_MYERS.SCORE, new DollBody(true, DATA_JASON_MYERS.SPD), new Abilities()
-      {
-        HasInventory = true,
-        CanUseMapObjects = true,
-        CanBreakObjects = true,
-        CanJump = true,
-        CanTire = true,
-        CanRun = true,
-        CanUseItems = true,
-        HasToEat = false,
-        HasToSleep = false,
-        CanTalk = true,
-        CanPush = true,
-        CanBarricade = true,
-        AI_CanUseAIExits = true
-      }, new ActorSheet(DATA_JASON_MYERS.HP, DATA_JASON_MYERS.STA, HUMAN_HUN, HUMAN_SLP, NO_SANITY, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_JASON_MYERS.ATK, DATA_JASON_MYERS.DMG), new Defence(DATA_JASON_MYERS.DEF, DATA_JASON_MYERS.PRO_HIT, DATA_JASON_MYERS.PRO_SHOT), DATA_JASON_MYERS.FOV, DATA_JASON_MYERS.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (InsaneHumanAI))
+      this[GameActors.IDs.JASON_MYERS] = new ActorModel((string) null, DATA_JASON_MYERS.NAME, DATA_JASON_MYERS.PLURAL, DATA_JASON_MYERS.SCORE, new DollBody(true, DATA_JASON_MYERS.SPD), new Abilities(
+          Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN |
+          Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE |
+          Abilities.Flags.AI_CAN_USE_AI_EXITS),
+          new ActorSheet(DATA_JASON_MYERS.HP, DATA_JASON_MYERS.STA, HUMAN_HUN, HUMAN_SLP, NO_SANITY, new Attack(AttackKind.PHYSICAL, GameActors.VERB_PUNCH, DATA_JASON_MYERS.ATK, DATA_JASON_MYERS.DMG), new Defence(DATA_JASON_MYERS.DEF, DATA_JASON_MYERS.PRO_HIT, DATA_JASON_MYERS.PRO_SHOT), DATA_JASON_MYERS.FOV, DATA_JASON_MYERS.AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (InsaneHumanAI))
       {
         FlavorDescription = DATA_JASON_MYERS.FLAVOR
       };
