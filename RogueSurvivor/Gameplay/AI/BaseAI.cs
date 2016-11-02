@@ -498,8 +498,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it == null) return null;
       if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
       MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
-      ActionDropItem tmp = new ActionDropItem(m_Actor, it);
-      return (tmp.IsLegal() ? tmp : null);
+      return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
     protected int ComputeTrapsMaxDamage(Map map, Point pos)

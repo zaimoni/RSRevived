@@ -4328,7 +4328,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (inv != m_Player.Inventory) return false;
       string reason;
-      if (m_Rules.CanActorDropItem(m_Player, it, out reason)) {
+      if (m_Player.CanDrop(it, out reason)) {
         DoDropItem(m_Player, it);
         return true;
       }
@@ -4629,7 +4629,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       string reason;
-      if (m_Rules.CanActorDropItem(player, it, out reason)) {
+      if (player.CanDrop(it, out reason)) {
         DoDropItem(player, it);
         return true;
       }
@@ -6221,7 +6221,7 @@ namespace djack.RogueSurvivor.Engine
           if (inventory4 == null || inventory4.IsEmpty)
             return false;
           foreach (Item it in inventory4.Items) {
-            if (m_Rules.CanActorDropItem(m_Player, it)) return true;
+            if (m_Player.CanDrop(it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_USE:

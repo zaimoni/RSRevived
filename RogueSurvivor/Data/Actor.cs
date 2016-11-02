@@ -1530,6 +1530,26 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantUnequip(it));
     }
 
+    private string ReasonCantDrop(Item it)
+    {
+      Contract.Requires(null != it);
+      if (it.IsEquipped) return "unequip first";
+      Inventory inventory = Inventory;
+      if (inventory == null || !inventory.Contains(it)) return "not in inventory";
+      return "";
+    }
+
+    public bool CanDrop(Item it, out string reason)
+    {
+      reason = ReasonCantDrop(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanDrop(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantDrop(it));
+    }
+
     public Skill SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);

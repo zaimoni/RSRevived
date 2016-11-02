@@ -272,33 +272,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorDropItem(Actor actor, Item it)
-    {
-      string reason;
-      return CanActorDropItem(actor, it, out reason);
-    }
-
-    public bool CanActorDropItem(Actor actor, Item it, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (it == null)
-        throw new ArgumentNullException("item");
-      if (it.IsEquipped)
-      {
-        reason = "unequip first";
-        return false;
-      }
-      Inventory inventory = actor.Inventory;
-      if (inventory == null || !inventory.Contains(it))
-      {
-        reason = "not in inventory";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorEatFoodOnGround(Actor actor, Item it, out string reason)
     {
       if (actor == null)
