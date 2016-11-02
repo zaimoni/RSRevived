@@ -77,7 +77,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
       if (current_enemies != null) {
-        List<Percept> percepts3 = FilterFireTargets(game, current_enemies);
+        List<Percept> percepts3 = FilterFireTargets(current_enemies);
         if (percepts3 != null) {
           Actor actor = FilterNearest(percepts3).Percepted as Actor;
           tmpAction = BehaviorRangedAttack(actor);

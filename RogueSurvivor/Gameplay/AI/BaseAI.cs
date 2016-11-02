@@ -93,10 +93,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     The only realistic mitigation is to pro-rate the capacity request.
  */
     // April 22, 2016: testing indicates this does not need micro-optimization
-    protected List<Percept> FilterSameMap(List<Percept> percepts)
+    protected List<Percept_<_T_>> FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
-      return Filter(percepts,(Predicate<Percept>) (p => p.Location.Map == map));
+      return Filter(percepts,(p => p.Location.Map == map));
     }
 
     protected List<Percept> FilterEnemies(List<Percept> percepts)
@@ -109,22 +109,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
     }
 
-    protected List<Percept> FilterCurrent(List<Percept> percepts)
+    protected List<Percept_<_T_>> FilterCurrent<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      return Filter(percepts,(Predicate<Percept>) (p => p.Turn == turnCounter));
+      return Filter(percepts,(p => p.Turn == turnCounter));
     }
 
     // GangAI's mugging target selection triggered a race condition 
     // that allowed a non-null non-empty percepts
     // to be seen as returning null from FilterNearest anyway, from
     // the outside (Contracts saw a non-null return)
-    protected Percept FilterNearest(List<Percept> percepts)
+    protected Percept_<_T_> FilterNearest<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
       double num1 = double.MaxValue;
-      Percept percept1 = null;
-      foreach(Percept percept2 in percepts) {
+      Percept_<_T_> percept1 = null;
+      foreach(Percept_<_T_> percept2 in percepts) {
          float num2 = Rules.StdDistance(m_Actor.Location.Position, percept2.Location.Position);
          if (num2 < num1) {
            percept1 = percept2;
@@ -186,7 +186,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    protected List<Percept> FilterFireTargets(RogueGame game, List<Percept> percepts)
+    protected List<Percept> FilterFireTargets(List<Percept> percepts)
     {
       return FilterActors(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
     }
@@ -224,33 +224,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    protected List<Percept> Filter(List<Percept> percepts, Predicate<Percept> predicateFn)
+    protected static List<Percept_<_T_>> Filter<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      IEnumerable<Percept> tmp = percepts.Where(p=> predicateFn(p));
+      IEnumerable<Percept_<_T_>> tmp = percepts.Where(p=> predicateFn(p));
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    protected Percept FilterFirst(List<Percept> percepts, Predicate<Percept> predicateFn)
+    protected static Percept_<_T_> FilterFirst<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      foreach (Percept percept in percepts) {
+      foreach (Percept_<_T_> percept in percepts) {
         if (predicateFn(percept)) return percept;
       }
       return null;
     }
 
-    protected List<Percept> FilterOut(List<Percept> percepts, Predicate<Percept> rejectPredicateFn)
+    protected static List<Percept_<_T_>> FilterOut<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> rejectPredicateFn) where _T_:class
     {
-      return Filter(percepts, (Predicate<Percept>) (p => !rejectPredicateFn(p)));
+      return Filter(percepts,(p => !rejectPredicateFn(p)));
     }
 
-    protected List<Percept> SortByDistance(List<Percept> percepts)
+    protected List<Percept_<_T_>> SortByDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
       Point from = m_Actor.Location.Position;
-      List<Percept> perceptList = new List<Percept>((IEnumerable<Percept>) percepts);
-      perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
+      List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
+      perceptList.Sort(((pA, pB) =>
       {
         float num1 = Rules.StdDistance(pA.Location.Position, from);
         float num2 = Rules.StdDistance(pB.Location.Position, from);
@@ -261,18 +261,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // firearms use grid i.e. L-infinity distance
-    protected List<Percept> SortByGridDistance(List<Percept> percepts)
+    protected List<Percept_<_T_>> SortByGridDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
       if (1==percepts.Count) return percepts;
 
-      List<Percept> perceptList = new List<Percept>(percepts);
+      List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
       Point from = m_Actor.Location.Position;
-      Dictionary<Percept,int> dict = new Dictionary<Percept,int>(perceptList.Count);
-      foreach(Percept p in perceptList) {
+      Dictionary<Percept_<_T_>, int> dict = new Dictionary<Percept_<_T_>, int>(perceptList.Count);
+      foreach(Percept_<_T_> p in perceptList) {
         dict.Add(p,Rules.GridDistance(p.Location.Position, from));
       }
-      perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
+      perceptList.Sort(((pA, pB) =>
       {
         int num1 = dict[pA];
         int num2 = dict[pB];
