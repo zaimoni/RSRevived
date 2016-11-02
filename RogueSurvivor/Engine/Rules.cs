@@ -272,32 +272,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorEquipItem(Actor actor, Item it)
-    {
-      string reason;
-      return CanActorEquipItem(actor, it, out reason);
-    }
-
-    public bool CanActorEquipItem(Actor actor, Item it, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (it == null)
-        throw new ArgumentNullException("item");
-      if (!actor.Model.Abilities.CanUseItems)
-      {
-        reason = "no ability to use items";
-        return false;
-      }
-      if (!it.Model.IsEquipable)
-      {
-        reason = "this item cannot be equipped";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public static bool CanActorUnequipItem(Actor actor, Item it)
     {
       string reason;

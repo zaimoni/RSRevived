@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorEquipItem(m_Actor, m_Item, out m_FailReason);
+      return m_Actor.CanEquip(m_Item, out m_FailReason);
     }
 
     public override void Perform()

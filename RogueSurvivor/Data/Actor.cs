@@ -1491,6 +1491,25 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
+    private string ReasonCantEquip(Item it)
+    {
+      Contract.Requires(null != it);
+      if (!Model.Abilities.CanUseItems) return "no ability to use items";
+      if (!it.Model.IsEquipable) return "this item cannot be equipped";
+      return "";
+    }
+
+    public bool CanEquip(Item it, out string reason)
+    {
+      reason = ReasonCantEquip(it);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanEquip(Item it)
+    {
+      return string.IsNullOrEmpty(ReasonCantEquip(it));
+    }
+
     public Skill SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);

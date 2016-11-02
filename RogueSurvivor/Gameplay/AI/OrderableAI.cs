@@ -459,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!it.IsUseless) return !IsItemTaboo(it);
           return false;
       }));
-      if (tmp != null && game.Rules.CanActorEquipItem(m_Actor, tmp)) {
+      if (tmp != null && m_Actor.CanEquip(tmp)) {
         game.DoEquipItem(m_Actor, tmp);
         return true;
       }
@@ -493,12 +493,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoUnequipItem(m_Actor, equippedCellPhone);
       }
       if (!wantCellPhone) return false;
-      ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it =>
+      ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>(it =>
       {
         if (it.CanTrackFollowersOrLeader && 0 < it.Batteries) return !IsItemTaboo(it);
         return false;
-      }));
-      if (firstTracker != null && game.Rules.CanActorEquipItem(m_Actor, firstTracker)) {
+      });
+      if (firstTracker != null && m_Actor.CanEquip(firstTracker)) {
         game.DoEquipItem(m_Actor, firstTracker);
         return true;
       }
@@ -826,11 +826,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ItemSprayScent GetFirstStenchKiller(Predicate<ItemSprayScent> fn)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemSprayScent && (fn == null || fn(obj as ItemSprayScent)))
-          return obj as ItemSprayScent;
-      }
-      return null;
+      return m_Actor.Inventory.GetFirstMatching<ItemSprayScent>(fn);
     }
 
     protected ActorAction BehaviorUseStenchKiller()
@@ -851,7 +847,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
           return !it.IsUseless && !IsItemTaboo(it);
       }));
-      if (firstStenchKiller != null && game.Rules.CanActorEquipItem(m_Actor, firstStenchKiller)) {
+      if (firstStenchKiller != null && m_Actor.CanEquip(firstStenchKiller)) {
         game.DoEquipItem(m_Actor, firstStenchKiller);
         return true;
       }

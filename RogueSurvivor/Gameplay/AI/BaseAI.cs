@@ -479,7 +479,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (Directives.CanFireWeapons) {
         Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo(it => !IsItemTaboo(it));
-        if (rangedWeaponWithAmmo != null && game.Rules.CanActorEquipItem(m_Actor, rangedWeaponWithAmmo)) {
+        if (rangedWeaponWithAmmo != null && m_Actor.CanEquip(rangedWeaponWithAmmo)) {
           game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
           return null;
         }

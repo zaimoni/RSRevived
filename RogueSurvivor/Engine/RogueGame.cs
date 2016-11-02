@@ -4300,7 +4300,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (it.Model.IsEquipable) {
           string reason;
-          if (m_Rules.CanActorEquipItem(m_Player, it, out reason)) {
+          if (m_Player.CanEquip(it, out reason)) {
             DoEquipItem(m_Player, it);
             return false;
           }
@@ -4560,12 +4560,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoPlayerItemSlot(Actor player, int slot, KeyEventArgs key)
     {
-      if ((key.Modifiers & Keys.Control) != Keys.None)
-        return DoPlayerItemSlotUse(player, slot);
-      if (key.Shift)
-        return DoPlayerItemSlotTake(player, slot);
-      if (key.Alt)
-        return DoPlayerItemSlotDrop(player, slot);
+      if ((key.Modifiers & Keys.Control) != Keys.None) return DoPlayerItemSlotUse(player, slot);
+      if (key.Shift) return DoPlayerItemSlotTake(player, slot);
+      if (key.Alt) return DoPlayerItemSlotDrop(player, slot);
       return false;
     }
 
@@ -4587,7 +4584,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (it.Model.IsEquipable) {
         string reason;
-        if (m_Rules.CanActorEquipItem(player, it, out reason)) {
+        if (player.CanEquip(it, out reason)) {
           DoEquipItem(player, it);
           return false;
         }
@@ -6203,35 +6200,28 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.ITEM_UNEQUIP:
           Inventory inventory1 = m_Player.Inventory;
-          if (inventory1 == null || inventory1.IsEmpty)
-            return false;
-          foreach (Item it in inventory1.Items)
-          {
+          if (inventory1 == null || inventory1.IsEmpty) return false;
+          foreach (Item it in inventory1.Items) {
             if (Rules.CanActorUnequipItem(m_Player, it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_EQUIP:
           Inventory inventory2 = m_Player.Inventory;
-          if (inventory2 == null || inventory2.IsEmpty)
-            return false;
+          if (inventory2 == null || inventory2.IsEmpty) return false;
           foreach (Item it in inventory2.Items) {
-            if (!it.IsEquipped && m_Rules.CanActorEquipItem(m_Player, it))
-              return true;
+            if (!it.IsEquipped && m_Player.CanEquip(it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_TYPE_BARRICADING:
           Inventory inventory3 = m_Player.Inventory;
-          if (inventory3 == null || inventory3.IsEmpty)
-            return false;
+          if (inventory3 == null || inventory3.IsEmpty) return false;
           return inventory3.Has<ItemBarricadeMaterial>();
         case AdvisorHint.ITEM_DROP:
           Inventory inventory4 = m_Player.Inventory;
           if (inventory4 == null || inventory4.IsEmpty)
             return false;
-          foreach (Item it in inventory4.Items)
-          {
-            if (m_Rules.CanActorDropItem(m_Player, it))
-              return true;
+          foreach (Item it in inventory4.Items) {
+            if (m_Rules.CanActorDropItem(m_Player, it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_USE:
@@ -8958,15 +8948,14 @@ namespace djack.RogueSurvivor.Engine
       int quantity = it.Quantity;
       int quantityAdded;
       actor.Inventory.AddAsMuchAsPossible(it, out quantityAdded);
-      if (quantityAdded == quantity)
-      {
+      if (quantityAdded == quantity) {
         Inventory itemsAt = map.GetItemsAt(position);
         if (itemsAt != null && itemsAt.Contains(it))
           map.RemoveItemAt(it, position);
       }
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
-      if (!it.Model.DontAutoEquip && m_Rules.CanActorEquipItem(actor, it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
+      if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         DoEquipItem(actor, it);
     }
 
@@ -8992,7 +8981,7 @@ namespace djack.RogueSurvivor.Engine
         actor.Inventory.RemoveAllQuantity(gift);
       
       target.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (!gift.Model.DontAutoEquip && m_Rules.CanActorEquipItem(target, gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
+      if (!gift.Model.DontAutoEquip && target.CanEquip(gift) && target.GetEquippedItem(gift.Model.EquipmentPart) != null)
         DoEquipItem(target, gift);
 
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(target)) return;
