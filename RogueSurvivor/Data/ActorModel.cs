@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -20,24 +21,23 @@ namespace djack.RogueSurvivor.Data
     public Type DefaultController { get; private set; }
     public int CreatedCount { get; private set; }
     public int ScoreValue { get; private set; }
-    public string FlavorDescription { get; set; }
+    public string FlavorDescription { get; private set; }
 
-    public ActorModel(string imageID, string name, string pluralName, int scoreValue, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
+    public ActorModel(string imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
     {
-#if DEBUG
-      if (name == null)
-        throw new ArgumentNullException("name");
-      if (body == null)
-        throw new ArgumentNullException("body");
-      if (abilities == null)
-        throw new ArgumentNullException("abilities");
-      if (startingSheet == null)
-        throw new ArgumentNullException("startingSheet");
-      if (defaultController == null)
-        throw new ArgumentNullException("defaultController");
-      if (!defaultController.IsSubclassOf(typeof (ActorController)))
-        throw new ArgumentException("defaultController is not a subclass of ActorController");
-#endif
+      Contract.Requires(!string.IsNullOrEmpty(name));
+      Contract.Requires(!string.IsNullOrEmpty(flavor));
+      Contract.Requires(null != body);
+      Contract.Requires(null != abilities);
+      Contract.Requires(null != startingSheet);
+      Contract.Requires(null != defaultController);
+      Contract.Requires(defaultController.IsSubclassOf(typeof(ActorController)));
+      // using logical XOR to restate IFF
+      Contract.Requires(abilities.HasInventory ^ (0 >= startingSheet.BaseInventoryCapacity));
+      Contract.Requires((abilities.HasToEat || abilities.IsRotting) ^ (0 >= startingSheet.BaseFoodPoints));
+      Contract.Requires(abilities.HasToSleep ^ (0 >= startingSheet.BaseSleepPoints));
+      Contract.Requires(abilities.HasSanity ^ (0 >= startingSheet.BaseSanity));
+
       ImageID = imageID;
       DollBody = body;
       Name = name;

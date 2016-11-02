@@ -98,7 +98,7 @@ namespace djack.RogueSurvivor.Data
       CAN_JUMP_STUMBLE = 1 << 19,
       IS_LAW_ENFORCER = 1 << 20,
       IS_INTELLIGENT = 1 << 21,
-      IS_ROTTING = 1 << 22,
+      IS_ROTTING = 1 << 22,         // XXX very similar to HAS_TO_EAT
       AI_CAN_USE_AI_EXITS = 1 << 23,
       AI_NOT_INTERESTED_IN_RANGED_WEAPONS = 1 << 24,
       ZOMBIEAI_ASSAULT_BREAKABLES = 1 << 25,
