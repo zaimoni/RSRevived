@@ -2478,7 +2478,7 @@ namespace djack.RogueSurvivor.Engine
           List<Actor> actorList = null;
           foreach (Actor actor in map.Actors) {
             if (actor.Infection >= Rules.INFECTION_LEVEL_1_WEAK && !actor.Model.Abilities.IsUndead) {
-              int infectionPercent = m_Rules.ActorInfectionPercent(actor);
+              int infectionPercent = actor.InfectionPercent;
               if (m_Rules.Roll(0, 1000) < Rules.InfectionEffectTriggerChance1000(infectionPercent)) {
                 bool player = ForceVisibleToPlayer(actor);
                 bool flag3 = actor == m_Player;
@@ -7003,7 +7003,7 @@ namespace djack.RogueSurvivor.Engine
           stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object)FoodToHoursUntilHungry(actor.FoodPoints)));
           stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, actor.SleepToHoursUntilSleepy));
           stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, actor.HoursUntilUnstable));
-          stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, (object)m_Rules.ActorInfectionPercent(actor)));
+          stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, actor.InfectionPercent));
         } else
           stringList.Add(string.Format("Leader : {0}.", (object)Capitalize(actor.Leader.Name)));
       }
@@ -7210,7 +7210,7 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add(string.Format("Death     : {0}.", (object) str1));
       string str2 = "???";
       if (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION) {
-        int num = m_Rules.ActorInfectionPercent(c.DeadGuy);
+        int num = c.DeadGuy.InfectionPercent;
         str2 = num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
       }
       stringList.Add(string.Format("Infection : {0}.", (object) str2));
@@ -11299,7 +11299,7 @@ namespace djack.RogueSurvivor.Engine
         gy += 14;
         m_UI.UI_DrawStringBold(Color.White, string.Format("INF {0}", (object) actor.Infection), gx, gy, new Color?());
         DrawBar(actor.Infection, actor.Infection, maxValue2, refValue, 100, 14, gx + 70, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
-        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", (object)m_Rules.ActorInfectionPercent(actor)), gx + 84 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", actor.InfectionPercent), gx + 84 + 100, gy, new Color?());
       }
       gy += 14;
       Attack attack1 = actor.MeleeAttack();

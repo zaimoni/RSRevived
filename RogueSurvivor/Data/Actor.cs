@@ -1044,6 +1044,12 @@ namespace djack.RogueSurvivor.Data
       m_Infection = Math.Max(0, m_Infection - i);
     }
 
+    public int InfectionPercent {
+      get {
+        return 100 * m_Infection / InfectionHPs;
+      }
+    }
+
     // health
     public int MaxHPs {
       get {

@@ -1328,11 +1328,6 @@ namespace djack.RogueSurvivor.Engine
       return (int) ((1.0 + (double) infector.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * (double) Rules.SKILL_ZINFECTOR_BONUS) * (double) dmg);
     }
 
-    public int ActorInfectionPercent(Actor a)
-    {
-      return 100 * a.Infection / a.InfectionHPs;
-    }
-
     public static int InfectionEffectTriggerChance1000(int infectionPercent)
     {
       return Rules.INFECTION_EFFECT_TRIGGER_CHANCE_1000 + infectionPercent / 5;
@@ -1346,11 +1341,9 @@ namespace djack.RogueSurvivor.Engine
     public int CorpseZombifyChance(Corpse c, WorldTime timeNow, bool checkDelay = true)
     {
       int num1 = timeNow.TurnCounter - c.Turn;
-      if (checkDelay && num1 < CORPSE_ZOMBIFY_DELAY)
-        return 0;
-      int num2 = ActorInfectionPercent(c.DeadGuy);
-      if (checkDelay)
-      {
+      if (checkDelay && num1 < CORPSE_ZOMBIFY_DELAY) return 0;
+      int num2 = c.DeadGuy.InfectionPercent;
+      if (checkDelay) {
         int num3 = num2 >= 100 ? 1 : 100 / (1 + num2);
         if (timeNow.TurnCounter % num3 != 0)
           return 0;
