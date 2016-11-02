@@ -1510,7 +1510,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return weakerInMelee != target && (weakerInMelee == m_Actor || courage != ActorCourage.COURAGEOUS);
     }
 
-    protected Actor FindWeakerInMelee(Actor a, Actor b)
+    protected static Actor FindWeakerInMelee(Actor a, Actor b)
     {
       int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
       int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;
@@ -1519,13 +1519,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected bool WillTireAfterAttack(Actor actor)
+    protected static bool WillTireAfterAttack(Actor actor)
     {
       return actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK+ actor.CurrentMeleeAttack.StaminaPenalty);
     }
 
     // XXX doesn't work in the presence of jumping
-    protected bool WillTireAfterRunning(Actor actor)
+    protected static bool WillTireAfterRunning(Actor actor)
     {
       return actor.WillTireAfter(Rules.STAMINA_COST_RUNNING);
     }
@@ -1537,7 +1537,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return num1 > num2 || actor.CanRun() && !target.CanRun() && (!WillTireAfterRunning(actor) && num1 * 2 > num2);
     }
 
-    protected bool IsBetween(Point A, Point between, Point B)
+    protected static bool IsBetween(Point A, Point between, Point B)
     {
       return (double) Rules.StdDistance(A, between) + (double) Rules.StdDistance(B, between) <= (double) Rules.StdDistance(A, B) + 0.25;
     }
@@ -1548,7 +1548,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected Actor GetNearestTargetFor(Actor actor)
+    protected static Actor GetNearestTargetFor(Actor actor)
     {
       Map map = actor.Location.Map;
       Actor actor1 = null;
@@ -1565,7 +1565,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor1;
     }
 
-    protected List<Exit> ListAdjacentExits(Location fromLocation)
+    protected static List<Exit> ListAdjacentExits(Location fromLocation)
     {
       List<Exit> exitList = null;
       foreach (Direction direction in Direction.COMPASS) {
@@ -1607,7 +1607,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
-    protected Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
+    protected static Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
     {
       int x = goal.X + rules.Roll(-range, range);
       int y = goal.Y + rules.Roll(-range, range);
