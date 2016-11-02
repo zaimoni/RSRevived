@@ -7,6 +7,8 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
@@ -17,71 +19,51 @@ namespace djack.RogueSurvivor.Engine.AI
     private Sensor m_Sensor;
     private int m_Persistance;
 
-    public Sensor Sensor
-    {
-      get
-      {
+    public Sensor Sensor {
+      get {
         return m_Sensor;
       }
     }
 
     public MemorizedSensor(Sensor noMemorySensor, int persistance)
     {
-      if (noMemorySensor == null)
-        throw new ArgumentNullException("decoratedSensor");
-            m_Sensor = noMemorySensor;
-            m_Persistance = persistance;
+      Contract.Requires(null != noMemorySensor);
+      m_Sensor = noMemorySensor;
+      m_Persistance = persistance;
     }
 
     public void Clear()
     {
-            m_Percepts.Clear();
+      m_Percepts.Clear();
     }
 
     public void Forget(Actor actor)
     {
-      int i = m_Percepts.Count;
-      while(0 < i--)
+      IEnumerable<Percept> tmp = m_Percepts.Where(p=>p.GetAge(actor.Location.Map.LocalTime.TurnCounter) <= m_Persistance).Where(p=>
         {
-        if (m_Percepts[i].GetAge(actor.Location.Map.LocalTime.TurnCounter) > m_Persistance)
-          m_Percepts.RemoveAt(i);
-        }
-      i = m_Percepts.Count;
-      while(0 < i--)
-        {
-        Actor actor1 = m_Percepts[i].Percepted as Actor;
-        if (actor1 != null && (actor1.IsDead || actor1.Location.Map != actor.Location.Map))
-          m_Percepts.RemoveAt(i);
-        }
+            Actor a = p.Percepted as Actor;
+            return a == null || (!a.IsDead && a.Location.Map == actor.Location.Map);
+        });
+      m_Percepts = tmp.ToList();
     }
 
     public override List<Percept> Sense(Actor actor)
     {
       Forget(actor);
 
-      List<Percept> perceptList1 = m_Sensor.Sense(actor);
-      List<Percept> perceptList2 = null;
-      foreach (Percept percept in perceptList1)
-      {
-        bool flag = false;
+      HashSet<Percept> tmp = new HashSet<Percept>(m_Sensor.Sense(actor));
+      foreach (Percept percept in tmp.ToList()) { 
         foreach (Percept mPercept in m_Percepts) {
           if (mPercept.Percepted == percept.Percepted) {
             mPercept.Location = percept.Location;
             mPercept.Turn = percept.Turn;
-            flag = true;
+            tmp.Remove(percept);
             break;
           }
         }
-        if (!flag) {
-          if (perceptList2 == null)
-            perceptList2 = new List<Percept>(perceptList1.Count);
-          perceptList2.Add(percept);
-        }
       }
-      if (perceptList2 != null) {
-        foreach (Percept percept in perceptList2)
-          m_Percepts.Add(percept);
-      }
+      foreach (Percept percept in tmp)
+        m_Percepts.Add(percept);
       return m_Percepts;
     }
   }
