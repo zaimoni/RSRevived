@@ -2393,7 +2393,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
       nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
       if (nextActorToAct.Controller == null)
+#if DEBUG
+        throw new InvalidOperationException("nextActorToAct.Controller == null");
+#else
         nextActorToAct.SpendActionPoints(Rules.BASE_ACTION_COST);
+#endif
       else if (nextActorToAct.IsPlayer) {
         HandlePlayerActor(nextActorToAct);
         if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
@@ -3472,6 +3476,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerActor(Actor player)
     {
+      Contract.Requires(null != player);
+      Contract.Requires(!player.IsSleeping);
       player.Controller.UpdateSensors();
       m_Player = player;
       Session.Get.CurrentMap = player.Location.Map;  // multi-PC support
@@ -6083,6 +6089,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleAiActor(Actor aiActor)
     {
+      Contract.Requires(null != aiActor);
+      Contract.Requires(!aiActor.IsSleeping);
       ActorAction actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);

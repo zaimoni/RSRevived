@@ -451,6 +451,7 @@ namespace djack.RogueSurvivor.Data
 
     public Actor NextActorToAct { 
       get {
+        Contract.Ensures(null==Contract.Result<Actor>() || (Contract.Result<Actor>().CanActThisTurn && !Contract.Result<Actor>().IsSleeping));
         int countActors = m_ActorsList.Count;
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
           Actor actor = m_ActorsList[checkNextActorIndex];
