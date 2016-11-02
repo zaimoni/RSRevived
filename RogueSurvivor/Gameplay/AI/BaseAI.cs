@@ -1231,10 +1231,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected Item GetBestRangedWeaponWithAmmo(Predicate<Item> fn)
+    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      Item obj1 = null;
+      ItemRangedWeapon obj1 = null;
       int num1 = 0;
       foreach (Item obj2 in m_Actor.Inventory.Items) {
         ItemRangedWeapon w = obj2 as ItemRangedWeapon;
@@ -1243,21 +1243,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (w.Ammo > 0) {
             flag = true;
           } else {
-            foreach (Item obj3 in m_Actor.Inventory.Items)
-            {
-              if (obj3 is ItemAmmo && (fn == null || fn(obj3)) && (obj3 as ItemAmmo).AmmoType == w.AmmoType)
-              {
+            foreach (Item obj3 in m_Actor.Inventory.Items) {
+              if (obj3 is ItemAmmo && (fn == null || fn(obj3)) && (obj3 as ItemAmmo).AmmoType == w.AmmoType) {
                 flag = true;
                 break;
               }
             }
           }
-          if (flag)
-          {
+          if (flag) {
             int num2 = ScoreRangedWeapon(w);
-            if (obj1 == null || num2 > num1)
-            {
-              obj1 = (Item) w;
+            if (num2 > num1) {
+              obj1 = w;
               num1 = num2;
             }
           }
@@ -1266,36 +1262,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
-    protected int ScoreRangedWeapon(ItemRangedWeapon w)
+    protected static int ScoreRangedWeapon(ItemRangedWeapon w)
     {
       ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
       return 1000 * rangedWeaponModel.Attack.Range + rangedWeaponModel.Attack.DamageValue;
-    }
-
-    protected Item GetFirstMeleeWeapon(Predicate<Item> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemMeleeWeapon && (fn == null || fn(obj))) return obj;
-      }
-      return null;
-    }
-
-    protected Item GetFirstBodyArmor(Predicate<Item> fn)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj is ItemBodyArmor && (fn == null || fn(obj))) return obj;
-      }
-      return null;
-    }
-
-    protected bool IsRangedWeaponOutOfAmmo(Item it)
-    {
-      ItemRangedWeapon itemRangedWeapon = it as ItemRangedWeapon;
-      if (itemRangedWeapon == null)
-        return false;
-      return itemRangedWeapon.Ammo <= 0;
     }
 
     public List<Item> GetTradeableItems(Inventory inv)
