@@ -8,6 +8,8 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 
+using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+
 namespace djack.RogueSurvivor.Engine.AI
 {
   [Serializable]

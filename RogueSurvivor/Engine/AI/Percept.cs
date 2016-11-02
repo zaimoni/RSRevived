@@ -6,51 +6,47 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
   [Serializable]
-  internal class Percept
+  internal class WhereWhen
   {
-    private int m_Turn;
-    private Location m_Location;
-    private object m_Percepted;
+    // MemorizedSensor needs public setters for these
+    public int Turn { get; set; }
+    public Location Location { get; set; }
 
-    public int Turn {
-      get {
-        return m_Turn;
-      }
-      set { // MemorizedSensor needs this
-        m_Turn = value;
-      }
+    public WhereWhen(Location loc, int t0)
+    {
+      Contract.Requires(0 <= t0);
+      Contract.Requires(null != loc.Map);
+      Turn = t0;
+      Location = loc;
     }
 
-    public object Percepted {
+    public int GetAge(int t1)
+    {
+      return Math.Max(0, t1 - Turn);
+    }
+  }
+
+  [Serializable]
+  internal class Percept_<_T_> : WhereWhen where _T_:class
+  {
+    private _T_ m_Percepted;
+
+    public _T_ Percepted {
       get {
         return m_Percepted;
       }
     }
 
-    public Location Location {
-      get {
-        return m_Location;
-      }
-      set { // MemorizedSensor needs this
-        m_Location = value;
-      }
-    }
-
-    public Percept(object percepted, int turn, Location location)
+    public Percept_(_T_ percepted, int turn, Location location)
+     : base(location,turn)
     {
-      if (percepted == null) throw new ArgumentNullException("percepted");
+      Contract.Requires(null != percepted);
       m_Percepted = percepted;
-      m_Turn = turn;
-      m_Location = location;
-    }
-
-    public int GetAge(int currentGameTurn)
-    {
-      return Math.Max(0, currentGameTurn - m_Turn);
     }
   }
 }

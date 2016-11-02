@@ -8,7 +8,8 @@ using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
+
+using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -59,7 +60,7 @@ namespace djack.RogueSurvivor.Data
     public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return m_itemMemory.WhatHaveISeen(); }
     public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return m_itemMemory.WhereIs(x); }
 
-    public override List<Engine.AI.Percept> UpdateSensors()
+    public override List<Percept> UpdateSensors()
     {
       return m_LOSSensor.Sense(m_Actor);
     }

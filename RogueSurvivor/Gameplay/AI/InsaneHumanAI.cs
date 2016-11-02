@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics.Contracts;
 
+using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]

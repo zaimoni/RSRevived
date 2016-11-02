@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
+using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -36,7 +38,7 @@ namespace djack.RogueSurvivor.Data
        }
     }
 
-    public abstract List<Engine.AI.Percept> UpdateSensors();
+    public abstract List<Percept> UpdateSensors();
 
     // vision
     public abstract HashSet<Point> FOV { get; }

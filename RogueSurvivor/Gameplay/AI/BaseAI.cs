@@ -19,6 +19,8 @@ using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
 
+using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
