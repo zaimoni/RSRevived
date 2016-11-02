@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Data
         Contract.Ensures(null!=Contract.Result<ActorModel>());
         return Models.Actors[m_ModelID];
       }
-      set {
+      set { // this must be public due to undead evolution
         m_ModelID = value.ID;
         OnModelSet();
       }
@@ -547,11 +547,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Actor(ActorModel model, Faction faction, string name, bool isProperName, bool isPluralName, int spawnTime)
+    public Actor(ActorModel model, Faction faction, int spawnTime, string name="", bool isProperName=false, bool isPluralName=false)
     {
-      if (model == null) throw new ArgumentNullException("model");
-      if (faction == null) throw new ArgumentNullException("faction");
-      if (name == null) throw new ArgumentNullException("name");
+      Contract.Requires(null != model);
+      Contract.Requires(null != faction);
+      if (string.IsNullOrEmpty(name)) name = model.Name;
       m_ModelID = model.ID;
       m_FactionID = faction.ID;
       m_GangID = 0;
@@ -563,11 +563,6 @@ namespace djack.RogueSurvivor.Data
       IsUnique = false;
       IsDead = false;
       OnModelSet();
-    }
-
-    public Actor(ActorModel model, Faction faction, int spawnTime)
-      : this(model, faction, model.Name, false, false, spawnTime)
-    {
     }
 
     private void OnModelSet()
@@ -583,6 +578,8 @@ namespace djack.RogueSurvivor.Data
       m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
       if (model.Abilities.HasInventory)
         m_Inventory = new Inventory(model.StartingSheet.BaseInventoryCapacity);
+      else
+        m_Inventory = null; // any previous inventory will be irrevocably destroyed
       m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
       m_CurrentDefence = model.StartingSheet.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
