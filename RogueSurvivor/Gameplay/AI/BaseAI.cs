@@ -99,6 +99,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return Filter(percepts,(p => p.Location.Map == map));
     }
 
+    // actually deploying this is time-intensive
+    protected static List<Percept_<_dest_>> FilterTo<_dest_,_src_>(List<Percept_<_src_>> percepts) where _dest_: class,_src_ where _src_:class
+    {
+      List<Percept_<_dest_>> tmp = new List<Percept_<_dest_>>();
+      foreach(Percept_<_src_> p in percepts) {
+        _dest_ tmp2 = p.Percepted as _dest_;
+        if (null == tmp2) continue;
+        tmp.Add(new Percept_<_dest_>(tmp2,p.Turn,p.Location));
+      }
+      return (0<tmp.Count ? tmp : null);
+    }
+
     protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
       return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
