@@ -4291,7 +4291,7 @@ namespace djack.RogueSurvivor.Engine
       if (inv == m_Player.Inventory) {
         if (it.IsEquipped) {
           string reason;
-          if (Rules.CanActorUnequipItem(m_Player, it, out reason)) {
+          if (m_Player.CanUnequip(it, out reason)) {
             DoUnequipItem(m_Player, it);
             return false;
           }
@@ -4575,7 +4575,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (it.IsEquipped) {
         string reason;
-        if (Rules.CanActorUnequipItem(player, it, out reason)) {
+        if (player.CanUnequip(it, out reason)) {
           DoUnequipItem(player, it);
           return false;
         }
@@ -6202,7 +6202,7 @@ namespace djack.RogueSurvivor.Engine
           Inventory inventory1 = m_Player.Inventory;
           if (inventory1 == null || inventory1.IsEmpty) return false;
           foreach (Item it in inventory1.Items) {
-            if (Rules.CanActorUnequipItem(m_Player, it)) return true;
+            if (m_Player.CanUnequip(it)) return true;
           }
           return false;
         case AdvisorHint.ITEM_EQUIP:

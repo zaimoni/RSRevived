@@ -496,7 +496,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionDropItem BehaviorDropItem(Item it)
     {
       if (it == null) return null;
-      if (Rules.CanActorUnequipItem(m_Actor, it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
+      if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
       MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
       ActionDropItem tmp = new ActionDropItem(m_Actor, it);
       return (tmp.IsLegal() ? tmp : null);
