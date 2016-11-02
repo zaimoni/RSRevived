@@ -600,45 +600,32 @@ namespace djack.RogueSurvivor.Data
       return GetItemsAt(new Point(x, y));
     }
 
-    public djack.RogueSurvivor.Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
+    public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
     {
       Inventory itemsAt = GetItemsAt(pos);
       if (itemsAt == null || itemsAt.IsEmpty) return null;
-      Item tmp = itemsAt.GetFirstMatching((Predicate<Item>) (it =>
-      {
-        djack.RogueSurvivor.Engine.Items.ItemTrap itemTrap = it as djack.RogueSurvivor.Engine.Items.ItemTrap;
-        if (itemTrap != null) return itemTrap.IsActivated;
-        return false;
-      }));
-      return tmp as djack.RogueSurvivor.Engine.Items.ItemTrap;
+      return itemsAt.GetFirstMatching<Engine.Items.ItemTrap>(it => it.IsActivated);
     }
 
     public Point? GetGroundInventoryPosition(Inventory groundInv)
     {
-      foreach (KeyValuePair<Point, Inventory> keyValuePair in m_GroundItemsByPosition)
-      {
-        if (keyValuePair.Value == groundInv)
-          return new Point?(keyValuePair.Key);
+      foreach (KeyValuePair<Point, Inventory> keyValuePair in m_GroundItemsByPosition) {
+        if (keyValuePair.Value == groundInv) return keyValuePair.Key;
       }
-      return new Point?();
+      return null;
     }
 
     public void DropItemAt(Item it, Point position)
     {
-      if (it == null)
-        throw new ArgumentNullException("item");
-      if (!IsInBounds(position))
-        throw new ArgumentOutOfRangeException("position out of map bounds");
+      Contract.Requires(null != it);
+      Contract.Requires(IsInBounds(position));
       Inventory itemsAt = GetItemsAt(position);
-      if (itemsAt == null)
-      {
+      if (itemsAt == null) {
         Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
-                m_aux_GroundItemsList.Add(inventory);
-                m_GroundItemsByPosition.Add(position, inventory);
+        m_aux_GroundItemsList.Add(inventory);
+        m_GroundItemsByPosition.Add(position, inventory);
         inventory.AddAll(it);
-      }
-      else if (itemsAt.IsFull)
-      {
+      } else if (itemsAt.IsFull) {
         int quantity = it.Quantity;
         int quantityAdded;
         itemsAt.AddAsMuchAsPossible(it, out quantityAdded);

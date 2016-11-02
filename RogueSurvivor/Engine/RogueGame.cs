@@ -4522,7 +4522,7 @@ namespace djack.RogueSurvivor.Engine
       } else {
         Point position = pointList[m_Rules.Roll(0, pointList.Count)];
         int chance = m_Rules.CorpseReviveChance(actor, corpse);
-        Item firstMatching = actor.Inventory.GetFirstMatching((Predicate<Item>) (it => it.Model == GameItems.MEDIKIT));
+        Item firstMatching = actor.Inventory.GetFirstByModel(GameItems.MEDIKIT);
         actor.Inventory.Consume(firstMatching);
         if (m_Rules.RollChance(chance)) {
           corpse.DeadGuy.IsDead = false;
@@ -6244,7 +6244,7 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.FLASHLIGHT:
           return m_Player.Inventory.Has<ItemLight>();
         case AdvisorHint.CELLPHONES:
-          return m_Player.Inventory.GetFirstByModel((ItemModel)GameItems.CELL_PHONE) != null;
+          return m_Player.Inventory.GetFirstByModel(GameItems.CELL_PHONE) != null;
         case AdvisorHint.SPRAYS_PAINT:
           return m_Player.Inventory.Has<ItemSprayPaint>();
         case AdvisorHint.SPRAYS_SCENT:

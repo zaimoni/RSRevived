@@ -234,6 +234,7 @@ namespace djack.RogueSurvivor.Data
       return tList;
     }
 
+/*
     public Item GetFirstMatching(Predicate<Item> fn)
     {
       foreach (Item mItem in m_Items)
@@ -243,6 +244,7 @@ namespace djack.RogueSurvivor.Data
       }
       return (Item) null;
     }
+*/
 
     public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
     {
