@@ -8,8 +8,8 @@
 
 using System;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -1033,32 +1033,25 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(GameOptions options, string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options...");
-      IFormatter formatter = GameOptions.CreateFormatter();
-      Stream stream = GameOptions.CreateStream(filepath, true);
-      formatter.Serialize(stream, (object) options);
-      stream.Flush();
-      stream.Close();
+      using (Stream stream = GameOptions.CreateStream(filepath, true)) {
+        (new BinaryFormatter()).Serialize(stream, (object) options);
+        stream.Flush();
+	  };
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options... done!");
     }
 
     public static GameOptions Load(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
       GameOptions gameOptions;
-      try
-      {
-        IFormatter formatter = GameOptions.CreateFormatter();
-        Stream stream = GameOptions.CreateStream(filepath, false);
-        gameOptions = (GameOptions) formatter.Deserialize(stream);
-        stream.Close();
-      }
-      catch (Exception ex)
-      {
+      try {
+        using (Stream stream = GameOptions.CreateStream(filepath, false)) {
+          gameOptions = (GameOptions)(new BinaryFormatter()).Deserialize(stream);
+		};
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load options (no custom options?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning default values.");
@@ -1067,11 +1060,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options... done!");
       return gameOptions;
-    }
-
-    private static IFormatter CreateFormatter()
-    {
-      return (IFormatter) new BinaryFormatter();
     }
 
     private static Stream CreateStream(string saveFileName, bool save)

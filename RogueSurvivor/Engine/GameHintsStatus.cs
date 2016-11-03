@@ -51,11 +51,10 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
-      IFormatter formatter = GameHintsStatus.CreateFormatter();
-      Stream stream = GameHintsStatus.CreateStream(filepath, true);
-      formatter.Serialize(stream, (object) hints);
-      stream.Flush();
-      stream.Close();
+      using (Stream stream = GameHintsStatus.CreateStream(filepath, true)) {
+        (new BinaryFormatter()).Serialize(stream, hints);
+        stream.Flush();
+	  };
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints... done!");
     }
 
@@ -65,10 +64,9 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
-        IFormatter formatter = GameHintsStatus.CreateFormatter();
-        Stream stream = GameHintsStatus.CreateStream(filepath, false);
-        gameHintsStatus = (GameHintsStatus) formatter.Deserialize(stream);
-        stream.Close();
+        using (Stream stream = GameHintsStatus.CreateStream(filepath, false)) {
+          gameHintsStatus = (GameHintsStatus)(new BinaryFormatter()).Deserialize(stream);
+		};
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
@@ -78,11 +76,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options... done!");
       return gameHintsStatus;
-    }
-
-    private static IFormatter CreateFormatter()
-    {
-      return new BinaryFormatter();
     }
 
     private static Stream CreateStream(string saveFileName, bool save)

@@ -234,7 +234,7 @@ namespace djack.RogueSurvivor.Engine
       if (filepath == null) throw new ArgumentNullException("filepath");
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
       using (Stream stream = Session.CreateStream(filepath, true)) {
-        Session.CreateFormatter().Serialize(stream, (object) session);
+        (new BinaryFormatter()).Serialize(stream, (object) session);
         stream.Flush();
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
@@ -246,12 +246,12 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
 #if DEBUG
         using (Stream stream = Session.CreateStream(filepath, false)) {
-          Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
+          Session.s_TheSession = (Session) (new BinaryFormatter()).Deserialize(stream);
         }
 #else
       try {
         using (Stream stream = Session.CreateStream(filepath, false)) {
-          Session.s_TheSession = (Session) Session.CreateFormatter().Deserialize(stream);
+          Session.s_TheSession = (Session) (new BinaryFormatter()).Deserialize(stream);
         }
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
@@ -259,7 +259,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 #endif
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
+			Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
 
@@ -342,11 +342,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "deleting saved game... done!");
       return flag;
-    }
-
-    private static IFormatter CreateFormatter()
-    {
-      return (IFormatter) new BinaryFormatter();
     }
 
     private static IFormatter CreateSoapFormatter()

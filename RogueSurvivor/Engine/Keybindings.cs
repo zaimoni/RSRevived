@@ -8,9 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -124,14 +124,12 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(Keybindings kb, string filepath)
     {
-      if (kb == null)
-        throw new ArgumentNullException("kb");
+	  Contract.Requires(null != kb);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
-      IFormatter formatter = Keybindings.CreateFormatter();
-      Stream stream = Keybindings.CreateStream(filepath, true);
-      formatter.Serialize(stream, (object) kb);
-      stream.Flush();
-      stream.Close();
+	  using (Stream stream = Keybindings.CreateStream(filepath, true)) {
+        (new BinaryFormatter()).Serialize(stream, (object) kb);
+        stream.Flush();
+	  };
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
     }
 
@@ -139,15 +137,11 @@ namespace djack.RogueSurvivor.Engine
     {
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
       Keybindings keybindings;
-      try
-      {
-        IFormatter formatter = Keybindings.CreateFormatter();
-        Stream stream = Keybindings.CreateStream(filepath, false);
-        keybindings = (Keybindings) formatter.Deserialize(stream);
-        stream.Close();
-      }
-      catch (Exception ex)
-      {
+      try {
+        using (Stream stream = Keybindings.CreateStream(filepath, false)) {
+          keybindings = (Keybindings) (new BinaryFormatter()).Deserialize(stream);
+		};
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         keybindings = new Keybindings();
@@ -155,11 +149,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... done!");
       return keybindings;
-    }
-
-    private static IFormatter CreateFormatter()
-    {
-      return (IFormatter) new BinaryFormatter();
     }
 
     private static Stream CreateStream(string saveName, bool save)

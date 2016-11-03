@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
 
@@ -78,11 +77,10 @@ namespace djack.RogueSurvivor.Engine
 	  Contract.Requires(null != table);
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
-      IFormatter formatter = HiScoreTable.CreateFormatter();
-      Stream stream = HiScoreTable.CreateStream(filepath, true);
-      formatter.Serialize(stream, (object) table);
-      stream.Flush();
-      stream.Close();
+      using (Stream stream = HiScoreTable.CreateStream(filepath, true)) {
+        (new BinaryFormatter()).Serialize(stream, (object) table);
+        stream.Flush();
+	  };
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
     }
 
@@ -92,10 +90,9 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {
-        IFormatter formatter = HiScoreTable.CreateFormatter();
-        Stream stream = HiScoreTable.CreateStream(filepath, false);
-        hiScoreTable = (HiScoreTable) formatter.Deserialize(stream);
-        stream.Close();
+		using (Stream stream = HiScoreTable.CreateStream(filepath, false)) { 
+          hiScoreTable = (HiScoreTable)(new BinaryFormatter()).Deserialize(stream);
+		};
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
@@ -103,11 +100,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table... done!");
       return hiScoreTable;
-    }
-
-    private static IFormatter CreateFormatter()
-    {
-      return new BinaryFormatter();
     }
 
     private static Stream CreateStream(string saveFileName, bool save)
