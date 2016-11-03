@@ -402,7 +402,7 @@ namespace djack.RogueSurvivor.Engine
             if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
           }
-          return (IsSwitchableFor(actor, powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
+          return (actor.CanSwitch(powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
         }
       }
       return null;
@@ -417,26 +417,6 @@ namespace djack.RogueSurvivor.Engine
     public ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
     {
       return IsBumpableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
-    }
-
-    public bool IsSwitchableFor(Actor actor, PowerGenerator powGen, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (powGen == null)
-        throw new ArgumentNullException("powGen");
-      if (!actor.Model.Abilities.CanUseMapObjects)
-      {
-        reason = "cannot use map objects";
-        return false;
-      }
-      if (actor.IsSleeping)
-      {
-        reason = "is sleeping";
-        return false;
-      }
-      reason = "";
-      return true;
     }
 
     public bool CanActorLeaveMap(Actor actor, out string reason)

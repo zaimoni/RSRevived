@@ -15,6 +15,7 @@ using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
 using Skills = djack.RogueSurvivor.Gameplay.Skills;
+using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -986,6 +987,27 @@ namespace djack.RogueSurvivor.Data
     public bool CanBarricade(DoorWindow door)
     {
       return string.IsNullOrEmpty(ReasonCantBarricade(door));
+    }
+
+	// leave the dead parameter in there, for now.
+	// E.g., non-CHAR power generators might actually *need fuel*
+	private string ReasonCantSwitch(PowerGenerator powGen)
+	{
+	  Contract.Requires(null != powGen);
+      if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
+      if (IsSleeping) return "is sleeping";
+      return "";
+	}
+
+    public bool CanSwitch(PowerGenerator powGen, out string reason)
+    {
+	  reason = ReasonCantSwitch(powGen);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanSwitch(PowerGenerator powGen)
+    {
+	  return string.IsNullOrEmpty(ReasonCantSwitch(powGen));
     }
 
     // event timing

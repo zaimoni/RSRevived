@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.IsSwitchableFor(m_Actor, m_PowGen, out m_FailReason);
+      return m_Actor.CanSwitch(m_PowGen, out m_FailReason);
     }
 
     public override void Perform()
