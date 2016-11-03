@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Item
   {
-    private int m_ModelID;
+    private readonly int m_ModelID;
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
@@ -24,11 +24,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public virtual string ImageID {
-      get {
-        return Model.ImageID;
-      }
-    }
+    public virtual string ImageID { get { return Model.ImageID; } }
 
     public string TheName {
       get {
@@ -46,8 +42,7 @@ namespace djack.RogueSurvivor.Data
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural)
           return "some " + model.PluralName;
-        if (model.IsAn)
-          return "an " + model.SingleName;
+        if (model.IsAn) return "an " + model.SingleName;
         return "a " + model.SingleName;
       }
     }
@@ -88,12 +83,10 @@ namespace djack.RogueSurvivor.Data
       EquippedPart = DollPart.NONE;
     }
 
-    public bool IsUnique { get; set; }
-    public bool IsForbiddenToAI { get; set; }
+    public bool IsUnique { get { return Model.IsUnique; } }
+    public bool IsForbiddenToAI { get { return Model.IsForbiddenToAI; } }
 
-    public virtual bool IsUseless {
-      get { return false; }
-    }
+    public virtual bool IsUseless { get { return false; } }
 
     public Item(ItemModel model)
     {

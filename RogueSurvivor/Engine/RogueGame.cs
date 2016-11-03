@@ -12120,9 +12120,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.STRONG,5);
       named.StartingSkill(Skills.IDs.TOUGH,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT) {
-          IsUnique = true
-      });
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT));
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
@@ -12146,9 +12144,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs._FIRST,5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA) {
-          IsUnique = true
-      });
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
@@ -12172,10 +12168,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.AWAKE,5);
       named.StartingSkill(Skills.IDs.FIREARMS,5);
-      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN)
-      {
-          IsUnique = true
-      });
+      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN));
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
@@ -12199,9 +12192,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.LEADERSHIP,5);
       named.StartingSkill(Skills.IDs.CHARISMATIC,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD) {
-          IsUnique = true
-      });
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD));
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
@@ -12250,10 +12241,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.FIREARMS,5);
       named.StartingSkill(Skills.IDs.LEADERSHIP,5);
       named.StartingSkill(Skills.IDs.NECROLOGY,5);
-      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_HANS_VON_HANZ_PISTOL)
-      {
-          IsUnique = true
-      });
+      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_HANS_VON_HANZ_PISTOL));
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
@@ -12270,16 +12258,11 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
     {
-      Item it = new Item(GameItems.UNIQUE_SUBWAY_BADGE)
-      {
-        IsUnique = true,
-        IsForbiddenToAI = true
-      };
+      Item it = new Item(GameItems.UNIQUE_SUBWAY_BADGE);
+      // we intentionally do not take advantage of the current subway layout algorithm
       List<Map> mapList = new List<Map>();
-      for (int index1 = 0; index1 < world.Size; ++index1)
-      {
-        for (int index2 = 0; index2 < world.Size; ++index2)
-        {
+      for (int index1 = 0; index1 < world.Size; ++index1) {
+        for (int index2 = 0; index2 < world.Size; ++index2) {
           if (world[index1, index2].HasSubway)
             mapList.Add(world[index1, index2].SubwayMap);
         }

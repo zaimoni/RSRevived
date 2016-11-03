@@ -21,6 +21,8 @@ namespace djack.RogueSurvivor.Data
     public DollPart EquipmentPart { get; set; }
     public bool DontAutoEquip { get; set; }
     public bool IsUnbreakable { get; set; }
+    public bool IsUnique { get; set; }
+    public bool IsForbiddenToAI { get; set; }
 
     public string SingleName
     {
@@ -32,7 +34,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-        public int StackingLimit
+    public int StackingLimit
     {
       get { return m_StackingLimit; }
       set
@@ -42,10 +44,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsEquipable
-    {
-      get
-      {
+    public bool IsEquipable {
+      get {
         return EquipmentPart != DollPart.NONE;
       }
     }
@@ -61,6 +61,5 @@ namespace djack.RogueSurvivor.Data
     {
       return 0 <= "AEIOUaeiou".IndexOf(name[0]);
     }
-
-    }
+  }
 }
