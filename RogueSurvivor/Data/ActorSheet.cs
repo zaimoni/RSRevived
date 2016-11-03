@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Data
   {
     [NonSerialized]
     public static readonly ActorSheet BLANK = new ActorSheet(0, 0, 0, 0, 0, Attack.BLANK, Defence.BLANK, 0, 0, 0, 0);
-    private SkillTable m_SkillTable = new SkillTable(); // this must not be null.  readonly is incompatible with automatically generated serialization
+    private readonly SkillTable m_SkillTable = new SkillTable();
 
     public int BaseHitPoints { get; private set; }
     public int BaseStaminaPoints { get; private set; }
@@ -63,8 +63,7 @@ namespace djack.RogueSurvivor.Data
       BaseAudioRange = copyFrom.BaseAudioRange;
       BaseSmellRating = copyFrom.BaseSmellRating;
       BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
-      if (copyFrom.SkillTable.Skills == null) return;
-      m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
+      if (null != copyFrom.SkillTable.Skills) m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
     }
   }
 }

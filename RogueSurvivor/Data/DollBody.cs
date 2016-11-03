@@ -12,29 +12,13 @@ namespace djack.RogueSurvivor.Data
   internal class DollBody
   {
     public static readonly DollBody UNDEF = new DollBody(true, 0);
-    private bool m_IsMale;
-    private int m_Speed;
-
-    public bool IsMale
-    {
-      get
-      {
-        return m_IsMale;
-      }
-    }
-
-    public int Speed
-    {
-      get
-      {
-        return m_Speed;
-      }
-    }
+    public readonly bool IsMale;
+    public readonly int Speed;
 
     public DollBody(bool isMale, int speed)
     {
-            m_IsMale = isMale;
-            m_Speed = speed;
+      IsMale = isMale;
+      Speed = speed;
     }
   }
 }

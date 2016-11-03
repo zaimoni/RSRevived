@@ -54,53 +54,33 @@ namespace djack.RogueSurvivor.Data
       Direction.S,
       Direction.W
     };
-    private int m_Index;
-    private string m_Name;
-    private Point m_Vector;
-    private PointF m_NormalizedVector;
+    private readonly int m_Index;
+    private readonly string m_Name;
+    private readonly Point m_Vector;
+    private readonly PointF m_NormalizedVector;
 
-    public int Index
-    {
-      get
-      {
-        return m_Index;
-      }
-    }
-
-    public string Name
-    {
-      get
-      {
-        return m_Name;
-      }
-    }
-
-    public Point Vector
-    {
-      get
-      {
+    public Point Vector {
+      get {
         return m_Vector;
       }
     }
 
-    public PointF NormalizedVector
-    {
-      get
-      {
+    public PointF NormalizedVector {
+      get {
         return m_NormalizedVector;
       }
     }
 
     private Direction(int index, string name, Point vector)
     {
-            m_Index = index;
-            m_Name = name;
-            m_Vector = vector;
+      m_Index = index;
+      m_Name = name;
+      m_Vector = vector;
       float num = (float) Math.Sqrt((double) (vector.X * vector.X + vector.Y * vector.Y));
-      if ((double) num != 0.0)
-                m_NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
+      if (num != 0.0f)
+        m_NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
       else
-                m_NormalizedVector = PointF.Empty;
+        m_NormalizedVector = PointF.Empty;
     }
 
     public static Point operator +(Point lhs, Direction rhs)
@@ -115,27 +95,23 @@ namespace djack.RogueSurvivor.Data
 
     public static Point operator *(int lhs, Direction rhs)
     {
-        return new Point(lhs * rhs.Vector.X, lhs * rhs.Vector.Y);
+      return new Point(lhs * rhs.Vector.X, lhs * rhs.Vector.Y);
     }
 
     public static Direction FromVector(Point v)
     {
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        if (direction.Vector == v)
-          return direction;
+      foreach (Direction direction in Direction.COMPASS) {
+        if (direction.Vector == v) return direction;
       }
-      return (Direction) null;
+      return null;
     }
 
     public static Direction FromVector(int vx, int vy)
     {
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        if (direction.Vector.X == vx & direction.Vector.Y == vy)
-          return direction;
+      foreach (Direction direction in Direction.COMPASS) {
+        if (direction.Vector.X == vx & direction.Vector.Y == vy) return direction;
       }
-      return (Direction) null;
+      return null;
     }
 
     public static Direction To(int xFrom, int yFrom, int xTo, int yTo)
@@ -145,8 +121,7 @@ namespace djack.RogueSurvivor.Data
         int xDeltaSgn = (0 == xDelta ? 0 : (0 < xDelta ? 1 : -1));
         int yDeltaSgn = (0 == yDelta ? 0 : (0 < yDelta ? 1 : -1));
         int dirCode = 3 * xDeltaSgn + yDeltaSgn;
-        switch (dirCode)
-        {
+        switch (dirCode) {
         case -3: return Direction.W;
         case -1: return Direction.N;
         case 0: return Direction.NEUTRAL;
@@ -260,17 +235,14 @@ diagonalExit:
     {
       PointF pointF = (PointF) v;
       float num1 = (float) Math.Sqrt((double) pointF.X * (double) pointF.X + (double) pointF.Y * (double) pointF.Y);
-      if ((double) num1 == 0.0)
-        return Direction.N;
+      if ((double) num1 == 0.0) return Direction.N;
       pointF.X /= num1;
       pointF.Y /= num1;
       float num2 = float.MaxValue;
       Direction direction1 = Direction.N;
-      foreach (Direction direction2 in Direction.COMPASS)
-      {
+      foreach (Direction direction2 in Direction.COMPASS) {
         float num3 = Math.Abs(pointF.X - direction2.NormalizedVector.X) + Math.Abs(pointF.Y - direction2.NormalizedVector.Y);
-        if ((double) num3 < (double) num2)
-        {
+        if ((double) num3 < (double) num2) {
           direction1 = direction2;
           num2 = num3;
         }

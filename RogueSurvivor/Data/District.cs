@@ -7,15 +7,16 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class District
   {
-    private List<Map> m_Maps = new List<Map>(3);
+    private readonly List<Map> m_Maps = new List<Map>(3);
     private Point m_WorldPosition;
-    private DistrictKind m_Kind;
+    private readonly DistrictKind m_Kind;
     private string m_Name;
     private Map m_EntryMap;
     private Map m_SewersMap;
@@ -42,22 +43,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Map> Maps
-    {
+    public IEnumerable<Map> Maps {
       get {
-        return (IEnumerable<Map>)m_Maps;
+        return m_Maps;
       }
     }
 
-    public int CountMaps
-    {
+    public int CountMaps {
       get {
         return m_Maps.Count;
       }
     }
 
-    public Map EntryMap
-    {
+    public Map EntryMap {
       get {
         return m_EntryMap;
       }
@@ -79,8 +77,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Map SewersMap
-    {
+    public Map SewersMap {
       get {
         return m_SewersMap;
       }
@@ -92,8 +89,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Map SubwayMap
-    {
+    public Map SubwayMap {
       get {
         return m_SubwayMap;
       }
@@ -105,8 +101,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool HasSubway
-    {
+    public bool HasSubway {
       get {
         return m_SubwayMap != null;
       }
@@ -121,7 +116,7 @@ namespace djack.RogueSurvivor.Data
     // map manipulation
     protected void AddMap(Map map)
     {
-      if (map == null) throw new ArgumentNullException("map");
+      Contract.Requires(null != map);
       if (m_Maps.Contains(map)) return;
       map.District = this;
       m_Maps.Add(map);
@@ -139,7 +134,7 @@ namespace djack.RogueSurvivor.Data
 
     protected void RemoveMap(Map map)
     {
-      if (map == null) throw new ArgumentNullException("map");
+      Contract.Requires(null != map);
       m_Maps.Remove(map);
       map.District = null;
     }

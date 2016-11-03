@@ -13,8 +13,8 @@ namespace djack.RogueSurvivor
 {
   public class Bugreport : Form
   {
-    private string NL = Environment.NewLine;
-    private Exception m_Exception;
+    private readonly string NL = Environment.NewLine;
+    private readonly Exception m_Exception;
     private IContainer components;
     private Button m_OkButton;
     private TextBox m_HeaderTextBox;

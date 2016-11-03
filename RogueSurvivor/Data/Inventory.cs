@@ -13,45 +13,21 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Inventory
   {
-    private List<Item> m_Items;
+    private readonly List<Item> m_Items;
     public int MaxCapacity { get; set; }    // Actor requires a public setter
 
-    public IEnumerable<Item> Items {
-      get {
-        return m_Items;
-      }
-    }
+    public IEnumerable<Item> Items { get { return m_Items; } }
+    public int CountItems { get { return m_Items.Count; } }
 
-    public int CountItems {
+    public Item this[int index] {
       get {
-        return m_Items.Count;
-      }
-    }
-
-    public Item this[int index]
-    {
-      get
-      {
         if (index < 0 || index >= m_Items.Count) return null;
         return m_Items[index];
       }
     }
 
-    public bool IsEmpty
-    {
-      get
-      {
-        return m_Items.Count == 0;
-      }
-    }
-
-    public bool IsFull
-    {
-      get
-      {
-        return m_Items.Count >= MaxCapacity;
-      }
-    }
+    public bool IsEmpty { get { return m_Items.Count == 0; } }
+    public bool IsFull { get { return m_Items.Count >= MaxCapacity; } }
 
     public Item TopItem {
       get {
@@ -69,7 +45,7 @@ namespace djack.RogueSurvivor.Data
 
     public Inventory(int maxCapacity)
     {
-      if (maxCapacity < 0) throw new ArgumentOutOfRangeException("maxCapacity < 0");
+      Contract.Requires(0 <= maxCapacity);
       MaxCapacity = maxCapacity;
       m_Items = new List<Item>(1);
     }
@@ -222,12 +198,9 @@ namespace djack.RogueSurvivor.Data
     {
       List<_T_> tList = (List<_T_>) null;
       Type type = typeof (_T_);
-      foreach (Item mItem in m_Items)
-      {
-        if (mItem.GetType() == type)
-        {
-          if (tList == null)
-            tList = new List<_T_>(m_Items.Count);
+      foreach (Item mItem in m_Items) {
+        if (mItem.GetType() == type) {
+          if (tList == null) tList = new List<_T_>(m_Items.Count);
           tList.Add(mItem as _T_);
         }
       }
@@ -258,20 +231,16 @@ namespace djack.RogueSurvivor.Data
     public int CountItemsMatching(Predicate<Item> fn)
     {
       int num = 0;
-      foreach (Item mItem in m_Items)
-      {
-        if (fn(mItem))
-          ++num;
+      foreach (Item mItem in m_Items) {
+        if (fn(mItem)) ++num;
       }
       return num;
     }
 
     public bool HasItemMatching(Predicate<Item> fn)
     {
-      foreach (Item mItem in m_Items)
-      {
-        if (fn(mItem))
-          return true;
+      foreach (Item mItem in m_Items) {
+        if (fn(mItem)) return true;
       }
       return false;
     }

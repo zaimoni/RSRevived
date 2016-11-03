@@ -70,7 +70,7 @@ namespace djack.RogueSurvivor.Data
     private string m_Name;
     private ActorController m_Controller;
     private ActorSheet m_Sheet;
-    private int m_SpawnTime;
+    private readonly int m_SpawnTime;
     private Inventory m_Inventory;
     private Doll m_Doll;
     private int m_HitPoints;
