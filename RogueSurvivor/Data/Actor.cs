@@ -66,7 +66,7 @@ namespace djack.RogueSurvivor.Data
     private Actor.Flags m_Flags;
     private int m_ModelID;
     private int m_FactionID;
-    private int m_GangID;
+    private Gameplay.GameGangs.IDs m_GangID;
     private string m_Name;
     private ActorController m_Controller;
     private ActorSheet m_Sheet;
@@ -213,7 +213,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int GangID {
+    public Gameplay.GameGangs.IDs GangID {
       get {
         return m_GangID;
       }

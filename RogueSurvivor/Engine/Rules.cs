@@ -1185,9 +1185,9 @@ namespace djack.RogueSurvivor.Engine
         }
         else if (observer.Faction.ID == (int) GameFactions.IDs.TheBikers)
         {
-          if (itemBodyArmor.IsHostileForBiker((GameGangs.IDs) observer.GangID))
+          if (itemBodyArmor.IsHostileForBiker(observer.GangID))
             num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
-          else if (itemBodyArmor.IsFriendlyForBiker((GameGangs.IDs) observer.GangID))
+          else if (itemBodyArmor.IsFriendlyForBiker(observer.GangID))
             num2 += Rules.UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
         }
       }

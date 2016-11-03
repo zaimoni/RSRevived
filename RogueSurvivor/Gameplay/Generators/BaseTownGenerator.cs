@@ -3242,7 +3242,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
     {
       Actor numberedName = m_Game.GameActors.BikerMan.CreateNumberedName(m_Game.GameFactions.TheBikers, spawnTime);
-      numberedName.GangID = (int) gangId;
+      numberedName.GangID = gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Controller = new GangAI();
@@ -3257,7 +3257,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
     {
       Actor numberedName = m_Game.GameActors.GangstaMan.CreateNumberedName(m_Game.GameFactions.TheGangstas, spawnTime);
-      numberedName.GangID = (int) gangId;
+      numberedName.GangID = gangId;
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Controller = (ActorController) new GangAI();

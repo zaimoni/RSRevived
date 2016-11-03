@@ -10,6 +10,8 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class GameGangs
   {
+	private const int MAX_GANGS = 5;
+
     public static readonly GameGangs.IDs[] GANGSTAS = new GameGangs.IDs[2]
     {
       GameGangs.IDs.GANGSTA_CRAPS,
@@ -20,7 +22,7 @@ namespace djack.RogueSurvivor.Gameplay
       GameGangs.IDs.BIKER_HELLS_SOULS,
       GameGangs.IDs.BIKER_FREE_ANGELS
     };
-    public static readonly string[] NAMES = new string[5]
+    public static readonly string[] NAMES = new string[MAX_GANGS]
     {
       "(no gang)",
       "Hell's Souls",
@@ -28,7 +30,7 @@ namespace djack.RogueSurvivor.Gameplay
       "Craps",
       "Floods"
     };
-    public static readonly GameItems.IDs[][] BAD_GANG_OUTFITS = new GameItems.IDs[5][]
+    public static readonly GameItems.IDs[][] BAD_GANG_OUTFITS = new GameItems.IDs[MAX_GANGS][]
     {
       new GameItems.IDs[0],
       new GameItems.IDs[3]
@@ -58,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay
         GameItems.IDs.ARMOR_POLICE_RIOT
       }
     };
-    public static readonly GameItems.IDs[][] GOOD_GANG_OUTFITS = new GameItems.IDs[5][]
+    public static readonly GameItems.IDs[][] GOOD_GANG_OUTFITS = new GameItems.IDs[MAX_GANGS][]
     {
       new GameItems.IDs[0],
       new GameItems.IDs[1]

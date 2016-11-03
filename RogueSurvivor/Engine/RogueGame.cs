@@ -6977,7 +6977,7 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>(10);
       if (actor.Faction != null) {
         if (actor.IsInAGang)
-          stringList.Add(string.Format("{0}, {1}-{2}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName, (object) GameGangs.NAMES[actor.GangID]));
+          stringList.Add(string.Format("{0}, {1}-{2}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName, (object) GameGangs.NAMES[(int)actor.GangID]));
         else
           stringList.Add(string.Format("{0}, {1}.", (object)Capitalize(actor.Name), (object) actor.Faction.MemberName));
       } else
