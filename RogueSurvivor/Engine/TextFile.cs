@@ -7,50 +7,44 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
   internal class TextFile
   {
-    private List<string> m_RawLines;
-    private List<string> m_FormatedLines;
+    private readonly List<string> m_RawLines = new List<string>();
+    private readonly List<string> m_FormatedLines = new List<string>();
 
-    public IEnumerable<string> RawLines
-    {
-      get
-      {
-        return (IEnumerable<string>)m_RawLines;
+    public IEnumerable<string> RawLines {
+      get {
+        return m_RawLines;
       }
     }
 
-    public List<string> FormatedLines
-    {
-      get
-      {
+    public List<string> FormatedLines {
+      get {
         return m_FormatedLines;
       }
     }
 
     public TextFile()
     {
-            m_RawLines = new List<string>();
     }
 
     public bool Load(string fileName)
     {
-      try
-      {
+	  Contract.Requires(!string.IsNullOrEmpty(fileName));
+      try {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading text file {0}...", (object) fileName));
-        StreamReader streamReader = File.OpenText(fileName);
-                m_RawLines = new List<string>();
-        while (!streamReader.EndOfStream)
-                    m_RawLines.Add(streamReader.ReadLine());
-        streamReader.Close();
+		using (StreamReader streamReader = File.OpenText(fileName)) {
+	      m_RawLines.Clear();
+		  while (!streamReader.EndOfStream)
+		    m_RawLines.Add(streamReader.ReadLine());
+		}
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading exception: {0}", (object) ex.ToString()));
         return false;
       }
@@ -58,15 +52,13 @@ namespace djack.RogueSurvivor.Engine
 
     public bool Save(string fileName)
     {
-      try
-      {
+	  Contract.Requires(!string.IsNullOrEmpty(fileName));
+      try {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Saving text file {0}...", (object) fileName));
         File.WriteAllLines(fileName, m_RawLines.ToArray());
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "done!");
         return true;
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Saving exception: {0}", (object) ex.ToString()));
         return false;
       }
@@ -74,25 +66,23 @@ namespace djack.RogueSurvivor.Engine
 
     public void Append(string line)
     {
-            m_RawLines.Add(line);
+      m_RawLines.Add(line);
     }
 
     public void FormatLines(int charsPerLine)
     {
-      if (m_RawLines == null || m_RawLines.Count == 0)
-        return;
-            m_FormatedLines = new List<string>(m_RawLines.Count);
-      for (int index = 0; index < m_RawLines.Count; ++index)
-      {
+      if (m_RawLines == null || m_RawLines.Count == 0) return;
+      m_FormatedLines.Clear();
+	  m_FormatedLines.Capacity = m_RawLines.Count;
+      for (int index = 0; index < m_RawLines.Count; ++index) {
         string str1;
         string str2;
-        for (str1 = m_RawLines[index]; str1.Length > charsPerLine; str1 = str2)
-        {
+        for (str1 = m_RawLines[index]; str1.Length > charsPerLine; str1 = str2) {
           string str3 = str1.Substring(0, charsPerLine);
           str2 = str1.Remove(0, charsPerLine);
-                    m_FormatedLines.Add(str3);
+          m_FormatedLines.Add(str3);
         }
-                m_FormatedLines.Add(str1);
+        m_FormatedLines.Add(str1);
       }
     }
   }

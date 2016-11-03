@@ -20,10 +20,9 @@ namespace Zaimoni.Data
 
         public FloodfillPathfinder(Func<T, Dictionary<T,int>> Forward, Func<T,Dictionary<T, int>> Inverse, Func<T, bool> InDomain)
         {
-            if (null == Forward) throw new ArgumentNullException("Forward");
-            if (null == Inverse) throw new ArgumentNullException("Inverse");
-            if (null == InDomain) throw new ArgumentNullException("InDomain");
-            Contract.EndContractBlock();
+			Contract.Requires(null != Forward);
+			Contract.Requires(null != Inverse);
+			Contract.Requires(null != InDomain);
             _blacklist = new HashSet<T>();
             _inDomain = InDomain;   // required
             _map = new Dictionary<T, int>();
@@ -44,9 +43,8 @@ namespace Zaimoni.Data
         // retain domain and blacklist, change specification of forward and inverse which invalidates the map itself
         public FloodfillPathfinder(FloodfillPathfinder<T> src, Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse)
         {
-            if (null == Forward) throw new ArgumentNullException("Forward");
-            if (null == Inverse) throw new ArgumentNullException("Inverse");
-            Contract.EndContractBlock();
+			Contract.Requires(null != Forward);
+			Contract.Requires(null != Inverse);
             _blacklist = new HashSet<T>(src._blacklist);
             _inDomain = src._inDomain;
             _map = new Dictionary<T, int>();
@@ -73,11 +71,9 @@ namespace Zaimoni.Data
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
         public void GoalDistance(IEnumerable<T> goals, int max_depth, T start)
         {
-            if (null == start) throw new ArgumentNullException("start");
-            if (null == goals) throw new ArgumentNullException("goals");
-            Contract.EndContractBlock();
+            Contract.Requires(null != start);
+            Contract.Requires(null != goals);
             if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
-//          Contract.EndContractBlock();
             _map.Clear();
             Queue<T> gen0 = new Queue<T>();
             foreach(T tmp in goals) {

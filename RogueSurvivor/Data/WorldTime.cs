@@ -28,11 +28,9 @@ namespace djack.RogueSurvivor.Data
     {
       get {
         Contract.Ensures(0<= m_TurnCounter);
-        Contract.Ensures(0<= m_TurnCounter);
         return m_TurnCounter;
       }
       set {
-        Contract.Requires(0<=value);
         Contract.Requires(0<=value);
         m_TurnCounter = value;
         RecomputeDate();
