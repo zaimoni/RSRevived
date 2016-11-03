@@ -6266,36 +6266,31 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null) return false;
-            return m_Rules.IsOpenableFor(m_Player, door);
+			return null != door && m_Player.CanOpen(door);
           }));
         case AdvisorHint.DOORWINDOW_CLOSE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null) return false;
-            return m_Player.CanClose(door);
+			return null != door && m_Player.CanClose(door);
           }));
         case AdvisorHint.OBJECT_PUSH:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-            if (mapObjectAt == null) return false;
-            return m_Player.CanPush(mapObjectAt);
+			return null != mapObjectAt && m_Player.CanPush(mapObjectAt);
           }));
         case AdvisorHint.OBJECT_BREAK:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-            if (mapObjectAt == null) return false;
-            return m_Player.CanBreak(mapObjectAt);
+			return null != mapObjectAt && m_Player.CanBreak(mapObjectAt);
           }));
         case AdvisorHint.BARRICADE:
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-            if (door == null) return false;
-            return m_Player.CanBarricade(door);
+			return null != door && m_Player.CanBarricade(door);
           }));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.GetExitAt(position) != null;
         case AdvisorHint.EXIT_LEAVING_DISTRICT:

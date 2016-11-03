@@ -316,8 +316,7 @@ namespace djack.RogueSurvivor.Engine
         DoorWindow door = mapObjectAt as DoorWindow;
         if (door != null) {
           if (door.IsClosed) {
-            if (IsOpenableFor(actor, door, out reason))
-              return new ActionOpenDoor(actor, door);
+            if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
             return null;
           }
@@ -464,32 +463,6 @@ namespace djack.RogueSurvivor.Engine
       if (!speaker.Model.Abilities.CanTalk)
       {
         reason = "can't talk";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public bool IsOpenableFor(Actor actor, DoorWindow door)
-    {
-      string reason;
-      return IsOpenableFor(actor, door, out reason);
-    }
-
-    public bool IsOpenableFor(Actor actor, DoorWindow door, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (door == null)
-        throw new ArgumentNullException("door");
-      if (!actor.Model.Abilities.CanUseMapObjects)
-      {
-        reason = "no ability to open";
-        return false;
-      }
-      if (!door.IsClosed || door.BarricadePoints > 0)
-      {
-        reason = "not closed nor barricaded";
         return false;
       }
       reason = "";
