@@ -39,13 +39,15 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemBodyArmorModel(string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight)
+    public ItemBodyArmorModel(string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight, string flavor)
       : base(aName, theNames, imageID)
     {
       m_Protection_Hit = protection_hit;
       m_Protection_Shot = protection_shot;
       m_Encumbrance = encumbrance;
       m_Weight = weight;
+      EquipmentPart = DollPart.TORSO;
+      FlavorDescription = flavor;
     }
 
     public Defence ToDefence()

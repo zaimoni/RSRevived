@@ -767,41 +767,13 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameItems.IDs.BAR_WOODEN_PLANK] = (ItemModel) barricadeMaterialModel1;
 
       // body armor
-      GameItems.ArmorData armorData1 = DATA_ARMOR_ARMY;
-      ItemBodyArmorModel tmpBodyArmorModel = new ItemBodyArmorModel(armorData1.NAME, armorData1.PLURAL, "Items\\item_army_bodyarmor", armorData1.PRO_HIT, armorData1.PRO_SHOT, armorData1.ENC, armorData1.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData1.FLAVOR;
-      this[GameItems.IDs.ARMOR_ARMY_BODYARMOR] = (ItemModel) tmpBodyArmorModel;
-      GameItems.ArmorData armorData2 = DATA_ARMOR_CHAR;
-      tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_CHAR_light_bodyarmor", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
-      this[GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = DATA_ARMOR_HELLS_SOULS_JACKET;
-      tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_hells_souls_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
-      this[GameItems.IDs.ARMOR_HELLS_SOULS_JACKET] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = DATA_ARMOR_FREE_ANGELS_JACKET;
-      tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_free_angels_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
-      this[GameItems.IDs.ARMOR_FREE_ANGELS_JACKET] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = DATA_ARMOR_POLICE_JACKET;
-      tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_police_jacket", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
-      this[GameItems.IDs.ARMOR_POLICE_JACKET] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = DATA_ARMOR_POLICE_RIOT;
-      tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_police_riot_armor", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
-      this[GameItems.IDs.ARMOR_POLICE_RIOT] = (ItemModel) tmpBodyArmorModel;
-      armorData2 = DATA_ARMOR_HUNTER_VEST;
-      tmpBodyArmorModel = new ItemBodyArmorModel(armorData2.NAME, armorData2.PLURAL, "Items\\item_hunter_vest", armorData2.PRO_HIT, armorData2.PRO_SHOT, armorData2.ENC, armorData2.WEIGHT);
-      tmpBodyArmorModel.EquipmentPart = DollPart.TORSO;
-      tmpBodyArmorModel.FlavorDescription = armorData2.FLAVOR;
-      this[GameItems.IDs.ARMOR_HUNTER_VEST] = (ItemModel) tmpBodyArmorModel;
+      this[GameItems.IDs.ARMOR_ARMY_BODYARMOR] = new ItemBodyArmorModel(DATA_ARMOR_ARMY.NAME, DATA_ARMOR_ARMY.PLURAL, "Items\\item_army_bodyarmor", DATA_ARMOR_ARMY.PRO_HIT, DATA_ARMOR_ARMY.PRO_SHOT, DATA_ARMOR_ARMY.ENC, DATA_ARMOR_ARMY.WEIGHT, DATA_ARMOR_ARMY.FLAVOR);
+      this[GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR] = new ItemBodyArmorModel(DATA_ARMOR_CHAR.NAME, DATA_ARMOR_CHAR.PLURAL, "Items\\item_CHAR_light_bodyarmor", DATA_ARMOR_CHAR.PRO_HIT, DATA_ARMOR_CHAR.PRO_SHOT, DATA_ARMOR_CHAR.ENC, DATA_ARMOR_CHAR.WEIGHT, DATA_ARMOR_CHAR.FLAVOR);
+      this[GameItems.IDs.ARMOR_HELLS_SOULS_JACKET] = new ItemBodyArmorModel(DATA_ARMOR_HELLS_SOULS_JACKET.NAME, DATA_ARMOR_HELLS_SOULS_JACKET.PLURAL, "Items\\item_hells_souls_jacket", DATA_ARMOR_HELLS_SOULS_JACKET.PRO_HIT, DATA_ARMOR_HELLS_SOULS_JACKET.PRO_SHOT, DATA_ARMOR_HELLS_SOULS_JACKET.ENC, DATA_ARMOR_HELLS_SOULS_JACKET.WEIGHT, DATA_ARMOR_HELLS_SOULS_JACKET.FLAVOR);
+      this[GameItems.IDs.ARMOR_FREE_ANGELS_JACKET] = new ItemBodyArmorModel(DATA_ARMOR_FREE_ANGELS_JACKET.NAME, DATA_ARMOR_FREE_ANGELS_JACKET.PLURAL, "Items\\item_free_angels_jacket", DATA_ARMOR_FREE_ANGELS_JACKET.PRO_HIT, DATA_ARMOR_FREE_ANGELS_JACKET.PRO_SHOT, DATA_ARMOR_FREE_ANGELS_JACKET.ENC, DATA_ARMOR_FREE_ANGELS_JACKET.WEIGHT, DATA_ARMOR_FREE_ANGELS_JACKET.FLAVOR);
+      this[GameItems.IDs.ARMOR_POLICE_JACKET] = new ItemBodyArmorModel(DATA_ARMOR_POLICE_JACKET.NAME, DATA_ARMOR_POLICE_JACKET.PLURAL, "Items\\item_police_jacket", DATA_ARMOR_POLICE_JACKET.PRO_HIT, DATA_ARMOR_POLICE_JACKET.PRO_SHOT, DATA_ARMOR_POLICE_JACKET.ENC, DATA_ARMOR_POLICE_JACKET.WEIGHT, DATA_ARMOR_POLICE_JACKET.FLAVOR);
+      this[GameItems.IDs.ARMOR_POLICE_RIOT] = new ItemBodyArmorModel(DATA_ARMOR_POLICE_RIOT.NAME, DATA_ARMOR_POLICE_RIOT.PLURAL, "Items\\item_police_riot_armor", DATA_ARMOR_POLICE_RIOT.PRO_HIT, DATA_ARMOR_POLICE_RIOT.PRO_SHOT, DATA_ARMOR_POLICE_RIOT.ENC, DATA_ARMOR_POLICE_RIOT.WEIGHT, DATA_ARMOR_POLICE_RIOT.FLAVOR);
+      this[GameItems.IDs.ARMOR_HUNTER_VEST] = new ItemBodyArmorModel(DATA_ARMOR_HUNTER_VEST.NAME, DATA_ARMOR_HUNTER_VEST.PLURAL, "Items\\item_hunter_vest", DATA_ARMOR_HUNTER_VEST.PRO_HIT, DATA_ARMOR_HUNTER_VEST.PRO_SHOT, DATA_ARMOR_HUNTER_VEST.ENC, DATA_ARMOR_HUNTER_VEST.WEIGHT, DATA_ARMOR_HUNTER_VEST.FLAVOR);
 
       // trackers
       GameItems.TrackerData trackerData = DATA_TRACKER_CELL_PHONE;
