@@ -293,31 +293,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorRechargeItemBattery(Actor actor, Item it, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (it == null)
-        throw new ArgumentNullException("item");
-      if (!actor.Model.Abilities.CanUseItems)
-      {
-        reason = "no ability to use items";
-        return false;
-      }
-      if (!it.IsEquipped || !actor.Inventory.Contains(it))
-      {
-        reason = "item not equipped";
-        return false;
-      }
-      if (!(it is BatteryPowered))
-      {
-        reason = "not a battery powered item";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)
     {
       Contract.Requires(null != actor);
@@ -393,13 +368,13 @@ namespace djack.RogueSurvivor.Engine
         if (powGen != null) {
           if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
-            if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
             tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
-            if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
             tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
-            if (tmp != null && CanActorRechargeItemBattery(actor, tmp, out reason))
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
           }
           return (actor.CanSwitch(powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
