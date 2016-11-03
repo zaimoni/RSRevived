@@ -17,8 +17,8 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Keybindings
   {
-    private Dictionary<PlayerCommand, Keys> m_CommandToKeyData;
-    private Dictionary<Keys, PlayerCommand> m_KeyToCommand;
+    private readonly Dictionary<PlayerCommand, Keys> m_CommandToKeyData;
+    private readonly Dictionary<Keys, PlayerCommand> m_KeyToCommand;
 
     public Keybindings()
     {

@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionUseItem : ActorAction
   {
-    private Item m_Item;
+    private readonly Item m_Item;
 
     public ActionUseItem(Actor actor, Item it)
       : base(actor)

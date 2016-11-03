@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionRechargeItemBattery : ActorAction
   {
-    private Item m_Item;
+    private readonly Item m_Item;
 
     public ActionRechargeItemBattery(Actor actor, Item it)
       : base(actor)

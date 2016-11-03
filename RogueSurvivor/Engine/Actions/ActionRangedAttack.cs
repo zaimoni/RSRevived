@@ -13,9 +13,9 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionRangedAttack : ActorAction
   {
-    private List<Point> m_LoF = new List<Point>();
-    private Actor m_Target;
-    private FireMode m_Mode;
+    private readonly List<Point> m_LoF = new List<Point>();
+    private readonly Actor m_Target;
+    private readonly FireMode m_Mode;
 
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=FireMode.DEFAULT)
       : base(actor)

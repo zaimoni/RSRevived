@@ -10,7 +10,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionShout : ActorAction
   {
-    private string m_Text;
+    private readonly string m_Text;
 
     public ActionShout(Actor actor, string text=null)
       : base(actor)

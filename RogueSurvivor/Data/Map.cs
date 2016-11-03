@@ -27,26 +27,26 @@ namespace djack.RogueSurvivor.Data
     public int Width { get; private set; }
     public int Height { get; private set; }
     public Rectangle Rect { get; private set; }
-    private Tile[,] m_Tiles;
-    private Dictionary<Point, Exit> m_Exits;
-    private List<Zone> m_Zones;
-    private List<Actor> m_ActorsList;
+    private readonly Tile[,] m_Tiles;
+    private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
+    private readonly List<Zone> m_Zones = new List<Zone>(5);
+    private readonly List<Actor> m_ActorsList = new List<Actor>(5);
     private int m_iCheckNextActorIndex;
-    private List<MapObject> m_MapObjectsList;
-    private Dictionary<Point, Inventory> m_GroundItemsByPosition;
-    private List<Corpse> m_CorpsesList;
-    private List<OdorScent> m_Scents;
-    private List<TimedTask> m_Timers;
+    private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
+    private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
+    private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
+    private readonly List<OdorScent> m_Scents = new List<OdorScent>(128);
+    private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
     [NonSerialized]
-    private Dictionary<Point, Actor> m_aux_ActorsByPosition;
+    private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
     [NonSerialized]
-    private Dictionary<Point, MapObject> m_aux_MapObjectsByPosition;
+    private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized]
-    private List<Inventory> m_aux_GroundItemsList;
+    private readonly List<Inventory> m_aux_GroundItemsList = new List<Inventory>(5);
     [NonSerialized]
-    private Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition;
+    private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     [NonSerialized]
-    private Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition;
+    private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     [NonSerialized]
     private List<Actor> m_aux_Players;
 
@@ -72,37 +72,17 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Zone> Zones {
-      get {
-        return (IEnumerable<Zone>)m_Zones;
-      }
-    }
-
-    public IEnumerable<Exit> Exits {
-      get {
-        return (IEnumerable<Exit>)m_Exits.Values;
-      }
-    }
+    public IEnumerable<Zone> Zones { get { return m_Zones; } }
+    public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
 
     public int CountExits {
       get {
-        if (m_Exits.Values != null)
-          return m_Exits.Values.Count;
-        return 0;
+        return (m_Exits.Values != null ? m_Exits.Values.Count : 0);
       }
     }
 
-    public IEnumerable<Actor> Actors {
-      get {
-        return (IEnumerable<Actor>)m_ActorsList;
-      }
-    }
-
-    public int CountActors {
-      get {
-        return m_ActorsList.Count;
-      }
-    }
+    public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
+    public int CountActors { get { return m_ActorsList.Count; } }
 
     public int CheckNextActorIndex
     {
@@ -114,55 +94,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<MapObject> MapObjects {
-      get {
-        return (IEnumerable<MapObject>)m_MapObjectsList;
-      }
-    }
-
-    public IEnumerable<Inventory> GroundInventories {
-      get {
-        return (IEnumerable<Inventory>)m_aux_GroundItemsList;
-      }
-    }
-
-    public IEnumerable<Corpse> Corpses {
-      get {
-        return (IEnumerable<Corpse>)m_CorpsesList;
-      }
-    }
-
-    public int CountCorpses {
-      get {
-        return m_CorpsesList.Count;
-      }
-    }
-
-    public IEnumerable<TimedTask> Timers {
-      get {
-        return (IEnumerable<TimedTask>)m_Timers;
-      }
-    }
+    public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
+    public IEnumerable<Inventory> GroundInventories { get { return m_aux_GroundItemsList; } }
+    public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
+    public int CountCorpses { get { return m_CorpsesList.Count; } }
+    public IEnumerable<TimedTask> Timers { get { return m_Timers; } }
 
     public int CountTimers {
       get {
-        if (m_Timers != null)
-          return m_Timers.Count;
-        return 0;
+        return (m_Timers != null ? m_Timers.Count : 0);
       }
     }
 
-    public IEnumerable<OdorScent> Scents {
-      get {
-        return (IEnumerable<OdorScent>)m_Scents;
-      }
-    }
+    public IEnumerable<OdorScent> Scents { get { return m_Scents; } }
 
     public Map(int seed, string name, int width, int height)
     {
-      if (name == null) throw new ArgumentNullException("name");
-      if (width <= 0) throw new ArgumentOutOfRangeException("width <=0");
-      if (height <= 0) throw new ArgumentOutOfRangeException("height <=0");
+      Contract.Requires(null != name);
+      Contract.Requires(0 < width);
+      Contract.Requires(0 < height);
       Seed = seed;
       Name = name;
       Width = width;
@@ -176,19 +126,6 @@ namespace djack.RogueSurvivor.Data
         for (int index2 = 0; index2 < height; ++index2)
           m_Tiles[index1, index2] = new Tile(TileModel.UNDEF);
       }
-      m_Exits = new Dictionary<Point, Exit>();
-      m_Zones = new List<Zone>(5);
-      m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
-      m_ActorsList = new List<Actor>(5);
-      m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
-      m_MapObjectsList = new List<MapObject>(5);
-      m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
-      m_aux_GroundItemsList = new List<Inventory>(5);
-      m_CorpsesList = new List<Corpse>(5);
-      m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
-      m_Scents = new List<OdorScent>(128);
-      m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
-      m_Timers = new List<TimedTask>(5);
     }
 
 #region Implement ISerializable
@@ -738,12 +675,10 @@ namespace djack.RogueSurvivor.Data
     private void RemoveCorpseFromPos(Corpse c)
     {
       List<Corpse> corpseList;
-      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
-        return;
+      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList)) return;
       corpseList.Remove(c);
-      if (corpseList.Count != 0)
-        return;
-            m_aux_CorpsesByPosition.Remove(c.Position);
+      if (corpseList.Count != 0) return;
+      m_aux_CorpsesByPosition.Remove(c.Position);
     }
 
     private void InsertCorpseAtPos(Corpse c)
@@ -752,48 +687,40 @@ namespace djack.RogueSurvivor.Data
       if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
         corpseList.Insert(0, c);
       else
-                m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
+        m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
     }
 
     public void AddTimer(TimedTask t)
     {
-      if (m_Timers == null)
-                m_Timers = new List<TimedTask>(5);
-            m_Timers.Add(t);
+      m_Timers.Add(t);
     }
 
     public void RemoveTimer(TimedTask t)
     {
-            m_Timers.Remove(t);
+      m_Timers.Remove(t);
     }
 
     public int GetScentByOdorAt(Odor odor, Point position)
     {
-      if (!IsInBounds(position))
-        return 0;
+      if (!IsInBounds(position)) return 0;
       OdorScent scentByOdor = GetScentByOdor(odor, position);
-      if (scentByOdor != null)
-        return scentByOdor.Strength;
+      if (scentByOdor != null) return scentByOdor.Strength;
       return 0;
     }
 
     private OdorScent GetScentByOdor(Odor odor, Point p)
     {
       List<OdorScent> odorScentList;
-      if (!m_aux_ScentsByPosition.TryGetValue(p, out odorScentList))
-        return (OdorScent) null;
-      foreach (OdorScent odorScent in odorScentList)
-      {
-        if (odorScent.Odor == odor)
-          return odorScent;
+      if (!m_aux_ScentsByPosition.TryGetValue(p, out odorScentList)) return null;
+      foreach (OdorScent odorScent in odorScentList) {
+        if (odorScent.Odor == odor) return odorScent;
       }
-      return (OdorScent) null;
+      return null;
     }
 
     private void AddNewScent(OdorScent scent)
     {
-      if (!m_Scents.Contains(scent))
-                m_Scents.Add(scent);
+      if (!m_Scents.Contains(scent)) m_Scents.Add(scent);
       List<OdorScent> odorScentList;
       if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
       {
@@ -1074,16 +1001,16 @@ namespace djack.RogueSurvivor.Data
 
     private void ReconstructAuxiliaryFields()
     {
-      m_aux_ActorsByPosition = new Dictionary<Point, Actor>();
+      m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList)
         m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
-      m_aux_GroundItemsList = new List<Inventory>();
+      m_aux_GroundItemsList.Clear();
       foreach (Inventory inventory in m_GroundItemsByPosition.Values)
         m_aux_GroundItemsList.Add(inventory);
-      m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>();
+      m_aux_MapObjectsByPosition.Clear();
       foreach (MapObject mMapObjects in m_MapObjectsList)
         m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
-      m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>();
+      m_aux_ScentsByPosition.Clear();
       foreach (OdorScent mScent in m_Scents) {
         List<OdorScent> odorScentList;
         if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList)) {
@@ -1096,7 +1023,7 @@ namespace djack.RogueSurvivor.Data
           m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
         }
       }
-      m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>();
+      m_aux_CorpsesByPosition.Clear();
       foreach (Corpse mCorpses in m_CorpsesList) {
         List<Corpse> corpseList;
         if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out corpseList))
@@ -1110,8 +1037,7 @@ namespace djack.RogueSurvivor.Data
       // Support savefile hacking.
       // Check the actors.  If any have null controllers, intent was to hand control from the player to the AI.
       // Give them AI controllers here.
-      foreach(Actor tmp in m_ActorsList)
-      {
+      foreach(Actor tmp in m_ActorsList) {
         if (null != tmp.Controller) continue;
         tmp.Controller = tmp.Model.InstanciateController();
       }
@@ -1121,8 +1047,7 @@ namespace djack.RogueSurvivor.Data
 
     public void OptimizeBeforeSaving()
     {
-      for (int index1 = 0; index1 < Width; ++index1)
-      {
+      for (int index1 = 0; index1 < Width; ++index1) {
         for (int index2 = 0; index2 < Height; ++index2)
           m_Tiles[index1, index2].OptimizeBeforeSaving();
       }

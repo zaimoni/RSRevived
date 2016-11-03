@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionGetFromContainer : ActorAction
   {
-    private Point m_Position;
+    private readonly Point m_Position;
 
     public Item Item {
       get {

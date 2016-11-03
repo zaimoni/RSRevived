@@ -19,15 +19,15 @@ namespace djack.RogueSurvivor.UI
   public class GDIPlusGameCanvas : UserControl, IGameCanvas
   {
     private Color m_ClearColor = Color.CornflowerBlue;
-    private List<GDIPlusGameCanvas.IGfx> m_Gfxs = new List<GDIPlusGameCanvas.IGfx>(100);
-    private Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
-    private Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
+    private readonly List<GDIPlusGameCanvas.IGfx> m_Gfxs = new List<GDIPlusGameCanvas.IGfx>(100);
+    private readonly Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
+    private readonly Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
     private RogueForm m_RogueForm;
     private Bitmap m_RenderImage;
-    private Graphics m_RenderGraphics;
+    private readonly Graphics m_RenderGraphics;
     private Bitmap m_MinimapBitmap;
-    private byte[] m_MinimapBytes;
-    private int m_MinimapStride;
+    private readonly byte[] m_MinimapBytes;
+    private readonly int m_MinimapStride;
     private IContainer components;
 
     public bool ShowFPS { get; set; }

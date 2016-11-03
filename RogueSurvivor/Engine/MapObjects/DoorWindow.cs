@@ -16,29 +16,15 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public const int STATE_CLOSED = 1;
     public const int STATE_OPEN = 2;
     public const int STATE_BROKEN = 3;
-    private string m_ClosedImageID;
-    private string m_OpenImageID;
-    private string m_BrokenImageID;
-    private bool m_IsWindow;
+    private readonly string m_ClosedImageID;
+    private readonly string m_OpenImageID;
+    private readonly string m_BrokenImageID;
+    private readonly bool m_IsWindow;
     private int m_BarricadePoints;
 
-    public bool IsOpen {
-      get {
-        return State == STATE_OPEN;
-      }
-    }
-
-    public bool IsClosed {
-      get {
-        return State == STATE_CLOSED;
-      }
-    }
-
-    public bool IsBroken {
-      get {
-        return State == STATE_BROKEN;
-      }
-    }
+    public bool IsOpen { get { return State == STATE_OPEN; } }
+    public bool IsClosed { get { return State == STATE_CLOSED; } }
+    public bool IsBroken { get { return State == STATE_BROKEN; } }
 
     public override bool IsTransparent
     {
@@ -49,11 +35,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-    public bool IsWindow {
-      get {
-        return m_IsWindow;
-      }
-    }
+    public bool IsWindow { get { return m_IsWindow; } }
 
     public int BarricadePoints {
       get {
@@ -72,11 +54,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
-    public bool IsBarricaded {
-      get {
-        return m_BarricadePoints > 0;
-      }
-    }
+    public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
 
     public DoorWindow(string name, string closedImageID, string openImageID, string brokenImageID, int hitPoints)
       : base(name, closedImageID, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)

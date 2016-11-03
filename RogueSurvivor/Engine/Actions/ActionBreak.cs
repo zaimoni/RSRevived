@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionBreak : ActorAction
   {
-    private MapObject m_Obj;
+    private readonly MapObject m_Obj;
 
     public ActionBreak(Actor actor, MapObject obj)
       : base(actor)

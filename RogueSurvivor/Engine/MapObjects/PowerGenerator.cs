@@ -14,14 +14,10 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   {
     public const int STATE_OFF = 0;
     public const int STATE_ON = 1;
-    private string m_OffImageID;
-    private string m_OnImageID;
+    private readonly string m_OffImageID;
+    private readonly string m_OnImageID;
 
-    public bool IsOn {
-      get {
-        return State == STATE_ON;
-      }
-    }
+    public bool IsOn { get { return State == STATE_ON; } }
 
     // While there is only one kind of power generator currently, the graphics
     // should be isolated from the constructor "just in case".

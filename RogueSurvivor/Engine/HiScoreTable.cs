@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -16,16 +17,10 @@ namespace djack.RogueSurvivor.Engine
   internal class HiScoreTable
   {
     public const int DEFAULT_MAX_ENTRIES = 12;
-    private List<HiScore> m_Table;
-    private int m_MaxEntries;
+    private readonly List<HiScore> m_Table;
+    private readonly int m_MaxEntries;
 
-    public int Count
-    {
-      get
-      {
-        return m_Table.Count;
-      }
-    }
+    public int Count { get { return m_Table.Count; } }
 
     public HiScore this[int index]
     {
@@ -37,16 +32,16 @@ namespace djack.RogueSurvivor.Engine
 
     public HiScoreTable(int maxEntries)
     {
-      if (maxEntries < 1)
-        throw new ArgumentOutOfRangeException("maxEntries < 1");
-            m_Table = new List<HiScore>(maxEntries);
-            m_MaxEntries = maxEntries;
+	  Contract.Requires(0 < maxEntries);
+      m_Table = new List<HiScore>(maxEntries);
+      m_MaxEntries = maxEntries;
     }
 
     public void Clear()
     {
+	  m_Table.Clear();
       for (int index = 0; index < m_MaxEntries; ++index)
-                m_Table.Add(new HiScore()
+        m_Table.Add(new HiScore()
         {
           Death = "no death",
           DifficultyPercent = 0,
@@ -65,27 +60,23 @@ namespace djack.RogueSurvivor.Engine
       int index = 0;
       while (index < m_Table.Count && m_Table[index].TotalPoints >= hi.TotalPoints)
         ++index;
-      if (index > m_MaxEntries)
-        return false;
-            m_Table.Insert(index, hi);
+      if (index > m_MaxEntries) return false;
+      m_Table.Insert(index, hi);
       while (m_Table.Count > m_MaxEntries)
-                m_Table.RemoveAt(m_Table.Count - 1);
+        m_Table.RemoveAt(m_Table.Count - 1);
       return true;
     }
 
     public HiScore Get(int index)
     {
-      if (index < 0 || index >= m_Table.Count)
-        throw new ArgumentOutOfRangeException("index");
+	  Contract.Requires(0 <= index && index < Count);
       return m_Table[index];
     }
 
     public static void Save(HiScoreTable table, string filepath)
     {
-      if (table == null)
-        throw new ArgumentNullException("table");
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(null != table);
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
       IFormatter formatter = HiScoreTable.CreateFormatter();
       Stream stream = HiScoreTable.CreateStream(filepath, true);
@@ -97,22 +88,18 @@ namespace djack.RogueSurvivor.Engine
 
     public static HiScoreTable Load(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
-      try
-      {
+      try {
         IFormatter formatter = HiScoreTable.CreateFormatter();
         Stream stream = HiScoreTable.CreateStream(filepath, false);
         hiScoreTable = (HiScoreTable) formatter.Deserialize(stream);
         stream.Close();
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
-        return (HiScoreTable) null;
+        return null;
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table... done!");
       return hiScoreTable;
@@ -120,12 +107,12 @@ namespace djack.RogueSurvivor.Engine
 
     private static IFormatter CreateFormatter()
     {
-      return (IFormatter) new BinaryFormatter();
+      return new BinaryFormatter();
     }
 
     private static Stream CreateStream(string saveFileName, bool save)
     {
-      return (Stream) new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
+      return new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
   }
 }

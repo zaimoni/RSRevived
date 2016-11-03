@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class InsaneHumanAI : BaseAI
   {
-    private string[] INSANITIES = new string[56]
+    private static readonly string[] INSANITIES = new string[56]
     {
       "WHY WALK THERE?",
       "WHAT MAKES YOU FUN?",
@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private LOSSensor m_LOSSensor;
+    private readonly LOSSensor m_LOSSensor;
 
     public InsaneHumanAI()
     {

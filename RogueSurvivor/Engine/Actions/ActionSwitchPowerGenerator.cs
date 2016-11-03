@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionSwitchPowerGenerator : ActorAction
   {
-    private PowerGenerator m_PowGen;
+    private readonly PowerGenerator m_PowGen;
 
     public ActionSwitchPowerGenerator(Actor actor, PowerGenerator powGen)
       : base(actor)

@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionThrowGrenade : ActorAction
   {
-    private Point m_ThrowPos;
+    private readonly Point m_ThrowPos;
 
     public ActionThrowGrenade(Actor actor, Point throwPos)
       : base(actor)

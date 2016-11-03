@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Data
         // we'll just do taint checking.
 
         // As we actually have to iterate over the keys of _threats in a multi-threaded situation, just lock it when using.
-        private Dictionary<Actor, HashSet<Location>> _threats;  // simpler taint tracking
+        private readonly Dictionary<Actor, HashSet<Location>> _threats;  // simpler taint tracking
 
         public ThreatTracking()
         {

@@ -12,16 +12,16 @@ namespace djack.RogueSurvivor.Engine.Tasks
   [Serializable]
   internal class TaskRemoveDecoration : TimedTask
   {
-    private int m_X;
-    private int m_Y;
-    private string m_imageID;
+    private readonly int m_X;
+    private readonly int m_Y;
+    private readonly string m_imageID;
 
     public TaskRemoveDecoration(int turns, int x, int y, string imageID)
       : base(turns)
     {
-            m_X = x;
-            m_Y = y;
-            m_imageID = imageID;
+      m_X = x;
+      m_Y = y;
+      m_imageID = imageID;
     }
 
     public override void Trigger(Map m)

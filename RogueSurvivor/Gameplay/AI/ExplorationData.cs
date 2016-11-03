@@ -16,8 +16,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EXPLORATION_LOCATIONS = WorldTime.TURNS_PER_HOUR;
     private const int EXPLORATION_ZONES = 3;
 
-    private Queue<Location> m_LocationsQueue;
-    private Queue<Zone> m_ZonesQueue;
+    private readonly Queue<Location> m_LocationsQueue;
+    private readonly Queue<Zone> m_ZonesQueue;
 
     public ExplorationData()
     {

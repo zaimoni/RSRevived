@@ -8,18 +8,19 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
   internal class GameHintsStatus
   {
-    private bool[] m_AdvisorHints = new bool[46];
+    private readonly bool[] m_AdvisorHints = new bool[(int) AdvisorHint._COUNT];
 
     public void ResetAllHints()
     {
-      for (int index = 0; index < 46; ++index)
-                m_AdvisorHints[index] = false;
+      for (int index = 0; index < (int)AdvisorHint._COUNT; ++index)
+        m_AdvisorHints[index] = false;
     }
 
     public bool IsAdvisorHintGiven(AdvisorHint hint)
@@ -29,29 +30,26 @@ namespace djack.RogueSurvivor.Engine
 
     public void SetAdvisorHintAsGiven(AdvisorHint hint)
     {
-            m_AdvisorHints[(int) hint] = true;
+      m_AdvisorHints[(int) hint] = true;
     }
 
     public int CountAdvisorHintsGiven()
     {
       int num = 0;
-      for (int index = 0; index < 46; ++index)
-      {
-        if (m_AdvisorHints[index])
-          ++num;
+      for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
+        if (m_AdvisorHints[index]) ++num;
       }
       return num;
     }
 
     public bool HasAdvisorGivenAllHints()
     {
-      return CountAdvisorHintsGiven() >= 46;
+      return CountAdvisorHintsGiven() >= (int)AdvisorHint._COUNT;
     }
 
     public static void Save(GameHintsStatus hints, string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
       IFormatter formatter = GameHintsStatus.CreateFormatter();
       Stream stream = GameHintsStatus.CreateStream(filepath, true);
@@ -63,19 +61,15 @@ namespace djack.RogueSurvivor.Engine
 
     public static GameHintsStatus Load(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
-      try
-      {
+      try {
         IFormatter formatter = GameHintsStatus.CreateFormatter();
         Stream stream = GameHintsStatus.CreateStream(filepath, false);
         gameHintsStatus = (GameHintsStatus) formatter.Deserialize(stream);
         stream.Close();
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "resetting.");
@@ -88,12 +82,12 @@ namespace djack.RogueSurvivor.Engine
 
     private static IFormatter CreateFormatter()
     {
-      return (IFormatter) new BinaryFormatter();
+      return new BinaryFormatter();
     }
 
     private static Stream CreateStream(string saveFileName, bool save)
     {
-      return (Stream) new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
+      return new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
   }
 }

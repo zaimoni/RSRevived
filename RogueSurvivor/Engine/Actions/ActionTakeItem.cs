@@ -12,8 +12,8 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionTakeItem : ActorAction
   {
-    private Point m_Position;
-    private Item m_Item;
+    private readonly Point m_Position;
+    private readonly Item m_Item;
 
     public ActionTakeItem(Actor actor, Point position, Item it)
       : base(actor)

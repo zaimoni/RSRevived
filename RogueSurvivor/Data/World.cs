@@ -6,43 +6,39 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class World
   {
-    private District[,] m_DistrictsGrid;
-    private int m_Size;
-    private Queue<District> m_PCready;
-    private Queue<District> m_NPCready;
+    private readonly District[,] m_DistrictsGrid;
+    private readonly int m_Size;
+    private readonly Queue<District> m_PCready;
+    private readonly Queue<District> m_NPCready;
 
     public Weather Weather { get; set; }
 
-    public int Size
-    {
-      get {
-        return m_Size;
-      }
-    }
+    public int Size { get { return m_Size; } }
 
     public District this[int x, int y]
     {
       get {
-        if (x < 0 || x >= m_Size) throw new ArgumentOutOfRangeException("x");
-        if (y < 0 || y >= m_Size) throw new ArgumentOutOfRangeException("y");
+        Contract.Requires(0<=x && Size>x);
+        Contract.Requires(0<=y && Size>y);
         return m_DistrictsGrid[x, y];
       }
       set {
-        if (x < 0 || x >= m_Size) throw new ArgumentOutOfRangeException("x");
-        if (y < 0 || y >= m_Size) throw new ArgumentOutOfRangeException("y");
+        Contract.Requires(0<=x && Size>x);
+        Contract.Requires(0<=y && Size>y);
         m_DistrictsGrid[x, y] = value;
       }
     }
 
     public World(int size)
     {
-      if (size <= 0) throw new ArgumentOutOfRangeException("size <=0");
+      Contract.Requires(0 < size);
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
       Weather = Weather.CLEAR;

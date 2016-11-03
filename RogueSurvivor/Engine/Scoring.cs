@@ -15,10 +15,10 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Scoring
   {
-    private Dictionary<int, Scoring.KillData> m_Kills = new Dictionary<int, Scoring.KillData>();
-    private HashSet<int> m_Sightings = new HashSet<int>();
-    private List<Scoring.GameEventData> m_Events = new List<Scoring.GameEventData>();
-    private HashSet<Map> m_VisitedMaps = new HashSet<Map>();
+    private readonly Dictionary<int, Scoring.KillData> m_Kills = new Dictionary<int, Scoring.KillData>();
+    private readonly HashSet<int> m_Sightings = new HashSet<int>();
+    private readonly List<Scoring.GameEventData> m_Events = new List<Scoring.GameEventData>();
+    private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
     private float m_DifficultyRating = 1f;
     public const int MAX_ACHIEVEMENTS = 8;
     public const int SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD = 360;
@@ -67,102 +67,25 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public Achievement[] Achievements { get; private set; }
-
     public Skills.IDs StartingSkill { get; set; }
-
-    public IEnumerable<Scoring.GameEventData> Events
-    {
-      get
-      {
-        return (IEnumerable<Scoring.GameEventData>)m_Events;
-      }
-    }
-
-    public bool HasNoEvents
-    {
-      get
-      {
-        return m_Events.Count == 0;
-      }
-    }
-
-    public IEnumerable<Scoring.KillData> Kills
-    {
-      get
-      {
-        return (IEnumerable<Scoring.KillData>)m_Kills.Values;
-      }
-    }
-
-    public bool HasNoKills
-    {
-      get
-      {
-        return m_Kills.Count == 0;
-      }
-    }
-
-    public IEnumerable<int> Sightings
-    {
-      get
-      {
-        return (IEnumerable<int>)m_Sightings;
-      }
-    }
-
+    public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
+    public bool HasNoEvents { get { return m_Events.Count == 0; } }
+    public IEnumerable<Scoring.KillData> Kills { get { return m_Kills.Values; } }
+    public bool HasNoKills { get { return m_Kills.Count == 0; } }
+    public IEnumerable<int> Sightings { get { return (IEnumerable<int>)m_Sightings; } }
     public int TurnsSurvived { get; set; }
-
     public string DeathReason { get; set; }
-
     public string DeathPlace { get; set; }
+    public List<Actor> FollowersWhendDied { get { return m_FollowersWhenDied; } }
+    public Actor Killer { get { return m_Killer; } }
+    public Actor ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
+    public int KillPoints { get { return m_KillPoints; } }
+    public int SurvivalPoints { get { return 2 * (TurnsSurvived - m_StartScoringTurn); } }
 
-    public List<Actor> FollowersWhendDied
-    {
-      get
-      {
-        return m_FollowersWhenDied;
-      }
-    }
-
-    public Actor Killer
-    {
-      get
-      {
-        return m_Killer;
-      }
-    }
-
-    public Actor ZombifiedPlayer
-    {
-      get
-      {
-        return m_ZombifiedPlayer;
-      }
-    }
-
-    public int KillPoints
-    {
-      get
-      {
-        return m_KillPoints;
-      }
-    }
-
-    public int SurvivalPoints
-    {
-      get
-      {
-        return 2 * (TurnsSurvived - m_StartScoringTurn);
-      }
-    }
-
-    public int AchievementPoints
-    {
-      get
-      {
+    public int AchievementPoints {
+      get {
         int num = 0;
-        for (int index = 0; index < 8; ++index)
-        {
+        for (int index = 0; index < 8; ++index) {
           if (HasCompletedAchievement((Achievement.IDs) index))
             num += GetAchievement((Achievement.IDs) index).ScoreValue;
         }
@@ -170,28 +93,22 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public float DifficultyRating
-    {
-      get
-      {
+    public float DifficultyRating {
+      get {
         return m_DifficultyRating / (float) (1 + m_ReincarnationNumber);
       }
-      set
-      {
-                m_DifficultyRating = value;
+      set {
+        m_DifficultyRating = value;
       }
     }
 
-    public int TotalPoints
-    {
-      get
-      {
+    public int TotalPoints {
+      get {
         return (int) ((double)DifficultyRating * (double) (m_KillPoints + SurvivalPoints + AchievementPoints));
       }
     }
 
     public TimeSpan RealLifePlayingTime { get; set; }
-
     public int CompletedAchievementsCount { get; set; }
 
     public Scoring()
@@ -412,10 +329,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddSighting(int actorModelID, int turn)
     {
-      if (m_Sightings.Contains(actorModelID))
-        return;
-            m_Sightings.Add(actorModelID);
-            m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[actorModelID].Name)));
+      if (m_Sightings.Contains(actorModelID)) return;
+      m_Sightings.Add(actorModelID);
+      m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[actorModelID].Name)));
     }
 
     public bool HasSighted(int actorModelID)
@@ -454,23 +370,21 @@ namespace djack.RogueSurvivor.Engine
     public void AddEvent(int turn, string text)
     {
       lock (m_Events)
-                m_Events.Add(new Scoring.GameEventData(turn, text));
+        m_Events.Add(new Scoring.GameEventData(turn, text));
     }
 
     [Serializable]
     public class KillData
     {
       public int ActorModelID { get; set; }
-
       public int Amount { get; set; }
-
       public int FirstKillTurn { get; set; }
 
       public KillData(int actorModelID, int turn)
       {
-                ActorModelID = actorModelID;
-                Amount = 1;
-                FirstKillTurn = turn;
+        ActorModelID = actorModelID;
+        Amount = 1;
+        FirstKillTurn = turn;
       }
     }
 
@@ -478,13 +392,12 @@ namespace djack.RogueSurvivor.Engine
     public class GameEventData
     {
       public int Turn { get; set; }
-
       public string Text { get; set; }
 
       public GameEventData(int turn, string text)
       {
-                Turn = turn;
-                Text = text;
+        Turn = turn;
+        Text = text;
       }
     }
   }

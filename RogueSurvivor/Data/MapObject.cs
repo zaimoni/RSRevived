@@ -14,13 +14,13 @@ namespace djack.RogueSurvivor.Data
   internal class MapObject
   {
     private string m_ImageID;
-    private string m_HiddenImageID;
-    private string m_Name;
+    private readonly string m_HiddenImageID;
+    private readonly string m_Name;
     private MapObject.Flags m_Flags;
     private int m_JumpLevel;
     private int m_Weight;
     private MapObject.Break m_BreakState;
-    private int m_MaxHitPoints;
+    private readonly int m_MaxHitPoints;
     private int m_HitPoints;
     private MapObject.Fire m_FireState;
     private Location m_Location;

@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionLeaveMap : ActorAction
   {
-    private Point m_ExitPoint;
+    private readonly Point m_ExitPoint;
 
     public ActionLeaveMap(Actor actor, Point exitPoint)
       : base(actor)

@@ -18,8 +18,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   [Serializable]
   internal class SmellSensor : Sensor
   {
-    private Odor m_OdorToSmell;
-    private List<Percept> m_List;
+    private readonly Odor m_OdorToSmell;
+    private readonly List<Percept> m_List;
 
     public List<Percept> Scents {
       get {

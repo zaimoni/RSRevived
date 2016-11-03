@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionEatFoodOnGround : ActorAction
   {
-    private ItemFood m_Item;
+    private readonly ItemFood m_Item;
 
     public ActionEatFoodOnGround(Actor actor, ItemFood it)
       : base(actor)

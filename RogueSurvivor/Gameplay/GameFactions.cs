@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Gameplay
       GameItems.IDs.ARMOR_POLICE_JACKET,
       GameItems.IDs.ARMOR_POLICE_RIOT
     };
-    private Faction[] m_Factions = new Faction[(int) IDs._COUNT];
+    private readonly Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
     public Faction this[int id] {
       get {

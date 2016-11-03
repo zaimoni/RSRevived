@@ -6,6 +6,7 @@
 
 using System;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -14,24 +15,16 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal struct Location
   {
-    private Map m_Map;
+    private readonly Map m_Map;
     private Point m_Position;
 
-    public Map Map {
-      get {
-        return m_Map;
-      }
-    }
+    public Map Map { get { return m_Map; } }
 
-    public Point Position {
-      get {
-        return m_Position;
-      }
-    }
+    public Point Position { get { return m_Position; } }
 
     public Location(Map map, Point position)
     {
-      if (map == null) throw new ArgumentNullException("map");
+      Contract.Requires(null != map);
       m_Map = map;
       m_Position = position;
     }

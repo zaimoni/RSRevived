@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionOpenDoor : ActorAction
   {
-    private DoorWindow m_Door;
+    private readonly DoorWindow m_Door;
 
     public ActionOpenDoor(Actor actor, DoorWindow door)
       : base(actor)

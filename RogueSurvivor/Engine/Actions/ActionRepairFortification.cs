@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 {
   internal class ActionRepairFortification : ActorAction
   {
-    private Fortification m_Fort;
+    private readonly Fortification m_Fort;
 
     public ActionRepairFortification(Actor actor, Fortification fort)
       : base(actor)

@@ -18,14 +18,10 @@ namespace djack.RogueSurvivor.Engine.AI
   internal class MemorizedSensor : Sensor
   {
     private List<Percept> m_Percepts = new List<Percept>();
-    private Sensor m_Sensor;
-    private int m_Persistance;
+    private readonly Sensor m_Sensor;
+    private readonly int m_Persistance;
 
-    public Sensor Sensor {
-      get {
-        return m_Sensor;
-      }
-    }
+    public Sensor Sensor { get { return m_Sensor; } }
 
     public MemorizedSensor(Sensor noMemorySensor, int persistance)
     {
