@@ -5,19 +5,19 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemGrenadePrimedModel : ItemExplosiveModel
   {
-    public ItemGrenadeModel GrenadeModel { get; private set; }
+    public readonly ItemGrenadeModel GrenadeModel;
 
     public ItemGrenadePrimedModel(string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
       : base(aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage)
     {
-      if (grenadeModel == null)
-        throw new ArgumentNullException("grenadeModel");
-            GrenadeModel = grenadeModel;
+	  Contract.Requires(null!= grenadeModel);
+      GrenadeModel = grenadeModel;
     }
   }
 }
