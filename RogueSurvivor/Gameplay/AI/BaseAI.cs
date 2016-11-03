@@ -309,7 +309,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // policy change for behaviors: unless the action from a behavior is being used to decide whether to commit to the behavior,
     // a behavior should handle all free actions itself and return only non-free actions.
 
-    protected ActorAction BehaviorWander(RogueGame game, Predicate<Location> goodWanderLocFn)
+    protected ActorAction BehaviorWander(RogueGame game, Predicate<Location> goodWanderLocFn=null)
     {
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
@@ -324,11 +324,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (float) num;
       }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
       return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
-    }
-
-    protected ActorAction BehaviorWander(RogueGame game)
-    {
-      return BehaviorWander(game, (Predicate<Location>) null);
     }
 
     protected ActorAction BehaviorBumpToward(Point goal, Func<Point, Point, float> distanceFn)
