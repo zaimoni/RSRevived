@@ -14,6 +14,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Formatters.Soap;
 using System.Xml.Serialization;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -230,10 +231,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveBin(Session session, string filepath)
     {
-      if (session == null) throw new ArgumentNullException("session");
-      if (filepath == null) throw new ArgumentNullException("filepath");
+      Contract.Requires(null != session);
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = Session.CreateStream(filepath, true)) {
+      using (Stream stream = filepath.CreateStream(true)) {
         (new BinaryFormatter()).Serialize(stream, (object) session);
         stream.Flush();
       }
@@ -242,10 +243,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadBin(string filepath)
     {
-      if (filepath == null) throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
 #if DEBUG
-        using (Stream stream = Session.CreateStream(filepath, false)) {
+        using (Stream stream = filepath.CreateStream(false)) {
           Session.s_TheSession = (Session) (new BinaryFormatter()).Deserialize(stream);
         }
 #else
@@ -265,10 +266,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveSoap(Session session, string filepath)
     {
-      if (session == null) throw new ArgumentNullException("session");
-      if (filepath == null) throw new ArgumentNullException("filepath");
+      Contract.Requires(null != session);
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = Session.CreateStream(filepath, true)) {
+      using (Stream stream = filepath.CreateStream(true)) {
         Session.CreateSoapFormatter().Serialize(stream, (object) session);
         stream.Flush();
       }
@@ -277,10 +278,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadSoap(string filepath)
     {
-      if (filepath == null) throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
       try {
-        using (Stream stream = Session.CreateStream(filepath, false)) {
+        using (Stream stream = filepath.CreateStream(false)) {
           Session.s_TheSession = (Session) Session.CreateSoapFormatter().Deserialize(stream);
         }
       } catch (Exception ex) {
@@ -294,10 +295,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveXml(Session session, string filepath)
     {
-      if (session == null) throw new ArgumentNullException("session");
-      if (filepath == null) throw new ArgumentNullException("filepath");
+      Contract.Requires(null != session);
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = Session.CreateStream(filepath, true)) {
+      using (Stream stream = filepath.CreateStream(true)) {
         new XmlSerializer(typeof (Session)).Serialize(stream, (object) session);
         stream.Flush();
       }
@@ -306,10 +307,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadXml(string filepath)
     {
-      if (filepath == null) throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
       try {
-        using (Stream stream = Session.CreateStream(filepath, false)) {
+        using (Stream stream = filepath.CreateStream(false)) {
           Session.s_TheSession = (Session) new XmlSerializer(typeof (Session)).Deserialize(stream);
           stream.Flush();
         }
@@ -347,11 +348,6 @@ namespace djack.RogueSurvivor.Engine
     private static IFormatter CreateSoapFormatter()
     {
       return (IFormatter) new SoapFormatter();
-    }
-
-    private static Stream CreateStream(string saveFileName, bool save)
-    {
-      return (Stream) new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
 
     // game mode support

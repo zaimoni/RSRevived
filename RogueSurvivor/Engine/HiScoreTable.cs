@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -77,8 +78,8 @@ namespace djack.RogueSurvivor.Engine
 	  Contract.Requires(null != table);
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
-      using (Stream stream = HiScoreTable.CreateStream(filepath, true)) {
-        (new BinaryFormatter()).Serialize(stream, (object) table);
+      using (Stream stream = filepath.CreateStream(true)) {
+        (new BinaryFormatter()).Serialize(stream, table);
         stream.Flush();
 	  };
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
@@ -90,7 +91,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {
-		using (Stream stream = HiScoreTable.CreateStream(filepath, false)) { 
+		using (Stream stream = filepath.CreateStream(false)) { 
           hiScoreTable = (HiScoreTable)(new BinaryFormatter()).Deserialize(stream);
 		};
       } catch (Exception ex) {
@@ -100,11 +101,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table... done!");
       return hiScoreTable;
-    }
-
-    private static Stream CreateStream(string saveFileName, bool save)
-    {
-      return new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
   }
 }

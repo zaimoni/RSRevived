@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -126,7 +127,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(null != kb);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
-	  using (Stream stream = Keybindings.CreateStream(filepath, true)) {
+	  using (Stream stream = filepath.CreateStream(true)) {
         (new BinaryFormatter()).Serialize(stream, (object) kb);
         stream.Flush();
 	  };
@@ -138,7 +139,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
       Keybindings keybindings;
       try {
-        using (Stream stream = Keybindings.CreateStream(filepath, false)) {
+        using (Stream stream = filepath.CreateStream(false)) {
           keybindings = (Keybindings) (new BinaryFormatter()).Deserialize(stream);
 		};
       } catch (Exception ex) {
@@ -149,11 +150,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... done!");
       return keybindings;
-    }
-
-    private static Stream CreateStream(string saveName, bool save)
-    {
-      return (Stream) new FileStream(saveName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
   }
 }

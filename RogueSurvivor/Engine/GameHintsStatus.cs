@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -51,7 +52,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
-      using (Stream stream = GameHintsStatus.CreateStream(filepath, true)) {
+      using (Stream stream = filepath.CreateStream(true)) {
         (new BinaryFormatter()).Serialize(stream, hints);
         stream.Flush();
 	  };
@@ -64,7 +65,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
-        using (Stream stream = GameHintsStatus.CreateStream(filepath, false)) {
+        using (Stream stream = filepath.CreateStream(false)) {
           gameHintsStatus = (GameHintsStatus)(new BinaryFormatter()).Deserialize(stream);
 		};
       } catch (Exception ex) {
@@ -76,11 +77,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options... done!");
       return gameHintsStatus;
-    }
-
-    private static Stream CreateStream(string saveFileName, bool save)
-    {
-      return new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
   }
 }

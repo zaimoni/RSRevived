@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -1035,7 +1036,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options...");
-      using (Stream stream = GameOptions.CreateStream(filepath, true)) {
+      using (Stream stream = filepath.CreateStream(true)) {
         (new BinaryFormatter()).Serialize(stream, (object) options);
         stream.Flush();
 	  };
@@ -1048,7 +1049,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
       GameOptions gameOptions;
       try {
-        using (Stream stream = GameOptions.CreateStream(filepath, false)) {
+        using (Stream stream = filepath.CreateStream(false)) {
           gameOptions = (GameOptions)(new BinaryFormatter()).Deserialize(stream);
 		};
       } catch (Exception ex) {
@@ -1060,11 +1061,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options... done!");
       return gameOptions;
-    }
-
-    private static Stream CreateStream(string saveFileName, bool save)
-    {
-      return (Stream) new FileStream(saveFileName, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, FileShare.None);
     }
 
     public enum IDs
