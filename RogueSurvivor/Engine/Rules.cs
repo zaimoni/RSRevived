@@ -287,8 +287,7 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(null != map);
       Contract.Requires(null != actor);
       reason = "";
-      if (!map.IsInBounds(x, y))
-      {
+      if (!map.IsInBounds(x, y)) {
         if (!CanActorLeaveMap(actor, out reason)) return null;
         reason = "";
         return new ActionLeaveMap(actor, new Point(x, y));
@@ -305,10 +304,11 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsEnemyOf(actorAt)) {
           return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
-        if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
+		// player as leader should be able to switch with player as follower
+		// NPCs shouldn't be leading players anyway
+        if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
-        if (actor.CanChatWith(actorAt, out reason)) return new ActionChat(actor, actorAt);
-        return null;
+        return (actor.CanChatWith(actorAt, out reason) ? new ActionChat(actor, actorAt) : null);
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
@@ -576,32 +576,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public bool CanActorCancelLead(Actor actor, Actor target, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (target.Leader != actor)
-      {
-        reason = "not your follower";
-        return false;
-      }
-      if (target.IsSleeping)
-      {
-        reason = "sleeping";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public bool CanActorSwitchPlaceWith(Actor actor, Actor target)
-    {
-      string reason;
-      return CanActorSwitchPlaceWith(actor, target, out reason);
-    }
-
-    public bool CanActorSwitchPlaceWith(Actor actor, Actor target, out string reason)
     {
       if (actor == null)
         throw new ArgumentNullException("actor");

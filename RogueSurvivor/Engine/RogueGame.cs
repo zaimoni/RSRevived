@@ -5142,7 +5142,7 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
               string reason;
-              if (m_Rules.CanActorSwitchPlaceWith(player, actorAt, out reason)) {
+              if (player.CanSwitchPlaceWith(actorAt, out reason)) {
                 flag2 = true;
                 flag1 = false;
                 DoSwitchPlace(player, actorAt);
@@ -6346,8 +6346,7 @@ namespace djack.RogueSurvivor.Engine
           return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt =>
           {
             Actor actorAt = map.GetActorAt(pt);
-            if (actorAt == null) return false;
-            return m_Rules.CanActorSwitchPlaceWith(m_Player, actorAt);
+			return (null != actorAt && m_Player.CanSwitchPlaceWith(actorAt));
           }));
         case AdvisorHint.GAME_SAVE_LOAD:
           return map.LocalTime.Hour >= 7;

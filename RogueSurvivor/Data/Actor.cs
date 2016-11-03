@@ -507,6 +507,25 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(ReasonCantChatWith(target));
     }
 
+	private string ReasonCantSwitchPlaceWith(Actor target)
+	{
+	  Contract.Requires(null != target);
+      if (target.Leader != this) return "not your follower";
+      if (target.IsSleeping) return "sleeping";
+      return "";
+	}
+
+    public bool CanSwitchPlaceWith(Actor target, out string reason)
+    {
+	  reason = ReasonCantSwitchPlaceWith(target);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanSwitchPlaceWith(Actor target)
+    {
+	  return string.IsNullOrEmpty(ReasonCantSwitchPlaceWith(target));
+    }
+
     // aggression statistics, etc.
     public int KillsCount {
       get {

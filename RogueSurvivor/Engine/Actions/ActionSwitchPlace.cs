@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorSwitchPlaceWith(m_Actor, m_Target);
+      return m_Actor.CanSwitchPlaceWith(m_Target,out m_FailReason);
     }
 
     public override void Perform()
