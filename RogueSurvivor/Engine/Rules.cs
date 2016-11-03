@@ -307,8 +307,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (!actor.IsPlayer && !actorAt.IsPlayer && CanActorSwitchPlaceWith(actor, actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
-        if (CanActorChatWith(actor, actorAt, out reason))
-          return new ActionChat(actor, actorAt);
+        if (actor.CanChatWith(actorAt, out reason)) return new ActionChat(actor, actorAt);
         return null;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
@@ -367,36 +366,6 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer)
       {
         reason = "can't leave maps";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public bool CanActorChatWith(Actor speaker, Actor target, out string reason)
-    {
-      if (speaker == null)
-        throw new ArgumentNullException("speaker");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (!speaker.Model.Abilities.CanTalk)
-      {
-        reason = "can't talk";
-        return false;
-      }
-      if (!target.Model.Abilities.CanTalk)
-      {
-        reason = string.Format("{0} can't talk", (object) target.TheName);
-        return false;
-      }
-      if (speaker.IsSleeping)
-      {
-        reason = "sleeping";
-        return false;
-      }
-      if (target.IsSleeping)
-      {
-        reason = string.Format("{0} is sleeping", (object) target.TheName);
         return false;
       }
       reason = "";

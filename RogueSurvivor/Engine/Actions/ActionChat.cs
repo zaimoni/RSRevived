@@ -28,7 +28,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return true;
+      return m_Actor.CanChatWith(m_Target,out m_FailReason);
     }
 
     public override void Perform()

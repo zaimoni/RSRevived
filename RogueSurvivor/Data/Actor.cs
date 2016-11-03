@@ -486,6 +486,27 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
     }
 
+	private string ReasonCantChatWith(Actor target)
+	{
+	  Contract.Requires(null != target);
+      if (!Model.Abilities.CanTalk) return "can't talk";
+      if (!target.Model.Abilities.CanTalk) return string.Format("{0} can't talk", target.TheName);
+      if (IsSleeping) return "sleeping";
+      if (target.IsSleeping) return string.Format("{0} is sleeping", target.TheName);
+      return "";
+	}
+
+    public bool CanChatWith(Actor target, out string reason)
+    {
+	  reason = ReasonCantChatWith(target);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanChatWith(Actor target)
+    {
+	  return string.IsNullOrEmpty(ReasonCantChatWith(target));
+    }
+
     // aggression statistics, etc.
     public int KillsCount {
       get {
