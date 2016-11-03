@@ -989,6 +989,26 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantBarricade(door));
     }
 
+	private string ReasonCantBash(DoorWindow door)
+	{
+	  Contract.Requires(null != door);
+      if (!Model.Abilities.CanBashDoors) return "can't bash doors";
+      if (IsTired) return "tired";
+      if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) return "can't break this object";
+      return "";
+	}
+
+    public bool CanBash(DoorWindow door, out string reason)
+    {
+	  reason = ReasonCantBash(door);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBash(DoorWindow door)
+    {
+	  return string.IsNullOrEmpty(ReasonCantBash(door));
+    }
+
 	// leave the dead parameter in there, for now.
 	// E.g., non-CHAR power generators might actually *need fuel*
 	private string ReasonCantSwitch(PowerGenerator powGen)

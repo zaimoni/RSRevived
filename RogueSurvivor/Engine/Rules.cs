@@ -318,13 +318,11 @@ namespace djack.RogueSurvivor.Engine
           if (door.IsClosed) {
             if (IsOpenableFor(actor, door, out reason))
               return new ActionOpenDoor(actor, door);
-            if (IsBashableFor(actor, door, out reason))
-              return new ActionBashDoor(actor, door);
+            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
             return null;
           }
           if (door.BarricadePoints > 0) {
-            if (IsBashableFor(actor, door, out reason))
-              return new ActionBashDoor(actor, door);
+            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
             reason = "cannot bash the barricade";
             return null;
           }
@@ -492,32 +490,6 @@ namespace djack.RogueSurvivor.Engine
       if (!door.IsClosed || door.BarricadePoints > 0)
       {
         reason = "not closed nor barricaded";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
-    public bool IsBashableFor(Actor actor, DoorWindow door)
-    {
-      string reason;
-      return IsBashableFor(actor, door, out reason);
-    }
-
-    public bool IsBashableFor(Actor actor, DoorWindow door, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (door == null) throw new ArgumentNullException("door");
-      if (!actor.Model.Abilities.CanBashDoors) {
-        reason = "can't bash doors";
-        return false;
-      }
-      if (actor.IsTired) {
-        reason = "tired";
-        return false;
-      }
-      if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) {
-        reason = "can't break this object";
         return false;
       }
       reason = "";
