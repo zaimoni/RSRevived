@@ -6198,7 +6198,7 @@ namespace djack.RogueSurvivor.Engine
             }));
           return false;
         case AdvisorHint.ITEM_GRAB_CONTAINER:
-          return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => m_Rules.CanActorGetItemFromContainer(m_Player, pt)));
+          return map.HasAnyAdjacentInMap(position, (Predicate<Point>) (pt => m_Player.CanGetFromContainer(pt)));
         case AdvisorHint.ITEM_GRAB_FLOOR:
           Inventory itemsAt = map.GetItemsAt(position);
           if (itemsAt == null) return false;

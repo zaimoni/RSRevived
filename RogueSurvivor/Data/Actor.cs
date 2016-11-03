@@ -1530,6 +1530,29 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
+    private string ReasonCantGetFromContainer(Point position)
+    {
+      MapObject mapObjectAt = Location.Map.GetMapObjectAt(position);
+      if (mapObjectAt == null || !mapObjectAt.IsContainer) return "object is not a container";
+      Inventory itemsAt = Location.Map.GetItemsAt(position);
+      if (itemsAt == null || itemsAt.IsEmpty) return "nothing to take there";
+	  // XXX should be "can't get any of the items in the container"
+      if (!CanGet(itemsAt.TopItem)) return "cannot take an item";
+      return "";
+    }
+
+	public bool CanGetFromContainer(Point position,out string reason)
+	{
+	  reason = ReasonCantGetFromContainer(position);
+	  return string.IsNullOrEmpty(reason);
+	}
+
+	public bool CanGetFromContainer(Point position)
+	{
+	  return string.IsNullOrEmpty(ReasonCantGetFromContainer(position));
+	}
+
+
     private string ReasonCantEquip(Item it)
     {
       Contract.Requires(null != it);

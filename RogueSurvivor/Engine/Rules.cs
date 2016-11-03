@@ -210,37 +210,6 @@ namespace djack.RogueSurvivor.Engine
       return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 
-    public bool CanActorGetItemFromContainer(Actor actor, Point position)
-    {
-      string reason;
-      return CanActorGetItemFromContainer(actor, position, out reason);
-    }
-
-    public bool CanActorGetItemFromContainer(Actor actor, Point position, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      MapObject mapObjectAt = actor.Location.Map.GetMapObjectAt(position);
-      if (mapObjectAt == null || !mapObjectAt.IsContainer)
-      {
-        reason = "object is not a container";
-        return false;
-      }
-      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
-      if (itemsAt == null || itemsAt.IsEmpty)
-      {
-        reason = "nothing to take there";
-        return false;
-      }
-      if (!actor.CanGet(itemsAt.TopItem))
-      {
-        reason = "cannot take an item";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorPutItemIntoContainer(Actor actor, Point position)
     {
       string reason;
@@ -360,7 +329,7 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
         }
-        if (CanActorGetItemFromContainer(actor, point, out reason))
+        if (actor.CanGetFromContainer(point, out reason))
           return new ActionGetFromContainer(actor, point);
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);

@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorGetItemFromContainer(m_Actor, m_Position, out m_FailReason);
+      return m_Actor.CanGetFromContainer(m_Position, out m_FailReason);
     }
 
     public override void Perform()
