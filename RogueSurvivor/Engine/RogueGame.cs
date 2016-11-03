@@ -9796,11 +9796,9 @@ namespace djack.RogueSurvivor.Engine
     public void DropCorpse(Actor deadGuy)
     {
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
-      int num = deadGuy.MaxHPs;
       float rotation = (float)m_Rules.Roll(30, 60);
       if (m_Rules.RollChance(50)) rotation = -rotation;
-      float scale = 1f;
-      deadGuy.Location.Map.AddCorpseAt(new Corpse(deadGuy, num, num, deadGuy.Location.Map.LocalTime.TurnCounter, rotation, scale), deadGuy.Location.Position);
+      deadGuy.Location.Map.AddCorpseAt(new Corpse(deadGuy, rotation), deadGuy.Location.Position);
     }
 
     private void PlayerDied(Actor killer, string reason)

@@ -12,118 +12,65 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Corpse
   {
-    private Actor m_DeadGuy;
-    private int m_Turn;
+    private readonly Actor m_DeadGuy;
+    private readonly int m_Turn;
     private Point m_Position;
     private float m_HitPoints;
-    private int m_MaxHitPoints;
-    private float m_Rotation;
-    private float m_Scale;
+    private readonly int m_MaxHitPoints;
+    private readonly float m_Rotation;
+    private readonly float m_Scale; // currently not used properly
     private Actor m_DraggedBy;
 
-    public Actor DeadGuy
-    {
-      get
-      {
-        return m_DeadGuy;
-      }
-    }
+    public Actor DeadGuy { get { return m_DeadGuy; } }
+    public int Turn { get { return m_Turn; } }
 
-    public int Turn
-    {
-      get
-      {
-        return m_Turn;
-      }
-    }
-
-    public Point Position
-    {
-      get
-      {
+    public Point Position {
+      get {
         return m_Position;
       }
-      set
-      {
-                m_Position = value;
+      set {
+         m_Position = value;
       }
     }
 
-    public float HitPoints
-    {
-      get
-      {
+    public float HitPoints {
+      get {
         return m_HitPoints;
       }
-      set
-      {
-                m_HitPoints = value;
+      set {
+        m_HitPoints = value;
       }
     }
 
-    public int MaxHitPoints
-    {
-      get
-      {
-        return m_MaxHitPoints;
-      }
-    }
-
-    public float Rotation
-    {
-      get
-      {
-        return m_Rotation;
-      }
-      set
-      {
-                m_Rotation = value;
-      }
-    }
-
-    public float Scale
-    {
-      get
-      {
-        return m_Scale;
-      }
-      set
-      {
-                m_Scale = Math.Max(0.0f, Math.Min(1f, value));
-      }
-    }
+    public int MaxHitPoints { get { return m_MaxHitPoints; } }
+    public float Rotation { get { return m_Rotation; } }
+    public float Scale { get { return m_Scale; } }
 
     public bool IsDragged
     {
-      get
-      {
-        if (m_DraggedBy != null)
-          return !m_DraggedBy.IsDead;
-        return false;
+      get {
+        return m_DraggedBy != null && !m_DraggedBy.IsDead;
       }
     }
 
-    public Actor DraggedBy
-    {
-      get
-      {
+    public Actor DraggedBy {
+      get {
         return m_DraggedBy;
       }
-      set
-      {
-                m_DraggedBy = value;
+      set {
+        m_DraggedBy = value;
       }
     }
 
-    public Corpse(Actor deadGuy, int hitPoints, int maxHitPoints, int corpseTurn, float rotation, float scale)
+    public Corpse(Actor deadGuy, float rotation, float scale=1f)
     {
-            m_DeadGuy = deadGuy;
-            m_Turn = corpseTurn;
-            m_HitPoints = (float) hitPoints;
-            m_MaxHitPoints = maxHitPoints;
-            m_Rotation = rotation;
-            m_Scale = scale;
-            m_DraggedBy = (Actor) null;
+      m_DeadGuy = deadGuy;
+      m_Turn = deadGuy.Location.Map.LocalTime.TurnCounter;
+      m_HitPoints = (float)deadGuy.MaxHPs;
+      m_MaxHitPoints = deadGuy.MaxHPs;
+      m_Rotation = rotation;
+      m_Scale = Math.Max(0.0f, Math.Min(1f, scale));
+      m_DraggedBy = null;
     }
 
     public int FreshnessPercent {
