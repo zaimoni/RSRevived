@@ -5,9 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
@@ -52,10 +49,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
-      using (Stream stream = filepath.CreateStream(true)) {
-        (new BinaryFormatter()).Serialize(stream, hints);
-        stream.Flush();
-	  };
+	  filepath.BinarySerialize(hints);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints... done!");
     }
 
@@ -65,9 +59,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
-        using (Stream stream = filepath.CreateStream(false)) {
-          gameHintsStatus = (GameHintsStatus)(new BinaryFormatter()).Deserialize(stream);
-		};
+	    gameHintsStatus = filepath.BinaryDeserialize<GameHintsStatus>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

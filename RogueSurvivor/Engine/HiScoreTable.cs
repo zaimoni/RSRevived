@@ -6,8 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
@@ -78,10 +76,7 @@ namespace djack.RogueSurvivor.Engine
 	  Contract.Requires(null != table);
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
-      using (Stream stream = filepath.CreateStream(true)) {
-        (new BinaryFormatter()).Serialize(stream, table);
-        stream.Flush();
-	  };
+	  filepath.BinarySerialize(table);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
     }
 
@@ -91,9 +86,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {
-		using (Stream stream = filepath.CreateStream(false)) { 
-          hiScoreTable = (HiScoreTable)(new BinaryFormatter()).Deserialize(stream);
-		};
+	    hiScoreTable = filepath.BinaryDeserialize<HiScoreTable>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hiscore table (no hiscores?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

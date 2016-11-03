@@ -6,9 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using System.Diagnostics.Contracts;
 using Zaimoni.Data;
@@ -127,10 +125,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(null != kb);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
-	  using (Stream stream = filepath.CreateStream(true)) {
-        (new BinaryFormatter()).Serialize(stream, (object) kb);
-        stream.Flush();
-	  };
+	  filepath.BinarySerialize(kb);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
     }
 
@@ -139,9 +134,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
       Keybindings keybindings;
       try {
-        using (Stream stream = filepath.CreateStream(false)) {
-          keybindings = (Keybindings) (new BinaryFormatter()).Deserialize(stream);
-		};
+	    keybindings = filepath.BinaryDeserialize<Keybindings>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));

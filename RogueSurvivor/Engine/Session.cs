@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization.Formatters.Soap;
 using System.Xml.Serialization;
 using System.Diagnostics.Contracts;
@@ -234,10 +233,7 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(null != session);
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = filepath.CreateStream(true)) {
-        (new BinaryFormatter()).Serialize(stream, (object) session);
-        stream.Flush();
-      }
+	  filepath.BinarySerialize(session);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 
@@ -246,21 +242,19 @@ namespace djack.RogueSurvivor.Engine
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
 #if DEBUG
-        using (Stream stream = filepath.CreateStream(false)) {
-          Session.s_TheSession = (Session) (new BinaryFormatter()).Deserialize(stream);
-        }
 #else
       try {
-        using (Stream stream = Session.CreateStream(filepath, false)) {
-          Session.s_TheSession = (Session) (new BinaryFormatter()).Deserialize(stream);
-        }
+#endif
+	    Session.s_TheSession = filepath.BinaryDeserialize<Session>();
+#if DEBUG
+#else
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         return false;
       }
 #endif
-			Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
+	  Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session... done!");
       return true;
     }
 
@@ -269,10 +263,7 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(null != session);
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
-      using (Stream stream = filepath.CreateStream(true)) {
-        Session.CreateSoapFormatter().Serialize(stream, (object) session);
-        stream.Flush();
-      }
+	  filepath.BinarySerialize(session);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
     }
 

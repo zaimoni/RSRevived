@@ -7,8 +7,6 @@
 #define STABLE_SIM_OPTIONAL
 
 using System;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
@@ -1036,10 +1034,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options...");
-      using (Stream stream = filepath.CreateStream(true)) {
-        (new BinaryFormatter()).Serialize(stream, (object) options);
-        stream.Flush();
-	  };
+	  filepath.BinarySerialize(options);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options... done!");
     }
 
@@ -1049,9 +1044,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
       GameOptions gameOptions;
       try {
-        using (Stream stream = filepath.CreateStream(false)) {
-          gameOptions = (GameOptions)(new BinaryFormatter()).Deserialize(stream);
-		};
+	    gameOptions = filepath.BinaryDeserialize<GameOptions>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load options (no custom options?).");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
