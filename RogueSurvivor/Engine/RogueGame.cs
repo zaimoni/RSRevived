@@ -4005,6 +4005,40 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
     }
 
+	private string HandleCityInfo_DistrictToCode(DistrictKind d)
+	{
+       switch (d) {
+         case DistrictKind.GENERAL: return "Gen";
+         case DistrictKind.RESIDENTIAL: return "Res";
+         case DistrictKind.SHOPPING: return "Sho";
+         case DistrictKind.GREEN: return "Gre";
+         case DistrictKind.BUSINESS: return "Bus";
+         default:
+#if DEBUG
+           throw new ArgumentOutOfRangeException("unhandled district kind");
+#else
+		   return "BUG";
+#endif
+       }
+	}
+
+	private Color HandleCityInfo_DistrictToColor(DistrictKind d)
+	{
+       switch (d) {
+         case DistrictKind.GENERAL: return Color.Gray;
+         case DistrictKind.RESIDENTIAL: return Color.Orange;
+         case DistrictKind.SHOPPING: return Color.White;
+         case DistrictKind.GREEN: return Color.Green;
+         case DistrictKind.BUSINESS: return Color.Red;
+         default:
+#if DEBUG
+           throw new ArgumentOutOfRangeException("unhandled district kind");
+#else
+		   return Color.Blue;
+#endif
+	  }
+	}
+
     private void HandleCityInfo()
     {
       int gx = 0;
@@ -4040,33 +4074,8 @@ namespace djack.RogueSurvivor.Engine
         for (int index2 = 0; index2 < Session.Get.World.Size; ++index2) {
           District district = Session.Get.World[index2, index1];
           char ch = district == Session.Get.CurrentMap.District ? '*' : (Session.Get.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
-          Color color;
-          string str;
-          switch (district.Kind)
-          {
-            case DistrictKind.GENERAL:
-              color = Color.Gray;
-              str = "Gen";
-              break;
-            case DistrictKind.RESIDENTIAL:
-              color = Color.Orange;
-              str = "Res";
-              break;
-            case DistrictKind.SHOPPING:
-              color = Color.White;
-              str = "Sho";
-              break;
-            case DistrictKind.GREEN:
-              color = Color.Green;
-              str = "Gre";
-              break;
-            case DistrictKind.BUSINESS:
-              color = Color.Red;
-              str = "Bus";
-              break;
-            default:
-              throw new ArgumentOutOfRangeException("unhandled district kind");
-          }
+          Color color = HandleCityInfo_DistrictToColor(district.Kind);
+          string str = HandleCityInfo_DistrictToCode(district.Kind);
           string text = "".PadLeft(5,ch);
           m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + index1 * 3 * BOLD_LINE_SPACING, new Color?());
           m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", (object) ch, (object) str, (object) ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * BOLD_LINE_SPACING, new Color?());
@@ -7186,58 +7195,53 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
+	// UI functions ... do not belong in Corpse class for now
+	private string DescribeCorpseLong_DescInfectionPercent(int num)
+	{
+			return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
+	}
+
+	private string DescribeCorpseLong_DescRiseProbability(int num)
+	{
+			return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
+	}
+
+	private string DescribeCorpseLong_DescRotLevel(int num)
+	{
+      switch (num)
+      {
+        case 0: return "The corpse looks fresh.";
+        case 1: return "The corpse is bruised and smells.";
+        case 2: return "The corpse is damaged.";
+        case 3: return "The corpse is badly damaged.";
+        case 4: return "The corpse is almost entirely rotten.";
+        case 5: return "The corpse is about to crumble to dust.";
+        default:
+#if DEBUG
+          throw new Exception("unhandled rot level");
+#else
+		  return "The corpse is infested with software bugs.";
+#endif
+      }
+	}
+
+	private string DescribeCorpseLong_DescReviveChance(int num)
+	{
+			return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
+	}
+
     private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
     {
       List<string> stringList = new List<string>(10);
       stringList.Add(string.Format("Corpse of {0}.", (object) c.DeadGuy.Name));
       stringList.Add(" ");
       int skillLevel = m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
-      string str1 = "???";
-      if (skillLevel > 0)
-        str1 = WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn);
-      stringList.Add(string.Format("Death     : {0}.", (object) str1));
-      string str2 = "???";
-      if (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION) {
-        int num = c.DeadGuy.InfectionPercent;
-        str2 = num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
-      }
-      stringList.Add(string.Format("Infection : {0}.", (object) str2));
-      string str3 = "???";
-      if (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE) {
-        int num = 2 * m_Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false);
-        str3 = num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
-      }
-      stringList.Add(string.Format("Rise      : {0}.", (object) str3));
+      stringList.Add(string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")));
+      stringList.Add(string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")));
+      stringList.Add(string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * m_Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")));
       stringList.Add(" ");
-      switch (c.RotLevel)
-      {
-        case 0:
-          stringList.Add("The corpse looks fresh.");
-          break;
-        case 1:
-          stringList.Add("The corpse is bruised and smells.");
-          break;
-        case 2:
-          stringList.Add("The corpse is damaged.");
-          break;
-        case 3:
-          stringList.Add("The corpse is badly damaged.");
-          break;
-        case 4:
-          stringList.Add("The corpse is almost entirely rotten.");
-          break;
-        case 5:
-          stringList.Add("The corpse is about to crumble to dust.");
-          break;
-        default:
-          throw new Exception("unhandled rot level");
-      }
-      string str4 = "???";
-      if (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST) {
-        int num = m_Rules.CorpseReviveChance(m_Player, c);
-        str4 = num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
-      }
-      stringList.Add(string.Format("Revive    : {0}.", (object) str4));
+	  stringList.Add(DescribeCorpseLong_DescRotLevel(c.RotLevel));
+      stringList.Add(string.Format("Revive    : {0}.", (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(m_Rules.CorpseReviveChance(m_Player, c)) : "???")));
       if (isInPlayerTile) {
         stringList.Add(" ");
         stringList.Add("----");
@@ -9169,22 +9173,15 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.RegenSanity(Rules.ActorSanRegenValue(actor, ent.EntertainmentModel.Value));
-      if (player)
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
+      if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
       int boreChance = ent.EntertainmentModel.BoreChance;
-      bool flag1 = false;
-      bool flag2 = false;
       if (boreChance == 100) {
         actor.Inventory.Consume(ent);
-        flag2 = true;
+        if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
+      } else if (m_Rules.RollChance(boreChance)) {
+        actor.AddBoringItem(ent);
+        if (player) AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", (object) Conjugate(actor, VERB_BE), (object) ent.TheName)));
       }
-      else if (m_Rules.RollChance(boreChance)) flag1 = true;
-      if (flag1) actor.AddBoringItem(ent);
-      if (!player) return;
-      if (flag1)
-        AddMessage(MakeMessage(actor, string.Format("{0} now bored of {1}.", (object) Conjugate(actor, VERB_BE), (object) ent.TheName)));
-      if (!flag2) return;
-      AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), ent));
     }
 
     public void DoRechargeItemBattery(Actor actor, Item it)
@@ -9566,12 +9563,9 @@ namespace djack.RogueSurvivor.Engine
         if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID && m_Rules.RollChance(Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE)) {
           deadGuy.Location.Map.DropItemAt(m_TownGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
         }
-        Item[] objArray = new Item[deadGuy.Inventory.CountItems];
-        for (int index = 0; index < objArray.Length; ++index)
-          objArray[index] = deadGuy.Inventory[index];
-        for (int index = 0; index < objArray.Length; ++index) {
-          Item it = objArray[index];
-          int chance = it is ItemAmmo || it is ItemFood ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
+        Item[] objArray = deadGuy.Inventory.Items.ToArray();
+        foreach (Item it in objArray) {
+          int chance = (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
           if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(chance))
             DropItem(deadGuy, it);
         }
@@ -9611,9 +9605,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (killer != null && killer.CountFollowers > 0) {
         foreach (Actor follower in killer.Followers) {
-          bool flag2 = false;
-          if (follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location)) flag2 = true;
-          if (flag2) {
+          if (follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location)) {
             DoSay(follower, killer, "That was close! Thanks for the help!!", RogueGame.Sayflags.IS_FREE_ACTION);
             ModifyActorTrustInLeader(follower, 90, true);
           }
