@@ -309,16 +309,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // policy change for behaviors: unless the action from a behavior is being used to decide whether to commit to the behavior,
     // a behavior should handle all free actions itself and return only non-free actions.
 
-    protected ActorAction BehaviorWander(RogueGame game, Predicate<Location> goodWanderLocFn=null)
+    protected ActorAction BehaviorWander(Predicate<Location> goodWanderLocFn=null)
     {
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         if (goodWanderLocFn != null && !goodWanderLocFn(location)) return false;
-        return isValidWanderAction(game.Rules.IsBumpableFor(m_Actor, location));
+        return isValidWanderAction(Rules.IsBumpableFor(m_Actor, location));
       }), (Func<Direction, float>) (dir =>
       {
-        int num = game.Rules.Roll(0, 666);
+        int num = RogueForm.Game.Rules.Roll(0, 666);
         if (m_Actor.Model.Abilities.IsIntelligent && null != m_Actor.Location.Map.GetActivatedTrapAt((m_Actor.Location + dir).Position))
           num -= 1000;
         return (float) num;
@@ -331,7 +331,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS_LIST, (Func<Direction, ActorAction>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        ActorAction a = RogueForm.Game.Rules.IsBumpableFor(m_Actor, location);
+        ActorAction a = Rules.IsBumpableFor(m_Actor, location);
         if (a == null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
             MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(location.Position);
@@ -414,10 +414,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorWalkAwayFrom(RogueGame game, Percept goal)
     {
-      return BehaviorWalkAwayFrom(game, new List<Percept>(1) { goal });
+      return BehaviorWalkAwayFrom(new List<Percept>(1) { goal });
     }
 
-    protected ActorAction BehaviorWalkAwayFrom(RogueGame game, List<Percept> goals)
+    protected ActorAction BehaviorWalkAwayFrom(List<Percept> goals)
     {
       Actor leader = m_Actor.Leader;
       bool flag = m_Actor.HasLeader && m_Actor.GetEquippedWeapon() is ItemRangedWeapon;
@@ -429,7 +429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemRangedWeapon itemRangedWeapon = m_Actor.GetEquippedWeapon() as ItemRangedWeapon;
         LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (itemRangedWeapon.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
       }
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(game.Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
         float num = SafetyFrom(location.Position, goals);
@@ -810,7 +810,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return actorAction;
           }
         }
-        ActorAction actorAction1 = BehaviorWalkAwayFrom(game, enemies);
+        ActorAction actorAction1 = BehaviorWalkAwayFrom(enemies);
         if (actorAction1 != null) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
@@ -831,7 +831,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction;
         }
       }
-      return (ActorAction) null;
+      return null;
     }
 
     protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration)
@@ -842,7 +842,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Location location = m_Actor.Location + dir;
         if (exploration.HasExplored(location)) return false;
-        return IsValidMoveTowardGoalAction(game.Rules.IsBumpableFor(m_Actor, location));
+        return IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, location));
       }), (Func<Direction, float>) (dir =>
       {
         Location loc = m_Actor.Location + dir;

@@ -231,7 +231,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (actorAction4 != null) return actorAction4;
 
       List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position.X, Order.Location.Position.Y);
-      return BehaviorWander(game, (Predicate<Location>) (loc =>
+      return BehaviorWander(loc =>
       {
         List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position.X, loc.Position.Y);
         if (zonesAt == null) return false;
@@ -241,7 +241,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         return false;
-      }));
+      });
     }
 
     private ActorAction ExecuteDropAllItems(RogueGame game)
@@ -593,7 +593,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
-    protected ActorAction BehaviorFleeFromExplosives(RogueGame game, List<Percept> itemStacks)
+    protected ActorAction BehaviorFleeFromExplosives(List<Percept> itemStacks)
     {
       List<Percept> goals = FilterStacks(itemStacks, (Predicate<Inventory>) (inv =>
       {
@@ -603,9 +603,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }));
       if (null == goals) return null;
-      ActorAction actorAction = BehaviorWalkAwayFrom(game, goals);
+      ActorAction actorAction = BehaviorWalkAwayFrom(goals);
       if (actorAction == null) return null;
       RunIfPossible();
+	  m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
       return actorAction;
     }
 
@@ -753,12 +754,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       if (map.HasAnyAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is DoorWindow)))
       {
-        ActorAction actorAction = BehaviorWander(game, (Predicate<Location>) (loc =>
+        ActorAction actorAction = BehaviorWander(loc =>
         {
           if (!(map.GetMapObjectAt(loc.Position) is DoorWindow))
             return !map.HasAnyAdjacentInMap(loc.Position, (Predicate<Point>) (pt => loc.Map.GetMapObjectAt(pt) is DoorWindow));
           return false;
-        }));
+        });
         if (actorAction != null) return actorAction;
       }
       if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor);

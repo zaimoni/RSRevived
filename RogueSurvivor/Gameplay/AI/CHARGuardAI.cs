@@ -147,13 +147,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorWander(game, (Predicate<Location>) (loc => RogueGame.IsInCHAROffice(loc)));
+      tmpAction = BehaviorWander(loc => RogueGame.IsInCHAROffice(loc));
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
       m_Actor.Activity = Activity.IDLE;
-      return BehaviorWander(game);
+      return BehaviorWander();
     }
   }
 }

@@ -282,17 +282,15 @@ namespace djack.RogueSurvivor.Engine
       return target.CanGet(gift, out reason);
     }
 
-    public ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
+    private static ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
     {
       Contract.Requires(null != map);
       Contract.Requires(null != actor);
+      Point point = new Point(x, y);
       reason = "";
       if (!map.IsInBounds(x, y)) {
-        if (!CanActorLeaveMap(actor, out reason)) return null;
-        reason = "";
-        return new ActionLeaveMap(actor, new Point(x, y));
+	    return (actor.CanLeaveMap(out reason) ? new ActionLeaveMap(actor, point) : null);
       }
-      Point point = new Point(x, y);
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
       if (actionMoveStep.IsLegal()) {
         reason = "";
@@ -348,28 +346,15 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    public ActorAction IsBumpableFor(Actor actor, Location location)
+    public static ActorAction IsBumpableFor(Actor actor, Location location)
     {
       string reason;
       return IsBumpableFor(actor, location, out reason);
     }
 
-    public ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
+    public static ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
     {
       return IsBumpableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
-    }
-
-    public bool CanActorLeaveMap(Actor actor, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (!actor.IsPlayer)
-      {
-        reason = "can't leave maps";
-        return false;
-      }
-      reason = "";
-      return true;
     }
 
     public bool CanActorInitiateTradeWith(Actor speaker, Actor target)

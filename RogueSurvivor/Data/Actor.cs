@@ -1251,6 +1251,24 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
+	// Ultimately, we do plan to allow the AI to cross district boundaries
+	private string ReasonCantLeaveMap()
+	{
+      if (!IsPlayer) return "can't leave maps";
+      return "";
+	}
+
+    public bool CanLeaveMap(out string reason)
+    {
+	  reason = ReasonCantLeaveMap();
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanLeaveMap()
+    {
+	  return string.IsNullOrEmpty(ReasonCantLeaveMap());
+    }
+
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
     {

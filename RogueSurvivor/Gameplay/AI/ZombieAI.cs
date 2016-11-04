@@ -126,7 +126,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       m_Actor.Activity = Activity.IDLE;
-      return BehaviorWander(game);
+      return BehaviorWander();
     }
   }
 }

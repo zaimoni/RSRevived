@@ -180,11 +180,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      ActorAction tmpAction = BehaviorFleeFromExplosives(game, percepts1);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-        return tmpAction;
-      }
+      ActorAction tmpAction = BehaviorFleeFromExplosives(percepts1);
+      if (null != tmpAction) return tmpAction;
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
@@ -644,7 +641,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         return tmpAction;
       }
       m_Actor.Activity = Activity.IDLE;
-      return BehaviorWander(game);
+      return BehaviorWander();
     }
   }
 }

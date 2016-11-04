@@ -88,11 +88,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // fleeing from explosives is done before the enemies check
-      ActorAction tmpAction = BehaviorFleeFromExplosives(game, percepts1);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-        return tmpAction;
-      }
+      ActorAction tmpAction = BehaviorFleeFromExplosives(percepts1);
+      if (null != tmpAction) return tmpAction;
 
       List<Percept> enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = FilterCurrent(enemies);
@@ -203,13 +200,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       tmpAction = BehaviorExplore(game, m_Exploration);
-      if (null != tmpAction)
-      {
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
       m_Actor.Activity = Activity.IDLE;
-      return BehaviorWander(game);
+      return BehaviorWander();
     }
   }
 }
