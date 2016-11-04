@@ -8,13 +8,13 @@ namespace djack.RogueSurvivor.Data
 {
   internal class ItemModel
   {
-    public djack.RogueSurvivor.Gameplay.GameItems.IDs ID { get; set; }
+    public Gameplay.GameItems.IDs ID { get; set; }
     private string m_SingleName;
-    public string PluralName { get; private set; }
+    public readonly string PluralName;
     public bool IsPlural { get; set; }
     public bool IsAn { get; private set; }
     public bool IsProper { get; set; }
-    public string ImageID { get; private set; }
+    public readonly string ImageID;
     public string FlavorDescription { get; set; }
     public bool IsStackable { get; private set; }
     private int m_StackingLimit;
