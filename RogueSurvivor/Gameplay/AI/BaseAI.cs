@@ -75,16 +75,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Ensures(null != Contract.Result<ActorAction>());
       Contract.Ensures(Contract.Result<ActorAction>().IsLegal());
-      List<Percept> percepts = UpdateSensors();
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
-      ActorAction actorAction = SelectAction(game, percepts);
+      ActorAction actorAction = SelectAction(game);
       m_prevLocation = m_Actor.Location;
       if (actorAction != null) return actorAction;
       return new ActionWait(m_Actor);
     }
 
-    protected abstract ActorAction SelectAction(RogueGame game, List<Percept> percepts);
+    protected abstract ActorAction SelectAction(RogueGame game);
 
 /*
     NOTE: List<Percept>, as a list data structure, takes O(n) time/RAM to reset its capacity down 

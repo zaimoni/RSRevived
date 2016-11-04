@@ -49,12 +49,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override HashSet<Point> FOV { get { return (m_MemorizedSensor.Sensor as LOSSensor).FOV; } }
 
-    protected override ActorAction SelectAction(RogueGame game, List<Percept> percepts)
+    protected override ActorAction SelectAction(RogueGame game)
     {
       Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
-      List<Percept> percepts1 = FilterSameMap(percepts);
 
       BehaviorEquipBodyArmor(game);
+
+      List<Percept> percepts1 = FilterSameMap(UpdateSensors());
       
       // OrderableAI specific: respond to orders
       if (null != Order) {
