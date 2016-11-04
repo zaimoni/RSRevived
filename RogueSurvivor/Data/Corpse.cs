@@ -6,71 +6,38 @@
 
 using System;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class Corpse
   {
-    private readonly Actor m_DeadGuy;
-    private readonly int m_Turn;
-    private Point m_Position;
-    private float m_HitPoints;
-    private readonly int m_MaxHitPoints;
-    private readonly float m_Rotation;
-    private readonly float m_Scale; // currently not used properly
-    private Actor m_DraggedBy;
+    public readonly Actor DeadGuy;
+    public readonly int Turn;
+    public Point Position;
+    public float HitPoints;
+    public readonly int MaxHitPoints;
+    public readonly float Rotation;
+    public readonly float Scale; // currently not used properly
+    public Actor DraggedBy;
 
-    public Actor DeadGuy { get { return m_DeadGuy; } }
-    public int Turn { get { return m_Turn; } }
-
-    public Point Position {
+    public bool IsDragged {
       get {
-        return m_Position;
-      }
-      set {
-         m_Position = value;
-      }
-    }
-
-    public float HitPoints {
-      get {
-        return m_HitPoints;
-      }
-      set {
-        m_HitPoints = value;
-      }
-    }
-
-    public int MaxHitPoints { get { return m_MaxHitPoints; } }
-    public float Rotation { get { return m_Rotation; } }
-    public float Scale { get { return m_Scale; } }
-
-    public bool IsDragged
-    {
-      get {
-        return m_DraggedBy != null && !m_DraggedBy.IsDead;
-      }
-    }
-
-    public Actor DraggedBy {
-      get {
-        return m_DraggedBy;
-      }
-      set {
-        m_DraggedBy = value;
+        return DraggedBy != null && !DraggedBy.IsDead;
       }
     }
 
     public Corpse(Actor deadGuy, float rotation, float scale=1f)
     {
-      m_DeadGuy = deadGuy;
-      m_Turn = deadGuy.Location.Map.LocalTime.TurnCounter;
-      m_HitPoints = (float)deadGuy.MaxHPs;
-      m_MaxHitPoints = deadGuy.MaxHPs;
-      m_Rotation = rotation;
-      m_Scale = Math.Max(0.0f, Math.Min(1f, scale));
-      m_DraggedBy = null;
+	  Contract.Requires(null != deadGuy);
+      DeadGuy = deadGuy;
+      Turn = deadGuy.Location.Map.LocalTime.TurnCounter;
+      HitPoints = (float)deadGuy.MaxHPs;
+      MaxHitPoints = deadGuy.MaxHPs;
+      Rotation = rotation;
+      Scale = Math.Max(0.0f, Math.Min(1f, scale));
+      DraggedBy = null;
     }
 
     public int FreshnessPercent {
