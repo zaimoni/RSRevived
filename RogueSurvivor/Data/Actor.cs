@@ -339,6 +339,7 @@ namespace djack.RogueSurvivor.Data
 
     public ActorSheet Sheet {
       get {
+        Contract.Ensures(null!=Contract.Result<ActorSheet>());
         return m_Sheet;
       }
     }

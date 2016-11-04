@@ -238,11 +238,12 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInterestingItem(Item it)
     {
-      if (it.IsForbiddenToAI || it is ItemSprayPaint || it is ItemTrap && (it as ItemTrap).IsActivated)
-        return false;
+	  if (it.IsForbiddenToAI) return false;
+	  if (it is ItemSprayPaint) return false;
+	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
 
       // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
-      if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI) && !(m_Actor.Controller is Gameplay.AI.SoldierAI)) return false;
+      if (Gameplay.GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI) && !(m_Actor.Controller is Gameplay.AI.SoldierAI)) return false;
 
       // only civilians use stench killer
       if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
@@ -251,8 +252,7 @@ namespace djack.RogueSurvivor.Data
       if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && (int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return false;
 
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
-      if (it is ItemFood)
-      {
+      if (it is ItemFood) {
         if (!m_Actor.Model.Abilities.HasToEat) return false;
         if (m_Actor.IsHungry) return true;
         if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
@@ -264,8 +264,7 @@ namespace djack.RogueSurvivor.Data
       // don't lose last inventory slot to non-food unless we have enough
 //    if (m_Actor.Model.Abilities.HasToEat && m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
 
-      if (it is ItemRangedWeapon)
-      {
+      if (it is ItemRangedWeapon) {
         if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
         if (1 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) return false;  // XXX rules out AI gun bunnies
         if (!m_Actor.Inventory.Contains(it) && m_Actor.HasItemOfModel(it.Model)) return false;
