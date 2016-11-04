@@ -12074,11 +12074,7 @@ namespace djack.RogueSurvivor.Engine
           "- In case of emergency, take refuge here.",
           "- Do not let other people interact with it!"
         })));
-      return new UniqueActor()
-      {
-        TheActor = named,
-        IsSpawned = true
-      };
+      return new UniqueActor(named,true);
     }
 
     private UniqueActor CreateUniqueBigBear(World world)
@@ -12096,13 +12092,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor() {
-        TheActor = named,
-        IsSpawned = false,
-        IsWithRefugees = true,
-        EventMessage = "You hear an angry man shouting 'FOOLS!'",
-        EventThemeMusic = GameMusics.BIGBEAR_THEME_SONG
-      };
+      return new UniqueActor(named,false,true, "You hear an angry man shouting 'FOOLS!'", GameMusics.BIGBEAR_THEME_SONG);
     }
 
     private UniqueActor CreateUniqueFamuFataru(World world)
@@ -12120,13 +12110,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor() {
-        TheActor = named,
-        IsSpawned = false,
-        IsWithRefugees = true,
-        EventMessage = "You hear a woman laughing.",
-        EventThemeMusic = GameMusics.FAMU_FATARU_THEME_SONG
-      };
+      return new UniqueActor(named,false,true, "You hear a woman laughing.", GameMusics.FAMU_FATARU_THEME_SONG);
     }
 
     private UniqueActor CreateUniqueSantaman(World world)
@@ -12144,13 +12128,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor() {
-        TheActor = named,
-        IsSpawned = false,
-        IsWithRefugees = true,
-        EventMessage = "You hear christmas music and drunken vomitting.",
-        EventThemeMusic = GameMusics.SANTAMAN_THEME_SONG
-      };
+      return new UniqueActor(named,false,true, "You hear christmas music and drunken vomiting.", GameMusics.SANTAMAN_THEME_SONG);
     }
 
     private UniqueActor CreateUniqueRoguedjack(World world)
@@ -12168,13 +12146,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor() {
-        TheActor = named,
-        IsSpawned = false,
-        IsWithRefugees = true,
-        EventMessage = "You hear a man shouting in French.",
-        EventThemeMusic = GameMusics.ROGUEDJACK_THEME_SONG
-      };
+      return new UniqueActor(named,false,true, "You hear a man shouting in French.", GameMusics.ROGUEDJACK_THEME_SONG);
     }
 
     private UniqueActor CreateUniqueDuckman(World world)
@@ -12193,13 +12165,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor() {
-        TheActor = named,
-        IsSpawned = false,
-        IsWithRefugees = true,
-        EventMessage = "You hear loud demented QUACKS.",
-        EventThemeMusic = GameMusics.DUCKMAN_THEME_SONG
-      };
+      return new UniqueActor(named,false,true, "You hear loud demented QUACKS.", GameMusics.DUCKMAN_THEME_SONG);
     }
 
     private UniqueActor CreateUniqueHansVonHanz(World world)
@@ -12217,13 +12183,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor() {
-        TheActor = named,
-        IsSpawned = false,
-        IsWithRefugees = true,
-        EventMessage = "You hear a man barking orders in German.",
-        EventThemeMusic = GameMusics.HANS_VON_HANZ_THEME_SONG
-      };
+      return new UniqueActor(named,false,true, "You hear a man barking orders in German.",GameMusics.HANS_VON_HANZ_THEME_SONG);
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)

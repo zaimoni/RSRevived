@@ -2594,10 +2594,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int index = 0; index < newCivilian1.Inventory.MaxCapacity; ++index)
         newCivilian1.Inventory.AddAll(MakeItemArmyRation());
       map.PlaceActorAt(newCivilian1, new Point(rectangle1.Left + 1, rectangle1.Top + 1));
-      Session.Get.UniqueActors.PoliceStationPrisonner = new UniqueActor() {
-        TheActor = newCivilian1,
-        IsSpawned = true
-      };
+      Session.Get.UniqueActors.PoliceStationPrisonner = new UniqueActor(newCivilian1,true);
       DoForEachTile(map.Rect, (Action<Point>)(pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
       }));
@@ -2860,10 +2857,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Inventory.AddAll(MakeItemJasonMyersAxe());
       map.PlaceActorAt(named, new Point(map.Width / 2, map.Height / 2));
-      Session.Get.UniqueActors.JasonMyers = new UniqueActor() {
-        TheActor = named,
-        IsSpawned = true
-      };
+      Session.Get.UniqueActors.JasonMyers = new UniqueActor(named,true);
       return map;
     }
 

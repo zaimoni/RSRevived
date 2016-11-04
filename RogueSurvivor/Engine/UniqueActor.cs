@@ -12,14 +12,19 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class UniqueActor
   {
-    public bool IsSpawned { get; set; }
+    public bool IsSpawned;
+    public readonly Actor TheActor;
+    public readonly bool IsWithRefugees;
+    public readonly string EventThemeMusic;
+    public readonly string EventMessage;
 
-    public Actor TheActor { get; set; }
-
-    public bool IsWithRefugees { get; set; }
-
-    public string EventThemeMusic { get; set; }
-
-    public string EventMessage { get; set; }
+	public UniqueActor(Actor a, bool spawn_now, bool refugee=false, string music=null, string msg=null)
+	{
+	  IsSpawned = spawn_now;
+	  TheActor = a;
+	  IsWithRefugees = refugee;
+	  EventThemeMusic = music;
+	  EventMessage = msg;
+	}
   }
 }
