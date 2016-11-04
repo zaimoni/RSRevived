@@ -4609,7 +4609,7 @@ namespace djack.RogueSurvivor.Engine
     private bool DoPlayerItemSlotTake(Actor player, int slot)
     {
       Inventory itemsAt = player.Location.Map.GetItemsAt(player.Location.Position);
-      if (itemsAt == null || itemsAt.IsEmpty) {
+      if (itemsAt == null) {
         AddMessage(MakeErrorMessage("No items on ground."));
         return false;
       }
@@ -6952,18 +6952,14 @@ namespace djack.RogueSurvivor.Engine
     private string[] DescribeStuffAt(Map map, Point mapPos)
     {
       Actor actorAt = map.GetActorAt(mapPos);
-      if (actorAt != null)
-        return DescribeActor(actorAt);
+      if (actorAt != null) return DescribeActor(actorAt);
       MapObject mapObjectAt = map.GetMapObjectAt(mapPos);
-      if (mapObjectAt != null)
-        return DescribeMapObject(mapObjectAt, map, mapPos);
+      if (mapObjectAt != null) return DescribeMapObject(mapObjectAt, map, mapPos);
       Inventory itemsAt = map.GetItemsAt(mapPos);
-      if (itemsAt != null && !itemsAt.IsEmpty)
-        return DescribeInventory(itemsAt);
+      if (itemsAt != null) return DescribeInventory(itemsAt);
       List<Corpse> corpsesAt = map.GetCorpsesAt(mapPos);
-      if (corpsesAt != null)
-        return DescribeCorpses(corpsesAt);
-      return (string[]) null;
+      if (corpsesAt != null) return DescribeCorpses(corpsesAt);
+      return null;
     }
 
     private string[] DescribeActor(Actor actor)
@@ -7161,7 +7157,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (obj.Weight > 0) stringList.Add(string.Format("Weight    : {0}", (object) obj.Weight));
       Inventory itemsAt = map.GetItemsAt(mapPos);
-      if (itemsAt != null && !itemsAt.IsEmpty) stringList.AddRange(DescribeInventory(itemsAt));
+      if (itemsAt != null) stringList.AddRange(DescribeInventory(itemsAt));
       return stringList.ToArray();
     }
 
@@ -7865,30 +7861,22 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
-      if (m_Rules.IsTrapCoveringMapObjectThere(map, position))
-        return;
+      if (m_Rules.IsTrapCoveringMapObjectThere(map, position)) return;
       Inventory itemsAt = map.GetItemsAt(position);
-      if (itemsAt == null)
-        return;
+      if (itemsAt == null) return;
       List<Item> objList = (List<Item>) null;
-      foreach (Item obj in itemsAt.Items)
-      {
+      foreach (Item obj in itemsAt.Items) {
         ItemTrap trap = obj as ItemTrap;
-        if (trap != null && trap.IsActivated && TryTriggerTrap(trap, actor))
-        {
-          if (objList == null)
-            objList = new List<Item>(itemsAt.CountItems);
+        if (trap != null && trap.IsActivated && TryTriggerTrap(trap, actor)) {
+          if (objList == null) objList = new List<Item>(itemsAt.CountItems);
           objList.Add(obj);
         }
       }
-      if (objList != null)
-      {
+      if (objList != null) {
         foreach (Item it in objList)
           map.RemoveItemAt(it, position);
       }
-      if (actor.HitPoints > 0)
-        return;
-            KillActor((Actor) null, actor, "trap");
+      if (0 >= actor.HitPoints) KillActor(null, actor, "trap");
     }
 
     private bool TryActorLeaveTile(Actor actor)
@@ -7896,11 +7884,9 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
       bool canLeave = true;
-      if (!m_Rules.IsTrapCoveringMapObjectThere(map, position))
-      {
+      if (!m_Rules.IsTrapCoveringMapObjectThere(map, position)) {
         Inventory itemsAt = map.GetItemsAt(position);
-        if (itemsAt != null)
-        {
+        if (itemsAt != null) {
           List<Item> objList = null;
           bool flag = false;
           foreach (Item obj in itemsAt.Items) {
@@ -7951,32 +7937,28 @@ namespace djack.RogueSurvivor.Engine
       if (trap.TrapModel.BlockChance <= 0) return true;
       bool player = ForceVisibleToPlayer(victim);
       bool flag = false;
-      if (m_Rules.CheckTrapEscape(trap, victim))
-      {
+      if (m_Rules.CheckTrapEscape(trap, victim)) {
         trap.IsTriggered = false;
         flag = true;
         if (player)
-                    AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_ESCAPE), (object) trap.TheName)));
-        if (m_Rules.CheckTrapEscapeBreaks(trap, victim))
-        {
+          AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_ESCAPE), (object) trap.TheName)));
+        if (m_Rules.CheckTrapEscapeBreaks(trap, victim)) {
           if (player)
-                        AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_BREAK), (object) trap.TheName)));
+            AddMessage(MakeMessage(victim, string.Format("{0} {1}.", (object)Conjugate(victim, VERB_BREAK), (object) trap.TheName)));
           --trap.Quantity;
           isDestroyed = trap.Quantity <= 0;
         }
       }
       else if (player)
-                AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", (object) trap.TheName)));
+        AddMessage(MakeMessage(victim, string.Format("is trapped by {0}!", (object) trap.TheName)));
       return flag;
     }
 
     private void UntriggerAllTrapsHere(Location loc)
     {
       Inventory itemsAt = loc.Map.GetItemsAt(loc.Position);
-      if (itemsAt == null)
-        return;
-      foreach (Item obj in itemsAt.Items)
-      {
+      if (itemsAt == null) return;
+      foreach (Item obj in itemsAt.Items) {
         ItemTrap itemTrap = obj as ItemTrap;
         if (itemTrap != null && itemTrap.IsTriggered)
           itemTrap.IsTriggered = false;
@@ -7985,29 +7967,22 @@ namespace djack.RogueSurvivor.Engine
 
     private void CheckMapObjectTriggersTraps(Map map, Point pos)
     {
-      if (!m_Rules.IsTrapTriggeringMapObjectThere(map, pos))
-        return;
+      if (!m_Rules.IsTrapTriggeringMapObjectThere(map, pos)) return;
       MapObject mapObjectAt = map.GetMapObjectAt(pos);
       Inventory itemsAt = map.GetItemsAt(pos);
-      if (itemsAt == null)
-        return;
+      if (itemsAt == null) return;
       List<Item> objList = (List<Item>) null;
-      foreach (Item obj in itemsAt.Items)
-      {
+      foreach (Item obj in itemsAt.Items) {
         ItemTrap trap = obj as ItemTrap;
-        if (trap != null && trap.IsActivated)
-        {
-                    DoTriggerTrap(trap, map, pos, (Actor) null, mapObjectAt);
-          if (trap.Quantity <= 0)
-          {
-            if (objList == null)
-              objList = new List<Item>(itemsAt.CountItems);
+        if (trap != null && trap.IsActivated) {
+          DoTriggerTrap(trap, map, pos, (Actor) null, mapObjectAt);
+          if (trap.Quantity <= 0) {
+            if (objList == null) objList = new List<Item>(itemsAt.CountItems);
             objList.Add(obj);
           }
         }
       }
-      if (objList == null)
-        return;
+      if (objList == null) return;
       foreach (Item it in objList)
         map.RemoveItemAt(it, pos);
     }
@@ -12086,11 +12061,9 @@ namespace djack.RogueSurvivor.Engine
         throw new InvalidOperationException("could not spawn unique The Sewers Thing");
       Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
       if (zoneByPartialName != null)
-                m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, (Func<Point, bool>) (pt =>
+        m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, (Func<Point, bool>) (pt =>
         {
-          if (map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null)
-            return map.GetItemsAt(pt) == null;
-          return false;
+          return map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null && map.GetItemsAt(pt) == null;
         }), roller, (Func<Point, MapObject>) (pt => m_TownGenerator.MakeObjBoard("MapObjects\\announcement_board", new string[7]
         {
           "TO SEWER WORKERS :",

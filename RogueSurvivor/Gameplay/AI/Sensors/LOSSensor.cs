@@ -87,7 +87,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
         foreach (Point position in m_FOV) {
           Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
           if (null==itemsAt) continue;
-          if (itemsAt.IsEmpty) continue;
           perceptList.Add(new Percept((object) itemsAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));
           if (null==seen_items) continue;
           seen_items[new Location(actor.Location.Map, position)] = new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID));

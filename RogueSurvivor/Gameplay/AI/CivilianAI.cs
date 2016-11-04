@@ -485,8 +485,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
             return false;
           if (a.Inventory.Has<ItemFood>()) return true;
           Inventory itemsAt = a.Location.Map.GetItemsAt(a.Location.Position);
-          if (itemsAt == null || itemsAt.IsEmpty) return false;
-          return itemsAt.Has<ItemFood>();
+          return null != itemsAt && itemsAt.Has<ItemFood>();
         })));
         if (target != null) {
           tmpAction = BehaviorChargeEnemy(target);

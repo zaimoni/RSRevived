@@ -526,6 +526,7 @@ namespace djack.RogueSurvivor.Data
  
     public Inventory GetItemsAt(Point position)
     {
+      Contract.Ensures(null == Contract.Result<Inventory>() || !Contract.Result<Inventory>().IsEmpty);
       if (!IsInBounds(position)) return null;
       Inventory inventory;
       if (m_GroundItemsByPosition.TryGetValue(position, out inventory))
@@ -541,8 +542,7 @@ namespace djack.RogueSurvivor.Data
     public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
     {
       Inventory itemsAt = GetItemsAt(pos);
-      if (itemsAt == null || itemsAt.IsEmpty) return null;
-      return itemsAt.GetFirstMatching<Engine.Items.ItemTrap>(it => it.IsActivated);
+      return itemsAt?.GetFirstMatching<Engine.Items.ItemTrap>(it => it.IsActivated);
     }
 
     public Point? GetGroundInventoryPosition(Inventory groundInv)
@@ -578,39 +578,33 @@ namespace djack.RogueSurvivor.Data
 
     public void DropItemAt(Item it, int x, int y)
     {
-            DropItemAt(it, new Point(x, y));
+      DropItemAt(it, new Point(x, y));
     }
 
     public void RemoveItemAt(Item it, Point position)
     {
-      if (it == null)
-        throw new ArgumentNullException("item");
-      if (!IsInBounds(position))
-        throw new ArgumentOutOfRangeException("position out of map bounds");
+	  Contract.Requires(null != it);
+	  Contract.Requires(IsInBounds(position));
       Inventory itemsAt = GetItemsAt(position);
-      if (itemsAt == null)
-        throw new ArgumentException("no items at this position");
-      if (!itemsAt.Contains(it))
-        throw new ArgumentException("item not at this position");
+      if (itemsAt == null) throw new ArgumentException("no items at this position");
+      if (!itemsAt.Contains(it)) throw new ArgumentException("item not at this position");
       itemsAt.RemoveAllQuantity(it);
-      if (!itemsAt.IsEmpty)
-        return;
-            m_GroundItemsByPosition.Remove(position);
-            m_aux_GroundItemsList.Remove(itemsAt);
+      if (!itemsAt.IsEmpty) return;
+      m_GroundItemsByPosition.Remove(position);
+      m_aux_GroundItemsList.Remove(itemsAt);
     }
 
     public void RemoveItemAt(Item it, int x, int y)
     {
-            RemoveItemAt(it, new Point(x, y));
+      RemoveItemAt(it, new Point(x, y));
     }
 
     public void RemoveAllItemsAt(Point position)
     {
       Inventory itemsAt = GetItemsAt(position);
-      if (itemsAt == null)
-        return;
-            m_GroundItemsByPosition.Remove(position);
-            m_aux_GroundItemsList.Remove(itemsAt);
+      if (itemsAt == null) return;
+      m_GroundItemsByPosition.Remove(position);
+      m_aux_GroundItemsList.Remove(itemsAt);
     }
 
     public List<Corpse> GetCorpsesAt(Point p)
@@ -618,7 +612,7 @@ namespace djack.RogueSurvivor.Data
       List<Corpse> corpseList;
       if (m_aux_CorpsesByPosition.TryGetValue(p, out corpseList))
         return corpseList;
-      return (List<Corpse>) null;
+      return null;
     }
 
     public List<Corpse> GetCorpsesAt(int x, int y)

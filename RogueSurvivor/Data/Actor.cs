@@ -1634,7 +1634,7 @@ namespace djack.RogueSurvivor.Data
       MapObject mapObjectAt = Location.Map.GetMapObjectAt(position);
       if (mapObjectAt == null || !mapObjectAt.IsContainer) return "object is not a container";
       Inventory itemsAt = Location.Map.GetItemsAt(position);
-      if (itemsAt == null || itemsAt.IsEmpty) return "nothing to take there";
+      if (itemsAt == null) return "nothing to take there";
 	  // XXX should be "can't get any of the items in the container"
       if (!CanGet(itemsAt.TopItem)) return "cannot take an item";
       return "";
