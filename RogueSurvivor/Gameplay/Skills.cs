@@ -94,6 +94,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static bool LoadSkillsFromCSV(IRogueUI ui, string path)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(path));
       Skills.SkillData[] data;
       Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", 6, new Func<CSVLine, Skills.SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
       {

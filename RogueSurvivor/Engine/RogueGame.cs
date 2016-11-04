@@ -11603,6 +11603,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoSaveGame(string saveName)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(saveName));
       ClearMessages();
       AddMessage(new Data.Message("SAVING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
@@ -11617,6 +11618,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoLoadGame(string saveName)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(saveName));
       ClearMessages();
       AddMessage(new Data.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
@@ -11629,6 +11631,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DeleteSavedGame(string saveName)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(saveName));
       if (!Session.Delete(saveName)) return;
       AddMessage(new Data.Message("PERMADEATH : SAVE GAME DELETED!", Session.Get.WorldTime.TurnCounter, Color.Red));
     }
@@ -11636,6 +11639,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private bool LoadGame(string saveName)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(saveName));
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       m_Player = null;
@@ -11817,6 +11821,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CreateDirectory(string path)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(path));
       if (Directory.Exists(path)) return false;
       Directory.CreateDirectory(path);
       return true;

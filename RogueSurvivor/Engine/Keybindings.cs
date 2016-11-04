@@ -123,6 +123,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(Keybindings kb, string filepath)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
 	  Contract.Requires(null != kb);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
 	  filepath.BinarySerialize(kb);
@@ -131,6 +132,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static Keybindings Load(string filepath)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
       Keybindings keybindings;
       try {

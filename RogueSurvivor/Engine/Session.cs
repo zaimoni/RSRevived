@@ -198,6 +198,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(Session session, string filepath, Session.SaveFormat format)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       session.World.OptimizeBeforeSaving();
       switch (format)
       {
@@ -215,6 +216,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool Load(string filepath, Session.SaveFormat format)
     {
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       switch (format)
       {
         case Session.SaveFormat.FORMAT_BIN:
@@ -316,17 +318,13 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool Delete(string filepath)
     {
-      if (filepath == null)
-        throw new ArgumentNullException("filepath");
+	  Contract.Requires(!string.IsNullOrEmpty(filepath));
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "deleting saved game...");
       bool flag = false;
-      try
-      {
+      try {
         File.Delete(filepath);
         flag = true;
-      }
-      catch (Exception ex)
-      {
+      } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to delete saved game (no save?)");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "exception :");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, ex.ToString());
