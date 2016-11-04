@@ -6,12 +6,19 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
   internal class UniqueMap
   {
-    public Map TheMap { get; set; }
+	public readonly Map TheMap;
+
+	public UniqueMap(Map src)
+	{
+	  Contract.Requires(null != src);
+	  TheMap = src;
+	}
   }
 }

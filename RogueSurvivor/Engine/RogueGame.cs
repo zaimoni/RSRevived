@@ -12318,10 +12318,7 @@ namespace djack.RogueSurvivor.Engine
       mapCharUnderground.District = district;
       mapCharUnderground.Name = string.Format("CHAR Underground Facility @{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       district.AddUniqueMap(mapCharUnderground);
-      return new UniqueMap()
-      {
-        TheMap = mapCharUnderground
-      };
+      return new UniqueMap(mapCharUnderground);
     }
 
     private DistrictKind GenerateDistrictKind(World world, int gridX, int gridY)

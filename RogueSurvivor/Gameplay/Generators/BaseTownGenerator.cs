@@ -2435,12 +2435,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), "Tiles\\Decoration\\stairs_up", true);
       m_Params.District.AddUniqueMap(stationOfficesLevel);
       m_Params.District.AddUniqueMap(stationJailsLevel);
-      Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap() {
-        TheMap = stationOfficesLevel
-      };
-      Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap() {
-        TheMap = stationJailsLevel
-      };
+      Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap(stationOfficesLevel);
+      Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap(stationJailsLevel);
     }
 
     private void GeneratePoliceStation(Map surfaceMap, BaseTownGenerator.Block policeBlock, out Point stairsToLevel1)
@@ -2643,21 +2639,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_Params.District.AddUniqueMap(hospitalPatients);
       m_Params.District.AddUniqueMap(hospitalStorage);
       m_Params.District.AddUniqueMap(hospitalPower);
-      Session.Get.UniqueMaps.Hospital_Admissions = new UniqueMap() {
-        TheMap = hospitalAdmissions
-      };
-      Session.Get.UniqueMaps.Hospital_Offices = new UniqueMap() {
-        TheMap = hospitalOffices
-      };
-      Session.Get.UniqueMaps.Hospital_Patients = new UniqueMap() {
-        TheMap = hospitalPatients
-      };
-      Session.Get.UniqueMaps.Hospital_Storage = new UniqueMap() {
-        TheMap = hospitalStorage
-      };
-      Session.Get.UniqueMaps.Hospital_Power = new UniqueMap() {
-        TheMap = hospitalPower
-      };
+      Session.Get.UniqueMaps.Hospital_Admissions = new UniqueMap(hospitalAdmissions);
+      Session.Get.UniqueMaps.Hospital_Offices = new UniqueMap(hospitalOffices);
+      Session.Get.UniqueMaps.Hospital_Patients = new UniqueMap(hospitalPatients);
+      Session.Get.UniqueMaps.Hospital_Storage = new UniqueMap(hospitalStorage);
+      Session.Get.UniqueMaps.Hospital_Power = new UniqueMap(hospitalPower);
     }
 
     private void GenerateHospitalEntryHall(Map surfaceMap, BaseTownGenerator.Block block)
