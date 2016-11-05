@@ -658,10 +658,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int num = Rules.GridDistance(m_Actor.Location.Position, otherPosition);
       if (isVisible && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
+	    // We can do much better than this.
+		// Floodfill path-find from our map to our leader's.  Then identify the exits to the "next map", and head for them.
         Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
           return new ActionUseExit(m_Actor, m_Actor.Location.Position);
       }
+	  // replace this with a floodfill pathfind to our leader's location on this level.
       ActorAction actorAction = BehaviorIntelligentBumpToward(otherPosition);
       if (actorAction == null || !actorAction.IsLegal()) return null;
       if (other.IsRunning) RunIfPossible();
