@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Skill
   {
-    public readonly int ID;
+    public readonly Gameplay.Skills.IDs ID;
     private int m_Level;
 
     public int Level {
@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Data
 
     public Skill(Gameplay.Skills.IDs id)
     {
-      ID = (int) id;
+      ID = id;
     }
   }
 }

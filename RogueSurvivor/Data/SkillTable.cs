@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class SkillTable
   {
-    private Dictionary<int, Skill> m_Table;
+    private Dictionary<Gameplay.Skills.IDs, Skill> m_Table;
 
     public IEnumerable<Skill> Skills
     {
@@ -29,7 +29,7 @@ namespace djack.RogueSurvivor.Data
         int[] numArray = new int[CountSkills];
         int num = 0;
         foreach (Skill skill in m_Table.Values)
-          numArray[num++] = skill.ID;
+          numArray[num++] = (int)skill.ID;
         return numArray;
       }
     }
@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (m_Table == null) return null;
       Skill skill;
-      if (m_Table.TryGetValue((int) id, out skill)) return skill;
+      if (m_Table.TryGetValue(id, out skill)) return skill;
       return null;
     }
 
@@ -78,19 +78,19 @@ namespace djack.RogueSurvivor.Data
     public void AddSkill(Skill sk)
     {
       Contract.Requires(null!=sk);
-      if (m_Table == null) m_Table = new Dictionary<int, Skill>(3);
+      if (m_Table == null) m_Table = new Dictionary<Gameplay.Skills.IDs, Skill>(3);
       if (m_Table.ContainsKey(sk.ID)) throw new ArgumentException("skill of same ID already in table");
       if (m_Table.ContainsValue(sk)) throw new ArgumentException("skill already in table");
       m_Table.Add(sk.ID, sk);
     }
 
-    public void AddOrIncreaseSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
+    public void AddOrIncreaseSkill(Gameplay.Skills.IDs id)
     {
-      if (m_Table == null) m_Table = new Dictionary<int, Skill>(3);
+      if (m_Table == null) m_Table = new Dictionary<Gameplay.Skills.IDs, Skill>(3);
       Skill skill = GetSkill(id);
       if (skill == null) {
         skill = new Skill(id);
-        m_Table.Add((int) id, skill);
+        m_Table.Add(id, skill);
       }
       ++skill.Level;
     }
@@ -100,7 +100,7 @@ namespace djack.RogueSurvivor.Data
       if (m_Table == null) return;
       Skill skill = GetSkill(id);
       if (skill == null || --skill.Level > 0) return;
-      m_Table.Remove((int) id);
+      m_Table.Remove(id);
       if (m_Table.Count != 0) return;
       m_Table = null;
     }

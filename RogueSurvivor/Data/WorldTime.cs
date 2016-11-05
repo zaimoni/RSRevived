@@ -73,10 +73,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public WorldTime()
-      : this(0)
-    {
-    }
 
     public WorldTime(WorldTime src)
       : this(src.TurnCounter)
@@ -84,7 +80,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null!=src);
     }
 
-    public WorldTime(int turnCounter)
+    public WorldTime(int turnCounter=0)
     {
       Contract.Requires(0<=turnCounter);
       TurnCounter = turnCounter;

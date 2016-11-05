@@ -9589,7 +9589,7 @@ namespace djack.RogueSurvivor.Engine
           if (skillTable != null) {
             foreach (Skill skill in skillTable.Skills) {
               for (int index = 0; index < skill.Level; ++index) {
-                killer.SkillUpgrade((Skills.IDs) skill.ID);
+                killer.SkillUpgrade(skill.ID);
               }
             }
             killer.RecomputeStartingStats();
@@ -9886,7 +9886,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("{0} was a jack of all trades. Or an incompetent.", (object) str1));
       } else {
         foreach (Skill skill in m_Player.Sheet.SkillTable.Skills)
-          textFile.Append(string.Format("{0}-{1}.", (object) skill.Level, (object) Skills.Name(skill.ID)));
+          textFile.Append(string.Format("{0}-{1}.", skill.Level, Skills.Name(skill.ID)));
       }
       textFile.Append(" ");
       textFile.Append("> INVENTORY");
@@ -9925,7 +9925,7 @@ namespace djack.RogueSurvivor.Engine
           textFile.Append(string.Format("{0} skills : ", (object) actor.Name));
           if (actor.Sheet.SkillTable != null && actor.Sheet.SkillTable.Skills != null) {
             foreach (Skill skill in actor.Sheet.SkillTable.Skills)
-              textFile.Append(string.Format("{0}-{1}.", (object) skill.Level, (object) Skills.Name(skill.ID)));
+              textFile.Append(string.Format("{0}-{1}.", skill.Level, Skills.Name(skill.ID)));
           }
         }
       }
@@ -9935,10 +9935,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("{0} had a quiet life. Or dull and boring.", (object) str1));
       } else {
         foreach (Scoring.GameEventData @event in Session.Get.Scoring.Events)
-          textFile.Append(string.Format("- {0,13} : {1}", (object) new WorldTime()
-          {
-            TurnCounter = @event.Turn
-          }.ToString(), (object) @event.Text));
+          textFile.Append(string.Format("- {0,13} : {1}", new WorldTime(@event.Turn).ToString(), @event.Text));
       }
       textFile.Append(" ");
       textFile.Append("> CUSTOM OPTIONS");
@@ -10033,7 +10030,7 @@ namespace djack.RogueSurvivor.Engine
       StringBuilder stringBuilder1 = new StringBuilder();
       if (m_Player.Sheet.SkillTable.Skills != null) {
         foreach (Skill skill in m_Player.Sheet.SkillTable.Skills)
-          stringBuilder1.AppendFormat("{0}-{1} ", (object) skill.Level, (object) Skills.Name(skill.ID));
+          stringBuilder1.AppendFormat("{0}-{1} ", skill.Level, Skills.Name(skill.ID));
       }
       if (!m_HiScoreTable.Register(HiScore.FromScoring(name, Session.Get.Scoring, stringBuilder1.ToString()))) return;
       SaveHiScoreTable();
@@ -10125,13 +10122,10 @@ namespace djack.RogueSurvivor.Engine
         int choiceNumber = KeyToChoiceNumber(key.KeyCode);
         if (choiceNumber >= 1 && choiceNumber <= upgrade.Count) {
           Skill skill = upgradeActor.SkillUpgrade(upgrade[choiceNumber - 1]);
-          if (skill.Level == 1) {
-            AddMessage(new Data.Message(string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-            Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} learned skill {1}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID)));
-          } else {
-            AddMessage(new Data.Message(string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-            Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} improved skill {1} to level {2}.", (object) upgradeActor.Name, (object) Skills.Name(skill.ID), (object) skill.Level));
-          }
+		  string msg = (1 == skill.Level ? string.Format("{0} learned skill {1}.", upgradeActor.Name, Skills.Name(skill.ID))
+					 : string.Format("{0} improved skill {1} to level {2}.", upgradeActor.Name, Skills.Name(skill.ID), skill.Level));
+          AddMessage(new Data.Message(msg, Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+          Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, msg);
           AddMessagePressEnter();
           flag = false;
         }
@@ -11382,22 +11376,19 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
       gy -= 14;
-            m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy, new Color?());
       gy += 14;
       IEnumerable<Skill> skills = actor.Sheet.SkillTable.Skills;
-      if (skills == null)
-        return;
+      if (skills == null) return;
       int num = 0;
       int gx1 = gx;
       int gy1 = gy;
-      foreach (Skill skill in skills)
-      {
-                m_UI.UI_DrawString(Color.White, string.Format("{0}-", (object) skill.Level), gx1, gy1, new Color?());
+      foreach (Skill skill in skills) {
+        m_UI.UI_DrawString(Color.White, string.Format("{0}-", (object) skill.Level), gx1, gy1, new Color?());
         int gx2 = gx1 + 16;
-                m_UI.UI_DrawString(Color.White, Skills.Name(skill.ID), gx2, gy1, new Color?());
+        m_UI.UI_DrawString(Color.White, Skills.Name(skill.ID), gx2, gy1, new Color?());
         gx1 = gx2 - 16;
-        if (++num >= 10)
-        {
+        if (++num >= 10) {
           num = 0;
           gy1 = gy;
           gx1 += TEXTFILE_CHARS_PER_LINE;
