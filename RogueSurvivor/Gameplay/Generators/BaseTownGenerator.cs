@@ -2308,7 +2308,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int index1 = 0; index1 < width; ++index1) {
         Actor newUndead = CreateNewUndead(0);
         while (true) {
-          GameActors.IDs index2 = m_Game.NextUndeadEvolution(newUndead.Model.ID);
+          GameActors.IDs index2 = newUndead.Model.ID.NextUndeadEvolution();
           if (index2 == newUndead.Model.ID) break;
           newUndead.Model = m_Game.GameActors[index2];
         }

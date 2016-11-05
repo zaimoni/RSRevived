@@ -3354,9 +3354,9 @@ namespace djack.RogueSurvivor.Engine
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) { 
           int chance = Math.Min(75, day * 2);
           if (m_Rules.RollChance(chance)) {
-            fromModelID = NextUndeadEvolution(fromModelID);
+            fromModelID = fromModelID.NextUndeadEvolution();
             if (m_Rules.RollChance(chance))
-              fromModelID = NextUndeadEvolution(fromModelID);
+              fromModelID = fromModelID.NextUndeadEvolution();
             newUndead.Model = GameActors[fromModelID];
           }
         }
@@ -9687,60 +9687,25 @@ namespace djack.RogueSurvivor.Engine
         default:
           return null;
       }
-      GameActors.IDs index = NextUndeadEvolution(undead.Model.ID);
+      GameActors.IDs index = undead.Model.ID.NextUndeadEvolution();
 	  return (index != undead.Model.ID ? GameActors[index] : null);
-    }
-
-	// XXX extension function?
-    public GameActors.IDs NextUndeadEvolution(GameActors.IDs fromModelID)
-    {
-      switch (fromModelID)
-      {
-        case GameActors.IDs._FIRST:
-          return GameActors.IDs.UNDEAD_RED_EYED_SKELETON;
-        case GameActors.IDs.UNDEAD_RED_EYED_SKELETON:
-          return GameActors.IDs.UNDEAD_RED_SKELETON;
-        case GameActors.IDs.UNDEAD_ZOMBIE:
-          return GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE;
-        case GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE:
-          return GameActors.IDs.UNDEAD_DARK_ZOMBIE;
-        case GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
-          return GameActors.IDs.UNDEAD_ZOMBIE_LORD;
-        case GameActors.IDs.UNDEAD_ZOMBIE_LORD:
-          return GameActors.IDs.UNDEAD_ZOMBIE_PRINCE;
-        case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
-          return GameActors.IDs.UNDEAD_MALE_NEOPHYTE;
-        case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
-          return GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE;
-        case GameActors.IDs.UNDEAD_MALE_NEOPHYTE:
-          return GameActors.IDs.UNDEAD_MALE_DISCIPLE;
-        case GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE:
-          return GameActors.IDs.UNDEAD_FEMALE_DISCIPLE;
-        default:
-          return fromModelID;
-      }
     }
 
     public void SplatterBlood(Map map, Point position)
     {
       Tile tileAt1 = map.GetTileAt(position.X, position.Y);
-      if (map.IsWalkable(position.X, position.Y) && !tileAt1.HasDecoration("Tiles\\Decoration\\bloodied_floor"))
-      {
-        tileAt1.AddDecoration("Tiles\\Decoration\\bloodied_floor");
-        map.AddTimer((TimedTask) new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, "Tiles\\Decoration\\bloodied_floor"));
+      if (map.IsWalkable(position.X, position.Y) && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
+        tileAt1.AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
+        map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_BLOODIED_FLOOR));
       }
-      foreach (Direction direction in Direction.COMPASS)
-      {
-        if (m_Rules.RollChance(20))
-        {
+      foreach (Direction direction in Direction.COMPASS) {
+        if (m_Rules.RollChance(20)) {
           Point p = position + direction;
-          if (map.IsInBounds(p))
-          {
+          if (map.IsInBounds(p)) {
             Tile tileAt2 = map.GetTileAt(p.X, p.Y);
-            if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration("Tiles\\Decoration\\bloodied_wall"))
-            {
-              tileAt2.AddDecoration("Tiles\\Decoration\\bloodied_wall");
-              map.AddTimer((TimedTask) new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p.X, p.Y, "Tiles\\Decoration\\bloodied_wall"));
+            if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL)) {
+              tileAt2.AddDecoration(GameImages.DECO_BLOODIED_WALL);
+              map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p.X, p.Y, GameImages.DECO_BLOODIED_WALL));
             }
           }
         }
