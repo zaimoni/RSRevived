@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define NOSKEW_SCHEDULER
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -217,14 +219,19 @@ retry:
       // d.WorldPosition is morally readonly
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
+      District tmp_E = (m_Size > x + 1 ? m_DistrictsGrid[x + 1, y] : null);
+      District tmp_SW = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
+#if NOSKEW_SCHEDULER
+#else
+      District tmp_NW = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
+#endif
+#if FAIL
       District tmp_N = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
       District tmp_W = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
       District tmp_S = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
-      District tmp_E = (m_Size > x + 1 ? m_DistrictsGrid[x + 1, y] : null);
       District tmp_NE = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
-      District tmp_NW = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
-      District tmp_SW = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
       District tmp_SE = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1, y + 1] : null);
+#endif
 
       lock(m_PCready) {
         if (0 < m_PCready.Count && d == m_PCready.Peek()) m_PCready.Dequeue();
@@ -233,14 +240,20 @@ retry:
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
         if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
-        if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);
+#if NOSKEW_SCHEDULER
+		if (m_Size-1== d.WorldPosition.X && m_Size - 1 == d.WorldPosition.Y) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
+#else
+        if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);	// XXX causes global vs. local time skew
+#endif
 
         // backstops
+#if FAIL
         if (null != tmp_N) ScheduleForAdvancePlay(tmp_N);
         if (null != tmp_W) ScheduleForAdvancePlay(tmp_W);
         if (null != tmp_NE) ScheduleForAdvancePlay(tmp_NE);
         if (null != tmp_S) ScheduleForAdvancePlay(tmp_S);
         if (null != tmp_SE) ScheduleForAdvancePlay(tmp_SE);
+#endif
       }
     }
 
