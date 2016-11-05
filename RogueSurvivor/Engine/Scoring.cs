@@ -15,8 +15,8 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Scoring
   {
-    private readonly Dictionary<int, Scoring.KillData> m_Kills = new Dictionary<int, Scoring.KillData>();
-    private readonly HashSet<int> m_Sightings = new HashSet<int>();
+    private readonly Dictionary<GameActors.IDs, Scoring.KillData> m_Kills = new Dictionary<GameActors.IDs, Scoring.KillData>();
+    private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
     private readonly List<Scoring.GameEventData> m_Events = new List<Scoring.GameEventData>();
     private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
     private float m_DifficultyRating = 1f;
@@ -310,31 +310,27 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddKill(Actor player, Actor victim, int turn)
     {
-      int id = victim.Model.ID;
+      GameActors.IDs id = victim.Model.ID;
       Scoring.KillData killData;
-      if (m_Kills.TryGetValue(id, out killData))
-      {
+      if (m_Kills.TryGetValue(id, out killData)) {
         ++killData.Amount;
+      } else {
+        m_Kills.Add(id, new Scoring.KillData(id, turn));
+        m_Events.Add(new Scoring.GameEventData(turn, string.Format("Killed first {0}.", (object) Models.Actors[(int)id].Name)));
       }
-      else
-      {
-                m_Kills.Add(id, new Scoring.KillData(id, turn));
-                m_Events.Add(new Scoring.GameEventData(turn, string.Format("Killed first {0}.", (object) Models.Actors[id].Name)));
-      }
-            m_KillPoints += Models.Actors[id].ScoreValue;
-      if (m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[id].Abilities.IsUndead)
-        return;
+      m_KillPoints += Models.Actors[(int)id].ScoreValue;
+      if (m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[(int)id].Abilities.IsUndead) return;
       m_KillPoints += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD;
     }
 
-    public void AddSighting(int actorModelID, int turn)
+    public void AddSighting(GameActors.IDs actorModelID, int turn)
     {
       if (m_Sightings.Contains(actorModelID)) return;
       m_Sightings.Add(actorModelID);
-      m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[actorModelID].Name)));
+      m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[(int)actorModelID].Name)));
     }
 
-    public bool HasSighted(int actorModelID)
+    public bool HasSighted(GameActors.IDs actorModelID)
     {
       return m_Sightings.Contains(actorModelID);
     }
@@ -376,11 +372,11 @@ namespace djack.RogueSurvivor.Engine
     [Serializable]
     public class KillData
     {
-      public int ActorModelID { get; set; }
+      public GameActors.IDs ActorModelID { get; set; }
       public int Amount { get; set; }
       public int FirstKillTurn { get; set; }
 
-      public KillData(int actorModelID, int turn)
+      public KillData(Gameplay.GameActors.IDs actorModelID, int turn)
       {
         ActorModelID = actorModelID;
         Amount = 1;

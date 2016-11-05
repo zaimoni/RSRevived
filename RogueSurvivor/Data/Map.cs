@@ -918,54 +918,54 @@ namespace djack.RogueSurvivor.Data
               pos_css = " style='background:lightgreen'";
             };
             switch(a.Model.ID) {
-              case (int)Gameplay.GameActors.IDs.UNDEAD_SKELETON:
+              case Gameplay.GameActors.IDs.UNDEAD_SKELETON:
                 a_str = "<span style='background:orange'>s</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_RED_EYED_SKELETON:
+              case Gameplay.GameActors.IDs.UNDEAD_RED_EYED_SKELETON:
                 a_str = "<span style='background:red'>s</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_RED_SKELETON:
+              case Gameplay.GameActors.IDs.UNDEAD_RED_SKELETON:
                 a_str = "<span style='background:darkred'>s</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE:
+              case Gameplay.GameActors.IDs.UNDEAD_ZOMBIE:
                 a_str = "<span style='background:orange'>S</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE:
+              case Gameplay.GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE:
                 a_str = "<span style='background:red'>S</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_DARK_ZOMBIE:
+              case Gameplay.GameActors.IDs.UNDEAD_DARK_ZOMBIE:
                 a_str = "<span style='background:darkred'>S</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
+              case Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
                 a_str = "<span style='background:orange'>Z</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_LORD:
+              case Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_LORD:
                 a_str = "<span style='background:red'>Z</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_PRINCE:
+              case Gameplay.GameActors.IDs.UNDEAD_ZOMBIE_PRINCE:
                 a_str = "<span style='background:darkred'>Z</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
-              case (int)Gameplay.GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
+              case Gameplay.GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
+              case Gameplay.GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
                 a_str = "<span style='background:orange'>d</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_MALE_NEOPHYTE:
-              case (int)Gameplay.GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE:
+              case Gameplay.GameActors.IDs.UNDEAD_MALE_NEOPHYTE:
+              case Gameplay.GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE:
                 a_str = "<span style='background:red'>d</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_MALE_DISCIPLE:
-              case (int)Gameplay.GameActors.IDs.UNDEAD_FEMALE_DISCIPLE:
+              case Gameplay.GameActors.IDs.UNDEAD_MALE_DISCIPLE:
+              case Gameplay.GameActors.IDs.UNDEAD_FEMALE_DISCIPLE:
                 a_str = "<span style='background:darkred'>d</span>"; break;
-              case (int)Gameplay.GameActors.IDs.UNDEAD_RAT_ZOMBIE:
+              case Gameplay.GameActors.IDs.UNDEAD_RAT_ZOMBIE:
                 a_str = "<span style='background:orange'>r</span>"; break;
-              case (int)Gameplay.GameActors.IDs.MALE_CIVILIAN:
-              case (int)Gameplay.GameActors.IDs.FEMALE_CIVILIAN:
+              case Gameplay.GameActors.IDs.MALE_CIVILIAN:
+              case Gameplay.GameActors.IDs.FEMALE_CIVILIAN:
                 a_str = "<span style='background:lightgreen'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.FERAL_DOG:
+              case Gameplay.GameActors.IDs.FERAL_DOG:
                 a_str = "<span style='background:lightgreen'>C</span>"; break;    // C in Angband, Nethack
-              case (int)Gameplay.GameActors.IDs.CHAR_GUARD:
+              case Gameplay.GameActors.IDs.CHAR_GUARD:
                 a_str = "<span style='background:darkgray;color:white'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.ARMY_NATIONAL_GUARD:
+              case Gameplay.GameActors.IDs.ARMY_NATIONAL_GUARD:
                 a_str = "<span style='background:darkgreen;color:white'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.BIKER_MAN:
+              case Gameplay.GameActors.IDs.BIKER_MAN:
                 a_str = "<span style='background:darkorange;color:white'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.POLICEMAN:
+              case Gameplay.GameActors.IDs.POLICEMAN:
                 a_str = "<span style='background:lightblue'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.GANGSTA_MAN:
+              case Gameplay.GameActors.IDs.GANGSTA_MAN:
                 a_str = "<span style='background:red;color:white'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.BLACKOPS_MAN:
+              case Gameplay.GameActors.IDs.BLACKOPS_MAN:
                 a_str = "<span style='background:black;color:white'>"+a_str+"</span>"; break;
-              case (int)Gameplay.GameActors.IDs.SEWERS_THING:
-              case (int)Gameplay.GameActors.IDs.JASON_MYERS:
+              case Gameplay.GameActors.IDs.SEWERS_THING:
+              case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }          
             actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>\n");

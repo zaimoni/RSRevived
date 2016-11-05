@@ -2972,12 +2972,12 @@ namespace djack.RogueSurvivor.Engine
       return num1 + num2;
     }
 
+	// XXX dead function?
     private bool HasActorOfModelID(Map map, GameActors.IDs actorModelID)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
+	  Contract.Requires(null != map);
       foreach (Actor actor in map.Actors) {
-        if ((GameActors.IDs) actor.Model.ID == actorModelID) return true;
+        if (actor.Model.ID == actorModelID) return true;
       }
       return false;
     }
@@ -3350,7 +3350,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor newUndead = m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
       if (RogueGame.s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution) {
-        GameActors.IDs fromModelID = (GameActors.IDs) newUndead.Model.ID;
+        GameActors.IDs fromModelID = newUndead.Model.ID;
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) { 
           int chance = Math.Min(75, day * 2);
           if (m_Rules.RollChance(chance)) {
@@ -9654,31 +9654,32 @@ namespace djack.RogueSurvivor.Engine
     private ActorModel CheckUndeadEvolution(Actor undead)
     {
       if (!RogueGame.s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
+	  // anything not whitelisted to evolve, doesn't
       switch (undead.Model.ID)
       {
-        case 0:
+        case GameActors.IDs.UNDEAD_SKELETON:
           if (undead.KillsCount < 2) return null;
           break;
-        case 1:
+        case GameActors.IDs.UNDEAD_RED_EYED_SKELETON:
           if (undead.KillsCount < 4) return null;
           break;
-        case 3:
-        case 4:
+        case GameActors.IDs.UNDEAD_ZOMBIE:
+        case GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE:
           break;
-        case 6:
+        case GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
           if (undead.KillsCount < 4) return null;
           if (undead.Location.Map.LocalTime.Day < ZOMBIE_LORD_EVOLUTION_MIN_DAY && !undead.IsPlayer)
             return null;
           break;
-        case 7:
+        case GameActors.IDs.UNDEAD_ZOMBIE_LORD:
           if (undead.KillsCount < 8) return null;
           break;
-        case 9:
-        case 10:
+        case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
+        case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
           if (undead.KillsCount < 2) return null;
           break;
-        case 11:
-        case 12:
+        case GameActors.IDs.UNDEAD_MALE_NEOPHYTE:
+        case GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE:
           if (undead.KillsCount < 4) return null;
           if (undead.Location.Map.LocalTime.Day < DISCIPLE_EVOLUTION_MIN_DAY && !undead.IsPlayer)
             return null;
@@ -9686,11 +9687,11 @@ namespace djack.RogueSurvivor.Engine
         default:
           return null;
       }
-      GameActors.IDs index = NextUndeadEvolution((GameActors.IDs) undead.Model.ID);
-      if (index == (GameActors.IDs) undead.Model.ID) return null;
-      return GameActors[index];
+      GameActors.IDs index = NextUndeadEvolution(undead.Model.ID);
+	  return (index != undead.Model.ID ? GameActors[index] : null);
     }
 
+	// XXX extension function?
     public GameActors.IDs NextUndeadEvolution(GameActors.IDs fromModelID)
     {
       switch (fromModelID)
@@ -9869,7 +9870,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("{0} was a pacifist. Or too scared to fight.", (object) str1));
       } else {
         foreach (Scoring.KillData kill in Session.Get.Scoring.Kills) {
-          string str3 = kill.Amount > 1 ? Models.Actors[kill.ActorModelID].PluralName : Models.Actors[kill.ActorModelID].Name;
+          string str3 = kill.Amount > 1 ? Models.Actors[(int)kill.ActorModelID].PluralName : Models.Actors[(int)kill.ActorModelID].Name;
           textFile.Append(string.Format("{0,4} {1}.", (object) kill.Amount, (object) str3));
         }
       }

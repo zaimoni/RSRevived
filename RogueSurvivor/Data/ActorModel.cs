@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Data
 {
   internal class ActorModel
   {
-    public int ID { get; set; }
+    public Gameplay.GameActors.IDs ID { get; set; }
     public string ImageID { get; private set; }
     public DollBody DollBody { get; private set;  }
     public string Name { get; private set; }

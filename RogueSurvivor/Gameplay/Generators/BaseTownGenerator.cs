@@ -2286,20 +2286,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
         underground.AddZone(MakeUniqueZone(basename, rectangle));
       }
-      for (int x = 0; x < underground.Width; ++x)
-      {
-        for (int y = 0; y < underground.Height; ++y)
-        {
-          if (m_DiceRoller.RollChance(25))
-          {
+      for (int x = 0; x < underground.Width; ++x) {
+        for (int y = 0; y < underground.Height; ++y) {
+          if (m_DiceRoller.RollChance(25)) {
             Tile tileAt = underground.GetTileAt(x, y);
             if (!tileAt.Model.IsWalkable)
               tileAt.AddDecoration(BaseTownGenerator.CHAR_POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.CHAR_POSTERS.Length)]);
             else
               continue;
           }
-          if (m_DiceRoller.RollChance(20))
-          {
+          if (m_DiceRoller.RollChance(20)) {
             Tile tileAt = underground.GetTileAt(x, y);
             if (tileAt.Model.IsWalkable)
               tileAt.AddDecoration("Tiles\\Decoration\\bloodied_floor");
@@ -2309,15 +2305,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
       int width = underground.Width;
-      for (int index1 = 0; index1 < width; ++index1)
-      {
+      for (int index1 = 0; index1 < width; ++index1) {
         Actor newUndead = CreateNewUndead(0);
         while (true) {
-          GameActors.IDs index2 = m_Game.NextUndeadEvolution((GameActors.IDs) newUndead.Model.ID);
-          if (index2 != (GameActors.IDs) newUndead.Model.ID)
-            newUndead.Model = m_Game.GameActors[index2];
-          else
-            break;
+          GameActors.IDs index2 = m_Game.NextUndeadEvolution(newUndead.Model.ID);
+          if (index2 == newUndead.Model.ID) break;
+          newUndead.Model = m_Game.GameActors[index2];
         }
         ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newUndead, (Predicate<Point>) (pt => underground.GetExitAt(pt) == null));
       }

@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
     private Actor.Flags m_Flags;
-    private int m_ModelID;
+    private Gameplay.GameActors.IDs m_ModelID;
     private int m_FactionID;
     private Gameplay.GameGangs.IDs m_GangID;
     private string m_Name;
@@ -109,7 +109,7 @@ namespace djack.RogueSurvivor.Data
     {
       get {
         Contract.Ensures(null!=Contract.Result<ActorModel>());
-        return Models.Actors[m_ModelID];
+        return Models.Actors[(int)m_ModelID];
       }
       set { // this must be public due to undead evolution
         m_ModelID = value.ID;

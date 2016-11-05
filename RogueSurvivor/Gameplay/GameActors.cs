@@ -75,7 +75,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
       private set {
         m_Models[(int) id] = value;
-        m_Models[(int) id].ID = (int) id;
+        m_Models[(int) id].ID = id;
       }
     }
 
