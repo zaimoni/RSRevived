@@ -12578,6 +12578,7 @@ namespace djack.RogueSurvivor.Engine
           Session.Get.CHARUndergroundFacility_Activated = true;
           Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.IsSecret = false;
           Map surfaceMap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap;
+		  // XXX reduced to integrity checking by Exit constructor adjustment
           Point? local_0 = surfaceMap.FindFirstInMap((Predicate<Point>) (pt =>
           {
             Exit exitAt = surfaceMap.GetExitAt(pt);
@@ -12586,7 +12587,6 @@ namespace djack.RogueSurvivor.Engine
           }));
           if (!local_0.HasValue)
             throw new InvalidOperationException("could not find exit to CUF in surface map");
-          surfaceMap.GetExitAt(local_0.Value).IsAnAIExit = true;
           Point? local_2 = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.FindFirstInMap((Predicate<Point>) (pt =>
           {
             Exit exitAt = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(pt);
@@ -12595,7 +12595,6 @@ namespace djack.RogueSurvivor.Engine
           }));
           if (!local_2.HasValue)
             throw new InvalidOperationException("could not find exit to surface in CUF map");
-          Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(local_2.Value).IsAnAIExit = true;
         }
       }
       if (player != Session.Get.UniqueActors.TheSewersThing.TheActor && !Session.Get.PlayerKnows_TheSewersThingLocation && (player.Location.Map == Session.Get.UniqueActors.TheSewersThing.TheActor.Location.Map && !Session.Get.UniqueActors.TheSewersThing.TheActor.IsDead && IsVisibleToPlayer(Session.Get.UniqueActors.TheSewersThing.TheActor)))

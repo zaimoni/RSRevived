@@ -1351,10 +1351,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       PlaceDoor(map, x, y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       map.GetTileAt(exitPosition.X, exitPosition.Y).AddDecoration(isSurface ? "Tiles\\Decoration\\sewer_hole" : "Tiles\\Decoration\\sewer_ladder");
-      map.SetExitAt(exitPosition, new Exit(linkedMap, exitPosition)
-      {
-        IsAnAIExit = true
-      });
+      map.SetExitAt(exitPosition, new Exit(linkedMap, exitPosition, true));
       if (!isSurface) {
         Point p = new Point(x, y) + direction;
         while (map.IsInBounds(p) && !map.GetTileAt(p.X, p.Y).Model.IsWalkable) {
@@ -1454,10 +1451,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int x2 = exitPosition.X - 1; x2 <= exitPosition.X + 1; ++x2) {
         Point point = new Point(x2, exitPosition.Y);
         map.GetTileAt(point.X, point.Y).AddDecoration(isSurface ? "Tiles\\Decoration\\stairs_down" : "Tiles\\Decoration\\stairs_up");
-        map.SetExitAt(point, new Exit(linkedMap, point)
-        {
-          IsAnAIExit = true
-        });
+        map.SetExitAt(point, new Exit(linkedMap, point, true));
       }
       if (!isSurface) {
         map.SetTileModelAt(x1, num, m_Game.GameTiles.FLOOR_CONCRETE);
@@ -2216,9 +2210,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         surfaceMap.PlaceMapObjectAt((MapObject) doorWindow, pt);
       }));
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
-      underground.SetExitAt(point2, new Exit(surfaceMap, point1));
+      underground.SetExitAt(point2, new Exit(surfaceMap, point1, true));
       underground.GetTileAt(point2.X, point2.Y).AddDecoration(GameImages.DECO_STAIRS_UP);
-      surfaceMap.SetExitAt(point1, new Exit(underground, point2));
+      surfaceMap.SetExitAt(point1, new Exit(underground, point2, true));
       surfaceMap.GetTileAt(point1.X, point1.Y).AddDecoration(GameImages.DECO_STAIRS_DOWN);
       ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.GetTileAt(pt).AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
@@ -3271,10 +3265,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID, bool isAnAIExit)
     {
-      from.SetExitAt(fromPosition, new Exit(to, toPosition)
-      {
-        IsAnAIExit = isAnAIExit
-      });
+      from.SetExitAt(fromPosition, new Exit(to, toPosition, isAnAIExit));
       from.GetTileAt(fromPosition).AddDecoration(exitImageID);
     }
 

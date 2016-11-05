@@ -12,16 +12,16 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Exit
   {
-    Location m_Location;
+    private Location m_Location;	// XXX this cannot be public readonly Location: load fails in the runtime library Nov 5 2016.  Retry after compiler upgrade.
+    public readonly bool IsAnAIExit;
 
     public Map ToMap { get { return m_Location.Map; } }
     public Location Location { get { return m_Location; } }
 
-    public bool IsAnAIExit { get; set; }
-
-    public Exit(Map toMap, Point toPosition)
+    public Exit(Map toMap, Point toPosition, bool AIexit=false)
     {
       m_Location = new Location(toMap,toPosition);
+	  IsAnAIExit = AIexit;
     }
   }
 }
