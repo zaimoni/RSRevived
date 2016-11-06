@@ -223,12 +223,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       IEnumerable<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != GetCompatibleAmmoItem(rw));
       List<ItemRangedWeapon> available_ranged_weapons = (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
+	  List<Percept> friends = FilterNonEnemies(percepts1);
 
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
       // XXX we also want to be close enough to fire at all
       if (null != retreat && null!=available_ranged_weapons) {
-	    ActionMoveStep tmpAction2 = DecideMove(retreat);
+	    ActionMoveStep tmpAction2 = DecideMove(retreat, enemies, friends);
         if (null != tmpAction2) {
           RunIfAdvisable(tmpAction2.dest.Position);
           m_Actor.Activity = Activity.FLEEING;
@@ -237,7 +238,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // need stamina to melee: slow retreat ok
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
-	    ActionMoveStep tmpAction2 = DecideMove(retreat);
+	    ActionMoveStep tmpAction2 = DecideMove(retreat, enemies, friends);
         if (null != tmpAction2) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction2;
@@ -245,7 +246,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // have slow enemies nearby
       if (null != retreat && null != slow_threat) {
-	    ActionMoveStep tmpAction2 = DecideMove(retreat);
+	    ActionMoveStep tmpAction2 = DecideMove(retreat, enemies, friends);
         if (null != tmpAction2) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction2;
@@ -326,13 +327,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
-      if (null != enemies) {
+      if (null != enemies && friends != null) {
         if (game.Rules.RollChance(50)) {
-          List<Percept> friends = FilterNonEnemies(percepts1);
-          if (friends != null) {
-            ActorAction actorAction2 = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
-            if (actorAction2 != null) return actorAction2;
-          }
+          ActorAction actorAction2 = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
+          if (actorAction2 != null) return actorAction2;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
@@ -444,7 +442,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         }
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory)) {
           List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
-          List<Percept> percepts2 = FilterOut(FilterNonEnemies(percepts1), (Predicate<Percept>) (p =>
+          List<Percept> percepts2 = FilterOut(friends, (Predicate<Percept>) (p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
               return true;
@@ -526,7 +524,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < m_Actor.MaxFollowers))
       {
-        Percept target = FilterNearest(FilterNonEnemies(percepts1));
+        Percept target = FilterNearest(friends);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {

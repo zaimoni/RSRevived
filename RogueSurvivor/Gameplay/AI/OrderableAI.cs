@@ -959,6 +959,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  HashSet<Point> tmp = new HashSet<Point>();
 	  foreach(Actor f in friends2) {
 	    foreach(Actor e in enemies.Select(p => p.Percepted as Actor)) {
+		  if (!f.IsEnemyOf(e)) continue;
+		  if (f.CurrentRangedAttack.Range<Rules.GridDistance(f.Location.Position,e.Location.Position)) continue;
 		  List<Point> line = new List<Point>();
 	      LOS.CanTraceFireLine(f.Location, e.Location.Position, f.CurrentRangedAttack.Range, line);
 		  foreach(Point pt in line) {
@@ -966,14 +968,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		  }
 		}
 	  }
-	  return tmp;
+	  return (0<tmp.Count ? tmp : null);
 	}
 
-	protected ActionMoveStep DecideMove(IEnumerable<Point> src)
+	protected ActionMoveStep DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
 	{
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();
-	  // XXX do not get in the way of allies' line of fire
+
+	  // do not get in the way of allies' line of fire
+	  if (2 <= tmp.Count) {
+	    HashSet<Point> friends_LoF = FriendsLoF(enemies, friends);
+		if (null != friends_LoF) {
+		  IEnumerable<Point> no_LoF = tmp.Where(pt=>!friends_LoF.Contains(pt));
+		  int new_dest = no_LoF.Count();
+          if (0<new_dest && new_dest<tmp.Count) tmp = no_LoF.ToList();
+		}
+	  }
 
 	  // weakly prefer not to jump
       if (2 <= tmp.Count) {
