@@ -13,6 +13,7 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -949,5 +950,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+	protected ActionMoveStep DecideMove(IEnumerable<Point> src)
+	{
+	  Contract.Requires(null != src);
+	  List<Point> tmp = src.ToList();
+	  // XXX do not get in the way of allies' line of fire
+
+	  // prefer not to jump
+      if (2 <= tmp.Count) {
+        IEnumerable<Point> no_jump = tmp.Where(pt=> {
+          MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
+          return null==tmp2 || !tmp2.IsJumpable;
+        });
+		int new_dest = no_jump.Count();
+        if (0<new_dest && new_dest<tmp.Count) tmp = no_jump.ToList();
+      }
+
+	  ActionMoveStep ret = new ActionMoveStep(m_Actor, tmp[RogueForm.Game.Rules.Roll(0,tmp.Count)]);
+	  return (ret.IsLegal() ? ret : null);
+	}
   }
 }

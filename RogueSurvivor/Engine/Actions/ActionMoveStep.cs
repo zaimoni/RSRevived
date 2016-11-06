@@ -13,6 +13,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private Location m_NewLocation;
 
+	public Location dest { get { return m_NewLocation; } }
+
     public ActionMoveStep(Actor actor, Direction direction)
       : base(actor)
     {

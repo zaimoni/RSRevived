@@ -228,30 +228,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
       // XXX we also want to be close enough to fire at all
       if (null != retreat && null!=available_ranged_weapons) {
-        Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, tmp);
-        if (tmpAction.IsLegal()) {
-          RunIfAdvisable(tmp);
+	    ActionMoveStep tmpAction2 = DecideMove(retreat);
+        if (null != tmpAction2) {
+          RunIfAdvisable(tmpAction2.dest.Position);
           m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
+          return tmpAction2;
         }
       }
       // need stamina to melee: slow retreat ok
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
-        Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, tmp);
-        if (tmpAction.IsLegal()) {
+	    ActionMoveStep tmpAction2 = DecideMove(retreat);
+        if (null != tmpAction2) {
           m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
+          return tmpAction2;
         }
       }
       // have slow enemies nearby
       if (null != retreat && null != slow_threat) {
-        Point tmp = retreat[game.Rules.Roll(0,retreat.Count)];
-        tmpAction = new ActionMoveStep(m_Actor, tmp);
-        if (tmpAction.IsLegal()) {
+	    ActionMoveStep tmpAction2 = DecideMove(retreat);
+        if (null != tmpAction2) {
           m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
+          return tmpAction2;
         }
       }
       // end melee risk management check
