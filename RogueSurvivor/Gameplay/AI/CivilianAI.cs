@@ -593,13 +593,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return tmpAction;
         }
       }
-      if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
-        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-      }
+
       Percept percept1 = FilterFirst(percepts1, (Predicate<Percept>) (p =>
       {
         Actor actor = p.Percepted as Actor;
@@ -607,38 +601,46 @@ retry:    Percept percept = FilterNearest(perceptList2);
         return IsSoldier(actor);
       }));
       if (percept1 != null) m_LastSoldierSaw = percept1;
-      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE) && m_LastSoldierSaw != null) {
-        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+
+	  if (null != friends) {
+        if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
         }
-      }
-      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE) && m_LastEnemySaw != null) {
-        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+        if (m_LastSoldierSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
         }
-      }
-      if (game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE) && m_LastItemsSaw != null) {
-        tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
+        if (m_LastEnemySaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
         }
-      }
-      if (m_Actor.Model.Abilities.IsLawEnforcer && percepts1 != null && game.Rules.RollChance(LAW_ENFORCE_CHANCE))
-      {
-        Actor target;
-        tmpAction = BehaviorEnforceLaw(game, percepts1, out target);
-        if (null != tmpAction) {
-          m_Actor.TargetActor = target;
-          return tmpAction;
+        if (m_LastItemsSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
         }
-      }
-      if (m_Actor.CountFollowers > 0)
-      {
+        if (m_Actor.Model.Abilities.IsLawEnforcer && game.Rules.RollChance(LAW_ENFORCE_CHANCE)) {
+          Actor target;
+          tmpAction = BehaviorEnforceLaw(game, friends, out target);
+          if (null != tmpAction) {
+            m_Actor.TargetActor = target;
+            return tmpAction;
+          }
+        }
+	  }
+      if (m_Actor.CountFollowers > 0) {
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
         if (null != tmpAction) {
