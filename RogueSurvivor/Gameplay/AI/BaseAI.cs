@@ -657,7 +657,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (other == null || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location.Position, otherPosition);
       if (isVisible && num <= maxDist) return new ActionWait(m_Actor);
-      if (other.Location.Map != m_Actor.Location.Map) {
+#if FAIL
+	  if (other.Location.Map != m_Actor.Location.Map) {
+	    IEnumerable<Exit> valid_exits = m_Actor.Location.Map.Exits.Where(e => e.IsAnAIExit);
+	    // should be at least one by construction
+	    HashSet<Map> exit_maps = new HashSet<Map>(valid_exits.Select(e->e.ToMap));
+	    if (2<=exit_maps.Count && exit_maps.Contains(other.Location.Map)) {	// normalize
+	      valid_exits = valid_exits.Where(e => other.Location.Map==e.ToMap);
+	      exit_maps = new HashSet<Map>(valid_exits.Select(e->e.ToMap));
+	    }
+	    // XXX if still at at least 2 maps, one of us or our leader is in one of the special locations.
+	    Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps;	// XXX new function
+	    navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
+	    Dictionary<Point, int> tmp = navgiate.Approach(m_Actor.Location.Position);
+	    // ...
+	  }
+#endif
+	  if (other.Location.Map != m_Actor.Location.Map) {
 	    // We can do much better than this.
 		// Floodfill path-find from our map to our leader's.  Then identify the exits to the "next map", and head for them.
         Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
