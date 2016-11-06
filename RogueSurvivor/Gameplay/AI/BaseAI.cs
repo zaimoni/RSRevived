@@ -678,6 +678,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();
 
+	  // damaging traps are a problem
+	  if (2 <= tmp.Count) {
+	    Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
+	    foreach (Point pt in tmp) {
+		  trap_damage_field[pt] = ComputeTrapsMaxDamage(m_Actor.Location.Map, pt);
+		}
+	    IEnumerable<Point> safe = tmp.Where(pt => 0>=trap_damage_field[pt]);
+		int new_dest = safe.Count();
+        if (0<new_dest && new_dest<tmp.Count) tmp = safe.ToList();
+		if (0==new_dest) {
+		  safe = tmp.Where(pt => m_Actor.HitPoints>trap_damage_field[pt]);
+		  new_dest = safe.Count();
+          if (0<new_dest && new_dest<tmp.Count) tmp = safe.ToList();
+		}
+	  }
+
 	  // do not get in the way of allies' line of fire
 	  if (2 <= tmp.Count) {
 	    HashSet<Point> friends_LoF = FriendsLoF(enemies, friends);
@@ -697,7 +713,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		int new_dest = no_jump.Count();
         if (0<new_dest && new_dest<tmp.Count) tmp = no_jump.ToList();
       }
-	  return Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[RogueForm.Game.Rules.Roll(0, tmp.Count)]));
+	  while(0<tmp.Count) {
+	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
+		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
+		if (null != ret && ret.IsLegal()) return ret;
+		tmp.RemoveAt(i);
+	  }
+	  return null;
 	}
 
 	protected ActorAction BehaviorPathTo(Location dest)

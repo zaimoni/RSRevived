@@ -681,7 +681,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		}
       }
       if (target == null) return null;
-      return BehaviorIntelligentBumpToward(target.Location.Position);
+      return BehaviorPathTo(target.Location);
+//    return BehaviorIntelligentBumpToward(target.Location.Position);
     }
 
     protected ActorAction BehaviorLeadActor(Percept target)
