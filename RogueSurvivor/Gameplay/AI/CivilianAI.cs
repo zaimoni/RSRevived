@@ -313,12 +313,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
         List<Percept> percepts2 = FilterFireTargets(enemies);
         if (percepts2 != null) {
+		  if (null != damage_field && !damage_field.ContainsKey(m_Actor.Location.Position)) {
+		    // attempt to snipe with current weapon
+		    foreach(Percept p in enemies) {
+              Actor en = p.Percepted as Actor;
+			  if (m_Actor.CurrentRangedAttack.Range<Rules.GridDistance(m_Actor.Location.Position,en.Location.Position)) continue;
+              Attack tmp_attack = m_Actor.RangedAttack(Rules.GridDistance(m_Actor.Location.Position, en.Location.Position));
+              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
+			  // can one-shot
+              tmpAction = BehaviorRangedAttack(en);
+              if (tmpAction != null) {
+                m_Actor.Activity = Activity.FIGHTING;
+                m_Actor.TargetActor = en;
+                return tmpAction;
+              }
+			}
+		  }
+
+		  // normally, shoot at nearest target
           Actor actor = FilterNearest(percepts2).Percepted as Actor;
-          ActorAction actorAction5 = BehaviorRangedAttack(actor);
-          if (actorAction5 != null) {
+          tmpAction = BehaviorRangedAttack(actor);
+          if (tmpAction != null) {
             m_Actor.Activity = Activity.FIGHTING;
             m_Actor.TargetActor = actor;
-            return actorAction5;
+            return tmpAction;
           }
         }
       }
