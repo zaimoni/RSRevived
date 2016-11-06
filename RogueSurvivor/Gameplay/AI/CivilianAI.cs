@@ -530,10 +530,8 @@ retry:    Percept percept = FilterNearest(perceptList2);
         if (null != tmpAction) return tmpAction;
       }
       if (m_Actor.HasLeader && !DontFollowLeader) {
-        Point position1 = m_Actor.Leader.Location.Position;
-        bool isVisible = m_LOSSensor.FOV.Contains(position1);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, position1, isVisible, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;

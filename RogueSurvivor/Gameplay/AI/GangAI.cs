@@ -209,10 +209,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorAttackBarricade(game);
       if (null != tmpAction) return tmpAction;
       if (m_Actor.HasLeader && !DontFollowLeader) {
-        Point position = m_Actor.Leader.Location.Position;
-        bool isVisible = FOV.Contains(position);
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, position, isVisible, maxDist);
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;

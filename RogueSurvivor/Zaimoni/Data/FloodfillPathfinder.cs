@@ -61,12 +61,28 @@ namespace Zaimoni.Data
             }
         }
 
+        public void Blacklist(T src)
+        {
+            if (_inDomain(src)) _blacklist.Add(src);
+        }
+
         public void Approve(IEnumerable<T> src)
         {
             foreach(T tmp in src) {
                 _blacklist.Remove(tmp);
             }
         }
+
+        public void Approve(T src)
+        {
+            _blacklist.Remove(src);
+        }
+
+		public void GoalDistance(T goal, int max_depth, T start)
+		{
+		  T[] tmp = { goal };
+		  GoalDistance(tmp,max_depth,start);
+		}
 
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
         public void GoalDistance(IEnumerable<T> goals, int max_depth, T start)
@@ -123,6 +139,7 @@ namespace Zaimoni.Data
             Dictionary<T, int> tmp = _inverse(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
             foreach (T tmp2 in tmp.Keys) {
+				if (!_map.ContainsKey(tmp2)) continue;
                 if (_map[tmp2] < current_cost) ret[tmp2] = _map[tmp2];
             }
             if (0 == ret.Count) return null;
@@ -136,7 +153,8 @@ namespace Zaimoni.Data
             Dictionary<T, int> tmp = _forward(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);
             foreach (T tmp2 in tmp.Keys) {
-                if (_map[tmp2] > current_cost) ret[tmp2] = _map[tmp2];
+				if (!_map.ContainsKey(tmp2)) continue;
+				if (_map[tmp2] > current_cost) ret[tmp2] = _map[tmp2];
             }
             if (0 == ret.Count) return null;
             return ret;

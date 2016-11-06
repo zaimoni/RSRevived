@@ -652,38 +652,92 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorFollowActor(Actor other, Point otherPosition, bool isVisible, int maxDist)
-    {
-      if (other == null || other.IsDead) return null;
-      int num = Rules.GridDistance(m_Actor.Location.Position, otherPosition);
-      if (isVisible && num <= maxDist) return new ActionWait(m_Actor);
-#if FAIL
-	  if (other.Location.Map != m_Actor.Location.Map) {
+	protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
+	{
+	  if (null == enemies) return null;
+	  if (null == friends) return null;
+	  IEnumerable<Actor> friends2 = friends.Select(p=>p.Percepted as Actor).Where(a=>HasEquipedRangedWeapon(a));
+	  if (!friends2.Any()) return null;
+	  HashSet<Point> tmp = new HashSet<Point>();
+	  foreach(Actor f in friends2) {
+	    foreach(Actor e in enemies.Select(p => p.Percepted as Actor)) {
+		  if (!f.IsEnemyOf(e)) continue;
+		  if (f.CurrentRangedAttack.Range<Rules.GridDistance(f.Location.Position,e.Location.Position)) continue;
+		  List<Point> line = new List<Point>();
+	      LOS.CanTraceFireLine(f.Location, e.Location.Position, f.CurrentRangedAttack.Range, line);
+		  foreach(Point pt in line) {
+		    tmp.Add(pt);
+		  }
+		}
+	  }
+	  return (0<tmp.Count ? tmp : null);
+	}
+
+	protected ActionMoveStep DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
+	{
+	  Contract.Requires(null != src);
+	  List<Point> tmp = src.ToList();
+
+	  // do not get in the way of allies' line of fire
+	  if (2 <= tmp.Count) {
+	    HashSet<Point> friends_LoF = FriendsLoF(enemies, friends);
+		if (null != friends_LoF) {
+		  IEnumerable<Point> no_LoF = tmp.Where(pt=>!friends_LoF.Contains(pt));
+		  int new_dest = no_LoF.Count();
+          if (0<new_dest && new_dest<tmp.Count) tmp = no_LoF.ToList();
+		}
+	  }
+
+	  // weakly prefer not to jump
+      if (2 <= tmp.Count) {
+        IEnumerable<Point> no_jump = tmp.Where(pt=> {
+          MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
+          return null==tmp2 || !tmp2.IsJumpable;
+        });
+		int new_dest = no_jump.Count();
+        if (0<new_dest && new_dest<tmp.Count) tmp = no_jump.ToList();
+      }
+
+	  ActionMoveStep ret = new ActionMoveStep(m_Actor, tmp[RogueForm.Game.Rules.Roll(0,tmp.Count)]);
+	  return (ret.IsLegal() ? ret : null);
+	}
+
+	protected ActorAction BehaviorPathTo(Location dest)
+	{
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();	// XXX new function
+	  if (dest.Map != m_Actor.Location.Map) {
 	    IEnumerable<Exit> valid_exits = m_Actor.Location.Map.Exits.Where(e => e.IsAnAIExit);
 	    // should be at least one by construction
-	    HashSet<Map> exit_maps = new HashSet<Map>(valid_exits.Select(e->e.ToMap));
-	    if (2<=exit_maps.Count && exit_maps.Contains(other.Location.Map)) {	// normalize
-	      valid_exits = valid_exits.Where(e => other.Location.Map==e.ToMap);
-	      exit_maps = new HashSet<Map>(valid_exits.Select(e->e.ToMap));
+	    HashSet<Map> exit_maps = new HashSet<Map>(valid_exits.Select(e=>e.ToMap));
+	    if (2<=exit_maps.Count && exit_maps.Contains(dest.Map)) {	// normalize
+	      valid_exits = valid_exits.Where(e => dest.Map==e.ToMap);
+	      exit_maps = new HashSet<Map>(valid_exits.Select(e=>e.ToMap));
 	    }
-	    // XXX if still at at least 2 maps, one of us or our leader is in one of the special locations.
-	    Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps;	// XXX new function
-	    navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
-	    Dictionary<Point, int> tmp = navgiate.Approach(m_Actor.Location.Position);
-	    // ...
-	  }
-#endif
-	  if (other.Location.Map != m_Actor.Location.Map) {
-	    // We can do much better than this.
-		// Floodfill path-find from our map to our leader's.  Then identify the exits to the "next map", and head for them.
-        Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-        if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
+	    // XXX if still at at least 2 maps before cross-district AI, one of us or our leader is in one of the special locations and that special location is in our district.
+	    Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+        if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))
           return new ActionUseExit(m_Actor, m_Actor.Location.Position);
-      }
-	  // replace this with a floodfill pathfind to our leader's location on this level.
-      ActorAction actorAction = BehaviorIntelligentBumpToward(otherPosition);
+	    navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
+	  } else {
+	    navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
+	  }
+	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
+	  return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
+	}
+
+    protected ActorAction BehaviorFollowActor(Actor other, int maxDist)
+    {
+      if (other == null || other.IsDead) return null;
+	  if (other.Location.Map == m_Actor.Location.Map) {
+	    int num = Rules.GridDistance(m_Actor.Location.Position, other.Location.Position);
+        if (FOV.Contains(other.Location.Position) && num <= maxDist) return new ActionWait(m_Actor);
+	  }
+	  ActorAction actorAction = BehaviorPathTo(other.Location);
       if (actorAction == null || !actorAction.IsLegal()) return null;
-      if (other.IsRunning) RunIfPossible();
+	  ActionMoveStep tmp = actorAction as ActionMoveStep;
+	  if (null != tmp) {
+        if (other.IsRunning || other.Location.Map != m_Actor.Location.Map) RunIfAdvisable(tmp.dest.Position);
+	  }
       return actorAction;
     }
 

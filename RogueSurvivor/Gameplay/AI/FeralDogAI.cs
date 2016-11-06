@@ -102,9 +102,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionSleep(m_Actor);
       }
       if (m_Actor.HasLeader) {
-        Point position = m_Actor.Leader.Location.Position;
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        ActorAction actorAction = BehaviorFollowActor(m_Actor.Leader, position, hasVisibleLeader, maxDist);
+        ActorAction actorAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.FOLLOWING;

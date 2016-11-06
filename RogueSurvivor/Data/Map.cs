@@ -271,14 +271,58 @@ namespace djack.RogueSurvivor.Data
 
     public Point? GetExitPos(Exit exit)
     {
-      if (exit == null) return new Point?();
+      if (exit == null) return null;
       foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
-        if (mExit.Value == exit) return new Point?(mExit.Key);
+        if (mExit.Value == exit) return mExit.Key;
       }
-      return new Point?();
+      return null;
     }
 
-    public void AddZone(Zone zone)
+	public List<Point> ExitLocations(IEnumerable<Exit> src)
+	{
+	  List<Point> ret = new List<Point>();
+	  foreach(Exit e in src) {
+	    Point? pt = GetExitPos(e);
+		if (pt.HasValue) ret.Add(pt.Value);
+	  }
+	  return (0<ret.Count ? ret : null);
+	}
+
+	Dictionary<Point,int> OneStepForPathfinder(Point pt)
+	{
+	  Dictionary<Point,int> ret = new Dictionary<Point, int>();
+	  foreach(Direction dir in Direction.COMPASS) {
+	    Point dest = pt+dir;
+	    if (!IsInBounds(dest)) continue;
+		if (!GetTileAt(dest).Model.IsWalkable) continue;
+	    MapObject tmp = GetMapObjectAt(dest);
+	    if (null==tmp || tmp.IsWalkable || tmp.IsJumpable) {
+	      ret[dest] = 1;
+	      continue;
+	    }
+	    // the following objects are neither walkable nor jumpable: burning cars, barricaded windows/doors, large fortifications, some heavy furnitute
+	    // we do not want to path through burning cars.  Pathing through others is ok in some conditions but not others.
+	  }
+	  return ret;
+	}
+
+	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps()
+	{
+	  Zaimoni.Data.FloodfillPathfinder<Point> m_StepPather = null;	// convert this to a non-zerialized member variable as cache
+	  if (null == m_StepPather) {
+	    Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt));
+	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=>this.IsInBounds(pt)));
+	    Point p = new Point();
+		for (p.X = 0; p.X < Width; ++p.X) {
+		  for (p.Y = 0; p.Y < Height; ++p.Y) {
+		    if (!GetTileAt(p).Model.IsWalkable) m_StepPather.Blacklist(p);
+	      }
+	    }
+	  }
+	  return new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
+	}
+
+	public void AddZone(Zone zone)
     {
       m_Zones.Add(zone);
     }
