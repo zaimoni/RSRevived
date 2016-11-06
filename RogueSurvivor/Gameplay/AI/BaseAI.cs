@@ -807,7 +807,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
     {
       Percept target = FilterNearest(enemies);
-      bool doRun = false;
+      bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted as Actor;
       bool decideToFlee;
       if (HasEquipedRangedWeapon(enemy))
@@ -816,30 +816,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
         decideToFlee = true;
-      else if (m_Actor.Leader != null)
-      {
-        switch (courage)
-        {
-          case ActorCourage.COWARD:
-            decideToFlee = true;
-            doRun = true;
-            break;
-          case ActorCourage.CAUTIOUS:
-            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(m_Actor, enemy);
-            break;
-          case ActorCourage.COURAGEOUS:
-            if (isLeaderFighting)
-            {
-              decideToFlee = false;
-              break;
-            }
-            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(m_Actor, enemy);
-            break;
-          default:
-            throw new ArgumentOutOfRangeException("unhandled courage");
-        }
+      else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
+	    decideToFlee = false;
       } else {
         switch (courage) {
           case ActorCourage.COWARD:
@@ -1611,10 +1589,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected static Actor FindWeakerInMelee(Actor a, Actor b)
     {
-      int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
-      int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;
-      if (num1 < num2) return a;
-      if (num1 > num2) return b;
+	  int a_dam = a.MeleeAttack(b).DamageValue - b.CurrentDefence.Protection_Hit;
+	  int b_dam = b.MeleeAttack(a).DamageValue - a.CurrentDefence.Protection_Hit;
+	  if (0 >= a_dam) return a;
+	  if (0 >= b_dam) return b;
+	  if (RogueForm.Game.Rules.WillOtherActTwiceBefore(a,b)) b_dam *= 2;
+	  if (a_dam/2 >= b.HitPoints) return b;	// one-shot if hit
+	  if (b_dam >= a.HitPoints) return a; // could die if hit
+	  int a_kill_b_in = ((8*b.HitPoints)/(5*a_dam));	// assume bad luck when attacking
+	  int b_kill_a_in = ((8*a.HitPoints)/(7*b_dam));	// assume bad luck when defending
+	  if (a_kill_b_in < b_kill_a_in) return b;
+	  if (a_kill_b_in > b_kill_a_in) return a;
+//	  int num1 = a.HitPoints + a.MeleeAttack(b).DamageValue;
+//      int num2 = b.HitPoints + b.MeleeAttack(a).DamageValue;
+//      if (num1 < num2) return a;
+//      if (num1 > num2) return b;
       return null;
     }
 
