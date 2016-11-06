@@ -943,24 +943,23 @@ namespace djack.RogueSurvivor.Data
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
-              continue;
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) { 
               ascii_map[y][x] = "|"; // either a gate or an iron wall.
-              continue;
-            }
-            Engine.MapObjects.DoorWindow tmp_door = tmp_obj as Engine.MapObjects.DoorWindow;
-            if (null!=tmp_door) {
-              if (tmp_door.IsBarricaded) {
-                ascii_map[y][x] = "+"; // no good icon...pretend it's a closed door
-              } else if (tmp_door.IsClosed) {
-                ascii_map[y][x] = "+"; // typical closed door
-              } else if (tmp_door.IsOpen) {
-                ascii_map[y][x] = "'"; // typical open door
-              } else /* if (tmp_door.IsBroken */ { 
-                ascii_map[y][x] = "'"; // typical broken door
+            } else {
+              Engine.MapObjects.DoorWindow tmp_door = tmp_obj as Engine.MapObjects.DoorWindow;
+              if (null!=tmp_door) {
+                if (tmp_door.IsBarricaded) {
+                  ascii_map[y][x] = "+"; // no good icon...pretend it's a closed door
+                } else if (tmp_door.IsClosed) {
+                  ascii_map[y][x] = "+"; // typical closed door
+                } else if (tmp_door.IsOpen) {
+                  ascii_map[y][x] = "'"; // typical open door
+                } else /* if (tmp_door.IsBroken */ { 
+                  ascii_map[y][x] = "'"; // typical broken door
+                }
               }
             }
-          }
+		  }
 #endregion
 #region map inventory
           Inventory inv = GetItemsAt(x,y);
