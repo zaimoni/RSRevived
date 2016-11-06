@@ -654,20 +654,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorDontLeaveFollowersBehind(int distance, out Actor target)
     {
       target = null;
-      int num1 = int.MinValue;
+
+      // Scan the group:
+      // - Find farthest member of the group.
+      // - If at least half the group is close enough we consider the group cohesion to be good enough and do nothing.
+      int halfGroup = m_Actor.CountFollowers / 2;
+	  if (0 >= halfGroup) return null;	// automatic do nothing(!)
+      int worstDist = Int32.MinValue;
       Map map = m_Actor.Location.Map;
-      Point position = m_Actor.Location.Position;
-      int num2 = 0;
-      int num3 = m_Actor.CountFollowers / 2;
+      Point myPos = m_Actor.Location.Position;
+      int closeCount = 0;
+
       foreach (Actor follower in m_Actor.Followers) {
         if (follower.Location.Map == map) {
-          if (Rules.GridDistance(follower.Location.Position, position) <= distance && ++num2 >= num3) return null;
-          int num4 = Rules.GridDistance(follower.Location.Position, position);
-          if (target == null || num4 > num1) {
+          if (Rules.GridDistance(follower.Location.Position, myPos) <= distance && ++closeCount >= halfGroup) return null;
+          int dist = Rules.GridDistance(follower.Location.Position, myPos);
+          if (target == null || dist > worstDist) {
             target = follower;
-            num1 = num4;
+            worstDist = dist;
           }
-        }
+        } else {	// not even on map
+          if (target == null || int.MaxValue > worstDist) {
+            target = follower;
+            worstDist = int.MaxValue;
+          }
+		}
       }
       if (target == null) return null;
       return BehaviorIntelligentBumpToward(target.Location.Position);

@@ -673,7 +673,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
-	protected ActionMoveStep DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
+	protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
 	{
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();
@@ -697,9 +697,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		int new_dest = no_jump.Count();
         if (0<new_dest && new_dest<tmp.Count) tmp = no_jump.ToList();
       }
-
-	  ActionMoveStep ret = new ActionMoveStep(m_Actor, tmp[RogueForm.Game.Rules.Roll(0,tmp.Count)]);
-	  return (ret.IsLegal() ? ret : null);
+	  return Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[RogueForm.Game.Rules.Roll(0, tmp.Count)]));
 	}
 
 	protected ActorAction BehaviorPathTo(Location dest)

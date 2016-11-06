@@ -300,8 +300,30 @@ namespace djack.RogueSurvivor.Data
 	      ret[dest] = 1;
 	      continue;
 	    }
+		DoorWindow door = tmp as DoorWindow;
+		if (null != door) {
+		  // door should be closed as it isn't walkable.
+		  if (door.IsClosed) {
+		    int cost = 2;
+		    if (0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
+			ret[dest] = cost;
+			continue;
+		  }
+		}
+		if (tmp.IsMovable) {
+		  int cost = 2;	// time cost for a non-optimal push.  Cars are jumpable so we don't get here with them.
+		  ret[dest] = cost;	// time cost for pushing
+		  continue;
+		}
+		if (tmp.BreakState == MapObject.Break.BREAKABLE) {
+		  int cost = 1;
+		  if (0<tmp.HitPoints) cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
+		  ret[dest] = cost;
+		  continue;
+		}
 	    // the following objects are neither walkable nor jumpable: burning cars, barricaded windows/doors, large fortifications, some heavy furnitute
 	    // we do not want to path through burning cars.  Pathing through others is ok in some conditions but not others.
+		// we probably also want to account for traps.
 	  }
 	  return ret;
 	}
