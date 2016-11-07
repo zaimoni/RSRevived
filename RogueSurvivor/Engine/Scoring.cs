@@ -266,7 +266,7 @@ namespace djack.RogueSurvivor.Engine
       if (!options.NPCCanStarveToDeath)
         num14 = -1f;
       float num15 = side != DifficultySide.FOR_SURVIVOR ? num10 - (float) (0.3 * (double) num12 + 0.2 * (double) num14) : num10 + (float) (0.3 * (double) num12 + 0.2 * (double) num14);
-      if (!options.AllowUndeadsEvolution)
+      if (!options.AllowUndeadsEvolution && Session.Get.HasEvolution)
       {
         if (side == DifficultySide.FOR_SURVIVOR)
           num15 *= 0.5f;
@@ -284,21 +284,21 @@ namespace djack.RogueSurvivor.Engine
         else
           num15 *= 2f;
       }
-      if (options.RatsUpgrade)
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.RatsUpgrade)
       {
         if (side == DifficultySide.FOR_SURVIVOR)
           num15 *= 1.1f;
         else
           num15 *= 0.9f;
       }
-      if (options.SkeletonsUpgrade)
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.SkeletonsUpgrade)
       {
         if (side == DifficultySide.FOR_SURVIVOR)
           num15 *= 1.2f;
         else
           num15 *= 0.8f;
       }
-      if (options.ShamblersUpgrade)
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.ShamblersUpgrade)
       {
         if (side == DifficultySide.FOR_SURVIVOR)
           num15 *= 1.25f;

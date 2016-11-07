@@ -986,10 +986,6 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case 2:
                 Session.Get.GameMode = GameMode.GM_VINTAGE;
-                RogueGame.s_Options.AllowUndeadsEvolution = false;
-                RogueGame.s_Options.ShamblersUpgrade = false;
-                RogueGame.s_Options.RatsUpgrade = false;
-                RogueGame.s_Options.SkeletonsUpgrade = false;
                 ApplyOptions(false);
                 flag2 = true;
                 flag1 = false;
@@ -1723,7 +1719,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.RevealStartingDistrict = !RogueGame.s_Options.RevealStartingDistrict;
                 break;
               case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                RogueGame.s_Options.AllowUndeadsEvolution = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.AllowUndeadsEvolution;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.AllowUndeadsEvolution = !RogueGame.s_Options.AllowUndeadsEvolution;
                 break;
               case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
                 RogueGame.s_Options.DayZeroUndeadsPercent -= 5;
@@ -1768,13 +1764,13 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE:
-                RogueGame.s_Options.RatsUpgrade = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.RatsUpgrade;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.RatsUpgrade = !RogueGame.s_Options.RatsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-                RogueGame.s_Options.SkeletonsUpgrade = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.SkeletonsUpgrade;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.SkeletonsUpgrade = !RogueGame.s_Options.SkeletonsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-                RogueGame.s_Options.ShamblersUpgrade = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.ShamblersUpgrade = !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
             break;
@@ -1858,7 +1854,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.RevealStartingDistrict = !RogueGame.s_Options.RevealStartingDistrict;
                 break;
               case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                RogueGame.s_Options.AllowUndeadsEvolution = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.AllowUndeadsEvolution;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.AllowUndeadsEvolution = !RogueGame.s_Options.AllowUndeadsEvolution;
                 break;
               case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
                 RogueGame.s_Options.DayZeroUndeadsPercent += 5;
@@ -1904,15 +1900,13 @@ namespace djack.RogueSurvivor.Engine
                 }
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE:
-                RogueGame.s_Options.RatsUpgrade = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.RatsUpgrade;
+				if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.RatsUpgrade = !RogueGame.s_Options.RatsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-                if (Session.Get.GameMode == GameMode.GM_VINTAGE)
-                  RogueGame.s_Options.SkeletonsUpgrade = false;
-                RogueGame.s_Options.SkeletonsUpgrade = !RogueGame.s_Options.SkeletonsUpgrade;
+			    if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.SkeletonsUpgrade = !RogueGame.s_Options.SkeletonsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-                RogueGame.s_Options.ShamblersUpgrade = Session.Get.GameMode != GameMode.GM_VINTAGE && !RogueGame.s_Options.ShamblersUpgrade;
+				if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.ShamblersUpgrade = !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
             break;
@@ -2872,15 +2866,16 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering NPC upgrade, Map: "+map.Name);
 #endif
 #region Advance local time
-      bool isNight = map.LocalTime.IsNight;
+      bool wasNight = map.LocalTime.IsNight;
       ++map.LocalTime.TurnCounter;
-      bool flag = !map.LocalTime.IsNight;
+      bool isDay = !map.LocalTime.IsNight;
 #endregion
 #region Check for NPC upgrade
-      if (isNight && flag) {
+	  if (wasNight != isDay) return;	// night/day did not end, do not upgrade skills
+      if (isDay) {
         HandleLivingNPCsUpgrade(map);
       } else {
-        if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || isNight || (flag || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day)))
+        if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day))
           return;
         HandleUndeadNPCsUpgrade(map);
       }
@@ -9908,7 +9903,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("- difficulty rating of {0}%.", (object) (int) (100.0 * (double)Session.Get.Scoring.DifficultyRating)));
       if (RogueGame.s_Options.IsPermadeathOn)
         textFile.Append(string.Format("- {0} : yes.", (object) GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
-      if (!RogueGame.s_Options.AllowUndeadsEvolution)
+      if (!RogueGame.s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), RogueGame.s_Options.AllowUndeadsEvolution ? (object) "yes" : (object) "no"));
       if (RogueGame.s_Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), (object) RogueGame.s_Options.CitySize));
@@ -10158,9 +10153,9 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Actor actor in map.Actors) {
         if (!actor.Model.Abilities.IsUndead) continue;
-        if (!RogueGame.s_Options.SkeletonsUpgrade && GameActors.IsSkeletonBranch(actor.Model)) continue;
-        if (!RogueGame.s_Options.RatsUpgrade && GameActors.IsRatBranch(actor.Model)) continue;
-        if (!RogueGame.s_Options.ShamblersUpgrade && GameActors.IsShamblerBranch(actor.Model)) continue;
+        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) continue;
+        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) continue;
+        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) continue;
         if (actor.HasLeader && actor.Leader.IsPlayer) continue; // leader triggers upgrade
         if (actor.IsPlayer) {
           HandlePlayerDecideUpgrade(actor);
@@ -11056,10 +11051,10 @@ namespace djack.RogueSurvivor.Engine
             if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
             Tile tileAt = map.GetTileAt(pos);
             string imageID = null;
-            if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag")) imageID = "mini_player_tag";
-            else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag2")) imageID = "mini_player_tag2";
-            else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag3")) imageID = "mini_player_tag3";
-            else if (tileAt.HasDecoration("Tiles\\Decoration\\player_tag4")) imageID = "mini_player_tag4";
+            if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG1)) imageID = "mini_player_tag";
+            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG2)) imageID = "mini_player_tag2";
+            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG3)) imageID = "mini_player_tag3";
+            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG4)) imageID = "mini_player_tag4";
             if (imageID != null) {
               Point point = new Point(MINIMAP_X + pos.X * MINITILE_SIZE, MINIMAP_Y + pos.Y * MINITILE_SIZE);
               m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
@@ -11067,8 +11062,8 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (!m_Player.IsSleeping)
-      { // normal detectors/lights
+      if (!m_Player.IsSleeping) {
+	    // normal detectors/lights
         ItemTracker itemTracker1 = m_Player.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
         if (null!=itemTracker1 && itemTracker1.IsUseless) itemTracker1 = null;    // require batteries > 0
         bool find_followers = (null != itemTracker1 && m_Player.CountFollowers > 0 && itemTracker1.CanTrackFollowersOrLeader);
@@ -11120,7 +11115,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-      }
+      }	// end if (!m_Player.IsSleeping)
       Point position = m_Player.Location.Position;
       int x1 = MINIMAP_X + position.X * 2;
       int y1 = MINIMAP_Y + position.Y * 2;

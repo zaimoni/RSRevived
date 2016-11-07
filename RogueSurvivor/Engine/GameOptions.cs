@@ -22,6 +22,9 @@ namespace djack.RogueSurvivor.Engine
  * The stamina cost for pushing cars should not scale, but the stamina stat of livings should scale (as should the relevant skills).
  */
 
+// Design decision: we do not want to reference Session.Get.GameOptions in the accessors.
+// RogueGame::HandleOptions wants all of these setters to be public
+
   [Serializable]
   internal struct GameOptions
   {
@@ -984,8 +987,7 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
           return !RevealStartingDistrict ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-          if (mode == GameMode.GM_VINTAGE)
-            return "---";
+          if (mode == GameMode.GM_VINTAGE) return "---";
           return !AllowUndeadsEvolution ? "NO    (default YES)" : "YES   (default YES)";
         case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)DayZeroUndeadsPercent, (object) DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
@@ -1014,16 +1016,13 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
           return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(ZombifiedsUpgradeDays), (object) GameOptions.Name(GameOptions.ZupDays.THREE));
         case GameOptions.IDs.GAME_RATS_UPGRADE:
-          if (mode == GameMode.GM_VINTAGE)
-            return "---";
+          if (mode == GameMode.GM_VINTAGE) return "---";
           return !RatsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-          if (mode == GameMode.GM_VINTAGE)
-            return "---";
+          if (mode == GameMode.GM_VINTAGE) return "---";
           return !SkeletonsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-          if (mode == GameMode.GM_VINTAGE)
-            return "---";
+          if (mode == GameMode.GM_VINTAGE) return "---";
           return !ShamblersUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         default:
           return "???";
