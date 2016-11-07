@@ -256,11 +256,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
 
-    public static HashSet<Point> ComputeFOVFor(Actor actor, WorldTime time, Weather weather)
+	// note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
+    public static HashSet<Point> ComputeFOVFor(Actor actor, WorldTime time, Weather weather, Location a_loc)
     {
       HashSet<Point> visibleSet = new HashSet<Point>();
-      Point position = actor.Location.Position;
-      Map map = actor.Location.Map;
+      Point position = a_loc.Position;
+      Map map = a_loc.Map;
       int maxRange = actor.FOVrange(time, weather);
       int x1 = position.X - maxRange;
       int x2 = position.X + maxRange;
@@ -278,7 +279,7 @@ namespace djack.RogueSurvivor.Engine
           point1.Y = y3;
           if ((double) Rules.LOSDistance(position, point1) <= (double) maxRange && !visibleSet.Contains(point1))
           {
-            if (!LOS.FOVSub(actor.Location, point1, maxRange, ref visibleSet))
+            if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet))
             {
               bool flag = false;
               Tile tileAt = map.GetTileAt(x3, y3);
@@ -321,6 +322,11 @@ namespace djack.RogueSurvivor.Engine
       foreach (Point point2 in pointList2)
         visibleSet.Add(point2);
     return visibleSet;
+    }
+
+    public static HashSet<Point> ComputeFOVFor(Actor actor, WorldTime time, Weather weather)
+    {
+	  return ComputeFOVFor(actor, time, weather, actor.Location);
     }
   }
 }

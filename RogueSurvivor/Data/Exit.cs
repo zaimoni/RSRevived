@@ -6,6 +6,7 @@
 
 using System;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -20,6 +21,7 @@ namespace djack.RogueSurvivor.Data
 
     public Exit(Map toMap, Point toPosition, bool AIexit=false)
     {
+	  Contract.Requires(null!=toMap);
       m_Location = new Location(toMap,toPosition);
 	  IsAnAIExit = AIexit;
     }

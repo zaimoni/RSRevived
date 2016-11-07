@@ -9,6 +9,7 @@ using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -18,6 +19,10 @@ namespace djack.RogueSurvivor.Data
   internal abstract class ActorController
   {
     protected Actor m_Actor;
+
+#if CONTRACTS_FULL
+	public Actor Actor { get { return m_Actor; } }
+#endif
 
     public virtual void TakeControl(Actor actor)
     {
@@ -164,6 +169,8 @@ namespace djack.RogueSurvivor.Data
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(Item it)
     {
+		Contract.Requires(null != Actor);
+		Contract.Requires(null != it);
         if (it is ItemFood)
             {
             if (!m_Actor.Model.Abilities.HasToEat) return true;
@@ -238,6 +245,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInterestingItem(Item it)
     {
+	  Contract.Requires(null != Actor);
+	  Contract.Requires(null != it);
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
 	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;

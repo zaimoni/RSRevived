@@ -112,6 +112,7 @@ namespace djack.RogueSurvivor.Data
         return Models.Actors[(int)m_ModelID];
       }
       set { // this must be public due to undead evolution
+	    Contract.Requires(null!=value);
         m_ModelID = value.ID;
         OnModelSet();
       }
@@ -769,6 +770,7 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTrustIn(Actor other, int trust)
     {
+	  Contract.Requires(null != other);
       if (null == m_TrustDict) m_TrustDict = new Dictionary<Actor,int>();
       m_TrustDict[other] = trust;
     }
@@ -1950,7 +1952,7 @@ namespace djack.RogueSurvivor.Data
       m_Inventory.MaxCapacity = MaxInv;
     }
 
-    public void CreateCivilianDeductFoodSleep(Engine.Rules r) { 
+    public void CreateCivilianDeductFoodSleep(Rules r) { 
       m_FoodPoints -= r.Roll(0, m_FoodPoints / 4);
       m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
     }
