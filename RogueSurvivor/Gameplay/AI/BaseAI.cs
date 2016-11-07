@@ -707,6 +707,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  // XXX if we have priority-see locations, maximize that
 	  // XXX if we have threat tracking, maximize threat cleared
 	  // XXX if we have item memory, maximize "update"
+#if FAIL
+	  bool want_LOS_heuristics = false;
+	  ThreatTracking _threats = m_Actor.Threats;
+	  if (null != _threats) want_LOS_heuristics = true;
+	  // ....
+
+	  Dictionary<Point,HashSet<Point>> hypothetical_los = (want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>> : null);
+	  if (null != hypothetical_los)
+		{
+	    }
+
+	  if (null != _threats)
+	    {
+	    }
+#endif
 
 	  // weakly prefer not to jump
       if (2 <= tmp.Count) {
