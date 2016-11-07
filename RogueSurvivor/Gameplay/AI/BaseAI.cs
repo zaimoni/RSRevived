@@ -704,6 +704,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		}
 	  }
 
+	  // XXX if we have priority-see locations, maximize that
+	  // XXX if we have threat tracking, maximize threat cleared
+	  // XXX if we have item memory, maximize "update"
+
 	  // weakly prefer not to jump
       if (2 <= tmp.Count) {
         IEnumerable<Point> no_jump = tmp.Where(pt=> {

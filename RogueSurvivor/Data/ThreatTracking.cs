@@ -48,6 +48,13 @@ namespace djack.RogueSurvivor.Data
           return _threats.ContainsKey(a);
         }
 
+		public List<Actor> ThreatAt(Location loc)
+		{
+		  lock(_threats) {
+			return _threats.Keys.Where(a=>_threats[a].Contains(loc)).ToList();
+		  }
+		}
+
         public void RecordSpawn(Actor a, IEnumerable<Location> locs)
         {
           _threats[a] = new HashSet<Location>(locs);
