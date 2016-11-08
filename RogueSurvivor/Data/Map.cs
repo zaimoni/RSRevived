@@ -19,14 +19,14 @@ namespace djack.RogueSurvivor.Data
   internal class Map : ISerializable
   {
     public const int GROUND_INVENTORY_SLOTS = 10;
-    public int Seed { get; private set; }
-    private District m_District;
-    public string Name { get; private set; }
+    public readonly int Seed;
+    public readonly District District;
+	public readonly string Name;
     private Lighting m_Lighting;
-    public WorldTime LocalTime { get; private set; }
-    public int Width { get; private set; }
-    public int Height { get; private set; }
-    public Rectangle Rect { get; private set; }
+	public readonly WorldTime LocalTime;
+	public readonly int Width;
+	public readonly int Height;
+	public readonly Rectangle Rect;
     private readonly Tile[,] m_Tiles;
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
     private readonly List<Zone> m_Zones = new List<Zone>(5);
@@ -49,8 +49,6 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     [NonSerialized]
     private List<Actor> m_aux_Players;
-
-    public District District { get { return m_District; } }
 
     public bool IsSecret { get; set; }
 
@@ -109,7 +107,7 @@ namespace djack.RogueSurvivor.Data
       Name = name;
       Width = width;
       Height = height;
-	  m_District = d;
+	  District = d;
       Rect = new Rectangle(0, 0, width, height);
       LocalTime = new WorldTime();
       Lighting = Lighting.OUTSIDE;
@@ -125,7 +123,7 @@ namespace djack.RogueSurvivor.Data
     protected Map(SerializationInfo info, StreamingContext context)
     {
       Seed = (int) info.GetValue("m_Seed", typeof (int));
-      m_District = (District) info.GetValue("m_District", typeof (District));
+      District = (District) info.GetValue("m_District", typeof (District));
       Name = (string) info.GetValue("m_Name", typeof (string));
       LocalTime = (WorldTime) info.GetValue("m_LocalTime", typeof (WorldTime));
       Width = (int) info.GetValue("m_Width", typeof (int));
@@ -148,7 +146,7 @@ namespace djack.RogueSurvivor.Data
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
       info.AddValue("m_Seed", Seed);
-      info.AddValue("m_District", (object)m_District);
+      info.AddValue("m_District", (object)District);
       info.AddValue("m_Name", (object)Name);
       info.AddValue("m_LocalTime", (object)LocalTime);
       info.AddValue("m_Width", Width);
@@ -1125,7 +1123,7 @@ namespace djack.RogueSurvivor.Data
 
     public override int GetHashCode()
     {
-      return Name.GetHashCode() ^ m_District.GetHashCode();
+      return Name.GetHashCode() ^ District.GetHashCode();
     }
   }
 }
