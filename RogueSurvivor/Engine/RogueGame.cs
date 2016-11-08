@@ -9506,6 +9506,7 @@ namespace djack.RogueSurvivor.Engine
       Actor m_Player_bak = m_Player;    // ForceVisibleToPlayer calls below can change this
 
       deadGuy.IsDead = true;
+	  deadGuy.Killed(reason);
       DoStopDraggingCorpses(deadGuy);
       UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
@@ -11035,16 +11036,29 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMiniMap(Map map)
     {
       if (null == m_Player) return;   // fail-safe.
+      if (null == m_Player) return;   // fail-safe.
+	  ThreatTracking _threats = m_Player.Threats;
+	  
 	  if (RogueGame.s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         Point pos = new Point();
+		if (null == _threats) {
         for (pos.X = 0; pos.X < map.Width; ++pos.X) {
           for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
             if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
             m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
           }
         }
+		} else {
+        for (pos.X = 0; pos.X < map.Width; ++pos.X) {
+          for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
+            if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
+            m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : (0<_threats.ThreatAt(new Location(map,pos)).Count ? Color.Maroon : map.GetTileAt(pos).Model.MinimapColor)));
+          }
+        }
+
+		}
 #endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
       }

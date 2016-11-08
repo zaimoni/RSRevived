@@ -102,10 +102,13 @@ namespace djack.RogueSurvivor.Data
           Actor moving = (sender as Actor);
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
+			_threats[moving].Add(moving.Location);
             List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
-            foreach(Point pt in tmp) {
-              _threats[moving].Add(new Location(moving.Location.Map,pt));
-            }
+			if (null!=tmp) {
+              foreach(Point pt in tmp) {
+                _threats[moving].Add(new Location(moving.Location.Map,pt));
+              }
+			}
           }
         }
     }
