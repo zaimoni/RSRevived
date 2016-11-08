@@ -15,30 +15,18 @@ namespace djack.RogueSurvivor.Data
   internal class District
   {
     private readonly List<Map> m_Maps = new List<Map>(3);
-    private Point m_WorldPosition;
-    private readonly DistrictKind m_Kind;
+    public readonly Point WorldPosition;
+    public readonly DistrictKind Kind;
     private string m_Name;
     private Map m_EntryMap;
     private Map m_SewersMap;
     private Map m_SubwayMap;
 
-    public Point WorldPosition {
-      get {
-        return m_WorldPosition;
-      }
-    }
-
-    public DistrictKind Kind {
-      get {
-        return m_Kind;
-      }
-    }
-
     public string Name {
       get {
         return m_Name;
       }
-      private set {
+      private set {	// XXX GenerateEntryMap updates outside of constructor
         m_Name = value;
       }
     }
@@ -109,8 +97,8 @@ namespace djack.RogueSurvivor.Data
 
     public District(Point worldPos, DistrictKind kind)
     {
-      m_WorldPosition = worldPos;
-      m_Kind = kind;
+      WorldPosition = worldPos;
+      Kind = kind;
     }
 
     // map manipulation
@@ -267,7 +255,7 @@ namespace djack.RogueSurvivor.Data
 
     public override int GetHashCode()
     {
-      return m_WorldPosition.GetHashCode();
+      return WorldPosition.GetHashCode();
     }
   }
 }
