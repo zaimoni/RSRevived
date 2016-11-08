@@ -66,20 +66,6 @@ namespace djack.RogueSurvivor.Data
       Actor.Says -= HandleSay;
     }
 
-    public bool LastSeen(Location x, out int turn) { return m_itemMemory.HaveEverSeen(x,out turn); }
-
-    public bool IsKnown(Location x) {
-      int discard;
-      return LastSeen(x, out discard);
-    }
-
-    public void ForceKnown(Point x) {   // for world creation
-      m_itemMemory.Set(new Location(m_Actor.Location.Map, x), null, m_Actor.Location.Map.LocalTime.TurnCounter);
-    }
-
-    public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return m_itemMemory.WhatHaveISeen(); }
-    public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return m_itemMemory.WhereIs(x); }
-
     public override List<Percept> UpdateSensors()
     {
       return m_LOSSensor.Sense(m_Actor);

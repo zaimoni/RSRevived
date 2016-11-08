@@ -43,6 +43,21 @@ namespace djack.RogueSurvivor.Data
        }
     }
 
+    public bool LastSeen(Location x, out int turn) { turn = 0; return (null != ItemMemory ? ItemMemory.HaveEverSeen(x, out turn) : false); }
+
+    public bool IsKnown(Location x) {
+      int discard;
+      return LastSeen(x, out discard);
+    }
+
+    public void ForceKnown(Point x) {   // for world creation
+      ItemMemory?.Set(new Location(m_Actor.Location.Map, x), null, m_Actor.Location.Map.LocalTime.TurnCounter);
+    }
+
+    public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
+    public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
+
+
     public abstract List<Percept> UpdateSensors();
 
     // vision

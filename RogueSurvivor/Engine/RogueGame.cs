@@ -4158,7 +4158,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleItemInfo()
     {
-      List<Gameplay.GameItems.IDs> item_classes = (m_Player.Controller as PlayerController).WhatHaveISeen();
+      List<Gameplay.GameItems.IDs> item_classes = m_Player.Controller.WhatHaveISeen();
       if (null == item_classes || 0>=item_classes.Count) {
         AddMessage(new Data.Message("You have seen no memorable items.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         return;
@@ -4189,7 +4189,7 @@ namespace djack.RogueSurvivor.Engine
         } else if (choiceNumber >= 1 && choiceNumber <= num2) {
           int index = num1 + choiceNumber - 1;
           Gameplay.GameItems.IDs item_type = item_classes[index];
-          Dictionary<Location, int> catalog = (m_Player.Controller as PlayerController).WhereIs(item_type);
+          Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
           List<string> tmp = new List<string>();
           foreach(Location tmp2 in catalog.Keys) {
             tmp.Add(tmp2.ToString()+": "+catalog[tmp2].ToString());
@@ -10567,7 +10567,7 @@ namespace djack.RogueSurvivor.Engine
           Tile tile = map.IsInBounds(x, y) ? map.GetTileAt(x, y) : null;
           if (null != tile) {
             tile.IsInView = player;
-            tile.IsVisited = (m_Player.Controller as PlayerController).IsKnown(new Location(map,point));
+            tile.IsVisited = m_Player.Controller.IsKnown(new Location(map,point));
             DrawTile(tile, screen, tint);
           } else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
             DrawExit(screen);
@@ -10697,7 +10697,7 @@ namespace djack.RogueSurvivor.Engine
         DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else {
-        if (!(m_Player.Controller as PlayerController).IsKnown(mapObj.Location) || IsPlayerSleeping()) return;
+        if (!m_Player.Controller.IsKnown(mapObj.Location) || IsPlayerSleeping()) return;
         DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
       }
     }
@@ -11046,14 +11046,14 @@ namespace djack.RogueSurvivor.Engine
 		if (null == _threats) {
         for (pos.X = 0; pos.X < map.Width; ++pos.X) {
           for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
-            if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
+            if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
             m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
           }
         }
 		} else {
         for (pos.X = 0; pos.X < map.Width; ++pos.X) {
           for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
-            if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
+            if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
             m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : (0<_threats.ThreatAt(new Location(map,pos)).Count ? Color.Maroon : map.GetTileAt(pos).Model.MinimapColor)));
           }
         }
@@ -11067,7 +11067,7 @@ namespace djack.RogueSurvivor.Engine
         Point pos = new Point();
         for (pos.X = 0; pos.X < map.Width; ++pos.X) {
           for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
-            if (!(m_Player.Controller as PlayerController).IsKnown(new Location(map, pos))) continue;
+            if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
             Tile tileAt = map.GetTileAt(pos);
             string imageID = null;
             if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG1)) imageID = "mini_player_tag";
@@ -11993,7 +11993,7 @@ namespace djack.RogueSurvivor.Engine
                 if (zonesAt2 != null && zonesAt2[0] == zone) flag = true;
               }
               if (flag) { 
-                (player.Controller as PlayerController).ForceKnown(point);
+                player.Controller.ForceKnown(point);
               }
             }
           }
