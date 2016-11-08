@@ -314,7 +314,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
         List<Percept> percepts2 = FilterFireTargets(enemies);
         if (percepts2 != null) {
-		  if (null != damage_field && !damage_field.ContainsKey(m_Actor.Location.Position)) {
+		  if (null != damage_field  && 2<=percepts2.Count && !damage_field.ContainsKey(m_Actor.Location.Position)) {
 		    // attempt to snipe with current weapon
 		    foreach(Percept p in enemies) {
               Actor en = p.Percepted as Actor;
