@@ -711,20 +711,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  bool want_LOS_heuristics = false;
 	  ThreatTracking _threats = m_Actor.Threats;
 	  if (null != _threats) want_LOS_heuristics = true;
-	  // ....
+	  Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> _item_memory = m_Actor.ItemMemory
+	  if (null != _item_memory) want_LOS_heuristics = true;
 
-	  Dictionary<Point,HashSet<Point>> hypothetical_los = (want_LOS_heuristics ? new Dictionary<Point,HashSet<Point>> : null);
-	  if (null != hypothetical_los)
-		{
+	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>> : null);
+	  if (null != hypothetical_los) {
+	    foreach(Point pt in tmp) {
+	      hypothetical_los[pt] = LOS.ComputeFOVFor(m_Actor, actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(actor.Location.Map,pt));
 	    }
+	  }
 
-	  if (null != _threats)
+	  if (null != _threats && 2<=tmp.Count)
+	    {
+	    }
+	  if (null != _item_memory && 2<=tmp.Count)
 	    {
 	    }
 #endif
 
 	  // weakly prefer not to jump
-      if (2 <= tmp.Count) {
+	  if (2 <= tmp.Count) {
         IEnumerable<Point> no_jump = tmp.Where(pt=> {
           MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
           return null==tmp2 || !tmp2.IsJumpable;

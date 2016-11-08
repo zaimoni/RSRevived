@@ -16,10 +16,10 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class PlayerController : ActorController
   {
-    private readonly Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
+    private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
 
-    public PlayerController() { 
+	public PlayerController() { 
       // XXX filter should be by the normal filter type of the AI being substituted for
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES);
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
@@ -31,7 +31,24 @@ namespace djack.RogueSurvivor.Data
        }
     }
 
-    public override void TakeControl(Actor actor)
+	private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
+	  switch(m_Actor.Model.DefaultController.Name)
+	  {
+	  case "CHARGuardAI": return Gameplay.AI.CHARGuardAI.VISION_SEES;
+	  case "CivilianAI": return Gameplay.AI.CivilianAI.VISION_SEES;
+	  case "FeralDogAI": return Gameplay.AI.FeralDogAI.VISION_SEES;
+	  case "GangAI": return Gameplay.AI.GangAI.VISION_SEES;
+	  case "InsaneHumanAI": return Gameplay.AI.InsaneHumanAI.VISION_SEES;
+	  case "RatAI": return Gameplay.AI.RatAI.VISION_SEES;
+	  case "SewersThingAI": return Gameplay.AI.SewersThingAI.VISION_SEES;
+	  case "SkeletonAI": return Gameplay.AI.SkeletonAI.VISION_SEES;
+	  case "SoldierAI": return Gameplay.AI.SoldierAI.VISION_SEES;
+	  case "ZombieAI": return Gameplay.AI.ZombieAI.VISION_SEES;
+	  default: return Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES;
+	  }
+	}
+
+	public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);
       Actor.Says += HandleSay;
@@ -39,6 +56,8 @@ namespace djack.RogueSurvivor.Data
         // use police item memory rather than ours
         m_itemMemory = Session.Get.PoliceItemMemory;
       }
+	  // deal with vision capabilities
+      m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES());
     }
 
     public override void LeaveControl()

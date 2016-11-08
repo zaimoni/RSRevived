@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine
  * The stamina cost for pushing cars should not scale, but the stamina stat of livings should scale (as should the relevant skills).
  */
 
-// Design decision: we do not want to reference Session.Get.GameOptions in the accessors.
+// Design decision: we do not want to reference Session.Get.GameMode in the accessors.
 // RogueGame::HandleOptions wants all of these setters to be public
 
   [Serializable]
