@@ -114,14 +114,13 @@ namespace djack.RogueSurvivor.Data
           Actor moving = (sender as Actor);
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
-            foreach(Point pt in new List<Point>(_threats[moving].Where(loc=>loc.Map==moving.Location.Map).Select(loc=>loc.Position))) {
-              List<Point> tmp = moving.OneStepRange(moving.Location.Map, pt);
-              if (null==tmp) continue;
-              foreach (Point pt2 in tmp) {
-               _threats[moving].Add(new Location(moving.Location.Map,pt2));
-              }
-            }
-			_threats[moving].Add(moving.Location);
+			HashSet<Location> dest = new HashSet<Location>();
+            List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
+            foreach(Point pt in tmp) {
+              dest.Add(new Location(moving.Location.Map,pt));
+			}
+	 		dest.Add(moving.Location);
+			_threats[moving] = dest;
           }
         }
     }

@@ -430,9 +430,7 @@ namespace djack.RogueSurvivor.Data
         if (actor.IsPlayer) m_aux_Players = null;
       }
       m_aux_ActorsByPosition.Add(position, actor);
-	  actor.Moved();	  
       actor.Location = new Location(this, position);
-	  Engine.Session.Get.PoliceTrackingThroughExitSpawn(actor);
       m_iCheckNextActorIndex = 0;
     }
 
