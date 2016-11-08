@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Data
 
         public bool IsThreat(Actor a)
         {
-          return _threats.ContainsKey(a);
+          lock(_threats) { return _threats.ContainsKey(a); }
         }
 
 		public List<Actor> ThreatAt(Location loc)
@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Data
 
         public void RecordSpawn(Actor a, IEnumerable<Location> locs)
         {
-          _threats[a] = new HashSet<Location>(locs);
+          lock(_threats) {  _threats[a] = new HashSet<Location>(locs); }
         }
 
         public void RecordTaint(Actor a, Location loc)
@@ -86,7 +86,9 @@ namespace djack.RogueSurvivor.Data
           }
         }
 
-        public void Cleared(Location loc)
+		// XXX CodeContracts is reporting insufficient memory allocations at _threats.Keys.ToList() [reacting to a system library bug]
+		// when trying to bring up even basic tracking.
+		public void Cleared(Location loc)
         {
           lock(_threats) { 
             foreach (Actor a in _threats.Keys.ToList()) {

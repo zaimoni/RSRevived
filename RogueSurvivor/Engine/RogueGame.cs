@@ -7,6 +7,7 @@
 //#define DATAFLOW_TRACE
 
 #define STABLE_SIM_OPTIONAL
+// #define THREAT_TRACKING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -7837,8 +7838,10 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
       actor.SpendActionPoints(actionCost);
 
-      // committed to move now
-//	  actor.Moved();
+	  // committed to move now
+#if ENABLE_THREAT_TRACKING
+	  actor.Moved();
+#endif
       ItemTracker itemTracker = actor.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
       if (itemTracker != null) itemTracker.Batteries += 2;  // police radio recharge
             
@@ -7861,7 +7864,9 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
-//	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
+#if ENABLE_THREAT_TRACKING
+	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
+#endif
       if (m_Rules.IsTrapCoveringMapObjectThere(map, position)) return;
       Inventory itemsAt = map.GetItemsAt(position);
       if (itemsAt == null) return;
