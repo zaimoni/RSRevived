@@ -21,11 +21,11 @@ namespace djack.RogueSurvivor.Engine
 
     public MapGenerator(Rules rules)
     {
-      if (rules == null) throw new ArgumentNullException("rules");
+	  Contract.Requires(null != rules);
       m_Rules = rules;
     }
 
-    public abstract Map Generate(int seed);
+    public abstract Map Generate(int seed, string name);
 
 #region Tile filling
     public void TileFill(Map map, TileModel model)

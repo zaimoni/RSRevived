@@ -18,32 +18,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
     }
 
-    public override Map Generate(int seed)
+    public override Map Generate(int seed, string name)
     {
-      Map map = base.Generate(seed);
-      map.Name = "Std City";
+      Map map = base.Generate(seed, name);
       int maxTries = 10 * map.Width * map.Height;
-      for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index)
-      {
-        if (m_DiceRoller.RollChance(Params.PolicemanChance))
-        {
+      for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
+        if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
           Actor newPoliceman = CreateNewPoliceman(0);
           ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
-        }
-        else
-        {
+        } else {
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
           ActorPlace(m_DiceRoller, maxTries, map, newCivilian, (Predicate<Point>) (pt => map.GetTileAt(pt.X, pt.Y).IsInside));
         }
       }
-      for (int index = 0; index < RogueGame.Options.MaxDogs; ++index)
-      {
+      for (int index = 0; index < RogueGame.Options.MaxDogs; ++index) {
         Actor newFeralDog = CreateNewFeralDog(0);
         ActorPlace(m_DiceRoller, maxTries, map, newFeralDog, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
       }
       int num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
-      for (int index = 0; index < num; ++index)
-      {
+      for (int index = 0; index < num; ++index) {
         Actor newUndead = CreateNewUndead(0);
         ActorPlace(m_DiceRoller, maxTries, map, newUndead, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
       }

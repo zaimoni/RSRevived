@@ -117,8 +117,9 @@ namespace djack.RogueSurvivor.Data
     protected void AddMap(Map map)
     {
       Contract.Requires(null != map);
+	  Contract.Requires(map.District == this);
       if (m_Maps.Contains(map)) return;
-      map.District = this;
+//    map.District = this;
       m_Maps.Add(map);
     }
 
@@ -136,7 +137,7 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null != map);
       m_Maps.Remove(map);
-      map.District = null;
+//    map.District = null;
     }
 
     // possible micro-optimization target
@@ -249,8 +250,7 @@ namespace djack.RogueSurvivor.Data
       // 3. Generate map.
       Gameplay.Generators.BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
       m_TownGenerator.Params = parameters;
-      Map map = m_TownGenerator.Generate(seed);
-      map.Name = string.Format("{0}@{1}", (object) str, (object) World.CoordToString(x, y));
+      Map map = m_TownGenerator.Generate(seed, string.Format("{0}@{1}", (object)str, (object)World.CoordToString(x, y)));
       m_TownGenerator.Params = @params;
 
       // done.

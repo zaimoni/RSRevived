@@ -100,11 +100,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             m_DiceRoller = new DiceRoller();
     }
 
-    public override Map Generate(int seed)
+    public override Map Generate(int seed, string name)
     {
       m_DiceRoller = new DiceRoller(seed);
-      Map map = new Map(seed, "Base City", m_Params.MapWidth, m_Params.MapHeight);
-      map.District = m_Params.District;
+      Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
 
       TileFill(map, m_Game.GameTiles.FLOOR_GRASS);
       List<BaseTownGenerator.Block> list = new List<BaseTownGenerator.Block>();
@@ -178,7 +177,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public virtual Map GenerateSewersMap(int seed, District district)
     {
       m_DiceRoller = new DiceRoller(seed);
-      Map sewers = new Map(seed, "sewers", district.EntryMap.Width, district.EntryMap.Height)
+      Map sewers = new Map(seed, string.Format("Sewers@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height)
       {
         Lighting = Lighting.DARKNESS
       };
@@ -417,7 +416,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
 #endregion
 
-      sewers.Name = string.Format("Sewers@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       district.SewersMap = sewers;
       return sewers;
     }
@@ -425,13 +423,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public virtual Map GenerateSubwayMap(int seed, District district)
     {
       m_DiceRoller = new DiceRoller(seed);
-      Map subway = new Map(seed, "subway", district.EntryMap.Width, district.EntryMap.Height)
+      Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height)
       {
         Lighting = Lighting.DARKNESS
       };
       TileFill(subway, m_Game.GameTiles.WALL_BRICK);
 
-      subway.Name = string.Format("Subway@{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       district.SubwayMap = subway;
 
       /////////////////////////////////////
@@ -852,9 +849,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         rectangle = b.BuildingRect;
         int width = rectangle.Width;
         int height = rectangle.Height;
-        Map shopBasement = new Map(seed, name, width, height) {
+        Map shopBasement = new Map(seed, name, map.District, width, height) {
           Lighting = Lighting.DARKNESS,
-          District = map.District
         };
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt => shopBasement.GetTileAt(pt).IsInside = true));
         TileFill(shopBasement, m_Game.GameTiles.FLOOR_CONCRETE);
@@ -2095,10 +2091,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Contract.Requires(null!=map.District);
       Rectangle buildingRect = houseBlock.BuildingRect;
-      Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), buildingRect.Width, buildingRect.Height)
+      Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), map.District, buildingRect.Width, buildingRect.Height)
       {
         Lighting = Lighting.DARKNESS,
-        District = map.District
       };
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
       TileFill(basement, m_Game.GameTiles.FLOOR_CONCRETE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.IsInside = true));
@@ -2166,10 +2161,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Map GenerateUniqueMap_CHARUnderground(Map surfaceMap, Zone officeZone)
     {
       Contract.Requires(null != surfaceMap);
-      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, "CHAR Underground Facility", 100, 100) {
+      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceMap.District.WorldPosition.X, surfaceMap.District.WorldPosition.Y), surfaceMap.District, 100, 100) {
         Lighting = Lighting.DARKNESS,
         IsSecret = true,
-        District = surfaceMap.District
       };
       TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.IsInside = true));
       TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
@@ -2455,11 +2449,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap, BaseTownGenerator.Block policeBlock, Point exitPos)
     {
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", 20, 20)
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, 20, 20)
       {
         Lighting = Lighting.DARKNESS
       };
-      map.District = surfaceMap.District;
 
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2541,11 +2534,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GeneratePoliceStation_JailsLevel(Map surfaceMap)
     {
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", 22, 6)
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, 22, 6)
       {
         Lighting = Lighting.DARKNESS
       };
-      map.District = surfaceMap.District;
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
       TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
@@ -2596,7 +2588,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map hospitalAdmissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
       Map hospitalOffices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);
       Map hospitalPatients = GenerateHospital_Patients(map.Seed << 3 ^ map.Seed, map.District);
-      Map hospitalStorage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed);
+      Map hospitalStorage = GenerateHospital_Storage(map.Seed << 4 ^ map.Seed, map.District);
       Map hospitalPower = GenerateHospital_Power(map.Seed << 5 ^ map.Seed, map.District);
       Point point1 = new Point(hospitalBlock.InsideRect.Left + hospitalBlock.InsideRect.Width / 2, hospitalBlock.InsideRect.Top);
       Point point2 = new Point(hospitalAdmissions.Width / 2, 1);
@@ -2655,10 +2647,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GenerateHospital_Admissions(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Admissions", 13, 33)
+      Map map = new Map(seed, "Hospital - Admissions", d, 13, 33)
       {
         Lighting = Lighting.DARKNESS,
-        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2697,10 +2688,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GenerateHospital_Offices(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Offices", 13, 33)
+      Map map = new Map(seed, "Hospital - Offices", d, 13, 33)
       {
         Lighting = Lighting.DARKNESS,
-        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2735,10 +2725,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GenerateHospital_Patients(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Patients", 13, 49)
+      Map map = new Map(seed, "Hospital - Patients", d, 13, 49)
       {
         Lighting = Lighting.DARKNESS,
-        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_TILES);
@@ -2775,9 +2764,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return map;
     }
 
-    private Map GenerateHospital_Storage(int seed)
+    private Map GenerateHospital_Storage(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Storage", 51, 16)
+      Map map = new Map(seed, "Hospital - Storage", d, 51, 16)
       {
         Lighting = Lighting.DARKNESS
       };
@@ -2817,9 +2806,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GenerateHospital_Power(int seed, District d)
     {
-      Map map = new Map(seed, "Hospital - Power", 10, 10) {
+      Map map = new Map(seed, "Hospital - Power", d, 10, 10) {
         Lighting = Lighting.DARKNESS,
-        District = d
       };
       DoForEachTile(map.Rect, (Action<Point>) (pt => map.GetTileAt(pt).IsInside = true));
       TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE);

@@ -12232,8 +12232,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Zone officeZone = zoneList[m_Rules.Roll(0, zoneList.Count)];
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
-      mapCharUnderground.District = district;
-      mapCharUnderground.Name = string.Format("CHAR Underground Facility @{0}-{1}", (object) district.WorldPosition.X, (object) district.WorldPosition.Y);
       district.AddUniqueMap(mapCharUnderground);
       return new UniqueMap(mapCharUnderground);
     }

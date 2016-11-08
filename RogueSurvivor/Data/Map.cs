@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Data
     public const int GROUND_INVENTORY_SLOTS = 10;
     public int Seed { get; private set; }
     private District m_District;
-    public string Name { get; set; }
+    public string Name { get; private set; }
     private Lighting m_Lighting;
     public WorldTime LocalTime { get; private set; }
     public int Width { get; private set; }
@@ -50,15 +50,7 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     private List<Actor> m_aux_Players;
 
-    public District District
-    {
-      get {
-        return m_District;
-      }
-      set {
-        m_District = value;
-      }
-    }
+    public District District { get { return m_District; } }
 
     public bool IsSecret { get; set; }
 
@@ -108,7 +100,7 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<OdorScent> Scents { get { return m_Scents; } }
 
-    public Map(int seed, string name, int width, int height)
+    public Map(int seed, string name, District d, int width, int height)
     {
       Contract.Requires(null != name);
       Contract.Requires(0 < width);
@@ -117,6 +109,7 @@ namespace djack.RogueSurvivor.Data
       Name = name;
       Width = width;
       Height = height;
+	  m_District = d;
       Rect = new Rectangle(0, 0, width, height);
       LocalTime = new WorldTime();
       Lighting = Lighting.OUTSIDE;
