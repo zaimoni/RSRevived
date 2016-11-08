@@ -11041,6 +11041,7 @@ namespace djack.RogueSurvivor.Engine
         Point screen = MapToScreen(actor.Location.Position);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
+      m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
