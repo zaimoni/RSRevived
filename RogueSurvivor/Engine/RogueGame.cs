@@ -10001,7 +10001,12 @@ namespace djack.RogueSurvivor.Engine
     private void OnNewNight()
     {
       m_Player.Controller.UpdateSensors();
-      if (!m_Player.Model.Abilities.IsUndead || m_Player.Location.Map.LocalTime.Day % 2 != 1) return;
+      if (!m_Player.Model.Abilities.IsUndead) return;
+	  // Proboards leonelhenry: PC should be on the same options as undead
+	  if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, m_Player.Location.Map.LocalTime.Day)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(m_Player.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.RatsUpgrade) && GameActors.IsRatBranch(m_Player.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(m_Player.Model)) return;
       ClearOverlays();
       AddOverlay(new RogueGame.OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
       m_MusicManager.StopAll();
@@ -11030,7 +11035,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMiniMap(Map map)
     {
       if (null == m_Player) return;   // fail-safe.
-      if (RogueGame.s_Options.IsMinimapOn) {
+	  if (RogueGame.s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         Point pos = new Point();
