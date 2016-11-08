@@ -74,8 +74,10 @@ namespace djack.RogueSurvivor.Data
 
         public void RecordTaint(Actor a, Location loc)
         {
-          if (!_threats.ContainsKey(a))  _threats[a] = new HashSet<Location>();
-          _threats[a].Add(loc);
+		  lock(_threats) {
+            if (!_threats.ContainsKey(a))  _threats[a] = new HashSet<Location>();
+            _threats[a].Add(loc);
+		  }
         }
 
         public void Sighted(Actor a, Location loc)
@@ -86,8 +88,6 @@ namespace djack.RogueSurvivor.Data
           }
         }
 
-		// XXX CodeContracts is reporting insufficient memory allocations at _threats.Keys.ToList() [reacting to a system library bug]
-		// when trying to bring up even basic tracking.
 		public void Cleared(Location loc)
         {
           lock(_threats) { 
@@ -116,13 +116,11 @@ namespace djack.RogueSurvivor.Data
           Actor moving = (sender as Actor);
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
-			HashSet<Location> dest = new HashSet<Location>();
             List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
             foreach(Point pt in tmp) {
-              dest.Add(new Location(moving.Location.Map,pt));
+              _threats[moving].Add(new Location(moving.Location.Map,pt));
 			}
-	 		dest.Add(moving.Location);
-			_threats[moving] = dest;
+	 		_threats[moving].Add(moving.Location);
           }
         }
     }

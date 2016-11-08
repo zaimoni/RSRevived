@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define TRACKING_FLOODFILL
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
@@ -188,16 +190,16 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(null != map);
       Contract.Requires(null != actor);
       Point position = new Point();
-#if FAIL
+#if TRACKING_FLOODFILL
       List<Location> valid_spawn = new List<Location>();
 	  if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice])) {
 	    for (int x=left; x<left+width; ++x) {
 	      position.X = x;
-	      for (int y=top; y<top+height; ++ y) {
+	      for (int y=top; y<top+height; ++y) {
 		    position.Y = y;
-		    if (!map.IsWalkableFor(position, actor)) continue;
-		    if (null != goodPositionFn && !goodPositionFn(position)) continue;
-		    valid_spawn.Add(new Location(map,position));
+            if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
+		      valid_spawn.Add(new Location(map,position));
+	        }
 		  }
 	    }
 	  }
@@ -208,7 +210,9 @@ namespace djack.RogueSurvivor.Engine
         position.Y = roller.Roll(top, top + height);
         if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
           map.PlaceActorAt(actor, position);
-//		  if (0<valid_spawn.Count) Session.Get.PoliceThreatTracking.RecordSpawn(actor, valid_spawn);
+#if TRACKING_FLOODFILL
+		  if (0<valid_spawn.Count) Session.Get.PoliceThreatTracking.RecordSpawn(actor, valid_spawn);
+#endif
           return true;
         }
       }

@@ -7,7 +7,7 @@
 //#define DATAFLOW_TRACE
 
 #define STABLE_SIM_OPTIONAL
-// #define THREAT_TRACKING
+#define ENABLE_THREAT_TRACKING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
