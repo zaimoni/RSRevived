@@ -2841,7 +2841,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = "Patient " + numberedName.Name;
+      numberedName.PrefixName("Patient");
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_patient_uniform");
       return numberedName;
@@ -2852,7 +2852,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = m_Game.GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = "Nurse " + numberedName.Name;
+      numberedName.PrefixName("Nurse");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC);
@@ -2865,7 +2865,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = m_Game.GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = "Doctor " + numberedName.Name;
+      numberedName.PrefixName("Doctor");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_DOCTOR_UNIFORM);
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
@@ -3088,7 +3088,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = m_Game.GameActors.Policeman.CreateNumberedName(m_Game.GameFactions.ThePolice, spawnTime);
       DressPolice(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = "Cop " + numberedName.Name;
+      numberedName.PrefixName("Cop");
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
@@ -3161,7 +3161,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = m_Game.GameActors.CHARGuard.CreateNumberedName(m_Game.GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = "Gd. " + numberedName.Name;
+      numberedName.PrefixName("Gd.");
       numberedName.Inventory.AddAll(MakeItemShotgun());
       numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
       numberedName.Inventory.AddAll(MakeItemCHARLightBodyArmor());
@@ -3173,7 +3173,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = m_Game.GameActors.NationalGuard.CreateNumberedName(m_Game.GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = rankName + " " + numberedName.Name;
+      numberedName.PrefixName(rankName);
       numberedName.Inventory.AddAll(MakeItemArmyRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyPistol());
@@ -3228,7 +3228,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = m_Game.GameActors.BlackOps.CreateNumberedName(m_Game.GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Name = rankName + " " + numberedName.Name;
+      numberedName.PrefixName(rankName);
       numberedName.Inventory.AddAll(MakeItemPrecisionRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyPistol());

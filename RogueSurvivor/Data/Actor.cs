@@ -628,6 +628,11 @@ namespace djack.RogueSurvivor.Data
       m_CurrentRangedAttack = Attack.BLANK;
     }
 
+	public void PrefixName(string prefix)
+	{
+	  m_Name = prefix+" "+m_Name;
+	}
+
     public int DamageBonusVsUndeads {
       get {
         return Actor.SKILL_NECROLOGY_UNDEAD_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);

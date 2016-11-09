@@ -49,10 +49,10 @@ namespace djack.RogueSurvivor.Data
       CreatedCount = 0;
     }
 
-    private Actor Create(Faction faction, int spawnTime)
+    private Actor Create(Faction faction, int spawnTime, string properName="")
     {
       ++CreatedCount;
-      return new Actor(this, faction, spawnTime)
+      return new Actor(this, faction, spawnTime, properName)
       {
         Controller = InstanciateController()
       };
@@ -79,8 +79,7 @@ namespace djack.RogueSurvivor.Data
 
     public Actor CreateNamed(Faction faction, string properName, bool isPluralName, int spawnTime)
     {
-      Actor actor = Create(faction, spawnTime);
-      actor.Name = properName;
+      Actor actor = Create(faction, spawnTime, properName);
       actor.IsProperName = true;
       actor.IsPluralName = isPluralName;
       return actor;

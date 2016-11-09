@@ -10123,7 +10123,7 @@ namespace djack.RogueSurvivor.Engine
         if (WaitYesOrNo()) {
           upgradeActor.Faction = GameFactions.ThePolice;
           DiscardItem(upgradeActor, upgradeActor.GetEquippedItem(GameItems.IDs.TRACKER_POLICE_RADIO));    // now implicit; don't worry about efficiency here
-          upgradeActor.Name = "Cop " + upgradeActor.UnmodifiedName; // adjust job title
+          upgradeActor.PrefixName("Cop"); // adjust job title
           upgradeActor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT); // XXX should selectively remove clothes when re-clothing
           upgradeActor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
           upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
