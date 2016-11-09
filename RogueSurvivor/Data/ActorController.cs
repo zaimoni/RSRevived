@@ -139,6 +139,32 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+#if FAIL
+	public void AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+	{
+      List<Percept> goals = FilterT<Inventory>(itemStacks, (Predicate<Inventory>) (inv =>
+      {
+        foreach (Item obj in inv.Items) {
+          if (obj is ItemPrimedExplosive) return true;
+        }
+        return false;
+      }));
+      if (null == goals) return;
+	  IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p=>new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
+	  foreach(Percept_<ItemPrimedExplosive> exp in explosives) {
+	    BlastAttack tmp_blast = (exp.Percepted.Model as ItemExplosiveModel).BlastAttack;
+		Point pt = p.Location.Position;
+	    if (damage_field.Contains(pt)) damage_field[pt]+=tmp_blast.Damage[0];
+	    else damage_field[pt] = Damage[0];
+	    int r = 0;
+//		if (!blastCenter.Map.IsInBounds(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance)) return false;
+	    while(++r <= tmp_blast.radius) {
+	    }
+	  }
+	}
+#endif
+
+
     public abstract ActorAction GetAction(RogueGame game);
 
     // savegame support

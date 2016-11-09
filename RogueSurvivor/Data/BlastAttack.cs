@@ -19,7 +19,8 @@ namespace djack.RogueSurvivor.Data
 
     public BlastAttack(int radius, int[] damage, bool canDamageObjects, bool canDestroyWalls)
     {
-	  Contract.Requires(damage.Length == radius + 1);
+      Contract.Requires(damage.Length == radius + 1);
+      Contract.Requires(0<=radius);
       Radius = radius;
       Damage = damage;
       CanDamageObjects = canDamageObjects;

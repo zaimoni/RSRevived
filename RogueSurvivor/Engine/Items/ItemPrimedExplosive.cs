@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemPrimedExplosive(ItemExplosiveModel model)
       : base(model, model)
     {
-      FuseTimeLeft = (model as ItemExplosiveModel).FuseDelay;
+      FuseTimeLeft = model.FuseDelay;
     }
   }
 }
