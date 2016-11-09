@@ -89,6 +89,16 @@ namespace djack.RogueSurvivor.Data
 		  }
         }
 
+        public void RecordTaint(Actor a, Map m, IEnumerable<Point> pts)
+        {
+		  lock(_threats) {
+		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
+		    if (!_threats[a].ContainsKey(m)) _threats[a][m] = new HashSet<Point>();
+            _threats[a][m].UnionWith(pts);
+		  }
+        }
+
+
         public void Sighted(Actor a, Location loc)
         {
           lock(_threats) { 
@@ -129,8 +139,8 @@ namespace djack.RogueSurvivor.Data
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
             List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
-            foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map,pt);
-			RecordTaint(moving,moving.Location);
+			tmp.Add(moving.Location.Position);
+            foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map, tmp);
           }
         }
     }
