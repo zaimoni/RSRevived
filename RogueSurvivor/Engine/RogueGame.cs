@@ -3287,8 +3287,9 @@ namespace djack.RogueSurvivor.Engine
 
     private int DistanceToPlayer(Map map, int x, int y)
     {
-      if (m_Player == null || m_Player.Location.Map != map) return int.MaxValue;
-      return Rules.GridDistance(m_Player.Location.Position, x, y);
+	  List<Actor> players = map.Players;
+	  if (0 >= players.Count) return int.MaxValue;
+	  return players.Select(p=> Rules.GridDistance(p.Location.Position, x, y)).Min();
     }
 
     private int DistanceToPlayer(Map map, Point pos)

@@ -1422,6 +1422,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.IsRunning = true;
     }
 
+	protected void RunIfReasonable(Point dest)
+	{
+      if (!m_Actor.CanRun()) return;
+      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(dest);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
+        if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP)) return;
+      }
+      if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING)) return;
+	  if (!m_Actor.RunIsFreeMove) {
+        m_Actor.IsRunning = true;	// re-setup free move
+		return;
+	  }
+	  // past this point, "reasonable" can vary.  One can either favor accuracy with ranged weapons, or try to move as fast as possible without compromising stance
+	  // favoring accuracy would stop here
+	}
+
     protected int GridDistancesSum(Point from, List<Percept> goals)
     {
       int num = 0;

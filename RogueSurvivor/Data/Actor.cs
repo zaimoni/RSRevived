@@ -1184,7 +1184,6 @@ namespace djack.RogueSurvivor.Data
       return other.ActionPoints <= 0 && (!other.CanActNextTurn || IsBefore(other));
     }
 
-
     public int Speed { 
       get {
         float num = Doll.Body.Speed;    // an exhausted, sleepy living dragging a corpse in heavy armor, below 36 here, will have a speed of zero
@@ -1273,6 +1272,8 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantRun());
     }
+
+	public bool RunIsFreeMove { get { return Rules.BASE_ACTION_COST/2 < m_ActionPoints; } }
 
     public bool CanJump {
       get {
