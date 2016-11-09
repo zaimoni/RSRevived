@@ -180,6 +180,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
+	protected List<Percept> FilterT<_T_>(List<Percept> percepts, Predicate<_T_> fn=null) where _T_:class
+	{
+      if (null == percepts || 0 == percepts.Count) return null;
+      IEnumerable<Percept> tmp = percepts.Where(p=>p.Percepted is _T_);
+	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
+	  return (tmp.Any() ? tmp.ToList() : null);
+	}
+
+	protected List<Percept_<_T_>> FilterCast<_T_>(List<Percept> percepts, Predicate<_T_> fn=null) where _T_:class
+	{
+      if (null == percepts || 0 == percepts.Count) return null;
+      IEnumerable<Percept> tmp = percepts.Where(p=>p.Percepted is _T_);
+	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
+	  if (!tmp.Any()) return null;
+	  List<Percept_<_T_>> ret = new List<Percept_<_T_>>();
+	  foreach(Percept p in tmp) {
+	    ret.Add(new Percept_<_T_>(p.Percepted as _T_, p.Turn, p.Location));
+	  }
+	  return ret;
+	}
+
     // XXX dead function?
     protected List<Percept> FilterActors(List<Percept> percepts)
     {
