@@ -1252,17 +1252,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorStupidBumpToward(percept.Location.Position);
     }
 
-    protected ActorAction BehaviorGoEatCorpse(List<Percept> corpsesPercepts)
+    protected ActorAction BehaviorGoEatCorpse(List<Percept> percepts)
     {
-      if (corpsesPercepts == null) return null;
+	  if (!Session.Get.HasCorpses) return null;
       if (!m_Actor.CanEatCorpse) return null;
       if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
-      List<Corpse> corpsesAt = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
-      if (corpsesAt != null) {
-        Corpse corpse = corpsesAt[0];
-        return new ActionEatCorpse(m_Actor, corpse);
-      }
+	  List<Percept> corpsesPercepts = FilterT<List<Corpse>>(percepts);
+	  if (null == corpsesPercepts) return null;
       Percept percept = FilterNearest(corpsesPercepts);
+	  if (m_Actor.Location.Position==percept.Location.Position) {
+        return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
+	  }
       if (!m_Actor.Model.Abilities.IsIntelligent)
         return BehaviorStupidBumpToward(percept.Location.Position);
       return BehaviorIntelligentBumpToward(percept.Location.Position);
