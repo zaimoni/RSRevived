@@ -339,8 +339,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.TargetActor = actor;
             return tmpAction;
           }
-        }
-      }
+		} else {
+		  percepts2 = FilterPossibleFireTargets(enemies);
+		  if (null != percepts2) {
+		    IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
+		    if (tmp.Any()) {
+	          tmpAction = DecideMove(tmp, enemies, friends);
+              if (null != tmpAction) {
+                m_Actor.Activity = Activity.FIGHTING;
+			    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+				if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+                return tmpAction;
+              }
+		    }
+		  }
+	    }
+	  }
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;

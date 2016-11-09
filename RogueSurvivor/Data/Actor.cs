@@ -639,6 +639,29 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+	// strictly speaking, 1 step is allowed but we do not check LoF here
+    private string ReasonCouldntFireAt(Actor target)
+    {
+      Contract.Requires(null != target);
+      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      if (itemRangedWeapon == null) return "no ranged weapon equipped";
+      if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CouldFireAt(Actor target, out string reason)
+    {
+      reason = ReasonCouldntFireAt(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CouldFireAt(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCouldntFireAt(target));
+    }
+
     private string ReasonCantFireAt(Actor target, List<Point> LoF)
     {
       Contract.Requires(null != target);
@@ -662,6 +685,25 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCantFireAt(target, null));
     }
+
+    private string ReasonCantContrafactualFireAt(Actor target, Point p)
+    {
+      Contract.Requires(null != target);
+      if (CurrentRangedAttack.Range < Rules.GridDistance(p, target.Location.Position)) return "out of range";
+      if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location.Position, CurrentRangedAttack.Range, this)) return "no line of fire";
+      return "";
+    }
+
+	public bool CanContrafactualFireAt(Actor target, Point p, out string reason)
+	{
+	  reason = ReasonCantContrafactualFireAt(target,p);
+	  return string.IsNullOrEmpty(reason);
+	}
+
+	public bool CanContrafactualFireAt(Actor target, Point p)
+	{
+	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, p));
+	}
 
     public string ReasonCantMeleeAttack(Actor target)
     {

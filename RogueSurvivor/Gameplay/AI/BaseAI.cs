@@ -206,6 +206,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
     }
 
+    protected List<Percept> FilterFireTargets(List<Percept> percepts, Point pos)
+    {
+      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
+    }
+
+    protected List<Percept> FilterPossibleFireTargets(List<Percept> percepts)
+    {
+      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CouldFireAt(target)));
+    }
+
+    protected List<Percept> FilterContrafactualFireTargets(List<Percept> percepts, Point p)
+    {
+      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanContrafactualFireAt(target,p)));
+    }
+
     protected static List<Percept_<_T_>> Filter<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
