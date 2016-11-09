@@ -112,12 +112,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
-      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
+      return FilterT<Actor>(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
     }
 
     protected List<Percept> FilterNonEnemies(List<Percept> percepts)
     {
-      return FilterActors(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
+      return FilterT<Actor>(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
     }
 
     protected List<Percept_<_T_>> FilterCurrent<_T_>(List<Percept_<_T_>> percepts) where _T_:class
@@ -202,25 +202,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	}
 
     // XXX dead function?
-    protected List<Percept> FilterActors(List<Percept> percepts)
-    {
-      return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is Actor));
-    }
-
-    protected List<Percept> FilterActors(List<Percept> percepts, Predicate<Actor> predicateFn)
-    {
-      if (null == percepts || 0 == percepts.Count) return null;
-      IEnumerable<Percept> tmp = percepts.Where((Func<Percept,bool>) (p =>
-      {
-        Actor a = p.Percepted as Actor;
-        return null != a && predicateFn(a);
-      }));
-      return tmp.Any() ? tmp.ToList() : null;
-    }
-
     protected List<Percept> FilterFireTargets(List<Percept> percepts)
     {
-      return FilterActors(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
+      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
     }
 
     protected List<Percept> FilterStacks(List<Percept> percepts)
@@ -1271,12 +1255,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       target = null;
       if (!m_Actor.Model.Abilities.IsLawEnforcer) return null;
       if (percepts == null) return null;
-      List<Percept> percepts1 = FilterActors(percepts, (Predicate<Actor>) (a =>
+      List<Percept> percepts1 = FilterT<Actor>(percepts, (Predicate<Actor>) (a =>
       {
         if (a.MurdersCounter > 0) return !m_Actor.IsEnemyOf(a);
         return false;
       }));
-      if (percepts1 == null || percepts1.Count == 0) return null;
+      if (null == percepts1) return null;
       Percept percept = FilterNearest(percepts1);
       target = percept.Percepted as Actor;
       if (game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, target))) {

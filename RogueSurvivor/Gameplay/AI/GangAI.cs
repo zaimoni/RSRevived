@@ -190,7 +190,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == current_enemies) {
         Map map = m_Actor.Location.Map;
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
-        Percept victimize = FilterNearest(FilterActors(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
+        Percept victimize = FilterNearest(FilterT<Actor>(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
         {
           if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(a)) return false;
           if (!game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);

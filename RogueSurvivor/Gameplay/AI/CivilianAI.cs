@@ -494,7 +494,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.Has<ItemFood>()))
       {
-        Percept target = FilterNearest(FilterActors(percepts1, (Predicate<Actor>) (a =>
+        Percept target = FilterNearest(FilterT<Actor>(percepts1, (Predicate<Actor>) (a =>
         {
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;
