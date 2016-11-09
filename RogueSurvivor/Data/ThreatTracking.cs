@@ -10,15 +10,17 @@ namespace djack.RogueSurvivor.Data
     [Serializable]
     class ThreatTracking : ISerializable
     {
-        // an earlier iteration of this cost 39MB of savefile size.  Instead of attempting a full probability analysis,
-        // we'll just do taint checking.
+        // The first iteration of this cost 39MB of savefile size for a full probability analysis.
+
+		// The second iteration of this took 42MB when trying to be realistic at the start of the game, for taint checking.  Conjecture is that storing full locations is
+		// expensive compared to map with points within the map.
 
         // As we actually have to iterate over the keys of _threats in a multi-threaded situation, just lock it when using.
-        private readonly Dictionary<Actor, HashSet<Location>> _threats;  // simpler taint tracking
+        private readonly Dictionary<Actor, Dictionary<Map, HashSet<Point>>> _threats;
 
         public ThreatTracking()
         {
-          _threats = new Dictionary<Data.Actor, HashSet<Data.Location>>();
+          _threats = new Dictionary<Actor, Dictionary<Map, HashSet<Point>>>();
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
         }
@@ -27,7 +29,7 @@ namespace djack.RogueSurvivor.Data
         // general idea is Plain Old Data before objects.
         protected ThreatTracking(SerializationInfo info, StreamingContext context)
         {
-          _threats = (Dictionary<Actor, HashSet<Location>>)info.GetValue("threats",typeof(Dictionary<Actor, HashSet<Location>>));
+          _threats = (Dictionary<Actor, Dictionary<Map, HashSet<Point>>>)info.GetValue("threats",typeof(Dictionary<Actor, Dictionary<Map, HashSet<Point>>>));
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
         }
@@ -51,49 +53,59 @@ namespace djack.RogueSurvivor.Data
 		public List<Actor> ThreatAt(Location loc)
 		{
 		  lock(_threats) {
-			return _threats.Keys.Where(a=>_threats[a].Contains(loc)).ToList();
+			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(loc.Map) && _threats[a][loc.Map].Contains(loc.Position)).ToList();
 		  }
 		}
 
 		public List<Actor> ThreatIn(Map map)
 		{
 		  lock(_threats) {
-		    List<Actor> ret = new List<Actor>();
-		    foreach(Actor a in _threats.Keys) {
-		      HashSet<Map> tmp = new HashSet<Map>(_threats[a].Select(loc=>loc.Map));
-		      if (tmp.Contains(map)) ret.Add(a);
-		    }
-			return ret;
+			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(map)).ToList();
 		  }
 		}
 
-        public void RecordSpawn(Actor a, IEnumerable<Location> locs)
+        public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
-          lock(_threats) {  _threats[a] = new HashSet<Location>(locs); }
+          lock(_threats) {  
+		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
+		    _threats[a][m] = new HashSet<Point>(pts); }
         }
 
         public void RecordTaint(Actor a, Location loc)
         {
 		  lock(_threats) {
-            if (!_threats.ContainsKey(a))  _threats[a] = new HashSet<Location>();
-            _threats[a].Add(loc);
+		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
+		    if (!_threats[a].ContainsKey(loc.Map)) _threats[a][loc.Map] = new HashSet<Point>();
+            _threats[a][loc.Map].Add(loc.Position);
+		  }
+        }
+
+        public void RecordTaint(Actor a, Map m, Point p)
+        {
+		  lock(_threats) {
+		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
+		    if (!_threats[a].ContainsKey(m)) _threats[a][m] = new HashSet<Point>();
+            _threats[a][m].Add(p);
 		  }
         }
 
         public void Sighted(Actor a, Location loc)
         {
           lock(_threats) { 
-            _threats[a] = new HashSet<Location>();
-            _threats[a].Add(loc);
+		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
+            _threats[a][loc.Map] = new HashSet<Point>();
+            _threats[a][loc.Map].Add(loc.Position);
           }
         }
 
-		public void Cleared(Location loc)
+		public void Cleared(Map m, HashSet<Point> pts)
         {
           lock(_threats) { 
-            foreach (Actor a in _threats.Keys.ToList()) {
-              if (_threats[a].Remove(loc) && 0 >= _threats[a].Count) _threats.Remove(a);
-            }
+            foreach (Actor a in _threats.Keys.ToList().Where(a=>_threats[a].ContainsKey(m))) {
+			  _threats[a][m] = new HashSet<Point>(_threats[a][m].Except(pts));
+			  if (0 >= _threats[a][m].Count) _threats[a].Remove(m);
+			  if (0 >= _threats[a].Count) _threats.Remove(a);	// should not happen
+			}
           }
         }
 
@@ -117,10 +129,8 @@ namespace djack.RogueSurvivor.Data
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
             List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
-            foreach(Point pt in tmp) {
-              _threats[moving].Add(new Location(moving.Location.Map,pt));
-			}
-	 		_threats[moving].Add(moving.Location);
+            foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map,pt);
+			RecordTaint(moving,moving.Location);
           }
         }
     }

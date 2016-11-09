@@ -74,11 +74,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
            }
          }
         // ensure fact what is in sight is current, is recorded
-        if (null!=has_threat) {
-          foreach (Point pt in m_FOV) {
-            if (!has_threat.Contains(pt)) threats.Cleared(new Location(actor.Location.Map, pt));
-          }
-        }
+        if (null!=has_threat)
+		  threats.Cleared(actor.Location.Map,new HashSet<Point>(m_FOV.Except(has_threat)));
       }
       if ((m_Filters & LOSSensor.SensingFilter.ITEMS) != LOSSensor.SensingFilter.NONE) {
         Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items = actor.Controller.ItemMemory;
