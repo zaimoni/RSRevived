@@ -180,7 +180,22 @@ namespace djack.RogueSurvivor.Engine
       return LOS.CanTraceViewLine(fromLocation, toPosition, int.MaxValue);
     }
 
-    public static bool CanTraceFireLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
+    public static bool CanTraceHypotheticalFireLine(Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
+    {
+      Map map = fromLocation.Map;
+      Point start = fromLocation.Position;
+      Point goal = toPosition;
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            {
+				if (x == start.X && y == start.Y) return true;
+				if (x == goal.X && y == goal.Y) return true;
+				if (x == shooter.Location.Position.X && y == shooter.Location.Position.Y) return true;  // testing whether can fire from FromLocation, so not really here
+				return !map.IsBlockingFire(x, y);
+            }), line);
+    }
+
+
+    public static bool CanTraceFireLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
