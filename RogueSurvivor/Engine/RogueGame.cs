@@ -8494,22 +8494,19 @@ namespace djack.RogueSurvivor.Engine
       foreach (Point point in LoF)
       {
         MapObject mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
-        if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable))
-        {
+        if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
           bool player1 = ForceVisibleToPlayer(attacker);
           bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
-          if (player1 || player2)
-          {
-            if (player1)
-            {
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
+          if (player1 || player2) {
+            if (player1) {
+              AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
+              AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
             }
             if (player2)
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(point), new Size(32, 32))));
+              AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(point), new Size(32, 32))));
             AnimDelay(attacker.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
-                    DoDestroyObject(mapObjectAt);
+          DoDestroyObject(mapObjectAt);
           return true;
         }
       }
@@ -8523,7 +8520,7 @@ namespace djack.RogueSurvivor.Engine
         throw new InvalidOperationException("throwing grenade but no grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
-      actor.Location.Map.DropItemAt(new ItemGrenadePrimed(m_GameItems[itemGrenade.PrimedModelID]), targetPos);
+      actor.Location.Map.DropItemAt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), new Size(32, 32))));
       AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), new Size(32, 32))));
@@ -8709,40 +8706,30 @@ namespace djack.RogueSurvivor.Engine
     private void ExplosionChainReaction(Inventory inv, Location location)
     {
       if (inv == null || inv.IsEmpty) return;
-      List<ItemExplosive> itemExplosiveList = (List<ItemExplosive>) null;
-      List<ItemPrimedExplosive> itemPrimedExplosiveList = (List<ItemPrimedExplosive>) null;
-      foreach (Item obj in inv.Items)
-      {
+      List<ItemExplosive> itemExplosiveList = null;
+      List<ItemPrimedExplosive> itemPrimedExplosiveList = null;
+      foreach (Item obj in inv.Items) {
         ItemExplosive itemExplosive = obj as ItemExplosive;
-        if (itemExplosive != null)
-        {
-          ItemPrimedExplosive itemPrimedExplosive = itemExplosive as ItemPrimedExplosive;
-          if (itemPrimedExplosive != null)
-          {
-            itemPrimedExplosive.FuseTimeLeft = 0;
-          }
-          else
-          {
-            if (itemExplosiveList == null)
-              itemExplosiveList = new List<ItemExplosive>();
-            if (itemPrimedExplosiveList == null)
-              itemPrimedExplosiveList = new List<ItemPrimedExplosive>();
-            itemExplosiveList.Add(itemExplosive);
-            for (int index = 0; index < obj.Quantity; ++index)
-              itemPrimedExplosiveList.Add(new ItemPrimedExplosive(m_GameItems[itemExplosive.PrimedModelID])
-              {
-                FuseTimeLeft = 0
-              });
-          }
+		if (null == itemExplosive) continue;
+        ItemPrimedExplosive itemPrimedExplosive = itemExplosive as ItemPrimedExplosive;
+        if (itemPrimedExplosive != null) {
+          itemPrimedExplosive.FuseTimeLeft = 0;
+        } else {
+          if (itemExplosiveList == null) itemExplosiveList = new List<ItemExplosive>();
+          if (itemPrimedExplosiveList == null) itemPrimedExplosiveList = new List<ItemPrimedExplosive>();
+          itemExplosiveList.Add(itemExplosive);
+          for (int index = 0; index < obj.Quantity; ++index)
+            itemPrimedExplosiveList.Add(new ItemPrimedExplosive(GameItems.Cast<ItemExplosiveModel>(itemExplosive.PrimedModelID))
+            {
+              FuseTimeLeft = 0
+            });
         }
       }
-      if (itemExplosiveList != null)
-      {
+      if (itemExplosiveList != null) {
         foreach (Item it in itemExplosiveList)
           inv.RemoveAllQuantity(it);
       }
-      if (itemPrimedExplosiveList == null)
-        return;
+      if (itemPrimedExplosiveList == null) return;
       foreach (Item it in itemPrimedExplosiveList)
         location.Map.DropItemAt(it, location.Position);
     }

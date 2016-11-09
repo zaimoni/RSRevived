@@ -12,14 +12,12 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemExplosive : Item
   {
-    public int PrimedModelID { get; private set; }
+    public readonly int PrimedModelID;
 
-    public ItemExplosive(ItemModel model, ItemModel primedModel)
+    public ItemExplosive(ItemExplosiveModel model, ItemExplosiveModel primedModel)
       : base(model)
     {
-      if (!(model is ItemExplosiveModel))
-        throw new ArgumentException("model is not ItemExplosiveModel");
-            PrimedModelID = (int) primedModel.ID;
+      PrimedModelID = (int) primedModel.ID;
     }
   }
 }

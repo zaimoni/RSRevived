@@ -4,7 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using djack.RogueSurvivor.Data;
 using System;
 
 namespace djack.RogueSurvivor.Engine.Items
@@ -14,12 +13,10 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public int FuseTimeLeft { get; set; }
 
-    public ItemPrimedExplosive(ItemModel model)
+    public ItemPrimedExplosive(ItemExplosiveModel model)
       : base(model, model)
     {
-      if (!(model is ItemExplosiveModel))
-        throw new ArgumentException("model is not ItemExplosiveModel");
-            FuseTimeLeft = (model as ItemExplosiveModel).FuseDelay;
+      FuseTimeLeft = (model as ItemExplosiveModel).FuseDelay;
     }
   }
 }

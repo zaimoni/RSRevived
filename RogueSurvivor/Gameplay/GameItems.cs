@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal class GameItems : ItemModelDB
   {
-    private readonly ItemModel[] m_Models = new ItemModel[(int) GameItems.IDs._COUNT];
+    private static readonly ItemModel[] m_Models = new ItemModel[(int) GameItems.IDs._COUNT];
     private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
     private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
     private GameItems.MedecineData DATA_MEDICINE_PILLS_STA;
@@ -97,6 +97,11 @@ namespace djack.RogueSurvivor.Gameplay
         m_Models[(int) id].ID = id;
       }
     }
+
+	public static _T_ Cast<_T_>(int id) where _T_:ItemModel
+	{
+	  return m_Models[id] as _T_;
+	}
 
     public ItemMedicineModel BANDAGE
     {
