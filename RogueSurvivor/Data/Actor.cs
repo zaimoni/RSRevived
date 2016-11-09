@@ -2035,6 +2035,24 @@ namespace djack.RogueSurvivor.Data
       if (null != m_BoringItems) m_BoringItems.TrimExcess();
     }
 
+	// C# docs indicate using Actor as a key wants these
+    public bool Equals(Actor x)
+    {
+      return m_SpawnTime == x.m_SpawnTime && m_Name == x.m_Name;
+    }
+
+    public override bool Equals(object obj)
+    {
+      Actor tmp = obj as Actor;
+      if (null == tmp) return false;
+      return Equals(tmp);
+    }
+
+    public override int GetHashCode()
+    {
+      return m_SpawnTime ^ m_Name.GetHashCode();
+    }
+
     [System.Flags]
     private enum Flags
     {
