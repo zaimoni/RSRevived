@@ -206,23 +206,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
     }
 
-    protected List<Percept> FilterCorpses(List<Percept> percepts)
-    {
-      return Filter(percepts, (Predicate<Percept>) (p => p.Percepted is List<Corpse>));
-    }
-
-    // XXX dead function?
-    protected List<Percept> FilterCorpses(List<Percept> percepts, Predicate<List<Corpse>> predicateFn)
-    {
-      if (null == percepts || 0 == percepts.Count) return null;
-      IEnumerable<Percept> tmp = percepts.Where((Func<Percept,bool>) (p =>
-      {
-        List<Corpse> i = p.Percepted as List<Corpse>;
-        return null != i && predicateFn(i);
-      }));
-      return tmp.Any() ? tmp.ToList() : null;
-    }
-
     protected static List<Percept_<_T_>> Filter<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;

@@ -76,7 +76,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = TargetGridMelee(Filter(enemies, (Predicate<Percept>)(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter)));
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorGoEatCorpse(FilterCorpses(percepts1));
+      tmpAction = BehaviorGoEatCorpse(FilterT<List<Corpse>>(percepts1));
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
