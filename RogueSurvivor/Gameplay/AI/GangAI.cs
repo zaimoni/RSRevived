@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == current_enemies) {
         Map map = m_Actor.Location.Map;
-        List<Percept> percepts3 = FilterOut(FilterStacks(percepts1), (Predicate<Percept>) (p =>
+        List<Percept> percepts3 = FilterOut(FilterT<Inventory>(percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn == map.LocalTime.TurnCounter)
             return IsOccupiedByOther(map, p.Location.Position);

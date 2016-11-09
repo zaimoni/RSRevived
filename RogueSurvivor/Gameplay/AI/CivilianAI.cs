@@ -411,7 +411,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == enemies && Directives.CanTakeItems) {
         Map map = m_Actor.Location.Map;
-        List<Percept> perceptList2 = SortByDistance(FilterOut(FilterStacks(percepts1), (Predicate<Percept>) (p =>
+        List<Percept> perceptList2 = SortByDistance(FilterOut(FilterT<Inventory>(percepts1), (Predicate<Percept>) (p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked

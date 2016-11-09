@@ -596,7 +596,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorFleeFromExplosives(List<Percept> itemStacks)
     {
-      List<Percept> goals = FilterStacks(itemStacks, (Predicate<Inventory>) (inv =>
+      List<Percept> goals = FilterT<Inventory>(itemStacks, (Predicate<Inventory>) (inv =>
       {
         foreach (Item obj in inv.Items) {
           if (obj is ItemPrimedExplosive) return true;

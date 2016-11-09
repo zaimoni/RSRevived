@@ -82,7 +82,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (game.IsAlmostHungry(m_Actor)) {
-        ActorAction actorAction = BehaviorGoEatFoodOnGround(FilterStacks(percepts1));
+        ActorAction actorAction = BehaviorGoEatFoodOnGround(FilterT<Inventory>(percepts1));
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.IDLE;
