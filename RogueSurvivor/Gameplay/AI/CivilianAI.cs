@@ -565,7 +565,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
           }
         }
       }
-      tmpAction = BehaviorGoReviveCorpse(game, FilterT<List<Corpse>>(percepts1));
+      tmpAction = BehaviorGoReviveCorpse(game, percepts1);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

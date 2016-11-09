@@ -1268,12 +1268,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(percept.Location.Position);
     }
 
-    protected ActorAction BehaviorGoReviveCorpse(RogueGame game, List<Percept> corpsesPercepts)
+    protected ActorAction BehaviorGoReviveCorpse(RogueGame game, List<Percept> percepts)
     {
-      if (corpsesPercepts == null) return null;
+	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
       if (!m_Actor.HasItemOfModel(game.GameItems.MEDIKIT)) return null;
-      List<Percept> percepts = Filter(corpsesPercepts, (Predicate<Percept>) (p =>
+      List<Percept> corpsePercepts = Filter(FilterT<List<Corpse>>(percepts), (Predicate<Percept>) (p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {
           if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
@@ -1281,15 +1281,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return false;
       }));
-      if (percepts == null) return null;
-      List<Corpse> corpsesAt = m_Actor.Location.Map.GetCorpsesAt(m_Actor.Location.Position);
-      if (corpsesAt != null) {
-        foreach (Corpse corpse in corpsesAt) {
+      if (null == corpsePercepts) return null;
+      Percept percept = FilterNearest(corpsePercepts);
+	  if (m_Actor.Location.Position==percept.Location.Position) {
+        foreach (Corpse corpse in (percept.Percepted as List<Corpse>)) {
           if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return new ActionReviveCorpse(m_Actor, corpse);
         }
-      }
-      Percept percept = FilterNearest(percepts);
+	  }
       if (!m_Actor.Model.Abilities.IsIntelligent)
         return BehaviorStupidBumpToward(percept.Location.Position);
       return BehaviorIntelligentBumpToward(percept.Location.Position);
