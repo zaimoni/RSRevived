@@ -5,29 +5,25 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal struct BlastAttack
   {
-    public int Radius { get; private set; }
-
-    public int[] Damage { get; private set; }
-
-    public bool CanDamageObjects { get; private set; }
-
-    public bool CanDestroyWalls { get; private set; }
+    public readonly int Radius;
+    public readonly int[] Damage;
+    public readonly bool CanDamageObjects;
+    public readonly bool CanDestroyWalls;
 
     public BlastAttack(int radius, int[] damage, bool canDamageObjects, bool canDestroyWalls)
     {
-      this = new BlastAttack();
-      if (damage.Length != radius + 1)
-        throw new ArgumentException("damage.Length != radius + 1");
-            Radius = radius;
-            Damage = damage;
-            CanDamageObjects = canDamageObjects;
-            CanDestroyWalls = canDestroyWalls;
+	  Contract.Requires(damage.Length == radius + 1);
+      Radius = radius;
+      Damage = damage;
+      CanDamageObjects = canDamageObjects;
+      CanDestroyWalls = canDestroyWalls;
     }
   }
 }
