@@ -617,72 +617,85 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
+    private List<Point> DecideMove_WaryOfTraps(List<Point> src)
+    {
+	  Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
+	  foreach (Point pt in src) {
+		trap_damage_field[pt] = ComputeTrapsMaxDamage(m_Actor.Location.Map, pt);
+	  }
+	  IEnumerable<Point> safe = src.Where(pt => 0>=trap_damage_field[pt]);
+	  int new_dest = safe.Count();
+      if (0 == new_dest) {
+		safe = src.Where(pt => m_Actor.HitPoints>trap_damage_field[pt]);
+		new_dest = safe.Count();
+      }
+      return ((0 < new_dest && new_dest < src.Count) ? safe.ToList() : src);
+    }
+
+    private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point> avoid)
+    {
+      if (null == avoid) return src;
+      IEnumerable<Point> ok = src.Except(avoid);
+	  int new_dest = ok.Count();
+      return ((0 < new_dest && new_dest < src.Count) ? ok.ToList() : src);
+    }
+
+    private List<Point> DecideMove_NoJump(List<Point> src)
+    {
+      IEnumerable<Point> no_jump = src.Where(pt=> {
+        MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
+        return null==tmp2 || !tmp2.IsJumpable;
+      });
+	  int new_dest = no_jump.Count();
+      return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
+    }
+
 	protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
 	{
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();
 
 	  // damaging traps are a problem
-	  if (2 <= tmp.Count) {
-	    Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
-	    foreach (Point pt in tmp) {
-		  trap_damage_field[pt] = ComputeTrapsMaxDamage(m_Actor.Location.Map, pt);
-		}
-	    IEnumerable<Point> safe = tmp.Where(pt => 0>=trap_damage_field[pt]);
-		int new_dest = safe.Count();
-        if (0<new_dest && new_dest<tmp.Count) tmp = safe.ToList();
-		if (0==new_dest) {
-		  safe = tmp.Where(pt => m_Actor.HitPoints>trap_damage_field[pt]);
-		  new_dest = safe.Count();
-          if (0<new_dest && new_dest<tmp.Count) tmp = safe.ToList();
-		}
-	  }
+	  if (2 <= tmp.Count) tmp = DecideMove_WaryOfTraps(tmp);
 
 	  // do not get in the way of allies' line of fire
-	  if (2 <= tmp.Count) {
-	    HashSet<Point> friends_LoF = FriendsLoF(enemies, friends);
-		if (null != friends_LoF) {
-		  IEnumerable<Point> no_LoF = tmp.Where(pt=>!friends_LoF.Contains(pt));
-		  int new_dest = no_LoF.Count();
-          if (0<new_dest && new_dest<tmp.Count) tmp = no_LoF.ToList();
-		}
-	  }
+	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
 
 	  // XXX if we have priority-see locations, maximize that
 	  // XXX if we have threat tracking, maximize threat cleared
 	  // XXX if we have item memory, maximize "update"
 #if FAIL
 	  bool want_LOS_heuristics = false;
-	  ThreatTracking _threats = m_Actor.Threats;
-	  if (null != _threats) want_LOS_heuristics = true;
-	  Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> _item_memory = m_Actor.ItemMemory
-	  if (null != _item_memory) want_LOS_heuristics = true;
+	  ThreatTracking threats = m_Actor.Threats;
+	  if (null != threats) want_LOS_heuristics = true;
+	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  if (null != sights_to_see) want_LOS_heuristics = true;
 
 	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>> : null);
+      HashSet<Point> new_los = new HashSet<Point>();
 	  if (null != hypothetical_los) {
 	    // only need points newly in FOV that aren't currently
 	    foreach(Point pt in tmp) {
 	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(actor.Location.Map,pt)).Except(FOV));
+          new_los.UnionWith(hypothetical_los[pt])
 	    }
 	  }
+      // only need to check if new locations seen
+      if (0 >= new_los.Count)) {
+        threats = null;
+        sights_to_see = null;
+      }
 
 	  if (null != _threats && 2<=tmp.Count)
 	    {
 	    }
-	  if (null != _item_memory && 2<=tmp.Count)
+	  if (null != _sights_to_see && 2<=tmp.Count)
 	    {
 	    }
 #endif
 
 	  // weakly prefer not to jump
-	  if (2 <= tmp.Count) {
-        IEnumerable<Point> no_jump = tmp.Where(pt=> {
-          MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
-          return null==tmp2 || !tmp2.IsJumpable;
-        });
-		int new_dest = no_jump.Count();
-        if (0<new_dest && new_dest<tmp.Count) tmp = no_jump.ToList();
-      }
+	  if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
