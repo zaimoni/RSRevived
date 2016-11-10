@@ -349,7 +349,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.TargetActor = actor;
             return tmpAction;
           }
-		} else {
+		} else if (null != legal_steps) {
 		  percepts2 = FilterPossibleFireTargets(enemies);
 		  if (null != percepts2) {
 		    IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
