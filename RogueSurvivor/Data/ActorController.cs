@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Data
 #if FAIL
 	public void AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
 	{
-      List<Percept> goals = FilterT<Inventory>(itemStacks, (Predicate<Inventory>) (inv =>
+      List<Percept> goals = FilterT<Inventory>(percepts, (Predicate<Inventory>) (inv =>
       {
         foreach (Item obj in inv.Items) {
           if (obj is ItemPrimedExplosive) return true;
@@ -156,14 +156,19 @@ namespace djack.RogueSurvivor.Data
 		Point pt = p.Location.Position;
 	    if (damage_field.Contains(pt)) damage_field[pt]+=tmp_blast.Damage[0];
 	    else damage_field[pt] = Damage[0];
-	    int r = 0;
-//		if (!blastCenter.Map.IsInBounds(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance)) return false;
+	    // We would need a very different implementation for large blast radii.
+        int r = 0;
 	    while(++r <= tmp_blast.radius) {
+          foreach(Point p in Enumerable.Range(0,8*r).Select(i=>exp.Location.Position.RadarSweep(r,i)) {
+            if (!exp.Location.Map.IsInBounds(p)) continue;
+            if (!LOS.CanTraceFireLine(exp.Location.Position,pt,tmp_blast_radius)) continue;
+	        if (damage_field.Contains(pt)) damage_field[pt]+=tmp_blast.Damage[r];
+	        else damage_field[pt] = Damage[r];
+          }
 	    }
 	  }
 	}
 #endif
-
 
     public abstract ActorAction GetAction(RogueGame game);
 

@@ -1134,5 +1134,33 @@ namespace djack.RogueSurvivor.Engine
     {
       return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * Rules.SKILL_ZGRAB_CHANCE;
     }
+  } // end Rules class
+
+  internal static class ext_Rules
+  {
+    // 8r coordinates at grid distance r
+    // 0..2r: y constant r, x increment -r to r
+    // 2r...4r: x constant r, y decrement r to -r
+    // 4r..64: y constant -r, x decrement r to -r
+    // 4r to 8r i.e. 0: x constant -r, y increment -r to r
+    static Point RadarSweep(this Point origin,int radius,int i)
+    {
+      Contract.Requires(0 < radius);
+      Contract.Requires(int.MaxValue/8 >= radius);
+      Contract.Requires(int.MaxValue-radius>=origin.X);
+      Contract.Requires(int.MaxValue-radius>=origin.Y);
+      Contract.Requires(int.MinValue+radius<=origin.X);
+      Contract.Requires(int.MinValue+radius<=origin.Y);
+
+      // normalize i
+      i %= 8*radius;
+      if (0>i) i+=8*radius;
+
+      // parentheses are to deny compiler the option to reorder to overflow
+      if (2*radius>i) return new Point((i-radius)+origin.X,radius + origin.Y);
+      if (4*radius>i) return new Point(radius + origin.X, (3*radius- i) + origin.Y);
+      if (6*radius>i) return new Point((5*radius-i) + origin.X, -radius + origin.Y);
+      /* if (8*radius>i) */ return new Point(-radius + origin.X, (i-7* radius) + origin.Y);
+    }
   }
 }
