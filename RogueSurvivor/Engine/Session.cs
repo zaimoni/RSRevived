@@ -30,6 +30,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
     private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_PoliceItemMemory;
     private readonly ThreatTracking m_PoliceThreatTracking;
+    private readonly LocationSet m_PoliceInvestigate;
 
     public GameMode GameMode { get; set; }
     public int Seed { get; private set; }
@@ -76,12 +77,19 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    public LocationSet PoliceInvestigate {
+      get {
+        return m_PoliceInvestigate;
+      }
+    }
+
     private Session()
     {
       m_WorldTime = new WorldTime();
       m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
       m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
       m_PoliceThreatTracking = new ThreatTracking();
+      m_PoliceInvestigate = new LocationSet();
       Reset();
     }
 
@@ -107,6 +115,7 @@ namespace djack.RogueSurvivor.Engine
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
       m_PoliceItemMemory = (Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>) info.GetValue("m_PoliceItemMemory", typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
       m_PoliceThreatTracking = (ThreatTracking) info.GetValue("m_PoliceThreatTracking", typeof(ThreatTracking));
+      m_PoliceInvestigate = (LocationSet) info.GetValue("m_PoliceInvestigate", typeof(LocationSet));
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -130,6 +139,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("UniqueMaps",UniqueMaps,typeof(UniqueMaps));
       info.AddValue("m_PoliceItemMemory", m_PoliceItemMemory, typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
       info.AddValue("m_PoliceThreatTracking", m_PoliceThreatTracking, typeof(ThreatTracking));
+      info.AddValue("m_PoliceInvestigate", m_PoliceInvestigate, typeof(LocationSet));
     }
 #endregion
 

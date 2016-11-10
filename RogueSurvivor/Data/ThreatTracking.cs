@@ -16,11 +16,10 @@ namespace djack.RogueSurvivor.Data
 		// expensive compared to map with points within the map.
 
         // As we actually have to iterate over the keys of _threats in a multi-threaded situation, just lock it when using.
-        private readonly Dictionary<Actor, Dictionary<Map, HashSet<Point>>> _threats;
+        private readonly Dictionary<Actor, Dictionary<Map, HashSet<Point>>> _threats = new Dictionary<Actor, Dictionary<Map, HashSet<Point>>>();
 
         public ThreatTracking()
         {
-          _threats = new Dictionary<Actor, Dictionary<Map, HashSet<Point>>>();
           Actor.Dies += HandleDie;  // XXX removal would be in destructor
           Actor.Moving += HandleMove;
         }
@@ -143,5 +142,36 @@ namespace djack.RogueSurvivor.Data
             foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map, tmp);
           }
         }
+    }   // end ThreatTracking definition
+
+    // stripped down version of above, just managing locations of interest across maps
+    // due to locking, prefer to not reuse this above.
+    [Serializable]
+    class LocationSet
+    {
+      private readonly Dictionary<Map, HashSet<Point>> _locs = new Dictionary<Map, HashSet<Point>>();
+
+      public LocationSet()
+      {
+      }
+
+      public void Clear()
+      {
+        lock (_locs) { _locs.Clear(); }
+      }
+
+      public bool Contains(Location loc)
+      {
+        lock (_locs) {
+		  return _locs.ContainsKey(loc.Map) && _locs[loc.Map].Contains(loc.Position);
+		}
+	  }
+
+      public HashSet<Point> In(Map map)
+	  {
+		lock(_locs) {
+          return _locs.ContainsKey(map) ? _locs[map] : null;
+		}
+	  }
     }
 }

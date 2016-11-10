@@ -842,6 +842,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public LocationSet InterestingLocs { 
+      get {
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceInvestigate;
+        return null;
+      }
+    }
+
     public void MarkAsAgressorOf(Actor other)
     {
       if (other == null || other.IsDead) return;
