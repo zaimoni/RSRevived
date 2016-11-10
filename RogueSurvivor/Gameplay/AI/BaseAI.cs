@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Percept_<_T_>> FilterSameMap<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       Map map = m_Actor.Location.Map;
-      return Filter(percepts,(p => p.Location.Map == map));
+      return percepts.Filter(p => p.Location.Map == map);
     }
 
     // actually deploying this is time-intensive
@@ -112,18 +112,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
-      return FilterT<Actor>(percepts,(Predicate<Actor>) (target => target!=m_Actor && m_Actor.IsEnemyOf(target)));
+      return percepts.FilterT<Actor>(target => target!=m_Actor && m_Actor.IsEnemyOf(target));
     }
 
     protected List<Percept> FilterNonEnemies(List<Percept> percepts)
     {
-      return FilterT<Actor>(percepts,(Predicate<Actor>) (target => target!=m_Actor && !m_Actor.IsEnemyOf(target)));
+      return percepts.FilterT<Actor>(target => target!=m_Actor && !m_Actor.IsEnemyOf(target));
     }
 
     protected List<Percept_<_T_>> FilterCurrent<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      return Filter(percepts,(p => p.Turn == turnCounter));
+      return percepts.Filter(p => p.Turn == turnCounter);
     }
 
     // GangAI's mugging target selection triggered a race condition 
@@ -180,66 +180,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
-	protected List<Percept> FilterT<_T_>(List<Percept> percepts, Predicate<_T_> fn=null) where _T_:class
-	{
-      if (null == percepts || 0 == percepts.Count) return null;
-      IEnumerable<Percept> tmp = percepts.Where(p=>p.Percepted is _T_);
-	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
-	  return (tmp.Any() ? tmp.ToList() : null);
-	}
-
-	protected List<Percept_<_T_>> FilterCast<_T_>(List<Percept> percepts, Predicate<_T_> fn=null) where _T_:class
-	{
-      if (null == percepts || 0 == percepts.Count) return null;
-      IEnumerable<Percept> tmp = percepts.Where(p=>p.Percepted is _T_);
-	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
-	  if (!tmp.Any()) return null;
-	  List<Percept_<_T_>> ret = new List<Percept_<_T_>>();
-	  foreach(Percept p in tmp) {
-	    ret.Add(new Percept_<_T_>(p.Percepted as _T_, p.Turn, p.Location));
-	  }
-	  return ret;
-	}
-
     protected List<Percept> FilterFireTargets(List<Percept> percepts)
     {
-      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
+      return percepts.FilterT<Actor>(target => m_Actor.CanFireAt(target));
     }
 
     protected List<Percept> FilterFireTargets(List<Percept> percepts, Point pos)
     {
-      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanFireAt(target)));
+      return percepts.FilterT<Actor>(target => m_Actor.CanFireAt(target));
     }
 
     protected List<Percept> FilterPossibleFireTargets(List<Percept> percepts)
     {
-      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CouldFireAt(target)));
+      return percepts.FilterT<Actor>(target => m_Actor.CouldFireAt(target));
     }
 
     protected List<Percept> FilterContrafactualFireTargets(List<Percept> percepts, Point p)
     {
-      return FilterT<Actor>(percepts, (Predicate<Actor>) (target => m_Actor.CanContrafactualFireAt(target,p)));
-    }
-
-    protected static List<Percept_<_T_>> Filter<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
-    {
-      if (null == percepts || 0 == percepts.Count) return null;
-      IEnumerable<Percept_<_T_>> tmp = percepts.Where(p=> predicateFn(p));
-      return tmp.Any() ? tmp.ToList() : null;
-    }
-
-    protected static Percept_<_T_> FilterFirst<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
-    {
-      if (null == percepts || 0 == percepts.Count) return null;
-      foreach (Percept_<_T_> percept in percepts) {
-        if (predicateFn(percept)) return percept;
-      }
-      return null;
-    }
-
-    protected static List<Percept_<_T_>> FilterOut<_T_>(List<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> rejectPredicateFn) where _T_:class
-    {
-      return Filter(percepts,(p => !rejectPredicateFn(p)));
+      return percepts.FilterT<Actor>(target => m_Actor.CanContrafactualFireAt(target,p));
     }
 
     protected List<Percept_<_T_>> SortByDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
@@ -1236,11 +1194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       target = null;
       if (!m_Actor.Model.Abilities.IsLawEnforcer) return null;
       if (percepts == null) return null;
-      List<Percept> percepts1 = FilterT<Actor>(percepts, (Predicate<Actor>) (a =>
-      {
-        if (a.MurdersCounter > 0) return !m_Actor.IsEnemyOf(a);
-        return false;
-      }));
+      List<Percept> percepts1 = percepts.FilterT<Actor>(a => 0< a.MurdersCounter && !m_Actor.IsEnemyOf(a));
       if (null == percepts1) return null;
       Percept percept = FilterNearest(percepts1);
       target = percept.Percepted as Actor;
@@ -1258,7 +1212,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;
-      List<Percept> percepts = Filter(stacksPercepts, (Predicate<Percept>) (p => (p.Percepted as Inventory).Has<ItemFood>()));
+      List<Percept> percepts = stacksPercepts.Filter(p => (p.Percepted as Inventory).Has<ItemFood>());
       if (percepts == null) return null;
       Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
       ItemFood firstByType = itemsAt?.GetFirst<ItemFood>();
@@ -1272,7 +1226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (!Session.Get.HasCorpses) return null;
       if (!m_Actor.CanEatCorpse) return null;
       if (m_Actor.Model.Abilities.IsUndead && m_Actor.HitPoints >= m_Actor.MaxHPs) return null;
-	  List<Percept> corpsesPercepts = FilterT<List<Corpse>>(percepts);
+	  List<Percept> corpsesPercepts = percepts.FilterT<List<Corpse>>();
 	  if (null == corpsesPercepts) return null;
       Percept percept = FilterNearest(corpsesPercepts);
 	  if (m_Actor.Location.Position==percept.Location.Position) {
@@ -1288,14 +1242,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
       if (!m_Actor.HasItemOfModel(game.GameItems.MEDIKIT)) return null;
-      List<Percept> corpsePercepts = Filter(FilterT<List<Corpse>>(percepts), (Predicate<Percept>) (p =>
+      List<Percept> corpsePercepts = percepts.FilterT<List<Corpse>>().Filter(p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {
           if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return true;
         }
         return false;
-      }));
+      });
       if (null == corpsePercepts) return null;
       Percept percept = FilterNearest(corpsePercepts);
 	  if (m_Actor.Location.Position==percept.Location.Position) {

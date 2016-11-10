@@ -425,7 +425,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == enemies && Directives.CanTakeItems) {
         Map map = m_Actor.Location.Map;
-        List<Percept> perceptList2 = SortByDistance(FilterOut(FilterT<Inventory>(percepts1), (Predicate<Percept>) (p =>
+        List<Percept> perceptList2 = SortByDistance(percepts1.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
@@ -440,9 +440,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
           return true;  // no, not really interesting after all
-        })));
-        if (perceptList2 != null)
-        {
+        }));
+        if (perceptList2 != null) {
 retry:    Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
           Inventory stack = percept.Percepted as Inventory;
@@ -475,7 +474,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
         }
         if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory)) {
           List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
-          List<Percept> percepts2 = FilterOut(friends, (Predicate<Percept>) (p =>
+          List<Percept> percepts2 = friends.FilterOut(p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
               return true;
@@ -485,7 +484,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
             if (IsActorTabooTrade(actor)) return true;
             if (!HasAnyInterestingItem(actor.Inventory)) return true;
             return !(actor.Controller as BaseAI).HasAnyInterestingItem(TradeableItems);
-          }));
+          });
           if (percepts2 != null) {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
@@ -508,14 +507,14 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.Has<ItemFood>()))
       {
-        Percept target = FilterNearest(FilterT<Actor>(percepts1, (Predicate<Actor>) (a =>
+        Percept target = FilterNearest(percepts1.FilterT<Actor>(a =>
         {
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;
           if (a.Inventory.Has<ItemFood>()) return true;
           Inventory itemsAt = a.Location.Map.GetItemsAt(a.Location.Position);
           return null != itemsAt && itemsAt.Has<ItemFood>();
-        })));
+        }));
         if (target != null) {
           tmpAction = BehaviorChargeEnemy(target);
           if (null != tmpAction) {
@@ -607,12 +606,12 @@ retry:    Percept percept = FilterNearest(perceptList2);
         }
       }
 
-      Percept percept1 = FilterFirst(percepts1, (Predicate<Percept>) (p =>
+      Percept percept1 = percepts1.FilterFirst(p =>
       {
         Actor actor = p.Percepted as Actor;
         if (actor == null || actor == m_Actor) return false;
         return IsSoldier(actor);
-      }));
+      });
       if (percept1 != null) m_LastSoldierSaw = percept1;
 
 	  if (null != friends) {

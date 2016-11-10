@@ -96,13 +96,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       List<Percept> perceptList2 = FilterNonEnemies(percepts1);
       if (perceptList2 != null) {
-        List<Percept> percepts3 = Filter(perceptList2, (Predicate<Percept>) (p =>
+        List<Percept> percepts3 = perceptList2.Filter(p =>
         {
           Actor actor = p.Percepted as Actor;
           if (actor.Faction == game.GameFactions.TheCHARCorporation)
             return false;
           return game.IsInCHARProperty(actor.Location);
-        }));
+        });
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;
           game.DoMakeAggression(m_Actor, target);

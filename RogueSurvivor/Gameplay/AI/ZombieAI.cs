@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies != null) {
         tmpAction = TargetGridMelee(FilterCurrent(enemies));
         if (null != tmpAction) return tmpAction;
-        tmpAction = TargetGridMelee(Filter(enemies, (Predicate<Percept>)(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter)));
+        tmpAction = TargetGridMelee(enemies.Filter(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
         if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorGoEatCorpse(percepts1);
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
-        Percept percept = FilterNearest(FilterT<Actor>(percepts1, (Predicate<Actor>) (a => a.Model.Abilities.IsUndeadMaster)));
+        Percept percept = FilterNearest(percepts1.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
         if (percept != null) {
           ActorAction actorAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
           if (actorAction != null) {

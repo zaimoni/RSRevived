@@ -172,12 +172,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == current_enemies) {
         Map map = m_Actor.Location.Map;
-        List<Percept> percepts3 = FilterOut(FilterT<Inventory>(percepts1), (Predicate<Percept>) (p =>
+        List<Percept> percepts3 = percepts1.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn == map.LocalTime.TurnCounter)
             return IsOccupiedByOther(map, p.Location.Position);
           return true;
-        }));
+        });
         if (percepts3 != null) {
           Percept percept = FilterNearest(percepts3);
           tmpAction = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
@@ -190,13 +190,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == current_enemies) {
         Map map = m_Actor.Location.Map;
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
-        Percept victimize = FilterNearest(FilterT<Actor>(FilterCurrent(percepts1), (Predicate<Actor>) (a =>
+        Percept victimize = FilterNearest(FilterCurrent(percepts1).FilterT<Actor>(a =>
         {
           if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(a)) return false;
           if (!game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
           return false;
-        })));
+        }));
         if (null!=victimize) {
           Actor target = victimize.Percepted as Actor;
           Item obj = FirstInterestingItem(target.Inventory);
