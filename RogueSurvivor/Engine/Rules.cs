@@ -1143,7 +1143,7 @@ namespace djack.RogueSurvivor.Engine
     // 2r...4r: x constant r, y decrement r to -r
     // 4r..64: y constant -r, x decrement r to -r
     // 4r to 8r i.e. 0: x constant -r, y increment -r to r
-    static Point RadarSweep(this Point origin,int radius,int i)
+    internal static Point RadarSweep(this Point origin,int radius,int i)
     {
       Contract.Requires(0 < radius);
       Contract.Requires(int.MaxValue/8 >= radius);

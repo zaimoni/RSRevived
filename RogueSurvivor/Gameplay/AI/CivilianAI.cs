@@ -181,14 +181,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // obsolete: not needed with AddExplosivesToDamageField
+      ActorAction tmpAction = null;
+#if FAIL
       ActorAction tmpAction = BehaviorFleeFromExplosives(percepts1);
       if (null != tmpAction) return tmpAction;
+#endif
 
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       Dictionary<Point,int> damage_field = (null != enemies ? VisibleMaximumDamage() : null);
-      // \todo visible primed explosives also have a damage field that civilians and soldiers respect, CHAR and gang don't
+      bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts1);  // only civilians and soldiers respect explosives; CHAR and gang don't
       List<Point> retreat = null;
       List<Actor> slow_threat = null;
       IEnumerable<Point> tmp_point;
@@ -205,15 +209,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (tmp_point.Any()) retreat = tmp_point.ToList();
         }
       }
-      // XXX should not block line of fire to mutual enemies of a non-enemy
-      // prefer not to jump
-      if (null != retreat && 2 <= retreat.Count) {
-        tmp_point = retreat.Where(pt=> {
-          MapObject tmp = m_Actor.Location.Map.GetMapObjectAt(pt);
-          return null==tmp || tmp.IsWalkable || tmp.IsJumpable;
-        });
-        if (tmp_point.Count()<retreat.Count()) retreat = new List<Point>(tmp_point);
-      }
+
       // XXX the proper weapon should be calculated like a player....
       // range 1: if melee weapon has a good enough one-shot kill rate, use it
       // any range: of all ranged weapons available, use the weakest one with a good enough one-shot kill rate
@@ -232,8 +228,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	    tmpAction = DecideMove(retreat, enemies, friends);
         if (null != tmpAction) {
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
-          m_Actor.Activity = Activity.FLEEING;
+          if (in_blast_field) {
+            if (null != tmpAction2) RunIfPossible();
+            m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+          } else { 
+            if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+            m_Actor.Activity = Activity.FLEEING;
+          }
+          return tmpAction;
+        }
+      }
+      if (in_blast_field) {
+	    tmpAction = DecideMove(retreat, enemies, friends);
+        if (null != tmpAction) {
+		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+          if (null != tmpAction2) RunIfPossible();
+          m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
           return tmpAction;
         }
       }

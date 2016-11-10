@@ -6,9 +6,11 @@
 
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
+using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -139,36 +141,31 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-#if FAIL
-	public void AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+	public bool AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
 	{
-      List<Percept> goals = FilterT<Inventory>(percepts, (Predicate<Inventory>) (inv =>
-      {
-        foreach (Item obj in inv.Items) {
-          if (obj is ItemPrimedExplosive) return true;
-        }
-        return false;
-      }));
-      if (null == goals) return;
+      List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemPrimedExplosive>());
+      if (null == goals) return false;
+      bool in_blast_field = false;
 	  IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p=>new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
 	  foreach(Percept_<ItemPrimedExplosive> exp in explosives) {
 	    BlastAttack tmp_blast = (exp.Percepted.Model as ItemExplosiveModel).BlastAttack;
-		Point pt = p.Location.Position;
-	    if (damage_field.Contains(pt)) damage_field[pt]+=tmp_blast.Damage[0];
-	    else damage_field[pt] = Damage[0];
+		Point pt = exp.Location.Position;
+	    if (damage_field.ContainsKey(pt)) damage_field[pt]+=tmp_blast.Damage[0];
+	    else damage_field[pt] = tmp_blast.Damage[0];
 	    // We would need a very different implementation for large blast radii.
         int r = 0;
-	    while(++r <= tmp_blast.radius) {
-          foreach(Point p in Enumerable.Range(0,8*r).Select(i=>exp.Location.Position.RadarSweep(r,i)) {
+	    while(++r <= tmp_blast.Radius) {
+          foreach(Point p in Enumerable.Range(0,8*r).Select(i=>exp.Location.Position.RadarSweep(r,i))) {
             if (!exp.Location.Map.IsInBounds(p)) continue;
-            if (!LOS.CanTraceFireLine(exp.Location.Position,pt,tmp_blast_radius)) continue;
-	        if (damage_field.Contains(pt)) damage_field[pt]+=tmp_blast.Damage[r];
-	        else damage_field[pt] = Damage[r];
+            if (!LOS.CanTraceFireLine(exp.Location,pt,tmp_blast.Radius)) continue;
+	        if (damage_field.ContainsKey(pt)) damage_field[pt]+=tmp_blast.Damage[r];
+	        else damage_field[pt] = tmp_blast.Damage[r];
+            if (pt == m_Actor.Location.Position) in_blast_field = true;
           }
 	    }
 	  }
+      return in_blast_field;
 	}
-#endif
 
     public abstract ActorAction GetAction(RogueGame game);
 
