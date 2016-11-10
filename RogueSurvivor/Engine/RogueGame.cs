@@ -8125,11 +8125,15 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = m_Player == leader;
       if (to.Map.District != fromMap.District) {
         foreach (Actor other in actorList) {
-          leader.RemoveFollower(other);
+          if (!other.IsPlayer) leader.RemoveFollower(other);
           if (flag2) {
             Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} was left behind.", other.TheName));
             ClearMessages();
-            AddMessage(new Data.Message(string.Format("{0} could not follow you out of the district and left you!", other.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
+            if (other.IsPlayer) {
+              AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, fromMap.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+            } else {
+              AddMessage(new Data.Message(string.Format("{0} could not follow you out of the district and left you!", other.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
+            }
             AddMessagePressEnter();
             ClearMessages();
           }
@@ -11057,8 +11061,12 @@ namespace djack.RogueSurvivor.Engine
 		} else {
           for (pos.X = 0; pos.X < map.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
+              if (0 < _threats.ThreatAt(new Location(map, pos)).Count) {
+                m_UI.UI_SetMinimapColor(pos.X, pos.Y, Color.Maroon);
+                continue;
+              }
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : (0<_threats.ThreatAt(new Location(map,pos)).Count ? Color.Maroon : map.GetTileAt(pos).Model.MinimapColor)));
+              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
             }
           }
 		}
