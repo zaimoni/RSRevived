@@ -212,7 +212,6 @@ namespace djack.RogueSurvivor.Data
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(Item it)
     {
-		Contract.Requires(null != Actor);
 		Contract.Requires(null != it);
         if (it is ItemFood)
             {
@@ -288,7 +287,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInterestingItem(Item it)
     {
-	  Contract.Requires(null != Actor);
 	  Contract.Requires(null != it);
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
