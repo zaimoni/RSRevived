@@ -351,10 +351,10 @@
     <Compile Include="Engine\AI\Sensor.cs" />
     <Compile Include="Engine\AI\Percept.cs" />
     <Compile Include="Engine\AI\MemorizedSensor.cs" />
-    <Compile Include="Engine\MapObjects\Fortification.cs" />
-    <Compile Include="Engine\MapObjects\DoorWindow.cs" />
-    <Compile Include="Engine\MapObjects\Board.cs" />
-    <Compile Include="Engine\MapObjects\PowerGenerator.cs" />
+    <Compile Include="Engine\Items\MapObjects\Fortification.cs" />
+    <Compile Include="Engine\Items\MapObjects\DoorWindow.cs" />
+    <Compile Include="Engine\Items\MapObjects\Board.cs" />
+    <Compile Include="Engine\Items\MapObjects\PowerGenerator.cs" />
     <Compile Include="Engine\Tasks\TaskRemoveDecoration.cs" />
     <Compile Include="UI\IGameCanvas.cs" />
     <Compile Include="UI\GDIPlusGameCanvas.cs">

@@ -2048,7 +2048,6 @@ namespace djack.RogueSurvivor.Data
     // by hex-editing does work flawlessly at the Actor level.
     public void PrepareForPlayerControl()
     {
-      if (m_Inventory == null) m_Inventory = new Inventory(1);  // but the GUI still won't display it for undead; test removing for 0.10.0
       if (Leader != null) Leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
