@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -1761,17 +1762,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // maintain taboo information
       int time = m_Actor.LastActionTurn;
       if (null != m_TabooItems) {
-        foreach (Item tmp in new List<Item>(m_TabooItems.Keys)) { 
-          if (m_TabooItems[tmp] > time) continue;
-          m_TabooItems.Remove(tmp);
-        }
+        m_TabooItems.OnlyIf(val => val<=time);
         if (0 == m_TabooItems.Count) m_TabooItems = null;
       }
       if (null != m_TabooTiles) {
-        foreach (Point tmp in new List<Point>(m_TabooTiles.Keys)) {
-        if (m_TabooTiles[tmp] > time) continue;
-          m_TabooTiles.Remove(tmp);
-        }
+        m_TabooTiles.OnlyIf(val => val<=time);
         if (0 == m_TabooTiles.Count) m_TabooTiles = null;
       }
       // actors ok to clear at midnight

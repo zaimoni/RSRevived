@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Data
         {
           lock(_threats) { 
             foreach (Actor a in _threats.Keys.ToList().Where(a=>_threats[a].ContainsKey(m))) {
-			  _threats[a][m] = new HashSet<Point>(_threats[a][m].Except(pts));
+			  _threats[a][m].Except(pts);
 			  if (0 >= _threats[a][m].Count) _threats[a].Remove(m);
 			  if (0 >= _threats[a].Count) _threats.Remove(a);	// should not happen
 			}
