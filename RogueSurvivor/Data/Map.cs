@@ -64,13 +64,6 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
     public IEnumerable<Exit> Exits { get { return m_Exits.Values; } }
-
-    public int CountExits {
-      get {
-        return (m_Exits.Values != null ? m_Exits.Values.Count : 0);
-      }
-    }
-
     public IEnumerable<Actor> Actors { get { return m_ActorsList; } }
     public int CountActors { get { return m_ActorsList.Count; } }
 
@@ -238,6 +231,15 @@ namespace djack.RogueSurvivor.Data
     public Exit GetExitAt(int x, int y)
     {
       return GetExitAt(new Point(x, y));
+    }
+
+    public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
+      Contract.Requires(null != fn);
+      Dictionary<Point,Exit> ret = new Dictionary<Point, Exit>();
+      foreach(Point pt in m_Exits.Keys) {
+        if (fn(m_Exits[pt])) ret[pt] = m_Exits[pt];
+      }
+      return ret;
     }
 
     public void SetExitAt(Point pos, Exit exit)

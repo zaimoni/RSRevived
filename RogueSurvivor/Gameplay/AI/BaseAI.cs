@@ -707,7 +707,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	protected ActorAction BehaviorPathTo(Location dest)
 	{
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();	// XXX new function
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
 	  if (dest.Map != m_Actor.Location.Map) {
 	    IEnumerable<Exit> valid_exits = m_Actor.Location.Map.Exits.Where(e => e.IsAnAIExit);
 	    // should be at least one by construction

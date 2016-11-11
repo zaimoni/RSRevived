@@ -673,8 +673,42 @@ retry:    Percept percept = FilterNearest(perceptList2);
       ThreatTracking threats = m_Actor.Threats;
       if (null != threats) {
         // 1) clear the current map, unless it's non-vintage sewers
+        HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? _threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+        if (0<tainted.Count) {
+          Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
+          navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+          Dictionary<Point, int> candidates = navigate.Approach(m_Actor.Location.Position);
+          Dictionary<Point, int> exposed = new Dictionary<Point,int>();
+          List<Point> dest = candidates.Keys.ToList();
+          // require immediately legal move
+          foreach(Point pt in dest) {
+            if (null == Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)) candidates.Remove(pt);
+          }
+          dest = candidates.Keys.ToList();
+          foreach(Point pt in dest) {
+            HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.Weather, pt);
+            los.IntersectWith(tainted);
+            exposed[pt] = los.Count;
+          }
+          int most_exposed = exposed.Values.Max();
+          if (0<most_exposed) {
+            foreach(Point pt in dest) {
+              if (most_exposed>exposed[pt]) candidates.Remove(pt);
+            }
+            dest = candidates.keys.ToList();
+          }
+        }
+
+        Dictionary<Point,Exit> candidates = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+        IEnumerable<Map> possible_destinations = candidates.Values.Select(exit=>exit.ToMap);
+        if (1<possible_destinations.Count()) {
+        }
         // 2) clear the entry map
+        if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
+          // todo: pathfind to entry map
         // 3) clear basements and subway; ok to clear police station and first level of hospital.
+        } else {
+        }
       }
 #endif
 
