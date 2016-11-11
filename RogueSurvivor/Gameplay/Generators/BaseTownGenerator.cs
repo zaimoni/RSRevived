@@ -1488,6 +1488,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (CountAdjWalls(map, left2, y) >= 3)
             map.PlaceMapObjectAt(MakeObjIronBench(), new Point(left2, y));
         }
+        DoForEachTile(rect1,(pt => {
+          Session.Get.ForcePoliceKnown(new Location(map, pt));
+        }));
         map.AddZone(MakeUniqueZone("platform", rect1));
         Point point1 = direction != Direction.S ? new Point(x1, rect1.Bottom) : new Point(x1, rect1.Top - 1);
         map.PlaceMapObjectAt(MakeObjIronGate(), new Point(point1.X, point1.Y));
