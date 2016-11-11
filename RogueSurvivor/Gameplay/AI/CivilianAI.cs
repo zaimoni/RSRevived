@@ -654,12 +654,8 @@ retry:    Percept percept = FilterNearest(perceptList2);
           }
         }
         if (m_Actor.Model.Abilities.IsLawEnforcer && game.Rules.RollChance(LAW_ENFORCE_CHANCE)) {
-          Actor target;
-          tmpAction = BehaviorEnforceLaw(game, friends, out target);
-          if (null != tmpAction) {
-            m_Actor.TargetActor = target;
-            return tmpAction;
-          }
+          tmpAction = BehaviorEnforceLaw(game, friends);
+          if (null != tmpAction) return tmpAction;
         }
 	  }
       if (m_Actor.CountFollowers > 0) {
