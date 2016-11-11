@@ -668,6 +668,16 @@ retry:    Percept percept = FilterNearest(perceptList2);
           return tmpAction;
         }
       }
+
+#if FAIL
+      ThreatTracking threats = m_Actor.Threats;
+      if (null != threats) {
+        // 1) clear the current map, unless it's non-vintage sewers
+        // 2) clear the entry map
+        // 3) clear basements and subway; ok to clear police station and first level of hospital.
+      }
+#endif
+
       tmpAction = BehaviorExplore(game, m_Exploration);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;

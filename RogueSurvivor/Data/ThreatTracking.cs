@@ -56,6 +56,17 @@ namespace djack.RogueSurvivor.Data
 		  }
 		}
 
+		public HashSet<Point> ThreatWhere(Map map)
+		{
+          HashSet<Point> ret = new HashSet<Point>();
+		  lock(_threats) {
+            foreach (Actor a in _threats.Keys.Where(a => _threats[a].Keys.Contains(map))) {
+              ret.UnionWith(_threats[a][map]);
+            }
+		  }
+		  return ret;
+		}
+
 		public List<Actor> ThreatIn(Map map)
 		{
 		  lock(_threats) {

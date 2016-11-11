@@ -11059,9 +11059,10 @@ namespace djack.RogueSurvivor.Engine
             }
           }
 		} else {
+          HashSet<Point> tainted = _threats.ThreatWhere(map);
           for (pos.X = 0; pos.X < map.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
-              if (0 < _threats.ThreatAt(new Location(map, pos)).Count) {
+              if (tainted.Contains(pos)) {
                 m_UI.UI_SetMinimapColor(pos.X, pos.Y, Color.Maroon);
                 continue;
               }
