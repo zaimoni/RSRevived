@@ -677,26 +677,16 @@ retry:    Percept percept = FilterNearest(perceptList2);
         if (0<tainted.Count) {
           Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
           navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
-          Dictionary<Point, int> candidates = navigate.Approach(m_Actor.Location.Position);
+          Dictionary<Point, int> candidates = navigate.Approach(m_Actor.Location.Position).OnlyIf(pt=>null != Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt));
           Dictionary<Point, int> exposed = new Dictionary<Point,int>();
-          List<Point> dest = candidates.Keys.ToList();
-          // require immediately legal move
-          foreach(Point pt in dest) {
-            if (null == Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)) candidates.Remove(pt);
-          }
-          dest = candidates.Keys.ToList();
-          foreach(Point pt in dest) {
+          foreach(Point pt in candidates.Keys) {
             HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.Weather, pt);
             los.IntersectWith(tainted);
             exposed[pt] = los.Count;
           }
           int most_exposed = exposed.Values.Max();
-          if (0<most_exposed) {
-            foreach(Point pt in dest) {
-              if (most_exposed>exposed[pt]) candidates.Remove(pt);
-            }
-            dest = candidates.keys.ToList();
-          }
+          if (0<most_exposed) candidates.OnlyIf(val=>most_exposed<=val);
+          return DecideMove(candidates.Keys.ToList(), null, null);
         }
 
         Dictionary<Point,Exit> candidates = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
