@@ -769,7 +769,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         });
         if (actorAction != null) return actorAction;
       }
-      if (m_Actor.IsOnCouch) return new ActionSleep(m_Actor);
+      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
+      if (m_Actor.IsOnCouch) {
+        if (it is BatteryPowered) game.DoUnequipItem(m_Actor, it);
+        return new ActionSleep(m_Actor);
+      }
       Point? nullable = null;
       float num1 = float.MaxValue;
       foreach (Point point in m_Actor.Controller.FOV) {
@@ -789,7 +793,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // all battery powered items other than the police radio are left hand, currently
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
-      Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (it is BatteryPowered) game.DoUnequipItem(m_Actor, it);
       return new ActionSleep(m_Actor);
     }
