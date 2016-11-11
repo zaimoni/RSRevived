@@ -690,14 +690,31 @@ retry:    Percept percept = FilterNearest(perceptList2);
         }
 
         Dictionary<Point,Exit> candidates = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
-        IEnumerable<Map> possible_destinations = candidates.Values.Select(exit=>exit.ToMap);
-        if (1<possible_destinations.Count()) {
+        HashSet<Map> possible_destinations = new HashSet<Map>(candidates.Values.Select(exit=>exit.ToMap));
+        // but ignore the sewers if we're not vintage
+        if (Session.Get.HasZombiesInSewers) possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
+        
+        // try to pick something reasonable
+        Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map,int>();
+        if (1<possible_destinations.Count) {
+          foreach(Map m in possible_destinations) {
+            hazards[m] = _threats.ThreatsWhere(m);
+          }
+          hazards.OnlyIf(val=>0<val.Count);
+          if (0<hazards.Count) possible_destinations.IntersectWith(hazards.Keys);
         }
+        // if the entry map is a destination, go there if it has a problem
+        if (1<possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap) && hazards.ContainsKey(m_Actor.Location.Map.District.EntryMap)) {
+          possible_destinations = new HashSet<Map>();
+          possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
+        }
+
+        // general priorities
         // 2) clear the entry map
         if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
-          // todo: pathfind to entry map
         // 3) clear basements and subway; ok to clear police station and first level of hospital.
         } else {
+        }
         }
       }
 #endif
