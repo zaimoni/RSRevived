@@ -1328,23 +1328,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public List<Item> GetTradeableItems(Inventory inv)
     {
       if (inv == null) return null;
-      List<Item> ret = null;
-      foreach (Item it in inv.Items) {
-         if (IsTradeableItem(it)) {
-           if (null == ret) ret = new List<Item>(inv.CountItems);
-           ret.Add(it);
-         }
-      }
-      return ret;
+      IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
+      return ret.Any() ? ret.ToList() : null;
     }
 
     public bool HasAnyTradeableItem(Inventory inv)
     {
       if (inv == null) return false;
-      foreach (Item it in inv.Items) {
-        if (IsTradeableItem(it)) return true;
-      }
-      return false;
+      return inv.Items.Where(it=> IsTradeableItem(it)).Any();
     }
 
     public bool HasAnyInterestingItem(Inventory inv)
@@ -1651,41 +1642,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected static List<Exit> ListAdjacentExits(Location fromLocation)
     {
-      List<Exit> exitList = null;
-      foreach (Direction direction in Direction.COMPASS) {
-        Point pos = fromLocation.Position + direction;
-        Exit exitAt = fromLocation.Map.GetExitAt(pos);
-        if (exitAt != null) {
-          if (exitList == null) exitList = new List<Exit>(8);
-          exitList.Add(exitAt);
-        }
-      }
-      return exitList;
+      IEnumerable<Exit> adj_exits = Direction.COMPASS.Select(dir=> fromLocation.Map.GetExitAt(fromLocation.Position + dir)).Where(exit=>null!=exit);
+      return adj_exits.Any() ? adj_exits.ToList() : null;
     }
 
     protected Exit PickAnyAdjacentExit(RogueGame game, Location fromLocation)
     {
       List<Exit> exitList = ListAdjacentExits(fromLocation);
-      if (exitList == null) return null;
-      return exitList[game.Rules.Roll(0, exitList.Count)];
+      return null != exitList ? exitList[game.Rules.Roll(0, exitList.Count)] : null;
     }
 
     public static bool IsZoneChange(Map map, Point pos)
     {
       List<Zone> zonesHere = map.GetZonesAt(pos.X, pos.Y);
-      if (zonesHere == null)
-        return false;
+      if (zonesHere == null) return false;
       return map.HasAnyAdjacentInMap(pos, (Predicate<Point>) (adj =>
       {
         List<Zone> zonesAt = map.GetZonesAt(adj.X, adj.Y);
-        if (zonesAt == null)
-          return false;
-        if (zonesHere == null)
-          return true;
-        foreach (Zone zone in zonesAt)
-        {
-          if (!zonesHere.Contains(zone))
-            return true;
+        if (zonesAt == null) return false;
+        if (zonesHere == null) return true;
+        foreach (Zone zone in zonesAt) {
+          if (!zonesHere.Contains(zone)) return true;
         }
         return false;
       }));

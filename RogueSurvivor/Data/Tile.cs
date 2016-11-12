@@ -70,50 +70,32 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool HasDecorations
-    {
-      get
-      {
-        return m_Decorations != null;
-      }
-    }
-
-    public IEnumerable<string> Decorations
-    {
-      get
-      {
-        return (IEnumerable<string>)m_Decorations;
-      }
-    }
+    public bool HasDecorations { get { return m_Decorations != null; } }
+    public IEnumerable<string> Decorations { get { return m_Decorations; } }
 
     public Tile(TileModel model)
     {
-      if (model == null)
-        throw new ArgumentNullException("model");
-            m_ModelID = model.ID;
+      Contract.Requires(null != model);
+      m_ModelID = model.ID;
     }
 
     public void AddDecoration(string imageID)
     {
-      if (m_Decorations == null)
-                m_Decorations = new List<string>(1);
-      if (m_Decorations.Contains(imageID))
-        return;
-            m_Decorations.Add(imageID);
+      if (m_Decorations == null) m_Decorations = new List<string>(1);
+      else if (m_Decorations.Contains(imageID)) return;
+      m_Decorations.Add(imageID);
     }
 
     public bool HasDecoration(string imageID)
     {
-      if (m_Decorations == null)
-        return false;
+      if (m_Decorations == null) return false;
       return m_Decorations.Contains(imageID);
     }
 
     public void RemoveAllDecorations()
     {
-      if (m_Decorations != null)
-                m_Decorations.Clear();
-            m_Decorations = (List<string>) null;
+      if (m_Decorations != null) m_Decorations.Clear();
+      m_Decorations = null;
     }
 
     public void RemoveDecoration(string imageID)

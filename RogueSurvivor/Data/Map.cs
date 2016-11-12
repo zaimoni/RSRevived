@@ -357,15 +357,8 @@ namespace djack.RogueSurvivor.Data
 
     public List<Zone> GetZonesAt(int x, int y)
     {
-      List<Zone> zoneList = (List<Zone>) null;
-      foreach (Zone mZone in m_Zones) {
-        if (mZone.Bounds.Contains(x, y)) {
-          if (zoneList == null)
-            zoneList = new List<Zone>(m_Zones.Count / 4);
-          zoneList.Add(mZone);
-        }
-      }
-      return zoneList;
+      IEnumerable<Zone> zoneList = m_Zones.Where(z => z.Bounds.Contains(x, y));
+      return zoneList.Any() ? zoneList.ToList() : null;
     }
 
     // XXX dead function?
@@ -411,8 +404,8 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceActorAt(Actor actor, Point position)
     {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (!IsInBounds(position.X, position.Y)) throw new ArgumentOutOfRangeException("position out of map bounds");
+      Contract.Requires(null != actor);
+      Contract.Requires(IsInBounds(position));
       Actor actorAt = GetActorAt(position);
       if (actorAt == actor) throw new InvalidOperationException("actor already at position");
       if (actorAt != null) throw new InvalidOperationException("another actor already at position");
@@ -495,7 +488,7 @@ namespace djack.RogueSurvivor.Data
     public List<Actor> Players { 
       get {
         if (null != m_aux_Players) return m_aux_Players;
-        m_aux_Players = new List<Actor>(m_ActorsList.Where((Func<Actor,bool>)(a => a.IsPlayer && !a.IsDead)));
+        m_aux_Players = m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList();
         return m_aux_Players;
       }
     }
@@ -518,12 +511,8 @@ namespace djack.RogueSurvivor.Data
     // police on map
     public List<Actor> Police { 
       get {
-        List<Actor> police = new List<Actor>(m_ActorsList.Count);
-        foreach(Actor tmp in m_ActorsList) { 
-          if ((int)Gameplay.GameFactions.IDs.ThePolice==tmp.Faction.ID && !tmp.IsDead) police.Add(tmp);
-        }
-        police.TrimExcess();
-        return 0 < police.Count ? police : null;
+        IEnumerable<Actor> police = m_ActorsList.Where(a=> (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead);
+        return police.Any() ? police.ToList() : null;
       }
     }
 
@@ -549,14 +538,11 @@ namespace djack.RogueSurvivor.Data
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
       Contract.Requires(null != mapObj);
+      Contract.Requires(IsInBounds(position));
       MapObject mapObjectAt = GetMapObjectAt(position);
       if (mapObjectAt == mapObj) return;
-      if (mapObjectAt == mapObj)
-        throw new InvalidOperationException("mapObject already at position");
       if (mapObjectAt != null)
         throw new InvalidOperationException("another mapObject already at position");
-      if (!IsInBounds(position.X, position.Y))
-        throw new ArgumentOutOfRangeException("position out of map bounds");
       if (!GetTileAt(position.X, position.Y).Model.IsWalkable)
         throw new InvalidOperationException("cannot place map objects on unwalkable tiles");
       if (HasMapObject(mapObj))
@@ -686,39 +672,34 @@ namespace djack.RogueSurvivor.Data
 
     public void AddCorpseAt(Corpse c, Point p)
     {
-      if (m_CorpsesList.Contains(c))
-        throw new ArgumentException("corpse already in this map");
+      if (m_CorpsesList.Contains(c)) throw new ArgumentException("corpse already in this map");
       c.Position = p;
-            m_CorpsesList.Add(c);
-            InsertCorpseAtPos(c);
+      m_CorpsesList.Add(c);
+      InsertCorpseAtPos(c);
       c.DeadGuy.Location = new Location(this, p);
     }
 
     public void MoveCorpseTo(Corpse c, Point newPos)
     {
-      if (!m_CorpsesList.Contains(c))
-        throw new ArgumentException("corpse not in this map");
-            RemoveCorpseFromPos(c);
+      if (!m_CorpsesList.Contains(c)) throw new ArgumentException("corpse not in this map");
+      RemoveCorpseFromPos(c);
       c.Position = newPos;
-            InsertCorpseAtPos(c);
+      InsertCorpseAtPos(c);
       c.DeadGuy.Location = new Location(this, newPos);
     }
 
     public void RemoveCorpse(Corpse c)
     {
-      if (!m_CorpsesList.Contains(c))
-        throw new ArgumentException("corpse not in this map");
-            m_CorpsesList.Remove(c);
-            RemoveCorpseFromPos(c);
+      if (!m_CorpsesList.Contains(c)) throw new ArgumentException("corpse not in this map");
+      m_CorpsesList.Remove(c);
+      RemoveCorpseFromPos(c);
     }
 
     public bool TryRemoveCorpseOf(Actor a)
     {
-      foreach (Corpse mCorpses in m_CorpsesList)
-      {
-        if (mCorpses.DeadGuy == a)
-        {
-                    RemoveCorpse(mCorpses);
+      foreach (Corpse mCorpses in m_CorpsesList) {
+        if (mCorpses.DeadGuy == a) {
+          RemoveCorpse(mCorpses);
           return true;
         }
       }
@@ -888,10 +869,8 @@ namespace djack.RogueSurvivor.Data
 
     public void ForEachAdjacentInMap(Point position, Action<Point> fn)
     {
+      Contract.Requires(null != fn);
       if (!IsInBounds(position)) return;
-#if DEBUG
-      if (null == fn) throw new ArgumentNullException("fn");
-#endif
       foreach (Direction direction in Direction.COMPASS) {
         Point p = position + direction;
         if (IsInBounds(p)) fn(p);
@@ -900,17 +879,14 @@ namespace djack.RogueSurvivor.Data
 
     public Point? FindFirstInMap(Predicate<Point> predicateFn)
     {
+      Contract.Requires(null != predicateFn);
       Point point = new Point();
-      for (int index1 = 0; index1 < Width; ++index1)
-      {
-        point.X = index1;
-        for (int index2 = 0; index2 < Height; ++index2)
-        {
-          point.Y = index2;
-          if (predicateFn(point)) return new Point?(point);
+      for (point.X = 0; point.X < Width; ++point.X) {
+        for (point.Y = 0; point.Y < Height; ++point.Y) {
+          if (predicateFn(point)) return point;
         }
       }
-      return new Point?();
+      return null;
     }
 
     // cheat map similar to savefile viewer

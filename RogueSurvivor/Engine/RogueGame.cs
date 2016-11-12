@@ -5748,7 +5748,7 @@ namespace djack.RogueSurvivor.Engine
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               string reason;
               if (m_Rules.CanActorBuildFortification(follower, map2, isLarge, out reason)) {
-                nullable = new Point?(map2);
+                nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   DoGiveOrderTo(player, follower, new ActorOrder(isLarge ? ActorTasks.BUILD_LARGE_FORTIFICATION : ActorTasks.BUILD_SMALL_FORTIFICATION, new Location(player.Location.Map, map2)));
@@ -5756,7 +5756,7 @@ namespace djack.RogueSurvivor.Engine
                   flag2 = true;
                 }
               } else {
-                nullable = new Point?(map2);
+                nullable = map2;
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   AddMessage(MakeErrorMessage(string.Format("Can't build {0} fortification : {1}.", isLarge ? (object) "large" : (object) "small", (object) reason)));
@@ -5764,7 +5764,7 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              nullable = new Point?(map2);
+              nullable = map2;
               color = Color.Red;
             }
           }
@@ -5862,7 +5862,7 @@ namespace djack.RogueSurvivor.Engine
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               string reason;
               if (map2 == follower.Location.Position || map1.IsWalkableFor(map2, follower, out reason)) {
-                nullable = new Point?(map2);
+                nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.GUARD, new Location(map1, map2)));
@@ -5870,7 +5870,7 @@ namespace djack.RogueSurvivor.Engine
                   flag2 = true;
                 }
               } else {
-                nullable = new Point?(map2);
+                nullable = map2;
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   AddMessage(MakeErrorMessage(string.Format("Can't guard here : {0}", (object) reason)));
@@ -5878,7 +5878,7 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              nullable = new Point?(map2);
+              nullable = map2;
               color = Color.Red;
             }
           }
@@ -5931,7 +5931,7 @@ namespace djack.RogueSurvivor.Engine
               } else if (!(map2 == follower.Location.Position) && !map1.IsWalkableFor(map2, follower, out reason))
                 flag3 = false;
               if (flag3) {
-                nullable = new Point?(map2);
+                nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.PATROL, new Location(map1, map2)));
@@ -5939,7 +5939,7 @@ namespace djack.RogueSurvivor.Engine
                   flag2 = true;
                 }
               } else {
-                nullable = new Point?(map2);
+                nullable = map2;
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   AddMessage(MakeErrorMessage(string.Format("Can't patrol here : {0}", (object) reason)));
@@ -5947,7 +5947,7 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             } else {
-              nullable = new Point?(map2);
+              nullable = map2;
               color = Color.Red;
             }
           }
@@ -8844,24 +8844,15 @@ namespace djack.RogueSurvivor.Engine
       if (!m_Rules.CanActorInitiateTradeWith(speaker,target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
       Item trade = PickItemToTrade(speaker, target);
-            DoTrade(speaker, trade, target, false);
+      DoTrade(speaker, trade, target, false);
     }
 
     private List<Item> GetInterestingTradeableItems(Actor speaker, Actor buyer)
     {
 //    if (buyer.IsPlayer) return speaker.Inventory.Items
 
-      List<Item> objList = null;
-      foreach (Item offeredItem in speaker.Inventory.Items)
-      {
-        if (   IsInterestingTradeItem(speaker, offeredItem, buyer)
-            && IsTradeableItem(speaker, offeredItem))
-        {
-          if (objList == null) objList = new List<Item>(speaker.Inventory.CountItems);
-          objList.Add(offeredItem);
-        }
-      }
-      return objList;
+      IEnumerable<Item> objList = speaker.Inventory.Items.Where(it=> IsInterestingTradeItem(speaker, it, buyer) && IsTradeableItem(speaker, it));
+      return objList.Any() ? objList.ToList() : null;
     }
 
     private Item PickItemToTrade(Actor speaker, Actor buyer)
