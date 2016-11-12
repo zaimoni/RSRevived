@@ -717,6 +717,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	      valid_exits = valid_exits.Where(e => dest.Map==e.ToMap);
 	      exit_maps = new HashSet<Map>(valid_exits.Select(e=>e.ToMap));
 	    }
+        if (2<=exit_maps.Count) {
+          // remove dead ends: Hospital Power, Police Jails
+          if (exit_maps.Remove(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap)) valid_exits = valid_exits.Where(e => Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap != e.ToMap);
+          if (exit_maps.Remove(Session.Get.UniqueMaps.Hospital_Power.TheMap)) valid_exits = valid_exits.Where(e => Session.Get.UniqueMaps.Hospital_Power.TheMap != e.ToMap);
+        }
 	    // XXX if still at at least 2 maps before cross-district AI, one of us or our leader is in one of the special locations and that special location is in our district.
 	    Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))

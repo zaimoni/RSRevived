@@ -71,15 +71,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       private readonly int _STA_buffer;
       private int _start_time;
-      private Location _src;
       private Map _dest_map;
       private HashSet<Point> _dest_pts = new HashSet<Point>();
 //    List<Objective> _sub_goals = new List<Objective>();
 
-      public Goal_BeThereAt(Location src, Location dest, int t0, int STA_buffer=0)
+      public Goal_BeThereAt(Location dest, int t0, int STA_buffer=0)
       : base(t0)
       {
-        _src = src;
         _dest_map = dest.Map;
         _dest_pts.Add(dest.Position);
         _STA_buffer = STA_buffer;
@@ -92,7 +90,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_BeThereAt(Location src, Map dest_map, IEnumerable<Point> dest_pts, int t0, int STA_buffer=0)
       : base(t0)
       {
-        _src = src;
         _dest_map = dest_map;
         _dest_pts.UnionWith(dest_pts);
         _STA_buffer = STA_buffer;
@@ -100,15 +97,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      _calc_subgoals();
       }
 
-      void Update(Location src)
-      { // subgoals matter here...this is just a placeholder
-        _src = src;
-//      _calc_subgoals();
-      }
-
       bool UrgentAction(out ActorAction ret)
       {
         ret = null;
+        // if no subgoals are urgent, path
         return false;
       }
 
