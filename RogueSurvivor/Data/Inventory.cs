@@ -139,11 +139,8 @@ namespace djack.RogueSurvivor.Data
       List<Item> objList = null;
       foreach (Item mItem in m_Items) {
         if (mItem.Model == it.Model && mItem.CanStackMore && !mItem.IsEquipped) {
-          if (objList == null) objList = new List<Item>(m_Items.Count);
-          objList.Add(mItem);
-          int val2 = mItem.Model.StackingLimit - mItem.Quantity;
-          int num = Math.Min(it.Quantity - stackedQuantity, val2);
-          stackedQuantity += num;
+          (objList ?? (objList = new List<Item>())).Add(mItem);
+          stackedQuantity += Math.Min(it.Quantity - stackedQuantity, mItem.Model.StackingLimit - mItem.Quantity);
           if (stackedQuantity == it.Quantity) break;
         }
       }
@@ -196,13 +193,9 @@ namespace djack.RogueSurvivor.Data
 
     public List<_T_> GetItemsByType<_T_>() where _T_ : Item
     {
-      List<_T_> tList = (List<_T_>) null;
-      Type type = typeof (_T_);
+      List<_T_> tList = null;
       foreach (Item mItem in m_Items) {
-        if (mItem.GetType() == type) {
-          if (tList == null) tList = new List<_T_>(m_Items.Count);
-          tList.Add(mItem as _T_);
-        }
+        if (mItem is _T_) (tList ?? (tList = new List<_T_>())).Add(mItem as _T_);
       }
       return tList;
     }
