@@ -1506,7 +1506,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == a) return false;
       if (a is ActionMoveStep) return true;
       if (a is ActionSwitchPlace) return true;
-      if (a is ActionPush) return true;
+//    if (a is ActionPush) return true; // wasn't being generated in RS alpha 9...results do not look good
       if (a is ActionOpenDoor) return true;
       if (a is ActionBashDoor) return true;
       if (a is ActionChat) {

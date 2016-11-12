@@ -20,11 +20,6 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
-  [Serializable]
-  internal abstract class OrderableAI : BaseAI
-  {
-    private const int EMOTE_GRAB_ITEM_CHANCE = 30;
-
     // OrderableAI subsumes all close-to-normal livings.  The Police Faction AI needs the following capabilities
     // * sweep district for threat
     // * explore
@@ -40,24 +35,91 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // sleep (on bed) at time t with food value >= and sanity value >= 
     // * reversed-sense of these inequalities may also be of use
     // Engine.AI.Percept looks related, but reverse-engineering the required action is problematic
-    protected enum ObjectiveKinds
-    {
-      NONE = 0,
-      LOCATION,
-      GET_ITEM,
-      DROP_ITEM,
-      USE_ITEM,
-      SLEEP,
-      WAKE_UP
-    }
     [Serializable]
-    protected abstract class Objective
+    internal abstract class Objective
     {
-      int turn;
+      protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point
+      protected readonly Actor m_Actor;   // owning actor is likely important
 
-      public abstract ObjectiveKinds type();
+      public int TurnCounter { get { return turn; } }
+
+      protected Objective(int t0, Actor who)
+      {
+         Contract.Requires(0 <= t0);
+         Contract.Requires(null != who);
+         turn = t0;
+         m_Actor = who;
+      }
+
       public virtual List<Objective> Subobjectives() { return null; }
     }
+
+#if FAIL
+    [Serializable]
+    public Goal_Sleep : Objective
+    {
+    }
+
+    [Serializable]
+    // fulfilled by one of: sleep, stimulates, non-leader ally pushing/shoving
+    public Goal_Wakeup : Objective
+    {
+    }
+
+    [Serializable]
+    public Goal_BeThereAt : Objective
+    {
+      private readonly int _STA_buffer;
+      private int _start_time;
+      private Location _src;
+      private Map _dest_map;
+      private HashSet<Point> _dest_pts = new HashSet<Point>();
+//    List<Objective> _sub_goals = new List<Objective>();
+
+      public Goal_BeThereAt(Location src, Location dest, int t0, int STA_buffer=0)
+      : base(t0)
+      {
+        _src = src;
+        _dest_map = dest.Map;
+        _dest_pts.Add(dest.Position);
+        _STA_buffer = STA_buffer;
+//      _bootstrap_subgoals();
+//      _calc_subgoals();
+      }
+
+      // This is "be at X at t0"; it does not imply guarding.  Rather, this is for
+      // pre-positioning for the midnight invasions.
+      public Goal_BeThereAt(Location src, Map dest_map, IEnumerable<Point> dest_pts, int t0, int STA_buffer=0)
+      : base(t0)
+      {
+        _src = src;
+        _dest_map = dest_map;
+        _dest_pts.UnionWith(dest_pts);
+        _STA_buffer = STA_buffer;
+//      _bootstrap_subgoals();
+//      _calc_subgoals();
+      }
+
+      void Update(Location src)
+      { // subgoals matter here...this is just a placeholder
+        _src = src;
+//      _calc_subgoals();
+      }
+
+      bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        return false;
+      }
+
+      public virtual List<Objective> Subobjectives() { return new List<Objective>(_sub_goals); }
+    }
+#endif
+
+    [Serializable]
+  internal abstract class OrderableAI : BaseAI
+  {
+    private const int EMOTE_GRAB_ITEM_CHANCE = 30;
 
 #if FAIL
     // build out CivilianAI first, then fix the other AIs

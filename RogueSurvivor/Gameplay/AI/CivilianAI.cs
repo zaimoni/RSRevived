@@ -397,13 +397,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-#if FAIL
-      // the new objectives system should trigger after all enemies-handling behavior
-      List<Objectives> ai_objectives = Objectives;
-      if (null != ai_objectives) {
-      }
-#endif
-
       // handle food after enemies check
       tmpAction = BehaviorEatProactively(game);
       if (null != tmpAction) return tmpAction;
@@ -419,6 +412,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+
+#if FAIL
+      // the new objectives system should trigger after all enemies-handling behavior
+      List<Objectives> ai_objectives = Objectives;
+      if (null != ai_objectives) {
+      }
+#endif
+
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(m_Actor)) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
