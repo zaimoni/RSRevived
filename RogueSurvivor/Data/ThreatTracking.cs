@@ -149,6 +149,7 @@ namespace djack.RogueSurvivor.Data
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
             List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
+            if (null == tmp) return;
 			tmp.Add(moving.Location.Position);
             foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map, tmp);
           }
@@ -184,5 +185,39 @@ namespace djack.RogueSurvivor.Data
           return _locs.ContainsKey(map) ? _locs[map] : null;
 		}
 	  }
+
+      public void Record(Map m, IEnumerable<Point> pts)
+      {
+        lock(_locs) {  
+		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
+          _locs[m].UnionWith(pts);
+        }
+      }
+
+      public void Record(Location loc)
+      {
+		lock(_locs) {
+		  if (!_locs.ContainsKey(loc.Map)) _locs[loc.Map] = new HashSet<Point>();
+          _locs[loc.Map].Add(loc.Position);
+		}
+      }
+
+      public void Seen(Map m, IEnumerable<Point> pts)
+      {
+        lock(_locs) {  
+		  if (!_locs.ContainsKey(m)) return;
+          IEnumerable<Point> tmp = _locs[m].Except(pts);
+          if (tmp.Any()) _locs[m] = new HashSet<Point>(tmp);
+          else _locs.Remove(m);
+        }
+      }
+
+      public void Seen(Location loc)
+      {
+		lock(_locs) {
+		  if (!_locs.ContainsKey(loc.Map)) return;
+          if (_locs[loc.Map].Remove(loc.Position) && 0 >= _locs[loc.Map].Count) _locs.Remove(loc.Map);
+		}
+      }
     }
 }

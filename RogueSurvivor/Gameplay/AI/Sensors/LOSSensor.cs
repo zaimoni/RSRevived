@@ -80,7 +80,6 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       if ((m_Filters & LOSSensor.SensingFilter.ITEMS) != LOSSensor.SensingFilter.NONE) {
         Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items = actor.Controller.ItemMemory;
         Dictionary<Location,HashSet< Gameplay.GameItems.IDs >> seen_items = (null==items ? null : new Dictionary<Location, HashSet<Gameplay.GameItems.IDs>>());
-
         foreach (Point position in m_FOV) {
           Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
           if (null==itemsAt) continue;
@@ -102,6 +101,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
             perceptList.Add(new Percept((object) corpsesAt, actor.Location.Map.LocalTime.TurnCounter, new Location(actor.Location.Map, position)));
         }
       }
+      // now have seen everything; note this
+      actor.InterestingLocs?.Seen(actor.Location.Map, m_FOV);
       return perceptList;
     }
 

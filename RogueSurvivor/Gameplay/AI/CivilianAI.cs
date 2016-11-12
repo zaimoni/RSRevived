@@ -191,8 +191,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
-      Dictionary<Point,int> damage_field = (null != enemies ? VisibleMaximumDamage() : null);
+      Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
+      if (null != enemies) VisibleMaximumDamage(damage_field);
       bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts1);  // only civilians and soldiers respect explosives; CHAR and gang don't
+      if (0>=damage_field.Count) damage_field = null;
       List<Point> retreat = null;
       List<Actor> slow_threat = null;
       IEnumerable<Point> tmp_point;
@@ -670,6 +672,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
       }
 
 #if FAIL
+      // hunt down threats
       ThreatTracking threats = m_Actor.Threats;
       if (null != threats) {
         // 1) clear the current map, unless it's non-vintage sewers
@@ -716,6 +719,14 @@ retry:    Percept percept = FilterNearest(perceptList2);
         } else {
         }
         }
+      }
+#endif
+
+#if FAIL
+      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      if (null != sights_to_see) {
+        HashSet<Point> local_interest = sights_to_see.In(m_Actor.Location.Map);
+        if (local_interest) 
       }
 #endif
 

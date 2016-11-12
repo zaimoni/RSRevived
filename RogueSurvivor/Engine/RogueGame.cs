@@ -8858,7 +8858,7 @@ namespace djack.RogueSurvivor.Engine
     private Item PickItemToTrade(Actor speaker, Actor buyer)
     {
       List<Item> objList = GetInterestingTradeableItems(speaker,buyer);
-      if (objList == null) return null;
+      if (objList == null || 0>=objList.Count) return null;
       return objList[m_Rules.Roll(0, objList.Count)];
     }
 

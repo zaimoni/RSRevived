@@ -79,13 +79,12 @@ namespace djack.RogueSurvivor.Data
       return tmpFOV.Contains(x.Position);
     }
 
-    public Dictionary<Point,int> VisibleMaximumDamage()
+    public void VisibleMaximumDamage(Dictionary<Point, int> ret)
     {
-      if (null == m_Actor) return null;
-      if (null == m_Actor.Location.Map) return null;    // Duckman
+      if (null == m_Actor) return;
+      if (null == m_Actor.Location.Map) return;    // Duckman
       HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
-      if (null == tmpFOV) return null;
-      Dictionary<Point,int> ret = new Dictionary<Point,int>();
+      if (null == tmpFOV) return;
       foreach(Point tmp in tmpFOV) {
         if (tmp == m_Actor.Location.Position) continue;
         Actor a = m_Actor.Location.Map.GetActorAt(tmp);
@@ -138,8 +137,6 @@ namespace djack.RogueSurvivor.Data
           }
         }
       }
-      if (0 == ret.Count) return null;
-      return ret;
     }
 
 	public bool AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
