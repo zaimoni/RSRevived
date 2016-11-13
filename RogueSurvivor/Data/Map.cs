@@ -321,16 +321,16 @@ namespace djack.RogueSurvivor.Data
 	  return ret;
 	}
 
-	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps()
+	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps(Actor actor)
 	{
 	  Zaimoni.Data.FloodfillPathfinder<Point> m_StepPather = null;	// convert this to a non-zerialized member variable as cache
 	  if (null == m_StepPather) {
 	    Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt));
-	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=>this.IsInBounds(pt)));
+	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
 	    Point p = new Point();
 		for (p.X = 0; p.X < Width; ++p.X) {
 		  for (p.Y = 0; p.Y < Height; ++p.Y) {
-		    if (!GetTileAt(p).Model.IsWalkable) m_StepPather.Blacklist(p);
+		    if (null==Engine.Rules.IsBumpableFor(actor,new Location(this,p))) m_StepPather.Blacklist(p);
 	      }
 	    }
 	  }

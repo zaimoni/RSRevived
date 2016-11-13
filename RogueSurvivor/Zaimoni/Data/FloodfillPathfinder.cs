@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace Zaimoni.Data
@@ -89,6 +90,7 @@ namespace Zaimoni.Data
         {
             Contract.Requires(null != start);
             Contract.Requires(null != goals);
+            Contract.Requires(!goals.Contains(start));
             if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
             Queue<T> gen0 = new Queue<T>();

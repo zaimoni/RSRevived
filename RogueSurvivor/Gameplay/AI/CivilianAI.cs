@@ -672,9 +672,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // 1) clear the current map, unless it's non-vintage sewers
         HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
         if (0<tainted.Count) {
-          Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
+          Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
           navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
-          Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position).OnlyIf(pt=>null != Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)));
+          Dictionary<Point, int> pre_dest = navigate.Approach(m_Actor.Location.Position);
+          Dictionary<Point, int> dest = new Dictionary<Point,int>(pre_dest).OnlyIf(pt=>null != Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)));
           Dictionary<Point, int> exposed = new Dictionary<Point,int>();
           foreach(Point pt in dest.Keys) {
             HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt));
