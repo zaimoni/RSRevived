@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -665,25 +666,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-#if FAIL
       // hunt down threats
       ThreatTracking threats = m_Actor.Threats;
       if (null != threats) {
         // 1) clear the current map, unless it's non-vintage sewers
-        HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? _threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+        HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
         if (0<tainted.Count) {
           Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
           navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
-          Dictionary<Point, int> candidates = navigate.Approach(m_Actor.Location.Position).OnlyIf(pt=>null != Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt));
+          Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position).OnlyIf(pt=>null != Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)));
           Dictionary<Point, int> exposed = new Dictionary<Point,int>();
-          foreach(Point pt in candidates.Keys) {
-            HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.Weather, pt);
+          foreach(Point pt in dest.Keys) {
+            HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt));
             los.IntersectWith(tainted);
             exposed[pt] = los.Count;
           }
           int most_exposed = exposed.Values.Max();
-          if (0<most_exposed) candidates.OnlyIf(val=>most_exposed<=val);
-          return DecideMove(candidates.Keys.ToList(), null, null);
+          if (0<most_exposed) dest.OnlyIf(val=>most_exposed<=val);
+          return DecideMove(dest.Keys.ToList(), null, null);
         }
 
         Dictionary<Point,Exit> candidates = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
@@ -692,10 +692,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (Session.Get.HasZombiesInSewers) possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
         
         // try to pick something reasonable
-        Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map,int>();
+        Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
         if (1<possible_destinations.Count) {
           foreach(Map m in possible_destinations) {
-            hazards[m] = _threats.ThreatsWhere(m);
+            hazards[m] = threats.ThreatWhere(m);
           }
           hazards.OnlyIf(val=>0<val.Count);
           if (0<hazards.Count) possible_destinations.IntersectWith(hazards.Keys);
@@ -706,15 +706,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
           possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
         }
 
+#if FAIL
         // general priorities
         // 2) clear the entry map
         if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
         // 3) clear basements and subway; ok to clear police station and first level of hospital.
         } else {
         }
-        }
-      }
 #endif
+      }
 
 #if FAIL
       LocationSet sights_to_see = m_Actor.InterestingLocs;
