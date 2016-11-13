@@ -710,19 +710,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	{
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
 	  if (dest.Map != m_Actor.Location.Map) {
-	    IEnumerable<Exit> valid_exits = m_Actor.Location.Map.Exits.Where(e => e.IsAnAIExit);
-	    // should be at least one by construction
-	    HashSet<Map> exit_maps = new HashSet<Map>(valid_exits.Select(e=>e.ToMap));
-	    if (2<=exit_maps.Count && exit_maps.Contains(dest.Map)) {	// normalize
-	      valid_exits = valid_exits.Where(e => dest.Map==e.ToMap);
-	      exit_maps = new HashSet<Map>(valid_exits.Select(e=>e.ToMap));
-	    }
-        if (2<=exit_maps.Count) {
-          // remove dead ends: Hospital Power, Police Jails
-          if (exit_maps.Remove(Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap)) valid_exits = valid_exits.Where(e => Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap != e.ToMap);
-          if (exit_maps.Remove(Session.Get.UniqueMaps.Hospital_Power.TheMap)) valid_exits = valid_exits.Where(e => Session.Get.UniqueMaps.Hospital_Power.TheMap != e.ToMap);
-        }
-	    // XXX if still at at least 2 maps before cross-district AI, one of us or our leader is in one of the special locations and that special location is in our district.
+        HashSet<Exit> valid_exits;
+        HashSet<Map> exit_maps = m_Actor.Location.Map.PathTo(dest.Map, out valid_exits);
+
 	    Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))
           return new ActionUseExit(m_Actor, m_Actor.Location.Position);

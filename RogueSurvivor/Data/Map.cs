@@ -335,9 +335,57 @@ namespace djack.RogueSurvivor.Data
 	    }
 	  }
 	  return new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
-	}
+        }
 
-	public void AddZone(Zone zone)
+    // for AI pathing, currently.
+    private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
+    { 
+	  exits = new HashSet<Exit>(Exits.Where(e => e.IsAnAIExit));
+	  // should be at least one by construction
+	  HashSet<Map> exit_maps = new HashSet<Map>(exits.Select(e=>e.ToMap));
+      if (1>=exit_maps.Count) return exit_maps;
+      if (exit_maps.Contains(dest)) {
+        exit_maps.Clear();
+        exit_maps.Add(dest);
+        exits.RemoveWhere(e => e.ToMap!=dest);
+        return exit_maps;
+      }
+      // cross-district is ruled out due to AI exit restriction, currently
+      return exit_maps;
+    }
+
+    // for AI pathing, currently.
+    public HashSet<Map> PathTo(Map dest, out HashSet<Exit> exits)
+    { 
+      HashSet<Map> exit_maps = _PathTo(dest,out exits);
+      if (1>=exit_maps.Count) return exit_maps;
+
+      HashSet<Exit> inv_exits;
+      HashSet<Map> inv_exit_maps = dest._PathTo(this,out inv_exits); 
+
+      HashSet<Map> intersect = new HashSet<Map>(exit_maps);
+      intersect.IntersectWith(inv_exit_maps);
+      if (0<intersect.Count) {
+        exit_maps = intersect;
+        exits.RemoveWhere(e => !exit_maps.Contains(e.ToMap));
+        if (1>=exit_maps.Count) return exit_maps;
+      }
+
+#if FAIL
+      // XXX topology of these special locations has to be accounted for as they're more than 1 level deep
+      bool is_special = name.StartsWith("Police Station - ");
+      bool dest_is_special = name.StartsWith("Police Station - ");
+      // ...
+      bool is_special = name.StartsWith("Hospital - ");
+      bool dest_is_special = name.StartsWith("Hospital - ");
+      // ...
+#endif
+
+      // cross-district is ruled out due to AI exit restriction, currently
+      return exit_maps;
+    }
+
+    public void AddZone(Zone zone)
     {
       m_Zones.Add(zone);
     }
