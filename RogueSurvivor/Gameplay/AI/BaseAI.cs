@@ -662,41 +662,57 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  // do not get in the way of allies' line of fire
 	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
 
-	  // XXX if we have priority-see locations, maximize that
-	  // XXX if we have threat tracking, maximize threat cleared
-	  // XXX if we have item memory, maximize "update"
-#if FAIL
+      // XXX if we have priority-see locations, maximize that
+      // XXX if we have threat tracking, maximize threat cleared
+      // XXX if we have item memory, maximize "update"
 	  bool want_LOS_heuristics = false;
 	  ThreatTracking threats = m_Actor.Threats;
 	  if (null != threats) want_LOS_heuristics = true;
+#if FAIL
 	  LocationSet sights_to_see = m_Actor.InterestingLocs;
 	  if (null != sights_to_see) want_LOS_heuristics = true;
+#endif
 
-	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>> : null);
+	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>>() : null);
       HashSet<Point> new_los = new HashSet<Point>();
 	  if (null != hypothetical_los) {
 	    // only need points newly in FOV that aren't currently
 	    foreach(Point pt in tmp) {
-	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(actor.Location.Map,pt)).Except(FOV));
-          new_los.UnionWith(hypothetical_los[pt])
+	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt)).Except(FOV));
+          new_los.UnionWith(hypothetical_los[pt]);
 	    }
 	  }
       // only need to check if new locations seen
-      if (0 >= new_los.Count)) {
+      if (0 >= new_los.Count) {
         threats = null;
+#if FAIL
         sights_to_see = null;
+#endif
       }
 
-	  if (null != threats && 2<=tmp.Count)
-	    {
-	    }
+	  if (null != threats && 2<=tmp.Count) {
+        HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map);
+        tainted.IntersectWith(new_los);
+        if (0<tainted.Count) {
+          Dictionary<Point,int> threat_exposed = new Dictionary<Point,int>();
+          foreach(Point pt in tmp) {
+            HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
+            tmp2.IntersectWith(tainted);
+            threat_exposed[pt] = tmp2.Count;
+          }
+          int max_threat_exposed = tmp.Select(pt=>threat_exposed[pt]).Max();
+          threat_exposed.OnlyIf(val=>max_threat_exposed==val);
+          tmp = threat_exposed.Keys.ToList();
+        }
+	  }
+#if FAIL
 	  if (null != sights_to_see && 2<=tmp.Count)
 	    {
 	    }
 #endif
 
-	  // weakly prefer not to jump
-	  if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
+      // weakly prefer not to jump
+      if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
