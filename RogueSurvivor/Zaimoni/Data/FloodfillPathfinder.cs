@@ -131,6 +131,13 @@ namespace Zaimoni.Data
             }
         }
 
+        public int Cost(T current_pos)
+        {
+            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
+//          Contract.EndContractBlock();
+            return _map[current_pos];
+        }
+
         public Dictionary<T, int> Approach(T current_pos) {
             if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
 //          Contract.EndContractBlock();

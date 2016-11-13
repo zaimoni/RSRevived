@@ -1239,13 +1239,29 @@ namespace djack.RogueSurvivor.Data
     }
 
     // stamina
+    public int NightSTApenalty {
+      get { 
+        if (!Location.Map.LocalTime.IsNight) return 0;
+        if (Model.Abilities.IsUndead) return 0;
+        return NIGHT_STA_PENALTY;
+      }
+    }
+
     public bool WillTireAfter(int staminaCost)
     {
       if (!Model.Abilities.CanTire) return false;
-      if (Location.Map.LocalTime.IsNight && staminaCost > 0)
-        staminaCost += Model.Abilities.IsUndead ? 0 : NIGHT_STA_PENALTY;
+      if (0 < staminaCost) staminaCost += NightSTApenalty;
       if (IsExhausted) staminaCost *= 2;
       return m_StaminaPoints + STAMINA_MIN_FOR_ACTIVITY < staminaCost;
+    }
+
+    public bool WillTireAfterRunning(Point dest)
+    {
+      MapObject mapObjectAt = Location.Map.GetMapObjectAt(dest);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
+        return WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty);
+      }
+      return WillTireAfter(Rules.STAMINA_COST_RUNNING);
     }
 
     public int MaxSTA {

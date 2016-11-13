@@ -38,18 +38,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [Serializable]
     internal abstract class Objective
     {
-      protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point
+      protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point.
       protected readonly Actor m_Actor;   // owning actor is likely important
 
       public int TurnCounter { get { return turn; } }
 
       protected Objective(int t0, Actor who)
       {
-         Contract.Requires(0 <= t0);
          Contract.Requires(null != who);
          turn = t0;
          m_Actor = who;
       }
+
+      public abstract bool UrgentAction(out ActorAction ret);
 
       public virtual List<Objective> Subobjectives() { return null; }
     }
@@ -69,7 +70,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [Serializable]
     public Goal_BeThereAt : Objective
     {
-      private readonly int _STA_buffer;
       private int _start_time;
       private Map _dest_map;
       private HashSet<Point> _dest_pts = new HashSet<Point>();
@@ -80,7 +80,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         _dest_map = dest.Map;
         _dest_pts.Add(dest.Position);
-        _STA_buffer = STA_buffer;
 //      _bootstrap_subgoals();
 //      _calc_subgoals();
       }
@@ -92,7 +91,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         _dest_map = dest_map;
         _dest_pts.UnionWith(dest_pts);
-        _STA_buffer = STA_buffer;
 //      _bootstrap_subgoals();
 //      _calc_subgoals();
       }
@@ -100,8 +98,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        // if no subgoals are urgent, path
-        return false;
+        // if no subgoals are urgent, check pathing
+        int steps = 0;
+        Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps();
+        if (dest.Map == m_Actor.Location.Map) {
+	      navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
+          steps = navigate.Cost();
+        } else {
+          // XXX need the costs for each map in the sequence
+          HashSet<Exit> valid_exits;
+          HashSet<Map> exit_maps = m_Actor.Location.Map.PathTo(dest.Map, out valid_exits);
+
+	      Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+          if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))
+            return new ActionUseExit(m_Actor, m_Actor.Location.Position);
+	      navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
+          steps = navigate.Cost();
+	    }
+        // XXX convert steps to actual turns
+        if (TurnCounter-steps>m_Actor.Location.Map.LocalTime.TurnCounter) return false;  // not urgent
+        // final pathing
+	    Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
+        ret = DecideMove(tmp.Keys, null, null);
+        return null != ret;
+	    return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
       }
 
       public virtual List<Objective> Subobjectives() { return new List<Objective>(_sub_goals); }

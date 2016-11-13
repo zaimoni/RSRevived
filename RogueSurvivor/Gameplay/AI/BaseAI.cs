@@ -687,10 +687,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         sights_to_see = null;
       }
 
-	  if (null != _threats && 2<=tmp.Count)
+	  if (null != threats && 2<=tmp.Count)
 	    {
 	    }
-	  if (null != _sights_to_see && 2<=tmp.Count)
+	  if (null != sights_to_see && 2<=tmp.Count)
 	    {
 	    }
 #endif
@@ -967,7 +967,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Requires(null != lhs);
       Contract.Requires(null != rhs);
-      Contract.Requires(null != IsInterestingItem(rhs));    // lhs may be from inventory
+      Contract.Requires(IsInterestingItem(rhs));    // lhs may be from inventory
       if (IsItemTaboo(rhs)) return false;
       if (IsItemTaboo(lhs)) return true;
       if (lhs.Model.ID == rhs.Model.ID) {
@@ -1372,22 +1372,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void RunIfAdvisable(Point dest)
     {
       if (!m_Actor.CanRun()) return;
-      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(dest);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
-        if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP)) return;
-      }
-      if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING)) return;
+      if (m_Actor.WillTireAfterRunning(dest)) return;
       m_Actor.IsRunning = true;
     }
 
 	protected void RunIfReasonable(Point dest)
 	{
       if (!m_Actor.CanRun()) return;
-      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(dest);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
-        if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP)) return;
-      }
-      if (m_Actor.WillTireAfter(Rules.STAMINA_COST_RUNNING)) return;
+      if (m_Actor.WillTireAfterRunning(dest)) return;
 	  if (!m_Actor.RunIsFreeMove) {
         m_Actor.IsRunning = true;	// re-setup free move
 		return;
