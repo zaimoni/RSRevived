@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -111,7 +112,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	      Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
           if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))
-            return new ActionUseExit(m_Actor, m_Actor.Location.Position);
+            return new ActionUseExit(m_Actor, m_Actor.Location.Position);   // would prefer return BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES)
 	      navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
           steps = navigate.Cost();
 	    }
@@ -1051,6 +1052,67 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 #endif
+
+    protected ActorAction BehaviorHuntDownThreat()
+    {
+      ThreatTracking threats = m_Actor.Threats;
+      if (null == threats) return null;
+      // 1) clear the current map, unless it's non-vintage sewers
+      HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      if (0<tainted.Count) {
+        navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+        Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+        Dictionary<Point, int> exposed = new Dictionary<Point,int>();
+        foreach(Point pt in dest.Keys) {
+          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt));
+          los.IntersectWith(tainted);
+          exposed[pt] = los.Count;
+        }
+        int most_exposed = exposed.Values.Max();
+        if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
+        return DecideMove(exposed.Keys.ToList(), null, null);
+      }
+
+      if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+      // but ignore the sewers if we're not vintage
+      if (Session.Get.HasZombiesInSewers) possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
+      if (0>=possible_destinations.Count) return null;
+        
+      // try to pick something reasonable
+      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
+      if (1<possible_destinations.Count) {
+        foreach(Map m in possible_destinations) {
+          hazards[m] = threats.ThreatWhere(m);
+        }
+        hazards.OnlyIf(val=>0<val.Count);
+        if (0<hazards.Count) possible_destinations.IntersectWith(hazards.Keys);
+      }
+      // if the entry map is a destination, go there if it has a problem
+      if (1<possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap) && hazards.ContainsKey(m_Actor.Location.Map.District.EntryMap)) {
+        possible_destinations = new HashSet<Map>();
+        possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
+      }
+      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+      if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
+        return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      }
+
+	  navigate.GoalDistance(valid_exits.Values.Select(e=>e.Location.Position), int.MaxValue,m_Actor.Location.Position);
+	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
+	  return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
+
+#if FAIL
+        // general priorities
+        // 2) clear the entry map
+        if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
+        // 3) clear basements and subway; ok to clear police station and first level of hospital.
+        } else {
+        }
+#endif
+    }
 
     protected bool NeedsLight()
     {

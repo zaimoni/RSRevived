@@ -726,12 +726,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	{
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
 	  if (dest.Map != m_Actor.Location.Map) {
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
         HashSet<Exit> valid_exits;
         HashSet<Map> exit_maps = m_Actor.Location.Map.PathTo(dest.Map, out valid_exits);
 
 	    Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-        if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))
-          return new ActionUseExit(m_Actor, m_Actor.Location.Position);
+        if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
+          return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
 	    navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
 	  } else {
 	    navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
