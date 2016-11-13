@@ -965,12 +965,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool RHSMoreInteresting(Item lhs, Item rhs)
     {
-#if DEBUG
-      if (null == lhs) throw new ArgumentNullException("lhs"); 
-      if (null == rhs) throw new ArgumentNullException("rhs"); 
-//    if (!IsInterestingItem(lhs)) throw new ArgumentOutOfRangeException("lhs","!IsInterestingItem");   // LHS may be from own inventory
-      if (!IsInterestingItem(rhs)) throw new ArgumentOutOfRangeException("rhs","!IsInterestingItem");
-#endif
+      Contract.Requires(null != lhs);
+      Contract.Requires(null != rhs);
+      Contract.Requires(null != IsInterestingItem(rhs));    // lhs may be from inventory
       if (IsItemTaboo(rhs)) return false;
       if (IsItemTaboo(lhs)) return true;
       if (lhs.Model.ID == rhs.Model.ID) {
@@ -1333,22 +1330,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return inv.Items.Where(it=> IsTradeableItem(it)).Any();
     }
 
+    private List<Item> InterestingItems(IEnumerable<Item> Items)
+    {
+      if (Items == null) return null;
+      IEnumerable<Item> tmp = Items.Where(it => !IsItemTaboo(it) && IsInterestingItem(it));
+      return (tmp.Any() ? tmp.ToList() : null);
+    }
+
+    public List<Item> InterestingItems(Inventory inv)
+    {
+      return InterestingItems(inv?.Items);
+    }
+
+    public bool HasAnyInterestingItem(IEnumerable<Item> Items)
+    {
+      if (Items == null) return false;
+      return Items.Where(it => !IsItemTaboo(it) && IsInterestingItem(it)).Any();
+    }
+
     public bool HasAnyInterestingItem(Inventory inv)
     {
       if (inv == null) return false;
-      foreach (Item it in inv.Items) {
-        if (!IsItemTaboo(it)  && IsInterestingItem(it)) return true;
-      }
-      return false;
-    }
-
-    public bool HasAnyInterestingItem(List<Item> Items)
-    {
-      if (Items == null) return false;
-      foreach (Item it in Items) {
-        if (!IsItemTaboo(it) && IsInterestingItem(it)) return true;
-      }
-      return false;
+      return HasAnyInterestingItem(inv.Items);
     }
 
     protected Item FirstInterestingItem(Inventory inv)

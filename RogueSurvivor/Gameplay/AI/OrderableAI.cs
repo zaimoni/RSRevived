@@ -919,6 +919,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    protected ActorAction BehaviorWouldGrabFromStack(RogueGame game, Point position, Inventory stack)
+    {
+      if (stack == null || stack.IsEmpty) return null;
+      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);
+      if (mapObjectAt != null) {
+        Fortification fortification = mapObjectAt as Fortification;
+        if (fortification != null && !fortification.IsWalkable) return null;
+        DoorWindow doorWindow = mapObjectAt as DoorWindow;
+        if (doorWindow != null && doorWindow.IsBarricaded) return null;
+      }
+      List<Item> interesting = InterestingItems(stack);
+      if (null==interesting) return null;
+
+      Item obj = null;
+      foreach (Item it in interesting) {
+        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+      }
+      if (obj == null) return null;
+
+      // but if we cannot take it, ignore anyway
+      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(game, obj) : null);
+      if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
+
+      // the get item checks do not validate that inventory is not full
+      ActorAction tmp = new ActionTakeItem(m_Actor, position, obj);
+      if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
+        if (null == recover) return null;
+        if (!recover.IsLegal()) return null;
+        return recover;
+      }
+      return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
+    }
+
     protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
@@ -929,12 +962,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         DoorWindow doorWindow = mapObjectAt as DoorWindow;
         if (doorWindow != null && doorWindow.IsBarricaded) return null;
       }
+      List<Item> interesting = InterestingItems(stack);
+      if (null==interesting) return null;
+
       Item obj = null;
-      foreach (Item it in stack.Items) {
-        if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
+      foreach (Item it in interesting) {
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
       }
       if (obj == null) return null;
+
       // but if we cannot take it, ignore anyway
       ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(game, obj) : null);
       if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;

@@ -443,22 +443,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
           if (IsTileTaboo(p.Location.Position)) return true;    // already ruled out
-          Inventory tmp = p.Percepted as Inventory;
-          if (!HasAnyInterestingItem(tmp)) return true; // nothing interesting
-          if (m_Actor.Inventory.CountItems < m_Actor.MaxInv) return false;  // obviously have space, ok
-          foreach (Item it in tmp.Items) {
-            if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
-            foreach (Item it2 in m_Actor.Inventory.Items) {
-              if (RHSMoreInteresting(it2, it)) return false;    // clearly more interesting than what we have
-            }
-          }
-          return true;  // no, not really interesting after all
+          return null==BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
         }));
         if (perceptList2 != null) {
-retry:    Percept percept = FilterNearest(perceptList2);
+/*retry:*/Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
           Inventory stack = percept.Percepted as Inventory;
           ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
+#if FAIL
           if (actorAction5 != null && actorAction5.IsLegal() && actorAction5 is ActionTakeItem) {
             Item tmp = (actorAction5 as ActionTakeItem).Item;
             // check for "more interesting stack"
@@ -475,6 +467,7 @@ retry:    Percept percept = FilterNearest(perceptList2);
               }
             }
           }
+#endif
           if (actorAction5 != null && actorAction5.IsLegal()) {
             m_Actor.Activity = Activity.IDLE;
             return actorAction5;
