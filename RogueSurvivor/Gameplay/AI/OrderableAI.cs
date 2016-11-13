@@ -1100,7 +1100,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
 
-	  navigate.GoalDistance(valid_exits.Values.Select(e=>e.Location.Position), int.MaxValue,m_Actor.Location.Position);
+	  navigate.GoalDistance(valid_exits.Keys, int.MaxValue,m_Actor.Location.Position);
 	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
 	  return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
 

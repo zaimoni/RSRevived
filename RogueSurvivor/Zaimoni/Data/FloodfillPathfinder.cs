@@ -133,6 +133,8 @@ namespace Zaimoni.Data
             }
         }
 
+        public IEnumerable<T> Domain { get { return _map.Keys; } }
+
         public int Cost(T current_pos)
         {
             if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
