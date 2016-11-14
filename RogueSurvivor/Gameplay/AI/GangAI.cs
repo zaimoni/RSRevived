@@ -155,6 +155,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+
+      // the new objectives system should trigger after all enemies-handling behavior
+      if (null==Objectives) Objectives = new List<Objective>(); // auto-repair; remove after debugging
+      if (0<Objectives.Count) {
+        ActorAction goal_action = null;
+        foreach(Objective o in new List<Objective>(Objectives)) {
+          if (o.IsExpired) Objectives.Remove(o);
+          else if (o.UrgentAction(out goal_action)) {
+            if (null==goal_action) Objectives.Remove(o);
+#if DEBUG
+            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+#else
+            else if (!goal_action.IsLegal()) Objectives.Remove(o);
+#endif
+          }
+        }
+      }
+
       if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {

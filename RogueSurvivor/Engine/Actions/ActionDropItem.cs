@@ -13,6 +13,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Item m_Item;
 
+    public Item Item { get { return m_Item; } }
+
     public ActionDropItem(Actor actor, Item it)
       : base(actor)
     {
