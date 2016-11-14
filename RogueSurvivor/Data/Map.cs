@@ -321,6 +321,7 @@ namespace djack.RogueSurvivor.Data
 	  return ret;
 	}
 
+    // Default pather.  Recovery options would include allowing chat, and allowing pushing.
 	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps(Actor actor)
 	{
 	  Zaimoni.Data.FloodfillPathfinder<Point> m_StepPather = null;	// convert this to a non-zerialized member variable as cache
@@ -330,12 +331,19 @@ namespace djack.RogueSurvivor.Data
 	    Point p = new Point();
 		for (p.X = 0; p.X < Width; ++p.X) {
 		  for (p.Y = 0; p.Y < Height; ++p.Y) {
-		    if (null==Engine.Rules.IsBumpableFor(actor,new Location(this,p))) m_StepPather.Blacklist(p);
+            if (p == actor.Location.Position) continue;
+            ActorAction tmp = Engine.Rules.IsBumpableFor(actor, new Location(this, p));
+            if (null==tmp) {
+              m_StepPather.Blacklist(p);
+              continue;
+            }
+            if (tmp is Engine.Actions.ActionBump) tmp = (tmp as Engine.Actions.ActionBump).ConcreteAction;
+            if (Engine.Rules.IsAdjacent(p, actor.Location.Position) && tmp is Engine.Actions.ActionChat) m_StepPather.Blacklist(p);
 	      }
 	    }
 	  }
 	  return new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
-        }
+    }
 
     // for AI pathing, currently.
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)

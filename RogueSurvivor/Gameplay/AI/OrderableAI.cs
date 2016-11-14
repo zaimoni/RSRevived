@@ -1062,6 +1062,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       if (0<tainted.Count) {
         navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+        if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
         Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
         Dictionary<Point, int> exposed = new Dictionary<Point,int>();
         foreach(Point pt in dest.Keys) {
@@ -1071,7 +1072,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         int most_exposed = exposed.Values.Max();
         if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
-        return DecideMove(exposed.Keys.ToList(), null, null);
+        ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
+        ActionMoveStep test = ret as ActionMoveStep;
+        if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        return ret;
       }
 
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
@@ -1101,9 +1105,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 	  navigate.GoalDistance(valid_exits.Keys, int.MaxValue,m_Actor.Location.Position);
-	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
-	  return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
-
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);	// only called when no enemies in sight anyway
+      {
+      ActorAction ret = DecideMove(tmp.Keys.ToList(), null, null);
+      ActionMoveStep test = ret as ActionMoveStep;
+      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      return ret;
+      }
 #if FAIL
         // general priorities
         // 2) clear the entry map

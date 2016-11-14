@@ -1252,7 +1252,7 @@ namespace djack.RogueSurvivor.Data
       if (!Model.Abilities.CanTire) return false;
       if (0 < staminaCost) staminaCost += NightSTApenalty;
       if (IsExhausted) staminaCost *= 2;
-      return m_StaminaPoints + STAMINA_MIN_FOR_ACTIVITY < staminaCost;
+      return STAMINA_MIN_FOR_ACTIVITY > m_StaminaPoints-staminaCost;
     }
 
     public bool WillTireAfterRunning(Point dest)

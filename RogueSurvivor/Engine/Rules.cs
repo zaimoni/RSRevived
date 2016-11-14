@@ -326,23 +326,6 @@ namespace djack.RogueSurvivor.Engine
         }
         if (actor.CanGetFromContainer(point, out reason))
           return new ActionGetFromContainer(actor, point);
-        if (actor.CanPush(mapObjectAt,out reason)) {
-          // want to push to a location that is distance 2 i.e. actually moves at the same time
-          string reason2 = "nowhere to push to";
-          HashSet<Point> dest = new HashSet<Point>(Direction.COMPASS.Select(dir => point + dir).Where(pt=>map.IsInBounds(pt)));
-          dest.Remove(actor.Location.Position);
-          IEnumerable<Point> candidates = dest.Where(pt=>2==GridDistance(actor.Location.Position,pt)).Where(pt=>mapObjectAt.CanPushTo(pt, out reason2));
-          if (0<candidates.Count()) {
-            Point dest2 = candidates.ToList()[RogueForm.Game.Rules.Roll(0,candidates.Count())];
-            return new ActionPush(actor, mapObjectAt, Direction.FromVector(dest2.X-point.X,dest2.Y-point.Y));
-          }
-          candidates = dest.Where(pt=>1==GridDistance(actor.Location.Position,pt)).Where(pt=>mapObjectAt.CanPushTo(pt, out reason2));
-          if (0<candidates.Count()) {
-            Point dest2 = candidates.ToList()[RogueForm.Game.Rules.Roll(0,candidates.Count())];
-            return new ActionPush(actor, mapObjectAt, Direction.FromVector(dest2.X-point.X,dest2.Y-point.Y));
-          }
-          reason = reason2;
-        }
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;

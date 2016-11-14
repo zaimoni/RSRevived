@@ -737,6 +737,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  } else {
 	    navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
 	  }
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
 	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
 	  return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
 	}
