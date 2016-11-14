@@ -1552,25 +1552,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor.GetEquippedWeapon() is ItemRangedWeapon;
     }
 
-    protected ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn)
-    {
-      if (m_Actor.Inventory == null) return null;
-      List<ItemMeleeWeapon> tmp = m_Actor.Inventory.GetItemsByType<ItemMeleeWeapon>();
-      if (null == tmp) return null;
-      int num1 = 0;
-      ItemMeleeWeapon itemMeleeWeapon1 = null;
-      foreach (ItemMeleeWeapon obj in tmp) {
-        if (fn == null || fn(obj)) {
-          int num2 = (obj.Model as ItemMeleeWeaponModel).Attack.Rating;
-          if (num2 > num1) {
-            num1 = num2;
-            itemMeleeWeapon1 = obj;
-          }
-        }
-      }
-      return itemMeleeWeapon1;
-    }
-
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
     {
       if (WillTireAfterAttack(actor)) return true;

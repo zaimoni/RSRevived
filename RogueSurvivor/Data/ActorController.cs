@@ -283,6 +283,25 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
+    protected ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn)
+    {
+      if (m_Actor.Inventory == null) return null;
+      List<ItemMeleeWeapon> tmp = m_Actor.Inventory.GetItemsByType<ItemMeleeWeapon>();
+      if (null == tmp) return null;
+      int num1 = 0;
+      ItemMeleeWeapon itemMeleeWeapon1 = null;
+      foreach (ItemMeleeWeapon obj in tmp) {
+        if (fn == null || fn(obj)) {
+          int num2 = (obj.Model as ItemMeleeWeaponModel).Attack.Rating;
+          if (num2 > num1) {
+            num1 = num2;
+            itemMeleeWeapon1 = obj;
+          }
+        }
+      }
+      return itemMeleeWeapon1;
+    }
+
     public bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);
@@ -328,8 +347,12 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemMeleeWeapon)
       { // better handling of martial arts requires better attack juggling in general
         if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
-        if (2<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
+        if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
           ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
+          return (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
+        }
+        if (1<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
+          ItemMeleeWeapon weapon = GetBestMeleeWeapon(null);    // rely on OrderableAI doing the right thing
           return (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
         return true;
