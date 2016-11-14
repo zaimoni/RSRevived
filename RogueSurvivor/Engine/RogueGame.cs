@@ -4281,6 +4281,7 @@ namespace djack.RogueSurvivor.Engine
       itemPos = Point.Empty;
       if (m_Player == null) return null;
       Inventory inventory = m_Player.Inventory;
+      if (null == inventory) return null;
       Point inventorySlot1 = MouseToInventorySlot(INVENTORYPANEL_X, INVENTORYPANEL_Y, screen.X, screen.Y);
       int index1 = inventorySlot1.X + inventorySlot1.Y * 10;
       if (index1 >= 0 && index1 < inventory.MaxCapacity) {
@@ -9842,7 +9843,7 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> INVENTORY");
-      if (m_Player.Inventory.IsEmpty) {
+      if (null==m_Player.Inventory || m_Player.Inventory.IsEmpty) {
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", (object) str1));
       } else {
         foreach (Item it in m_Player.Inventory.Items) {
