@@ -810,6 +810,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             throw new ArgumentOutOfRangeException("unhandled courage");
         }
       }
+      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
+      }
       if (decideToFlee)
       {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
@@ -1365,7 +1368,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
     {
-      if (WillTireAfterAttack(actor)) return true;
+//    if (WillTireAfterAttack(actor)) return true;  // post-process this, handling this here is awful for rats
       if (actor.Speed > target.Speed) {
         if (actor.WillActAgainBefore(target)) return false;
         if (target.TargetActor == actor) return true;

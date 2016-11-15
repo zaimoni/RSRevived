@@ -749,6 +749,7 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
+    // does not properly account for martial arts
     public ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn=null)
     {
       if (Inventory == null) return null;
@@ -771,15 +772,13 @@ namespace djack.RogueSurvivor.Data
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
     public Attack MeleeAttack(Actor target = null) { return HypotheticalMeleeAttack(CurrentMeleeAttack, target); }
-#if FAIL
-..  public Attack BestMeleeAttack(Actor target = null)
+
+    public Attack BestMeleeAttack(Actor target = null)
     {
-      ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon(it => !IsItemTaboo(it));
-      Attack base_melee_attack = (null!=tmp_melee ? (tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet) : m_Actor.CurrentMeleeAttack);
+      ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon();
+      Attack base_melee_attack = (null!=tmp_melee ? (tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet) : CurrentMeleeAttack);
       return HypotheticalMeleeAttack(base_melee_attack, target);
     }
-#endif
-
 
     public Attack RangedAttack(int distance, Actor target = null)
     {

@@ -277,7 +277,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if FAIL
         IEnumerable<Percept> melee_enemies = enemies.Where(p=> 1 == Rules.GridDistance(p.Location.Position, m_Actor.Location.Position));
         if (melee_enemies.Any()) {
-          ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon(it => !IsItemTaboo(it));
+          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon(it => !IsItemTaboo(it));
           Attack base_melee_attack = (null!=tmp_melee ? (tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet) : m_Actor.CurrentMeleeAttack);
           foreach(Percept p in melee_enemies) {
             Actor en = p.Percepted as Actor;
