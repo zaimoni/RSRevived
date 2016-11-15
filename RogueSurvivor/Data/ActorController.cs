@@ -79,61 +79,82 @@ namespace djack.RogueSurvivor.Data
       return tmpFOV.Contains(x.Position);
     }
 
-    public void VisibleMaximumDamage(Dictionary<Point, int> ret)
+    public void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat)
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
       HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
       if (null == tmpFOV) return;
+      Map map = m_Actor.Location.Map;
       foreach(Point tmp in tmpFOV) {
         if (tmp == m_Actor.Location.Position) continue;
-        Actor a = m_Actor.Location.Map.GetActorAt(tmp);
+        Actor a = map.GetActorAt(tmp);
         if (null == a) continue;
         if (!m_Actor.IsEnemyOf(a)) continue;
         if (!a.CanActNextTurn) continue;
-        HashSet<Point> aFOV = a.Controller.FOV;
-        if (null == aFOV) continue;
+        if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location.Position, a.Location.Position)) slow_melee_threat.Add(a);
+        // calculate melee damage field now
+        Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
+        int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
+        if (RogueForm.Game.Rules.WillOtherActTwiceBefore(m_Actor, a)) {
+          HashSet<Point> radius2 = new HashSet<Point>();
+          foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
+            melee_damage_field[pt] = 2*a_max_dam;
+            radius2.UnionWith(Direction.COMPASS.Select(dir => pt + dir));
+          }
+          foreach(Point pt in Enumerable.Range(0,16).Select(i=> a.Location.Position.RadarSweep(2, i)).Where(pt => map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable && radius2.Contains(pt))) {
+            melee_damage_field[pt] = a_max_dam;
+          }
+        } else {
+          foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt => map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
+            melee_damage_field[pt] = a_max_dam;
+          }
+        }
+        // we can do melee attack damage field without FOV
+        // FOV doesn't matter without a ranged attack
+        // so we can work around a newly spawned actor not yet having a non-null FOV
+        HashSet<Point> aFOV = (0<a.CurrentRangedAttack.Range ? a.Controller.FOV : null);
+        if (null == aFOV) {
+          foreach(Point pt in melee_damage_field.Keys) {
+            if (ret.ContainsKey(pt)) ret[pt] += melee_damage_field[pt];
+            else ret[pt] = melee_damage_field[pt];
+          }
+          continue;
+        };
         // maximum melee damage: a.MeleeAttack(m_Actor).DamageValue
         // maximum ranged damage: a.CurrentRangedAttack.DamageValue
+        Dictionary<Point,int> ranged_damage_field = new Dictionary<Point,int>();
         // we can do better than these
         if (RogueForm.Game.Rules.WillOtherActTwiceBefore(m_Actor, a)) {
-          foreach(Point tmp2 in aFOV) {
-            if (tmp2 == a.Location.Position) continue;
-            int dist = Rules.GridDistance(tmp2,a.Location.Position);
-            int max_dam = 0;
-            if (1 == dist) {
-               max_dam = 2*a.MeleeAttack(m_Actor).DamageValue;
-            } else if (2 == dist) {
-               max_dam = a.MeleeAttack(m_Actor).DamageValue;
-            }
-
+          foreach(Point pt in aFOV) {
+            if (pt == a.Location.Position) continue;
+            int dist = Rules.GridDistance(pt, a.Location.Position);
+            a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
             if (dist <= a.CurrentRangedAttack.Range + 1) { 
-              int test_dam = a.RangedAttack(dist,m_Actor).DamageValue;
-              if (dist <= a.CurrentRangedAttack.Range && max_dam < 2*test_dam) {
-                max_dam = 2*test_dam;
-              } else if (dist == a.CurrentRangedAttack.Range+1 && max_dam < test_dam) {
-                max_dam = test_dam;
+              if (dist <= a.CurrentRangedAttack.Range) {
+                ranged_damage_field[pt] = 2*a_max_dam;
+              } else if (dist == a.CurrentRangedAttack.Range+1) {
+                ranged_damage_field[pt] = a_max_dam;
               }
-            }
-            if (0 < max_dam) {
-              if (ret.ContainsKey(tmp2)) ret[tmp2] += max_dam;
-              else ret[tmp2] = max_dam;
             }
           }
         } else {
-          foreach(Point tmp2 in aFOV) {
-            if (tmp2 == a.Location.Position) continue;
-            int dist = Rules.GridDistance(tmp2,a.Location.Position);
-            int max_dam = 0;
-            if (1 == dist) max_dam = a.MeleeAttack(m_Actor).DamageValue;
-            if (dist <= a.CurrentRangedAttack.Range) { 
-              int test_dam = a.RangedAttack(dist,m_Actor).DamageValue;
-              if (max_dam < test_dam) max_dam = test_dam;
+          foreach(Point pt in aFOV) {
+            if (pt == a.Location.Position) continue;
+            int dist = Rules.GridDistance(pt, a.Location.Position);
+            if (dist <= a.CurrentRangedAttack.Range) {
+              ranged_damage_field[pt] = a_max_dam;
             }
-            if (0 < max_dam) {
-              if (ret.ContainsKey(tmp2)) ret[tmp2] += max_dam;
-              else ret[tmp2] = max_dam;
-            }
+          }
+        }
+        // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
+        foreach(Point pt in ranged_damage_field.Keys) {
+          if (melee_damage_field.ContainsKey(pt)) {
+            if (ret.ContainsKey(pt)) ret[pt] += Math.Max(ranged_damage_field[pt], melee_damage_field[pt]);
+            else ret[pt] = Math.Max(ranged_damage_field[pt], melee_damage_field[pt]);
+          } else {
+            if (ret.ContainsKey(pt)) ret[pt] += ranged_damage_field[pt];
+            else ret[pt] = ranged_damage_field[pt];
           }
         }
       }

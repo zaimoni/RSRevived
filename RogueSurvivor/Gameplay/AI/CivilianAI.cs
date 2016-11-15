@@ -192,16 +192,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
-      if (null != enemies) VisibleMaximumDamage(damage_field);
+      List<Actor> slow_melee_threat = new List<Actor>();
+      if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat);
       bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts1);  // only civilians and soldiers respect explosives; CHAR and gang don't
       if (0>=damage_field.Count) damage_field = null;
+      if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       List<Point> retreat = null;
-      List<Actor> slow_threat = null;
       IEnumerable<Point> tmp_point;
       List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
       if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        IEnumerable<Percept> tmp_percept = enemies.Where(p=>1==Rules.GridDistance(m_Actor.Location.Position,p.Location.Position));
-        if (tmp_percept.Any()) slow_threat = new List<Actor>(tmp_percept.Select(p=>(p.Percepted as Actor)));
         tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
         if (tmp_point.Any()) retreat = tmp_point.ToList();
         // XXX we should be checking for running retreats before damaging ones
@@ -258,7 +257,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       // have slow enemies nearby
-      if (null != retreat && null != slow_threat) {
+      if (null != retreat && null != slow_melee_threat) {
 	    tmpAction = DecideMove(retreat, enemies, friends);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FLEEING;
