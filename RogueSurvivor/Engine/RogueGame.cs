@@ -11554,6 +11554,9 @@ namespace djack.RogueSurvivor.Engine
       lock (m_SimMutex) { 
         Session.Save(Session.Get, saveName, Session.SaveFormat.FORMAT_BIN);
       }
+#if DEBUG
+      File.Copy(saveName, RogueGame.GetUserSaveBackup(),true);
+#endif
       AddMessage(new Data.Message("SAVING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
@@ -11697,6 +11700,13 @@ namespace djack.RogueSurvivor.Engine
     {
       return RogueGame.GetUserSavesPath() + "save.dat";
     }
+
+#if DEBUG
+    public static string GetUserSaveBackup()
+    {
+      return RogueGame.GetUserSavesPath() + "save." + Session.Get.WorldTime.TurnCounter.ToString();
+    }
+#endif
 
     public static string GetUserDocsPath()
     {
