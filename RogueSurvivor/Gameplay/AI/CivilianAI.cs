@@ -200,6 +200,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> retreat = null;
       IEnumerable<Point> tmp_point;
       List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      // calculate retreat destinations if possibly needed
       if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
         tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
         if (tmp_point.Any()) retreat = tmp_point.ToList();
@@ -222,6 +223,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<ItemRangedWeapon> available_ranged_weapons = (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
 	  List<Percept> friends = FilterNonEnemies(percepts1);
 
+      // get out of the range of explosions if feasible
+      if (in_blast_field && null != retreat) {
+	    tmpAction = DecideMove(retreat, enemies, friends);
+        if (null != tmpAction) {
+		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+          if (null != tmpAction2) RunIfPossible();
+          m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+          return tmpAction;
+        }
+      }
+
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
       // XXX we also want to be close enough to fire at all
@@ -229,22 +241,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	    tmpAction = DecideMove(retreat, enemies, friends);
         if (null != tmpAction) {
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (in_blast_field) {
-            if (null != tmpAction2) RunIfPossible();
-            m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-          } else { 
-            if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
-            m_Actor.Activity = Activity.FLEEING;
-          }
-          return tmpAction;
-        }
-      }
-      if (in_blast_field) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
-        if (null != tmpAction) {
-		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) RunIfPossible();
-          m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
+          if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+          m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }
       }
