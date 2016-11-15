@@ -132,6 +132,55 @@ namespace Zaimoni.Data
                 gen0 = gen1;
             }
         }
+        public void GoalDistance(T goal, int max_depth)
+        {
+            T[] tmp = { goal };
+            GoalDistance(tmp, max_depth);
+        }
+
+        public void GoalDistance(IEnumerable<T> goals, int max_depth)
+        {
+            Contract.Requires(null != goals);
+            _map.Clear();
+            Queue<T> gen0 = new Queue<T>();
+            foreach(T tmp in goals) {
+                if (_blacklist.Contains(tmp)) continue;
+                if (!_inDomain(tmp)) continue;
+                _map[tmp] = 0;
+                gen0.Enqueue(tmp);
+            }
+            while(0 < gen0.Count && 0 < max_depth) {
+                --max_depth;
+                Queue<T> gen1 = new Queue<T>();
+                Dictionary<T,Dictionary<T, int>> candidate_dict = new Dictionary<T, Dictionary<T, int>>();
+                while (0 < gen0.Count) {
+                    T tmp = gen0.Dequeue();
+                    Dictionary<T, int> candidates = _forward(tmp);
+                    Dictionary<T, int> legal = new Dictionary<T, int>();
+                    foreach (T tmp2 in candidates.Keys) {
+                        if (_blacklist.Contains(tmp2)) continue;
+                        if (_map.ContainsKey(tmp2)) continue;
+                        if (!_inDomain(tmp2)) continue;
+                        legal[tmp2] = candidates[tmp2];
+                    }
+                    if (0 < legal.Count) candidate_dict[tmp] = legal;
+                }
+                gen0 = new Queue<T>(candidate_dict.Keys);
+                while (0< gen0.Count) {
+                    T tmp = gen0.Dequeue();
+                    int Distance = _map[tmp];
+                    foreach (T tmp2 in candidate_dict[tmp].Keys) {
+                        if (!_map.ContainsKey(tmp2)) {
+                            _map[tmp2] = Distance + candidate_dict[tmp][tmp2];
+                            gen1.Enqueue(tmp2);
+                            continue;
+                        }
+                        if (_map[tmp2] > Distance + candidate_dict[tmp][tmp2]) _map[tmp2] = Distance + candidate_dict[tmp][tmp2];
+                    }
+                }
+                gen0 = gen1;
+            }
+        }
 
         public IEnumerable<T> Domain { get { return _map.Keys; } }
 
