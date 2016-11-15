@@ -347,8 +347,8 @@ namespace djack.RogueSurvivor.Data
 
     // for AI pathing, currently.
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
-    { 
-	  exits = new HashSet<Exit>(Exits.Where(e => e.IsAnAIExit));
+    { // disallow the CHAR underground facility for now.  (remember to disallow secret maps even when it is enabled)
+	  exits = new HashSet<Exit>(Exits.Where(e => e.IsAnAIExit && Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap!=e.ToMap));
 	  // should be at least one by construction
 	  HashSet<Map> exit_maps = new HashSet<Map>(exits.Select(e=>e.ToMap));
       if (1>=exit_maps.Count) return exit_maps;
