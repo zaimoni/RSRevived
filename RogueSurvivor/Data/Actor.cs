@@ -749,9 +749,37 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
+    public ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn=null)
+    {
+      if (Inventory == null) return null;
+      List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
+      if (null == tmp) return null;
+      int num1 = 0;
+      ItemMeleeWeapon itemMeleeWeapon1 = null;
+      foreach (ItemMeleeWeapon obj in tmp) {
+        if (fn == null || fn(obj)) {
+          int num2 = (obj.Model as ItemMeleeWeaponModel).Attack.Rating;
+          if (num2 > num1) {
+            num1 = num2;
+            itemMeleeWeapon1 = obj;
+          }
+        }
+      }
+      return itemMeleeWeapon1;
+    }
+
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
     public Attack MeleeAttack(Actor target = null) { return HypotheticalMeleeAttack(CurrentMeleeAttack, target); }
+#if FAIL
+..  public Attack BestMeleeAttack(Actor target = null)
+    {
+      ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon(it => !IsItemTaboo(it));
+      Attack base_melee_attack = (null!=tmp_melee ? (tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet) : m_Actor.CurrentMeleeAttack);
+      return HypotheticalMeleeAttack(base_melee_attack, target);
+    }
+#endif
+
 
     public Attack RangedAttack(int distance, Actor target = null)
     {

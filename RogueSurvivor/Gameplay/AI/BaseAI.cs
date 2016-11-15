@@ -425,7 +425,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ranged weapon non-option for some reason
-      ItemMeleeWeapon bestMeleeWeapon = GetBestMeleeWeapon(it => !IsItemTaboo(it));
+      ItemMeleeWeapon bestMeleeWeapon = m_Actor.GetBestMeleeWeapon(it => !IsItemTaboo(it));
       if (bestMeleeWeapon == null) return null;
       if (equippedWeapon == bestMeleeWeapon) return null;
       game.DoEquipItem(m_Actor, bestMeleeWeapon);
