@@ -5,11 +5,13 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using System;
 using System.Drawing;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  [Serializable]
   internal class ActionTakeItem : ActorAction
   {
     private readonly Point m_Position;
