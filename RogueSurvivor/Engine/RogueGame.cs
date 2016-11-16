@@ -8624,11 +8624,9 @@ namespace djack.RogueSurvivor.Engine
           flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
       }
-      if (num2 < map.Width)
-      {
+      if (num2 < map.Width) {
         pt.X = num2;
-        for (int index = num3 + 1; index < num4; ++index)
-        {
+        for (int index = num3 + 1; index < num4; ++index) {
           pt.Y = index;
           flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
@@ -8649,10 +8647,10 @@ namespace djack.RogueSurvivor.Engine
     private int ApplyExplosionDamage(Location location, int distanceFromBlast, BlastAttack blast)
     {
       Contract.Requires(!blast.CanDestroyWalls);    // not implemented
-      Map map = location.Map;
       int num1 = m_Rules.BlastDamage(distanceFromBlast, blast);
       if (num1 <= 0) return 0;
-      Actor actorAt = map.GetActorAt(location.Position);
+      Map map = location.Map;
+      Actor actorAt = location.Actor;
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;

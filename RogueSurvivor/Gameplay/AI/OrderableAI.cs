@@ -825,7 +825,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActionMoveStep tmp2 = tmp3 as ActionMoveStep;
       if (null != tmp2) {
         Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
-        Actor actorAt = exitAt?.ToMap.GetActorAt(exitAt.Location.Position);
+        Actor actorAt = exitAt?.Location.Actor;
         if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return null;
       }
       return tmp3;

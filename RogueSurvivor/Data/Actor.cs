@@ -1027,7 +1027,7 @@ namespace djack.RogueSurvivor.Data
       DoorWindow doorWindow = mapObj as DoorWindow;
       bool flag = doorWindow != null && doorWindow.IsBarricaded;
       if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
-      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
+      if (mapObj.Location.Actor != null) return "someone is there";
       return "";
     }
 
@@ -1054,7 +1054,7 @@ namespace djack.RogueSurvivor.Data
       if (!AbleToPush) return "cannot push objects";
       if (IsTired) return "tired";
       if (!mapObj.IsMovable) return "cannot be moved";
-      if (mapObj.Location.Map.GetActorAt(mapObj.Location.Position) != null) return "someone is there";
+      if (mapObj.Location.Actor != null) return "someone is there";
       if (mapObj.IsOnFire) return "on fire";
       return "";
     }
@@ -1075,7 +1075,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null != door);
       if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
       if (!door.IsOpen) return "not open";
-      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
+      if (door.Location.Actor != null) return "someone is there";
       return "";
     }
 
@@ -1096,7 +1096,7 @@ namespace djack.RogueSurvivor.Data
       if (!Model.Abilities.CanBarricade) return "no ability to barricade";
       if (!door.IsClosed && !door.IsBroken) return "not closed or broken";
       if (door.BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
-      if (door.Location.Map.GetActorAt(door.Location.Position) != null) return "someone is there";
+      if (door.Location.Actor != null) return "someone is there";
       if (Inventory == null || Inventory.IsEmpty) return "no items";
       if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
       return "";
