@@ -194,6 +194,14 @@ namespace djack.RogueSurvivor.Data
         }
       }
 
+      public void Record(Map m, Point pt)
+      {
+        lock(_locs) {  
+		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
+          _locs[m].Add(pt);
+        }
+      }
+
       public void Record(Location loc)
       {
 		lock(_locs) {
@@ -209,6 +217,14 @@ namespace djack.RogueSurvivor.Data
           IEnumerable<Point> tmp = _locs[m].Except(pts);
           if (tmp.Any()) _locs[m] = new HashSet<Point>(tmp);
           else _locs.Remove(m);
+        }
+      }
+
+      public void Seen(Map m, Point pt)
+      {
+        lock(_locs) {  
+		  if (!_locs.ContainsKey(m)) return;
+          if (_locs[m].Remove(pt) && 0>=_locs[m].Count) _locs.Remove(m);
         }
       }
 

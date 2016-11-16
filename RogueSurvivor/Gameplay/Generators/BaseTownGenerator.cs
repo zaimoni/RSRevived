@@ -858,6 +858,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
+          Engine.Session.Get.PoliceInvestigate.Record(shopBasement, pt);
           if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.GetExitAt(pt) != null) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceMapObjectAt(MakeObjShelf(), pt);
@@ -2112,6 +2113,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddExit(basement, basementStairs, map, point, "Tiles\\Decoration\\stairs_up", true);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
       {
+        Engine.Session.Get.PoliceInvestigate.Record(basement,pt);
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
         basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
       }));
