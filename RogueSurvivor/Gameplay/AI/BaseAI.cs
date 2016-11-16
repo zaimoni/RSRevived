@@ -651,7 +651,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
-	protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
+    private List<Point> DecideMove_maximize_visibility(HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
+        tainted.IntersectWith(new_los);
+        if (0>=tainted.Count) return;
+        Dictionary<Point,int> taint_exposed = new Dictionary<Point,int>();
+        foreach(Point pt in tmp) {
+          HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
+          tmp2.IntersectWith(tainted);
+          taint_exposed[pt] = tmp2.Count;
+        }
+        int max_taint_exposed = tmp.Select(pt=>taint_exposed[pt]).Max();
+        taint_exposed.OnlyIf(val=>max_taint_exposed==val);
+        return taint_exposed.Keys.ToList();
+    }
+
+    protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
 	{
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();
@@ -668,10 +682,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  bool want_LOS_heuristics = false;
 	  ThreatTracking threats = m_Actor.Threats;
 	  if (null != threats) want_LOS_heuristics = true;
-#if FAIL
 	  LocationSet sights_to_see = m_Actor.InterestingLocs;
 	  if (null != sights_to_see) want_LOS_heuristics = true;
-#endif
 
 	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>>() : null);
       HashSet<Point> new_los = new HashSet<Point>();
@@ -685,31 +697,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // only need to check if new locations seen
       if (0 >= new_los.Count) {
         threats = null;
-#if FAIL
         sights_to_see = null;
-#endif
       }
 
 	  if (null != threats && 2<=tmp.Count) {
-        HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map);
-        tainted.IntersectWith(new_los);
-        if (0<tainted.Count) {
-          Dictionary<Point,int> threat_exposed = new Dictionary<Point,int>();
-          foreach(Point pt in tmp) {
-            HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
-            tmp2.IntersectWith(tainted);
-            threat_exposed[pt] = tmp2.Count;
-          }
-          int max_threat_exposed = tmp.Select(pt=>threat_exposed[pt]).Max();
-          threat_exposed.OnlyIf(val=>max_threat_exposed==val);
-          tmp = threat_exposed.Keys.ToList();
-        }
+        DecideMove_maximize_visibility(threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
 	  }
-#if FAIL
-	  if (null != sights_to_see && 2<=tmp.Count)
-	    {
-	    }
-#endif
+	  if (null != sights_to_see && 2<=tmp.Count) {
+        DecideMove_maximize_visibility(sights_to_see.In(m_Actor.Location.Map), new_los, hypothetical_los);
+	  }
 
       // weakly prefer not to jump
       if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);

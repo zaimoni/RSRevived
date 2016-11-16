@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -210,6 +211,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmp_point = legal_steps.Where(p=> damage_field[p] < damage_field[m_Actor.Location.Position]);
           if (tmp_point.Any()) retreat = tmp_point.ToList();
         }
+      }
+      // prefer retreating where we have further room to retreat
+      if (null != retreat && 2<=retreat.Count) {
+        HashSet<Point> cornered = new HashSet<Point>(retreat);
+        foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
+          if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) break;
+        }
+        if (0<cornered.Count && cornered.Count<retreat.Count) retreat = new List<Point>(retreat.Except(cornered));
       }
 
       // XXX the proper weapon should be calculated like a player....
