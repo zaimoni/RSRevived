@@ -501,7 +501,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!game.Rules.CanActorInitiateTradeWith(m_Actor, actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
             if (!HasAnyInterestingItem(actor.Inventory)) return true;
-            return !(actor.Controller as BaseAI).HasAnyInterestingItem(TradeableItems);
+            return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);
           });
           if (percepts2 != null) {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;

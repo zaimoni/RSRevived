@@ -33,14 +33,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
     private const float LEADER_LOF_PENALTY = 1f;
-    private ActorDirective m_Directive; // Should be in orderableAI but needed for movement AI here, and also FeralDogAI
+    private ActorDirective m_Directive = null; // Should be in orderableAI but needed for movement AI here, and also FeralDogAI
     private Location m_prevLocation;
-    protected Dictionary<Item, int> m_TabooItems;
+    protected Dictionary<Item, int> m_TabooItems = null;
 
     public BaseAI()
     {
-      m_Directive = null;
-      m_TabooItems = null;
     }
 
     // BaseAI does have to know about directives for the movement behaviors
@@ -418,14 +416,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (equippedWeapon == bestMeleeWeapon) return null;
       game.DoEquipItem(m_Actor, bestMeleeWeapon);
       return null;
-    }
-
-    protected ActionDropItem BehaviorDropItem(Item it)
-    {
-      if (it == null) return null;
-      if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
-      MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
-      return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
     protected int ComputeTrapsMaxDamage(Map map, Point pos)
@@ -948,81 +938,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected bool RHSMoreInteresting(Item lhs, Item rhs)
-    {
-      Contract.Requires(null != lhs);
-      Contract.Requires(null != rhs);
-      Contract.Requires(IsInterestingItem(rhs));    // lhs may be from inventory
-      if (IsItemTaboo(rhs)) return false;
-      if (IsItemTaboo(lhs)) return true;
-      if (lhs.Model.ID == rhs.Model.ID) {
-        if (lhs.Quantity < rhs.Quantity) return true;
-        if (lhs.Quantity > rhs.Quantity) return false;
-        if (lhs is BatteryPowered)
-          {
-          return ((lhs as BatteryPowered).Batteries < (rhs as BatteryPowered).Batteries);
-          }
-        else if (lhs is ItemFood && (lhs as ItemFood).IsPerishable)
-          { // complicated
-          int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-          int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-          if (lhs_nutrition==rhs_nutrition) return false;
-          if (need < lhs_nutrition && need >= rhs_nutrition) return true; 
-          if (need < rhs_nutrition && need >= lhs_nutrition) return false;
-          return lhs_nutrition < rhs_nutrition;
-          }
-        else if (lhs is ItemRangedWeapon)
-          {
-          return ((lhs as ItemRangedWeapon).Ammo < (rhs as ItemRangedWeapon).Ammo);
-          }
-        return false;
-      }
-
-      // if food is interesting, it will dominate non-food
-      if (rhs is ItemFood) return !(lhs is ItemFood);
-      else if (lhs is ItemFood) return false;
-
-      // ranged weapons
-      if (rhs is ItemRangedWeapon) return !(lhs is ItemRangedWeapon);
-      else if (lhs is ItemRangedWeapon) return false;
-
-      if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
-      else if (lhs is ItemAmmo) return false;
-
-      if (rhs is ItemMeleeWeapon)
-        {
-        if (!(lhs is ItemMeleeWeapon)) return false;
-        return (lhs.Model as ItemMeleeWeaponModel).Attack.Rating < (rhs.Model as ItemMeleeWeaponModel).Attack.Rating;
-        }
-      else if (lhs is ItemMeleeWeapon) return false;
-
-      if (rhs is ItemBodyArmor)
-        {
-        if (!(lhs is ItemBodyArmor)) return false;
-        return (lhs as ItemBodyArmor).Rating < (rhs as ItemBodyArmor).Rating;
-        }
-      else if (lhs is ItemBodyArmor) return false;
-
-      if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
-      else if (lhs is ItemGrenade) return false;
-
-      bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
-      if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
-      else if (lhs_low_priority) return false;
-
-      bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
-      if (rhs is ItemTracker)
-        {
-        if (!(lhs is ItemTracker)) return false;
-        if (wantCellPhone && (rhs as ItemTracker).CanTrackFollowersOrLeader) return true;
-        return false;
-        }
-      else if (lhs is ItemTracker) return false;
-
-      return false;
-    }
-
     // belongs with CivilianAI, or possibly OrderableAI but NatGuard may not have access to the crime listings
     protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts)
     {
@@ -1156,27 +1071,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return false;
       return inv.Items.Where(it=> IsTradeableItem(it)).Any();
-    }
-
-    public bool HasAnyInterestingItem(IEnumerable<Item> Items)
-    {
-      if (Items == null) return false;
-      return Items.Where(it => !IsItemTaboo(it) && IsInterestingItem(it)).Any();
-    }
-
-    public bool HasAnyInterestingItem(Inventory inv)
-    {
-      if (inv == null) return false;
-      return HasAnyInterestingItem(inv.Items);
-    }
-
-    protected Item FirstInterestingItem(Inventory inv)
-    {
-      if (inv == null) return null;
-      foreach (Item it in inv.Items) {
-        if (!IsItemTaboo(it) && IsInterestingItem(it)) return it;
-      }
-      return null;
     }
 
     protected void RunIfPossible()
@@ -1461,27 +1355,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int y = goal.Y + rules.Roll(-range, range);
       map.TrimToBounds(ref x, ref y);
       return new Point(x, y);
-    }
-
-    protected void MarkItemAsTaboo(Item it, int expiresTurn)
-    {
-      if (m_TabooItems == null) m_TabooItems = new Dictionary<Item,int>(1);
-      else if (m_TabooItems.ContainsKey(it)) return;
-      m_TabooItems.Add(it, expiresTurn);
-    }
-
-    public void MarkItemAsTaboo(Item it, Item alt)
-    {
-      if (m_TabooItems == null) return;
-      else if (!m_TabooItems.ContainsKey(it)) return;
-      m_TabooItems.Add(alt, m_TabooItems[it]);
-    }
-
-    protected void UnmarkItemAsTaboo(Item it)
-    {
-      if (m_TabooItems == null) return;
-      m_TabooItems.Remove(it);
-      if (m_TabooItems.Count == 0) m_TabooItems = null;
     }
 
     public bool IsItemTaboo(Item it)
