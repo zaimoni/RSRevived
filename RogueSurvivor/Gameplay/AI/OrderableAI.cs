@@ -190,33 +190,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // build out CivilianAI first, then fix the other AIs
     protected List<Objective> Objectives = new List<Objective>();
 
+    // taboos really belong here
+    private Dictionary<Point, int> m_TabooTiles = null;
+    private List<Actor> m_TabooTrades = null;
+
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
-    private ActorOrder m_Order;
-    protected Percept m_LastEnemySaw;
-    protected Percept m_LastItemsSaw;
-    protected Percept m_LastSoldierSaw;
-    protected Percept m_LastRaidHeard;
-    protected bool m_ReachedPatrolPoint;
-    protected int m_ReportStage;
+    private ActorOrder m_Order = null;
+    protected Percept m_LastEnemySaw = null;
+    protected Percept m_LastItemsSaw = null;
+    protected Percept m_LastSoldierSaw = null;
+    protected Percept m_LastRaidHeard = null;
+    protected bool m_ReachedPatrolPoint = false;
+    protected int m_ReportStage = 0;
 
     public bool DontFollowLeader { get; set; }
 
     public OrderableAI()
     {
-      m_Order = null;
-      m_LastEnemySaw = null;
-      m_LastItemsSaw = null;
-      m_LastSoldierSaw = null;
-      m_LastRaidHeard = null;
-      m_ReachedPatrolPoint = false;
-      m_ReportStage = 0;
     }
 
-    public ActorOrder Order {
-      get {
-        return m_Order;
-      }
-    }
+    protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
+    public ActorOrder Order { get { return m_Order; } }
 
     public void SetOrder(ActorOrder newOrder)
     {
@@ -1406,6 +1400,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    // taboos
+    protected void MarkTileAsTaboo(Point p, int expiresTurn)
+    {
+      if (m_TabooTiles == null) m_TabooTiles = new Dictionary<Point,int>(1);
+      else if (m_TabooTiles.ContainsKey(p)) return;
+      m_TabooTiles.Add(p, expiresTurn);
+    }
+
+    public bool IsTileTaboo(Point p)
+    {
+      if (m_TabooTiles == null) return false;
+      return m_TabooTiles.ContainsKey(p);
+    }
+
     protected void MarkActorAsRecentTrade(Actor other)
     {
       if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
@@ -1417,6 +1425,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_TabooTrades == null) return false;
       return m_TabooTrades.Contains(other);
+    }
+
+    protected void ExpireTaboos()
+    {
+      // maintain taboo information
+      int time = m_Actor.LastActionTurn;
+      if (null != m_TabooItems) {
+        m_TabooItems.OnlyIf(val => val<=time);
+        if (0 == m_TabooItems.Count) m_TabooItems = null;
+      }
+      if (null != m_TabooTiles) {
+        m_TabooTiles.OnlyIf(val => val<=time);
+        if (0 == m_TabooTiles.Count) m_TabooTiles = null;
+      }
+      // actors ok to clear at midnight
+      if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
+        m_TabooTrades = null;
     }
   }
 }

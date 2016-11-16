@@ -35,16 +35,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const float LEADER_LOF_PENALTY = 1f;
     private ActorDirective m_Directive; // Should be in orderableAI but needed for movement AI here, and also FeralDogAI
     private Location m_prevLocation;
-    private Dictionary<Item, int> m_TabooItems;
-    private Dictionary<Point, int> m_TabooTiles;
-    protected List<Actor> m_TabooTrades;
+    protected Dictionary<Item, int> m_TabooItems;
 
     public BaseAI()
     {
       m_Directive = null;
       m_TabooItems = null;
-      m_TabooTiles = null;
-      m_TabooTrades = null;
     }
 
     // BaseAI does have to know about directives for the movement behaviors
@@ -61,14 +57,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       get
       {
         return m_prevLocation;
-      }
-    }
-
-    protected List<Actor> TabooTrades
-    {
-      get
-      {
-        return m_TabooTrades;
       }
     }
 
@@ -1501,37 +1489,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_TabooItems == null) return false;
       return m_TabooItems.ContainsKey(it);
     }
-
-    protected void MarkTileAsTaboo(Point p, int expiresTurn)
-    {
-      if (m_TabooTiles == null) m_TabooTiles = new Dictionary<Point,int>(1);
-      else if (m_TabooTiles.ContainsKey(p)) return;
-      m_TabooTiles.Add(p, expiresTurn);
-    }
-
-    public bool IsTileTaboo(Point p)
-    {
-      if (m_TabooTiles == null) return false;
-      return m_TabooTiles.ContainsKey(p);
-    }
-
-    protected void ExpireTaboos()
-    {
-      // maintain taboo information
-      int time = m_Actor.LastActionTurn;
-      if (null != m_TabooItems) {
-        m_TabooItems.OnlyIf(val => val<=time);
-        if (0 == m_TabooItems.Count) m_TabooItems = null;
-      }
-      if (null != m_TabooTiles) {
-        m_TabooTiles.OnlyIf(val => val<=time);
-        if (0 == m_TabooTiles.Count) m_TabooTiles = null;
-      }
-      // actors ok to clear at midnight
-      if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
-        m_TabooTrades = null;
-    }
-
 
     protected class ChoiceEval<_T_>
     {
