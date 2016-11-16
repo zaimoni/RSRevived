@@ -801,24 +801,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(target1.Location.Position);
     }
 
-	protected ActorAction BehaviorPathTo(Location dest)
+	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
 	{
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-	  if (dest.Map != m_Actor.Location.Map) {
+      Map a_map = m_Actor.Location.Map;
+	  if (dest.Map != a_map) {
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
         HashSet<Exit> valid_exits;
-        HashSet<Map> exit_maps = m_Actor.Location.Map.PathTo(dest.Map, out valid_exits);
+        HashSet<Map> exit_maps = a_map.PathTo(dest.Map, out valid_exits);
 
-	    Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+	    Exit exitAt = a_map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
           return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-	    navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
+	    navigate.GoalDistance(a_map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
 	  } else {
 	    navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
 	  }
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+      if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
 	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
-	  return DecideMove(tmp.Keys, null, null);	// only called when no enemies in sight anyway
+      // XXX telepathy: do not block an exit which has a non-enemy at the other destination
+      ActorAction tmp3 = DecideMove(tmp.Keys, null, null);   // only called when no enemies in sight anyway
+      ActionMoveStep tmp2 = tmp3 as ActionMoveStep;
+      if (null != tmp2) {
+        Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
+        Actor actorAt = exitAt?.ToMap.GetActorAt(exitAt.Location.Position);
+        if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return null;
+      }
+      return tmp3;
 	}
 
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
