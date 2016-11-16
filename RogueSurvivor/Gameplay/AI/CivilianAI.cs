@@ -291,7 +291,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
               Attack tmp_attack = m_Actor.HypotheticalMeleeAttack((tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet),en);
-              if (tmp_attack.DamageValue / 2 >= en.HitPoints)
               if (en.HitPoints>tmp_attack.DamageValue/2) continue;
               // can one-shot
               if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
