@@ -1405,5 +1405,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           throw new ArgumentOutOfRangeException("unhandled lighting");
       }
     }
+
+    protected void MarkActorAsRecentTrade(Actor other)
+    {
+      if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
+      else if (m_TabooTrades.Contains(other)) return;
+      m_TabooTrades.Add(other);
+    }
+
+    public bool IsActorTabooTrade(Actor other)
+    {
+      if (m_TabooTrades == null) return false;
+      return m_TabooTrades.Contains(other);
+    }
   }
 }

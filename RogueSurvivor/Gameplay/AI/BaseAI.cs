@@ -37,7 +37,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private Location m_prevLocation;
     private Dictionary<Item, int> m_TabooItems;
     private Dictionary<Point, int> m_TabooTiles;
-    private List<Actor> m_TabooTrades;
+    protected List<Actor> m_TabooTrades;
 
     public BaseAI()
     {
@@ -651,16 +651,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
-    private List<Point> DecideMove_maximize_visibility(HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
+    private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
         tainted.IntersectWith(new_los);
-        if (0>=tainted.Count) return;
+        if (0>=tainted.Count) return dests;
         Dictionary<Point,int> taint_exposed = new Dictionary<Point,int>();
-        foreach(Point pt in tmp) {
+        foreach(Point pt in dests) {
           HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
           tmp2.IntersectWith(tainted);
           taint_exposed[pt] = tmp2.Count;
         }
-        int max_taint_exposed = tmp.Select(pt=>taint_exposed[pt]).Max();
+        int max_taint_exposed = dests.Select(pt=>taint_exposed[pt]).Max();
         taint_exposed.OnlyIf(val=>max_taint_exposed==val);
         return taint_exposed.Keys.ToList();
     }
@@ -701,10 +701,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
 	  if (null != threats && 2<=tmp.Count) {
-        DecideMove_maximize_visibility(threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
+        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
 	  }
 	  if (null != sights_to_see && 2<=tmp.Count) {
-        DecideMove_maximize_visibility(sights_to_see.In(m_Actor.Location.Map), new_los, hypothetical_los);
+        tmp = DecideMove_maximize_visibility(tmp, sights_to_see.In(m_Actor.Location.Map), new_los, hypothetical_los);
 	  }
 
       // weakly prefer not to jump
@@ -1515,24 +1515,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_TabooTiles.ContainsKey(p);
     }
 
-    protected void MarkActorAsRecentTrade(Actor other)
-    {
-      if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
-      else if (m_TabooTrades.Contains(other)) return;
-      m_TabooTrades.Add(other);
-    }
-
-    public bool IsActorTabooTrade(Actor other)
-    {
-      if (m_TabooTrades == null) return false;
-      return m_TabooTrades.Contains(other);
-    }
-
-    protected void ClearTabooTrades()
-    {
-      m_TabooTrades = null;
-    }
-
     protected void ExpireTaboos()
     {
       // maintain taboo information
@@ -1547,7 +1529,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // actors ok to clear at midnight
       if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
-        ClearTabooTrades();
+        m_TabooTrades = null;
     }
 
 
