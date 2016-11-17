@@ -35,7 +35,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const float LEADER_LOF_PENALTY = 1f;
     private ActorDirective m_Directive = null; // Should be in orderableAI but needed for movement AI here, and also FeralDogAI
     private Location m_prevLocation;
-    protected Dictionary<Item, int> m_TabooItems = null;
 
     public BaseAI()
     {
@@ -403,7 +402,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         equippedWeapon = null;
       }
       if (Directives.CanFireWeapons) {
-        Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo(it => !IsItemTaboo(it));
+        Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
         if (rangedWeaponWithAmmo != null && m_Actor.CanEquip(rangedWeaponWithAmmo)) {
           game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
           return null;
@@ -411,7 +410,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ranged weapon non-option for some reason
-      ItemMeleeWeapon bestMeleeWeapon = m_Actor.GetBestMeleeWeapon(it => !IsItemTaboo(it));
+      ItemMeleeWeapon bestMeleeWeapon = m_Actor.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
       if (bestMeleeWeapon == null) return null;
       if (equippedWeapon == bestMeleeWeapon) return null;
       game.DoEquipItem(m_Actor, bestMeleeWeapon);
@@ -1023,7 +1022,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn)
+    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn=null)
     {
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       ItemRangedWeapon obj1 = null;
@@ -1214,7 +1213,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (a is ActionGetFromContainer) {
         Item it = (a as ActionGetFromContainer).Item;
-        return !IsItemTaboo(it) && IsInterestingItem(it);
+        return IsInterestingItem(it);
       }
       return a is ActionBarricadeDoor;
     }
@@ -1355,12 +1354,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int y = goal.Y + rules.Roll(-range, range);
       map.TrimToBounds(ref x, ref y);
       return new Point(x, y);
-    }
-
-    public bool IsItemTaboo(Item it)
-    {
-      if (m_TabooItems == null) return false;
-      return m_TabooItems.ContainsKey(it);
     }
 
     protected class ChoiceEval<_T_>

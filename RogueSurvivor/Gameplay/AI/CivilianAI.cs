@@ -470,7 +470,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (p == percept) continue;
               Inventory inv = p.Percepted as Inventory;
               foreach (Item it in inv.Items) {
-                if (IsItemTaboo(it) || !IsInterestingItem(it)) continue;
+                if (!IsInterestingItem(it)) continue;
                 if (RHSMoreInteresting(tmp, it)) {  // we have a wrong stack
                   MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
                   perceptList2.Remove(percept);

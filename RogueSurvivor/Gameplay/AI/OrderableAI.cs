@@ -191,6 +191,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Objective> Objectives = new List<Objective>();
 
     // taboos really belong here
+    private Dictionary<Item, int> m_TabooItems = null;
     private Dictionary<Point, int> m_TabooTiles = null;
     private List<Actor> m_TabooTrades = null;
 
@@ -956,10 +957,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
+    public override bool IsInterestingItem(Item it)
+    {
+        if (IsItemTaboo(it)) return false;
+        return base.IsInterestingItem(it);
+    }
+
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
     {
       if (Items == null) return false;
-      return Items.Where(it => !IsItemTaboo(it) && IsInterestingItem(it)).Any();
+      return Items.Where(it => IsInterestingItem(it)).Any();
     }
 
     public bool HasAnyInterestingItem(Inventory inv)
@@ -972,7 +979,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return null;
       foreach (Item it in inv.Items) {
-        if (!IsItemTaboo(it) && IsInterestingItem(it)) return it;
+        if (IsInterestingItem(it)) return it;
       }
       return null;
     }
@@ -1126,7 +1133,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (Items == null) return null;
       HashSet<GameItems.IDs> exclude = new HashSet<GameItems.IDs>(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
-      IEnumerable<Item> tmp = Items.Where(it => !IsItemTaboo(it) && !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
+      IEnumerable<Item> tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
       return (tmp.Any() ? tmp.ToList() : null);
     }
 
@@ -1137,12 +1144,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorMakeRoomFor(RogueGame game, Item it)
     {
-#if DEBUG
-      if (null == it) throw new ArgumentNullException("it"); 
-      if (!m_Actor.Inventory.IsFull) throw new ArgumentOutOfRangeException("inventory not full",m_Actor.Name);
-      if (!IsInterestingItem(it)) throw new ArgumentOutOfRangeException("do not need to make room for uninteresting items");
-      if (IsItemTaboo(it)) throw new ArgumentOutOfRangeException("do not need to make room for taboo items");
-#endif
+      Contract.Requires(null != it);
+      Contract.Requires(m_Actor.Inventory.IsFull);
+      Contract.Requires(IsInterestingItem(it));
 
       Inventory inv = m_Actor.Inventory;
       if (it.Model.IsStackable && it.CanStackMore)
@@ -1505,6 +1509,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // taboos
+    public bool IsItemTaboo(Item it)
+    {
+      if (m_TabooItems == null) return false;
+      return m_TabooItems.ContainsKey(it);
+    }
+
     protected void MarkItemAsTaboo(Item it, int expiresTurn)
     {
       if (m_TabooItems == null) m_TabooItems = new Dictionary<Item,int>(1);

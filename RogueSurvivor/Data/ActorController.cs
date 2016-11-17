@@ -304,7 +304,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public bool IsInterestingItem(Item it)
+    public virtual bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);
 	  if (it.IsForbiddenToAI) return false;
