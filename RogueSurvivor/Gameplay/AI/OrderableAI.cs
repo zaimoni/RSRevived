@@ -1166,7 +1166,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // not-best melee weapon can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon))) {
-        ItemMeleeWeapon weapon = GetWorstMeleeWeapon();
+        ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
         // ok to drop if either the weapon won't become interesting, or is less interesting that the other item
         if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || (it is ItemMeleeWeapon && RHSMoreInteresting(weapon, it)))) return BehaviorDropItem(weapon);  
       }

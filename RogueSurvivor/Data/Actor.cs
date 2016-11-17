@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using LOS = djack.RogueSurvivor.Engine.LOS;
@@ -1629,6 +1630,13 @@ namespace djack.RogueSurvivor.Data
         return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
+
+    public ItemMeleeWeapon GetWorstMeleeWeapon()
+    {
+      if (null == Inventory) return null;
+      return Inventory.Items.Select(it=>it as ItemMeleeWeapon).Where(w=>null!=w).Minimize(w=>(w.Model as ItemMeleeWeaponModel).Attack.Rating);
+    }
+
 
     // equipped items
     public Item GetEquippedItem(DollPart part)

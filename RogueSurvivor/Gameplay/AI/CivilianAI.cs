@@ -243,6 +243,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+#if FAIL
+      // ranged weapon: prefer to maintain LoF when retreating
+      if (null!= retreat && 2 <= retreat.Count && null!= available_ranged_weapons) {
+      }
+#endif
+
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
       // XXX we also want to be close enough to fire at all
