@@ -269,24 +269,6 @@ namespace djack.RogueSurvivor.Data
         return true;    // default to ok to trade away
     }
 
-    protected ItemBodyArmor GetBestBodyArmor(Predicate<Item> fn=null)
-    {
-      if (m_Actor.Inventory == null) return null;
-      int num1 = 0;
-      ItemBodyArmor itemBodyArmor1 = null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (null != fn && !fn(obj)) continue;
-        ItemBodyArmor itemBodyArmor2 = obj as ItemBodyArmor;
-        if (null == itemBodyArmor2) continue;
-        int num2 = itemBodyArmor2.Rating;
-        if (num2 > num1) {
-          num1 = num2;
-          itemBodyArmor1 = itemBodyArmor2;
-        }
-      }
-      return itemBodyArmor1;
-    }
-
     public virtual bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);
@@ -323,14 +305,13 @@ namespace djack.RogueSurvivor.Data
         ItemRangedWeapon rw = it as ItemRangedWeapon;
         return rw.Ammo > 0 || GetCompatibleAmmoItem(rw) != null;
       }
-      if (it is ItemAmmo)
-      {
+      if (it is ItemAmmo) {
         ItemAmmo am = it as ItemAmmo;
         if (GetCompatibleRangedWeapon(am) == null) return false;
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
-      if (it is ItemMeleeWeapon)
-      { // better handling of martial arts requires better attack juggling in general
+      if (it is ItemMeleeWeapon) {
+        // better handling of martial arts requires better attack juggling in general
         if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
         if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
@@ -345,7 +326,7 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemMedicine)
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       if (it is ItemBodyArmor) { 
-        ItemBodyArmor armor = GetBestBodyArmor();
+        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null == armor) return true;
         return armor.Rating < (it as ItemBodyArmor).Rating;
       }

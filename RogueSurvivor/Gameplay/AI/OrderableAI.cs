@@ -474,7 +474,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void BehaviorEquipBodyArmor(RogueGame game)
     {
-      ItemBodyArmor bestBodyArmor = GetBestBodyArmor((Predicate<Item>) (it => !IsItemTaboo(it)));
+      ItemBodyArmor bestBodyArmor = m_Actor.GetBestBodyArmor(it => !IsItemTaboo(it));
       if (bestBodyArmor == null) return;
       ItemBodyArmor equippedBodyArmor = GetEquippedBodyArmor();
       if (equippedBodyArmor == bestBodyArmor) return;
