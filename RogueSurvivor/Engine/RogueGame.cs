@@ -2296,7 +2296,7 @@ namespace djack.RogueSurvivor.Engine
         while(!current.IsSecret && null != current.NextActorToAct) {
           AdvancePlay(current, sim);
           if (district == Session.Get.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
-            if (m_Player.IsDead) HandleReincarnation();
+            if (0>=Session.Get.World.PlayerCount) HandleReincarnation();
           }
           if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
         }
