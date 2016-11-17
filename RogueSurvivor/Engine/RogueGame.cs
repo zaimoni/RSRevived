@@ -5521,7 +5521,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       do {
-        ActorDirective directives = (follower.Controller as BaseAI).Directives;
+        ActorDirective directives = (follower.Controller as OrderableAI).Directives;
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         ClearMessages();
@@ -8810,7 +8810,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       else
-        acceptDeal = !target.HasLeader || (target.Controller as BaseAI).Directives.CanTrade;
+        acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
 
       if (!acceptDeal)
       {

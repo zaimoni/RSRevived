@@ -196,6 +196,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private List<Actor> m_TabooTrades = null;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
+    private ActorDirective m_Directive = null;
     private ActorOrder m_Order = null;
     protected Percept m_LastEnemySaw = null;
     protected Percept m_LastItemsSaw = null;
@@ -210,6 +211,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     }
 
+    public ActorDirective Directives { get { return m_Directive ?? (m_Directive = new ActorDirective()); } }
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
     public ActorOrder Order { get { return m_Order; } }
 

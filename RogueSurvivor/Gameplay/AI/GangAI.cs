@@ -255,7 +255,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorExplore(game, m_Exploration);
+      tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;

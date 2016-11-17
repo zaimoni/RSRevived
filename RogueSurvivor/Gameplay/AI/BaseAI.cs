@@ -33,20 +33,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
     private const float LEADER_LOF_PENALTY = 1f;
-    private ActorDirective m_Directive = null; // Should be in orderableAI but needed for movement AI here, and also FeralDogAI
     private Location m_prevLocation;
 
     public BaseAI()
     {
-    }
-
-    // BaseAI does have to know about directives for the movement behaviors
-    public ActorDirective Directives {
-      get {
-        if (m_Directive == null)
-          m_Directive = new ActorDirective();
-        return m_Directive;
-      }
     }
 
     protected Location PrevLocation
@@ -302,7 +292,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorIntelligentBumpToward(Point goal)
     {
       float currentDistance = Rules.StdDistance(m_Actor.Location.Position, goal);
-      bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
+      ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       return BehaviorBumpToward(goal, (Func<Point, Point, float>) ((ptA, ptB) =>
       {
         if (ptA == ptB) return 0.0f;
@@ -387,7 +378,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorEquipWeapon(RogueGame game)
     {
       Item equippedWeapon = GetEquippedWeapon();
-      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon && !Directives.CanFireWeapons) {
+      bool canFireWeapons = (this as OrderableAI)?.Directives.CanFireWeapons ?? true;
+      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon && !canFireWeapons) {
         game.DoUnequipItem(m_Actor, equippedWeapon);
         equippedWeapon = null;
       }
@@ -401,7 +393,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoUnequipItem(m_Actor, equippedWeapon);
         equippedWeapon = null;
       }
-      if (Directives.CanFireWeapons) {
+      if (canFireWeapons) {
         Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
         if (rangedWeaponWithAmmo != null && m_Actor.CanEquip(rangedWeaponWithAmmo)) {
           game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
@@ -856,10 +848,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration)
+    protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration, ActorCourage courage=ActorCourage.CAUTIOUS)
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
-      bool imStarvingOrCourageous = m_Actor.IsStarving || Directives.Courage == ActorCourage.COURAGEOUS;
+      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Location location = m_Actor.Location + dir;
@@ -1208,14 +1200,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //    if (a is ActionPush) return true; // wasn't being generated in RS alpha 9...results do not look good
       if (a is ActionOpenDoor) return true;
       if (a is ActionBashDoor) return true;
-      if (a is ActionChat) {
-        return Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader;
-      }
+      if (a is ActionBarricadeDoor) return true;
+      OrderableAI downcast = this as OrderableAI;
       if (a is ActionGetFromContainer) {
         Item it = (a as ActionGetFromContainer).Item;
         return IsInterestingItem(it);
       }
-      return a is ActionBarricadeDoor;
+      if (null==downcast) return false;
+      if (a is ActionChat) {
+        return downcast.Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader;
+      }
+      return false;
     }
 
     protected bool IsValidMoveTowardGoalAction(ActorAction a)
