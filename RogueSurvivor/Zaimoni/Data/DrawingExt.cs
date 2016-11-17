@@ -49,5 +49,33 @@ namespace Zaimoni.Data
       }
       return src;
     }
+
+    public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
+    {
+      R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
+      T ret = default(T);
+      foreach(T test in src) {
+         R num2 = metric(test);
+         if (0>num2.CompareTo(num1)) {
+           ret = test;
+           num1 = num2;
+         }
+      }
+      return ret;
+    }
+
+    public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
+    {
+      R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
+      T ret = default(T);
+      foreach(T test in src) {
+         R num2 = metric(test);
+         if (0<num2.CompareTo(num1)) {
+           ret = test;
+           num1 = num2;
+         }
+      }
+      return ret;
+    }
   }
 }

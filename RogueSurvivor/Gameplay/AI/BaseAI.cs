@@ -673,7 +673,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
 	  }
 	  if (null != sights_to_see && 2<=tmp.Count) {
-        tmp = DecideMove_maximize_visibility(tmp, sights_to_see.In(m_Actor.Location.Map), new_los, hypothetical_los);
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map);
+        if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
 	  }
 
       // weakly prefer not to jump
