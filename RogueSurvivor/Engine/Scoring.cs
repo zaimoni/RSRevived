@@ -30,57 +30,44 @@ namespace djack.RogueSurvivor.Engine
     private int m_KillPoints;
     private DifficultySide m_Side;
 
-    public DifficultySide Side
-    {
-      get
-      {
+    public readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
+    public Skills.IDs StartingSkill;    // RogueGame: 1 write access
+    public int TurnsSurvived;   // RogueGame: 3 write access
+    public string DeathReason;  // RogueGame: 1 write access
+    public string DeathPlace;  // RogueGame: 1 write access
+    public TimeSpan RealLifePlayingTime = new TimeSpan(0L);   // RogueGame: 1 write access
+
+    public DifficultySide Side {
+      get {
         return m_Side;
       }
-      set
-      {
-                m_Side = value;
+      set { // 4 references in RogueGame
+        m_Side = value;
       }
     }
 
-    public int StartScoringTurn
-    {
-      get
-      {
+    public int StartScoringTurn {
+      get {
         return m_StartScoringTurn;
       }
-      set
-      {
-                m_StartScoringTurn = value;
-      }
     }
 
-    public int ReincarnationNumber
-    {
-      get
-      {
+    public int ReincarnationNumber {
+      get {
         return m_ReincarnationNumber;
       }
-      set
-      {
-                m_ReincarnationNumber = value;
-      }
     }
 
-    public Achievement[] Achievements { get; private set; }
-    public Skills.IDs StartingSkill { get; set; }
     public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
     public bool HasNoEvents { get { return m_Events.Count == 0; } }
     public IEnumerable<Scoring.KillData> Kills { get { return m_Kills.Values; } }
     public bool HasNoKills { get { return m_Kills.Count == 0; } }
-    public IEnumerable<int> Sightings { get { return (IEnumerable<int>)m_Sightings; } }
-    public int TurnsSurvived { get; set; }
-    public string DeathReason { get; set; }
-    public string DeathPlace { get; set; }
+    public IEnumerable<int> Sightings { get { return (IEnumerable<int>) m_Sightings; } }
     public List<Actor> FollowersWhendDied { get { return m_FollowersWhenDied; } }
     public Actor Killer { get { return m_Killer; } }
     public Actor ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
     public int KillPoints { get { return m_KillPoints; } }
-    public int SurvivalPoints { get { return 2 * (TurnsSurvived - m_StartScoringTurn); } }
+    public int SurvivalPoints { get { return 2 * (TurnsSurvived - StartScoringTurn); } }
 
     public int AchievementPoints {
       get {
@@ -108,13 +95,10 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public TimeSpan RealLifePlayingTime { get; set; }
-    public int CompletedAchievementsCount { get; set; }
+    public int CompletedAchievementsCount { get; set; } // RogueGame: 1 write access, but could pay CPU to re-implement as a pure getter
 
     public Scoring()
     {
-      RealLifePlayingTime = new TimeSpan(0L);
-      Achievements = new Achievement[(int) Achievement.IDs._COUNT];
       InitAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]
       {
         "Now try not to die too soon..."
