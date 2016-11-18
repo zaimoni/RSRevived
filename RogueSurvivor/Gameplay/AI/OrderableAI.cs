@@ -860,7 +860,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
           return fortification != null && !fortification.IsTransparent;
         }));
-        return num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance) || num1 == 0 && num2 == 1;
+        return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;

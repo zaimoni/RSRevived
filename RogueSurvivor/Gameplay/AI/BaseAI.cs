@@ -194,12 +194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Percept_<_T_> p in perceptList) {
         dict.Add(p,Rules.GridDistance(p.Location.Position, from));
       }
-      perceptList.Sort(((pA, pB) =>
-      {
-        int num1 = dict[pA];
-        int num2 = dict[pB];
-        return num1.CompareTo(num2);
-      }));
+      perceptList.Sort((pA, pB) => dict[pA].CompareTo(dict[pB]));
       return perceptList;
     }
 
@@ -207,7 +202,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = new List<Percept>(percepts);
-      perceptList.Sort((Comparison<Percept>) ((pA, pB) => pB.Turn.CompareTo(pA.Turn)));
+      perceptList.Sort((pA, pB) => pB.Turn.CompareTo(pA.Turn));
       return perceptList;
     }
 
@@ -988,26 +983,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
       ItemRangedWeapon obj1 = null;
       int num1 = 0;
-      foreach (Item obj2 in m_Actor.Inventory.Items) {
-        ItemRangedWeapon w = obj2 as ItemRangedWeapon;
-        if (w != null && (fn == null || fn(obj2))) {
-          bool flag = false;
-          if (w.Ammo > 0) {
-            flag = true;
-          } else {
-            foreach (Item obj3 in m_Actor.Inventory.Items) {
-              if (obj3 is ItemAmmo && (fn == null || fn(obj3)) && (obj3 as ItemAmmo).AmmoType == w.AmmoType) {
-                flag = true;
-                break;
-              }
-            }
-          }
-          if (flag) {
-            int num2 = ScoreRangedWeapon(w);
-            if (num2 > num1) {
-              obj1 = w;
-              num1 = num2;
-            }
+      IEnumerable<ItemRangedWeapon> rws = m_Actor.Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(w=>null!=w);
+      if (null!=fn) rws = rws.Where(w=>fn(w));
+      foreach (ItemRangedWeapon w in rws) {
+        bool flag = false;
+        if (w.Ammo > 0) flag = true;
+        else {
+          IEnumerable<ItemAmmo> ammos = m_Actor.Inventory.Items.Select(it=>it as ItemAmmo).Where(ammo=>null!=ammo && ammo.AmmoType==w.AmmoType);
+          if (null!=fn) ammos = ammos.Where(ammo=>fn(ammo));
+          flag = ammos.Any();
+        }
+        if (flag) {
+          int num2 = ScoreRangedWeapon(w);
+          if (num2 > num1) {
+            obj1 = w;
+            num1 = num2;
           }
         }
       }
@@ -1253,7 +1243,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       int num1 = actor.Speed;
       int num2 = target.Speed;
-      return num1 > num2 || actor.CanRun() && !target.CanRun() && (!WillTireAfterRunning(actor) && num1 * 2 > num2);
+      return (num1 > num2) || (actor.CanRun() && !target.CanRun() && !WillTireAfterRunning(actor) && num1 * 2 > num2);
     }
 
     protected static bool IsBetween(Point A, Point between, Point B)
