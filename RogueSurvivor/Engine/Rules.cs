@@ -480,15 +480,15 @@ namespace djack.RogueSurvivor.Engine
           actorList.Add(actorAt);
         }
       }
-      if (actorList != null)
+      if (actorList != null) {
+        Point a_pos = actor.Location.Position;
         actorList.Sort((Comparison<Actor>) ((a, b) =>
         {
-          float num1 = Rules.StdDistance(a.Location.Position, actor.Location.Position);
-          float num2 = Rules.StdDistance(b.Location.Position, actor.Location.Position);
-          if ((double) num1 < (double) num2)
-            return -1;
-          return (double) num1 <= (double) num2 ? 0 : 1;
+          double num1 = Rules.StdDistance(a.Location.Position, a_pos);
+          double num2 = Rules.StdDistance(b.Location.Position, a_pos);
+          return num1.CompareTo(num2);
         }));
+      }
       return actorList;
     }
 
@@ -830,23 +830,23 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // Euclidean plane distance
-    public static float StdDistance(Point from, Point to)
+    public static double StdDistance(Point from, Point to)
     {
       int num1 = to.X - from.X;
       int num2 = to.Y - from.Y;
-      return (float) Math.Sqrt((double) (num1 * num1 + num2 * num2));
+      return Math.Sqrt((double) (num1 * num1 + num2 * num2));
     }
 
-    public static float StdDistance(Point v)
+    public static double StdDistance(Point v)
     {
-      return (float) Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
+      return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
-    public static float LOSDistance(Point from, Point to)
+    public static double LOSDistance(Point from, Point to)
     {
       int num1 = to.X - from.X;
       int num2 = to.Y - from.Y;
-      return (float) Math.Sqrt(0.75 * (double) (num1 * num1 + num2 * num2));
+      return Math.Sqrt(0.75 * (double) (num1 * num1 + num2 * num2));
     }
 
     public bool WillOtherActTwiceBefore(Actor actor, Actor other)

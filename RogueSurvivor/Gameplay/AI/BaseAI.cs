@@ -109,16 +109,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept_<_T_> FilterNearest<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      double num1 = double.MaxValue;
-      Percept_<_T_> percept1 = null;
-      foreach(Percept_<_T_> percept2 in percepts) {
-         float num2 = Rules.StdDistance(m_Actor.Location.Position, percept2.Location.Position);
-         if (num2 < num1) {
-           percept1 = percept2;
-           num1 = num2;
-         }
-      }
-      return percept1;
+      Point a_pos = m_Actor.Location.Position;
+      return percepts.Minimize(p=>Rules.StdDistance(a_pos, p.Location.Position));
     }
 
     protected Percept FilterStrongestScent(List<Percept> scents)
@@ -183,10 +175,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
       perceptList.Sort(((pA, pB) =>
       {
-        float num1 = Rules.StdDistance(pA.Location.Position, from);
-        float num2 = Rules.StdDistance(pB.Location.Position, from);
-        if (num1 > num2) return 1;
-        return num1 < num2 ? -1 : 0;
+        double num1 = Rules.StdDistance(pA.Location.Position, from);
+        double num2 = Rules.StdDistance(pB.Location.Position, from);
+        return num1.CompareTo(num2);
       }));
       return perceptList;
     }
@@ -207,8 +198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         int num1 = dict[pA];
         int num2 = dict[pB];
-        if (num1 > num2) return 1;
-        return num1 < num2 ? -1 : 0;
+        return num1.CompareTo(num2);
       }));
       return perceptList;
     }
@@ -217,11 +207,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == percepts || 0 == percepts.Count) return null;
       List<Percept> perceptList = new List<Percept>(percepts);
-      perceptList.Sort((Comparison<Percept>) ((pA, pB) =>
-      {
-        if (pA.Turn < pB.Turn) return 1;
-        return pA.Turn <= pB.Turn ? 0 : -1;
-      }));
+      perceptList.Sort((Comparison<Percept>) ((pA, pB) => pB.Turn.CompareTo(pA.Turn)));
       return perceptList;
     }
 
@@ -268,7 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Location location = m_Actor.Location + dir;
         if (distanceFn != null) return distanceFn(location.Position, goal);
-        return Rules.StdDistance(location.Position, goal);
+        return (float)Rules.StdDistance(location.Position, goal);
       }), (Func<float, float, bool>) ((a, b) =>
       {
         if (!float.IsNaN(a)) return (double) a < (double) b;
@@ -283,7 +269,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorBumpToward(goal, (Func<Point, Point, float>) ((ptA, ptB) =>
       {
         if (ptA == ptB) return 0.0f;
-        float num = Rules.StdDistance(ptA, ptB);
+        float num = (float)Rules.StdDistance(ptA, ptB);
         if (!m_Actor.Location.Map.IsWalkableFor(ptA, m_Actor)) num += 0.42f;
         return num;
       }));
@@ -291,13 +277,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorIntelligentBumpToward(Point goal)
     {
-      float currentDistance = Rules.StdDistance(m_Actor.Location.Position, goal);
+      float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, goal);
       ActorCourage courage = (this as OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       return BehaviorBumpToward(goal, (Func<Point, Point, float>) ((ptA, ptB) =>
       {
         if (ptA == ptB) return 0.0f;
-        float num = Rules.StdDistance(ptA, ptB);
+        float num = (float)Rules.StdDistance(ptA, ptB);
         if ((double) num >= (double) currentDistance) return float.NaN;
         if (!imStarvingOrCourageous) {
           int trapsMaxDamage = ComputeTrapsMaxDamage(m_Actor.Location.Map, ptA);
@@ -354,7 +340,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = m_Actor.Location + dir;
         float num = SafetyFrom(location.Position, goals);
         if (m_Actor.HasLeader) {
-          num -= Rules.StdDistance(location.Position, m_Actor.Leader.Location.Position);
+          num -= (float)Rules.StdDistance(location.Position, m_Actor.Leader.Location.Position);
           if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
         }
         return num;

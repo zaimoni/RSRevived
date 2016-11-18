@@ -931,12 +931,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionSleep(m_Actor);
       }
       Point? nullable = null;
-      float num1 = float.MaxValue;
+      double num1 = double.MaxValue;
       foreach (Point point in m_Actor.Controller.FOV) {
         MapObject mapObjectAt = map.GetMapObjectAt(point);
         if (mapObjectAt != null && mapObjectAt.IsCouch && map.GetActorAt(point) == null) {
-          float num2 = Rules.StdDistance(m_Actor.Location.Position, point);
-          if ((double) num2 < (double) num1) {
+          double num2 = Rules.StdDistance(m_Actor.Location.Position, point);
+          if (num2 < num1) {
             num1 = num2;
             nullable = point;
           }
