@@ -9265,6 +9265,15 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void DoBreak(Actor actor, MapObject mapObj)
     {
+      // XXX NPCs know to use their best melee weapon
+      // this doesn't handle martial artists properly
+      if (!actor.IsPlayer) {
+        ItemMeleeWeapon equippedWeapon = actor.GetEquippedWeapon() as ItemMeleeWeapon;
+        ItemMeleeWeapon bestMeleeWeapon = actor.GetBestMeleeWeapon();
+        if (bestMeleeWeapon == null) return;
+        if (equippedWeapon == bestMeleeWeapon) return;
+        DoEquipItem(actor, bestMeleeWeapon);
+      }
       Attack attack = actor.MeleeAttack();
       DoorWindow doorWindow = mapObj as DoorWindow;
       if (doorWindow != null && doorWindow.IsBarricaded) {

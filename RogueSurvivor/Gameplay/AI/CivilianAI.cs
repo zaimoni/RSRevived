@@ -192,6 +192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // melee risk management check
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
+      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
       Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
       List<Actor> slow_melee_threat = new List<Actor>();
       if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat);
@@ -200,7 +201,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       List<Point> retreat = null;
       IEnumerable<Point> tmp_point;
-      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
       // calculate retreat destinations if possibly needed
       if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
         tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
