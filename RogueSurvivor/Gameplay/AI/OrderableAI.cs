@@ -1449,6 +1449,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
+
+      // as we clear threats before tourism, non-entry maps should check for whether tourism is relevant before leaving
+      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      if (null != sights_to_see && m_Actor.Location.Map.District.EntryMap!=m_Actor.Location.Map) {
+        tainted = sights_to_see.In(m_Actor.Location.Map);   // XXX reuse
+        if (0<tainted.Count) return null;   // fall-through to tourism if indicated
+      }
+
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
       HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
       // but ignore the sewers if we're not vintage
@@ -1483,14 +1491,66 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
       }
-#if FAIL
-        // general priorities
-        // 2) clear the entry map
-        if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
-        // 3) clear basements and subway; ok to clear police station and first level of hospital.
-        } else {
+    }
+
+    protected ActorAction BehaviorTourism()
+    {
+      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      if (null == sights_to_see) return null;
+      // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
+      HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      if (0<tainted.Count) {
+        navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+        if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+        Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+        Dictionary<Point, int> exposed = new Dictionary<Point,int>();
+        foreach(Point pt in dest.Keys) {
+          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt));
+          los.IntersectWith(tainted);
+          exposed[pt] = los.Count;
         }
-#endif
+        int most_exposed = exposed.Values.Max();
+        if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
+        ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
+        ActionMoveStep test = ret as ActionMoveStep;
+        if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        return ret;
+      }
+
+      if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+      if (0>=possible_destinations.Count) return null;
+        
+      // try to pick something reasonable
+      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
+      if (1<possible_destinations.Count) {
+        foreach(Map m in possible_destinations) {
+          hazards[m] = sights_to_see.In(m);
+        }
+        hazards.OnlyIf(val=>0<val.Count);
+        if (0<hazards.Count) possible_destinations.IntersectWith(hazards.Keys);
+      }
+      // if the entry map is a destination, go there if it has a problem
+      if (1<possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap) && hazards.ContainsKey(m_Actor.Location.Map.District.EntryMap)) {
+        possible_destinations = new HashSet<Map>();
+        possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
+      }
+      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+      if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
+        return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      }
+
+	  navigate.GoalDistance(valid_exits.Keys, int.MaxValue,m_Actor.Location.Position);
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);	// only called when no enemies in sight anyway
+      {
+      ActorAction ret = DecideMove(tmp.Keys.ToList(), null, null);
+      ActionMoveStep test = ret as ActionMoveStep;
+      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      return ret;
+      }
     }
 
     protected bool NeedsLight()

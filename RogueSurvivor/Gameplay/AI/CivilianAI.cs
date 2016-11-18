@@ -696,13 +696,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorHuntDownThreat();
       if (null != tmpAction) return tmpAction;
 
-#if FAIL
-      LocationSet sights_to_see = m_Actor.InterestingLocs;
-      if (null != sights_to_see) {
-        HashSet<Point> local_interest = sights_to_see.In(m_Actor.Location.Map);
-        if (local_interest) 
-      }
-#endif
+      // tourism
+      tmpAction = BehaviorTourism();
+      if (null != tmpAction) return tmpAction;
 
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
       if (null != tmpAction) {

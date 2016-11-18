@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Data
       public HashSet<Point> In(Map map)
 	  {
 		lock(_locs) {
-          return _locs.ContainsKey(map) ? _locs[map] : null;
+          return _locs.ContainsKey(map) ? _locs[map] : new HashSet<Point>();
 		}
 	  }
 
