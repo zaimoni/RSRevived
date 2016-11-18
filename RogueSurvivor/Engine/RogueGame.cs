@@ -8064,16 +8064,9 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (isPlayer && exitAt.ToMap.District != map.District) 
         BeforePlayerEnterDistrict(exitAt.ToMap.District);
-      Actor actorAt = exitAt.Location.Actor;
-      if (actorAt != null) {
-        if (isPlayer)
-          AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) actorAt.Name)));
-        return true;
-      }
-      MapObject mapObjectAt = exitAt.Location.MapObject;
-      if (mapObjectAt != null && ((!mapObjectAt.IsJumpable || !actor.CanJump) && !mapObjectAt.IsCouch)) {
-        if (isPlayer)
-          AddMessage(MakeErrorMessage(string.Format("{0} is blocking your way.", (object) mapObjectAt.AName)));
+      string reason = exitAt.ReasonIsBlocked(actor);
+      if (!string.IsNullOrEmpty(reason)) {
+        if (isPlayer) AddMessage(MakeErrorMessage(reason));
         return true;
       }
       if (ForceVisibleToPlayer(actor))

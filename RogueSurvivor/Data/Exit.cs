@@ -25,5 +25,17 @@ namespace djack.RogueSurvivor.Data
       m_Location = new Location(toMap,toPosition);
 	  IsAnAIExit = AIexit;
     }
+
+    // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
+    // we do not consider actors to block exits when pathfinding
+    public string ReasonIsBlocked(Actor actor=null) {
+      if (null!=actor) {
+        Actor actorAt = Location.Actor;
+        if (actorAt != null) return string.Format("{0} is blocking your way.", actorAt.Name);
+      }
+      MapObject mapObjectAt = Location.MapObject;
+      if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return string.Format("{0} is blocking your way.", mapObjectAt.AName);
+      return "";
+    }
   }
 }
