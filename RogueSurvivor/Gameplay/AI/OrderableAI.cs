@@ -1075,7 +1075,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Item it in m_Actor.Inventory.Items) {
         if (it.IsUseless) return BehaviorDropItem(it);
       }
-      ItemBodyArmor armor = GetWorstBodyArmor();
+      ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
       if (null != armor) return BehaviorDropItem(armor); 
       return null;
     }
@@ -1160,7 +1160,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
-        ItemBodyArmor armor = GetWorstBodyArmor();
+        ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
         if (null != armor) return BehaviorDropItem(armor);  
       }
 

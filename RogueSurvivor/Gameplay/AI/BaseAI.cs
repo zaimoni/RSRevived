@@ -912,24 +912,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
     }
 
-    protected ItemBodyArmor GetWorstBodyArmor()
-    {
-      if (m_Actor.Inventory == null) return null;
-      int num1 = int.MaxValue;
-      ItemBodyArmor ret = null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemBodyArmor tmp = obj as ItemBodyArmor;
-        if (null == tmp) continue;
-        if (DollPart.NONE != tmp.EquippedPart) continue;
-        int num2 = tmp.Rating;
-        if (num2 < num1) {
-          num1 = num2;
-          ret = tmp;
-        }
-      }
-      return ret;
-    }
-
     // belongs with CivilianAI, or possibly OrderableAI but NatGuard may not have access to the crime listings
     protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts)
     {

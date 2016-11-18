@@ -1645,6 +1645,12 @@ namespace djack.RogueSurvivor.Data
       return armors.Maximize(armor=>armor.Rating);
     }
 
+    public ItemBodyArmor GetWorstBodyArmor()
+    {
+      if (null == Inventory) return null;
+      return Inventory.Items.Select(it=>it as ItemBodyArmor).Where(armor=>null!=armor && DollPart.NONE == armor.EquippedPart).Minimize(armor=>armor.Rating);
+    }
+
 
     // equipped items
     public Item GetEquippedItem(DollPart part)
