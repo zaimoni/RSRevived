@@ -11016,13 +11016,14 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMiniMap(Map map)
     {
       if (null == m_Player) return;   // fail-safe.
-	  ThreatTracking _threats = m_Player.Threats;
+	  ThreatTracking threats = m_Player.Threats;    // these two should agree on whether they're null or not
+      LocationSet sights_to_see = m_Player.InterestingLocs;
 	  
 	  if (RogueGame.s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         Point pos = new Point();
-		if (null == _threats) {
+		if (null == threats) {
           for (pos.X = 0; pos.X < map.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
@@ -11030,7 +11031,8 @@ namespace djack.RogueSurvivor.Engine
             }
           }
 		} else {
-          HashSet<Point> tainted = _threats.ThreatWhere(map);
+          HashSet<Point> tainted = threats.ThreatWhere(map);
+          HashSet<Point> tourism = sights_to_see.In(map);
           for (pos.X = 0; pos.X < map.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
               if (tainted.Contains(pos)) {
@@ -11038,6 +11040,7 @@ namespace djack.RogueSurvivor.Engine
                 continue;
               }
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
+              if (tourism.Contains(pos)) continue;  // sights to see are blacked out of the minimap, but not the main map
               m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
             }
           }
