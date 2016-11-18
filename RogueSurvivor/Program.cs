@@ -20,13 +20,18 @@ namespace djack.RogueSurvivor
     {
       if (null!=args) {
         // help option is impractical: C stdout is inaccessible in a GUI C# program
-        foreach(string tmp in args) { 
+        bool reading_PC = false;
+        foreach(string tmp in args) {
+          if (reading_PC) {
+            Engine.Session.CommandLineOptions["PC"] = tmp;
+          }
           if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) { 
             int tmp2;
             if (int.TryParse(tmp.Substring(7), out tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
           }
           if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist
           if ("--socrates-daimon"==tmp) Engine.Session.CommandLineOptions["socrates-daimon"] = "";    // key just has to exist
+          if ("--PC"==tmp) reading_PC=true;
         }
       }
 

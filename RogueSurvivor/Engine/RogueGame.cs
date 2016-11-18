@@ -9268,11 +9268,12 @@ namespace djack.RogueSurvivor.Engine
       // XXX NPCs know to use their best melee weapon
       // this doesn't handle martial artists properly
       if (!actor.IsPlayer) {
-        ItemMeleeWeapon equippedWeapon = actor.GetEquippedWeapon() as ItemMeleeWeapon;
         ItemMeleeWeapon bestMeleeWeapon = actor.GetBestMeleeWeapon();
-        if (bestMeleeWeapon == null) return;
-        if (equippedWeapon == bestMeleeWeapon) return;
-        DoEquipItem(actor, bestMeleeWeapon);
+        if (null!=bestMeleeWeapon) {
+          ItemMeleeWeapon equippedWeapon = actor.GetEquippedWeapon() as ItemMeleeWeapon;
+          if (equippedWeapon == bestMeleeWeapon) return;
+          DoEquipItem(actor, bestMeleeWeapon);
+        }
       }
       Attack attack = actor.MeleeAttack();
       DoorWindow doorWindow = mapObj as DoorWindow;
@@ -11578,6 +11579,8 @@ namespace djack.RogueSurvivor.Engine
     {
 	  Contract.Requires(!string.IsNullOrEmpty(saveName));
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
+      // command line option --PC requests converting an NPC to a PC
+      if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC(Session.CommandLineOptions["PC"]);
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       m_Player = null;
       RefreshPlayer();

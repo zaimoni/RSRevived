@@ -72,6 +72,23 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void MakePC(string target) {
+      if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
+        foreach(District d in m_DistrictsGrid) {
+          foreach(Map m in d.Maps) {
+            foreach(Actor a in m.Actors) {   
+              if (a.UnmodifiedName!= Engine.Session.CommandLineOptions["PC"]) continue;
+              if (!a.IsPlayer) {
+                a.Controller = new PlayerController();
+                a.Controller.UpdateSensors();
+              }
+              return;
+            }
+          }
+        }
+      }
+    }
+
     // Simulation support
     // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in 
     // an inconsistent state
