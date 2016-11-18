@@ -243,11 +243,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-#if FAIL
       // ranged weapon: prefer to maintain LoF when retreating
       if (null!= retreat && 2 <= retreat.Count && null!= available_ranged_weapons) {
+        Dictionary<Point,int> targets = new Dictionary<Point,int>();
+        int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+        foreach(Point pt in retreat) {
+          targets[pt] = 0;
+          foreach(Percept p in enemies) {
+            if (LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location.Position, max_range, m_Actor)) targets[pt]++;    // hard-code current LOS as range
+          }
+        }
+        int max_LoF = targets.Values.Max();
+        targets.OnlyIf(val=>val==max_LoF);
+        retreat = targets.Keys.ToList();
       }
-#endif
 
       // ranged weapon: fast retreat ok
       // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
