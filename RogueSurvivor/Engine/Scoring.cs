@@ -356,9 +356,9 @@ namespace djack.RogueSurvivor.Engine
     [Serializable]
     public class KillData
     {
-      public GameActors.IDs ActorModelID { get; set; }
-      public int Amount { get; set; }
-      public int FirstKillTurn { get; set; }
+      public readonly GameActors.IDs ActorModelID;
+      public int Amount;
+      public readonly int FirstKillTurn;
 
       public KillData(Gameplay.GameActors.IDs actorModelID, int turn)
       {
@@ -371,8 +371,8 @@ namespace djack.RogueSurvivor.Engine
     [Serializable]
     public class GameEventData
     {
-      public int Turn { get; set; }
-      public string Text { get; set; }
+      public readonly int Turn;
+      public readonly string Text;
 
       public GameEventData(int turn, string text)
       {
