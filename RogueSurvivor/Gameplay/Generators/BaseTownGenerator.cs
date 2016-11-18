@@ -1273,17 +1273,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
-      if (!flag)
-      {
-        do
-        {
+      if (!flag) {
+        do {
           int x = m_DiceRoller.Roll(b.BuildingRect.Left, b.BuildingRect.Right);
           int y = m_DiceRoller.Roll(b.BuildingRect.Top, b.BuildingRect.Bottom);
-          if (!map.GetTileAt(x, y).IsInside)
-          {
+          if (!map.GetTileAt(x, y).IsInside) {
             DoorWindow doorWindow = map.GetMapObjectAt(x, y) as DoorWindow;
-            if (doorWindow != null && doorWindow.IsWindow)
-            {
+            if (doorWindow != null && doorWindow.IsWindow) {
               map.RemoveMapObjectAt(x, y);
               map.PlaceMapObjectAt((MapObject)MakeObjWoodenDoor(), new Point(x, y));
               flag = true;
@@ -1293,27 +1289,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         while (!flag);
       }
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_CHANCE))
-                m_Params.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
+        m_Params.District.AddUniqueMap(GenerateHouseBasementMap(map, b));
       map.AddZone(MakeUniqueZone("Housing", b.BuildingRect));
-            MakeWalkwayZones(map, b);
+      MakeWalkwayZones(map, b);
       return true;
     }
 
     protected virtual void MakeSewersMaintenanceBuilding(Map map, bool isSurface, BaseTownGenerator.Block b, Map linkedMap, Point exitPosition)
     {
-      if (!isSurface)
-                TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect);
-            TileRectangle(map, m_Game.GameTiles.WALL_SEWER, b.BuildingRect);
-      for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left)
-      {
+      if (!isSurface) TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect);
+      TileRectangle(map, m_Game.GameTiles.WALL_SEWER, b.BuildingRect);
+      for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int top = b.InsideRect.Top; top < b.InsideRect.Bottom; ++top)
           map.GetTileAt(left, top).IsInside = true;
       }
       Direction direction;
       int x;
       int y;
-      switch (m_DiceRoller.Roll(0, 4))
-      {
+      switch (m_DiceRoller.Roll(0, 4)) {
         case 0:
           direction = Direction.N;
           x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
@@ -1335,20 +1328,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           map.GetTileAt(x, y - 1).AddDecoration("Tiles\\Decoration\\sewers_building");
           map.GetTileAt(x, y + 1).AddDecoration("Tiles\\Decoration\\sewers_building");
           break;
+#if DEBUG
         case 3:
+#else
+        default:
+#endif
           direction = Direction.E;
           x = b.BuildingRect.Right - 1;
           y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           map.GetTileAt(x, y - 1).AddDecoration("Tiles\\Decoration\\sewers_building");
           map.GetTileAt(x, y + 1).AddDecoration("Tiles\\Decoration\\sewers_building");
           break;
+#if DEBUG
         default:
           throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
       }
       PlaceDoor(map, x, y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
-      map.GetTileAt(exitPosition.X, exitPosition.Y).AddDecoration(isSurface ? "Tiles\\Decoration\\sewer_hole" : "Tiles\\Decoration\\sewer_ladder");
-      map.SetExitAt(exitPosition, new Exit(linkedMap, exitPosition, true));
+      AddExit(map, exitPosition, linkedMap, exitPosition, (isSurface ? GameImages.DECO_SEWER_HOLE : GameImages.DECO_SEWER_LADDER), true);
       if (!isSurface) {
         Point p = new Point(x, y) + direction;
         while (map.IsInBounds(p) && !map.GetTileAt(p.X, p.Y).Model.IsWalkable) {
@@ -1428,7 +1426,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             break;
           }
           break;
+#if DEBUG
         case 3:
+#else
+        default:
+#endif
           direction = Direction.E;
           x1 = b.BuildingRect.Right - 1;
           num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
@@ -1438,8 +1440,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             break;
           }
           break;
+#if DEBUG
         default:
           throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
       }
       if (isSurface) {
         map.SetTileModelAt(x1, num, m_Game.GameTiles.FLOOR_CONCRETE);
@@ -1447,8 +1451,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       for (int x2 = exitPosition.X - 1; x2 <= exitPosition.X + 1; ++x2) {
         Point point = new Point(x2, exitPosition.Y);
-        map.GetTileAt(point.X, point.Y).AddDecoration(isSurface ? "Tiles\\Decoration\\stairs_down" : "Tiles\\Decoration\\stairs_up");
-        map.SetExitAt(point, new Exit(linkedMap, point, true));
+        AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP), true);
       }
       if (!isSurface) {
         map.SetTileModelAt(x1, num, m_Game.GameTiles.FLOOR_CONCRETE);
@@ -2209,10 +2212,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         surfaceMap.PlaceMapObjectAt((MapObject) doorWindow, pt);
       }));
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
-      underground.SetExitAt(point2, new Exit(surfaceMap, point1, true));
-      underground.GetTileAt(point2.X, point2.Y).AddDecoration(GameImages.DECO_STAIRS_UP);
-      surfaceMap.SetExitAt(point1, new Exit(underground, point2, true));
-      surfaceMap.GetTileAt(point1.X, point1.Y).AddDecoration(GameImages.DECO_STAIRS_DOWN);
+      AddExit(underground, point2, surfaceMap, point1, GameImages.DECO_STAIRS_UP, true);
+      AddExit(surfaceMap, point1, underground, point2, GameImages.DECO_STAIRS_DOWN, true);
       ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.GetTileAt(pt).AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
