@@ -9625,10 +9625,7 @@ namespace djack.RogueSurvivor.Engine
 
       // achievement: killing the Sewers Thing
       if (killer == m_Player && killer.Leader == m_Player) {
-        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) {
-          Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
-          ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
-        }
+        if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
       }
 
       // If m_Player has just died, then we should be in the current district and thus clear to find a player
@@ -10033,19 +10030,10 @@ namespace djack.RogueSurvivor.Engine
       }
       CheckWeatherChange();
       if (m_Player.Model.Abilities.IsUndead) return;
-      if (Session.Get.WorldTime.Day == 7) {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_07);
-        ShowNewAchievement(Achievement.IDs.REACHED_DAY_07);
-      } else if (Session.Get.WorldTime.Day == 14) {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_14);
-        ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
-      } else if (Session.Get.WorldTime.Day == 21) {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_21);
-        ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
-      } else if (Session.Get.WorldTime.Day == 28) {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.REACHED_DAY_28);
-        ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
-      }
+      if (Session.Get.WorldTime.Day == 7) ShowNewAchievement(Achievement.IDs.REACHED_DAY_07);
+      else if (Session.Get.WorldTime.Day == 14) ShowNewAchievement(Achievement.IDs.REACHED_DAY_14);
+      else if (Session.Get.WorldTime.Day == 21) ShowNewAchievement(Achievement.IDs.REACHED_DAY_21);
+      else if (Session.Get.WorldTime.Day == 28) ShowNewAchievement(Achievement.IDs.REACHED_DAY_28);
     }
 
     private void HandlePlayerDecideUpgrade(Actor upgradeActor)
@@ -12518,6 +12506,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void ShowNewAchievement(Achievement.IDs id)
     {
+      Session.Get.Scoring.SetCompletedAchievement(id);
       ++Session.Get.Scoring.CompletedAchievementsCount;
       Achievement achievement = Session.Get.Scoring.GetAchievement(id);
       string musicId = achievement.MusicID;
@@ -12557,13 +12546,9 @@ namespace djack.RogueSurvivor.Engine
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
     {
       if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
-      {
-        Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
         ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
-      }
       if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
         lock (Session.Get) {
-          Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
           ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
           Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
           Session.Get.CHARUndergroundFacility_Activated = true;
@@ -13028,10 +13013,8 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(new Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
                 RedrawPlayScreen();
               }
-              if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY)) {
-                Session.Get.Scoring.SetCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
+              if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
                 ShowNewAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
-              }
             }
           } else if (map.Lighting != Lighting.DARKNESS) {
             map.Lighting = Lighting.DARKNESS;
