@@ -221,7 +221,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           game.DoMakeAggression(m_Actor, target);
           m_Actor.Activity = Activity.CHASING;
           m_Actor.TargetActor = target;
-          return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", (object) obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT);
+          return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", (object) obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT); // takes turn for game balance
         }
       }
       tmpAction = BehaviorAttackBarricade(game);

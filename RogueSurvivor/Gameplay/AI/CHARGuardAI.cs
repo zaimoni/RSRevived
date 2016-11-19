@@ -108,7 +108,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           game.DoMakeAggression(m_Actor, target);
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target;
-          return new ActionSay(m_Actor, target, "Hey YOU!", RogueGame.Sayflags.IS_IMPORTANT);
+          // players are special: they get to react to being aggressed
+          return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
         }
       }
       if (null != enemies && perceptList2 != null) {

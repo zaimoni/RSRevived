@@ -12976,7 +12976,7 @@ namespace djack.RogueSurvivor.Engine
                 actor.TrustInLeader = 0;
               }
               DoMakeAggression(actor, actor1);
-              return new ActionSay(actor, actor1, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);
+              return new ActionSay(actor, actor1, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);    // this takes a turn unconditionally for game balance.
             }
           }
           return null;
