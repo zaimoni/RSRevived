@@ -9271,8 +9271,7 @@ namespace djack.RogueSurvivor.Engine
         ItemMeleeWeapon bestMeleeWeapon = actor.GetBestMeleeWeapon();
         if (null!=bestMeleeWeapon) {
           ItemMeleeWeapon equippedWeapon = actor.GetEquippedWeapon() as ItemMeleeWeapon;
-          if (equippedWeapon == bestMeleeWeapon) return;
-          DoEquipItem(actor, bestMeleeWeapon);
+          if (equippedWeapon != bestMeleeWeapon) DoEquipItem(actor, bestMeleeWeapon);
         }
       }
       Attack attack = actor.MeleeAttack();
