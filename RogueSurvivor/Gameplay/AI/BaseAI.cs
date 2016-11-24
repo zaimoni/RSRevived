@@ -640,7 +640,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (null != hypothetical_los) {
 	    // only need points newly in FOV that aren't currently
 	    foreach(Point pt in tmp) {
-	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt)).Except(FOV));
+	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
           new_los.UnionWith(hypothetical_los[pt]);
 	    }
 	  }

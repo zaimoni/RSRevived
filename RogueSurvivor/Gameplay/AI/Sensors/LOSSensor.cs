@@ -42,7 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public override List<Percept> Sense(Actor actor)
     {
-      m_FOV = LOS.ComputeFOVFor(actor, actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      m_FOV = LOS.ComputeFOVFor(actor);
       actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);
       int num = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
       List<Percept> perceptList = new List<Percept>();

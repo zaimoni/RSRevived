@@ -1451,7 +1451,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
         Dictionary<Point, int> exposed = new Dictionary<Point,int>();
         foreach(Point pt in dest.Keys) {
-          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt));
+          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
           los.IntersectWith(tainted);
           exposed[pt] = los.Count;
         }
@@ -1521,7 +1521,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
         Dictionary<Point, int> exposed = new Dictionary<Point,int>();
         foreach(Point pt in dest.Keys) {
-          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Session.Get.World.Weather, new Location(m_Actor.Location.Map,pt));
+          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
           los.IntersectWith(tainted);
           exposed[pt] = los.Count;
         }

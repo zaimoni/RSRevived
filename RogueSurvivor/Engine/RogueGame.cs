@@ -4979,7 +4979,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         return false;
       }
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(player, Session.Get.WorldTime, Session.Get.World.Weather);
+      HashSet<Point> fovFor = LOS.ComputeFOVFor(player);
       List<Actor> enemiesInFov = m_Rules.GetEnemiesInFov(player, fovFor);
       if (enemiesInFov == null || enemiesInFov.Count == 0) {
         AddMessage(MakeErrorMessage("No targets to fire at."));
@@ -5491,7 +5491,7 @@ namespace djack.RogueSurvivor.Engine
       int index1 = 0;
       foreach (Actor follower in player.Followers) {
         actorArray[index1] = follower;
-        pointSetArray[index1] = LOS.ComputeFOVFor(follower, Session.Get.WorldTime, Session.Get.World.Weather);
+        pointSetArray[index1] = LOS.ComputeFOVFor(follower);
         bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_Player.Controller.FOV.Contains(follower.Location.Position);
         bool flag2 = AreLinkedByPhone(player, follower);
         flagArray[index1] = flag1 || flag2;
@@ -5617,7 +5617,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       string str1 = DescribePlayerFollowerStatus(follower);
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(follower, Session.Get.WorldTime, Session.Get.World.Weather);
+      HashSet<Point> fovFor = LOS.ComputeFOVFor(follower);
       bool flag1 = true;
       bool flag2 = false;
       do {
