@@ -8770,23 +8770,11 @@ namespace djack.RogueSurvivor.Engine
       DoTrade(speaker, target);
     }
 
-    private bool IsInterestingTradeItem(Actor speaker, Item offeredItem, Actor target)
-    {
-      if (m_Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
-      if (target.IsPlayer) return true;
-      return target.Controller.IsInterestingItem(offeredItem);
-    }
-
-    private bool IsTradeableItem(Actor speaker, Item offeredItem)
-    {
-       return speaker.Controller.IsTradeableItem(offeredItem);
-    }
-
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       bool wantedItem = true;
-      bool flag3 = itSpeaker != null && IsInterestingTradeItem(speaker, itSpeaker, target);
+      bool flag3 = itSpeaker != null && target.Controller.IsInterestingTradeItem(speaker, itSpeaker);
       if (target.Leader == speaker)
         wantedItem = true;
       else if (doesTargetCheckForInterestInOffer)
@@ -8874,7 +8862,7 @@ namespace djack.RogueSurvivor.Engine
     {
 //    if (buyer.IsPlayer) return speaker.Inventory.Items
 
-      IEnumerable<Item> objList = speaker.Inventory.Items.Where(it=> IsInterestingTradeItem(speaker, it, buyer) && IsTradeableItem(speaker, it));
+      IEnumerable<Item> objList = speaker.Inventory.Items.Where(it=> buyer.Controller.IsInterestingTradeItem(speaker, it) && speaker.Controller.IsTradeableItem(it));
       return objList.Any() ? objList.ToList() : null;
     }
 

@@ -1061,6 +1061,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    public bool HasAnyTradeableItem()
+    {
+      Inventory inv = m_Actor.Inventory;
+      if (inv == null) return false;
+      return inv.Items.Where(it=> IsTradeableItem(it)).Any();
+    }
+
+    public List<Item> GetTradeableItems()
+    {
+      Inventory inv = m_Actor.Inventory;
+      if (inv == null) return null;
+      IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
+      return ret.Any() ? ret.ToList() : null;
+    }
+
     protected ActionDropItem BehaviorDropItem(Item it)
     {
       if (it == null) return null;

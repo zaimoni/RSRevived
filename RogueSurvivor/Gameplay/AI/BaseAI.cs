@@ -1011,19 +1011,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 1000 * rangedWeaponModel.Attack.Range + rangedWeaponModel.Attack.DamageValue;
     }
 
-    public List<Item> GetTradeableItems(Inventory inv)
-    {
-      if (inv == null) return null;
-      IEnumerable<Item> ret = inv.Items.Where(it => IsTradeableItem(it));
-      return ret.Any() ? ret.ToList() : null;
-    }
-
-    public bool HasAnyTradeableItem(Inventory inv)
-    {
-      if (inv == null) return false;
-      return inv.Items.Where(it=> IsTradeableItem(it)).Any();
-    }
-
     protected void RunIfPossible()
     {
       if (!m_Actor.CanRun()) return;

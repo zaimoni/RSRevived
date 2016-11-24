@@ -505,8 +505,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
-        if (Directives.CanTrade && HasAnyTradeableItem(m_Actor.Inventory)) {
-          List<Item> TradeableItems = GetTradeableItems(m_Actor.Inventory);
+        if (Directives.CanTrade && HasAnyTradeableItem()) {
+          List<Item> TradeableItems = GetTradeableItems();
           List<Percept> percepts2 = friends.FilterOut(p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)

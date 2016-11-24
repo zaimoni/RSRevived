@@ -78,6 +78,11 @@ namespace djack.RogueSurvivor.Data
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
     }
 
+    public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
+    {
+      return true;
+    }
+
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);

@@ -228,10 +228,21 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    // XXX to implement
+    // core inventory should be (but is not)
+    // armor: 1 slot (done)
+    // flashlight: 1 slot (currently very low priority)
+    // melee weapon: 1 slot
+    // ranged weapon w/amoo: 1 slot
+    // ammo clips: 1 slot high priority, 1 slot moderate priority (tradeable)
+    // without Hauler levels, that is 5 non-tradeable slots when fully kitted
+    // Also, has enough food checks should be based on wakeup time
+
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(Item it)
     {
 		Contract.Requires(null != it);
+        if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
         if (it is ItemFood)
             {
             if (!m_Actor.Model.Abilities.HasToEat) return true;
@@ -257,7 +268,8 @@ namespace djack.RogueSurvivor.Data
         if (it is ItemMeleeWeapon)
             {
             if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return true;   // martial artists+melee weapons needs work
-            return m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon)) >= 2;
+            // do not trade away the best melee weapon.  Others ok.
+            return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
             }
         // player should be able to trade for blue pills
 /*
@@ -333,6 +345,14 @@ namespace djack.RogueSurvivor.Data
       if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))
         return false;
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
+    }
+
+    public virtual bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
+    {
+      Contract.Requires(null!=speaker);
+      Contract.Requires(speaker.Model.Abilities.CanTrade);
+      if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
+      return IsInterestingItem(offeredItem);
     }
   }
 }

@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -69,6 +70,7 @@ namespace djack.RogueSurvivor.Data
 
     public Abilities(Flags in_flags)
     {
+      Contract.Requires((Flags.NONE != (in_flags & Flags.HAS_INVENTORY)) || (Flags.NONE == (in_flags & Flags.CAN_TRADE)));
       m_Flags = in_flags;
     }
 
@@ -92,7 +94,7 @@ namespace djack.RogueSurvivor.Data
       IS_SMALL = 1 << 13,
       HAS_INVENTORY = 1 << 14,
       CAN_USE_ITEMS = 1 << 15,
-      CAN_TRADE = 1 << 16,
+      CAN_TRADE = 1 << 16,  // XXX requires HAS_INVENTORY
       CAN_BARRICADE = 1 << 17,
       CAN_PUSH = 1 << 18,
       CAN_JUMP_STUMBLE = 1 << 19,
