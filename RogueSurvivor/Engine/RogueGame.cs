@@ -3586,6 +3586,7 @@ namespace djack.RogueSurvivor.Engine
                   flag1 = false;
                   break;
                 }
+                flag1 = false;
                 break;
               case PlayerCommand.MOVE_N:
                 flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.N);
@@ -3802,7 +3803,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Contract.Requires(null!=player);
       Contract.Requires(player.IsPlayer);
-      AddMessage(MakeYesNoMessage("REALLY ABANDON "+m_Player.UnmodifiedName+" TO FATE"));
+      AddMessage(MakeYesNoMessage("REALLY ABANDON "+player.UnmodifiedName+" TO FATE"));
       RedrawPlayScreen();
       bool flag = WaitYesOrNo();
       if (!flag) { 
