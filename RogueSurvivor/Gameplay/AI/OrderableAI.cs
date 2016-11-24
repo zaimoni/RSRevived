@@ -1581,6 +1581,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
           // XXX should base lighting on threat tracking/tourism
+#if FAIL
+          ThreatTracking threats = m_Actor.Threats;
+          LocationSet sights_to_see = m_Actor.InterestingLocs;
+          int no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+          HashSet<Point> no_light_FOV = ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Weather weather, Location a_loc, no_light_range);
+          HashSet<Point> danger_point_FOV = ComputeFOVFor(Actor actor, WorldTime time, Weather weather, Location a_loc, no_light_range+3);
+          if (null!=threats) {
+          }
+          if (null!=sights_to_see) {
+          }
+#endif
           if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
           return true;
 #if DEBUG

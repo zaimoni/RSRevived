@@ -1907,44 +1907,45 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int FOVrange(WorldTime time, Weather weather)
+    public int FOVrangeNoFlashlight(WorldTime time, Weather weather)
     {
       if (IsSleeping) return 0;
-      int val2 = Sheet.BaseViewRange;
-      Lighting lighting = Location.Map.Lighting;
-      switch (lighting)
-      {
+      int FOV = Sheet.BaseViewRange;
+      switch (Location.Map.Lighting) {
         case Lighting.DARKNESS:
-          val2 = DarknessFOV;
-          goto case Lighting.LIT;
+          FOV = DarknessFOV;
+          break;
         case Lighting.OUTSIDE:
-          val2 -= NightFovPenalty(time) + WeatherFovPenalty(weather);
-          goto case Lighting.LIT;
-        case Lighting.LIT:
-          if (IsExhausted) val2 -= 2;
-          else if (IsSleepy) --val2;
-          if (lighting == Lighting.DARKNESS || (lighting == Lighting.OUTSIDE && time.IsNight))
-          {
-            int num = LightBonus;
-            if (num == 0)
-            {
-              Map map = Location.Map;
-              if (map.HasAnyAdjacentInMap(Location.Position, (Predicate<System.Drawing.Point>) (pt =>
+          FOV -= NightFovPenalty(time) + WeatherFovPenalty(weather);
+          break;
+      }
+      if (IsExhausted) FOV -= 2;
+      else if (IsSleepy) --FOV;
+      MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
+      if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) ++FOV;
+      return Math.Max(MINIMAL_FOV, FOV);
+    }
+
+    public int FOVrange(WorldTime time, Weather weather)
+    {
+      if (IsSleeping) return 0; // repeat this short-circuit here for correctness
+      int FOV = FOVrangeNoFlashlight(time, weather);
+      Lighting light = Location.Map.Lighting;
+      if (light == Lighting.DARKNESS || (light == Lighting.OUTSIDE && time.IsNight)) {
+        int lightBonus = LightBonus;
+        if (lightBonus == 0) {
+          Map map = Location.Map;
+          if (map.HasAnyAdjacentInMap(Location.Position, (Predicate<System.Drawing.Point>) (pt =>
               {
                 Actor actorAt = map.GetActorAt(pt);
                 if (actorAt == null) return false;
                 return 0 < actorAt.LightBonus;
               })))
-                num = 1;
-            }
-            val2 += num;
-          }
-          MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
-          if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) ++val2;
-          return Math.Max(MINIMAL_FOV, val2);
-        default:
-          throw new ArgumentOutOfRangeException("unhandled lighting");
+            lightBonus = 1;
+        }
+        FOV += lightBonus;
       }
+      return Math.Max(MINIMAL_FOV, FOV);
     }
 
     // event handlers
