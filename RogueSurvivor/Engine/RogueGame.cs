@@ -3576,7 +3576,14 @@ namespace djack.RogueSurvivor.Engine
                 if (HandleAbandonGame()) {
                   StopSimThread();
                   flag1 = false;
-                  KillActor((Actor) null, m_Player, "suicide");
+                  KillActor(null, m_Player, "suicide");
+                  break;
+                }
+                break;
+              case PlayerCommand.ABANDON_PC:
+                if (HandleAbandonPC(m_Player)) {
+                  StopSimThread();
+                  flag1 = false;
                   break;
                 }
                 break;
@@ -3790,6 +3797,29 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("You can't bear the horror anymore...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       return flag;
     }
+
+    private bool HandleAbandonPC(Actor player)
+    {
+      Contract.Requires(null!=player);
+      Contract.Requires(player.IsPlayer);
+      AddMessage(MakeYesNoMessage("REALLY ABANDON "+m_Player.UnmodifiedName+" TO FATE"));
+      RedrawPlayScreen();
+      bool flag = WaitYesOrNo();
+      if (!flag) { 
+        AddMessage(new Data.Message("Good. No reason to make the undeads life easier by removing yours!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        return false;
+      }
+      player.Controller = player.Model.InstanciateController();
+      AddMessage(new Data.Message("You can't bear the horror anymore...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      if (0<player.CountFollowers) {
+        foreach(Actor fo in player.Followers.Where(a=>a.IsPlayer)) {
+          HandleAbandonPC(fo);
+          if (fo.IsPlayer) player.RemoveFollower(fo);  // NPCs cannot lead PCs; cf Actor::PrepareForPlayerControl 
+        }
+      }
+      return 0>=Session.Get.World.PlayerCount;
+    }
+
 
     private void HandleScreenshot()
     {

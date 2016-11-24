@@ -63,5 +63,6 @@ namespace djack.RogueSurvivor.Engine
     ITEM_SLOT_9,
     ITEM_INFO,
     DAIMON_MAP,
+    ABANDON_PC,
    }
 }

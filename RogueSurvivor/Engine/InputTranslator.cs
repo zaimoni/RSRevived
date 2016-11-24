@@ -14,8 +14,9 @@ namespace djack.RogueSurvivor.Engine
     {
       // debugging/cheat commands
       if (Session.Get.CMDoptionExists("socrates-daimon")) {
-        if (key.KeyData == (Keys.I  | Keys.Control)) return PlayerCommand.DAIMON_MAP;
+        if (key.KeyData == (Keys.I | Keys.Control)) return PlayerCommand.DAIMON_MAP;
       }
+      if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;
 
       PlayerCommand playerCommand = RogueGame.KeyBindings.Get(key.KeyData);
       if (playerCommand != PlayerCommand.NONE)
