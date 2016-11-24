@@ -1572,16 +1572,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       switch (m_Actor.Location.Map.Lighting)
       {
-        case Lighting.DARKNESS:
-          return true;
+        case Lighting.DARKNESS: return true;
+        case Lighting.LIT: return false;
+#if DEBUG
         case Lighting.OUTSIDE:
+#else
+        default:
+#endif
           if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
+          // XXX should base lighting on threat tracking/tourism
           if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
           return true;
-        case Lighting.LIT:
-          return false;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled lighting");
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException("unhandled lighting");
+#endif
       }
     }
 

@@ -232,16 +232,22 @@ namespace djack.RogueSurvivor.Data
     // core inventory should be (but is not)
     // armor: 1 slot (done)
     // flashlight: 1 slot (currently very low priority)
-    // melee weapon: 1 slot
-    // ranged weapon w/amoo: 1 slot
+    // melee weapon: 1 slot (done)
+    // ranged weapon w/ammo: 1 slot
     // ammo clips: 1 slot high priority, 1 slot moderate priority (tradeable)
     // without Hauler levels, that is 5 non-tradeable slots when fully kitted
     // Also, has enough food checks should be based on wakeup time
+
+    // Gun bunnies would:
+    // * have a slot budget of MaxCapacity-3 or -4 for ranged weapons and ammo combined
+    // * use no more than half of that slot budget for ranged weapons, rounded up
+    // * strongly prefer one clip for each of two ranged weapons over 2 clips for a single ranged weapon
 
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(Item it)
     {
 		Contract.Requires(null != it);
+        Contract.Requires(Actor.Model.Abilities.CanTrade);
         if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
         if (it is ItemFood)
             {
@@ -284,6 +290,7 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);
+      Contract.Requires(Actor.Model.Abilities.CanTrade);
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
 	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
@@ -351,6 +358,7 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null!=speaker);
       Contract.Requires(speaker.Model.Abilities.CanTrade);
+      Contract.Requires(Actor.Model.Abilities.CanTrade);
       if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
       return IsInterestingItem(offeredItem);
     }
