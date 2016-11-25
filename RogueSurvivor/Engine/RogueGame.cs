@@ -9785,8 +9785,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePostMortem()
     {
-      WorldTime worldTime = new WorldTime();
-      worldTime.TurnCounter = Session.Get.Scoring.TurnsSurvived;
+      WorldTime worldTime = new WorldTime(Session.Get.Scoring.TurnsSurvived);
       bool isMale = m_Player.Model.DollBody.IsMale;
       string str1 = isMale ? "He" : "She";
             HisOrHer(m_Player);
@@ -10119,7 +10118,7 @@ namespace djack.RogueSurvivor.Engine
           upgradeActor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
           upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
           upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
-          upgradeActor.Model = Models.Actors[(int)GameActors.IDs.POLICEMAN];
+//        upgradeActor.Model = Models.Actors[(int)GameActors.IDs.POLICEMAN];    // XXX we want the AI update but reaction of DollBody is unclear
           upgradeActor.Controller = new PlayerController();
           AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         } else
