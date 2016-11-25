@@ -8763,6 +8763,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoChat(Actor speaker, Actor target)
     {
+      Contract.Requires(!speaker.IsPlayer);
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
@@ -8791,17 +8792,14 @@ namespace djack.RogueSurvivor.Engine
       };
 
       Item trade = PickItemToTrade(target, speaker);
-      if (null == trade)
-      {
+      if (null == trade) {
         if (!flag1) return;
         AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", (object) target.Name)));
         return;
       };
 
-      if (target.Leader != speaker)
-      {
-        if (itSpeaker.Model.ID == trade.Model.ID)
-        {
+      if (target.Leader != speaker) {
+        if (itSpeaker.Model.ID == trade.Model.ID) {
             if (!flag1) return;
             AddMessage(MakeMessage(target, "has no interesting deal to offer."));
             return;
@@ -8813,8 +8811,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", (object)Conjugate(target, VERB_OFFER), (object) trade.AName, (object) itSpeaker.AName)));
 
       bool acceptDeal = true;
-      if (speaker.IsPlayer)
-      {
+      if (speaker.IsPlayer) {
         AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
         RedrawPlayScreen();
         acceptDeal = WaitYesOrNo();
@@ -8824,8 +8821,7 @@ namespace djack.RogueSurvivor.Engine
       else
         acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
 
-      if (!acceptDeal)
-      {
+      if (!acceptDeal) {
         if (!flag1) return;
         AddMessage(MakeMessage(speaker, string.Format("{0}.", (object)Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
         if (!isPlayer) return;
@@ -8833,8 +8829,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
 
-      if (flag1)
-      {
+      if (flag1) {
         AddMessage(MakeMessage(speaker, string.Format("{0}.", (object)Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
         if (isPlayer) RedrawPlayScreen();
       }
@@ -8850,6 +8845,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTrade(Actor speaker, Actor target)
     {   // precondition: !speaker.IsPlayer (need different implementation)
+      Contract.Requires(!speaker.IsPlayer);
 #if DEBUG
       string reason;
       if (!m_Rules.CanActorInitiateTradeWith(speaker,target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);

@@ -187,5 +187,14 @@ namespace djack.RogueSurvivor.Data
         return "about 1 day";
       return string.Format("about {0} days", (object) worldTime.Day);
     }
+
+    public static int Turn(int day,int hour)
+    {
+      Contract.Requires(0<=day);
+      Contract.Requires(0<=hour);
+      Contract.Requires(int.MaxValue/TURNS_PER_DAY>=day);
+      Contract.Requires((int.MaxValue-(TURNS_PER_DAY*day))/TURNS_PER_HOUR>=hour);
+      return TURNS_PER_DAY*day + TURNS_PER_HOUR*hour;
+    }
   }
 }
