@@ -113,7 +113,7 @@ namespace djack.RogueSurvivor.Data
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
         // so we can work around a newly spawned actor not yet having a non-null FOV
-        HashSet<Point> aFOV = (0<a.CurrentRangedAttack.Range ? a.Controller.FOV : null);
+        HashSet<Point> aFOV = (0<a.CurrentRangedAttack.Range ? LOS.ComputeFOVFor(a) : null);
         if (null == aFOV) {
           foreach(Point pt in melee_damage_field.Keys) {
             if (ret.ContainsKey(pt)) ret[pt] += melee_damage_field[pt];
@@ -290,7 +290,8 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);
-      Contract.Requires(Actor.Model.Abilities.CanTrade);
+      Contract.Requires(Actor.Model.Abilities.HasInventory);    // CHAR guards: wander action can trigger getting items from containers.
+      Contract.Requires(Actor.Model.Abilities.CanUseMapObjects);
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
 	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
