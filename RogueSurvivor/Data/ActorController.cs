@@ -191,22 +191,6 @@ namespace djack.RogueSurvivor.Data
     // savegame support
     public virtual void OptimizeBeforeSaving() { }  // override this if there are memorized sensors
 
-    // trading support
-    protected bool HasEnoughFoodFor(int nutritionNeed)
-    {
-      if (!m_Actor.Model.Abilities.HasToEat) return true;
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return false;
-      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
-      int num = 0;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemFood tmpFood = obj as ItemFood;
-        if (null == tmpFood) continue;
-        num += tmpFood.NutritionAt(turnCounter);
-        if (num >= nutritionNeed) return true;
-      }
-      return false;
-    }
-
     // XXX to implement
     // core inventory should be (but is not)
     // armor: 1 slot (done)
@@ -232,7 +216,7 @@ namespace djack.RogueSurvivor.Data
             {
             if (!m_Actor.Model.Abilities.HasToEat) return true;
             if (m_Actor.IsHungry) return false; 
-            if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
+            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
               return (it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return true;
             }
@@ -294,14 +278,14 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemFood) {
         if (!m_Actor.Model.Abilities.HasToEat) return false;
         if (m_Actor.IsHungry) return true;
-        if (!HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
+        if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
         return false;
       }
 
       // XXX new dropping code should cope with food vs. full inventory
       // don't lose last inventory slot to non-food unless we have enough
-//    if (m_Actor.Model.Abilities.HasToEat && m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
+//    if (m_Actor.Model.Abilities.HasToEat && m_Actor.Inventory.CountItems >= m_Actor.MaxInv-1 && !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) return false;
 
       if (it is ItemRangedWeapon) {
         if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;

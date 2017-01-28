@@ -1668,6 +1668,21 @@ namespace djack.RogueSurvivor.Data
       return tmp.FirstOrDefault();
     }
 
+    public bool HasEnoughFoodFor(int nutritionNeed)
+    {
+      if (!Model.Abilities.HasToEat) return true;
+      if (null == Inventory || Inventory.IsEmpty) return false;
+      List<ItemFood> tmp = Inventory.GetItemsByType<ItemFood>();
+      if (null == tmp) return false;
+      int turnCounter = Location.Map.LocalTime.TurnCounter;
+      int num = 0;
+      foreach (ItemFood tmpFood in tmp) {
+        num += tmpFood.NutritionAt(turnCounter);
+        if (num >= nutritionNeed) return true;
+      }
+      return false;
+    }
+
     // equipped items
     public Item GetEquippedItem(DollPart part)
     {
