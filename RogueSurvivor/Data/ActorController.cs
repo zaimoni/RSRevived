@@ -277,6 +277,12 @@ namespace djack.RogueSurvivor.Data
             // do not trade away the best melee weapon.  Others ok.
             return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
             }
+        if (it is ItemLight)
+            {
+            if (!m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2)) return false;
+            // XXX more work needed
+            return true;
+            }
         // player should be able to trade for blue pills
 /*
         if (it is ItemMedicine)
