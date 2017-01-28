@@ -1661,6 +1661,13 @@ namespace djack.RogueSurvivor.Data
       return tmp2.FirstOrDefault() ?? tmp.FirstOrDefault();
     }
 
+    public ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)
+    {
+      if (null == Inventory) return null;
+      IEnumerable<ItemAmmo> tmp = Inventory.Items.Select(it=>it as ItemAmmo).Where(am => am != null && am.AmmoType == rw.AmmoType);
+      return tmp.FirstOrDefault();
+    }
+
     // equipped items
     public Item GetEquippedItem(DollPart part)
     {

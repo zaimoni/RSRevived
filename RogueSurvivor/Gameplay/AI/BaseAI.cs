@@ -368,7 +368,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
         if (rw.Ammo > 0) return null;
-        ItemAmmo compatibleAmmoItem = GetCompatibleAmmoItem(rw);
+        ItemAmmo compatibleAmmoItem = m_Actor.GetCompatibleAmmoItem(rw);
         if (compatibleAmmoItem != null)
           return new ActionUseItem(m_Actor, compatibleAmmoItem);
         game.DoUnequipItem(m_Actor, equippedWeapon);

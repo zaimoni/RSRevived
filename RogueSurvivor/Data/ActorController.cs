@@ -207,16 +207,6 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    protected ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)
-    {
-      if (m_Actor.Inventory == null) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemAmmo itemAmmo = obj as ItemAmmo;
-        if (itemAmmo != null && itemAmmo.AmmoType == rw.AmmoType) return itemAmmo;
-      }
-      return null;
-    }
-
     // XXX to implement
     // core inventory should be (but is not)
     // armor: 1 slot (done)
@@ -251,7 +241,7 @@ namespace djack.RogueSurvivor.Data
             if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
             ItemRangedWeapon rw = it as ItemRangedWeapon;
             if (0 < rw.Ammo) return false;
-            if (null != GetCompatibleAmmoItem(rw)) return false;
+            if (null != m_Actor.GetCompatibleAmmoItem(rw)) return false;
             return true;    // more work needed
             }
         if (it is ItemAmmo)
@@ -318,7 +308,7 @@ namespace djack.RogueSurvivor.Data
         if (1 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) return false;  // XXX rules out AI gun bunnies
         if (!m_Actor.Inventory.Contains(it) && m_Actor.HasItemOfModel(it.Model)) return false;
         ItemRangedWeapon rw = it as ItemRangedWeapon;
-        return rw.Ammo > 0 || GetCompatibleAmmoItem(rw) != null;
+        return rw.Ammo > 0 || m_Actor.GetCompatibleAmmoItem(rw) != null;
       }
       if (it is ItemAmmo) {
         ItemAmmo am = it as ItemAmmo;
