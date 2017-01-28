@@ -8774,35 +8774,35 @@ namespace djack.RogueSurvivor.Engine
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
+      // bail on null item from speaker early
+      if (null == itSpeaker) {
+        if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", (object) speaker.Name)));
+        return;
+      }
+
       bool wantedItem = true;
-      bool flag3 = itSpeaker != null && target.Controller.IsInterestingTradeItem(speaker, itSpeaker);
+      bool flag3 = target.Controller.IsInterestingTradeItem(speaker, itSpeaker);
       if (target.Leader == speaker)
         wantedItem = true;
       else if (doesTargetCheckForInterestInOffer)
         wantedItem = flag3;
 
-      if (null == itSpeaker || !wantedItem)
+      if (!wantedItem)
       { // offered item is not of perceived use
-        if (!flag1) return;
-        if (itSpeaker == null)
-          AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", (object) speaker.Name)));
-        else
-          AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", (object) itSpeaker.TheName)));
+        if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", (object) itSpeaker.TheName)));
         return;
       };
 
       Item trade = PickItemToTrade(target, speaker);
       if (null == trade) {
-        if (!flag1) return;
-        AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", (object) target.Name)));
+        if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", (object) target.Name)));
         return;
       };
 
       if (target.Leader != speaker) {
         if (itSpeaker.Model.ID == trade.Model.ID) {
-            if (!flag1) return;
-            AddMessage(MakeMessage(target, "has no interesting deal to offer."));
-            return;
+          if (flag1) AddMessage(MakeMessage(target, "has no interesting deal to offer."));
+          return;
         }
       }
 

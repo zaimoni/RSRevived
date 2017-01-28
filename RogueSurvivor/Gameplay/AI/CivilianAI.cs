@@ -506,7 +506,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
         if (Directives.CanTrade && HasAnyTradeableItem()) {
-          List<Item> TradeableItems = GetTradeableItems();
+          List<Item> TradeableItems = GetTradeableItems();  // iterating over friends next so m_Actor.GetInterestingTradeableItems(...) is inappropriate; do first half here
           List<Percept> percepts2 = friends.FilterOut(p =>
           {
             if (p.Turn != map.LocalTime.TurnCounter)
@@ -515,8 +515,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (actor.IsPlayer) return true;
             if (!game.Rules.CanActorInitiateTradeWith(m_Actor, actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
-            if (!HasAnyInterestingItem(actor.Inventory)) return true;
-            return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);
+            if (null == actor.GetInterestingTradeableItems(m_Actor)) return true;
+            return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
           });
           if (percepts2 != null) {
             Actor actor = FilterNearest(percepts2).Percepted as Actor;
