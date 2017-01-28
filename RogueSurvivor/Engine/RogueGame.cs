@@ -8854,17 +8854,9 @@ namespace djack.RogueSurvivor.Engine
       DoTrade(speaker, trade, target, false);
     }
 
-    private List<Item> GetInterestingTradeableItems(Actor speaker, Actor buyer)
-    {
-//    if (buyer.IsPlayer) return speaker.Inventory.Items
-
-      IEnumerable<Item> objList = speaker.Inventory.Items.Where(it=> buyer.Controller.IsInterestingTradeItem(speaker, it) && speaker.Controller.IsTradeableItem(it));
-      return objList.Any() ? objList.ToList() : null;
-    }
-
     private Item PickItemToTrade(Actor speaker, Actor buyer)
     {
-      List<Item> objList = GetInterestingTradeableItems(speaker,buyer);
+      List<Item> objList = speaker.GetInterestingTradeableItems(buyer);
       if (objList == null || 0>=objList.Count) return null;
       return objList[m_Rules.Roll(0, objList.Count)];
     }
