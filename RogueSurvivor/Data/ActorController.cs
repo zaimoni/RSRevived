@@ -217,17 +217,6 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    protected ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
-    {
-      if (m_Actor.Inventory == null) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        ItemRangedWeapon itemRangedWeapon = obj as ItemRangedWeapon;
-        if (itemRangedWeapon != null && itemRangedWeapon.AmmoType == am.AmmoType)
-          return itemRangedWeapon;
-      }
-      return null;
-    }
-
     // XXX to implement
     // core inventory should be (but is not)
     // armor: 1 slot (done)
@@ -268,7 +257,7 @@ namespace djack.RogueSurvivor.Data
         if (it is ItemAmmo)
             {
             ItemAmmo am = it as ItemAmmo;
-            if (GetCompatibleRangedWeapon(am) == null) return true;
+            if (m_Actor.GetCompatibleRangedWeapon(am) == null) return true;
             return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
             }
         if (it is ItemMeleeWeapon)
@@ -333,7 +322,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is ItemAmmo) {
         ItemAmmo am = it as ItemAmmo;
-        if (GetCompatibleRangedWeapon(am) == null) return false;
+        if (m_Actor.GetCompatibleRangedWeapon(am) == null) return false;
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemMeleeWeapon) {

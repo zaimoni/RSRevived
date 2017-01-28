@@ -1279,7 +1279,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // uninteresting ammo
       ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>((Predicate<ItemAmmo>) (ammo => !IsInterestingItem(ammo)));
       if (null != tmpAmmo) {
-        ItemRangedWeapon tmpRw = GetCompatibleRangedWeapon(tmpAmmo);
+        ItemRangedWeapon tmpRw = m_Actor.GetCompatibleRangedWeapon(tmpAmmo);
         if (null != tmpRw) {
           tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
           if (m_Actor.CanUse(tmpAmmo)) return new ActionUseItem(m_Actor, tmpAmmo);

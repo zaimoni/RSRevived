@@ -1651,6 +1651,15 @@ namespace djack.RogueSurvivor.Data
       return Inventory.Items.Select(it=>it as ItemBodyArmor).Where(armor=>null!=armor && DollPart.NONE == armor.EquippedPart).Minimize(armor=>armor.Rating);
     }
 
+    // we prefer to return weapons that need reloading.
+    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
+    {
+      if (null == Inventory) return null;
+      IEnumerable<ItemRangedWeapon> tmp = Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(rw=> null!=rw && rw.AmmoType == am.AmmoType);
+      if (!tmp.Any()) return null;
+      IEnumerable<ItemRangedWeapon> tmp2 = tmp.Where(rw=> rw.Ammo<(rw.Model as ItemRangedWeaponModel).MaxAmmo);
+      return tmp2.FirstOrDefault() ?? tmp.FirstOrDefault();
+    }
 
     // equipped items
     public Item GetEquippedItem(DollPart part)
