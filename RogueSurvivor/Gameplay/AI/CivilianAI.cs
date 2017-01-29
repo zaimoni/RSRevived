@@ -516,6 +516,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!m_Actor.CanTradeWith(actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
             if (null == actor.GetInterestingTradeableItems(m_Actor)) return true;
+            // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
             return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
           });
           if (percepts2 != null) {
