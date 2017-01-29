@@ -8793,18 +8793,11 @@ namespace djack.RogueSurvivor.Engine
         return;
       };
 
-      Item trade = PickItemToTrade(target, speaker);
+      Item trade = PickItemToTrade(target, speaker, itSpeaker);
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", (object) target.Name)));
         return;
       };
-
-      if (target.Leader != speaker) {
-        if (itSpeaker.Model.ID == trade.Model.ID) {
-          if (flag1) AddMessage(MakeMessage(target, "has no interesting deal to offer."));
-          return;
-        }
-      }
 
       bool isPlayer = speaker.IsPlayer;
       if (flag1)
@@ -8858,6 +8851,67 @@ namespace djack.RogueSurvivor.Engine
     {
       List<Item> objList = speaker.GetInterestingTradeableItems(buyer);
       if (objList == null || 0>=objList.Count) return null;
+      return objList[m_Rules.Roll(0, objList.Count)];
+    }
+
+    private Item PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
+    {
+      List<Item> objList = speaker.GetInterestingTradeableItems(buyer);
+      if (objList == null || 0>=objList.Count) return null;
+      IEnumerable<Item> tmp = objList.Where(it=>itSpeaker.Model.ID != it.Model.ID);
+      // XXX disallow clearly non-mutual advantage trades
+      switch(itSpeaker.Model.ID)
+      {
+      // two weapons for the ammo
+      case GameItems.IDs.RANGED_PRECISION_RIFLE:
+      case GameItems.IDs.RANGED_ARMY_RIFLE:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_HEAVY_RIFLE);
+        break;
+      case GameItems.IDs.AMMO_HEAVY_RIFLE:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_PRECISION_RIFLE && it.Model.ID!= GameItems.IDs.RANGED_ARMY_RIFLE);
+        break;
+      case GameItems.IDs.RANGED_PISTOL:
+      case GameItems.IDs.RANGED_KOLT_REVOLVER:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_LIGHT_PISTOL);
+        break;
+      case GameItems.IDs.AMMO_LIGHT_PISTOL:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_PISTOL && it.Model.ID!= GameItems.IDs.RANGED_KOLT_REVOLVER);
+        break;
+      // one weapon for the ammo
+      case GameItems.IDs.RANGED_ARMY_PISTOL:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_HEAVY_PISTOL);
+        break;
+      case GameItems.IDs.AMMO_HEAVY_PISTOL:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_ARMY_PISTOL);
+        break;
+      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_BOLTS);
+        break;
+      case GameItems.IDs.AMMO_BOLTS:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_HUNTING_CROSSBOW);
+        break;
+      case GameItems.IDs.RANGED_HUNTING_RIFLE:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_LIGHT_RIFLE);
+        break;
+      case GameItems.IDs.AMMO_LIGHT_RIFLE:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_HUNTING_RIFLE);
+        break;
+      case GameItems.IDs.RANGED_SHOTGUN:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.AMMO_SHOTGUN);
+        break;
+      case GameItems.IDs.AMMO_SHOTGUN:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.RANGED_SHOTGUN);
+        break;
+      // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
+      case GameItems.IDs.LIGHT_FLASHLIGHT:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.LIGHT_BIG_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries<=(it as BatteryPowered).Batteries);
+        break;
+      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
+        tmp = tmp.Where(it=> it.Model.ID!= GameItems.IDs.LIGHT_FLASHLIGHT || (itSpeaker as BatteryPowered).Batteries>=(it as BatteryPowered).Batteries);
+        break;
+      }
+      if (!tmp.Any()) return null;
+      objList = tmp.ToList();
       return objList[m_Rules.Roll(0, objList.Count)];
     }
 
