@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorInitiateTradeWith(m_Actor, m_Target);
+      return m_Actor.CanTradeWith(m_Target);
     }
 
     public override void Perform()

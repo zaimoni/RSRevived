@@ -358,47 +358,6 @@ namespace djack.RogueSurvivor.Engine
       return IsBumpableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public bool CanActorInitiateTradeWith(Actor speaker, Actor target)
-    {
-      string reason;
-      return CanActorInitiateTradeWith(speaker, target, out reason);
-    }
-
-    public bool CanActorInitiateTradeWith(Actor speaker, Actor target, out string reason)
-    {
-      Contract.Requires(null != speaker);
-      Contract.Requires(null != target);
-      if (target.IsPlayer) {
-        reason = "target is player";
-        return false;
-      }
-      if (!speaker.Model.Abilities.CanTrade && target.Leader != speaker) {
-        reason = "can't trade";
-        return false;
-      }
-      if (!target.Model.Abilities.CanTrade && target.Leader != speaker) {
-        reason = "target can't trade";
-        return false;
-      }
-      if (speaker.IsEnemyOf(target)) {
-        reason = "is an enemy";
-        return false;
-      }
-      if (target.IsSleeping) {
-        reason = "is sleeping";
-        return false;
-      }
-      if (speaker.Inventory == null || speaker.Inventory.IsEmpty) {
-        reason = "nothing to offer";
-        return false;
-      }
-      if (target.Inventory == null || target.Inventory.IsEmpty) {
-        reason = "has nothing to trade";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
 
     public bool CanActorShout(Actor speaker)
     {

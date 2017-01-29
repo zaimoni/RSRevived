@@ -4752,7 +4752,7 @@ namespace djack.RogueSurvivor.Engine
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
               string reason;
-              if (m_Rules.CanActorInitiateTradeWith(player, actorAt, out reason)) {
+              if (player.CanTradeWith(actorAt, out reason)) {
                 flag2 = true;
                 flag1 = false;
                 ClearOverlays();
@@ -6344,7 +6344,7 @@ namespace djack.RogueSurvivor.Engine
           {
             Actor actorAt = map.GetActorAt(pt);
             if (actorAt == null) return false;
-            return m_Rules.CanActorInitiateTradeWith(m_Player, actorAt);
+            return m_Player.CanTradeWith(actorAt);
           }));
         case AdvisorHint.NPC_GIVING_ITEM:
           Inventory inventory8 = m_Player.Inventory;
@@ -8767,7 +8767,7 @@ namespace djack.RogueSurvivor.Engine
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
-      if (!m_Rules.CanActorInitiateTradeWith(speaker, target)) return;
+      if (!speaker.CanTradeWith(target)) return;
       DoTrade(speaker, target);
     }
 
@@ -8848,7 +8848,7 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(!speaker.IsPlayer);
 #if DEBUG
       string reason;
-      if (!m_Rules.CanActorInitiateTradeWith(speaker,target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
+      if (!speaker.CanTradeWith(target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
       Item trade = PickItemToTrade(speaker, target);
       DoTrade(speaker, trade, target, false);
@@ -10757,7 +10757,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.IsInsane) m_UI.UI_DrawImage(GameImages.ICON_SANITY_INSANE, gx2, gy2, tint);
             else if (actor.IsDisturbed) m_UI.UI_DrawImage(GameImages.ICON_SANITY_DISTURBED, gx2, gy2, tint);
           }
-          if (m_Player != null && m_Rules.CanActorInitiateTradeWith(m_Player, actor)) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
+          if (m_Player != null && m_Player.CanTradeWith(actor)) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
           if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !actor.IsEnemyOf(m_Player))) break;

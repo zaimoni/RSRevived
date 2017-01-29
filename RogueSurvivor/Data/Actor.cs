@@ -1729,6 +1729,30 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    private string ReasonCantTradeWith(Actor target)
+    {
+      Contract.Requires(null != target);
+      if (target.IsPlayer) return "target is player";
+      if (!Model.Abilities.CanTrade && target.Leader != this) return "can't trade";
+      if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
+      if (IsEnemyOf(target)) return "is an enemy";
+      if (target.IsSleeping) return "is sleeping";
+      if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
+      if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
+      return "";
+    }
+
+    public bool CanTradeWith(Actor target, out string reason)
+    {
+      reason = ReasonCantTradeWith(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanTradeWith(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantTradeWith(target));
+    }
+
     private string ReasonCantUseItem(Item it)
     {
       Contract.Requires(null != it);

@@ -513,7 +513,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return true;
             Actor actor = p.Percepted as Actor;
             if (actor.IsPlayer) return true;
-            if (!game.Rules.CanActorInitiateTradeWith(m_Actor, actor)) return true;
+            if (!m_Actor.CanTradeWith(actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
             if (null == actor.GetInterestingTradeableItems(m_Actor)) return true;
             return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
