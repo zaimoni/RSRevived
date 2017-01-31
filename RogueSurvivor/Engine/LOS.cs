@@ -10,6 +10,7 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -271,15 +272,15 @@ namespace djack.RogueSurvivor.Engine
 #endif
         }
 
+    // To cache FOV centrally, we would have to be able to invalidate on change of mapobject position or transparency reliably
+    // and also ditch the cache when it got "old"
 	// note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
     public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)
     {
-      Weather weather = Session.Get.World.Weather;
-      WorldTime time = actor.Location.Map.LocalTime;
       HashSet<Point> visibleSet = new HashSet<Point>();
       Point position = a_loc.Position;
       Map map = a_loc.Map;
-      int maxRange = actor.FOVrange(time, weather);
+      int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
       int x1 = position.X - maxRange;
       int x2 = position.X + maxRange;
       int y1 = position.Y - maxRange;
@@ -288,29 +289,19 @@ namespace djack.RogueSurvivor.Engine
       map.TrimToBounds(ref x2, ref y2);
       Point point1 = new Point();
       List<Point> pointList1 = new List<Point>();
-      for (int x3 = x1; x3 <= x2; ++x3)
-      {
+      for (int x3 = x1; x3 <= x2; ++x3) {
         point1.X = x3;
-        for (int y3 = y1; y3 <= y2; ++y3)
-        {
+        for (int y3 = y1; y3 <= y2; ++y3) {
           point1.Y = y3;
-          if ((double) Rules.LOSDistance(position, point1) <= (double) maxRange && !visibleSet.Contains(point1))
-          {
-            if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet))
-            {
-              bool flag = false;
-              Tile tileAt = map.GetTileAt(x3, y3);
-              MapObject mapObjectAt = map.GetMapObjectAt(x3, y3);
-              if (!tileAt.Model.IsTransparent && !tileAt.Model.IsWalkable)
-                flag = true;
-              else if (mapObjectAt != null)
-                flag = true;
-              if (flag)
-                pointList1.Add(point1);
-            }
-            else
-              visibleSet.Add(point1);
-          }
+          if ((double)Rules.LOSDistance(position, point1) > (double)maxRange) continue;
+          if (visibleSet.Contains(point1)) continue;
+          if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
+            bool flag = false;
+            Tile tileAt = map.GetTileAt(x3, y3);
+            if (!tileAt.Model.IsTransparent && !tileAt.Model.IsWalkable) flag = true;
+            else if (null != map.GetMapObjectAt(x3, y3)) flag = true;
+            if (flag) pointList1.Add(point1);
+          } else visibleSet.Add(point1);
         }
       }
 
@@ -323,22 +314,15 @@ namespace djack.RogueSurvivor.Engine
         // tests for due NE/NW/SE/SW are more complex.
 
         int num = 0;
-        foreach (Direction direction in Direction.COMPASS)
-        {
-          Point point3 = point2 + direction;
-          if (visibleSet.Contains(point3))
-          {
-            Tile tileAt = map.GetTileAt(point3.X, point3.Y);
-            if (tileAt.Model.IsTransparent && tileAt.Model.IsWalkable)
-              ++num;
-          }
+        foreach (Point point3 in Direction.COMPASS.Select(dir=> point2 + dir)) {
+          if (!visibleSet.Contains(point3)) continue;
+          Tile tileAt = map.GetTileAt(point3.X, point3.Y);
+          if (tileAt.Model.IsTransparent && tileAt.Model.IsWalkable) ++num;
         }
-        if (num >= 3)
-          pointList2.Add(point2);
+        if (num >= 3) pointList2.Add(point2);
       }
-      foreach (Point point2 in pointList2)
-        visibleSet.Add(point2);
-    return visibleSet;
+      visibleSet.UnionWith(pointList2);
+      return visibleSet;
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor)
