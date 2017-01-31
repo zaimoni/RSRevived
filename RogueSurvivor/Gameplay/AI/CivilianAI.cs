@@ -431,7 +431,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // the new objectives system should trigger after all enemies-handling behavior
-      if (null==Objectives) Objectives = new List<Objective>(); // auto-repair; remove after debugging
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
