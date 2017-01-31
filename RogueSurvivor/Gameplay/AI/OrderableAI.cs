@@ -832,14 +832,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (other == null || other.IsDead) return null;
 	  if (other.Location.Map == m_Actor.Location.Map) {
-	    int num = Rules.GridDistance(m_Actor.Location.Position, other.Location.Position);
-        if (FOV.Contains(other.Location.Position) && num <= maxDist) return new ActionWait(m_Actor);
+        if (   FOV.Contains(other.Location.Position)
+            && Rules.GridDistance(m_Actor.Location.Position, other.Location.Position) <= maxDist)
+            return new ActionWait(m_Actor);
 	  }
 	  ActorAction actorAction = BehaviorPathTo(other.Location);
       if (actorAction == null || !actorAction.IsLegal()) return null;
 	  ActionMoveStep tmp = actorAction as ActionMoveStep;
 	  if (null != tmp) {
-        if (other.IsRunning || other.Location.Map != m_Actor.Location.Map) RunIfAdvisable(tmp.dest.Position);
+        if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
+           || other.Location.Map != m_Actor.Location.Map)
+           RunIfAdvisable(tmp.dest.Position);
 	  }
       return actorAction;
     }

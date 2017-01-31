@@ -538,7 +538,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
-      }
+      } // null == enemies && Directives.CanTakeItems
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.Has<ItemFood>()))
       {
         Percept target = FilterNearest(percepts1.FilterT<Actor>(a =>
