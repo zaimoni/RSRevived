@@ -1189,7 +1189,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 //    if (WillTireAfterAttack(actor)) return true;  // post-process this, handling this here is awful for rats
       if (actor.Speed > target.Speed) {
-        if (actor.WillActAgainBefore(target)) return false;
+        // XXX wrong for distance 2 (what we want to do is run-hit when run allows a double-move and the combo does not tire, otherwise rest)
+        int dist = Rules.GridDistance(actor.Location.Position,target.Location.Position);
+        if (actor.WillActAgainBefore(target)) {
+          if (1==dist) return false;    // free hit
+          if (3<=dist) return false;    // ok to close
+        }
         if (target.TargetActor == actor) return true;
       }
       Actor weakerInMelee = FindWeakerInMelee(m_Actor, target);
