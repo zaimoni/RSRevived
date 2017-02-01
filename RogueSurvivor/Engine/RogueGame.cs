@@ -5146,7 +5146,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerSleep(Actor player)
     {
       string reason;
-      if (!m_Rules.CanActorSleep(player, out reason)) {
+      if (!player.CanSleep(out reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot sleep now : {0}.", (object) reason)));
         return false;
       }

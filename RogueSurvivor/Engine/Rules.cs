@@ -486,40 +486,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorSleep(Actor actor)
-    {
-      string reason;
-      return CanActorSleep(actor, out reason);
-    }
-
-    public bool CanActorSleep(Actor actor, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (actor.IsSleeping)
-      {
-        reason = "already sleeping";
-        return false;
-      }
-      if (!actor.Model.Abilities.HasToSleep)
-      {
-        reason = "no ability to sleep";
-        return false;
-      }
-      if (actor.IsHungry || actor.IsStarving)
-      {
-        reason = "hungry";
-        return false;
-      }
-      if (actor.SleepPoints >= actor.MaxSleep - WorldTime.TURNS_PER_HOUR)
-      {
-        reason = "not sleepy at all";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorCancelLead(Actor actor, Actor target, out string reason)
     {
       if (actor == null)

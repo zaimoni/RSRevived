@@ -446,7 +446,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && game.Rules.CanActorSleep(m_Actor)) {
+      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && (m_Actor.WouldLikeToSleep && m_Actor.IsInside) && m_Actor.CanSleep()) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;

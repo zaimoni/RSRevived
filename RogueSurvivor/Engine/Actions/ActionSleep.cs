@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorSleep(m_Actor, out m_FailReason);
+      return m_Actor.CanSleep(out m_FailReason);
     }
 
     public override void Perform()

@@ -1538,6 +1538,26 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    private string ReasonCantSleep()
+    {
+      if (IsSleeping) return "already sleeping";
+      if (!Model.Abilities.HasToSleep) return "no ability to sleep";
+      if (IsHungry || IsStarving) return "hungry";
+      if (SleepPoints >= MaxSleep - WorldTime.TURNS_PER_HOUR) return "not sleepy at all";
+      return "";
+    }
+
+    public bool CanSleep(out string reason)
+    {
+      reason = ReasonCantSleep();
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanSleep()
+    {
+      return string.IsNullOrEmpty(ReasonCantSleep());
+    }
+
     public void Rest(int s) {
       m_SleepPoints = Math.Min(m_SleepPoints + s, MaxSleep);
     }

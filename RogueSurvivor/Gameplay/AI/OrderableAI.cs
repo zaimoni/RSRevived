@@ -409,7 +409,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
       string reason;
-      if (game.Rules.CanActorSleep(m_Actor, out reason)) {
+      if (m_Actor.CanSleep(out reason)) {
         return (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0 ? (ActorAction)(new ActionSleep(m_Actor)) : new ActionWait(m_Actor));
       }
       SetOrder(null);
@@ -916,7 +916,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorSleep(RogueGame game)
     {
-      if (!game.Rules.CanActorSleep(m_Actor)) return null;
+      if (!m_Actor.CanSleep()) return null;
       Map map = m_Actor.Location.Map;
       if (map.HasAnyAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is DoorWindow)))
       {

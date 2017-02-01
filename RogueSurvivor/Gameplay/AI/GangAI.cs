@@ -157,7 +157,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // the new objectives system should trigger after all enemies-handling behavior
-      if (null==Objectives) Objectives = new List<Objective>(); // auto-repair; remove after debugging
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
@@ -173,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && game.Rules.CanActorSleep(m_Actor))) {
+      if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && m_Actor.CanSleep())) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
