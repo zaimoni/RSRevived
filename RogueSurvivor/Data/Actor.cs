@@ -1837,6 +1837,27 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
+    private string ReasonCantGiveTo(Actor target, Item gift)
+    {
+      Contract.Requires(null != target);
+      Contract.Requires(null != gift);
+      if (IsEnemyOf(target)) return "enemy";
+      if (gift.IsEquipped) return "equipped";
+      if (target.IsSleeping) return "sleeping";
+      return target.ReasonCantGet(gift);
+    }
+
+    public bool CanGiveTo(Actor target, Item gift, out string reason)
+    {
+      reason = ReasonCantGiveTo(target,gift);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanGiveTo(Actor target, Item gift)
+    {
+      return string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
+    }
+
     private string ReasonCantGetFromContainer(Point position)
     {
       MapObject mapObjectAt = Location.Map.GetMapObjectAt(position);

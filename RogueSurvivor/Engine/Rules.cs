@@ -263,26 +263,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorGiveItemTo(Actor actor, Actor target, Item gift, out string reason)
-    {
-      Contract.Requires(null != actor);
-      Contract.Requires(null != target);
-      Contract.Requires(null != gift);
-      if (actor.IsEnemyOf(target)) {
-        reason = "enemy";
-        return false;
-      }
-      if (gift.IsEquipped) {
-        reason = "equipped";
-        return false;
-      }
-      if (target.IsSleeping) {
-        reason = "sleeping";
-        return false;
-      }
-      return target.CanGet(gift, out reason);
-    }
-
     private static ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
     {
       Contract.Requires(null != map);

@@ -4712,7 +4712,7 @@ namespace djack.RogueSurvivor.Engine
         Actor actorAt = player.Location.Map.GetActorAt(point);
         if (actorAt != null) {
           string reason;
-          if (m_Rules.CanActorGiveItemTo(player, actorAt, inventoryItem, out reason)) {
+          if (player.CanGiveTo(actorAt, inventoryItem, out reason)) {
             flag2 = true;
             DoGiveItemTo(player, actorAt, inventoryItem);
             break;
@@ -6064,8 +6064,8 @@ namespace djack.RogueSurvivor.Engine
           int index = num1 + choiceNumber - 1;
           Item obj = inventory[index];
           string reason;
-          if (m_Rules.CanActorGiveItemTo(follower, player, obj, out reason)) {
-            DoGiveItemTo(follower, m_Player, obj);
+          if (follower.CanGiveTo(player, obj, out reason)) {
+            DoGiveItemTo(follower, player, obj);
             flag1 = false;
             flag2 = true;
           } else {
