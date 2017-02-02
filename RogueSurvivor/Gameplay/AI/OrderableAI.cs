@@ -1613,6 +1613,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#if FAIL
+    protected ActorAction BehaviorResupply(HashSet<Gameplay.GameItems.IDs> critical)
+    {
+      HashSet<Point> where_to_go = new HashSet<Point>();
+      HashSet<Map> away_maps = new HashSet<Map>();
+      foreach(Gameplay.GameItems.IDs it in critical) {
+        Dictionary<Location, int> tmp = WhereIs(it);
+        // no cross-district finding for now
+        tmp.OnlyIf(loc=>loc.Map.District == m_Actor.Location.Map.District);
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) tmp.OnlyIf(loc=>loc.Map == m_Actor.Location.Map);
+        foreach(Location loc in tmp.Keys) {
+          if (loc.Map == m_Actor.Location.Map) {
+            where_to_go.Add(loc.Position);
+            continue;
+          }
+          away_maps.Add(loc.Map);
+        }
+      }  
+      if (0<away_maps.Count) {
+        foreach(Map m in away_maps) {
+          // XXX should screen dangerous maps as well
+          // should use other reality checks on exits
+          Dictionary<Point,Exit> tmp_dests = m_Actor.Location.Map.GetExits(e => e.ToMap==m && e.IsAnAIExit);
+          if (0<tmp_dests.Count) where_to_go.UnionWith(tmp_dests.Keys);
+        }
+      }
+
+      if (0>=where_to_go.Count) return null;
+
+      // if we are at a where_to_go, we want to go through the exit as the items should not be in sight
+      if (where_to_go.Contains(m_Actor.Location.Position)) {
+        tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS);
+        if (null != tmpAction) return tmpAction;
+        where_to_go.Remove(m_Actor.Location.Position); // critical error if there was an exit here; this is the release path for prototyping
+      }
+
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      navigate.GoalDistance(where_to_go,int.MaxValue,m_Actor.Location.Position);
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+      // ...
+    }
+#endif
+
     protected bool NeedsLight()
     {
       switch (m_Actor.Location.Map.Lighting)

@@ -596,6 +596,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+      // XXX if we are a leader, we should try to rearrange items for our followers (no one starving while another has a lot of food)
+      // XXX if we are a follower, we should try to avoid being hurt by the leader's rearranging our items
+
+      // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
+      // XXX leaders try to check what their followers use as well.
+#if FAIL
+      List<Gameplay.GameItems.IDs> items = WhatHaveISeen();
+      if (null != items) {
+        HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
+        if (0 < m_Actor.CountFollowers) {
+          foreach (Actor fo in m_Actor.Followers) {
+            HashSet<Gameplay.GameItems.IDs> fo_crit = fo.Controller.WhatDoINeedNow();
+            if (null != fo_crit) critical.UnionWith(fo_crit);
+          }
+        }
+        critical.IntersectWith(items);
+        if (0 < critical.Count) {
+          tmpAction = BehaviorResupply(critical);
+          if (null != tmpAction) return tmpAction;
+        }
+      }
+#endif
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorAttackBarricade(game);
         if (null != tmpAction) {
