@@ -131,7 +131,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (m_Actor.IsSleepy && null == enemies) {
+      if (null == enemies && OkToSleepNow) {
         tmpAction = BehaviorSleep(game);
         if (null != tmpAction) {
           if (tmpAction is ActionSleep)

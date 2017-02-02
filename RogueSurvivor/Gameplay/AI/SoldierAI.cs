@@ -141,7 +141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
       if (null != tmpAction) return tmpAction;
 
-      if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && m_Actor.CanSleep())) {
+      if (null == enemies && OkToSleepNow) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;

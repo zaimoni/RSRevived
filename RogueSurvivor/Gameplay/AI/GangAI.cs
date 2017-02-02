@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (null == enemies && m_Actor.WouldLikeToSleep && (m_Actor.IsInside && m_Actor.CanSleep())) {
+      if (null == enemies && OkToSleepNow) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;

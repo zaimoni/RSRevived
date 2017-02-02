@@ -215,6 +215,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
     public ActorOrder Order { get { return m_Order; } }
 
+    // doesn't include no-enemies check or any directives/orders
+    protected bool OkToSleepNow { get {
+      return m_Actor.WouldLikeToSleep && m_Actor.IsInside && m_Actor.CanSleep();
+    } }
+
     public void SetOrder(ActorOrder newOrder)
     {
       m_Order = newOrder;
