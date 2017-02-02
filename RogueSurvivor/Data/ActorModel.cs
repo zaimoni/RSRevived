@@ -37,6 +37,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires((abilities.HasToEat || abilities.IsRotting) ^ (0 >= startingSheet.BaseFoodPoints));
       Contract.Requires(abilities.HasToSleep ^ (0 >= startingSheet.BaseSleepPoints));
       Contract.Requires(abilities.HasSanity ^ (0 >= startingSheet.BaseSanity));
+      Contract.Requires(!abilities.CanTrade || defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)));
 
       ImageID = imageID;
       DollBody = body;
