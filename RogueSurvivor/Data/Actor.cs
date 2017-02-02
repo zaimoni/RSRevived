@@ -1714,6 +1714,17 @@ namespace djack.RogueSurvivor.Data
       return objList.Any() ? objList.ToList() : null;
     }
 
+    public List<Item> GetRationalTradeableItems(Actor buyer)
+    {
+      Contract.Requires(Model.Abilities.CanTrade);
+      Contract.Requires(buyer.Model.Abilities.CanTrade);
+
+//    if (buyer.IsPlayer) return Inventory.Items
+
+      IEnumerable<Item> objList = Inventory.Items.Where(it=> buyer.Controller.IsRationalTradeItem(this, it) && Controller.IsTradeableItem(it));
+      return objList.Any() ? objList.ToList() : null;
+    }
+
     // equipped items
     public Item GetEquippedItem(DollPart part)
     {

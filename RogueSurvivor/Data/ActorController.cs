@@ -332,5 +332,13 @@ namespace djack.RogueSurvivor.Data
       if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
       return IsInterestingItem(offeredItem);
     }
+
+    public virtual bool IsRationalTradeItem(Actor speaker, Item offeredItem)
+    {
+      Contract.Requires(null!=speaker);
+      Contract.Requires(speaker.Model.Abilities.CanTrade);
+      Contract.Requires(Actor.Model.Abilities.CanTrade);
+      return IsInterestingItem(offeredItem);
+    }
   }
 }
