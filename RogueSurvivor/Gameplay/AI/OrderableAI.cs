@@ -436,6 +436,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // we also assume no enemies in sight.
     ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
     {
+      if (0>=goals.Count) return null;
       List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
       if (null == legal_steps) return null;
       if (2 <= legal_steps.Count) legal_steps = DecideMove_WaryOfTraps(legal_steps);
@@ -464,6 +465,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) {
 		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
         if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+        m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
       return null;
@@ -770,14 +772,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           want_to_resolve[position] = Rules.GridDistance(position, m_Actor.Location.Position);
         }
       }
-      if (0>=want_to_resolve.Count) return null;
       // we could floodfill this, of course -- but everything is in LoS so try something else
       // we want to head for a nearest objective in such a way that the distance to all of the other objectives is minimized
       ActorAction tmpAction = BehaviorEfficientlyHeadFor(want_to_resolve);
-      if (null != tmpAction) {
-        m_Actor.Activity = Activity.IDLE;
-        return tmpAction;
-      }
+      if (null != tmpAction) return tmpAction;
       return null;
     }
 
@@ -976,22 +974,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (it is BatteryPowered) game.DoUnequipItem(m_Actor, it);
         return new ActionSleep(m_Actor);
       }
-      Point? nullable = null;
-      double num1 = double.MaxValue;
-      foreach (Point point in m_Actor.Controller.FOV) {
-        MapObject mapObjectAt = map.GetMapObjectAt(point);
-        if (mapObjectAt != null && mapObjectAt.IsCouch && map.GetActorAt(point) == null) {
-          double num2 = Rules.StdDistance(m_Actor.Location.Position, point);
-          if (num2 < num1) {
-            num1 = num2;
-            nullable = point;
-          }
+
+      // head for a couch if in plain sight
+      Dictionary<Point,int> couches = new Dictionary<Point,int>();
+      foreach (Point pt2 in m_Actor.Controller.FOV) {
+        if (map.HasAnyAdjacentInMap(pt2, (Predicate<Point>)(pt => map.GetMapObjectAt(pt) is DoorWindow))) continue;
+        MapObject mapObjectAt = map.GetMapObjectAt(pt2);
+        if (mapObjectAt != null && mapObjectAt.IsCouch && map.GetActorAt(pt2) == null) {
+          couches[pt2] = Rules.GridDistance(m_Actor.Location.Position, pt2);
         }
       }
-      if (nullable.HasValue) {
-        ActorAction actorAction = BehaviorIntelligentBumpToward(nullable.Value);
-        if (actorAction != null) return actorAction;
-      }
+      ActorAction tmpAction = BehaviorEfficientlyHeadFor(couches);
+      if (null != tmpAction) return tmpAction;
 
       // all battery powered items other than the police radio are left hand, currently
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
