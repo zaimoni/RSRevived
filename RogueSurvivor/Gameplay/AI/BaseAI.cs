@@ -565,7 +565,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return (0<tmp.Count ? tmp : null);
 	}
 
-    private List<Point> DecideMove_WaryOfTraps(List<Point> src)
+    protected List<Point> DecideMove_WaryOfTraps(List<Point> src)
     {
 	  Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
 	  foreach (Point pt in src) {

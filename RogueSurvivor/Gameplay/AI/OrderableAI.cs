@@ -432,6 +432,43 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSay(m_Actor, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
     }
 
+    // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
+    // we also assume no enemies in sight.
+    ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
+    {
+      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      if (null == legal_steps) return null;
+      if (2 <= legal_steps.Count) legal_steps = DecideMove_WaryOfTraps(legal_steps);
+      if (2 <= legal_steps.Count) {
+        int min_dist = goals.Values.Min();
+        int near_scale = goals.Count+1;
+        Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
+        foreach(Point pt in legal_steps) {
+          efficiency[pt] = 0;
+          foreach(Point pt2 in goals.Keys) {
+            // relies on FOV not being "too large"
+            int delta = goals[pt2]-Rules.GridDistance(pt, pt2);
+            if (min_dist == goals[pt2]) {
+              efficiency[pt] += near_scale*delta;
+            } else {
+              efficiency[pt] += delta;
+            }
+          }
+        }
+        int fast_approach = efficiency.Values.Min();
+        efficiency.OnlyIf(val=>fast_approach==val);
+        legal_steps = new List<Point>(efficiency.Keys);
+      }
+
+	  ActorAction tmpAction = DecideMove(legal_steps, null, null);
+      if (null != tmpAction) {
+		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+        if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+        return tmpAction;
+      }
+      return null;
+    }
+
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
@@ -736,28 +773,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>=want_to_resolve.Count) return null;
       // we could floodfill this, of course -- but everything is in LoS so try something else
       // we want to head for a nearest objective in such a way that the distance to all of the other objectives is minimized
-      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
-      if (null == legal_steps) return null;
-      int min_dist = want_to_resolve.Values.Min();
-      int near_scale = want_to_resolve.Count+1;
-      Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
-      foreach(Point pt in legal_steps) {
-        efficiency[pt] = 0;
-        foreach(Point pt2 in want_to_resolve.Keys) {
-          // relies on FOV not being "too large"
-          if (min_dist == want_to_resolve[pt2]) {
-            efficiency[pt] += near_scale*(want_to_resolve[pt2]-Rules.GridDistance(pt, pt2));
-          } else {
-            efficiency[pt] += (want_to_resolve[pt2]-Rules.GridDistance(pt, pt2));
-          }
-        }
-      }
-      int fast_approach = efficiency.Values.Min();
-      efficiency.OnlyIf(val=>fast_approach==val);
-	  ActorAction tmpAction = DecideMove(efficiency.Keys, null, null);    // this function only called when no enemies in sight
+      ActorAction tmpAction = BehaviorEfficientlyHeadFor(want_to_resolve);
       if (null != tmpAction) {
-		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-        if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
@@ -943,6 +960,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (!m_Actor.CanSleep()) return null;
       Map map = m_Actor.Location.Map;
+      // Do not sleep next to a door/window
       if (map.HasAnyAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is DoorWindow)))
       {
         ActorAction actorAction = BehaviorWander(loc =>
