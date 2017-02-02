@@ -718,12 +718,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
-#if FAIL
       Dictionary<Point,int> want_to_resolve = new Dictionary<Point,int>();
       foreach (Point position in m_Actor.Controller.FOV) {
-        MapObject mapObjectAt = map.GetMapObjectAt(position);   // post-condition: Location of map object is as specified
-        if (null == mapObjectAt) continue;        
-        DoorWindow door = mapObjectAt as DoorWindow;
+        DoorWindow door = map.GetMapObjectAt(position) as DoorWindow;
         if (null == door) continue;
         if (door.IsOpen && m_Actor.CanClose(door)) {
           if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
@@ -736,26 +733,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
           want_to_resolve[position] = Rules.GridDistance(door.Location.Position, m_Actor.Location.Position);
         }
       }
-      if (!want_to_resolve.Empty()) {   // we could floodfill this, of course -- but everything is in LoS so try something else
-      }
-#endif
-      foreach (Point position in m_Actor.Controller.FOV) {
-        MapObject mapObjectAt = map.GetMapObjectAt(position);
-        if (mapObjectAt != null) {
-          DoorWindow door = mapObjectAt as DoorWindow;
-          if (door != null) {
-            if (door.IsOpen && m_Actor.CanClose(door)) {
-              if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return new ActionCloseDoor(m_Actor, door);
-              return BehaviorIntelligentBumpToward(door.Location.Position);
-            }
-            if (door.IsWindow && !door.IsBarricaded && m_Actor.CanBarricade(door)) {
-              if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
-                return new ActionBarricadeDoor(m_Actor, door);
-              return BehaviorIntelligentBumpToward(door.Location.Position);
-            }
+      if (0>=want_to_resolve.Count) return null;
+      // we could floodfill this, of course -- but everything is in LoS so try something else
+      // we want to head for a nearest objective in such a way that the distance to all of the other objectives is minimized
+      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      if (null == legal_steps) return null;
+      int min_dist = want_to_resolve.Values.Min();
+      int near_scale = want_to_resolve.Count+1;
+      Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
+      foreach(Point pt in legal_steps) {
+        efficiency[pt] = 0;
+        foreach(Point pt2 in want_to_resolve.Keys) {
+          // relies on FOV not being "too large"
+          if (min_dist == want_to_resolve[pt2]) {
+            efficiency[pt] += near_scale*(want_to_resolve[pt2]-Rules.GridDistance(pt, pt2));
+          } else {
+            efficiency[pt] += (want_to_resolve[pt2]-Rules.GridDistance(pt, pt2));
           }
         }
+      }
+      int fast_approach = efficiency.Values.Min();
+      efficiency.OnlyIf(val=>fast_approach==val);
+	  ActorAction tmpAction = DecideMove(efficiency.Keys, null, null);    // this function only called when no enemies in sight
+      if (null != tmpAction) {
+		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+        if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
       }
       return null;
     }
