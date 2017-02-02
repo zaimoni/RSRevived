@@ -8010,14 +8010,13 @@ namespace djack.RogueSurvivor.Engine
       MapObject mapObjectAt = map.GetMapObjectAt(pos);
       Inventory itemsAt = map.GetItemsAt(pos);
       if (itemsAt == null) return;
-      List<Item> objList = (List<Item>) null;
+      List<Item> objList = null;
       foreach (Item obj in itemsAt.Items) {
         ItemTrap trap = obj as ItemTrap;
         if (trap != null && trap.IsActivated) {
-          DoTriggerTrap(trap, map, pos, (Actor) null, mapObjectAt);
+          DoTriggerTrap(trap, map, pos, null, mapObjectAt);
           if (trap.Quantity <= 0) {
-            if (objList == null) objList = new List<Item>(itemsAt.CountItems);
-            objList.Add(obj);
+            (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
           }
         }
       }
@@ -8032,18 +8031,16 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(map, pos);
       trap.IsTriggered = true;
       int dmg = trapModel.Damage * trap.Quantity;
-      if (dmg > 0 && victim != null)
-      {
-                InflictDamage(victim, dmg);
-        if (player)
-        {
-                    AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", (object) trap.AName, (object) dmg)));
-                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(victim.Location.Position), "Icons\\melee_damage"));
-                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(victim.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
-                    RedrawPlayScreen();
+      if (dmg > 0 && victim != null) {
+        InflictDamage(victim, dmg);
+        if (player) {
+          AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", (object) trap.AName, (object) dmg)));
+          AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(victim.Location.Position), "Icons\\melee_damage"));
+          AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(victim.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
+          RedrawPlayScreen();
           AnimDelay(victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
-                    ClearOverlays();
-                    RedrawPlayScreen();
+          ClearOverlays();
+          RedrawPlayScreen();
         }
       }
       if (trapModel.IsNoisy)
@@ -8489,47 +8486,40 @@ namespace djack.RogueSurvivor.Engine
                 AnimDelay(DELAY_LONG);
               }
                             KillActor(attacker, defender, "shot");
-            }
-            else if (player1)
-            {
-                            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) dmg)));
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_damage"));
-                            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
-                            RedrawPlayScreen();
+            } else if (player1) {
+              AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) dmg)));
+              AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_damage"));
+              AddOverlay(new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
+              RedrawPlayScreen();
               AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
             }
-          }
-          else if (player1)
-          {
-                        AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
-                        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
-                        RedrawPlayScreen();
+          } else if (player1) {
+            AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
+            AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
+            RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
-        }
-        else if (player1)
-        {
-                    AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
-                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
-                    RedrawPlayScreen();
+        } else if (player1) {
+          AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
+          AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_miss"));
+          RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
-                ClearOverlays();
+        ClearOverlays();
       }
     }
 
     private bool DoCheckFireThrough(Actor attacker, List<Point> LoF)
     {
-      foreach (Point point in LoF)
-      {
+      foreach (Point point in LoF) {
         MapObject mapObjectAt = attacker.Location.Map.GetMapObjectAt(point);
         if (mapObjectAt != null && mapObjectAt.BreaksWhenFiredThrough && (mapObjectAt.BreakState != MapObject.Break.BROKEN && !mapObjectAt.IsWalkable)) {
           bool player1 = ForceVisibleToPlayer(attacker);
           bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
           if (player1 || player2) {
             if (player1) {
-              AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
-              AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
+              AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
+              AddOverlay(new RogueGame.OverlayImage(MapToScreen(attacker.Location.Position), "Icons\\ranged_attack"));
             }
             if (player2)
               AddOverlay((RogueGame.Overlay) new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(point), new Size(32, 32))));
@@ -8545,8 +8535,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoThrowGrenadeUnprimed(Actor actor, Point targetPos)
     {
       ItemGrenade itemGrenade = actor.GetEquippedWeapon() as ItemGrenade;
-      if (itemGrenade == null)
-        throw new InvalidOperationException("throwing grenade but no grenade equiped ");
+      if (itemGrenade == null) throw new InvalidOperationException("throwing grenade but no grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
       actor.Location.Map.DropItemAt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
@@ -12333,9 +12322,7 @@ namespace djack.RogueSurvivor.Engine
             throw new ArgumentOutOfRangeException("unhandled undeadModel");
         }
         actor.PrepareForPlayerControl();
-      }
-      else
-      {
+      } else {
         actor = (m_CharGen.IsMale ? m_GameActors.MaleCivilian : m_GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
         townGen.DressCivilian(roller, actor);
         townGen.GiveNameToActor(roller, actor);

@@ -223,61 +223,54 @@ namespace djack.RogueSurvivor.Engine
 #region Map Objects
     public void MapObjectPlace(Map map, int x, int y, MapObject mapObj)
     {
-      if (map.GetMapObjectAt(x, y) != null)
-        return;
+      if (map.GetMapObjectAt(x, y) != null) return;
       map.PlaceMapObjectAt(mapObj, new Point(x, y));
     }
 
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
-            MapObjectFill(map, rect.Left, rect.Top, rect.Width, rect.Height, createFn);
+      MapObjectFill(map, rect.Left, rect.Top, rect.Width, rect.Height, createFn);
     }
 
+    // V0.10.0
+    // While createFn is likely to be an expensive function, it is also likely to use the RNG
+    // that is, rearranging this function for efficiency will change level generation
     public void MapObjectFill(Map map, int left, int top, int width, int height, Func<Point, MapObject> createFn)
     {
       Point point = new Point();
-      for (int x = left; x < left + width; ++x)
-      {
+      for (int x = left; x < left + width; ++x) {
         point.X = x;
-        for (int y = top; y < top + height; ++y)
-        {
+        for (int y = top; y < top + height; ++y) {
           point.Y = y;
           MapObject mapObj = createFn(point);
           if (mapObj != null && map.GetMapObjectAt(x, y) == null)
-            map.PlaceMapObjectAt(mapObj, new Point(x, y));
+            map.PlaceMapObjectAt(mapObj, point);
         }
       }
     }
 
     public void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
     {
-            MapObjectPlaceInGoodPosition(map, rect.Left, rect.Top, rect.Width, rect.Height, isGoodPosFn, roller, createFn);
+      MapObjectPlaceInGoodPosition(map, rect.Left, rect.Top, rect.Width, rect.Height, isGoodPosFn, roller, createFn);
     }
 
     public void MapObjectPlaceInGoodPosition(Map map, int left, int top, int width, int height, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
     {
       List<Point> pointList = (List<Point>) null;
       Point point = new Point();
-      for (int x = left; x < left + width; ++x)
-      {
+      for (int x = left; x < left + width; ++x) {
         point.X = x;
-        for (int y = top; y < top + height; ++y)
-        {
+        for (int y = top; y < top + height; ++y) {
           point.Y = y;
-          if (isGoodPosFn(point) && map.GetMapObjectAt(x, y) == null)
-          {
-            if (pointList == null)
-              pointList = new List<Point>();
-            pointList.Add(point);
+          if (isGoodPosFn(point) && map.GetMapObjectAt(x, y) == null) {
+            (pointList ?? (pointList = new List<Point>())).Add(point);
           }
         }
       }
-      if (pointList == null)
-        return;
+      if (pointList == null) return;
       int index = roller.Roll(0, pointList.Count);
       MapObject mapObj = createFn(pointList[index]);
-      if (mapObj == null)
-        return;
+      if (mapObj == null) return;
       map.PlaceMapObjectAt(mapObj, pointList[index]);
     }
 #endregion

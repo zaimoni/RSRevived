@@ -723,14 +723,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         DoorWindow door = map.GetMapObjectAt(position) as DoorWindow;
         if (null == door) continue;
         if (door.IsOpen && m_Actor.CanClose(door)) {
-          if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
+          if (Rules.IsAdjacent(position, m_Actor.Location.Position))
             return new ActionCloseDoor(m_Actor, door);
-          want_to_resolve[position] = Rules.GridDistance(door.Location.Position, m_Actor.Location.Position);
+          want_to_resolve[position] = Rules.GridDistance(position, m_Actor.Location.Position);
         }
         if (door.IsWindow && !door.IsBarricaded && m_Actor.CanBarricade(door)) {
-          if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
+          if (Rules.IsAdjacent(position, m_Actor.Location.Position))
             return new ActionBarricadeDoor(m_Actor, door);
-          want_to_resolve[position] = Rules.GridDistance(door.Location.Position, m_Actor.Location.Position);
+          want_to_resolve[position] = Rules.GridDistance(position, m_Actor.Location.Position);
         }
       }
       if (0>=want_to_resolve.Count) return null;

@@ -440,9 +440,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
       {
         DoorWindow doorWindow = map.GetMapObjectAt(pt) as DoorWindow;
-        if (doorWindow != null)
-          return doorWindow.IsBarricaded;
-        return false;
+        return ((null != doorWindow) ? doorWindow.IsBarricaded : false);
       }));
       if (pointList == null) return null;
       DoorWindow doorWindow1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]) as DoorWindow;
@@ -457,8 +455,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach (Point position in fov) {
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null && mapObjectAt.IsBreakable) {
-          if (percepts == null) percepts = new List<Percept>();
-          percepts.Add(new Percept(mapObjectAt, map.LocalTime.TurnCounter, new Location(map, position)));
+          (percepts ?? (percepts = new List<Percept>())).Add(new Percept(mapObjectAt, map.LocalTime.TurnCounter, new Location(map, position)));
         }
       }
       if (percepts == null) return null;
@@ -790,8 +787,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             bool flag3 = true;
             if (m_Actor.HasLeader) {
               Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-              if (exitAt != null)
-                flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
+              if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
               m_Actor.Activity = Activity.FLEEING;
