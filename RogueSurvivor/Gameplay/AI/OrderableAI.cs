@@ -718,6 +718,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
+#if FAIL
+      Dictionary<Point,int> want_to_resolve = new Dictionary<Point,int>();
+      foreach (Point position in m_Actor.Controller.FOV) {
+        MapObject mapObjectAt = map.GetMapObjectAt(position);   // post-condition: Location of map object is as specified
+        if (null == mapObjectAt) continue;        
+        DoorWindow door = mapObjectAt as DoorWindow;
+        if (null == door) continue;
+        if (door.IsOpen && m_Actor.CanClose(door)) {
+          if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
+            return new ActionCloseDoor(m_Actor, door);
+          want_to_resolve[position] = Rules.GridDistance(door.Location.Position, m_Actor.Location.Position);
+        }
+        if (door.IsWindow && !door.IsBarricaded && m_Actor.CanBarricade(door)) {
+          if (Rules.IsAdjacent(door.Location.Position, m_Actor.Location.Position))
+            return new ActionBarricadeDoor(m_Actor, door);
+          want_to_resolve[position] = Rules.GridDistance(door.Location.Position, m_Actor.Location.Position);
+        }
+      }
+      if (!want_to_resolve.Empty()) {   // we could floodfill this, of course -- but everything is in LoS so try something else
+      }
+#endif
       foreach (Point position in m_Actor.Controller.FOV) {
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null) {

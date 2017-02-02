@@ -581,9 +581,15 @@ namespace djack.RogueSurvivor.Data
     public MapObject GetMapObjectAt(Point position)
     {
       MapObject mapObject;
-      if (m_aux_MapObjectsByPosition.TryGetValue(position, out mapObject))
+      if (m_aux_MapObjectsByPosition.TryGetValue(position, out mapObject)) {
+#if DEBUG
+        // existence check for bugs relating to map object location
+        if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
+        if (position!=mapObject.Location.Position) throw new InvalidOperationException("map object and map disagree on position");
+#endif
         return mapObject;
-      return (MapObject) null;
+      }
+      return null;
     }
 
     public MapObject GetMapObjectAt(int x, int y)
