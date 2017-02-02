@@ -1483,30 +1483,49 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+    protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
+    {
+      Contract.Requires(0<tainted.Count());
+
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+      Dictionary<Point, int> exposed = new Dictionary<Point,int>();
+      foreach(Point pt in dest.Keys) {
+        HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
+        los.IntersectWith(tainted);
+        exposed[pt] = los.Count;
+      }
+      int most_exposed = exposed.Values.Max();
+      if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
+      ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
+      ActionMoveStep test = ret as ActionMoveStep;
+      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      return ret;
+    }
+
+    protected ActorAction BehaviorHastyNavigate(IEnumerable<Point> tainted)
+    {
+      Contract.Requires(0<tainted.Count());
+
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+      ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);
+      ActionMoveStep test = ret as ActionMoveStep;
+      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      return ret;
+    }
+
     protected ActorAction BehaviorHuntDownThreat()
     {
       ThreatTracking threats = m_Actor.Threats;
       if (null == threats) return null;
       // 1) clear the current map, unless it's non-vintage sewers
       HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      if (0<tainted.Count) {
-        navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
-        if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-        Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
-        Dictionary<Point, int> exposed = new Dictionary<Point,int>();
-        foreach(Point pt in dest.Keys) {
-          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
-          los.IntersectWith(tainted);
-          exposed[pt] = los.Count;
-        }
-        int most_exposed = exposed.Values.Max();
-        if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
-        ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
-        ActionMoveStep test = ret as ActionMoveStep;
-        if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-        return ret;
-      }
+      if (0<tainted.Count) return BehaviorNavigate(tainted);
 
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
 
@@ -1538,19 +1557,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
       }
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+      if (0>=valid_exits.Count) return null;
       if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
         return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
 
-	  navigate.GoalDistance(valid_exits.Keys, int.MaxValue,m_Actor.Location.Position);
-      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);	// only called when no enemies in sight anyway
-      {
-      ActorAction ret = DecideMove(tmp.Keys.ToList(), null, null);
-      ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-      return ret;
-      }
+      return BehaviorHastyNavigate(valid_exits.Keys);
     }
 
     protected ActorAction BehaviorTourism()
@@ -1559,24 +1571,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == sights_to_see) return null;
       // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      if (0<tainted.Count) {
-        navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
-        if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-        Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
-        Dictionary<Point, int> exposed = new Dictionary<Point,int>();
-        foreach(Point pt in dest.Keys) {
-          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
-          los.IntersectWith(tainted);
-          exposed[pt] = los.Count;
-        }
-        int most_exposed = exposed.Values.Max();
-        if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
-        ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
-        ActionMoveStep test = ret as ActionMoveStep;
-        if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-        return ret;
-      }
+      if (0<tainted.Count) return BehaviorNavigate(tainted);
 
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
@@ -1598,27 +1593,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
       }
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+      if (0>=valid_exits.Count) return null;
       if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
         return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
-
-	  navigate.GoalDistance(valid_exits.Keys, int.MaxValue,m_Actor.Location.Position);
-      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);	// only called when no enemies in sight anyway
-      {
-      ActorAction ret = DecideMove(tmp.Keys.ToList(), null, null);
-      ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-      return ret;
-      }
+      return BehaviorHastyNavigate(valid_exits.Keys);
     }
 
-#if FAIL
-    protected ActorAction BehaviorResupply(HashSet<Gameplay.GameItems.IDs> critical)
+    protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
       HashSet<Point> where_to_go = new HashSet<Point>();
       HashSet<Map> away_maps = new HashSet<Map>();
-      foreach(Gameplay.GameItems.IDs it in critical) {
+      foreach(GameItems.IDs it in critical) {
         Dictionary<Location, int> tmp = WhereIs(it);
         // no cross-district finding for now
         tmp.OnlyIf(loc=>loc.Map.District == m_Actor.Location.Map.District);
@@ -1631,31 +1617,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
           away_maps.Add(loc.Map);
         }
       }  
+
       if (0<away_maps.Count) {
-        foreach(Map m in away_maps) {
-          // XXX should screen dangerous maps as well
-          // should use other reality checks on exits
-          Dictionary<Point,Exit> tmp_dests = m_Actor.Location.Map.GetExits(e => e.ToMap==m && e.IsAnAIExit);
-          if (0<tmp_dests.Count) where_to_go.UnionWith(tmp_dests.Keys);
+        Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+        HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+        possible_destinations.IntersectWith(away_maps);
+        if (0<possible_destinations.Count) {
+          valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+          if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
+            return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+          }
+          where_to_go.UnionWith(valid_exits.Keys);
         }
       }
 
       if (0>=where_to_go.Count) return null;
-
-      // if we are at a where_to_go, we want to go through the exit as the items should not be in sight
-      if (where_to_go.Contains(m_Actor.Location.Position)) {
-        tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS);
-        if (null != tmpAction) return tmpAction;
-        where_to_go.Remove(m_Actor.Location.Position); // critical error if there was an exit here; this is the release path for prototyping
-      }
-
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      navigate.GoalDistance(where_to_go,int.MaxValue,m_Actor.Location.Position);
-      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
-      // ...
+      return BehaviorNavigate(where_to_go);
     }
-#endif
 
     protected bool NeedsLight()
     {
