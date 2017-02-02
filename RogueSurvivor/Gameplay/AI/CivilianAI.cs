@@ -514,12 +514,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (actor.IsPlayer) return true;
             if (!m_Actor.CanTradeWith(actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
-            if (null == actor.GetInterestingTradeableItems(m_Actor)) return true;
+            if (null == actor.GetInterestingTradeableItems(m_Actor)) return true;   // XXX invokes RNG so unstable through ActorController::IsInterestingTradeItem
             // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
             return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
           });
           if (percepts2 != null) {
-            Actor actor = FilterNearest(percepts2).Percepted as Actor;
+            Actor actor = FilterNearest(percepts2).Percepted as Actor;  // XXX unstable; this can throw a null error
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
               tmpAction = new ActionTrade(m_Actor, actor);
               if (tmpAction.IsLegal()) {
@@ -601,13 +601,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
       // XXX leaders try to check what their followers use as well.
-#if FAIL
       List<Gameplay.GameItems.IDs> items = WhatHaveISeen();
       if (null != items) {
         HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
         if (0 < m_Actor.CountFollowers) {
           foreach (Actor fo in m_Actor.Followers) {
-            HashSet<Gameplay.GameItems.IDs> fo_crit = fo.Controller.WhatDoINeedNow();
+            HashSet<Gameplay.GameItems.IDs> fo_crit = (fo.Controller as OrderableAI)?.WhatDoINeedNow();
             if (null != fo_crit) critical.UnionWith(fo_crit);
           }
         }
@@ -617,7 +616,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
-#endif
+
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorAttackBarricade(game);
         if (null != tmpAction) {

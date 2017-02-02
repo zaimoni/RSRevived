@@ -476,6 +476,58 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    // cf ActorController::IsTradeableItem
+    // this must prevent CivilianAI from
+    // 1) bashing barricades, etc. for food when hungry
+    // 2) trying to search for z at low ammo when there is ammo available
+    public HashSet<GameItems.IDs> WhatDoINeedNow()
+    {
+      HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
+
+      if (m_Actor.IsHungry && m_Actor.Model.Abilities.HasToEat) {
+        ret.Add(GameItems.IDs.FOOD_ARMY_RATION);
+        ret.Add(GameItems.IDs.FOOD_GROCERIES);
+        ret.Add(GameItems.IDs.FOOD_CANNED_FOOD);
+      }
+
+      if (!m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {
+        List<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
+        List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
+        if (null != tmp_rw) {
+          foreach(ItemRangedWeapon rw in tmp_rw) {
+            // V 0.10.0 : deal with misalignment of enum values
+            if (null == m_Actor.GetCompatibleAmmoItem(rw)) {
+              switch(rw.AmmoType) {
+              case AmmoType.LIGHT_PISTOL:
+                ret.Add(GameItems.IDs.AMMO_LIGHT_PISTOL);
+                break;
+              case AmmoType.HEAVY_PISTOL:
+                ret.Add(GameItems.IDs.AMMO_HEAVY_PISTOL);
+                break;
+              case AmmoType.SHOTGUN:
+                ret.Add(GameItems.IDs.AMMO_SHOTGUN);
+                break;
+              case AmmoType.LIGHT_RIFLE:
+                ret.Add(GameItems.IDs.AMMO_LIGHT_RIFLE);
+                break;
+              case AmmoType.HEAVY_RIFLE:
+                ret.Add(GameItems.IDs.AMMO_HEAVY_RIFLE);
+                break;
+              case AmmoType.BOLT:
+                ret.Add(GameItems.IDs.AMMO_BOLTS);
+                break;
+              }
+            }
+          }
+#if FAIL
+        // XXX need to fix AI to be gun bunny capable
+        } else if (null != tmp_ammo) {
+#endif
+        }
+      }
+      return ret;
+    }
+
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
