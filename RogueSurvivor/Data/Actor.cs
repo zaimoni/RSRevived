@@ -1703,7 +1703,7 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public List<Item> GetInterestingTradeableItems(Actor buyer)
+    public List<Item> GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {
       Contract.Requires(Model.Abilities.CanTrade);
       Contract.Requires(buyer.Model.Abilities.CanTrade);
@@ -1715,14 +1715,14 @@ namespace djack.RogueSurvivor.Data
       return 0<objList.Count ? objList : null;
     }
 
-    public List<Item> GetRationalTradeableItems(Actor buyer)
+    public List<Item> GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
     {
       Contract.Requires(Model.Abilities.CanTrade);
-      Contract.Requires(buyer.Model.Abilities.CanTrade);
+      Contract.Requires(buyer.Actor.Model.Abilities.CanTrade);
 
 //    if (buyer.IsPlayer) return Inventory.Items
 
-      IEnumerable<Item> objList = Inventory.Items.Where(it=> buyer.Controller.IsRationalTradeItem(this, it) && Controller.IsTradeableItem(it));
+      IEnumerable<Item> objList = Inventory.Items.Where(it=> buyer.IsRationalTradeItem(this, it) && Controller.IsTradeableItem(it));
       return objList.Any() ? objList.ToList() : null;
     }
 

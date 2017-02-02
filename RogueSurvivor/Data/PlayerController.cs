@@ -83,11 +83,6 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-    public override bool IsRationalTradeItem(Actor speaker, Item offeredItem)
-    {
-      return true;
-    }
-
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);

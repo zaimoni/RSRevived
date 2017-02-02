@@ -528,6 +528,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
+    public bool IsRationalTradeItem(Actor speaker, Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
+    {
+      Contract.Requires(null!=speaker);
+      Contract.Requires(speaker.Model.Abilities.CanTrade);
+      Contract.Requires(Actor.Model.Abilities.CanTrade);
+      return IsInterestingItem(offeredItem);
+    }
+
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
