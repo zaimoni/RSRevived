@@ -1144,11 +1144,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a is ActionOpenDoor) return true;
       if (a is ActionBashDoor) return true;
       if (a is ActionBarricadeDoor) return true;
-      OrderableAI downcast = this as OrderableAI;
-      if (a is ActionGetFromContainer) {
+      if (a is ActionGetFromContainer) {    // XXX Jason Myers: not OrderableAI but capable of this
         Item it = (a as ActionGetFromContainer).Item;
         return IsInterestingItem(it);
       }
+      OrderableAI downcast = this as OrderableAI;
       if (null==downcast) return false;
       if (a is ActionChat) {
         return downcast.Directives.CanTrade || (a as ActionChat).Target == m_Actor.Leader;

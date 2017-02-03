@@ -1703,6 +1703,7 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // prevents sinking IsInterestingTradeItem and IsTradeableItem below ActorController (these must work for both OrderableAI and PlayerController)
     public List<Item> GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {
       Contract.Requires(Model.Abilities.CanTrade);

@@ -8762,6 +8762,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
+      Contract.Requires(!target.IsPlayer);
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       // bail on null item from speaker early
       if (null == itSpeaker) {
@@ -8828,6 +8829,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoTrade(Actor speaker, Actor target)
     {   // precondition: !speaker.IsPlayer (need different implementation)
       Contract.Requires(!speaker.IsPlayer);
+      Contract.Requires(!target.IsPlayer);  // strictly implied by Actor::CanTradeWith
 #if DEBUG
       string reason;
       if (!speaker.CanTradeWith(target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
