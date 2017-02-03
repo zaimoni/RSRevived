@@ -1015,9 +1015,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public List<Point> OneStepRange(Map m,Point p) {
+    public List<Point> OneStepRange(Map m,Point p)
+    {
       IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>m.IsWalkableFor(pt,this));
       return tmp.Any() ? tmp.ToList() : null;
+    }
+
+    public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, HashSet<Point> now)
+    {
+      Contract.Requires(0<now.Count);
+      HashSet<Point> ret = new HashSet<Point>();
+      foreach(Point pt in now) {
+        List<Point> tmp = OneStepRange(m,pt);
+        if (null == tmp) continue;
+        HashSet<Point> tmp2 = new HashSet<Point>(tmp);
+        tmp2.ExceptWith(past);
+        tmp2.ExceptWith(now);
+        ret.UnionWith(tmp2);
+      }
+      return (0<ret.Count ? ret : null);
     }
 
     private string ReasonCantBreak(MapObject mapObj)

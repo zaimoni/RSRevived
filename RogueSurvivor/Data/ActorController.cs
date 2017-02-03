@@ -98,10 +98,6 @@ namespace djack.RogueSurvivor.Data
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
-#if FAIL
-        HashSet<Point> a_pos_range = new HashSet<Point>();
-        a_pos_range.Add(a.Location.Position);
-#endif
         foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
           melee_damage_field[pt] = a_turns*a_max_dam;
         }
@@ -116,51 +112,50 @@ namespace djack.RogueSurvivor.Data
         }
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
-        // just directly recalculate FOV if needed, to avoid problems with newly spawned actors
-        HashSet<Point> aFOV = (0<a.CurrentRangedAttack.Range ? LOS.ComputeFOVFor(a) : null);
-        if (null == aFOV) {
+        if (0 >= a.CurrentRangedAttack.Range) {
           foreach(Point pt in melee_damage_field.Keys) {
             if (ret.ContainsKey(pt)) ret[pt] += melee_damage_field[pt];
             else ret[pt] = melee_damage_field[pt];
           }
           continue;
-        };
+        }
+
+        // just directly recalculate FOV if needed, to avoid problems with newly spawned actors
+        HashSet<Point> aFOV = LOS.ComputeFOVFor(a);
         // maximum melee damage: a.MeleeAttack(m_Actor).DamageValue
         // maximum ranged damage: a.CurrentRangedAttack.DamageValue
         Dictionary<Point,int> ranged_damage_field = new Dictionary<Point,int>();
-#if FAIL
         a_turns = a_turns_bak;
-        radius2 = new HashSet<Point>()
         foreach(Point pt in aFOV) {
           if (pt == a.Location.Position) continue;
           int dist = Rules.GridDistance(pt, a.Location.Position);
+          a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
           if (dist <= a.CurrentRangedAttack.Range) {
             ranged_damage_field[pt] = a_turns*a_max_dam;
           }
         }
-#endif
-        // we can do better than these
-        if (Rules.WillOtherActTwiceBefore(m_Actor, a)) {
-          foreach(Point pt in aFOV) {
-            if (pt == a.Location.Position) continue;
-            int dist = Rules.GridDistance(pt, a.Location.Position);
-            a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
-            if (dist <= a.CurrentRangedAttack.Range + 1) { 
-              if (dist <= a.CurrentRangedAttack.Range) {
-                ranged_damage_field[pt] = 2*a_max_dam;
-              } else if (dist == a.CurrentRangedAttack.Range+1) {
-                ranged_damage_field[pt] = a_max_dam;
+        if (1<a_turns) {
+          HashSet<Point> already = new HashSet<Point>();
+          HashSet<Point> now = new HashSet<Point>();
+          now.Add(a.Location.Position);
+          do {
+            a_turns--;
+            HashSet<Point> tmp2 = a.NextStepRange(a.Location.Map,already,now);
+            if (null == tmp2) break;
+            foreach(Point pt2 in tmp2) {
+              aFOV = LOS.ComputeFOVFor(a,new Location(a.Location.Map,pt2));
+              aFOV.ExceptWith(ranged_damage_field.Keys);
+              foreach(Point pt in aFOV) {
+                int dist = Rules.GridDistance(pt, a.Location.Position);
+                a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
+                if (dist <= a.CurrentRangedAttack.Range) {
+                  ranged_damage_field[pt] = a_turns*a_max_dam;
+                }                
               }
             }
-          }
-        } else {
-          foreach(Point pt in aFOV) {
-            if (pt == a.Location.Position) continue;
-            int dist = Rules.GridDistance(pt, a.Location.Position);
-            if (dist <= a.CurrentRangedAttack.Range) {
-              ranged_damage_field[pt] = a_max_dam;
-            }
-          }
+            already.UnionWith(now);
+            now = tmp2;
+          } while(1<a_turns);
         }
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
         foreach(Point pt in ranged_damage_field.Keys) {
