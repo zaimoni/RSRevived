@@ -442,8 +442,17 @@ namespace djack.RogueSurvivor.Engine
     public void AddMessageIfAudibleForPlayer(Location location, Data.Message msg)
     {
       Contract.Requires(null != msg);
-      if (m_Player == null || m_Player.IsSleeping || location.Map != m_Player.Location.Map || (double) Rules.StdDistance(m_Player.Location.Position, location.Position) > (double)m_Player.AudioRange)
-        return;
+      if (  m_Player == null
+         || m_Player.IsSleeping
+         || location.Map != m_Player.Location.Map
+         || (double)Rules.StdDistance(m_Player.Location.Position, location.Position) > (double)m_Player.AudioRange)
+      { 
+        List<Actor> tmp = location.Map.Players;
+        if (0 >= tmp.Count) return;
+        tmp = tmp.Where(a => !a.IsSleeping && (double)Rules.StdDistance(a.Location.Position, location.Position) > (double)a.AudioRange).ToList();
+        if (0 >= tmp.Count) return;
+        PanViewportTo(tmp[0]);
+      }
       msg.Color = PLAYER_AUDIO_COLOR;
       AddMessage(msg);
       if (m_IsPlayerLongWait) m_IsPlayerLongWaitForcedStop = true;

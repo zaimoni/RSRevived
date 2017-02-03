@@ -2156,6 +2156,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // Note that an event-based Sees implementation (anchored in RogueGame) cannot avoid constructing messages
+    // even when no players would recieve them.
 #region Event-based Say implementation
     public struct SayArgs
     {
