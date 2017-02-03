@@ -757,8 +757,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
         decideToFlee = true;    // but do not run as otherwise we won't build up stamina
       }
-      if (decideToFlee)
-      {
+
+      ActorAction tmpAction = null;
+
+      if (decideToFlee) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
         if (m_Actor.Model.Abilities.CanUseMapObjects) {
@@ -782,8 +784,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE)) {
-          ActorAction actorAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);
-          if (actorAction != null) {
+          tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);
+          if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
               Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
@@ -791,37 +793,49 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
             if (flag3) {
               m_Actor.Activity = Activity.FLEEING;
-              return actorAction;
+              return tmpAction;
             }
           }
         }
         if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
-          ActorAction actorAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
-          if (actorAction != null) {
+          tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
+          if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
-            return actorAction;
+            return tmpAction;
           }
         }
-        ActorAction actorAction1 = BehaviorWalkAwayFrom(enemies);
-        if (actorAction1 != null) {
+        tmpAction = BehaviorWalkAwayFrom(enemies);
+        if (null != tmpAction) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
-          return actorAction1;
+          return tmpAction;
         }
-        if (actorAction1 == null && enemy.IsAdjacentToEnemy) {
+        if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
           return BehaviorMeleeAttack(target.Percepted as Actor);
         }
-      } else {
-        ActorAction actorAction = BehaviorChargeEnemy(target);
-        if (actorAction != null) {
-          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
-            game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = target.Percepted as Actor;
-          return actorAction;
+        return null;
+      } // if (decldeToFlee)
+
+      // redo the pause check
+      if (m_Actor.Speed > enemy.Speed) {
+        int dist = Rules.GridDistance(m_Actor.Location.Position,target.Location.Position);
+        if (m_Actor.WillActAgainBefore(enemy) && 2==dist) {
+          // Neither free hit, nor clearly safe to close.  Main options are charge-hit and wait
+          // We could also reposition for tactical advantage i.e. ability to retreat
+          return new ActionWait(m_Actor);   // default
         }
+      }
+
+      // charge
+      tmpAction = BehaviorChargeEnemy(target);
+      if (null != tmpAction) {
+        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
+        m_Actor.Activity = Activity.FIGHTING;
+        m_Actor.TargetActor = target.Percepted as Actor;
+        return tmpAction;
       }
       return null;
     }
@@ -1185,12 +1199,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 //    if (WillTireAfterAttack(actor)) return true;  // post-process this, handling this here is awful for rats
       if (actor.Speed > target.Speed) {
-        // XXX wrong for distance 2 (what we want to do is run-hit when run allows a double-move and the combo does not tire, otherwise rest)
-        int dist = Rules.GridDistance(actor.Location.Position,target.Location.Position);
-        if (actor.WillActAgainBefore(target)) {
-          if (1==dist) return false;    // free hit
-          if (3<=dist) return false;    // ok to close
-        }
+        if (actor.WillActAgainBefore(target)) return false; // caller must handle distance 2 correctly.
         if (target.TargetActor == actor) return true;
       }
       Actor weakerInMelee = FindWeakerInMelee(m_Actor, target);
