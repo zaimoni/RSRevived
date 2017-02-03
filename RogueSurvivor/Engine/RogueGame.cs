@@ -438,21 +438,23 @@ namespace djack.RogueSurvivor.Engine
       m_MessageManager.Add(msg);
     }
 
+    // XXX just about everything that rates this is probable cause for police investigation
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void AddMessageIfAudibleForPlayer(Location location, Data.Message msg)
+    public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
-      Contract.Requires(null != msg);
       if (  m_Player == null
          || m_Player.IsSleeping
-         || location.Map != m_Player.Location.Map
-         || (double)Rules.StdDistance(m_Player.Location.Position, location.Position) > (double)m_Player.AudioRange)
+         || loc.Map != m_Player.Location.Map
+         || (double)Rules.StdDistance(m_Player.Location.Position, loc.Position) > (double)m_Player.AudioRange)
       { 
-        List<Actor> tmp = location.Map.Players;
+        List<Actor> tmp = loc.Map.Players;
         if (0 >= tmp.Count) return;
-        tmp = tmp.Where(a => !a.IsSleeping && (double)Rules.StdDistance(a.Location.Position, location.Position) > (double)a.AudioRange).ToList();
+        tmp = tmp.Where(a => !a.IsSleeping && (double)Rules.StdDistance(a.Location.Position, loc.Position) > (double)a.AudioRange).ToList();
         if (0 >= tmp.Count) return;
         PanViewportTo(tmp[0]);
       }
+      // Data.Message msg = MakePlayerCentricMessage(string eventText, location.Position);
+      Data.Message msg = MakePlayerCentricMessage(text, loc.Position);
       msg.Color = PLAYER_AUDIO_COLOR;
       AddMessage(msg);
       if (m_IsPlayerLongWait) m_IsPlayerLongWaitForcedStop = true;
@@ -7892,7 +7894,7 @@ namespace djack.RogueSurvivor.Engine
       {
         OnLoudNoise(newLocation.Map, newLocation.Position, "A loud SCREAM");
         if (!ForceVisibleToPlayer(actor) && m_Rules.RollChance(PLAYER_HEAR_SCREAMS_CHANCE))
-          AddMessageIfAudibleForPlayer(actor.Location, MakePlayerCentricMessage("You hear screams of terror", actor.Location.Position));
+          AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
       OnActorEnterTile(actor);
     }
@@ -8347,7 +8349,7 @@ namespace djack.RogueSurvivor.Engine
       bool player2 = player1 ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool flag = attacker.IsPlayer || defender.IsPlayer;
       if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
-        AddMessageIfAudibleForPlayer(attacker.Location, MakePlayerCentricMessage("You hear fighting", attacker.Location.Position));
+        AddMessageIfAudibleForPlayer(attacker.Location, "You hear fighting");
       if (player2) {
         AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
         AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location.Position), new Size(32, 32))));
@@ -8477,7 +8479,7 @@ namespace djack.RogueSurvivor.Engine
         bool player2 = player1 ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
         bool flag = attacker.IsPlayer || defender.IsPlayer;
         if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
-          AddMessageIfAudibleForPlayer(attacker.Location, MakePlayerCentricMessage("You hear firing", attacker.Location.Position));
+          AddMessageIfAudibleForPlayer(attacker.Location, "You hear firing");
         if (player2) {
           AddOverlay(new RogueGame.OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), new Size(32, 32))));
           AddOverlay(new RogueGame.OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location.Position), new Size(32, 32))));
@@ -8491,10 +8493,10 @@ namespace djack.RogueSurvivor.Engine
               if (player1) {
                 AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
                 AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\killed"));
-                                RedrawPlayScreen();
+                RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
-                            KillActor(attacker, defender, "shot");
+              KillActor(attacker, defender, "shot");
             } else if (player1) {
               AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", (object) dmg)));
               AddOverlay(new RogueGame.OverlayImage(MapToScreen(defender.Location.Position), "Icons\\ranged_damage"));
@@ -8589,25 +8591,21 @@ namespace djack.RogueSurvivor.Engine
     private void DoBlast(Location location, BlastAttack blastAttack)
     {
       OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
-      if (ForceVisibleToPlayer(location))
-      {
+      if (ForceVisibleToPlayer(location)) {
         ShowBlastImage(MapToScreen(location.Position), blastAttack, blastAttack.Damage[0]);
         RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
         RedrawPlayScreen();
-      }
-      else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
-        AddMessageIfAudibleForPlayer(location, MakePlayerCentricMessage("You hear an explosion", location.Position));
+      } else if (m_Rules.RollChance(PLAYER_HEAR_EXPLOSION_CHANCE))
+        AddMessageIfAudibleForPlayer(location, "You hear an explosion");
       ApplyExplosionDamage(location, 0, blastAttack);
-      for (int waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance)
-      {
-        if (ApplyExplosionWave(location, waveDistance, blastAttack))
-        {
-                    RedrawPlayScreen();
-                    AnimDelay(DELAY_NORMAL);
+      for (int waveDistance = 1; waveDistance <= blastAttack.Radius; ++waveDistance) {
+        if (ApplyExplosionWave(location, waveDistance, blastAttack)) {
+          RedrawPlayScreen();
+          AnimDelay(DELAY_NORMAL);
         }
       }
-            ClearOverlays();
+      ClearOverlays();
     }
 
     private bool ApplyExplosionWave(Location center, int waveDistance, BlastAttack blast)
@@ -8619,11 +8617,9 @@ namespace djack.RogueSurvivor.Engine
       int num2 = center.Position.X + waveDistance;
       int num3 = center.Position.Y - waveDistance;
       int num4 = center.Position.Y + waveDistance;
-      if (num3 >= 0)
-      {
+      if (num3 >= 0) {
         pt.Y = num3;
-        for (int index = num1; index <= num2; ++index)
-        {
+        for (int index = num1; index <= num2; ++index) {
           pt.X = index;
           flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
         }
@@ -9346,7 +9342,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeMessage(actor, string.Format("{0} the barricade.", (object) Conjugate(actor, VERB_BASH))));
         } else {
           if (!m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE)) return;
-          AddMessageIfAudibleForPlayer(doorWindow.Location, MakePlayerCentricMessage("You hear someone bashing barricades", doorWindow.Location.Position));
+          AddMessageIfAudibleForPlayer(doorWindow.Location, "You hear someone bashing barricades");
         }
       } else {
         mapObj.HitPoints -= attack.DamageValue;
@@ -9381,9 +9377,9 @@ namespace djack.RogueSurvivor.Engine
           }
         } else if (flag) {
           if (m_Rules.RollChance(PLAYER_HEAR_BREAK_CHANCE))
-            AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone breaking furniture", mapObj.Location.Position));
+            AddMessageIfAudibleForPlayer(mapObj.Location, "You hear someone breaking furniture");
         } else if (m_Rules.RollChance(PLAYER_HEAR_BASH_CHANCE))
-          AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear someone bashing furniture", mapObj.Location.Position));
+          AddMessageIfAudibleForPlayer(mapObj.Location, "You hear someone bashing furniture");
         ClearOverlays();
       }
     }
@@ -9421,7 +9417,7 @@ namespace djack.RogueSurvivor.Engine
       } else {
         OnLoudNoise(map, toPos, "Something being pushed");
         if (m_Rules.RollChance(PLAYER_HEAR_PUSH_CHANCE))
-          AddMessageIfAudibleForPlayer(mapObj.Location, MakePlayerCentricMessage("You hear something being pushed", toPos));
+          AddMessageIfAudibleForPlayer(mapObj.Location, "You hear something being pushed");
       }
       CheckMapObjectTriggersTraps(map, toPos);
     }
