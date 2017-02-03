@@ -467,6 +467,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.Activity = Activity.IDLE;
             return actorAction5;
           }
+          // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
+          // under is handled within the Behavior functions
 #if DATAFLOW_TRACE
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif

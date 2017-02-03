@@ -1421,13 +1421,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorWouldGrabFromStack(RogueGame game, Point position, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
+
       MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
-      if (mapObjectAt != null) {
-        Fortification fortification = mapObjectAt as Fortification;
-        if (fortification != null && !fortification.IsWalkable) return null;
+      if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
+        // Cf. Actor::CanOpen
         DoorWindow doorWindow = mapObjectAt as DoorWindow;
-        if (doorWindow != null && doorWindow.IsBarricaded) return null;
+        if (doorWindow != null) {
+          if (doorWindow.IsBarricaded) return null;
+        // Cf. Actor::CanPush; closed door/window is not pushable but can be handled
+        } else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
       }
+
       List<Item> interesting = InterestingItems(stack);
       if (null==interesting) return null;
 
@@ -1454,12 +1458,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
-      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);
-      if (mapObjectAt != null) {
-        Fortification fortification = mapObjectAt as Fortification;
-        if (fortification != null && !fortification.IsWalkable) return null;
+
+      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
+      if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
+        // Cf. Actor::CanOpen
         DoorWindow doorWindow = mapObjectAt as DoorWindow;
-        if (doorWindow != null && doorWindow.IsBarricaded) return null;
+        if (doorWindow != null) {
+          if (doorWindow.IsBarricaded) return null;
+        // Cf. Actor::CanPush; closed door is not pushable but can be handled
+        } else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
       }
 
       List<Item> interesting = InterestingItems(stack);
