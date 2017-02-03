@@ -91,28 +91,32 @@ namespace djack.RogueSurvivor.Data
         Actor a = map.GetActorAt(tmp);
         if (null == a) continue;
         if (!m_Actor.IsEnemyOf(a)) continue;
-        if (!a.CanActNextTurn) continue;
+        int a_turns = m_Actor.HowManyTimesOtherActs(1,a);
+        int a_turns_bak = a_turns;
+        if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
         if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location.Position, a.Location.Position) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
-        if (Rules.WillOtherActTwiceBefore(m_Actor, a)) {
-          HashSet<Point> radius2 = new HashSet<Point>();
-          foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
-            melee_damage_field[pt] = 2*a_max_dam;
-            radius2.UnionWith(Direction.COMPASS.Select(dir => pt + dir));
-          }
-          foreach(Point pt in Enumerable.Range(0,16).Select(i=> a.Location.Position.RadarSweep(2, i)).Where(pt => map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable && radius2.Contains(pt))) {
-            melee_damage_field[pt] = a_max_dam;
-          }
-        } else {
-          foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt => map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
-            melee_damage_field[pt] = a_max_dam;
+#if FAIL
+        HashSet<Point> a_pos_range = new HashSet<Point>();
+        a_pos_range.Add(a.Location.Position);
+#endif
+        foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
+          melee_damage_field[pt] = a_turns*a_max_dam;
+        }
+        while(1<a_turns) {
+          HashSet<Point> sweep = new HashSet<Point>(melee_damage_field.Keys);
+          a_turns--;
+          foreach(Point pt2 in sweep) {
+            foreach(Point pt in Direction.COMPASS.Select(dir=>pt2+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable && !sweep.Contains(pt))) {
+              melee_damage_field[pt] = a_turns*a_max_dam;
+            }
           }
         }
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
-        // so we can work around a newly spawned actor not yet having a non-null FOV
+        // just directly recalculate FOV if needed, to avoid problems with newly spawned actors
         HashSet<Point> aFOV = (0<a.CurrentRangedAttack.Range ? LOS.ComputeFOVFor(a) : null);
         if (null == aFOV) {
           foreach(Point pt in melee_damage_field.Keys) {
@@ -124,6 +128,17 @@ namespace djack.RogueSurvivor.Data
         // maximum melee damage: a.MeleeAttack(m_Actor).DamageValue
         // maximum ranged damage: a.CurrentRangedAttack.DamageValue
         Dictionary<Point,int> ranged_damage_field = new Dictionary<Point,int>();
+#if FAIL
+        a_turns = a_turns_bak;
+        radius2 = new HashSet<Point>()
+        foreach(Point pt in aFOV) {
+          if (pt == a.Location.Position) continue;
+          int dist = Rules.GridDistance(pt, a.Location.Position);
+          if (dist <= a.CurrentRangedAttack.Range) {
+            ranged_damage_field[pt] = a_turns*a_max_dam;
+          }
+        }
+#endif
         // we can do better than these
         if (Rules.WillOtherActTwiceBefore(m_Actor, a)) {
           foreach(Point pt in aFOV) {

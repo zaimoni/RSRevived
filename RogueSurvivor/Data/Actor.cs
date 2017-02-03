@@ -1232,6 +1232,40 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // n is the number of our actions
+    public int HowManyTimesOtherActs(int n,Actor other)
+    {   // n=1:
+      Contract.Requires(1<=n);
+      int my_ap = m_ActionPoints;
+      int my_actions = 0;
+      while(0 < my_ap) { // assuming this never gets very large
+        my_ap -= Rules.BASE_ACTION_COST;
+        my_actions++;
+      }
+      if (my_actions>n) return 0;
+      int other_ap = other.ActionPoints+(IsBefore(other) ? 0 : other.Speed);
+      int other_actions = 0;
+      while(0 < other_ap) { // assuming this never gets very large
+        other_ap -= Rules.BASE_ACTION_COST;
+        other_actions++;
+      }
+      if (my_actions==n) return other_actions;
+      while(my_actions<n) {
+        my_ap += Speed;
+        while(0 < my_ap) { // assuming this never gets very large
+          my_ap -= Rules.BASE_ACTION_COST;
+          my_actions++;
+        }
+        if (my_actions>n) break;
+        other_ap += other.Speed;
+        while(0 < other_ap) { // assuming this never gets very large
+          other_ap -= Rules.BASE_ACTION_COST;
+          other_actions++;
+        } 
+      }
+      return other_actions;
+    }
+
     // infection
     public int InfectionHPs {
       get {
