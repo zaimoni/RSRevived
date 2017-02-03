@@ -1212,7 +1212,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  int b_dam = b.MeleeAttack(a).DamageValue - a.CurrentDefence.Protection_Hit;
 	  if (0 >= a_dam) return a;
 	  if (0 >= b_dam) return b;
-	  if (RogueForm.Game.Rules.WillOtherActTwiceBefore(a,b)) b_dam *= 2;
+	  if (Rules.WillOtherActTwiceBefore(a,b)) b_dam *= 2;
 	  if (a_dam/2 >= b.HitPoints) return b;	// one-shot if hit
 	  if (b_dam >= a.HitPoints) return a; // could die if hit
 	  int a_kill_b_in = ((8*b.HitPoints)/(5*a_dam));	// assume bad luck when attacking

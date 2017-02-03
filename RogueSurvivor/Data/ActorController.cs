@@ -96,7 +96,7 @@ namespace djack.RogueSurvivor.Data
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
-        if (RogueForm.Game.Rules.WillOtherActTwiceBefore(m_Actor, a)) {
+        if (Rules.WillOtherActTwiceBefore(m_Actor, a)) {
           HashSet<Point> radius2 = new HashSet<Point>();
           foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileAt(pt).Model.IsWalkable)) {
             melee_damage_field[pt] = 2*a_max_dam;
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Data
         // maximum ranged damage: a.CurrentRangedAttack.DamageValue
         Dictionary<Point,int> ranged_damage_field = new Dictionary<Point,int>();
         // we can do better than these
-        if (RogueForm.Game.Rules.WillOtherActTwiceBefore(m_Actor, a)) {
+        if (Rules.WillOtherActTwiceBefore(m_Actor, a)) {
           foreach(Point pt in aFOV) {
             if (pt == a.Location.Position) continue;
             int dist = Rules.GridDistance(pt, a.Location.Position);

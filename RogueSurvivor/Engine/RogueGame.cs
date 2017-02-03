@@ -10810,7 +10810,7 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawImage(GameImages.ICON_THREAT_SAFE, gx2, gy2, tint);
             break;
           }
-          if (m_Rules.WillOtherActTwiceBefore(m_Player, actor)) {
+          if (Rules.WillOtherActTwiceBefore(m_Player, actor)) {
             m_UI.UI_DrawImage(GameImages.ICON_THREAT_HIGH_DANGER, gx2, gy2, tint);
             break;
           }
