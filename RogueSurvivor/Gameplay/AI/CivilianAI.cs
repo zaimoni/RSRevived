@@ -452,36 +452,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == enemies && Directives.CanTakeItems) {
         Map map = m_Actor.Location.Map;
-        List<Percept> perceptList2 = SortByDistance(percepts1.FilterT<Inventory>().FilterOut(p =>
+        List<Percept> perceptList2 = percepts1.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
           if (IsTileTaboo(p.Location.Position)) return true;    // already ruled out
           return null==BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
-        }));
+        });
         if (perceptList2 != null) {
-/*retry:*/Percept percept = FilterNearest(perceptList2);
+          Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
-          Inventory stack = percept.Percepted as Inventory;
-          ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, stack);
-#if FAIL
-          if (actorAction5 != null && actorAction5.IsLegal() && actorAction5 is ActionTakeItem) {
-            Item tmp = (actorAction5 as ActionTakeItem).Item;
-            // check for "more interesting stack"
-            foreach(Percept p in perceptList2) {
-              if (p == percept) continue;
-              Inventory inv = p.Percepted as Inventory;
-              foreach (Item it in inv.Items) {
-                if (!IsInterestingItem(it)) continue;
-                if (RHSMoreInteresting(tmp, it)) {  // we have a wrong stack
-                  MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
-                  perceptList2.Remove(percept);
-                  goto retry;
-                }
-              }
-            }
-          }
-#endif
+          ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
           if (actorAction5 != null && actorAction5.IsLegal()) {
             m_Actor.Activity = Activity.IDLE;
             return actorAction5;

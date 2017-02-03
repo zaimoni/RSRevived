@@ -191,9 +191,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Map map = m_Actor.Location.Map;
         List<Percept> percepts3 = percepts1.FilterT<Inventory>().FilterOut(p =>
         {
-          if (p.Turn == map.LocalTime.TurnCounter)
-            return IsOccupiedByOther(map, p.Location.Position);
-          return true;
+          if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
+          if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
+          return null == BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
         });
         if (percepts3 != null) {
           Percept percept = FilterNearest(percepts3);

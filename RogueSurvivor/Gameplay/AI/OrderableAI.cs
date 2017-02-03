@@ -1421,7 +1421,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorWouldGrabFromStack(RogueGame game, Point position, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
-      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);
+      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null) {
         Fortification fortification = mapObjectAt as Fortification;
         if (fortification != null && !fortification.IsWalkable) return null;
