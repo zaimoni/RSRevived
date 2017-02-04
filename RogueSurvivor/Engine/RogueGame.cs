@@ -8254,7 +8254,9 @@ namespace djack.RogueSurvivor.Engine
         DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
       MakeEnemyOfTargetFactionInDistrict(aggressor, cop, (Action<Actor>) (a =>
       {
-        if (!a.IsPlayer || a == cop || (a.IsSleeping || a.IsEnemyOf(aggressor))) return;
+        if (a == aggressor || a.Leader == aggressor) return;  // aggressor doesn't find this message informative
+        if (!a.HasActivePoliceRadio) return;  // in communication (police have implicit radios)
+        if (a.IsEnemyOf(aggressor)) return; // already an enemy...presumed informed
         int turnCounter = Session.Get.WorldTime.TurnCounter;
         ClearMessages();
         AddMessage(new Data.Message("You get a message from your police radio.", turnCounter, Color.White));
@@ -8270,7 +8272,9 @@ namespace djack.RogueSurvivor.Engine
         DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, (Action<Actor>) (a =>
       {
-        if (!a.IsPlayer || a == soldier || (a.IsSleeping || a.IsEnemyOf(aggressor))) return;
+        if (a == aggressor || a.Leader == aggressor) return;  // aggressor doesn't find this message informative
+        if (a.Faction != soldier.Faction) return;  // in communication
+        if (a.IsEnemyOf(aggressor)) return; // already an enemy...presumed informed
         int turnCounter = Session.Get.WorldTime.TurnCounter;
         ClearMessages();
         AddMessage(new Data.Message("You get a message from your army radio.", turnCounter, Color.White));
@@ -8280,17 +8284,20 @@ namespace djack.RogueSurvivor.Engine
       }));
     }
 
+    // fn is the UI message
     private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn)
     {
       Faction faction = target.Faction;
       foreach (Map map in target.Location.Map.District.Maps) {
         foreach (Actor actor in map.Actors) {
           if (actor != aggressor && actor != target && (actor.Faction == faction && actor.Leader != aggressor)) {
-            if (fn != null) fn(actor);
             aggressor.MarkAsAgressorOf(actor);
             actor.MarkAsSelfDefenceFrom(aggressor);
           }
         }
+        if (null != fn)
+          foreach (Actor actor in map.Players.Where(a => a != target && !a.IsSleeping))
+            fn(actor);
       }
     }
 
