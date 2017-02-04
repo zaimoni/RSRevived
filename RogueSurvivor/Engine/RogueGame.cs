@@ -9638,7 +9638,7 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor follower in killer.Followers) {
           if (follower.TargetActor == deadGuy || follower.IsEnemyOf(deadGuy) && Rules.IsAdjacent(follower.Location, deadGuy.Location)) {
             DoSay(follower, killer, "That was close! Thanks for the help!!", RogueGame.Sayflags.IS_FREE_ACTION);
-            ModifyActorTrustInLeader(follower, 90, true);
+            ModifyActorTrustInLeader(follower, Rules.TRUST_LEADER_KILL_ENEMY, true);
           }
         }
       }
@@ -9663,6 +9663,20 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
         else
           DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
+      }
+      if (killer != null && killer.Model.Abilities.IsLawEnforcer && (killer.Faction.IsEnemyOf(deadGuy.Faction) || deadGuy.MurdersCounter > 0)) {
+        if (!killer.IsPlayer)
+          killer.MessagePlayerOnce((Action<Actor>)(a =>
+            {
+              int turnCounter = Session.Get.WorldTime.TurnCounter;
+              // possible verbs: killed, terminated, erased, downed, wasted.
+              AddMessage(new Data.Message(string.Format("(police radio, [0]) [1] killed.",killer.Name,deadGuy.Name), turnCounter, Color.White));
+            }), (Predicate<Actor>)(a =>
+            {
+              if (a.IsSleeping) return false;
+              if (!a.HasActivePoliceRadio) return false;
+              return true;
+            }));
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.

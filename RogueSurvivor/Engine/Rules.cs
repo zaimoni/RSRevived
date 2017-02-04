@@ -124,7 +124,7 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_GOOD_GIFT_INCREASE = 3*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_MISC_GIFT_INCREASE = WorldTime.TURNS_PER_HOUR/3;
     public const int TRUST_GIVE_ITEM_ORDER_PENALTY = -WorldTime.TURNS_PER_HOUR;
-    public const int TRUST_LEADER_KILL_ENEMY = 90;
+    public const int TRUST_LEADER_KILL_ENEMY = 3*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_REVIVE_BONUS = 12*WorldTime.TURNS_PER_HOUR;
     public const int MURDERER_SPOTTING_BASE_CHANCE = 5;
     public const int MURDERER_SPOTTING_DISTANCE_PENALTY = 1;
