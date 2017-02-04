@@ -2913,17 +2913,6 @@ namespace djack.RogueSurvivor.Engine
       return num;
     }
 
-    private int CountActors(Map map, Predicate<Actor> predFn)
-    {
-      if (map == null) throw new ArgumentNullException("map");
-      int num = 0;
-      foreach (Actor actor in map.Actors) {
-        if (predFn(actor))
-          ++num;
-      }
-      return num;
-    }
-
     private int CountFaction(Map map, Faction f)
     {
       if (map == null)
@@ -3040,12 +3029,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("A new wave of refugees has arrived!", Session.Get.WorldTime.TurnCounter, Color.Pink));
         RedrawPlayScreen();
       }
-      int num1 = CountActors(district.EntryMap, (Predicate<Actor>) (a =>
-      {
-        if (a.Faction != GameFactions.TheCivilians)
-          return a.Faction == GameFactions.ThePolice;
-        return true;
-      }));
+      int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
       int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)RogueGame.s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), RogueGame.s_Options.MaxCivilians - num1);
       for (int index = 0; index < num2; ++index)
         SpawnNewRefugee(!m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
@@ -3117,12 +3101,12 @@ namespace djack.RogueSurvivor.Engine
     {
       if (RogueGame.s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
         return false;
-      int num = 1 + CountActors(map, (Predicate<Actor>) (a =>
+      int num = 1 + map.Actors.Count(a =>
       {
         if (!a.Model.Abilities.IsUndead && a.Model.Abilities.HasToEat)
           return a.Faction == GameFactions.TheCivilians;
         return false;
-      }));
+      });
       return (double) ((float) (1 + CountFoodItemsNutrition(map)) / (float) num) < (double) RogueGame.s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
     }
 
