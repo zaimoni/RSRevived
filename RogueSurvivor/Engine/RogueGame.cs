@@ -2906,37 +2906,19 @@ namespace djack.RogueSurvivor.Engine
     private int CountLivings(Map map)
     {
       if (map == null) throw new ArgumentNullException("map");
-      int num = 0;
-      foreach (Actor actor in map.Actors) {
-        if (!actor.Model.Abilities.IsUndead) ++num;
-      }
-      return num;
+      return map.Actors.Count(a => !a.Model.Abilities.IsUndead);
     }
 
     private int CountFaction(Map map, Faction f)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      int num = 0;
-      foreach (Actor actor in map.Actors)
-      {
-        if (actor.Faction == f)
-          ++num;
-      }
-      return num;
+      if (map == null) throw new ArgumentNullException("map");
+      return map.Actors.Count(a => a.Faction == f);
     }
 
     private int CountUndeads(Map map)
     {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      int num = 0;
-      foreach (Actor actor in map.Actors)
-      {
-        if (actor.Model.Abilities.IsUndead)
-          ++num;
-      }
-      return num;
+      if (map == null) throw new ArgumentNullException("map");
+      return map.Actors.Count(a => a.Model.Abilities.IsUndead);
     }
 
     private int CountFoodItemsNutrition(Map map)
