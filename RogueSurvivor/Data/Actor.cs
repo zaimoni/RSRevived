@@ -813,10 +813,17 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
     }
 
+    public bool HasActivePoliceRadio { 
+      get {
+        if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
+        return (GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker)?.CanTrackPolice ?? false;
+      }
+    }
+
     // leadership/follower handling
     public void AddFollower(Actor other)
     {
-      if (other == null) throw new ArgumentNullException("other");
+      Contract.Requires(null != other);
       if (m_Followers != null && m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
       if (m_Followers == null) m_Followers = new List<Actor>(1);
       m_Followers.Add(other);
@@ -826,7 +833,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveFollower(Actor other)
     {
-      if (other == null) throw new ArgumentNullException("other");
+      Contract.Requires(null != other);
       if (m_Followers == null) throw new InvalidOperationException("no followers");
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
@@ -1781,19 +1788,13 @@ namespace djack.RogueSurvivor.Data
     public Item GetEquippedItem(DollPart part)
     {
       if (null == m_Inventory || DollPart.NONE == part) return null;
-      foreach (Item obj in m_Inventory.Items) {
-        if (obj.EquippedPart == part) return obj;
-      }
-      return null;
+      return m_Inventory.Items.FirstOrDefault(obj => obj.EquippedPart == part);
     }
 
     public Item GetEquippedItem(Gameplay.GameItems.IDs id)
     {
       if (null == m_Inventory) return null;
-      foreach (Item obj in m_Inventory.Items) {
-        if (obj.Model.ID == id && obj.EquippedPart != DollPart.NONE) return obj;
-      }
-      return null;
+      return m_Inventory.Items.FirstOrDefault(obj => obj.Model.ID == id && DollPart.NONE != obj.EquippedPart);
     }
 
     // this cannot be side-effecting (martial arts, grenades)
@@ -1806,10 +1807,7 @@ namespace djack.RogueSurvivor.Data
     public Item GetItem(Gameplay.GameItems.IDs id)
     {
       if (null == m_Inventory) return null;
-      foreach (Item obj in m_Inventory.Items) {
-        if (obj.Model.ID == id) return obj;
-      }
-      return null;
+      return m_Inventory.Items.FirstOrDefault(obj => obj.Model.ID == id);
     }
 
     private string ReasonCantTradeWith(Actor target)

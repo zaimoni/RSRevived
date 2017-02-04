@@ -468,6 +468,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return actorAction5;
           }
           // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
+          // could happen in normal play in the sewers
           // under is handled within the Behavior functions
 #if DATAFLOW_TRACE
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
