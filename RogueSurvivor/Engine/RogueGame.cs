@@ -8295,9 +8295,10 @@ namespace djack.RogueSurvivor.Engine
             actor.MarkAsSelfDefenceFrom(aggressor);
           }
         }
-        if (null != fn)
+        if (null != fn) { 
           foreach (Actor actor in map.Players.Where(a => a != target && !a.IsSleeping))
             fn(actor);
+        }
       }
     }
 

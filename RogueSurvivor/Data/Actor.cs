@@ -820,6 +820,17 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public void MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
+    {
+      Contract.Requires(null!=fn);
+      if (IsPlayer && !IsDead && (null == pred || pred(this))) {
+        fn(this);
+        return;
+      }
+      if (Location.Map.MessagePlayerOnce(fn,pred)) return;
+      Location.Map.District.MessagePlayerOnce(Location.Map,fn,pred);
+    }
+
     // leadership/follower handling
     public void AddFollower(Actor other)
     {

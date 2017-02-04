@@ -155,6 +155,15 @@ namespace djack.RogueSurvivor.Data
        return null;
     }
 
+    public void MessagePlayerOnce(Map already_failed, Action<Actor> fn, Predicate<Actor> pred=null)
+    {
+      Contract.Requires(null!=fn);
+      foreach(Map map in Maps) {
+        if (map == already_failed) continue;
+        if (map.MessagePlayerOnce(fn,pred)) return;
+      }
+    }
+
     public bool ReadyForNextTurn
     {
       get {

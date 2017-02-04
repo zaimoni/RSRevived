@@ -564,6 +564,20 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
+    {
+      Contract.Requires(null!=fn);
+      IEnumerable<Actor> tmp = Players;
+      if (null!=pred) tmp = tmp.Where(a => pred(a));
+      Actor player = tmp.FirstOrDefault();
+      if (null != player) {
+        RogueForm.Game.PanViewportTo(player);
+        fn(player);
+        return true;
+      }
+      return false;
+    }
+
     // police on map
     public List<Actor> Police { 
       get {
