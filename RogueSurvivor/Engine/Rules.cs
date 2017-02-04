@@ -877,17 +877,13 @@ namespace djack.RogueSurvivor.Engine
       int num1 = Rules.SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
       int num2 = 0;
       ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
-      if (itemBodyArmor != null)
-      {
-        if (observer.Faction.ID == (int) GameFactions.IDs.ThePolice)
-        {
+      if (itemBodyArmor != null) {
+        if (observer.Faction.ID == (int) GameFactions.IDs.ThePolice) {
           if (itemBodyArmor.IsHostileForCops())
             num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
           else if (itemBodyArmor.IsFriendlyForCops())
             num2 += Rules.UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
-        }
-        else if (observer.Faction.ID == (int) GameFactions.IDs.TheBikers)
-        {
+        } else if (observer.Faction.ID == (int) GameFactions.IDs.TheBikers) {
           if (itemBodyArmor.IsHostileForBiker(observer.GangID))
             num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
           else if (itemBodyArmor.IsFriendlyForBiker(observer.GangID))
