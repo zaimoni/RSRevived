@@ -8254,15 +8254,20 @@ namespace djack.RogueSurvivor.Engine
         DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
       MakeEnemyOfTargetFactionInDistrict(aggressor, cop, (Action<Actor>) (a =>
       {
-        if (a == aggressor || a.Leader == aggressor) return;  // aggressor doesn't find this message informative
-        if (!a.HasActivePoliceRadio) return;  // in communication (police have implicit radios)
-        if (a.IsEnemyOf(aggressor)) return; // already an enemy...presumed informed
         int turnCounter = Session.Get.WorldTime.TurnCounter;
         ClearMessages();
         AddMessage(new Data.Message("You get a message from your police radio.", turnCounter, Color.White));
         AddMessage(new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object) aggressor.TheName), turnCounter, Color.White));
         AddMessage(new Data.Message(string.Format("Current location : {0}@{1},{2}", (object) aggressor.Location.Map.Name, (object) aggressor.Location.Position.X, (object) aggressor.Location.Position.Y), turnCounter, Color.White));
         AddMessagePressEnter();
+      }), (Predicate<Actor>)(a =>
+      {
+        if (a == cop) return false;    // target already know
+        if (a.IsSleeping) return false;   // can't hear when sleeping
+        if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
+        if (!a.HasActivePoliceRadio) return false;  // not in communication (police have implicit radios)
+        if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
+        return true;
       }));
     }
 
@@ -8272,20 +8277,25 @@ namespace djack.RogueSurvivor.Engine
         DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", (object) aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, (Action<Actor>) (a =>
       {
-        if (a == aggressor || a.Leader == aggressor) return;  // aggressor doesn't find this message informative
-        if (a.Faction != soldier.Faction) return;  // in communication
-        if (a.IsEnemyOf(aggressor)) return; // already an enemy...presumed informed
         int turnCounter = Session.Get.WorldTime.TurnCounter;
         ClearMessages();
         AddMessage(new Data.Message("You get a message from your army radio.", turnCounter, Color.White));
         AddMessage(new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object) aggressor.Name), turnCounter, Color.White));
         AddMessage(new Data.Message(string.Format("Current location : {0}@{1},{2}", (object) aggressor.Location.Map.Name, (object) aggressor.Location.Position.X, (object) aggressor.Location.Position.Y), turnCounter, Color.White));
         AddMessagePressEnter();
+      }), (Predicate<Actor>)(a =>
+      {
+        if (a == soldier) return false;    // target already know
+        if (a.IsSleeping) return false;   // can't hear when sleeping
+        if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
+        if (a.Faction != soldier.Faction) return false;  // not in communication
+        if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
+        return true;
       }));
     }
 
     // fn is the UI message
-    private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn)
+    private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Predicate<Actor> pred)
     {
       Faction faction = target.Faction;
       foreach (Map map in target.Location.Map.District.Maps) {
@@ -8295,9 +8305,12 @@ namespace djack.RogueSurvivor.Engine
             actor.MarkAsSelfDefenceFrom(aggressor);
           }
         }
-        if (null != fn) { 
-          foreach (Actor actor in map.Players.Where(a => a != target && !a.IsSleeping))
-            fn(actor);
+      }
+      if (null!=fn) {
+        if (m_Player.Location.Map.District==target.Location.Map.District) {
+          m_Player.MessagePlayerOnce(fn,pred);
+        } else {
+          target.MessagePlayerOnce(fn, pred);
         }
       }
     }
