@@ -637,13 +637,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       Item equippedWeapon = GetEquippedWeapon();
-      // if not supposed to be using ranged weapons, immediately recurse
+      // if not supposed to be using ranged weapons, immediately  use BaseAI
       if (!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) { 
         if (null != (equippedWeapon as ItemRangedWeapon))  game.DoUnequipItem(m_Actor, equippedWeapon);
         return BehaviorEquipWeapon(game);
       }
-      // if no ranged weapons, recurse
+      // if no ranged weapons, use BaseAI
       if (null == available_ranged_weapons) return BehaviorEquipWeapon(game);
+
+      // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
+      if (null == enemies) {
+        IEnumerable<ItemRangedWeapon> reloadable = available_ranged_weapons.Where(rw => 0 >= rw.Ammo);
+        // XXX should not reload a precision rifle if also have an army rifle, but shouldn't have both in inventory anyway
+        foreach(ItemRangedWeapon rw in reloadable) {
+          ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw);
+          if (null != ammo) { 
+            if (m_Actor.CanEquip(rw)) game.DoEquipItem(m_Actor, rw);
+            return new ActionUseItem(m_Actor, ammo);
+          }
+        }
+
+        ItemRangedWeapon rw_w_ammo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
+        if (null == rw_w_ammo) return BehaviorEquipWeapon(game);  // no weapon with ammo; use BaseAI
+        if (m_Actor.CanEquip(rw_w_ammo)) game.DoEquipItem(m_Actor, rw_w_ammo);
+        return null;
+      }
+      // at this point, null != enemies
 
       if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
       {
@@ -663,7 +682,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // migrated from CivilianAI::SelectAction
-      if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
+      if (m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
         List<Percept> percepts2 = FilterFireTargets(enemies);
         if (percepts2 != null) {
 		  if (null != damage_field  && 2<=percepts2.Count && !damage_field.ContainsKey(m_Actor.Location.Position)) {
@@ -708,8 +727,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	    }
 	  }
 
-      // recurse to BaseAI for the melee weapon
-      return BehaviorEquipWeapon(game);
+      return null;  // weapon chosen, no further action
     }
 
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
