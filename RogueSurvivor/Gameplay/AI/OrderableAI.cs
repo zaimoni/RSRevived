@@ -594,6 +594,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != (equippedWeapon as ItemRangedWeapon))  game.DoUnequipItem(m_Actor, equippedWeapon);
         return BehaviorEquipWeapon(game);
       }
+      // if no ranged weapons, recurse
+      if (null == available_ranged_weapons) return BehaviorEquipWeapon(game);
 
       if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
       {

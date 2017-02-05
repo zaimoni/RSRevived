@@ -331,14 +331,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
-      if (null != enemies && friends != null) {
-        if (game.Rules.RollChance(50)) {
-          ActorAction actorAction2 = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
-          if (actorAction2 != null) return actorAction2;
+      if (null != enemies) {
+        if (null != friends && game.Rules.RollChance(50)) {
+          tmpAction = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
+          if (null != tmpAction) return tmpAction;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        ActorAction actorAction5 = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
-        if (actorAction5 != null) return actorAction5;
+        tmpAction = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
+        if (null != tmpAction) return tmpAction;
       }
 
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
