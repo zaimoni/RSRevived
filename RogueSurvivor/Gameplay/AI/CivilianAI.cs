@@ -324,54 +324,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      tmpAction = BehaviorEquipWeapon(game);
+      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends);
       if (null != tmpAction) return tmpAction;
-
-      // all free actions must be above the enemies check
-      if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
-        List<Percept> percepts2 = FilterFireTargets(enemies);
-        if (percepts2 != null) {
-		  if (null != damage_field  && 2<=percepts2.Count && !damage_field.ContainsKey(m_Actor.Location.Position)) {
-		    // attempt to snipe with current weapon
-		    foreach(Percept p in enemies) {
-              Actor en = p.Percepted as Actor;
-			  if (m_Actor.CurrentRangedAttack.Range<Rules.GridDistance(m_Actor.Location.Position,en.Location.Position)) continue;
-              Attack tmp_attack = m_Actor.RangedAttack(Rules.GridDistance(m_Actor.Location.Position, en.Location.Position));
-              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
-			  // can one-shot
-              tmpAction = BehaviorRangedAttack(en);
-              if (tmpAction != null) {
-                m_Actor.Activity = Activity.FIGHTING;
-                m_Actor.TargetActor = en;
-                return tmpAction;
-              }
-			}
-		  }
-
-		  // normally, shoot at nearest target
-          Actor actor = FilterNearest(percepts2).Percepted as Actor;
-          tmpAction = BehaviorRangedAttack(actor);
-          if (tmpAction != null) {
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = actor;
-            return tmpAction;
-          }
-		} else if (null != legal_steps) {
-		  percepts2 = FilterPossibleFireTargets(enemies);
-		  if (null != percepts2) {
-		    IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
-		    if (tmp.Any()) {
-	          tmpAction = DecideMove(tmp, enemies, friends);
-              if (null != tmpAction) {
-                m_Actor.Activity = Activity.FIGHTING;
-			    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-				if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
-                return tmpAction;
-              }
-		    }
-		  }
-	    }
-	  }
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;

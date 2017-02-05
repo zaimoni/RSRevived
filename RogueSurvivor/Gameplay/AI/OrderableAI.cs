@@ -585,6 +585,84 @@ namespace djack.RogueSurvivor.Gameplay.AI
       game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
+    // forked from BaseAI::BehaviorEquipWeapon
+    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends)
+    {
+      Item equippedWeapon = GetEquippedWeapon();
+      // if not supposed to be using ranged weapons, immediately recurse
+      if (!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) { 
+        if (null != (equippedWeapon as ItemRangedWeapon))  game.DoUnequipItem(m_Actor, equippedWeapon);
+        return BehaviorEquipWeapon(game);
+      }
+
+      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
+      {
+        ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
+        if (rw.Ammo > 0) return null;
+        ItemAmmo compatibleAmmoItem = m_Actor.GetCompatibleAmmoItem(rw);
+        if (compatibleAmmoItem != null)
+          return new ActionUseItem(m_Actor, compatibleAmmoItem);
+        game.DoUnequipItem(m_Actor, equippedWeapon);
+        equippedWeapon = null;
+      }
+
+      Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
+      if (rangedWeaponWithAmmo != null && m_Actor.CanEquip(rangedWeaponWithAmmo)) {
+        game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
+        return null;
+      }
+
+      // migrated from CivilianAI::SelectAction
+      ActorAction tmpAction = null;
+      if (null != enemies && m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
+        List<Percept> percepts2 = FilterFireTargets(enemies);
+        if (percepts2 != null) {
+		  if (null != damage_field  && 2<=percepts2.Count && !damage_field.ContainsKey(m_Actor.Location.Position)) {
+		    // attempt to snipe with current weapon
+		    foreach(Percept p in enemies) {
+              Actor en = p.Percepted as Actor;
+			  if (m_Actor.CurrentRangedAttack.Range<Rules.GridDistance(m_Actor.Location.Position,en.Location.Position)) continue;
+              Attack tmp_attack = m_Actor.RangedAttack(Rules.GridDistance(m_Actor.Location.Position, en.Location.Position));
+              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
+			  // can one-shot
+              tmpAction = BehaviorRangedAttack(en);
+              if (tmpAction != null) {
+                m_Actor.Activity = Activity.FIGHTING;
+                m_Actor.TargetActor = en;
+                return tmpAction;
+              }
+			}
+		  }
+
+		  // normally, shoot at nearest target
+          Actor actor = FilterNearest(percepts2).Percepted as Actor;
+          tmpAction = BehaviorRangedAttack(actor);
+          if (tmpAction != null) {
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = actor;
+            return tmpAction;
+          }
+		} else if (null != legal_steps) {
+		  percepts2 = FilterPossibleFireTargets(enemies);
+		  if (null != percepts2) {
+		    IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
+		    if (tmp.Any()) {
+	          tmpAction = DecideMove(tmp, enemies, friends);
+              if (null != tmpAction) {
+                m_Actor.Activity = Activity.FIGHTING;
+			    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+				if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+                return tmpAction;
+              }
+		    }
+		  }
+	    }
+	  }
+
+      // recurse to BaseAI for the melee weapon
+      return BehaviorEquipWeapon(game);
+    }
+
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
     protected ItemFood GetBestEdibleItem()
     {
