@@ -294,36 +294,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      if (null != enemies) {
-        if (1==Rules.GridDistance(enemies[0].Location.Position,m_Actor.Location.Position)) {
-          // something adjacent...check for one-shotting
-          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon(it => !IsItemTaboo(it));
-          if (null!=tmp_melee) {
-            foreach(Percept p in enemies) {
-              if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
-              Actor en = p.Percepted as Actor;
-              Attack tmp_attack = m_Actor.HypotheticalMeleeAttack((tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet),en);
-              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
-              // can one-shot
-              if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
-                tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) {
-                  if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
-                  return tmpAction;
-                }
-              }
-              if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
-                tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) {
-                  if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
-                  return tmpAction;
-                }
-              }
-            }
-          }
-        }
-      }
-
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends);
       if (null != tmpAction) return tmpAction;
 
