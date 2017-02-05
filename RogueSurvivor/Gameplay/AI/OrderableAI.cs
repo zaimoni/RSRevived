@@ -649,20 +649,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == enemies) {
         IEnumerable<ItemRangedWeapon> reloadable = available_ranged_weapons.Where(rw => 0 >= rw.Ammo);
         // XXX should not reload a precision rifle if also have an army rifle, but shouldn't have both in inventory anyway
-        foreach(ItemRangedWeapon rw in reloadable) {
-          ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw);
-          if (null != ammo) { 
-            if (m_Actor.CanEquip(rw)) game.DoEquipItem(m_Actor, rw);
-            return new ActionUseItem(m_Actor, ammo);
-          }
+        ItemRangedWeapon rw2 = reloadable.FirstOrDefault();
+        if (null != rw2) {
+          ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw2);    // should be non-null by construction; contract will catch it for debug builds
+          if (m_Actor.CanEquip(rw2)) game.DoEquipItem(m_Actor, rw2);
+          return new ActionUseItem(m_Actor, ammo);
         }
 
-        ItemRangedWeapon rw_w_ammo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
-        if (null == rw_w_ammo) return BehaviorEquipWeapon(game);  // no weapon with ammo; use BaseAI
-        if (m_Actor.CanEquip(rw_w_ammo)) game.DoEquipItem(m_Actor, rw_w_ammo);
+        rw2 = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing.  There should be something now that we've reloaded everything.
+        if (m_Actor.CanEquip(rw2)) game.DoEquipItem(m_Actor, rw2);
         return null;
       }
-      // at this point, null != enemies
+      // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
+      // XXX to improve on the following, we need Actor::HypotheticalRangedAttack(dist,actor)
 
       if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
       {
