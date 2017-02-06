@@ -781,20 +781,19 @@ namespace djack.RogueSurvivor.Data
       return HypotheticalMeleeAttack(base_melee_attack, target);
     }
 
-    public Attack RangedAttack(int distance, Actor target = null)
+    public Attack HypotheticalRangedAttack(Attack baseAttack, int distance, Actor target = null)
     {
-      Attack baseAttack = CurrentRangedAttack;
       int num1 = 0;
       int num2 = 0;
       switch (baseAttack.Kind)
       {
         case AttackKind.FIREARM:
-          num1 = Actor.SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
-          num2 = Actor.SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          num1 = SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          num2 = SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
           break;
         case AttackKind.BOW:
-          num1 = Actor.SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
-          num2 = Actor.SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          num1 = SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          num2 = SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
           break;
       }
       if (target != null && target.Model.Abilities.IsUndead)
@@ -811,6 +810,11 @@ namespace djack.RogueSurvivor.Data
       else if (StaminaPoints < MaxSTA)
         num4 *= FIRING_WHEN_STA_NOT_FULL;
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
+    }
+
+    public Attack RangedAttack(int distance, Actor target = null)
+    {
+      return HypotheticalRangedAttack(CurrentRangedAttack, distance, target);
     }
 
     public bool HasActivePoliceRadio { 
