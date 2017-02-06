@@ -588,6 +588,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
+      Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
+      Contract.Requires((null!=immediate_threat)==damage_field.ContainsKey(Actor.Location.Position));
+
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
       if (null != enemies) {
