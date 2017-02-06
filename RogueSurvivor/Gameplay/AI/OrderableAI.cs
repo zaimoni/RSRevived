@@ -658,7 +658,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionUseItem(m_Actor, ammo);
         }
 
-        rw2 = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing.  There should be something now that we've reloaded everything.
+        rw2 = GetBestRangedWeaponWithAmmo();    // non-null as available_ranged_weapons is non-null
         if (m_Actor.CanEquip(rw2)) game.DoEquipItem(m_Actor, rw2);
         return null;
       }
@@ -666,33 +666,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // also, damage field should be non-null because enemies is non-null
       // XXX to improve on the following, we need Actor::HypotheticalRangedAttack(dist,actor)
 #if FAIL
+      Dictionary<Actor,int> best_weapon_ETAs = new Dictionary<Actor,int>();
       if (1<available_ranged_weapons.Count) {
         Dictionary<Actor,ItemRangedWeapon> best_weapons = new Dictionary<Actor,GameItems.IDs>();
-        Dictionary<Actor,int> best_weapon_ETAs = new Dictionary<Actor,int>();
         foreach(Percept p in enemies) {
           Actor a = p.Percepted as Actor;
           m_Actor.BestRangedWeaponFor(a,GridDistance(m_Actor.Location.Position,p.Location.Position),available_ranged_weapons,best_weapons,best_weapon_ETAs);    // XXX to be implemented
         }
         // If we are in the damage field, identify which threat are causing the damage field
         // Identify the nearest threat
+      } else {
+        // exactly one usable ranged weapon; thus GetBestRangedWeaponWithAmmo() should be non-null and be the single available weapon
+        ItemRangedWeapon rw = GetBestRangedWeaponWithAmmo();
+        if (m_Actor.CanEquip(rw)) {
+          game.DoEquipItem(m_Actor, rw);
+          equippedWeapon = GetEquippedWeapon(); // cache variable had been invalidated
+        }
       }
 #endif
 
-      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
-      {
+      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon) {
         ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
-        if (rw.Ammo > 0) return null;
-        ItemAmmo compatibleAmmoItem = m_Actor.GetCompatibleAmmoItem(rw);
-        if (compatibleAmmoItem != null)
-          return new ActionUseItem(m_Actor, compatibleAmmoItem);
-        game.DoUnequipItem(m_Actor, equippedWeapon);
-        equippedWeapon = null;
+        if (0 >= rw.Ammo) {
+          ItemAmmo compatibleAmmoItem = m_Actor.GetCompatibleAmmoItem(rw);
+          if (compatibleAmmoItem != null) return new ActionUseItem(m_Actor, compatibleAmmoItem);
+          game.DoUnequipItem(m_Actor, equippedWeapon);
+          equippedWeapon = null;
+        }
       }
 
-      Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
-      if (rangedWeaponWithAmmo != null && m_Actor.CanEquip(rangedWeaponWithAmmo)) {
+      ItemRangedWeapon rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();    // non-null since at least one ranged weapon is available
+      if (m_Actor.CanEquip(rangedWeaponWithAmmo)) {
         game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
-        return null;
+        equippedWeapon = GetEquippedWeapon(); // cache variable had been invalidated
       }
 
       // migrated from CivilianAI::SelectAction
