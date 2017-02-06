@@ -195,10 +195,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
       Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
       List<Actor> slow_melee_threat = new List<Actor>();
-      if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat);
+      HashSet<Actor> immediate_threat = new HashSet<Actor>();
+      if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
       bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts1);  // only civilians and soldiers respect explosives; CHAR and gang don't
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
+      if (0>= immediate_threat.Count) immediate_threat = null;
       List<Point> retreat = null;
       IEnumerable<Point> tmp_point;
       // calculate retreat destinations if possibly needed
@@ -294,7 +296,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends);
+      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);

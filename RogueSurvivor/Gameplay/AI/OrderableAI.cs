@@ -586,7 +586,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends)
+    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
@@ -636,16 +636,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // if no ranged weapons, use BaseAI
+      if (null == available_ranged_weapons) return BehaviorEquipWeapon(game);
+
       Item equippedWeapon = GetEquippedWeapon();
       // if not supposed to be using ranged weapons, immediately  use BaseAI
       if (!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) { 
         if (null != (equippedWeapon as ItemRangedWeapon))  game.DoUnequipItem(m_Actor, equippedWeapon);
         return BehaviorEquipWeapon(game);
       }
-      // if no ranged weapons, use BaseAI
-      if (null == available_ranged_weapons) return BehaviorEquipWeapon(game);
 
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
+      // XXX there may be more important objectives than this
       if (null == enemies) {
         IEnumerable<ItemRangedWeapon> reloadable = available_ranged_weapons.Where(rw => 0 >= rw.Ammo);
         // XXX should not reload a precision rifle if also have an army rifle, but shouldn't have both in inventory anyway
@@ -661,7 +663,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
       }
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
+      // also, damage field should be non-null because enemies is non-null
       // XXX to improve on the following, we need Actor::HypotheticalRangedAttack(dist,actor)
+#if FAIL
+      if (1<available_ranged_weapons.Count) {
+        Dictionary<Actor,ItemRangedWeapon> best_weapons = new Dictionary<Actor,GameItems.IDs>();
+        Dictionary<Actor,int> best_weapon_ETAs = new Dictionary<Actor,int>();
+        foreach(Percept p in enemies) {
+          Actor a = p.Percepted as Actor;
+          m_Actor.BestRangedWeaponFor(a,GridDistance(m_Actor.Location.Position,p.Location.Position),available_ranged_weapons,best_weapons,best_weapon_ETAs);    // XXX to be implemented
+        }
+        // If we are in the damage field, identify which threat are causing the damage field
+        // Identify the nearest threat
+      }
+#endif
 
       if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
       {

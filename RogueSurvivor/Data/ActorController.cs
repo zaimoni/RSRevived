@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Data
       return tmpFOV.Contains(x.Position);
     }
 
-    public void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat)
+    public void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
@@ -110,8 +110,12 @@ namespace djack.RogueSurvivor.Data
             }
           }
         }
+        if (melee_damage_field.ContainsKey(m_Actor.Location.Position)) {
+          immediate_threat.Add(a);
+        }
         // we can do melee attack damage field without FOV
         // FOV doesn't matter without a ranged attack
+        // XXX doesn't handle non-optimal ranged attacks
         if (0 >= a.CurrentRangedAttack.Range) {
           foreach(Point pt in melee_damage_field.Keys) {
             if (ret.ContainsKey(pt)) ret[pt] += melee_damage_field[pt];
@@ -156,6 +160,9 @@ namespace djack.RogueSurvivor.Data
             already.UnionWith(now);
             now = tmp2;
           } while(1<a_turns);
+        }
+        if (ranged_damage_field.ContainsKey(m_Actor.Location.Position)) {
+          immediate_threat.Add(a);
         }
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
         foreach(Point pt in ranged_damage_field.Keys) {
