@@ -739,23 +739,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (1 == available_ranged_weapons.Count) {
         if (1 == en_in_range.Count) {
-          Actor actor = en_in_range[0].Percepted as Actor;
-          tmpAction = BehaviorRangedAttack(actor);
-          if (tmpAction != null) {
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = actor;
-            return tmpAction;
-          }
-          return null;
+          return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
         } else if (null != immediate_threat && 1 == immediate_threat.Count) {
-          Actor actor = immediate_threat.First();
-          tmpAction = BehaviorRangedAttack(actor);
-          if (tmpAction != null) {
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = actor;
-            return tmpAction;
-          }
-          return null;
+          return BehaviorRangedAttack(immediate_threat.First());
         }
       }
 
@@ -803,22 +789,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (en.HitPoints>tmp_attack.DamageValue/2) continue;
 			  // can one-shot
               tmpAction = BehaviorRangedAttack(en);
-              if (tmpAction != null) {
-                m_Actor.Activity = Activity.FIGHTING;
-                m_Actor.TargetActor = en;
-                return tmpAction;
-              }
+              if (tmpAction != null) return tmpAction;
 			}
 		  }
 
 		  // normally, shoot at nearest target
           Actor actor = FilterNearest(percepts2).Percepted as Actor;
           tmpAction = BehaviorRangedAttack(actor);
-          if (tmpAction != null) {
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = actor;
-            return tmpAction;
-          }
+          if (tmpAction != null) return tmpAction;
 		}
 	  }
 

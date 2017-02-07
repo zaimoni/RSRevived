@@ -352,7 +352,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionRangedAttack BehaviorRangedAttack(Actor target)
     {
       Contract.Requires(null != target);
-      return (m_Actor.CanFireAt(target) ? new ActionRangedAttack(m_Actor, target) : null);
+      if (m_Actor.CanFireAt(target)) {
+        m_Actor.Activity = Activity.FIGHTING;
+        m_Actor.TargetActor = target;
+        return new ActionRangedAttack(m_Actor, target);
+      }
+      return null;
     }
 
     /// <returns>null, or a non-free action</returns>

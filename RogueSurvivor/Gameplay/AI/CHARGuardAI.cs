@@ -82,11 +82,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (percepts3 != null) {
           Actor actor = FilterNearest(percepts3).Percepted as Actor;
           tmpAction = BehaviorRangedAttack(actor);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = actor;
-            return tmpAction;
-          }
+          if (null != tmpAction) return tmpAction;
         }
       }
       if (current_enemies != null) {
