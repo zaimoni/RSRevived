@@ -2771,54 +2771,35 @@ namespace djack.RogueSurvivor.Engine
 
 #region 6. Check explosives.
         bool hasExplosivesToExplode = false;
+        Action<ItemPrimedExplosive> expire_exp = (exp => { 
+          if (0 >= --exp.FuseTimeLeft) hasExplosivesToExplode = true;
+        });
 #region 6.1 Update fuses.
-        foreach (Inventory groundInventory in map.GroundInventories) {
-          foreach (Item obj in groundInventory.Items) {
-            ItemPrimedExplosive itemPrimedExplosive = obj as ItemPrimedExplosive;
-            if (itemPrimedExplosive != null) {
-              --itemPrimedExplosive.FuseTimeLeft;
-              if (itemPrimedExplosive.FuseTimeLeft <= 0)
-                hasExplosivesToExplode = true;
-            }
-          }
+        foreach (Inventory inv in map.GroundInventories) {
+          inv.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp);
         }
         foreach (Actor actor in map.Actors) {
-          Inventory inventory = actor.Inventory;
-          if (inventory != null && !inventory.IsEmpty) {
-            foreach (Item obj in inventory.Items)
-            {
-              ItemPrimedExplosive itemPrimedExplosive = obj as ItemPrimedExplosive;
-              if (itemPrimedExplosive != null)
-              {
-                --itemPrimedExplosive.FuseTimeLeft;
-                if (itemPrimedExplosive.FuseTimeLeft <= 0)
-                  hasExplosivesToExplode = true;
-              }
-            }
-          }
+          actor.Inventory?.GetItemsByType<ItemPrimedExplosive>()?.ForEach(expire_exp);
         }
 #endregion
-        if (hasExplosivesToExplode)
-        {
+        if (hasExplosivesToExplode) {
 #region 6.2 Explode.
           bool hasExplodedSomething;
-          do
-          {
+          do {
             hasExplodedSomething = false;
-            if (!hasExplodedSomething)
-            {
-              foreach (Inventory groundInventory in map.GroundInventories)
-              {
+            if (!hasExplodedSomething) {
+              foreach (Inventory groundInventory in map.GroundInventories) {
+                List<ItemPrimedExplosive> tmp = groundInventory.GetItemsByType<ItemPrimedExplosive>();
+                if (null == tmp) continue;
+
                 Point? inventoryPosition = map.GetGroundInventoryPosition(groundInventory);
                 if (!inventoryPosition.HasValue)
                   throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
-                foreach (Item obj in groundInventory.Items)
-                {
-                  ItemPrimedExplosive itemPrimedExplosive = obj as ItemPrimedExplosive;
-                  if (itemPrimedExplosive != null && itemPrimedExplosive.FuseTimeLeft <= 0)
-                  {
-                    map.RemoveItemAt((Item) itemPrimedExplosive, inventoryPosition.Value);
-                                        DoBlast(new Location(map, inventoryPosition.Value), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
+
+                foreach (ItemPrimedExplosive exp in tmp) {
+                  if (0 >= exp.FuseTimeLeft) {
+                    map.RemoveItemAt(exp, inventoryPosition.Value);
+                    DoBlast(new Location(map, inventoryPosition.Value), (exp.Model as ItemExplosiveModel).BlastAttack);
                     hasExplodedSomething = true;
                     break;
                   }
@@ -2826,23 +2807,16 @@ namespace djack.RogueSurvivor.Engine
                 if (hasExplodedSomething) break;
               }
             }
-            if (!hasExplodedSomething)
-            {
-              foreach (Actor actor in map.Actors)
-              {
-                Inventory inventory = actor.Inventory;
-                if (inventory != null && !inventory.IsEmpty)
-                {
-                  foreach (Item obj in inventory.Items)
-                  {
-                    ItemPrimedExplosive itemPrimedExplosive = obj as ItemPrimedExplosive;
-                    if (itemPrimedExplosive != null && itemPrimedExplosive.FuseTimeLeft <= 0)
-                    {
-                      actor.Inventory.RemoveAllQuantity((Item) itemPrimedExplosive);
-                                            DoBlast(new Location(map, actor.Location.Position), (itemPrimedExplosive.Model as ItemExplosiveModel).BlastAttack);
-                      hasExplodedSomething = true;
-                      break;
-                    }
+            if (!hasExplodedSomething) {
+              foreach (Actor actor in map.Actors) {
+                List<ItemPrimedExplosive> tmp = actor.Inventory?.GetItemsByType<ItemPrimedExplosive>();
+                if (null == tmp) continue;
+                foreach (ItemPrimedExplosive exp in tmp) {
+                  if (0 >= exp.FuseTimeLeft) {
+                    actor.Inventory.RemoveAllQuantity(exp);
+                    DoBlast(new Location(map, actor.Location.Position), (exp.Model as ItemExplosiveModel).BlastAttack);
+                    hasExplodedSomething = true;
+                    break;
                   }
                 }
               }
