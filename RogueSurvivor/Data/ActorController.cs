@@ -193,10 +193,10 @@ namespace djack.RogueSurvivor.Data
 	    while(++r <= tmp_blast.Radius) {
           foreach(Point p in Enumerable.Range(0,8*r).Select(i=>exp.Location.Position.RadarSweep(r,i))) {
             if (!exp.Location.Map.IsInBounds(p)) continue;
-            if (!LOS.CanTraceFireLine(exp.Location,pt,tmp_blast.Radius)) continue;
-	        if (damage_field.ContainsKey(pt)) damage_field[pt]+=tmp_blast.Damage[r];
-	        else damage_field[pt] = tmp_blast.Damage[r];
-            if (pt == m_Actor.Location.Position) in_blast_field = true;
+            if (!LOS.CanTraceFireLine(exp.Location,p,tmp_blast.Radius)) continue;
+	        if (damage_field.ContainsKey(p)) damage_field[p]+=tmp_blast.Damage[r];
+	        else damage_field[p] = tmp_blast.Damage[r];
+            if (p == m_Actor.Location.Position) in_blast_field = true;
           }
 	    }
 	  }
