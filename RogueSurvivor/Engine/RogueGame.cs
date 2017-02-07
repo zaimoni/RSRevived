@@ -2792,6 +2792,7 @@ namespace djack.RogueSurvivor.Engine
                 List<ItemPrimedExplosive> tmp = groundInventory.GetItemsByType<ItemPrimedExplosive>();
                 if (null == tmp) continue;
 
+                // leave in for formal correctness.
                 Point? inventoryPosition = map.GetGroundInventoryPosition(groundInventory);
                 if (!inventoryPosition.HasValue)
                   throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
@@ -2901,27 +2902,18 @@ namespace djack.RogueSurvivor.Engine
       if (map == null) throw new ArgumentNullException("map");
 #endif
       int num1 = 0;
+      Func<ItemFood,int> nutrition = (food => food.NutritionAt(map.LocalTime.TurnCounter));
       foreach (Inventory groundInventory in map.GroundInventories) {
-        if (!groundInventory.IsEmpty) {
-          foreach (Item obj in groundInventory.Items) {
-            ItemFood tmpFood = obj as ItemFood;
-            if (null == tmpFood) continue;
-            num1 += tmpFood.NutritionAt(map.LocalTime.TurnCounter);
-          }
-        }
+        List<ItemFood> tmp = groundInventory.GetItemsByType<ItemFood>();
+        if (null == tmp) continue;
+        num1 += tmp.Sum(nutrition);
       }
-      int num2 = 0;
       foreach (Actor actor in map.Actors) {
-        Inventory inventory = actor.Inventory;
-        if (inventory != null && !inventory.IsEmpty) {
-          foreach (Item obj in inventory.Items) {
-            ItemFood tmpFood = obj as ItemFood;
-            if (null == tmpFood) continue;
-            num2 += tmpFood.NutritionAt(map.LocalTime.TurnCounter);
-          }
-        }
+        List<ItemFood> tmp = actor.Inventory?.GetItemsByType<ItemFood>();
+        if (null == tmp) continue;
+        num1 += tmp.Sum(nutrition);
       }
-      return num1 + num2;
+      return num1;
     }
 
 	// XXX dead function?
