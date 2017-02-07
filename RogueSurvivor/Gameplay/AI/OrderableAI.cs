@@ -799,46 +799,43 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorRangedAttack(actor);
       }
       // at this point, no immediate threat in range
-
-      // XXX old code below
-      { // reload existing ranged weapon
-      ItemRangedWeapon rw = GetEquippedWeapon() as ItemRangedWeapon;
-      if (null != rw && 0 >= rw.Ammo) {
-        ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw);
-        if (null != ammo) return new ActionUseItem(m_Actor, ammo);
+      {
+        int ETA_min = en_in_range.Select(p => best_weapon_ETAs[p.Percepted as Actor]).Min();
+        if (2==ETA_min) {
+          // snipe something
+          en_in_range = new List<Percept>(en_in_range.Where(p => ETA_min == best_weapon_ETAs[p.Percepted as Actor]));
+          if (2<=en_in_range.Count) {
+            int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
+            en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_max));
+            if (2<=en_in_range.Count) {
+             int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location.Position,p.Location.Position)).Min();
+             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location.Position, p.Location.Position) == dist_min));
+            }
+          }
+          Actor actor = en_in_range.First().Percepted as Actor;
+          if (1 < available_ranged_weapons.Count) {
+            tmpAction = Equip(best_weapons[actor]);
+            if (null != tmpAction) return tmpAction;
+          }
+          return BehaviorRangedAttack(actor);
+        }
       }
+
+      // just deal with something close
+      {
+        int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location.Position,p.Location.Position)).Min();
+        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location.Position, p.Location.Position) == dist_min));
+        if (2<=en_in_range.Count) {
+          int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
+          en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
+        }
+        Actor actor = en_in_range.First().Percepted as Actor;
+        if (1 < available_ranged_weapons.Count) {
+          tmpAction = Equip(best_weapons[actor]);
+          if (null != tmpAction) return tmpAction;
+        }
+        return BehaviorRangedAttack(actor);
       }
-
-      ItemRangedWeapon rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();    // non-null since at least one ranged weapon is available
-      if (m_Actor.CanEquip(rangedWeaponWithAmmo)) {
-        game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
-      }
-
-      // migrated from CivilianAI::SelectAction
-      if (m_Actor.GetEquippedWeapon() is ItemRangedWeapon) {
-        List<Percept> percepts2 = FilterFireTargets(enemies);
-        if (percepts2 != null) {
-		  if (null != damage_field  && 2<=percepts2.Count && !damage_field.ContainsKey(m_Actor.Location.Position)) {
-		    // attempt to snipe with current weapon
-		    foreach(Percept p in enemies) {
-              Actor en = p.Percepted as Actor;
-			  if (m_Actor.CurrentRangedAttack.Range<Rules.GridDistance(m_Actor.Location.Position,en.Location.Position)) continue;
-              Attack tmp_attack = m_Actor.RangedAttack(Rules.GridDistance(m_Actor.Location.Position, en.Location.Position));
-              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
-			  // can one-shot
-              tmpAction = BehaviorRangedAttack(en);
-              if (tmpAction != null) return tmpAction;
-			}
-		  }
-
-		  // normally, shoot at nearest target
-          Actor actor = FilterNearest(percepts2).Percepted as Actor;
-          tmpAction = BehaviorRangedAttack(actor);
-          if (tmpAction != null) return tmpAction;
-		}
-	  }
-
-      return null;  // weapon chosen, no further action
     }
 
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
