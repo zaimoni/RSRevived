@@ -42,8 +42,6 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized]
-    private readonly List<Inventory> m_aux_GroundItemsList = new List<Inventory>(5);
-    [NonSerialized]
     private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     [NonSerialized]
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
@@ -78,7 +76,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public IEnumerable<MapObject> MapObjects { get { return m_MapObjectsList; } }
-    public IEnumerable<Inventory> GroundInventories { get { return m_aux_GroundItemsList; } }
+    public IEnumerable<Inventory> GroundInventories { get { return m_GroundItemsByPosition.Values; } }
     public IEnumerable<Corpse> Corpses { get { return m_CorpsesList; } }
     public int CountCorpses { get { return m_CorpsesList.Count; } }
     public IEnumerable<TimedTask> Timers { get { return m_Timers; } }
@@ -681,7 +679,6 @@ namespace djack.RogueSurvivor.Data
       Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null) {
         Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
-        m_aux_GroundItemsList.Add(inventory);
         m_GroundItemsByPosition.Add(position, inventory);
         inventory.AddAll(it);
       } else if (itemsAt.IsFull) {
@@ -712,7 +709,6 @@ namespace djack.RogueSurvivor.Data
       itemsAt.RemoveAllQuantity(it);
       if (!itemsAt.IsEmpty) return;
       m_GroundItemsByPosition.Remove(position);
-      m_aux_GroundItemsList.Remove(itemsAt);
     }
 
     public void RemoveItemAt(Item it, int x, int y)
@@ -725,7 +721,6 @@ namespace djack.RogueSurvivor.Data
       Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null) return;
       m_GroundItemsByPosition.Remove(position);
-      m_aux_GroundItemsList.Remove(itemsAt);
     }
 
     public List<Corpse> GetCorpsesAt(Point p)
@@ -1108,9 +1103,6 @@ namespace djack.RogueSurvivor.Data
       m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList)
         m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
-      m_aux_GroundItemsList.Clear();
-      foreach (Inventory inventory in m_GroundItemsByPosition.Values)
-        m_aux_GroundItemsList.Add(inventory);
       m_aux_MapObjectsByPosition.Clear();
       foreach (MapObject mMapObjects in m_MapObjectsList)
         m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
