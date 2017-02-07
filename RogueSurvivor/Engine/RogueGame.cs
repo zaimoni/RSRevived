@@ -449,7 +449,7 @@ namespace djack.RogueSurvivor.Engine
       { 
         List<Actor> tmp = loc.Map.Players;
         if (0 >= tmp.Count) return;
-        tmp = tmp.Where(a => !a.IsSleeping && (double)Rules.StdDistance(a.Location.Position, loc.Position) > (double)a.AudioRange).ToList();
+        tmp = tmp.Where(a => !a.IsSleeping && (double)Rules.StdDistance(a.Location.Position, loc.Position) <= (double)a.AudioRange).ToList();
         if (0 >= tmp.Count) return;
         PanViewportTo(tmp[0]);
       }
@@ -9670,7 +9670,7 @@ namespace djack.RogueSurvivor.Engine
             {
               int turnCounter = Session.Get.WorldTime.TurnCounter;
               // possible verbs: killed, terminated, erased, downed, wasted.
-              AddMessage(new Data.Message(string.Format("(police radio, [0]) [1] killed.",killer.Name,deadGuy.Name), turnCounter, Color.White));
+              AddMessage(new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name,deadGuy.Name), turnCounter, Color.White));
             }), (Predicate<Actor>)(a =>
             {
               if (a.IsSleeping) return false;

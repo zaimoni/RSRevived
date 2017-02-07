@@ -619,7 +619,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     private ActorAction Equip(ItemRangedWeapon rw) {
-      if (m_Actor.CanEquip(rw)) RogueForm.Game.DoEquipItem(m_Actor, rw);
+      if (!rw.IsEquipped && m_Actor.CanEquip(rw)) RogueForm.Game.DoEquipItem(m_Actor, rw);
       if (0 >= rw.Ammo) {
         ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw);
         if (null != ammo) return new ActionUseItem(m_Actor, ammo);
@@ -631,7 +631,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
       Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
-      Contract.Requires((null!=immediate_threat)==damage_field.ContainsKey(Actor.Location.Position));
+      Contract.Requires((null!=immediate_threat)==(null!=damage_field && damage_field.ContainsKey(Actor.Location.Position)));
 
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
@@ -694,18 +694,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
       // XXX there may be more important objectives than this
       if (null == enemies) {
-        IEnumerable<ItemRangedWeapon> reloadable = available_ranged_weapons.Where(rw => 0 >= rw.Ammo);
+        IEnumerable<ItemRangedWeapon> reloadable = available_ranged_weapons.Where(rw2 => 0 >= rw2.Ammo);
         // XXX should not reload a precision rifle if also have an army rifle, but shouldn't have both in inventory anyway
-        ItemRangedWeapon rw2 = reloadable.FirstOrDefault();
-        if (null != rw2) {
-          ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw2);    // should be non-null by construction; contract will catch it for debug builds
-          if (m_Actor.CanEquip(rw2)) game.DoEquipItem(m_Actor, rw2);
-          return new ActionUseItem(m_Actor, ammo);
+        ItemRangedWeapon rw = reloadable.FirstOrDefault();
+        if (null != rw) {
+          tmpAction = Equip(reloadable.FirstOrDefault());
+          if (null != tmpAction) return tmpAction;
         }
-
-        rw2 = GetBestRangedWeaponWithAmmo();    // non-null as available_ranged_weapons is non-null
-        if (m_Actor.CanEquip(rw2)) game.DoEquipItem(m_Actor, rw2);
-        return null;
+        return Equip(GetBestRangedWeaponWithAmmo());
       }
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
       // also, damage field should be non-null because enemies is non-null
