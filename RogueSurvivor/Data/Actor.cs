@@ -663,10 +663,30 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCouldntFireAt(target));
     }
 
+    // this one is very hypothetical -- note absence of ranged weapon validity checks
+    private string ReasonCouldntFireAt(Actor target, int range)
+    {
+      Contract.Requires(null != target);
+      if (range+1 < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CouldFireAt(Actor target, int range, out string reason)
+    {
+      reason = ReasonCouldntFireAt(target,range);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CouldFireAt(Actor target, int range)
+    {
+      return string.IsNullOrEmpty(ReasonCouldntFireAt(target,range));
+    }
+
     private string ReasonCantFireAt(Actor target, List<Point> LoF)
     {
       Contract.Requires(null != target);
-      if (LoF != null) LoF.Clear();
+      LoF?.Clear();
       ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
       if (CurrentRangedAttack.Range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
@@ -685,6 +705,29 @@ namespace djack.RogueSurvivor.Data
     public bool CanFireAt(Actor target)
     {
       return string.IsNullOrEmpty(ReasonCantFireAt(target, null));
+    }
+
+    // very hypothetical -- lack of ranged weapon validity checks
+    private string ReasonCantFireAt(Actor target, int range, List<Point> LoF)
+    {
+      Contract.Requires(null != target);
+      LoF?.Clear();
+      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      if (range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (!LOS.CanTraceFireLine(Location, target.Location.Position, range, LoF)) return "no line of fire";
+      if (target.IsDead) return "already dead!";
+      return "";
+    }
+
+    public bool CanFireAt(Actor target, int range, List<Point> LoF, out string reason)
+    {
+      reason = ReasonCantFireAt(target,range,LoF);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanFireAt(Actor target, int range)
+    {
+      return string.IsNullOrEmpty(ReasonCantFireAt(target,range,null));
     }
 
     private string ReasonCantContrafactualFireAt(Actor target, Point p)

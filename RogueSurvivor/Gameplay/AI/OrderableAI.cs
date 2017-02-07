@@ -585,6 +585,48 @@ namespace djack.RogueSurvivor.Gameplay.AI
       game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
+    private void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
+    {
+      Attack tmp = m_Actor.HypotheticalRangedAttack((rw.Model as ItemRangedWeaponModel).Attack, dist, en);
+	  int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
+      if (0 >= a_dam) return;   // do not update ineffective weapons
+      int a_kill_b_in = ((8*en.HitPoints)/(5*a_dam))+2;	// assume bad luck when attacking.
+      // Also, assume one fluky miss and compensate for overkill returning 0 rather than 1 attacks.
+      if (a_kill_b_in > rw.Ammo) {  // account for reloading weapon
+        int turns = a_kill_b_in-rw.Ammo;
+        a_kill_b_in++;
+        a_kill_b_in += turns/(rw.Model as ItemRangedWeaponModel).MaxAmmo;        
+      }
+      if (null == best_weapons) {
+        best_weapon_ETAs[en] = a_kill_b_in;
+        return;
+      } else if (!best_weapons.ContainsKey(en)) {
+        best_weapons[en] = rw;
+        best_weapon_ETAs[en] = a_kill_b_in;
+        return;
+      } else if (best_weapon_ETAs[en]>a_kill_b_in) {
+        best_weapons[en] = rw;
+        best_weapon_ETAs[en] = a_kill_b_in;
+        return;
+      } else if (2 == best_weapon_ETAs[en]) {
+        Attack tmp2 = m_Actor.HypotheticalRangedAttack((best_weapons[en].Model as ItemRangedWeaponModel).Attack, dist, en);
+        if (tmp.DamageValue < tmp2.DamageValue) {   // lower damage for overkill is usually better
+          best_weapons[en] = rw;
+          best_weapon_ETAs[en] = a_kill_b_in;
+        }
+        return;
+      }
+    }
+
+    private ActorAction Equip(ItemRangedWeapon rw) {
+      if (m_Actor.CanEquip(rw)) RogueForm.Game.DoEquipItem(m_Actor, rw);
+      if (0 >= rw.Ammo) {
+        ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw);
+        if (null != ammo) return new ActionUseItem(m_Actor, ammo);
+      }
+      return null;
+    }
+
     // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
@@ -667,28 +709,74 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
       // also, damage field should be non-null because enemies is non-null
-      // XXX to improve on the following, we need Actor::HypotheticalRangedAttack(dist,actor)
-#if FAIL
-      Dictionary<Actor,int> best_weapon_ETAs = new Dictionary<Actor,int>();
-      if (1<available_ranged_weapons.Count) {
-        Dictionary<Actor,ItemRangedWeapon> best_weapons = new Dictionary<Actor,GameItems.IDs>();
-        foreach(Percept p in enemies) {
-          Actor a = p.Percepted as Actor;
-          BestRangedWeaponFor(a,GridDistance(m_Actor.Location.Position,p.Location.Position),available_ranged_weapons,best_weapons,best_weapon_ETAs);    // XXX to be implemented
-        }
-        // If we are in the damage field, identify which threat are causing the damage field
-        // Identify the nearest threat
-      } else {
-        // exactly one usable ranged weapon; thus GetBestRangedWeaponWithAmmo() should be non-null and be the single available weapon
-        ItemRangedWeapon rw = GetBestRangedWeaponWithAmmo();
-        if (m_Actor.CanEquip(rw)) game.DoEquipItem(m_Actor, rw);
-        foreach(Percept p in enemies) {
-          Actor a = p.Percepted as Actor;
-          ETAToKill(a,GridDistance(m_Actor.Location.Position,p.Location.Position),rw,best_weapon_ETAs);    // XXX to be implemented
+
+      int best_range = available_ranged_weapons.Select(rw => (rw.Model as ItemRangedWeaponModel).Attack.Range).Max();
+      List<Percept> en_in_range = FilterFireTargets(enemies,best_range);
+      
+      // if no enemies in range, or just one available ranged weapon, use the best one
+      if (null == en_in_range || 1==available_ranged_weapons.Count) {
+        tmpAction = Equip(GetBestRangedWeaponWithAmmo());
+        if (null != tmpAction) return tmpAction;
+      }
+
+      if (null == en_in_range && null != legal_steps) {
+        List<Percept> percepts2 = FilterPossibleFireTargets(enemies);
+		if (null != percepts2) {
+		  IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
+		  if (tmp.Any()) {
+	        tmpAction = DecideMove(tmp, enemies, friends);
+            if (null != tmpAction) {
+              m_Actor.Activity = Activity.FIGHTING;
+			  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+			  if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+              return tmpAction;
+            }
+		  }
         }
       }
-#endif
 
+      if (null == en_in_range) return null; // no enemies in range, no constructive action: do somnething else
+
+      if (1 == available_ranged_weapons.Count) {
+        if (1 == en_in_range.Count) {
+          Actor actor = en_in_range[0].Percepted as Actor;
+          tmpAction = BehaviorRangedAttack(actor);
+          if (tmpAction != null) {
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = actor;
+            return tmpAction;
+          }
+          return null;
+        } else if (null != immediate_threat && 1 == immediate_threat.Count) {
+          Actor actor = immediate_threat.First();
+          tmpAction = BehaviorRangedAttack(actor);
+          if (tmpAction != null) {
+            m_Actor.Activity = Activity.FIGHTING;
+            m_Actor.TargetActor = actor;
+            return tmpAction;
+          }
+          return null;
+        }
+      }
+
+      // Get ETA stats
+      Dictionary<Actor,int> best_weapon_ETAs = new Dictionary<Actor,int>();
+      Dictionary<Actor,ItemRangedWeapon> best_weapons = new Dictionary<Actor,ItemRangedWeapon>();
+      if (1<available_ranged_weapons.Count) {
+        foreach(ItemRangedWeapon rw in available_ranged_weapons) {
+          foreach(Percept p in en_in_range) {
+            Actor a = p.Percepted as Actor;
+            ETAToKill(a,Rules.GridDistance(m_Actor.Location.Position,p.Location.Position),rw,best_weapon_ETAs, best_weapons);
+          }
+        }
+      } else {
+        foreach(Percept p in en_in_range) {
+          Actor a = p.Percepted as Actor;
+          ETAToKill(a,Rules.GridDistance(m_Actor.Location.Position,p.Location.Position), available_ranged_weapons[0], best_weapon_ETAs);
+        }
+      }
+
+      // XXX old code below
       { // reload existing ranged weapon
       ItemRangedWeapon rw = GetEquippedWeapon() as ItemRangedWeapon;
       if (null != rw && 0 >= rw.Ammo) {
@@ -731,21 +819,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.TargetActor = actor;
             return tmpAction;
           }
-		} else if (null != legal_steps) {
-		  percepts2 = FilterPossibleFireTargets(enemies);
-		  if (null != percepts2) {
-		    IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
-		    if (tmp.Any()) {
-	          tmpAction = DecideMove(tmp, enemies, friends);
-              if (null != tmpAction) {
-                m_Actor.Activity = Activity.FIGHTING;
-			    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-				if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
-                return tmpAction;
-              }
-		    }
-		  }
-	    }
+		}
 	  }
 
       return null;  // weapon chosen, no further action
