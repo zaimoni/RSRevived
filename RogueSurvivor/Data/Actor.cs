@@ -712,7 +712,6 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null != target);
       LoF?.Clear();
-      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
       if (!LOS.CanTraceFireLine(Location, target.Location.Position, range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";

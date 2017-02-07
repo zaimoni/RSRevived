@@ -737,11 +737,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == en_in_range) return null; // no enemies in range, no constructive action: do somnething else
 
+      // filter immediate threat by being in range
+      HashSet<Actor> immediate_threat_in_range = (null!=immediate_threat ? new HashSet<Actor>(immediate_threat) : new HashSet<Actor>());
+      if (null != immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
+
       if (1 == available_ranged_weapons.Count) {
         if (1 == en_in_range.Count) {
           return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
-        } else if (null != immediate_threat && 1 == immediate_threat.Count) {
-          return BehaviorRangedAttack(immediate_threat.First());
+        } else if (1 == immediate_threat_in_range.Count) {
+          return BehaviorRangedAttack(immediate_threat_in_range.First());
         }
       }
 
@@ -761,6 +765,40 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ETAToKill(a,Rules.GridDistance(m_Actor.Location.Position,p.Location.Position), available_ranged_weapons[0], best_weapon_ETAs);
         }
       }
+
+      // cf above: we got here because there were multiple ranged weapons to choose from in these cases
+      if (1 == en_in_range.Count) {
+        Actor a = en_in_range[0].Percepted as Actor;
+        tmpAction = Equip(best_weapons[a]);
+        if (null != tmpAction) return tmpAction;
+        return BehaviorRangedAttack(en_in_range[0].Percepted as Actor);
+      } else if (1 == immediate_threat_in_range.Count) {
+        Actor a = immediate_threat_in_range.First();
+        tmpAction = Equip(best_weapons[a]);
+        if (null != tmpAction) return tmpAction;
+        return BehaviorRangedAttack(a);
+      }
+      // at this point: there definitely is more than one enemy in range
+      // if there are any immediate threat, there are at least two immediate threat
+      if (2 <= immediate_threat_in_range.Count) {
+        int ETA_min = immediate_threat_in_range.Select(a => best_weapon_ETAs[a]).Min();
+        immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => best_weapon_ETAs[a] == ETA_min));
+        if (2 <= immediate_threat_in_range.Count) {
+          int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Select(a => a.HitPoints).Max() : immediate_threat_in_range.Select(a => a.HitPoints).Min());
+          immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
+          if (2 <= immediate_threat_in_range.Count) {
+           int dist_min = immediate_threat_in_range.Select(a => Rules.GridDistance(m_Actor.Location.Position,a.Location.Position)).Min();
+           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.GridDistance(m_Actor.Location.Position, a.Location.Position) == dist_min));
+          }
+        }
+        Actor actor = immediate_threat_in_range.First();
+        if (1 < available_ranged_weapons.Count) {
+         tmpAction = Equip(best_weapons[actor]);
+         if (null != tmpAction) return tmpAction;
+        }
+        return BehaviorRangedAttack(actor);
+      }
+      // at this point, no immediate threat in range
 
       // XXX old code below
       { // reload existing ranged weapon
