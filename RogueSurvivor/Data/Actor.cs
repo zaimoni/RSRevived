@@ -1079,6 +1079,39 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public List<Point> FastestStepTo(Map m,Point src,Point dest)
+    {
+      int dist = Rules.GridDistance(src,dest);
+      IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>src+dir).Where(pt=> dist>Rules.GridDistance(pt,dest) && m.IsWalkableFor(pt,this));
+      return tmp.Any() ? tmp.ToList() : null;
+    }
+
+    public List<List<Point> > MinStepPathTo(Map m, Point src, Point dest)
+    {
+      List<List<Point> > ret = new List<List<Point> >();
+      if (dest==src) return null;
+      List<Point> tmp = FastestStepTo(m,src,dest);
+      if (null == tmp) return null;
+      ret.Add(tmp);
+      while(!tmp.Contains(dest)) {
+        int dist = Rules.GridDistance(dest,tmp[0]);
+        if (1==dist) {
+          tmp = new List<Point>(){dest};
+        } else {
+          HashSet<Point> tmp2 = new HashSet<Point>();
+          foreach(Point pt in tmp) {
+            List<Point> tmp3 = FastestStepTo(m,pt,dest);
+            if (null == tmp3) continue;
+            tmp2.UnionWith(tmp3);
+          }
+          if (0 >= tmp2.Count) return null;
+          tmp = tmp2.ToList();
+        }
+        ret.Add(tmp);
+      }
+      return ret;
+    }
+
     public List<Point> OneStepRange(Map m,Point p)
     {
       IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>p+dir).Where(pt=>m.IsWalkableFor(pt,this));

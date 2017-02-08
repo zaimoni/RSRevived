@@ -384,6 +384,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
           if (IsTileTaboo(p.Location.Position)) return true;    // already ruled out
+          if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way
           return null==BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
         });
         if (perceptList2 != null) {
@@ -414,11 +415,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!m_Actor.CanTradeWith(actor)) return true;
             if (IsActorTabooTrade(actor)) return true;
             if (null == actor.GetRationalTradeableItems(this)) return true;   // XXX avoid Charisma check
+            if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
             // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
             return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
           });
           if (percepts2 != null) {
-            Actor actor = FilterNearest(percepts2).Percepted as Actor;  // XXX unstable; this can throw a null error
+            Actor actor = FilterNearest(percepts2).Percepted as Actor;
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
               tmpAction = new ActionTrade(m_Actor, actor);
               if (tmpAction.IsLegal()) {
