@@ -682,7 +682,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  List<Point> tmp2 = src_r2.ToList();
 
 	  // do not get in the way of allies' line of fire
-	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
+	  if (2 <= tmp2.Count) tmp2 = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
@@ -697,7 +697,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       HashSet<Point> new_los = new HashSet<Point>();
 	  if (null != hypothetical_los) {
 	    // only need points newly in FOV that aren't currently
-	    foreach(Point pt in tmp) {
+	    foreach(Point pt in tmp2) {
 	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
           new_los.UnionWith(hypothetical_los[pt]);
 	    }
@@ -708,16 +708,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
         sights_to_see = null;
       }
 
-	  if (null != threats && 2<=tmp.Count) {
+	  if (null != threats && 2<=tmp2.Count) {
         tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
 	  }
-	  if (null != sights_to_see && 2<=tmp.Count) {
+	  if (null != sights_to_see && 2<=tmp2.Count) {
         HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map);
         if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
 	  }
 
       // weakly prefer not to jump
-      if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
+      if (2 <= tmp2.Count)  tmp2 = DecideMove_NoJump(tmp2);
+
+      // TODO: filter down intermediate destinations
+      IEnumerable<Point> tmp3 = tmp.Where(pt => IsAdjacentTo(pt,tmp2))
+
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
