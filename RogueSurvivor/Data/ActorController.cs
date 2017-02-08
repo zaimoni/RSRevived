@@ -241,7 +241,9 @@ namespace djack.RogueSurvivor.Data
     public bool IsTradeableItem(Item it)
     {
 		Contract.Requires(null != it);
+#if DEBUG
         Contract.Requires(Actor.Model.Abilities.CanTrade);
+#endif
         if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
         if (it is ItemFood)
             {
@@ -290,8 +292,10 @@ namespace djack.RogueSurvivor.Data
     public virtual bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);
+#if DEBUG
       Contract.Requires(Actor.Model.Abilities.HasInventory);    // CHAR guards: wander action can trigger getting items from containers.
       Contract.Requires(Actor.Model.Abilities.CanUseMapObjects);
+#endif
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
 	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
@@ -359,7 +363,9 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null!=speaker);
       Contract.Requires(speaker.Model.Abilities.CanTrade);
+#if DEBUG
       Contract.Requires(Actor.Model.Abilities.CanTrade);
+#endif
       if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
       return IsInterestingItem(offeredItem);
     }

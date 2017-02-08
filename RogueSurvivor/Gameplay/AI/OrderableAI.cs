@@ -532,7 +532,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Requires(null!=speaker);
       Contract.Requires(speaker.Model.Abilities.CanTrade);
+#if DEBUG
       Contract.Requires(Actor.Model.Abilities.CanTrade);
+#endif
       return IsInterestingItem(offeredItem);
     }
 
@@ -631,7 +633,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
       Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
+#if DEBUG
       Contract.Requires((null!=immediate_threat)==(null!=damage_field && damage_field.ContainsKey(Actor.Location.Position)));
+#endif
 
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;

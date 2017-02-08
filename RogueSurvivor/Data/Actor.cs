@@ -1866,7 +1866,9 @@ namespace djack.RogueSurvivor.Data
     public List<Item> GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
     {
       Contract.Requires(Model.Abilities.CanTrade);
+#if DEBUG
       Contract.Requires(buyer.Actor.Model.Abilities.CanTrade);
+#endif
 
 //    if (buyer.IsPlayer) return Inventory.Items
 
