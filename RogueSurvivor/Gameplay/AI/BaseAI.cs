@@ -625,9 +625,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();
 
-	  // damaging traps are a problem
-	  if (2 <= tmp.Count) tmp = DecideMove_WaryOfTraps(tmp);
-
 	  // do not get in the way of allies' line of fire
 	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
 
@@ -684,9 +681,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  List<Point> tmp = src.ToList();
 	  List<Point> tmp2 = src_r2.ToList();
 
-	  // damaging traps are a problem
-	  if (2 <= tmp.Count) tmp = DecideMove_WaryOfTraps(tmp);
-
 	  // do not get in the way of allies' line of fire
 	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
 
@@ -734,7 +728,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	}
 #endif
 
-        protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
+    protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other == null || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location.Position, other.Location.Position);

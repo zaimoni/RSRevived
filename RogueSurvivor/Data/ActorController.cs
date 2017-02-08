@@ -203,6 +203,19 @@ namespace djack.RogueSurvivor.Data
       return in_blast_field;
 	}
 
+    public void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+    {
+      List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
+      foreach(Percept p in goals) {
+        List<ItemTrap> tmp = (p.Percepted as Inventory).GetItemsByType<ItemTrap>();
+        if (null == tmp) continue;
+        int damage = tmp.Sum(trap => (trap.IsActivated ? trap.TrapModel.Damage : 0));   // XXX wrong for barbed wire
+        if (0 >= damage) continue;
+        if (damage_field.ContainsKey(p.Location.Position)) damage_field[p.Location.Position] += damage;
+        else damage_field[p.Location.Position] = damage;
+      }
+    }
+
     public abstract ActorAction GetAction(RogueGame game);
 
     // savegame support

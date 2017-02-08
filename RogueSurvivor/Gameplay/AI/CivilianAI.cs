@@ -197,6 +197,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Actor> slow_melee_threat = new List<Actor>();
       HashSet<Actor> immediate_threat = new HashSet<Actor>();
       if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
+      AddTrapsToDamageField(damage_field, percepts1);
       bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts1);  // only civilians and soldiers respect explosives; CHAR and gang don't
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
