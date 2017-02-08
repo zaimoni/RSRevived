@@ -674,7 +674,67 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return null;
 	}
 
-    protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
+#if FAIL
+    // src_r2 is the desired destination list
+    // src are legal steps
+    protected ActorAction DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2, List<Percept> enemies, List<Percept> friends)
+	{
+	  Contract.Requires(null != src);
+	  Contract.Requires(null != src_r2);
+	  List<Point> tmp = src.ToList();
+	  List<Point> tmp2 = src_r2.ToList();
+
+	  // damaging traps are a problem
+	  if (2 <= tmp.Count) tmp = DecideMove_WaryOfTraps(tmp);
+
+	  // do not get in the way of allies' line of fire
+	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
+
+      // XXX if we have priority-see locations, maximize that
+      // XXX if we have threat tracking, maximize threat cleared
+      // XXX if we have item memory, maximize "update"
+	  bool want_LOS_heuristics = false;
+	  ThreatTracking threats = m_Actor.Threats;
+	  if (null != threats) want_LOS_heuristics = true;
+	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  if (null != sights_to_see) want_LOS_heuristics = true;
+
+	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>>() : null);
+      HashSet<Point> new_los = new HashSet<Point>();
+	  if (null != hypothetical_los) {
+	    // only need points newly in FOV that aren't currently
+	    foreach(Point pt in tmp) {
+	      hypothetical_los[pt] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt)).Except(FOV));
+          new_los.UnionWith(hypothetical_los[pt]);
+	    }
+	  }
+      // only need to check if new locations seen
+      if (0 >= new_los.Count) {
+        threats = null;
+        sights_to_see = null;
+      }
+
+	  if (null != threats && 2<=tmp.Count) {
+        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
+	  }
+	  if (null != sights_to_see && 2<=tmp.Count) {
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map);
+        if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
+	  }
+
+      // weakly prefer not to jump
+      if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
+	  while(0<tmp.Count) {
+	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
+		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
+		if (null != ret && ret.IsLegal()) return ret;
+		tmp.RemoveAt(i);
+	  }
+	  return null;
+	}
+#endif
+
+        protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other == null || other.IsDead) return null;
       int num = Rules.GridDistance(m_Actor.Location.Position, other.Location.Position);

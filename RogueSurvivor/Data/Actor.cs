@@ -1085,9 +1085,9 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, HashSet<Point> now)
+    public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
     {
-      Contract.Requires(0<now.Count);
+      Contract.Requires(0<now.Count());
       HashSet<Point> ret = new HashSet<Point>();
       foreach(Point pt in now) {
         List<Point> tmp = OneStepRange(m,pt);
