@@ -301,7 +301,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) return tmpAction;
 
-      if (null != enemies && assistLeader) {
+      if (null != enemies && assistLeader) {    // difference between civilian and CHAR/soldier is ok here
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
@@ -442,16 +442,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {
+      if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {    // civilian-specific
         tmpAction = BehaviorUseStenchKiller();
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);
+      tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);    // civilian-specific
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
-      if (m_Actor.Model.Abilities.HasSanity) {
+
+      if (m_Actor.Model.Abilities.HasSanity) {  // not logically civilian-specific, but needs a rework anyway
         if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
           tmpAction = BehaviorUseEntertainment();
           if (null != tmpAction)  return tmpAction;
@@ -459,6 +460,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorDropBoringEntertainment(game);
         if (null != tmpAction) return tmpAction;
       }
+
       if (m_Actor.HasLeader && !DontFollowLeader) {
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
@@ -515,7 +517,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      tmpAction = BehaviorGoReviveCorpse(game, percepts1);
+      tmpAction = BehaviorGoReviveCorpse(game, percepts1);  // not logically CivilianAI only
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -528,7 +530,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorBuildTrap(game);
         if (null != tmpAction) return tmpAction;
       }
-      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
+
+      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
         tmpAction = BehaviorBuildLargeFortification(game, 1);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
@@ -585,6 +588,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
 	  }
+
       if (m_Actor.CountFollowers > 0) {
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
@@ -596,11 +600,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      // hunt down threats
+      // XXX civilians that start in a boarded-up building (sewer maintenance, gun shop, hardware store
+      // should stay there until they get the all-clear from the police
+
+      // hunt down threats -- works for police
       tmpAction = BehaviorHuntDownThreat();
       if (null != tmpAction) return tmpAction;
 
-      // tourism
+      // tourism -- works for police
       tmpAction = BehaviorTourism();
       if (null != tmpAction) return tmpAction;
 

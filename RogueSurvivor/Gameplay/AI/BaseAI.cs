@@ -793,7 +793,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         p = otherPosition;
         p.X += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
         p.Y += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
-                m_Actor.Location.Map.TrimToBounds(ref p);
+        m_Actor.Location.Map.TrimToBounds(ref p);
       }
       while (Rules.GridDistance(p, otherPosition) < minDist && ++num < 100);
       ActorAction a = BehaviorIntelligentBumpToward(p);

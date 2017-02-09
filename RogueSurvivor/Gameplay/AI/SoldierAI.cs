@@ -204,8 +204,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) return tmpAction;
+
       if (null != old_enemies) {
         Percept target = FilterNearest(old_enemies);
         tmpAction = BehaviorChargeEnemy(target);
@@ -216,8 +219,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
-      if (null != tmpAction) return tmpAction;
+      // the new objectives system should trigger after all enemies-handling behavior
+      if (0<Objectives.Count) {
+        ActorAction goal_action = null;
+        foreach(Objective o in new List<Objective>(Objectives)) {
+          if (o.IsExpired) Objectives.Remove(o);
+          else if (o.UrgentAction(out goal_action)) {
+            if (null==goal_action) Objectives.Remove(o);
+#if DEBUG
+            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+#else
+            else if (!goal_action.IsLegal()) Objectives.Remove(o);
+#endif
+          }
+        }
+      }
 
       if (null == old_enemies && OkToSleepNow) {
         tmpAction = BehaviorSecurePerimeter();
@@ -232,7 +248,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      if (current_enemies != null) {
+      tmpAction = BehaviorDropUselessItem();
+      if (null != tmpAction) return tmpAction;
+
+      if (current_enemies != null) {    // this is morally dead code (needs testing)
         Percept target = FilterNearest(current_enemies);
         if (m_Actor.Location == target.Location) {
           Actor actor = target.Percepted as Actor;
@@ -245,6 +264,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
+      // stack grabbing/trade goes here
+
       if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) {
         tmpAction = BehaviorBuildLargeFortification(game, START_FORT_LINE_CHANCE);
         if (null != tmpAction) {
@@ -259,15 +281,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
       if (m_Actor.HasLeader && !DontFollowLeader) {
         Point position = m_Actor.Leader.Location.Position;
-        tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);
+        tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
           return tmpAction;
         }
       }
+      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < m_Actor.MaxFollowers))
+      {
+        Percept target = FilterNearest(friends);
+        if (target != null) {
+          tmpAction = BehaviorLeadActor(target);
+          if (null != tmpAction) {
+            m_Actor.TargetActor = target.Percepted as Actor;
+            return tmpAction;
+          }
+        }
+      }
+
+      // critical item memory check goes here
+
       if (m_Actor.CountFollowers > 0) {
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(4, out target);
@@ -278,6 +315,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
+      // hunt down threats would go here
+      // tourism would go here
+
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;

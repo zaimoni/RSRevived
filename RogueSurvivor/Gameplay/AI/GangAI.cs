@@ -197,8 +197,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) return tmpAction;
 
-      if (null != current_enemies && !m_Actor.IsTired) {
-        Percept target = FilterNearest(current_enemies);
+      if (null != old_enemies && !m_Actor.IsTired) {    // difference between gang and CHAR/soldier is ok here
+        Percept target = FilterNearest(old_enemies);
         tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
@@ -290,8 +290,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionSay(m_Actor, target, string.Format("Hey! That's some nice {0} you have here!", (object) obj.Model.SingleName), RogueGame.Sayflags.IS_IMPORTANT); // takes turn for game balance
         }
       }
-      tmpAction = BehaviorAttackBarricade(game);
+
+      tmpAction = BehaviorAttackBarricade(game);    // gang-specific
       if (null != tmpAction) return tmpAction;
+
       if (m_Actor.HasLeader && !DontFollowLeader) {
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
@@ -302,7 +304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < m_Actor.MaxFollowers) {
-        Percept target = FilterNearest(FilterNonEnemies(percepts1));
+        Percept target = FilterNearest(friends);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {
@@ -321,6 +323,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
+      // hunt down threats would go here
+      // tourism would go here
+
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;

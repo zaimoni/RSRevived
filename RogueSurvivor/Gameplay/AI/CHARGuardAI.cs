@@ -159,14 +159,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, current_enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
 
-      if (current_enemies != null) {
+      if (null != current_enemies) {
         object percepted = FilterNearest(current_enemies).Percepted;
         tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
-      List<Percept> perceptList2 = FilterNonEnemies(percepts1);
-      if (perceptList2 != null) {
-        List<Percept> percepts3 = perceptList2.Filter(p =>
+      if (null != friends) {
+        List<Percept> percepts3 = friends.Filter(p =>
         {
           Actor actor = p.Percepted as Actor;
           if (actor.Faction == game.GameFactions.TheCHARCorporation)
@@ -182,11 +181,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return new ActionSay(m_Actor, target, "Hey YOU!", (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
         }
       }
-      if (null != old_enemies && perceptList2 != null) {
-        tmpAction = BehaviorWarnFriends(perceptList2, FilterNearest(old_enemies).Percepted as Actor);
+      if (null != current_enemies && null != friends) {
+        tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
         if (null != tmpAction) return tmpAction;
       }
 
+      tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+      if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) return tmpAction;
 
@@ -203,6 +204,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
+      // the new objectives system should trigger after all enemies-handling behavior
+      if (0<Objectives.Count) {
+        ActorAction goal_action = null;
+        foreach(Objective o in new List<Objective>(Objectives)) {
+          if (o.IsExpired) Objectives.Remove(o);
+          else if (o.UrgentAction(out goal_action)) {
+            if (null==goal_action) Objectives.Remove(o);
+#if DEBUG
+            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+#else
+            else if (!goal_action.IsLegal()) Objectives.Remove(o);
+#endif
+          }
+        }
+      }
+
       if (null == old_enemies && OkToSleepNow) {
         tmpAction = BehaviorSleep(game);
         if (null != tmpAction) {
@@ -211,6 +229,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+      tmpAction = BehaviorDropUselessItem();
+      if (null != tmpAction) return tmpAction;
+
+      // stack grabbing/trade goes here
+
       if (m_Actor.HasLeader && !DontFollowLeader) {
         tmpAction = BehaviorFollowActor(m_Actor.Leader, 1);
         if (null != tmpAction) {
@@ -219,6 +242,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+      if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP) >= 1 && (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < m_Actor.MaxFollowers))
+      {
+        Percept target = FilterNearest(friends);
+        if (target != null) {
+          tmpAction = BehaviorLeadActor(target);
+          if (null != tmpAction) {
+            m_Actor.TargetActor = target.Percepted as Actor;
+            return tmpAction;
+          }
+        }
+      }
+
+      // critical item memory check goes here
+
+      // possible we don't want CHAR guard leadership at all.  The stay-near-leader behavior doesn't fit, regardless (would go here)
+
+      // hunt down threats would go here
+      // tourism would go here
+
       tmpAction = BehaviorWander(loc => RogueGame.IsInCHAROffice(loc));
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
