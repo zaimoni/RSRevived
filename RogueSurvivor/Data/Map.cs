@@ -218,6 +218,44 @@ namespace djack.RogueSurvivor.Data
       m_Tiles[x, y].Model = model;
     }
 
+    // thin wrappers based on Tile API
+    public bool HasDecorationsAt(int x, int y)
+    {
+      return m_Tiles[x, y].HasDecorations;
+    }
+
+    public IEnumerable<string> DecorationsAt(int x, int y)
+    {
+      return m_Tiles[x, y].Decorations;
+    }
+
+    public void AddDecorationAt(string imageID, int x, int y)
+    {
+      m_Tiles[x, y].AddDecoration(imageID);
+    }
+
+    public bool HasDecorationAt(string imageID, int x, int y)
+    {
+      return m_Tiles[x, y].HasDecoration(imageID);
+    }
+
+    public void RemoveAllDecorationsAt(int x, int y)
+    {
+      m_Tiles[x, y].RemoveAllDecorations();
+    }
+
+    public void RemoveDecorationAt(string imageID, int x, int y)
+    {
+      m_Tiles[x, y].RemoveDecoration(imageID);
+    }
+
+    public bool HasDecorationsAt(Point pt) { return HasDecorationsAt(pt.X, pt.Y); }
+    public IEnumerable<string> DecorationsAt(Point pt) { return DecorationsAt(pt.X, pt.Y); }
+    public void AddDecorationAt(string imageID, Point pt) { AddDecorationAt(imageID, pt.X, pt.Y); }
+    public bool HasDecorationAt(string imageID, Point pt) { return HasDecorationAt(imageID, pt.X, pt.Y); }
+    public void RemoveAllDecorationsAt(Point pt) { RemoveAllDecorationsAt(pt.X, pt.Y); }
+    public void RemoveDecorationAt(string imageID, Point pt) { RemoveDecorationAt(imageID, pt.X, pt.Y); }
+
     public Exit GetExitAt(Point pos)
     {
       Exit exit;

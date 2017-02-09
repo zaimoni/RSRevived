@@ -33,40 +33,28 @@ namespace djack.RogueSurvivor.Data
         return (m_Flags & Tile.Flags.IS_INSIDE) != Tile.Flags.NONE;
       }
       set {
-        if (value)
-          m_Flags |= Tile.Flags.IS_INSIDE;
-        else
-          m_Flags &= ~Tile.Flags.IS_INSIDE;
+        if (value) m_Flags |= Tile.Flags.IS_INSIDE;
+        else m_Flags &= ~Tile.Flags.IS_INSIDE;
       }
     }
 
-    public bool IsInView
-    {
-      get
-      {
+    public bool IsInView {
+      get {
         return (m_Flags & Tile.Flags.IS_IN_VIEW) != Tile.Flags.NONE;
       }
-      set
-      {
-        if (value)
-                    m_Flags |= Tile.Flags.IS_IN_VIEW;
-        else
-                    m_Flags &= ~Tile.Flags.IS_IN_VIEW;
+      set {
+        if (value) m_Flags |= Tile.Flags.IS_IN_VIEW;
+        else m_Flags &= ~Tile.Flags.IS_IN_VIEW;
       }
     }
 
-    public bool IsVisited
-    {
-      get
-      {
+    public bool IsVisited {
+      get {
         return (m_Flags & Tile.Flags.IS_VISITED) != Tile.Flags.NONE;
       }
-      set
-      {
-        if (value)
-                    m_Flags |= Tile.Flags.IS_VISITED;
-        else
-                    m_Flags &= ~Tile.Flags.IS_VISITED;
+      set {
+        if (value) m_Flags |= Tile.Flags.IS_VISITED;
+        else m_Flags &= ~Tile.Flags.IS_VISITED;
       }
     }
 
@@ -100,16 +88,100 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveDecoration(string imageID)
     {
-      if (m_Decorations == null || !m_Decorations.Remove(imageID) || m_Decorations.Count != 0)
-        return;
-            m_Decorations = (List<string>) null;
+      if (m_Decorations == null || !m_Decorations.Remove(imageID) || m_Decorations.Count != 0) return;
+      m_Decorations = null;
     }
 
     public void OptimizeBeforeSaving()
     {
-      if (m_Decorations == null)
-        return;
-            m_Decorations.TrimExcess();
+      m_Decorations?.TrimExcess();
+    }
+
+    [System.Flags]
+    private enum Flags
+    {
+      NONE = 0,
+      IS_INSIDE = 1,    // tile flag
+      IS_IN_VIEW = 2,   // tile-player flag
+      IS_VISITED = 4,   // tile-player flag
+    }
+  }
+
+  // prototype a replacement for the Tile class that never gets saved to hard drive
+  internal class TileV2
+  {
+    private int m_ModelID;
+    private TileV2.Flags m_Flags;
+    private Location m_Location;
+
+    public TileModel Model {
+      get {
+        Contract.Ensures(null!=Contract.Result<TileModel>());
+        return Models.Tiles[m_ModelID];
+      }
+      set {
+        Contract.Requires(null!=value);
+        m_ModelID = value.ID;
+      }
+    }
+
+    public bool IsInside {
+      get {
+        return (m_Flags & TileV2.Flags.IS_INSIDE) != TileV2.Flags.NONE;
+      }
+      set {
+        if (value) m_Flags |= TileV2.Flags.IS_INSIDE;
+        else m_Flags &= ~TileV2.Flags.IS_INSIDE;
+      }
+    }
+
+    public bool IsInView {
+      get {
+        return (m_Flags & TileV2.Flags.IS_IN_VIEW) != TileV2.Flags.NONE;
+      }
+      set {
+        if (value) m_Flags |= TileV2.Flags.IS_IN_VIEW;
+        else m_Flags &= ~TileV2.Flags.IS_IN_VIEW;
+      }
+    }
+
+    public bool IsVisited {
+      get {
+        return (m_Flags & TileV2.Flags.IS_VISITED) != TileV2.Flags.NONE;
+      }
+      set {
+        if (value) m_Flags |= TileV2.Flags.IS_VISITED;
+        else m_Flags &= ~TileV2.Flags.IS_VISITED;
+      }
+    }
+
+    public bool HasDecorations { get { return m_Location.Map.HasDecorationsAt(m_Location.Position); } }
+    public IEnumerable<string> Decorations { get { return m_Location.Map.DecorationsAt(m_Location.Position); } }
+
+    public TileV2(int modelID, bool inside)
+    {
+      m_ModelID = modelID;
+      IsInside = inside;
+    }
+
+    public void AddDecoration(string imageID)
+    {
+      m_Location.Map.AddDecorationAt(imageID,m_Location.Position);
+    }
+
+    public bool HasDecoration(string imageID)
+    {
+      return m_Location.Map.HasDecorationAt(imageID,m_Location.Position);
+    }
+
+    public void RemoveAllDecorations()
+    {
+      m_Location.Map.RemoveAllDecorationsAt(m_Location.Position);
+    }
+
+    public void RemoveDecoration(string imageID)
+    {
+      m_Location.Map.RemoveDecorationAt(imageID,m_Location.Position);
     }
 
     [System.Flags]
