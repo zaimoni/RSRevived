@@ -363,36 +363,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <returns>null, or a non-free action</returns>
     protected ActorAction BehaviorEquipWeapon(RogueGame game)
     {
-      Item equippedWeapon = GetEquippedWeapon();
       // One of our callers is InsaneHumanAI::SelectAction.  As this AI is always insane, it does not trigger
       // random insane actions which could pick up ranged weapons.
-      // Thus, ... replacing null with false is ok here
-      bool canFireWeapons = (this as OrderableAI)?.Directives.CanFireWeapons ?? false;
-      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon && !canFireWeapons) {
-        game.DoUnequipItem(m_Actor, equippedWeapon);
-        equippedWeapon = null;
-      }
-      if (equippedWeapon != null && equippedWeapon is ItemRangedWeapon)
-      {
-        ItemRangedWeapon rw = equippedWeapon as ItemRangedWeapon;
-        if (rw.Ammo > 0) return null;
-        ItemAmmo compatibleAmmoItem = m_Actor.GetCompatibleAmmoItem(rw);
-        if (compatibleAmmoItem != null)
-          return new ActionUseItem(m_Actor, compatibleAmmoItem);
-        game.DoUnequipItem(m_Actor, equippedWeapon);
-        equippedWeapon = null;
-      }
-      if (canFireWeapons) {
-        Item rangedWeaponWithAmmo = GetBestRangedWeaponWithAmmo();  // rely on OrderableAI doing the right thing
-        if (rangedWeaponWithAmmo != null && m_Actor.CanEquip(rangedWeaponWithAmmo)) {
-          game.DoEquipItem(m_Actor, rangedWeaponWithAmmo);
-          return null;
-        }
-      }
+      // Thus, no AI that calls this function has a usable firearm in inventory.
 
-      // ranged weapon non-option for some reason
+      Item equippedWeapon = GetEquippedWeapon();
       ItemMeleeWeapon bestMeleeWeapon = m_Actor.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
-      if (bestMeleeWeapon == null) return null;
+
+      if (bestMeleeWeapon == null) {
+        if (null != equippedWeapon) game.DoUnequipItem(m_Actor, equippedWeapon);    // unusable ranged weapon
+        return null;
+      }
       if (equippedWeapon == bestMeleeWeapon) return null;
       game.DoEquipItem(m_Actor, bestMeleeWeapon);
       return null;
