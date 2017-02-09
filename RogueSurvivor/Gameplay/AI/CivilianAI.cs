@@ -205,10 +205,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Point> retreat = null;
       List<Point> run_retreat = null;
+      bool safe_retreat = false;
+      bool safe_run_retreat = false;
       // calculate retreat destinations if possibly needed
       if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        retreat = FindSafeRetreat(damage_field,legal_steps) ?? FindRetreat(damage_field, legal_steps);
-        AvoidBeingCornered(retreat);
+        retreat = FindRetreat(damage_field, legal_steps);
+        if (null != retreat) {
+          AvoidBeingCornered(retreat);
+          safe_retreat = !damage_field.ContainsKey(retreat[0]);
+        }
+        if (m_Actor.RunIsFreeMove && m_Actor.CanRun()) { 
+          run_retreat = FindRunRetreat(damage_field, legal_steps);
+          if (null != run_retreat) {
+            AvoidBeingRunCornered(run_retreat);
+            safe_run_retreat = !damage_field.ContainsKey(run_retreat[0]);
+          }
+        }
       }
 
       // XXX the proper weapon should be calculated like a player....
