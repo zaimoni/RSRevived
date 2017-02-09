@@ -551,6 +551,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       dests.RemoveAll(pt => max_LoF>targets[pt]);
     }
 
+    protected List<ItemRangedWeapon> GetAvailableRangedWeapons()
+    {
+      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.GetCompatibleAmmoItem(rw)) : null);
+      return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
+    }
+
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
@@ -699,14 +705,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // if no ranged weapons, use BaseAI
+      // OrderableAI::GetAvailableRangedWeapons knows about AI disabling of ranged weapons
       if (null == available_ranged_weapons) return BehaviorEquipWeapon(game);
-
-      // if not supposed to be using ranged weapons, immediately  use BaseAI
-      if (!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) { 
-        ItemRangedWeapon rw = GetEquippedWeapon() as ItemRangedWeapon;
-        if (null != rw)  game.DoUnequipItem(m_Actor, rw);
-        return BehaviorEquipWeapon(game);
-      }
 
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
       // XXX there may be more important objectives than this

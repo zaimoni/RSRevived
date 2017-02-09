@@ -230,8 +230,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-      IEnumerable<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.GetCompatibleAmmoItem(rw));
-      List<ItemRangedWeapon> available_ranged_weapons = (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
 	  List<Percept> friends = FilterNonEnemies(percepts1);
 
       // get out of the range of explosions if feasible
@@ -244,6 +242,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
+
+      List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       if ((null != retreat || null != run_retreat) && null != available_ranged_weapons) {
         // ranged weapon: prefer to maintain LoF when retreating
