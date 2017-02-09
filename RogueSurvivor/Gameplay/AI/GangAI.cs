@@ -91,9 +91,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
+      List<Percept> old_enemies = FilterEnemies(percepts1);
+      List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 #if FAIL
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
-
       if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
       // obsolete: not needed with AddExplosivesToDamageField
@@ -182,14 +182,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
-#endif
 
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
+      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
+#else
       // Bikers and gangsters don't throw grenades
       ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) return tmpAction;
 
-      List<Percept> old_enemies = FilterEnemies(percepts1);
-      List<Percept> current_enemies = FilterCurrent(old_enemies);
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
 
@@ -202,6 +202,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
+#endif
+
       if (null != current_enemies) {
         if (game.Rules.RollChance(50)) {
           List<Percept> friends = FilterNonEnemies(percepts1);

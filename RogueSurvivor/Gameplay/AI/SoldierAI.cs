@@ -88,9 +88,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
-#if FAIL
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
+      List<Percept> old_enemies = FilterEnemies(percepts1);
+      List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
+#if FAIL
       if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
       if (!Directives.CanThrowGrenades) {
@@ -204,14 +205,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
-#endif
 
+      // all free actions have to be before targeting enemies
+      if (null != current_enemies) {
+        if (game.Rules.RollChance(50)) {
+          List<Percept> friends = FilterNonEnemies(percepts1);
+          if (friends != null) {
+            tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+            if (null != tmpAction) return tmpAction;
+          }
+        }
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
+        if (null != tmpAction) return tmpAction;
+      }
+#else
       // fleeing from explosives is done before the enemies check
       ActorAction tmpAction = BehaviorFleeFromExplosives(percepts1);
       if (null != tmpAction) return tmpAction;
-
-      List<Percept> old_enemies = FilterEnemies(percepts1);
-      List<Percept> current_enemies = FilterCurrent(old_enemies);
 
       // throwing a grenade overrides normal weapon equipping choices
       if (null != current_enemies) {
@@ -240,6 +250,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
+#endif
       tmpAction = BehaviorRestIfTired();
       if (null != tmpAction) return tmpAction;
       if (null != old_enemies) {

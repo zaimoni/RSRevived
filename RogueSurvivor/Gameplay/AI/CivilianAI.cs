@@ -98,10 +98,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_LOSSensor = new LOSSensor(VISION_SEES);
       m_SafeTurns = 0;
       m_Exploration = new ExplorationData();
-      m_LastEnemySaw = null;
-      m_LastItemsSaw = null;
-      m_LastSoldierSaw = null;
-      m_LastRaidHeard = null;
       m_Emotes = CivilianAI.FIGHT_EMOTES;
     }
 

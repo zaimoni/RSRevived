@@ -70,10 +70,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.IsRunning = false;
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
+      List<Percept> old_enemies = FilterEnemies(percepts1);
+      List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
 #if FAIL
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
-
       if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
       // obsolete: not needed with AddExplosivesToDamageField
@@ -162,14 +162,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
-#endif
-
+#else
       ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) return tmpAction;
 
       // All free actions go above the check for enemies.
-      List<Percept> old_enemies = FilterEnemies(percepts1);
-      List<Percept> current_enemies = FilterCurrent(old_enemies);
       if (current_enemies != null) {
         List<Percept> percepts3 = FilterFireTargets(current_enemies);
         if (percepts3 != null) {
@@ -178,6 +175,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
+#endif
       if (current_enemies != null) {
         object percepted = FilterNearest(current_enemies).Percepted;
         tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
