@@ -214,7 +214,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           AvoidBeingCornered(retreat);
           safe_retreat = !damage_field.ContainsKey(retreat[0]);
         }
-        if (m_Actor.RunIsFreeMove && m_Actor.CanRun()) { 
+        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) { 
           run_retreat = FindRunRetreat(damage_field, legal_steps);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
@@ -235,8 +235,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  List<Percept> friends = FilterNonEnemies(percepts1);
 
       // get out of the range of explosions if feasible
-      if (in_blast_field && null != retreat) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
+      if (in_blast_field) {
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
         if (null != tmpAction) {
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
           if (null != tmpAction2) RunIfPossible();
@@ -245,29 +245,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      // ranged weapon: prefer to maintain LoF when retreating
-      if (null!= retreat && 2 <= retreat.Count && null!= available_ranged_weapons) {
-        Dictionary<Point,int> targets = new Dictionary<Point,int>();
-        int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
-        foreach(Point pt in retreat) {
-          targets[pt] = 0;
-          foreach(Percept p in enemies) {
-            if (LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location.Position, max_range, m_Actor)) targets[pt]++;    // hard-code current LOS as range
-          }
-        }
-        int max_LoF = targets.Values.Max();
-        targets.OnlyIf(val=>val==max_LoF);
-        retreat = targets.Keys.ToList();
-      }
+      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons) {
+        // ranged weapon: prefer to maintain LoF when retreating
+        MaximizeRangedTargets(retreat, enemies);
+        MaximizeRangedTargets(run_retreat, enemies);
 
-      // ranged weapon: fast retreat ok
-      // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
-      // XXX we also want to be close enough to fire at all
-      if (null != retreat && null!=available_ranged_weapons) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
+        // ranged weapon: fast retreat ok
+        // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
+        // XXX we also want to be close enough to fire at all
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
         if (null != tmpAction) {
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+          if (null != tmpAction2) {
+            if (safe_run_retreat) RunIfPossible();
+            else RunIfAdvisable(tmpAction2.dest.Position);
+          }
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }

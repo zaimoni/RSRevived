@@ -538,6 +538,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return IsInterestingItem(offeredItem);
     }
 
+    protected void MaximizeRangedTargets(List<Point> dests, List<Percept> enemies)
+    {
+      if (null == dests || 2<=dests.Count) return;
+
+      Dictionary<Point,int> targets = new Dictionary<Point,int>();
+      int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+      foreach(Point pt in dests) {
+        targets[pt] = enemies.Count(p => LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location.Position, max_range, m_Actor));
+      }
+      int max_LoF = targets.Values.Max();
+      dests.RemoveAll(pt => max_LoF>targets[pt]);
+    }
+
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
