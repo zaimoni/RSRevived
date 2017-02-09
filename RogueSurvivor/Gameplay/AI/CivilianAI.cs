@@ -202,26 +202,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       if (0>= immediate_threat.Count) immediate_threat = null;
+
       List<Point> retreat = null;
-      IEnumerable<Point> tmp_point;
+      List<Point> run_retreat = null;
       // calculate retreat destinations if possibly needed
       if (null != damage_field && null!=legal_steps && damage_field.ContainsKey(m_Actor.Location.Position)) {
-        tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
-        if (tmp_point.Any()) retreat = tmp_point.ToList();
-        // XXX we should be checking for running retreats before damaging ones
-        // that would allow handling grenades as a damage field source
-        if (null == retreat) {
-          tmp_point = legal_steps.Where(p=> damage_field[p] < damage_field[m_Actor.Location.Position]);
-          if (tmp_point.Any()) retreat = tmp_point.ToList();
-        }
-      }
-      // prefer retreating where we have further room to retreat
-      if (null != retreat && 2<=retreat.Count) {
-        HashSet<Point> cornered = new HashSet<Point>(retreat);
-        foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
-          if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) break;
-        }
-        if (0<cornered.Count && cornered.Count<retreat.Count) retreat = new List<Point>(retreat.Except(cornered));
+        retreat = FindSafeRetreat(damage_field,legal_steps) ?? FindRetreat(damage_field, legal_steps);
+        AvoidBeingCornered(retreat);
       }
 
       // XXX the proper weapon should be calculated like a player....
