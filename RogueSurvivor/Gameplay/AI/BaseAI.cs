@@ -671,7 +671,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return null;
 	}
 
-#if FAIL
     // src_r2 is the desired destination list
     // src are legal steps
     protected ActorAction DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2, List<Percept> enemies, List<Percept> friends)
@@ -719,18 +718,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // weakly prefer not to jump
       if (2 <= tmp2.Count)  tmp2 = DecideMove_NoJump(tmp2);
 
-      // TODO: filter down intermediate destinations
-      IEnumerable<Point> tmp3 = tmp.Where(pt => IsAdjacentTo(pt,tmp2))
+      // filter down intermediate destinations
+      IEnumerable<Point> tmp3 = tmp.Where(pt => tmp2.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());
+      if (!tmp3.Any()) return null;
+      tmp = tmp3.ToList();
 
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
-		if (null != ret && ret.IsLegal()) return ret;
+		if (null != ret && ret.IsLegal() && ret is ActionMoveStep) {
+          RunIfPossible();
+          return ret;
+        }
 		tmp.RemoveAt(i);
 	  }
 	  return null;
 	}
-#endif
 
     protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
