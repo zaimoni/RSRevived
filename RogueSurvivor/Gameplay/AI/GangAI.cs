@@ -94,9 +94,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> old_enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 #if FAIL
-      if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
-
-      // obsolete: not needed with AddExplosivesToDamageField
       ActorAction tmpAction = null;
 
       // melee risk management check

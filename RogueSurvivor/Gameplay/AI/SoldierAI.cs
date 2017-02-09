@@ -92,8 +92,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
 #if FAIL
-      if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
-
       if (!Directives.CanThrowGrenades) {
         ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
         if (itemGrenade != null) {
@@ -101,7 +99,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      // obsolete: not needed with AddExplosivesToDamageField
       ActorAction tmpAction = null;
 
       // melee risk management check
