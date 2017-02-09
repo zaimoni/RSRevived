@@ -274,8 +274,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end melee risk management check
 
-      if (null != enemies && Directives.CanThrowGrenades)
-      {
+      if (null != enemies && Directives.CanThrowGrenades) {
         tmpAction = BehaviorThrowGrenade(game, enemies);
         if (null != tmpAction) return tmpAction;
       }

@@ -93,7 +93,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> old_enemies = FilterEnemies(percepts1);
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
-#if FAIL
+
       ActorAction tmpAction = null;
 
       // melee risk management check
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
       List<Actor> slow_melee_threat = new List<Actor>();
       HashSet<Actor> immediate_threat = new HashSet<Actor>();
-      if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
+      if (null != current_enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
       AddTrapsToDamageField(damage_field, percepts1);
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
@@ -138,17 +138,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  List<Percept> friends = FilterNonEnemies(percepts1);
 
-      List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
+      List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       if ((null != retreat || null != run_retreat) && null != available_ranged_weapons) {
         // ranged weapon: prefer to maintain LoF when retreating
-        MaximizeRangedTargets(retreat, enemies);
-        MaximizeRangedTargets(run_retreat, enemies);
+        MaximizeRangedTargets(retreat, current_enemies);
+        MaximizeRangedTargets(run_retreat, current_enemies);
 
         // ranged weapon: fast retreat ok
         // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
         // XXX we also want to be close enough to fire at all
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, current_enemies, friends) : ((null != retreat) ? DecideMove(retreat, current_enemies, friends) : null));
         if (null != tmpAction) {
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
           if (null != tmpAction2) {
@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // need stamina to melee: slow retreat ok
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
+	    tmpAction = DecideMove(retreat, current_enemies, friends);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // have slow enemies nearby
       if (null != retreat && null != slow_melee_threat) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
+	    tmpAction = DecideMove(retreat, current_enemies, friends);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -177,37 +177,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end melee risk management check
 
-      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, current_enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
-#else
-      // Bikers and gangsters don't throw grenades
-      ActorAction tmpAction = BehaviorEquipWeapon(game);
-      if (null != tmpAction) return tmpAction;
-
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
-
-      // all free actions must be above the enemies check
-      if (null != current_enemies && ((m_Actor.HasLeader && !DontFollowLeader) || game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))) {
-        List<Percept> percepts3 = FilterFireTargets(current_enemies);
-        if (percepts3 != null) {
-          Actor target = FilterNearest(percepts3).Percepted as Actor;
-          tmpAction = BehaviorRangedAttack(target);
-          if (null != tmpAction) return tmpAction;
-        }
-      }
-#endif
 
       if (null != current_enemies) {
-        if (game.Rules.RollChance(50)) {
-          List<Percept> friends = FilterNonEnemies(percepts1);
-          if (friends != null) {
-            tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
-            if (null != tmpAction) return tmpAction;
-          }
+        if (null != friends && game.Rules.RollChance(50)) {
+          tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+          if (null != tmpAction) return tmpAction;
         }
         tmpAction = BehaviorFightOrFlee(game, current_enemies, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
