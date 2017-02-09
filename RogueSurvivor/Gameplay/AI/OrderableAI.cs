@@ -553,7 +553,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<ItemRangedWeapon> GetAvailableRangedWeapons()
     {
-      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.GetCompatibleAmmoItem(rw)) : null);
+      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.GetCompatibleAmmoItem(rw)));
       return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
     }
 
@@ -653,7 +653,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
 #if DEBUG
-      Contract.Requires((null!=immediate_threat)==(null!=damage_field && damage_field.ContainsKey(Actor.Location.Position)));
+      // == failed for traps
+      Contract.Requires(null==immediate_threat || (null!=damage_field && damage_field.ContainsKey(Actor.Location.Position)));
 #endif
 
       // migrated from CivilianAI::SelectAction

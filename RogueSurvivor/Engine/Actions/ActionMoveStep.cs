@@ -36,5 +36,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       RogueForm.Game.DoMoveActor(m_Actor, m_NewLocation);
     }
+
+    public override string ToString()
+    {
+      return "step: "+m_Actor.Location+" to "+m_NewLocation;
+    }
   }
 }

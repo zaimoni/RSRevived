@@ -366,7 +366,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
           if (IsTileTaboo(p.Location.Position)) return true;    // already ruled out
-          if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way
+          if (m_Actor.Location.Position!= p.Location.Position && null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way
           return null==BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
         });
         if (perceptList2 != null) {
@@ -382,6 +382,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // under is handled within the Behavior functions
 #if DATAFLOW_TRACE
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
+#endif
+#if DEBUG
+          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed");
 #endif
           MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
           game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");

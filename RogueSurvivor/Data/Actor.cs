@@ -1082,6 +1082,7 @@ namespace djack.RogueSurvivor.Data
     public List<Point> FastestStepTo(Map m,Point src,Point dest)
     {
       int dist = Rules.GridDistance(src,dest);
+      if (1==dist) return new List<Point>() { dest };
       IEnumerable<Point> tmp = Direction.COMPASS_LIST.Select(dir=>src+dir).Where(pt=> dist>Rules.GridDistance(pt,dest) && m.IsWalkableFor(pt,this));
       return tmp.Any() ? tmp.ToList() : null;
     }
