@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define C_TILES
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -27,7 +29,13 @@ namespace djack.RogueSurvivor.Data
 	public readonly int Width;
 	public readonly int Height;
 	public readonly Rectangle Rect;
+#if C_TILES
+    private readonly byte[,] m_TileIDs;
+    private readonly byte[] m_IsInside;
+    private readonly Dictionary<Point,List<string>> m_Decorations = new Dictionary<Point,List<string>>();
+#else
     private readonly Tile[,] m_Tiles;
+#endif
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
     private readonly List<Zone> m_Zones = new List<Zone>(5);
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
@@ -103,11 +111,16 @@ namespace djack.RogueSurvivor.Data
       LocalTime = new WorldTime();
       Lighting = Lighting.OUTSIDE;
       IsSecret = false;
+#if C_TILES
+      m_TileIDs = new byte[width, height];
+      m_IsInside = new byte[width*height-1/8+1];
+#else
       m_Tiles = new Tile[width, height];
       for (int index1 = 0; index1 < width; ++index1) {
         for (int index2 = 0; index2 < height; ++index2)
           m_Tiles[index1, index2] = new Tile(TileModel.UNDEF);
       }
+#endif
     }
 
 #region Implement ISerializable
@@ -120,7 +133,10 @@ namespace djack.RogueSurvivor.Data
       Width = (int) info.GetValue("m_Width", typeof (int));
       Height = (int) info.GetValue("m_Height", typeof (int));
       Rect = (Rectangle) info.GetValue("m_Rectangle", typeof (Rectangle));
+#if C_TILES
+#else
       m_Tiles = (Tile[,]) info.GetValue("m_Tiles", typeof (Tile[,]));
+#endif
       m_Exits = (Dictionary<Point, Exit>) info.GetValue("m_Exits", typeof (Dictionary<Point, Exit>));
       m_Zones = (List<Zone>) info.GetValue("m_Zones", typeof (List<Zone>));
       m_ActorsList = (List<Actor>) info.GetValue("m_ActorsList", typeof (List<Actor>));
@@ -130,7 +146,10 @@ namespace djack.RogueSurvivor.Data
       m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
       m_Scents = (List<OdorScent>) info.GetValue("m_Scents", typeof (List<OdorScent>));
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
-
+#if C_TILES
+      m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
+      m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
+#endif
       ReconstructAuxiliaryFields();
     }
 
@@ -143,7 +162,10 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_Width", Width);
       info.AddValue("m_Height", Height);
       info.AddValue("m_Rectangle", (object)Rect);
+#if C_TILES
+#else
       info.AddValue("m_Tiles", (object)m_Tiles);
+#endif
       info.AddValue("m_Exits", (object)m_Exits);
       info.AddValue("m_Zones", (object)m_Zones);
       info.AddValue("m_ActorsList", (object)m_ActorsList);
@@ -153,6 +175,10 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_Lighting", (object)m_Lighting);
       info.AddValue("m_Scents", (object)m_Scents);
       info.AddValue("m_Timers", (object)m_Timers);
+#if C_TILES
+      info.AddValue("m_TileIDs", (object)m_TileIDs);
+      info.AddValue("m_IsInside", (object)m_IsInside);
+#endif
     }
 #endregion
 

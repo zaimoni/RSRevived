@@ -119,17 +119,13 @@ namespace djack.RogueSurvivor.Data
         Contract.Ensures(null!=Contract.Result<TileModel>());
         return Models.Tiles[m_ModelID];
       }
-      set {
-        Contract.Requires(null!=value);
-        m_ModelID = value.ID;
-      }
     }
 
     public bool IsInside {
       get {
         return (m_Flags & TileV2.Flags.IS_INSIDE) != TileV2.Flags.NONE;
       }
-      set {
+      private set {
         if (value) m_Flags |= TileV2.Flags.IS_INSIDE;
         else m_Flags &= ~TileV2.Flags.IS_INSIDE;
       }
@@ -158,10 +154,12 @@ namespace djack.RogueSurvivor.Data
     public bool HasDecorations { get { return m_Location.Map.HasDecorationsAt(m_Location.Position); } }
     public IEnumerable<string> Decorations { get { return m_Location.Map.DecorationsAt(m_Location.Position); } }
 
-    public TileV2(int modelID, bool inside)
+    public TileV2(int modelID, bool inside, Location loc)
     {
-      m_ModelID = modelID;
+      Contract.Requires(255>=modelID && 0<=modelID);
+      m_ModelID = (byte)modelID;
       IsInside = inside;
+      m_Location = loc;
     }
 
     public void AddDecoration(string imageID)
