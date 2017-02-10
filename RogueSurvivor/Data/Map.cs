@@ -237,7 +237,7 @@ namespace djack.RogueSurvivor.Data
       return m_Tiles[p.X, p.Y];
     }
 
-    public void SetIsInsideAt(bool inside, int x, int y)
+    public void SetIsInsideAt(int x, int y, bool inside=true)
     {
 #if C_TILES
       int i = y*Width+x;
@@ -251,10 +251,10 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
-    public void SetIsInsideAt(bool inside, Point pt)
+    public void SetIsInsideAt(Point pt, bool inside=true)
     {
 #if C_TILES
-      SetIsInsideAt(inside, pt.X,pt.Y);
+      SetIsInsideAt(pt.X,pt.Y, inside);
 #else
       m_Tiles[pt.X, pt.Y].IsInside = inside;
 #endif
