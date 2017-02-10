@@ -292,22 +292,18 @@ namespace djack.RogueSurvivor.Engine
 
     protected void ClearRectangle(Map map, Rectangle rect)
     {
-      for (int left = rect.Left; left < rect.Right; ++left)
-      {
-        for (int top = rect.Top; top < rect.Bottom; ++top)
-        {
+      for (int left = rect.Left; left < rect.Right; ++left) {
+        for (int top = rect.Top; top < rect.Bottom; ++top) {
           map.RemoveMapObjectAt(left, top);
           Inventory itemsAt = map.GetItemsAt(left, top);
-          if (itemsAt != null)
-          {
+          if (itemsAt != null) {
             while (!itemsAt.IsEmpty)
               map.RemoveItemAt(itemsAt[0], left, top);
           }
-          map.GetTileAt(left, top).RemoveAllDecorations();
+          map.RemoveAllDecorationsAt(left, top);
           map.RemoveAllZonesAt(left, top);
           Actor actorAt = map.GetActorAt(left, top);
-          if (actorAt != null)
-            map.RemoveActor(actorAt);
+          if (actorAt != null) map.RemoveActor(actorAt);
         }
       }
     }
@@ -316,11 +312,9 @@ namespace djack.RogueSurvivor.Engine
     public void ForEachAdjacent(Map map, int x, int y, Action<Point> doFn)
     {
       Point point = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      foreach (Direction direction in Direction.COMPASS) {
         Point p = point + direction;
-        if (map.IsInBounds(p))
-          doFn(p);
+        if (map.IsInBounds(p)) doFn(p);
       }
     }
 
@@ -328,11 +322,9 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = 0;
       Point point = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS)
-      {
+      foreach (Direction direction in Direction.COMPASS) {
         Point p = point + direction;
-        if (map.IsInBounds(p) && checkFn(p))
-          ++num;
+        if (map.IsInBounds(p) && checkFn(p)) ++num;
       }
       return num;
     }
