@@ -1245,26 +1245,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool IsDoorwayOrCorridor(Map map, Point pos)
     {
-      if (!map.GetTileAt(pos).Model.IsWalkable) return false;
+      if (!map.GetTileModelAt(pos).IsWalkable) return false;
       Point p5 = pos + Direction.NE;
-      bool flag_ne = map.IsInBounds(p5) && !map.GetTileAt(p5).Model.IsWalkable;
+      bool flag_ne = map.IsInBounds(p5) && !map.GetTileModelAt(p5).IsWalkable;
       Point p6 = pos + Direction.NW;
-      bool flag_nw = map.IsInBounds(p6) && !map.GetTileAt(p6).Model.IsWalkable;
+      bool flag_nw = map.IsInBounds(p6) && !map.GetTileModelAt(p6).IsWalkable;
       Point p7 = pos + Direction.SE;
-      bool flag_se = map.IsInBounds(p7) && !map.GetTileAt(p7).Model.IsWalkable;
+      bool flag_se = map.IsInBounds(p7) && !map.GetTileModelAt(p7).IsWalkable;
       Point p8 = pos + Direction.SW;
-      bool flag_sw = map.IsInBounds(p8) && !map.GetTileAt(p8).Model.IsWalkable;
+      bool flag_sw = map.IsInBounds(p8) && !map.GetTileModelAt(p8).IsWalkable;
       bool no_corner = !flag_ne && !flag_se && !flag_nw && !flag_sw;
       if (!no_corner) return false;
 
       Point p1 = pos + Direction.N;
-      bool flag_n = map.IsInBounds(p1) && !map.GetTileAt(p1).Model.IsWalkable;
+      bool flag_n = map.IsInBounds(p1) && !map.GetTileModelAt(p1).IsWalkable;
       Point p2 = pos + Direction.S;
-      bool flag_s = map.IsInBounds(p2) && !map.GetTileAt(p2).Model.IsWalkable;
+      bool flag_s = map.IsInBounds(p2) && !map.GetTileModelAt(p2).IsWalkable;
       Point p3 = pos + Direction.E;
-      bool flag_e = map.IsInBounds(p3) && !map.GetTileAt(p3).Model.IsWalkable;
+      bool flag_e = map.IsInBounds(p3) && !map.GetTileModelAt(p3).IsWalkable;
       Point p4 = pos + Direction.W;
-      bool flag_w = map.IsInBounds(p4) && !map.GetTileAt(p4).Model.IsWalkable;
+      bool flag_w = map.IsInBounds(p4) && !map.GetTileModelAt(p4).IsWalkable;
       return (flag_n && flag_s && !flag_e && !flag_w) || (flag_e && flag_w && !flag_n && !flag_s);
     }
 

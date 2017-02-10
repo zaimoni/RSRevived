@@ -28,42 +28,23 @@ namespace djack.RogueSurvivor.Engine
     public abstract Map Generate(int seed, string name);
 
 #region Tile filling
-    public void TileFill(Map map, TileModel model)
+    public void TileFill(Map map, TileModel model, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-            TileFill(map, model, (Action<Tile, TileModel, int, int>) null);
+      TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
     }
 
-    public void TileFill(Map map, TileModel model, Action<Tile, TileModel, int, int> decoratorFn)
+    public void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-            TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
+      TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
     }
 
-    public void TileFill(Map map, TileModel model, Rectangle rect)
+    public void TileFill(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-            TileFill(map, model, rect, (Action<Tile, TileModel, int, int>) null);
-    }
-
-    public void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, int, int> decoratorFn)
-    {
-            TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, decoratorFn);
-    }
-
-    public void TileFill(Map map, TileModel model, int left, int top, int width, int height)
-    {
-            TileFill(map, model, left, top, width, height, (Action<Tile, TileModel, int, int>) null);
-    }
-
-    public void TileFill(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn)
-    {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (model == null)
-        throw new ArgumentNullException("model");
-      for (int x = left; x < left + width; ++x)
-      {
-        for (int y = top; y < top + height; ++y)
-        {
-          TileModel model1 = map.GetTileAt(x, y).Model;
+      if (map == null) throw new ArgumentNullException("map");
+      if (model == null) throw new ArgumentNullException("model");
+      for (int x = left; x < left + width; ++x) {
+        for (int y = top; y < top + height; ++y) {
+          TileModel model1 = map.GetTileModelAt(x, y);
           map.SetTileModelAt(x, y, model);
           if (decoratorFn != null)
             decoratorFn(map.GetTileAt(x, y), model1, x, y);
@@ -71,40 +52,24 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void TileHLine(Map map, TileModel model, int left, int top, int width)
+    public void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-            TileHLine(map, model, left, top, width, (Action<Tile, TileModel, int, int>) null);
-    }
-
-    public void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, int, int> decoratorFn)
-    {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (model == null)
-        throw new ArgumentNullException("model");
-      for (int x = left; x < left + width; ++x)
-      {
-        TileModel model1 = map.GetTileAt(x, top).Model;
+      if (map == null) throw new ArgumentNullException("map");
+      if (model == null) throw new ArgumentNullException("model");
+      for (int x = left; x < left + width; ++x) {
+        TileModel model1 = map.GetTileModelAt(x, top);
         map.SetTileModelAt(x, top, model);
         if (decoratorFn != null)
           decoratorFn(map.GetTileAt(x, top), model1, x, top);
       }
     }
 
-    public void TileVLine(Map map, TileModel model, int left, int top, int height)
+    public void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-            TileVLine(map, model, left, top, height, (Action<Tile, TileModel, int, int>) null);
-    }
-
-    public void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, int, int> decoratorFn)
-    {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (model == null)
-        throw new ArgumentNullException("model");
-      for (int y = top; y < top + height; ++y)
-      {
-        TileModel model1 = map.GetTileAt(left, y).Model;
+      if (map == null) throw new ArgumentNullException("map");
+      if (model == null) throw new ArgumentNullException("model");
+      for (int y = top; y < top + height; ++y) {
+        TileModel model1 = map.GetTileModelAt(left, y);
         map.SetTileModelAt(left, y, model);
         if (decoratorFn != null)
           decoratorFn(map.GetTileAt(left, y), model1, left, y);
@@ -113,24 +78,17 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileRectangle(Map map, TileModel model, Rectangle rect)
     {
-            TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
+      TileRectangle(map, model, rect.Left, rect.Top, rect.Width, rect.Height);
     }
 
-    public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height)
+    public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-            TileRectangle(map, model, left, top, width, height, (Action<Tile, TileModel, int, int>) null);
-    }
-
-    public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn)
-    {
-      if (map == null)
-        throw new ArgumentNullException("map");
-      if (model == null)
-        throw new ArgumentNullException("model");
-            TileHLine(map, model, left, top, width, decoratorFn);
-            TileHLine(map, model, left, top + height - 1, width, decoratorFn);
-            TileVLine(map, model, left, top, height, decoratorFn);
-            TileVLine(map, model, left + width - 1, top, height, decoratorFn);
+      if (map == null) throw new ArgumentNullException("map");
+      if (model == null) throw new ArgumentNullException("model");
+      TileHLine(map, model, left, top, width, decoratorFn);
+      TileHLine(map, model, left, top + height - 1, width, decoratorFn);
+      TileVLine(map, model, left, top, height, decoratorFn);
+      TileVLine(map, model, left + width - 1, top, height, decoratorFn);
     }
 
     public Point DigUntil(Map map, TileModel model, Point startPos, Direction digDirection, Predicate<Point> stopFn)
@@ -331,7 +289,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int CountAdjWalls(Map map, int x, int y)
     {
-      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => !map.GetTileAt(pt.X, pt.Y).Model.IsWalkable));
+      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => !map.GetTileModelAt(pt).IsWalkable));
     }
 
     public int CountAdjWalls(Map map, Point p)
@@ -341,7 +299,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int CountAdjWalkables(Map map, int x, int y)
     {
-      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetTileAt(pt.X, pt.Y).Model.IsWalkable));
+      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetTileModelAt(pt).IsWalkable));
     }
 
     public int CountAdjDoors(Map map, int x, int y)

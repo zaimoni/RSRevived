@@ -297,8 +297,8 @@ namespace djack.RogueSurvivor.Engine
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;
-            Tile tileAt = map.GetTileAt(x3, y3);
-            if (!tileAt.Model.IsTransparent && !tileAt.Model.IsWalkable) flag = true;
+            TileModel tileModel = map.GetTileModelAt(x3, y3);
+            if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
             else if (null != map.GetMapObjectAt(x3, y3)) flag = true;
             if (flag) pointList1.Add(point1);
           } else visibleSet.Add(point1);
@@ -316,8 +316,8 @@ namespace djack.RogueSurvivor.Engine
         int num = 0;
         foreach (Point point3 in Direction.COMPASS.Select(dir=> point2 + dir)) {
           if (!visibleSet.Contains(point3)) continue;
-          Tile tileAt = map.GetTileAt(point3.X, point3.Y);
-          if (tileAt.Model.IsTransparent && tileAt.Model.IsWalkable) ++num;
+          TileModel tileModel = map.GetTileModelAt(point3);
+          if (tileModel.IsTransparent && tileModel.IsWalkable) ++num;
         }
         if (num >= 3) pointList2.Add(point2);
       }

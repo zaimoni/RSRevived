@@ -11060,7 +11060,7 @@ namespace djack.RogueSurvivor.Engine
           for (pos.X = 0; pos.X < map.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
+              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
             }
           }
 		} else {
@@ -11074,7 +11074,7 @@ namespace djack.RogueSurvivor.Engine
               }
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
               if (tourism.Contains(pos)) continue;  // sights to see are blacked out of the minimap, but not the main map
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileAt(pos).Model.MinimapColor));
+              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
             }
           }
 		}
@@ -12039,7 +12039,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckIfExitIsGood(Map toMap, Point to)
     {
-      return toMap.GetTileAt(to.X, to.Y).Model.IsWalkable && toMap.GetMapObjectAt(to.X, to.Y) == null;
+      return toMap.GetTileModelAt(to).IsWalkable && toMap.GetMapObjectAt(to.X, to.Y) == null;
     }
 
     private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)

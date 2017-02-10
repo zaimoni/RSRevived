@@ -389,7 +389,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "out of map";
         return false;
       }
-      if (!map.GetTileAt(toPos.X, toPos.Y).Model.IsWalkable) {
+      if (!map.GetTileModelAt(toPos).IsWalkable) {
         reason = "blocked";
         return false;
       }
@@ -533,7 +533,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       Map map = actor.Location.Map;
-      if (!map.GetTileAt(pos).Model.IsWalkable)
+      if (!map.GetTileModelAt(pos).IsWalkable)
       {
         reason = "cannot build on walls";
         return false;

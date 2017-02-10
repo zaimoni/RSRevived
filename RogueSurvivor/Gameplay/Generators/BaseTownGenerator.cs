@@ -2350,7 +2350,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       DoForEachTile(roomRect, (Action<Point>) (pt =>
       {
-        if (!map.GetTileAt(pt).Model.IsWalkable || map.GetExitAt(pt) != null || CountAdjWalls(map, pt.X, pt.Y) < 3) return;
+        if (!map.GetTileModelAt(pt).IsWalkable || map.GetExitAt(pt) != null || CountAdjWalls(map, pt.X, pt.Y) < 3) return;
         map.PlaceMapObjectAt(MakeObjPowerGenerator(), pt);
       }));
     }
