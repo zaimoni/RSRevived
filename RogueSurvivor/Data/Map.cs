@@ -244,43 +244,133 @@ namespace djack.RogueSurvivor.Data
       m_Tiles[x, y].Model = model;
     }
 
+    public TileModel GetTileModelAt(int x, int y)
+    {
+#if C_TILES
+      return Models.Tiles[m_TileIDs[x,y]];
+#else
+      return m_Tiles[x, y].Model;
+#endif
+    }
+
+    public TileModel GetTileModelAt(Point pt)
+    {
+      return GetTileModelAt(pt.X,pt.Y);
+    }
+
     // thin wrappers based on Tile API
     public bool HasDecorationsAt(int x, int y)
     {
+#if C_TILES
+      return HasDecorationsAt(new Point(x,y));
+#else
       return m_Tiles[x, y].HasDecorations;
+#endif
     }
 
     public IEnumerable<string> DecorationsAt(int x, int y)
     {
+#if C_TILES
+      return DecorationsAt(new Point(x,y));
+#else
       return m_Tiles[x, y].Decorations;
+#endif
     }
 
     public void AddDecorationAt(string imageID, int x, int y)
     {
+#if C_TILES
+      AddDecorationAt(imageID,new Point(x,y));
+#else
       m_Tiles[x, y].AddDecoration(imageID);
+#endif
     }
 
     public bool HasDecorationAt(string imageID, int x, int y)
     {
+#if C_TILES
+      return HasDecorationAt(imageID,new Point(x,y));
+#else
       return m_Tiles[x, y].HasDecoration(imageID);
+#endif
     }
 
     public void RemoveAllDecorationsAt(int x, int y)
     {
+#if C_TILES
+      RemoveAllDecorationsAt(new Point(x,y));
+#else
       m_Tiles[x, y].RemoveAllDecorations();
+#endif
     }
 
     public void RemoveDecorationAt(string imageID, int x, int y)
     {
+#if C_TILES
+      RemoveDecorationAt(imageID,new Point(x,y));
+#else
       m_Tiles[x, y].RemoveDecoration(imageID);
+#endif
     }
 
-    public bool HasDecorationsAt(Point pt) { return HasDecorationsAt(pt.X, pt.Y); }
-    public IEnumerable<string> DecorationsAt(Point pt) { return DecorationsAt(pt.X, pt.Y); }
-    public void AddDecorationAt(string imageID, Point pt) { AddDecorationAt(imageID, pt.X, pt.Y); }
-    public bool HasDecorationAt(string imageID, Point pt) { return HasDecorationAt(imageID, pt.X, pt.Y); }
-    public void RemoveAllDecorationsAt(Point pt) { RemoveAllDecorationsAt(pt.X, pt.Y); }
-    public void RemoveDecorationAt(string imageID, Point pt) { RemoveDecorationAt(imageID, pt.X, pt.Y); }
+    public bool HasDecorationsAt(Point pt)
+    {
+#if C_TILES
+      return m_Decorations.ContainsKey(pt);
+#else
+      return HasDecorationsAt(pt.X, pt.Y);
+#endif
+    }
+
+    public IEnumerable<string> DecorationsAt(Point pt)
+    {
+#if C_TILES
+      return (m_Decorations.ContainsKey(pt) ? m_Decorations[pt] : null);
+#else
+      return DecorationsAt(pt.X, pt.Y);
+#endif
+    }
+
+    public void AddDecorationAt(string imageID, Point pt)
+    {
+#if C_TILES
+      if (!m_Decorations.ContainsKey(pt)) m_Decorations[pt] = new List<string>() { imageID };
+      else if (m_Decorations[pt].Contains(imageID)) return;
+      m_Decorations[pt].Add(imageID);
+#else
+      AddDecorationAt(imageID, pt.X, pt.Y);
+#endif
+    }
+
+    public bool HasDecorationAt(string imageID, Point pt)
+    {
+#if C_TILES
+      return m_Decorations.ContainsKey(pt) && m_Decorations[pt].Contains(imageID);
+#else
+      return HasDecorationAt(imageID, pt.X, pt.Y);
+#endif
+    }
+
+    public void RemoveAllDecorationsAt(Point pt)
+    {
+#if C_TILES
+      m_Decorations.Remove(pt);
+#else
+      RemoveAllDecorationsAt(pt.X, pt.Y);
+#endif
+    }
+
+    public void RemoveDecorationAt(string imageID, Point pt)
+    {
+#if C_TILES
+      if (!m_Decorations.ContainsKey(pt)) return;
+      if (!m_Decorations[pt].Remove(imageID)) return;
+      if (0 < m_Decorations.Count) return;
+      m_Decorations.Remove(pt);
+#else
+      RemoveDecorationAt(imageID, pt.X, pt.Y);
+#endif
+    }
 
     public Exit GetExitAt(Point pos)
     {
@@ -575,7 +665,7 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null != actor);
       if (!IsInBounds(x, y)) return "out of map";
-      if (!m_Tiles[x, y].Model.IsWalkable) return "blocked";
+      if (!GetTileModelAt(x, y).IsWalkable) return "blocked";
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
@@ -944,7 +1034,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsTransparent(int x, int y)
     {
-      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsTransparent)
+      if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsTransparent)
         return false;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt == null)
@@ -954,7 +1044,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsWalkable(int x, int y)
     {
-      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsWalkable)
+      if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsWalkable)
         return false;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt == null)
@@ -969,7 +1059,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBlockingFire(int x, int y)
     {
-      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsTransparent)
+      if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsTransparent)
         return true;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       return mapObjectAt != null && !mapObjectAt.IsTransparent || GetActorAt(x, y) != null;
@@ -977,7 +1067,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBlockingThrow(int x, int y)
     {
-      if (!IsInBounds(x, y) || !m_Tiles[x, y].Model.IsWalkable)
+      if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsWalkable)
         return true;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
@@ -1040,7 +1130,7 @@ namespace djack.RogueSurvivor.Data
         ascii_map[y] = new string[Width];
         foreach(int x in Enumerable.Range(0, Width)) {
           // XXX does not handle transparent walls or opaque non-walls
-          ascii_map[y][x] = (m_Tiles[x,y].Model.IsWalkable ? "." : "#");    // typical floor tile if walkable, typical wall otherwise
+          ascii_map[y][x] = (GetTileModelAt(x,y).IsWalkable ? "." : "#");    // typical floor tile if walkable, typical wall otherwise
           if (null!=GetExitAt(x,y)) ascii_map[y][x] = ">";                  // downwards exit
 #region map objects
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
@@ -1207,10 +1297,13 @@ namespace djack.RogueSurvivor.Data
 
     public void OptimizeBeforeSaving()
     {
+#if C_TILES
+#else
       for (int index1 = 0; index1 < Width; ++index1) {
         for (int index2 = 0; index2 < Height; ++index2)
           m_Tiles[index1, index2].OptimizeBeforeSaving();
       }
+#endif
 
       int i = 0;
       if (null != m_ActorsList)
