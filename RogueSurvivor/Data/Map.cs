@@ -237,11 +237,38 @@ namespace djack.RogueSurvivor.Data
       return m_Tiles[p.X, p.Y];
     }
 
+    public void SetIsInsideAt(bool inside, int x, int y)
+    {
+#if C_TILES
+      int i = y*Width+x;
+      if (inside) {
+        m_IsInside[i/8] |= (byte)(1<<(i%8));
+      } else {
+        m_IsInside[i/8] &= (byte)(255&(~(1<<(i%8))));
+      }
+#else
+      m_Tiles[x, y].IsInside = inside;
+#endif
+    }
+
+    public void SetIsInsideAt(bool inside, Point pt)
+    {
+#if C_TILES
+      SetIsInsideAt(inside, pt.X,pt.Y);
+#else
+      m_Tiles[pt.X, pt.Y].IsInside = inside;
+#endif
+    }
+
     public void SetTileModelAt(int x, int y, TileModel model)
     {
       if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("position out of map bounds");
       if (model == null) throw new ArgumentNullException("model");
+#if C_TILES
+      m_TileIDs[x, y] = (byte)(model.ID);
+#else
       m_Tiles[x, y].Model = model;
+#endif
     }
 
     public TileModel GetTileModelAt(int x, int y)
