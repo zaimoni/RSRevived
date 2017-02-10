@@ -406,8 +406,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #region 9. Tags.
       for (int x = 0; x < sewers.Width; ++x) {
         for (int y = 0; y < sewers.Height; ++y) {
-          if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE))
-          {
+          if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) {
             Tile tileAt = sewers.GetTileAt(x, y);
             if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, x, y) >= 2)
               tileAt.AddDecoration(BaseTownGenerator.TAGS[m_DiceRoller.Roll(0, BaseTownGenerator.TAGS.Length)]);
@@ -520,15 +519,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
 #endregion
 #region 4. Tags & Posters almost everywhere.
-      for (int x2 = 0; x2 < subway.Width; ++x2)
-      {
-        for (int y2 = 0; y2 < subway.Height; ++y2)
-        {
-          if (m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE))
-          {
+      for (int x2 = 0; x2 < subway.Width; ++x2) {
+        for (int y2 = 0; y2 < subway.Height; ++y2) {
+          if (m_DiceRoller.RollChance(SUBWAY_TAGS_POSTERS_CHANCE)) {
             Tile tileAt = subway.GetTileAt(x2, y2);
-            if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, x2, y2) >= 2)
-            {
+            if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, x2, y2) >= 2) {
               if (m_DiceRoller.RollChance(50))
                 tileAt.AddDecoration(BaseTownGenerator.POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.POSTERS.Length)]);
               if (m_DiceRoller.RollChance(50))
@@ -552,10 +547,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       int width1 = m_DiceRoller.Roll(rect.Width / 3, 2 * rect.Width / 3);
       int height1 = m_DiceRoller.Roll(rect.Height / 3, 2 * rect.Height / 3);
-      if (width1 < minWidth)
-        width1 = minWidth;
-      if (height1 < minHeight)
-        height1 = minHeight;
+      if (width1 < minWidth) width1 = minWidth;
+      if (height1 < minHeight) height1 = minHeight;
       int width2 = rect.Width - width1;
       int height2 = rect.Height - height1;
       bool flag1;
@@ -1276,22 +1269,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           direction = Direction.N;
           x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
           y = b.BuildingRect.Top;
-          map.GetTileAt(x - 1, y).AddDecoration("Tiles\\Decoration\\sewers_building");
-          map.GetTileAt(x + 1, y).AddDecoration("Tiles\\Decoration\\sewers_building");
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x - 1, y);
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x + 1, y);
           break;
         case 1:
           direction = Direction.S;
           x = b.BuildingRect.Left + b.BuildingRect.Width / 2;
           y = b.BuildingRect.Bottom - 1;
-          map.GetTileAt(x - 1, y).AddDecoration("Tiles\\Decoration\\sewers_building");
-          map.GetTileAt(x + 1, y).AddDecoration("Tiles\\Decoration\\sewers_building");
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x - 1, y);
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x + 1, y);
           break;
         case 2:
           direction = Direction.W;
           x = b.BuildingRect.Left;
           y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          map.GetTileAt(x, y - 1).AddDecoration("Tiles\\Decoration\\sewers_building");
-          map.GetTileAt(x, y + 1).AddDecoration("Tiles\\Decoration\\sewers_building");
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x, y - 1);
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x, y + 1);
           break;
 #if DEBUG
         case 3:
@@ -1301,8 +1294,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           direction = Direction.E;
           x = b.BuildingRect.Right - 1;
           y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          map.GetTileAt(x, y - 1).AddDecoration("Tiles\\Decoration\\sewers_building");
-          map.GetTileAt(x, y + 1).AddDecoration("Tiles\\Decoration\\sewers_building");
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x, y - 1);
+          map.AddDecorationAt("Tiles\\Decoration\\sewers_building", x, y + 1);
           break;
 #if DEBUG
         default:
@@ -1366,8 +1359,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
           num = b.BuildingRect.Top;
           if (isSurface) {
-            map.GetTileAt(x1 - 1, num).AddDecoration("Tiles\\Decoration\\subway_building");
-            map.GetTileAt(x1 + 1, num).AddDecoration("Tiles\\Decoration\\subway_building");
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 - 1, num);
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 + 1, num);
             break;
           }
           break;
@@ -1376,8 +1369,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
           num = b.BuildingRect.Bottom - 1;
           if (isSurface) {
-            map.GetTileAt(x1 - 1, num).AddDecoration("Tiles\\Decoration\\subway_building");
-            map.GetTileAt(x1 + 1, num).AddDecoration("Tiles\\Decoration\\subway_building");
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 - 1, num);
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 + 1, num);
             break;
           }
           break;
@@ -1386,8 +1379,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Left;
           num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           if (isSurface) {
-            map.GetTileAt(x1, num - 1).AddDecoration("Tiles\\Decoration\\subway_building");
-            map.GetTileAt(x1, num + 1).AddDecoration("Tiles\\Decoration\\subway_building");
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num - 1);
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num + 1);
             break;
           }
           break;
@@ -1400,8 +1393,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Right - 1;
           num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           if (isSurface) {
-            map.GetTileAt(x1, num - 1).AddDecoration("Tiles\\Decoration\\subway_building");
-            map.GetTileAt(x1, num + 1).AddDecoration("Tiles\\Decoration\\subway_building");
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num - 1);
+            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num + 1);
             break;
           }
           break;
@@ -1477,8 +1470,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, rect2);
         TileRectangle(map, m_Game.GameTiles.WALL_STONE, rect2);
         PlaceDoor(map, point2.X, point2.Y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-        map.GetTileAt(point2.X, point2.Y - 1).AddDecoration("Tiles\\Decoration\\power_sign_big");
-        map.GetTileAt(point2.X, point2.Y + 1).AddDecoration("Tiles\\Decoration\\power_sign_big");
+        map.AddDecorationAt("Tiles\\Decoration\\power_sign_big", point2.X, point2.Y - 1);
+        map.AddDecorationAt("Tiles\\Decoration\\power_sign_big", point2.X, point2.Y + 1);
         MapObjectFill(map, rect2, (Func<Point, MapObject>) (pt =>
         {
           if (!map.GetTileAt(pt).Model.IsWalkable) return null;
@@ -2175,7 +2168,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
       AddExit(underground, point2, surfaceMap, point1, GameImages.DECO_STAIRS_UP, true);
       AddExit(surfaceMap, point1, underground, point2, GameImages.DECO_STAIRS_DOWN, true);
-      ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.GetTileAt(pt).AddDecoration(GameImages.DECO_CHAR_FLOOR_LOGO)));
+      ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
       Rectangle rect3 = Rectangle.FromLTRB(0, underground.Height / 2 + 1 + 1, rect1.Right, underground.Height);
@@ -2350,8 +2343,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         map.ForEachAdjacentInMap(pt, (Action<Point>) (ptAdj =>
         {
           Tile tileAt = map.GetTileAt(ptAdj);
-          if (tileAt.Model.IsWalkable)
-            return;
+          if (tileAt.Model.IsWalkable) return;
           tileAt.RemoveAllDecorations();
           tileAt.AddDecoration("Tiles\\Decoration\\power_sign_big");
         }));
@@ -2390,8 +2382,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt));
       }));
       Point point = new Point(policeBlock.BuildingRect.Left + policeBlock.BuildingRect.Width / 2, policeBlock.BuildingRect.Bottom - 1);
-      surfaceMap.GetTileAt(point.X - 1, point.Y).AddDecoration("Tiles\\Decoration\\police_station");
-      surfaceMap.GetTileAt(point.X + 1, point.Y).AddDecoration("Tiles\\Decoration\\police_station");
+      surfaceMap.AddDecorationAt("Tiles\\Decoration\\police_station", point.X - 1, point.Y);
+      surfaceMap.AddDecorationAt("Tiles\\Decoration\\police_station", point.X + 1, point.Y);
       Rectangle rect = Rectangle.FromLTRB(policeBlock.BuildingRect.Left, policeBlock.BuildingRect.Top + 2, policeBlock.BuildingRect.Right, policeBlock.BuildingRect.Bottom);
       TileRectangle(surfaceMap, m_Game.GameTiles.WALL_POLICE_STATION, rect);
       PlaceDoor(surfaceMap, rect.Left + rect.Width / 2, rect.Top, m_Game.GameTiles.FLOOR_TILES, MakeObjIronDoor());
@@ -2590,8 +2582,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DoForEachTile(block.InsideRect, (Action<Point>) (pt => surfaceMap.GetTileAt(pt).IsInside = true));
       Point point1 = new Point(block.BuildingRect.Left + block.BuildingRect.Width / 2, block.BuildingRect.Bottom - 1);
       Point point2 = new Point(point1.X - 1, point1.Y);
-      surfaceMap.GetTileAt(point2.X - 1, point2.Y).AddDecoration("Tiles\\Decoration\\hospital");
-      surfaceMap.GetTileAt(point1.X + 1, point1.Y).AddDecoration("Tiles\\Decoration\\hospital");
+      surfaceMap.AddDecorationAt("Tiles\\Decoration\\hospital", point2.X - 1, point2.Y);
+      surfaceMap.AddDecorationAt("Tiles\\Decoration\\hospital", point1.X + 1, point1.Y);
       Rectangle rect = Rectangle.FromLTRB(block.BuildingRect.Left, block.BuildingRect.Top, block.BuildingRect.Right, block.BuildingRect.Bottom);
       PlaceDoor(surfaceMap, point1.X, point1.Y, m_Game.GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       PlaceDoor(surfaceMap, point2.X, point2.Y, m_Game.GameTiles.FLOOR_TILES, MakeObjGlassDoor());
@@ -3207,7 +3199,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID, bool isAnAIExit)
     {
       from.SetExitAt(fromPosition, new Exit(to, toPosition, isAnAIExit));
-      from.GetTileAt(fromPosition).AddDecoration(exitImageID);
+      from.AddDecorationAt(exitImageID, fromPosition);
     }
 
     protected void MakeWalkwayZones(Map map, BaseTownGenerator.Block b)

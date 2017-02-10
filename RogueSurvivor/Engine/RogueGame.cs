@@ -9095,7 +9095,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Drowse(WorldTime.TURNS_PER_HOUR);
       actor.Appetite(WorldTime.TURNS_PER_HOUR);
       Location location = actor.Location;
-      location.Map.GetTileAt(location.Position.X, location.Position.Y).AddDecoration("Tiles\\Decoration\\vomit");
+      location.Map.AddDecorationAt("Tiles\\Decoration\\vomit", location.Position);
     }
 
     private void DoUseMedicineItem(Actor actor, ItemMedicine med)
@@ -9422,7 +9422,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       --spray.PaintQuantity;
-      actor.Location.Map.GetTileAt(pos.X, pos.Y).AddDecoration((spray.Model as ItemSprayPaintModel).TagImageID);
+      actor.Location.Map.AddDecorationAt((spray.Model as ItemSprayPaintModel).TagImageID,pos);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} a tag.", (object) Conjugate(actor, VERB_SPRAY))));
     }
@@ -12202,7 +12202,7 @@ namespace djack.RogueSurvivor.Engine
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
       Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, point);
-      map.GetTileAt(point).AddDecoration("Tiles\\Decoration\\bloodied_floor");
+      map.AddDecorationAt("Tiles\\Decoration\\bloodied_floor", point);
       return new UniqueItem()
       {
         TheItem = it,
