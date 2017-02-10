@@ -26,7 +26,7 @@ namespace djack.RogueSurvivor.Engine.Tasks
 
     public override void Trigger(Map m)
     {
-      m.GetTileAt(m_X, m_Y).RemoveDecoration(m_imageID);
+      m.RemoveDecorationAt(m_imageID, m_X, m_Y);
     }
   }
 }
