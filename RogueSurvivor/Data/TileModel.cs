@@ -5,13 +5,24 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   internal class TileModel
   {
     public static readonly TileModel UNDEF = new TileModel("", Color.Pink, false, true);
-    public int ID { get; set; }
+    
+    private int m_ID;
+
+    public int ID {
+      get { return m_ID; }
+      set {
+        Contract.Requires(-1 == ID);
+        Contract.Requires(0 <= value);
+        m_ID = value;
+      }
+    }
     public readonly string ImageID;
     public readonly bool IsWalkable;
     public readonly bool IsTransparent;
@@ -21,6 +32,7 @@ namespace djack.RogueSurvivor.Data
 
     public TileModel(string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string waterCoverImageID=null)
     {
+      m_ID = -1;
       ImageID = imageID;
       IsWalkable = isWalkable;
       IsTransparent = isTransparent;
