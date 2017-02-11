@@ -89,15 +89,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
 
     private readonly LOSSensor m_LOSSensor;
-    private int m_SafeTurns;
-    private readonly ExplorationData m_Exploration;
+    private int m_SafeTurns = 0;
+    private readonly ExplorationData m_Exploration = new ExplorationData();
     private string[] m_Emotes;
 
     public CivilianAI()
     {
       m_LOSSensor = new LOSSensor(VISION_SEES);
-      m_SafeTurns = 0;
-      m_Exploration = new ExplorationData();
       m_Emotes = CivilianAI.FIGHT_EMOTES;
     }
 

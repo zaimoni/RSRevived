@@ -37,13 +37,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS;
 
-    private readonly MemorizedSensor m_MemLOSSensor;
-    private readonly ExplorationData m_Exploration;
+    private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
+    private readonly ExplorationData m_Exploration = new ExplorationData();
 
     public SoldierAI()
     {
-      m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
-      m_Exploration = new ExplorationData();
     }
 
     public override void OptimizeBeforeSaving()
