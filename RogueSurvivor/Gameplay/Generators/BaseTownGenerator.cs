@@ -583,23 +583,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle topRight;
       Rectangle bottomLeft;
       Rectangle bottomRight;
-            QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out splitX, out splitY, out topLeft, out topRight, out bottomLeft, out bottomRight);
-      if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty)
-      {
-        if (makeRoads)
-        {
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Top, rect.Width, 1));
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, 1));
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Left, rect.Top, 1, rect.Height));
-                    MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Right - 1, rect.Top, 1, rect.Height));
+      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out splitX, out splitY, out topLeft, out topRight, out bottomLeft, out bottomRight);
+      if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
+        if (makeRoads) {
+          MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Top, rect.Width, 1));
+          MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_EW], new Rectangle(rect.Left, rect.Bottom - 1, rect.Width, 1));
+          MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Left, rect.Top, 1, rect.Height));
+          MakeRoad(map, m_Game.GameTiles[GameTiles.IDs.ROAD_ASPHALT_NS], new Rectangle(rect.Right - 1, rect.Top, 1, rect.Height));
           topLeft.Width -= 2;
           topLeft.Height -= 2;
           topLeft.Offset(1, 1);
         }
         list.Add(new BaseTownGenerator.Block(topLeft));
-      }
-      else
-      {
+      } else {
         MakeBlocks(map, makeRoads, ref list, topLeft);
         if (!topRight.IsEmpty) MakeBlocks(map, makeRoads, ref list, topRight);
         if (!bottomLeft.IsEmpty) MakeBlocks(map, makeRoads, ref list, bottomLeft);
