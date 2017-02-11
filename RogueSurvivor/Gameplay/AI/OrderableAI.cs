@@ -1551,11 +1551,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != armor) return BehaviorDropItem(armor);  
       }
 
-      // not-best melee weapon can be dropped
-      if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemMeleeWeapon))) {
-        ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-        // ok to drop if either the weapon won't become interesting, or is less interesting that the other item
-        if (null != weapon && (m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) > 2 || (it is ItemMeleeWeapon && RHSMoreInteresting(weapon, it)))) return BehaviorDropItem(weapon);  
+      
+      { // not-best melee weapon can be dropped
+        List<ItemMeleeWeapon> melee = inv.GetItemsByType<ItemMeleeWeapon>();
+        if (null != melee) {
+          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
+          if (2<=melee.Count) return BehaviorDropItem(weapon);
+          if (it is ItemMeleeWeapon && (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating) return BehaviorDropItem(weapon);
+        }
       }
 
       // another behavior is responsible for pre-emptively eating perishable food
@@ -1636,6 +1639,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemEntertainment) return null;
       if (it is ItemBarricadeMaterial) return null;
 
+      // dropping body armor to get a better one should be ok
+      if (it is ItemBodyArmor) {
+        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
+        if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) {
+          return BehaviorDropItem(armor);
+        }
+      }
+
       // ditch unimportant items
       ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>(null);
       if (null != tmpBarricade) return BehaviorDropItem(tmpBarricade);
@@ -1645,8 +1656,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpEntertainment) return BehaviorDropItem(tmpEntertainment);
       ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>(null);
       if (null != tmpMedicine) return BehaviorDropItem(tmpMedicine);
-      ItemLight tmpLight = inv.GetFirstMatching<ItemLight>(null);
-      if (null != tmpLight) return BehaviorDropItem(tmpLight);
+
+      // least charged flashlight goes      
+      List<ItemLight> lights = inv.GetItemsByType<ItemLight>();
+      if (null != lights && 2<=lights.Count) {
+        int min_batteries = lights.Select(obj => obj.Batteries).Min();
+        ItemLight discard = lights.Find(obj => obj.Batteries==min_batteries);
+        return BehaviorDropItem(discard);
+      }
 
       // uninteresting ammo
       ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>((Predicate<ItemAmmo>) (ammo => !IsInterestingItem(ammo)));
@@ -1676,10 +1693,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemTracker) return null;
 
       // body armor
-      // XXX dropping body armor to get a better one should be ok
       if (it is ItemBodyArmor) return null;
-      ItemBodyArmor tmpBodyArmor = inv.GetFirstMatching<ItemBodyArmor>(null);
-      if (null != tmpBodyArmor) return BehaviorDropItem(tmpBodyArmor);
 
       // give up
       return null;
