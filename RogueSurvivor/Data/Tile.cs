@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define C_TILES
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -11,7 +13,11 @@ using System.Diagnostics.Contracts;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
+#if C_TILES
+  internal class Tile_old
+#else
   internal class Tile
+#endif
   {
     private int m_ModelID;
     private Tile.Flags m_Flags;
@@ -30,31 +36,31 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInside {
       get {
-        return (m_Flags & Tile.Flags.IS_INSIDE) != Tile.Flags.NONE;
+        return (m_Flags & Flags.IS_INSIDE) != Flags.NONE;
       }
       set {
-        if (value) m_Flags |= Tile.Flags.IS_INSIDE;
-        else m_Flags &= ~Tile.Flags.IS_INSIDE;
+        if (value) m_Flags |= Flags.IS_INSIDE;
+        else m_Flags &= ~Flags.IS_INSIDE;
       }
     }
 
     public bool IsInView {
       get {
-        return (m_Flags & Tile.Flags.IS_IN_VIEW) != Tile.Flags.NONE;
+        return (m_Flags & Flags.IS_IN_VIEW) != Flags.NONE;
       }
       set {
-        if (value) m_Flags |= Tile.Flags.IS_IN_VIEW;
-        else m_Flags &= ~Tile.Flags.IS_IN_VIEW;
+        if (value) m_Flags |= Flags.IS_IN_VIEW;
+        else m_Flags &= ~Flags.IS_IN_VIEW;
       }
     }
 
     public bool IsVisited {
       get {
-        return (m_Flags & Tile.Flags.IS_VISITED) != Tile.Flags.NONE;
+        return (m_Flags & Flags.IS_VISITED) != Flags.NONE;
       }
       set {
-        if (value) m_Flags |= Tile.Flags.IS_VISITED;
-        else m_Flags &= ~Tile.Flags.IS_VISITED;
+        if (value) m_Flags |= Flags.IS_VISITED;
+        else m_Flags &= ~Flags.IS_VISITED;
       }
     }
 
@@ -108,7 +114,11 @@ namespace djack.RogueSurvivor.Data
   }
 
   // prototype a replacement for the Tile class that never gets saved to hard drive
+#if C_TILES
+  internal class Tile
+#else
   internal class TileV2
+#endif
   {
     private int m_ModelID;
     private TileV2.Flags m_Flags;
@@ -123,32 +133,32 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInside {
       get {
-        return (m_Flags & TileV2.Flags.IS_INSIDE) != TileV2.Flags.NONE;
+        return (m_Flags & Flags.IS_INSIDE) != Flags.NONE;
       }
       private set {
-        if (value) m_Flags |= TileV2.Flags.IS_INSIDE;
-        else m_Flags &= ~TileV2.Flags.IS_INSIDE;
-        m_Location.Map.SetIsInsideAt(m_Location.Position, value);
+        if (value) m_Flags |= Flags.IS_INSIDE;
+        else m_Flags &= ~Flags.IS_INSIDE;
+        m_Location.Map.SetIsInsideAt(m_Location.Position,value);
       }
     }
 
     public bool IsInView {
       get {
-        return (m_Flags & TileV2.Flags.IS_IN_VIEW) != TileV2.Flags.NONE;
+        return (m_Flags & Flags.IS_IN_VIEW) != Flags.NONE;
       }
       set {
-        if (value) m_Flags |= TileV2.Flags.IS_IN_VIEW;
-        else m_Flags &= ~TileV2.Flags.IS_IN_VIEW;
+        if (value) m_Flags |= Flags.IS_IN_VIEW;
+        else m_Flags &= ~Flags.IS_IN_VIEW;
       }
     }
 
     public bool IsVisited {
       get {
-        return (m_Flags & TileV2.Flags.IS_VISITED) != TileV2.Flags.NONE;
+        return (m_Flags & Flags.IS_VISITED) != Flags.NONE;
       }
       set {
-        if (value) m_Flags |= TileV2.Flags.IS_VISITED;
-        else m_Flags &= ~TileV2.Flags.IS_VISITED;
+        if (value) m_Flags |= Flags.IS_VISITED;
+        else m_Flags &= ~Flags.IS_VISITED;
       }
     }
 

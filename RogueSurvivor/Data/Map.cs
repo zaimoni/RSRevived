@@ -225,7 +225,12 @@ namespace djack.RogueSurvivor.Data
     /// </summary>
     public Tile GetTileAt(int x, int y)
     {
+#if C_TILES
+      int i = y*Width+x;
+      return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
+#else
       return m_Tiles[x, y];
+#endif
     }
 
     /// <summary>
@@ -234,7 +239,12 @@ namespace djack.RogueSurvivor.Data
     /// </summary>
     public Tile GetTileAt(Point p)
     {
+#if C_TILES
+      int i = p.Y*Width+p.X;
+      return new Tile(m_TileIDs[p.X,p.Y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,p));
+#else
       return m_Tiles[p.X, p.Y];
+#endif
     }
 
     public void SetIsInsideAt(int x, int y, bool inside=true)
