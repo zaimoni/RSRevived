@@ -28,9 +28,19 @@ namespace djack.RogueSurvivor.Engine
     public abstract Map Generate(int seed, string name);
 
 #region Tile filling
+    public void TileFill(Map map, TileModel model, bool inside)
+    {
+      TileFill(map, model, 0, 0, map.Width, map.Height, inside);
+    }
+
     public void TileFill(Map map, TileModel model, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
       TileFill(map, model, 0, 0, map.Width, map.Height, decoratorFn);
+    }
+
+    public void TileFill(Map map, TileModel model, Rectangle rect, bool inside)
+    {
+      TileFill(map, model, rect.Left, rect.Top, rect.Width, rect.Height, inside);
     }
 
     public void TileFill(Map map, TileModel model, Rectangle rect, Action<Tile, TileModel, int, int> decoratorFn=null)
@@ -48,6 +58,18 @@ namespace djack.RogueSurvivor.Engine
           map.SetTileModelAt(x, y, model);
           if (decoratorFn != null)
             decoratorFn(map.GetTileAt(x, y), model1, x, y);
+        }
+      }
+    }
+
+    public void TileFill(Map map, TileModel model, int left, int top, int width, int height, bool inside)
+    {
+      if (map == null) throw new ArgumentNullException("map");
+      if (model == null) throw new ArgumentNullException("model");
+      for (int x = left; x < left + width; ++x) {
+        for (int y = top; y < top + height; ++y) {
+          map.SetTileModelAt(x, y, model);
+          map.SetIsInsideAt(x, y, inside);
         }
       }
     }

@@ -142,7 +142,6 @@ namespace djack.RogueSurvivor.Data
       private set {
         if (value) m_Flags |= Flags.IS_INSIDE;
         else m_Flags &= ~Flags.IS_INSIDE;
-        m_Location.Map.SetIsInsideAt(m_Location.Position,value);
       }
     }
 

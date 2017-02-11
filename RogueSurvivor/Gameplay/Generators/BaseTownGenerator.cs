@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Lighting = Lighting.DARKNESS
       };
       sewers.AddZone(MakeUniqueZone("sewers", sewers.Rect));
-      TileFill(sewers, m_Game.GameTiles.WALL_SEWER);
+      TileFill(sewers, m_Game.GameTiles.WALL_SEWER, true);
 
       ///////////////////////////////////////////////////
       // 1. Make blocks.
@@ -263,13 +263,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
       while (countLinks < 1);
-#endregion
-
-#region 4. Additional jobs.
-      for (int x = 0; x < sewers.Width; ++x) {
-        for (int y = 0; y < sewers.Height; ++y)
-          sewers.SetIsInsideAt(x, y);
-      }
 #endregion
 
 #region 5. Sewers Maintenance Room & Building(surface).
@@ -425,7 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS
       };
-      TileFill(subway, m_Game.GameTiles.WALL_BRICK);
+      TileFill(subway, m_Game.GameTiles.WALL_BRICK, true);
 
       district.SubwayMap = subway;
 
@@ -532,12 +525,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
 #endregion
-      // 5. Additional jobs.
-      // Mark all the map as inside.
-      for (int x2 = 0; x2 < subway.Width; ++x2) {
-        for (int y2 = 0; y2 < subway.Height; ++y2)
-          subway.SetIsInsideAt(x2, y2);
-      }
 
       return subway;
     }
@@ -683,7 +670,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5) return false;
       TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, m_Game.GameTiles.WALL_STONE, b.BuildingRect);
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES, b.InsideRect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) => map.SetIsInsideAt(x, y)));
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, b.InsideRect, true);
       BaseTownGenerator.ShopType shopType = (BaseTownGenerator.ShopType)m_DiceRoller.Roll(0, 7);
       int left1 = b.InsideRect.Left;
       int top1 = b.InsideRect.Top;
@@ -832,8 +819,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Map shopBasement = new Map(seed, name, map.District, width, height) {
           Lighting = Lighting.DARKNESS,
         };
-        DoForEachTile(shopBasement.Rect, (Action<Point>) (pt => shopBasement.SetIsInsideAt(pt)));
-        TileFill(shopBasement, m_Game.GameTiles.FLOOR_CONCRETE);
+        TileFill(shopBasement, m_Game.GameTiles.FLOOR_CONCRETE, true);
         TileRectangle(shopBasement, m_Game.GameTiles.WALL_BRICK, shopBasement.Rect);
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
@@ -880,16 +866,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       bool flag = b.InsideRect.Width >= b.InsideRect.Height;
       int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
       int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
-      if (flag)
-      {
-        if (m_DiceRoller.RollChance(50))
-        {
-                    PlaceDoor(map, b.BuildingRect.Left, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
-          if (b.InsideRect.Height >= 8)
-          {
-                        PlaceDoor(map, b.BuildingRect.Left, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+      if (flag) {
+        if (m_DiceRoller.RollChance(50)) {
+          PlaceDoor(map, b.BuildingRect.Left, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+          if (b.InsideRect.Height >= 8) {
+            PlaceDoor(map, b.BuildingRect.Left, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
             if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Left, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+              PlaceDoor(map, b.BuildingRect.Left, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           }
         } else {
           PlaceDoor(map, b.BuildingRect.Right - 1, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
@@ -942,27 +925,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, m_Game.GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
-      TileFill(map, m_Game.GameTiles.FLOOR_OFFICE, b.InsideRect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) => map.SetIsInsideAt(x, y)));
+      TileFill(map, m_Game.GameTiles.FLOOR_OFFICE, b.InsideRect, true);
       Rectangle rectangle1 = b.InsideRect;
       bool flag = rectangle1.Width >= b.InsideRect.Height;
       int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
       int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
       Direction direction;
-      if (flag)
-      {
-        if (m_DiceRoller.RollChance(50))
-        {
+      if (flag) {
+        if (m_DiceRoller.RollChance(50)) {
           direction = Direction.W;
-                    PlaceDoor(map, b.BuildingRect.Left, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+          PlaceDoor(map, b.BuildingRect.Left, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           if (b.InsideRect.Height >= 8)
           {
-                        PlaceDoor(map, b.BuildingRect.Left, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+            PlaceDoor(map, b.BuildingRect.Left, y1 - 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
             if (b.InsideRect.Height >= 12)
-                            PlaceDoor(map, b.BuildingRect.Left, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
+              PlaceDoor(map, b.BuildingRect.Left, y1 + 1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           }
-        }
-        else
-        {
+        } else {
           direction = Direction.E;
           PlaceDoor(map, b.BuildingRect.Right - 1, y1, m_Game.GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor());
           if (b.InsideRect.Height >= 8) {
@@ -1209,7 +1188,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (b.InsideRect.Width < 4 || b.InsideRect.Height < 4) return false;
       TileRectangle(map, m_Game.GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, m_Game.GameTiles.WALL_BRICK, b.BuildingRect);
-      TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, b.InsideRect, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) => map.SetIsInsideAt(x, y)));
+      TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, b.InsideRect, true);
       List<Rectangle> list = new List<Rectangle>();
       MakeRoomsPlan(map, ref list, b.BuildingRect, 5);
       foreach (Rectangle roomRect in list) {
@@ -1338,10 +1317,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual void MakeSubwayStationBuilding(Map map, bool isSurface, BaseTownGenerator.Block b, Map linkedMap, Point exitPosition)
     {
-      if (!isSurface) TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect);
+      if (!isSurface) TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, b.InsideRect, true);
       TileRectangle(map, m_Game.GameTiles.WALL_SUBWAY, b.BuildingRect);
-      DoForEachTile(b.InsideRect,(Action<Point>)(pt => {
-          map.SetIsInsideAt(pt);
+      DoForEachTile(b.BuildingRect,(Action<Point>)(pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
       }));
       Direction direction;
@@ -2051,7 +2029,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Lighting = Lighting.DARKNESS,
       };
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
-      TileFill(basement, m_Game.GameTiles.FLOOR_CONCRETE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => basement.SetIsInsideAt(x, y)));
+      TileFill(basement, m_Game.GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(basement, m_Game.GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
       Point point = new Point();
       do {
@@ -2121,7 +2099,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Lighting = Lighting.DARKNESS,
         IsSecret = true,
       };
-      TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => underground.SetIsInsideAt(x,y)));
+      TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, true);
       TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
       Zone zone1 = null;
       Point point1 = new Point();
@@ -2368,11 +2346,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void GeneratePoliceStation(Map surfaceMap, BaseTownGenerator.Block policeBlock, out Point stairsToLevel1)
     {
-      TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, policeBlock.InsideRect);
+      TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, policeBlock.InsideRect, true);
       TileRectangle(surfaceMap, m_Game.GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, m_Game.GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
       DoForEachTile(policeBlock.InsideRect,(Action<Point>)(pt => {
-          surfaceMap.SetIsInsideAt(pt);
           Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt));
       }));
       Point point = new Point(policeBlock.BuildingRect.Left + policeBlock.BuildingRect.Width / 2, policeBlock.BuildingRect.Bottom - 1);
@@ -2400,8 +2377,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Lighting = Lighting.DARKNESS
       };
 
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, true);
       TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
       Rectangle rect1 = Rectangle.FromLTRB(3, 0, map.Width, map.Height);
       List<Rectangle> list = new List<Rectangle>();
@@ -2484,8 +2460,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS
       };
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, true);
       TileRectangle(map, m_Game.GameTiles.WALL_POLICE_STATION, map.Rect);
       List<Rectangle> rectangleList = new List<Rectangle>();
       int x = 0;
@@ -2570,10 +2545,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void GenerateHospitalEntryHall(Map surfaceMap, BaseTownGenerator.Block block)
     {
-      TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, block.InsideRect);
+      TileFill(surfaceMap, m_Game.GameTiles.FLOOR_TILES, block.InsideRect, true);
       TileRectangle(surfaceMap, m_Game.GameTiles.WALL_HOSPITAL, block.BuildingRect);
       TileRectangle(surfaceMap, m_Game.GameTiles.FLOOR_WALKWAY, block.Rectangle);
-      DoForEachTile(block.InsideRect, (Action<Point>) (pt => surfaceMap.SetIsInsideAt(pt)));
       Point point1 = new Point(block.BuildingRect.Left + block.BuildingRect.Width / 2, block.BuildingRect.Bottom - 1);
       Point point2 = new Point(point1.X - 1, point1.Y);
       surfaceMap.AddDecorationAt("Tiles\\Decoration\\hospital", point2.X - 1, point2.Y);
@@ -2597,8 +2571,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS,
       };
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, true);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect = new Rectangle(4, 0, 5, map.Height);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect);
@@ -2638,8 +2611,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS,
       };
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, true);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect = new Rectangle(4, 0, 5, map.Height);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect);
@@ -2675,8 +2647,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS,
       };
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, true);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect = new Rectangle(4, 0, 5, map.Height);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect);
@@ -2716,8 +2687,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Lighting = Lighting.DARKNESS
       };
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_TILES);
+      TileFill(map, m_Game.GameTiles.FLOOR_TILES, true);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, map.Rect);
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, map.Width, 4);
       TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, rect1);
@@ -2755,8 +2725,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = new Map(seed, "Hospital - Power", d, 10, 10) {
         Lighting = Lighting.DARKNESS,
       };
-      DoForEachTile(map.Rect, (Action<Point>) (pt => map.SetIsInsideAt(pt)));
-      TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE);
+      TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(map, m_Game.GameTiles.WALL_BRICK, map.Rect);
       Rectangle rect = Rectangle.FromLTRB(1, 1, 3, map.Height);
       map.AddZone(MakeUniqueZone("corridor", rect));
