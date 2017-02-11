@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
 #endif
   {
     private int m_ModelID;
-    private Tile.Flags m_Flags;
+    private Flags m_Flags;
     private List<string> m_Decorations;
 
     public TileModel Model {
@@ -67,7 +67,11 @@ namespace djack.RogueSurvivor.Data
     public bool HasDecorations { get { return m_Decorations != null; } }
     public IEnumerable<string> Decorations { get { return m_Decorations; } }
 
+#if C_TILES
+    public Tile_old(TileModel model)
+#else
     public Tile(TileModel model)
+#endif
     {
       Contract.Requires(null != model);
       m_ModelID = model.ID;
@@ -121,7 +125,7 @@ namespace djack.RogueSurvivor.Data
 #endif
   {
     private int m_ModelID;
-    private TileV2.Flags m_Flags;
+    private Flags m_Flags;
     private Location m_Location;
 
     public TileModel Model {
@@ -165,7 +169,11 @@ namespace djack.RogueSurvivor.Data
     public bool HasDecorations { get { return m_Location.Map.HasDecorationsAt(m_Location.Position); } }
     public IEnumerable<string> Decorations { get { return m_Location.Map.DecorationsAt(m_Location.Position); } }
 
+#if C_TILES
+    public Tile(int modelID, bool inside, Location loc)
+#else
     public TileV2(int modelID, bool inside, Location loc)
+#endif
     {
       Contract.Requires(255>=modelID && 0<=modelID);
       m_ModelID = (byte)modelID;
