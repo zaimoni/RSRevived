@@ -1181,7 +1181,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	    Exit exitAt = a_map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
-          return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+          return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
 	    navigate.GoalDistance(a_map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
 	  } else {
 	    navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
@@ -1893,7 +1893,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
       if (0>=valid_exits.Count) return null;
       if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
-        return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
 
       return BehaviorHastyNavigate(valid_exits.Keys);
@@ -1929,7 +1929,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
       if (0>=valid_exits.Count) return null;
       if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
-        return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
       return BehaviorHastyNavigate(valid_exits.Keys);
     }
@@ -1959,7 +1959,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0<possible_destinations.Count) {
           valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
           if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
-            return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+            return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
           }
           where_to_go.UnionWith(valid_exits.Keys);
         }

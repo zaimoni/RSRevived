@@ -592,6 +592,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0>=tainted.Count) return dests;
         Dictionary<Point,int> taint_exposed = new Dictionary<Point,int>();
         foreach(Point pt in dests) {
+          if (!hypothetical_los.ContainsKey(pt)) {
+            taint_exposed[pt] = 0;
+            continue;
+          }
           HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
           tmp2.IntersectWith(tainted);
           taint_exposed[pt] = tmp2.Count;

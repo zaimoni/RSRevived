@@ -149,6 +149,7 @@ namespace djack.RogueSurvivor.Data
 #if C_TILES
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
+      m_Decorations = (Dictionary<Point, List<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, List<string>>));
 #endif
       ReconstructAuxiliaryFields();
     }
@@ -178,6 +179,7 @@ namespace djack.RogueSurvivor.Data
 #if C_TILES
       info.AddValue("m_TileIDs", (object)m_TileIDs);
       info.AddValue("m_IsInside", (object)m_IsInside);
+      info.AddValue("m_Decorations", (object)m_Decorations);
 #endif
     }
 #endregion
