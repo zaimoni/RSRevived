@@ -383,11 +383,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DATAFLOW_TRACE
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
+          MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
+          game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
 #if DEBUG
           throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed");
 #endif
-          MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
-          game.DoEmote(m_Actor, "Mmmh. Looks like I can't reach what I want.");
         }
         if (Directives.CanTrade && HasAnyTradeableItem()) {
           List<Item> TradeableItems = GetTradeableItems();  // iterating over friends next so m_Actor.GetInterestingTradeableItems(...) is inappropriate; do first half here

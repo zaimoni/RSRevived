@@ -602,26 +602,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected DoorWindow MakeObjWoodenDoor()
     {
-      return new DoorWindow("wooden door", GameImages.OBJ_WOODEN_DOOR_CLOSED, GameImages.OBJ_WOODEN_DOOR_OPEN, GameImages.OBJ_WOODEN_DOOR_BROKEN, 40) {
+      return new DoorWindow("wooden door", GameImages.OBJ_WOODEN_DOOR_CLOSED, GameImages.OBJ_WOODEN_DOOR_OPEN, GameImages.OBJ_WOODEN_DOOR_BROKEN, DoorWindow.BASE_HITPOINTS) {
         GivesWood = true
       };
     }
 
     protected DoorWindow MakeObjHospitalDoor()
     {
-      return new DoorWindow("door", GameImages.OBJ_HOSPITAL_DOOR_CLOSED, GameImages.OBJ_HOSPITAL_DOOR_OPEN, GameImages.OBJ_HOSPITAL_DOOR_BROKEN, 40) {
+      return new DoorWindow("door", GameImages.OBJ_HOSPITAL_DOOR_CLOSED, GameImages.OBJ_HOSPITAL_DOOR_OPEN, GameImages.OBJ_HOSPITAL_DOOR_BROKEN, DoorWindow.BASE_HITPOINTS) {
         GivesWood = true
       };
     }
 
     protected DoorWindow MakeObjCharDoor()
     {
-      return new DoorWindow("CHAR door", GameImages.OBJ_CHAR_DOOR_CLOSED, GameImages.OBJ_CHAR_DOOR_OPEN, GameImages.OBJ_CHAR_DOOR_BROKEN, 160);
+      return new DoorWindow("CHAR door", GameImages.OBJ_CHAR_DOOR_CLOSED, GameImages.OBJ_CHAR_DOOR_OPEN, GameImages.OBJ_CHAR_DOOR_BROKEN, 4*DoorWindow.BASE_HITPOINTS);
     }
 
     protected DoorWindow MakeObjGlassDoor()
     {
-      return new DoorWindow("glass door", GameImages.OBJ_GLASS_DOOR_CLOSED, GameImages.OBJ_GLASS_DOOR_OPEN, GameImages.OBJ_GLASS_DOOR_BROKEN, 10) {
+      return new DoorWindow("glass door", GameImages.OBJ_GLASS_DOOR_CLOSED, GameImages.OBJ_GLASS_DOOR_OPEN, GameImages.OBJ_GLASS_DOOR_BROKEN, DoorWindow.BASE_HITPOINTS/4) {
         IsMaterialTransparent = true,
         BreaksWhenFiredThrough = true
       };
@@ -629,14 +629,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected DoorWindow MakeObjIronDoor()
     {
-      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 320) {
+      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 8*DoorWindow.BASE_HITPOINTS) {
         IsAn = true
       };
     }
 
     protected DoorWindow MakeObjWindow()
     {
-      return new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, 10) {
+      return new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, DoorWindow.BASE_HITPOINTS/4) {
         IsMaterialTransparent = true,
         GivesWood = true,
         BreaksWhenFiredThrough = true
@@ -674,7 +674,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Fortification MakeObjSmallFortification(string imageID)
     {
-      Fortification fortification = new Fortification("small fortification", imageID, 20);
+      Fortification fortification = new Fortification("small fortification", imageID, Fortification.SMALL_BASE_HITPOINTS);
       fortification.IsMaterialTransparent = true;
       fortification.GivesWood = true;
       fortification.IsMovable = true;
@@ -685,7 +685,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Fortification MakeObjLargeFortification(string imageID)
     {
-      Fortification fortification = new Fortification("large fortification", imageID, 40);
+      Fortification fortification = new Fortification("large fortification", imageID, Fortification.LARGE_BASE_HITPOINTS);
       fortification.GivesWood = true;
       return fortification;
     }
