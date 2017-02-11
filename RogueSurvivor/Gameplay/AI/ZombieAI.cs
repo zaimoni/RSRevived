@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     private readonly SmellSensor m_LivingSmellSensor;
     private readonly SmellSensor m_MasterSmellSensor;
-    private ExplorationData m_Exploration;
+    private ExplorationData m_Exploration = null;
 
     public ZombieAI()
     {

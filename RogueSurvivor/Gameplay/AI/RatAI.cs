@@ -22,13 +22,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly LOSSensor m_LOSSensor;
-    private readonly SmellSensor m_LivingSmellSensor;
+    private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
+    private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
     public RatAI()
     {
-      m_LOSSensor = new LOSSensor(VISION_SEES);
-      m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     }
 
     public override List<Percept> UpdateSensors()
