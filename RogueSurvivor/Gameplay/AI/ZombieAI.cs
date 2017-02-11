@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
+        tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES | BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (null != tmpAction) {
           m_MemLOSSensor.Clear();
           return tmpAction;
@@ -98,13 +98,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
-        tmpAction = BehaviorTrackScent(game, m_MasterSmellSensor.Scents);
+        tmpAction = BehaviorTrackScent(m_MasterSmellSensor.Scents);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.TRACKING;
           return tmpAction;
         }
       }
-      tmpAction = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
+      tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.TRACKING;
         return tmpAction;

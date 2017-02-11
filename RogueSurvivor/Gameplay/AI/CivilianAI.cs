@@ -524,7 +524,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.DONT_BACKTRACK);
+        tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
         if (null != tmpAction) return tmpAction;
       }
       if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {

@@ -776,7 +776,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (other.Location.Map != m_Actor.Location.Map) {
         Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
-          return BehaviorUseExit(RogueForm.Game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+          return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
       ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location.Position);
       if (actorAction == null || !actorAction.IsLegal()) return null;
@@ -802,7 +802,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return a;
     }
 
-    protected ActorAction BehaviorTrackScent(RogueGame game, List<Percept> scents)
+    protected ActorAction BehaviorTrackScent(List<Percept> scents)
     {
       if (scents == null || scents.Count == 0) return null;
       Percept percept = FilterStrongestScent(scents);
@@ -810,7 +810,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!(m_Actor.Location.Position == percept.Location.Position))
         return BehaviorIntelligentBumpToward(percept.Location.Position);
       if (map.GetExitAt(m_Actor.Location.Position) != null && m_Actor.Model.Abilities.AI_CanUseAIExits)
-        return BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       return null;
     }
 
@@ -886,7 +886,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE)) {
-          tmpAction = BehaviorUseExit(game, BaseAI.UseExitFlags.NONE);
+          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
@@ -986,7 +986,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanClose(door) ? new ActionCloseDoor(m_Actor, door) : null);
     }
 
-    protected ActorAction BehaviorUseExit(RogueGame game, BaseAI.UseExitFlags useFlags)
+    protected ActorAction BehaviorUseExit(BaseAI.UseExitFlags useFlags)
     {
       Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
       if (exitAt == null) return null;

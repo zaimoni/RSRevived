@@ -50,15 +50,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = TargetGridMelee(enemies.Filter(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
         if (null != tmpAction) return tmpAction;
       }
-      ActorAction actorAction = BehaviorGoEatCorpse(percepts1);
-      if (actorAction != null) {
+      tmpAction = BehaviorGoEatCorpse(percepts1);
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
-        return actorAction;
+        return tmpAction;
       }
-      ActorAction actorAction3 = BehaviorTrackScent(game, m_LivingSmellSensor.Scents);
-      if (actorAction3 != null) {
+      tmpAction = BehaviorTrackScent(m_LivingSmellSensor.Scents);
+      if (null != tmpAction) {
         m_Actor.Activity = Activity.TRACKING;
-        return actorAction3;
+        return tmpAction;
       }
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
