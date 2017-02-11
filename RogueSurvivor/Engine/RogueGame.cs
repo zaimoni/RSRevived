@@ -10591,7 +10591,7 @@ namespace djack.RogueSurvivor.Engine
           if (!m_Player.IsSleeping && map.IsInBounds(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {
             if (isUndead) {
               if (flag1) {
-                int num5 = Rules.ActorSmellThreshold(m_Player);
+                int num5 = m_Player.SmellThreshold;
                 int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, point);
                 if (scentByOdorAt1 >= num5) {
                   float num6 = (float) (0.9 * (double) scentByOdorAt1 / (double)(OdorScent.MAX_STRENGTH));

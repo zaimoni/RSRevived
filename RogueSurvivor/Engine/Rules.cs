@@ -840,12 +840,6 @@ namespace djack.RogueSurvivor.Engine
       return baseBarricadingPoints + num;
     }
 
-    public static int ActorSmellThreshold(Actor actor)
-    {
-      if (actor.IsSleeping) return -1;
-      return (OdorScent.MAX_STRENGTH+1) - (int) ((double)actor.Smell * OdorScent.MAX_STRENGTH);
-    }
-
     public static int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)
     {
       return 10 + Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (LOUD_NOISE_RADIUS - noiseDistance) * 10);

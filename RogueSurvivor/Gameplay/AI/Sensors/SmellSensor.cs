@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public override List<Percept> Sense(Actor actor)
     {
       m_List.Clear();
-      int num = Rules.ActorSmellThreshold(actor);
+      int num = actor.SmellThreshold;
       int x1 = actor.Location.Position.X - 1;
       int x2 = actor.Location.Position.X + 1;
       int y1 = actor.Location.Position.Y - 1;

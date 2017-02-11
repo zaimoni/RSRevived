@@ -2217,6 +2217,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int SmellThreshold {
+      get {
+        if (IsSleeping) return -1;
+        return (OdorScent.MAX_STRENGTH+1) - (int) ((double)Smell * OdorScent.MAX_STRENGTH);
+      }
+    }
+
     // event handlers
     public void OnEquipItem(Item it)
     {
