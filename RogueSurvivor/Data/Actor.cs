@@ -53,6 +53,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
+    public static float SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
 
     public static int SKILL_AGILE_ATK_BONUS = 2;
     public static int SKILL_BOWS_ATK_BONUS = 5;
@@ -2209,6 +2210,13 @@ namespace djack.RogueSurvivor.Data
       return Math.Max(MINIMAL_FOV, FOV);
     }
 
+    // smell
+    public float Smell {
+      get {
+        return (float) (1.0 + (double) SKILL_ZTRACKER_SMELL_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Model.StartingSheet.BaseSmellRating;
+      }
+    }
+
     // event handlers
     public void OnEquipItem(Item it)
     {
@@ -2357,12 +2365,10 @@ namespace djack.RogueSurvivor.Data
 
     public void DropScent()
     {
-      if (Model.Abilities.IsUndead)
-      {
+      if (Model.Abilities.IsUndead) {
         if (!Model.Abilities.IsUndeadMaster) return;
         Location.Map.RefreshScentAt(Odor.UNDEAD_MASTER, UNDEAD_MASTER_SCENT_DROP, Location.Position);
-      }
-      else
+      } else
         Location.Map.RefreshScentAt(Odor.LIVING, LIVING_SCENT_DROP, Location.Position);
     }
 

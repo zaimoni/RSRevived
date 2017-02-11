@@ -55,7 +55,6 @@ namespace djack.RogueSurvivor.Engine
     public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static float SKILL_ZEATER_REGEN_BONUS = 0.2f;
-    public static float SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
     public static int SKILL_ZGRAB_CHANCE = 2;
     public static float SKILL_ZINFECTOR_BONUS = 0.1f;
@@ -841,15 +840,10 @@ namespace djack.RogueSurvivor.Engine
       return baseBarricadingPoints + num;
     }
 
-    public static float ActorSmell(Actor actor)
-    {
-      return (float) (1.0 + (double) Rules.SKILL_ZTRACKER_SMELL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * actor.Model.StartingSheet.BaseSmellRating;
-    }
-
     public static int ActorSmellThreshold(Actor actor)
     {
       if (actor.IsSleeping) return -1;
-      return (OdorScent.MAX_STRENGTH+1) - (int) ((double)ActorSmell(actor) * OdorScent.MAX_STRENGTH);
+      return (OdorScent.MAX_STRENGTH+1) - (int) ((double)actor.Smell * OdorScent.MAX_STRENGTH);
     }
 
     public static int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)

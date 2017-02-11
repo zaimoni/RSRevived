@@ -201,7 +201,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[27];
       Actor.SKILL_ZTOUGH_HP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[28];
-      Rules.SKILL_ZTRACKER_SMELL_BONUS = skillData2.VALUE1;
+      Actor.SKILL_ZTRACKER_SMELL_BONUS = skillData2.VALUE1;
       return true;
     }
 
