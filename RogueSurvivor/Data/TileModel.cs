@@ -12,19 +12,23 @@ namespace djack.RogueSurvivor.Data
   {
     public static readonly TileModel UNDEF = new TileModel("", Color.Pink, false, true);
     public int ID { get; set; }
-    public string ImageID { get; private set; }
-    public bool IsWalkable { get; private set; }
-    public bool IsTransparent { get; private set; }
-    public Color MinimapColor { get; private set; }
-    public bool IsWater { get; set; }
-    public string WaterCoverImageID { get; set; }
+    public readonly string ImageID;
+    public readonly bool IsWalkable;
+    public readonly bool IsTransparent;
+    public readonly Color MinimapColor;
+    public readonly bool IsWater;
+    public readonly string WaterCoverImageID;
 
-    public TileModel(string imageID, Color minimapColor, bool isWalkable, bool isTransparent)
+    public TileModel(string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string waterCoverImageID=null)
     {
       ImageID = imageID;
       IsWalkable = isWalkable;
       IsTransparent = isTransparent;
       MinimapColor = minimapColor;
+      if (!string.IsNullOrEmpty(waterCoverImageID)) {
+        IsWater = true;
+        WaterCoverImageID  = waterCoverImageID;
+      }
     }
   }
 }

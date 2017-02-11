@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Gameplay
       get {
         return this[(int) id];
       }
-      set {
+      private set {
         m_Models[(int) id] = value;
         m_Models[(int) id].ID = (int) id;
       }
@@ -195,11 +195,7 @@ namespace djack.RogueSurvivor.Gameplay
       this[GameTiles.IDs.FLOOR_GRASS] = new TileModel("Tiles\\floor_grass", Color.Green, true, true);
       this[GameTiles.IDs.FLOOR_OFFICE] = new TileModel("Tiles\\floor_office", GameTiles.LIT_GRAY3, true, true);
       this[GameTiles.IDs.FLOOR_PLANKS] = new TileModel("Tiles\\floor_planks", GameTiles.LIT_BROWN, true, true);
-      this[GameTiles.IDs.FLOOR_SEWER_WATER] = new TileModel("Tiles\\floor_sewer_water", Color.Blue, true, true)
-      {
-        IsWater = true,
-        WaterCoverImageID = "Tiles\\floor_sewer_water_cover"
-      };
+      this[GameTiles.IDs.FLOOR_SEWER_WATER] = new TileModel("Tiles\\floor_sewer_water", Color.Blue, true, true, "Tiles\\floor_sewer_water_cover");
       this[GameTiles.IDs.FLOOR_TILES] = new TileModel("Tiles\\floor_tiles", GameTiles.LIT_GRAY2, true, true);
       this[GameTiles.IDs.FLOOR_WALKWAY] = new TileModel("Tiles\\floor_walkway", GameTiles.LIT_GRAY2, true, true);
       this[GameTiles.IDs.ROAD_ASPHALT_EW] = new TileModel("Tiles\\road_asphalt_ew", GameTiles.LIT_GRAY1, true, true);
