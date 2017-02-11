@@ -26,11 +26,11 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public TileModel this[GameTiles.IDs id] {
+    private TileModel this[GameTiles.IDs id] {
       get {
         return this[(int) id];
       }
-      private set {
+      set {
         m_Models[(int) id] = value;
         m_Models[(int) id].ID = (int) id;
       }
