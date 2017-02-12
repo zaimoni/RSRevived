@@ -592,6 +592,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool IsDebuggingTarget {
+      get {
+        return false;
+      }
+    }
+
     public Actor(ActorModel model, Faction faction, int spawnTime, string name="", bool isProperName=false, bool isPluralName=false)
     {
       Contract.Requires(null != model);

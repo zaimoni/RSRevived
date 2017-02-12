@@ -4,6 +4,9 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define TRACE_TOURISM
+// #define TRACE_NAVIGATE
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -1831,23 +1834,62 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+    // XXX arguably should be member function; doing this for code locality
+    protected static bool IsLegalPathingAction(ActorAction act)
+    {
+      if (act is ActionMoveStep) return true;
+      if (act is ActionSwitchPlace) return true;
+      if (act is ActionOpenDoor) return true;
+      if (act is ActionBashDoor) return true;
+      if (act is ActionMoveStep) return true;
+      if (act is ActionBreak) return true;
+      return false;
+    }
+
     protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
     {
       Contract.Requires(0<tainted.Count());
 
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+#if TRACE_NAVIGATE
+      if (m_Actor.IsDebuggingTarget && !navigate.Domain.Contains(m_Actor.Location.Position)) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": navigate destination unreachable from ("+m_Actor.Location.Position.X.ToString()+","+ m_Actor.Location.Position.Y.ToString() + ")");
+        foreach(Point pt in navigate.Domain) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, "("+pt.X.ToString()+","+pt.Y.ToString()+"): "+navigate.Cost(pt));
+        }
+      }
+#endif
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+
+      Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
       Dictionary<Point, int> exposed = new Dictionary<Point,int>();
+
       foreach(Point pt in dest.Keys) {
+#if TRACE_NAVIGATE
+        string err = "";
+        ActorAction tmp = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt), out err);
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": ("+pt.X.ToString()+","+pt.Y.ToString()+") "+(null==tmp ? "null ("+err+")" : tmp.ToString()));
+#else
+        ActorAction tmp = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt));
+#endif
+        if (null == tmp || !tmp.IsLegal() || !IsLegalPathingAction(tmp)) continue;
         HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
         los.IntersectWith(tainted);
         exposed[pt] = los.Count;
       }
+#if TRACE_NAVIGATE
+      if (m_Actor.IsDebuggingTarget && 0 >= dest.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no possible moves for navigation");
+      if (m_Actor.IsDebuggingTarget && 0 >= exposed.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no acceptable moves for navigation");
+#endif
+      if (0 >= exposed.Count) return null;
+
       int most_exposed = exposed.Values.Max();
       if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
       ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
+#if TRACE_NAVIGATE
+      if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
+#endif
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
@@ -1916,14 +1958,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorTourism()
     {
       LocationSet sights_to_see = m_Actor.InterestingLocs;
+#if TRACE_TOURISM
+      if (m_Actor.IsDebuggingTarget && null== sights_to_see) Logger.WriteLine(Logger.Stage.RUN_MAIN, "no tourism allowed");
+#endif
       if (null == sights_to_see) return null;
       // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
-      if (0<tainted.Count) return BehaviorNavigate(tainted);
+#if TRACE_TOURISM
+      if (m_Actor.IsDebuggingTarget && 0 < tainted.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, "navigating for tourism");
+#endif
+      if (0<tainted.Count) {
+        ActorAction tmpAction = BehaviorNavigate(tainted);
+        if (null!=tmpAction) return tmpAction;
+        // problem....
+      }
 
+#if TRACE_TOURISM
+      if (m_Actor.IsDebuggingTarget && !m_Actor.Model.Abilities.AI_CanUseAIExits) Logger.WriteLine(Logger.Stage.RUN_MAIN, "cannot use exits for tourism");
+#endif
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
       HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+#if TRACE_TOURISM
+      if (m_Actor.IsDebuggingTarget && 0 >= possible_destinations.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, "no exit destinations for tourism");
+#endif
       if (0>=possible_destinations.Count) return null;
         
       // try to pick something reasonable
@@ -1941,10 +1999,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
       }
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+#if TRACE_TOURISM
+      if (m_Actor.IsDebuggingTarget && 0 >= valid_exits.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, "all exits for tourism pruned");
+#endif
       if (0>=valid_exits.Count) return null;
       if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
+#if TRACE_TOURISM
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using exit");
+#endif
         return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
+#if TRACE_TOURISM
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hasty navigating to exit");
+#endif
       return BehaviorHastyNavigate(valid_exits.Keys);
     }
 

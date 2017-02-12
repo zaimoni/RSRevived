@@ -519,6 +519,9 @@ namespace djack.RogueSurvivor.Data
 	  if (null == m_StepPather) {
 	    Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt));
 	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
+	  }
+      Zaimoni.Data.FloodfillPathfinder<Point> ret = new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
+      { 
 	    Point p = new Point();
 		for (p.X = 0; p.X < Width; ++p.X) {
 		  for (p.Y = 0; p.Y < Height; ++p.Y) {
@@ -532,8 +535,8 @@ namespace djack.RogueSurvivor.Data
             if (Engine.Rules.IsAdjacent(p, actor.Location.Position) && tmp is Engine.Actions.ActionChat) m_StepPather.Blacklist(p);
 	      }
 	    }
-	  }
-	  return new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
+      }
+      return ret;
     }
 
     // for AI pathing, currently.
@@ -1366,6 +1369,11 @@ namespace djack.RogueSurvivor.Data
     public override int GetHashCode()
     {
       return Name.GetHashCode() ^ District.GetHashCode();
+    }
+
+    public override string ToString()
+    { 
+      return Name+" ("+Width.ToString()+","+Height.ToString()+") in "+District.Name;
     }
   }
 }

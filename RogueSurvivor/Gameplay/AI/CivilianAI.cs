@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define DATAFLOW_TRACE
+// #define TRACE_SELECTACTION
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -145,12 +145,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end item juggling check
 
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
+
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
+#endif
       
       // OrderableAI specific: respond to orders
       if (null != Order) {
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "under orders");
+#endif
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "implementing orders");
+#endif
           return actorAction;
         }
 
@@ -226,6 +236,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (in_blast_field) {
         tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
+#endif
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
           if (null != tmpAction2) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
@@ -245,6 +258,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX we also want to be close enough to fire at all
         tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ranged weapon retreat");
+#endif
 		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
           if (null != tmpAction2) {
             if (safe_run_retreat) RunIfPossible();
@@ -258,6 +274,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
 	    tmpAction = DecideMove(retreat, enemies, friends);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "too tired for melee retreat");
+#endif
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }
@@ -266,6 +285,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != retreat && null != slow_melee_threat) {
 	    tmpAction = DecideMove(retreat, enemies, friends);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "slow melee retreat");
+#endif
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
         }
@@ -274,10 +296,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null != enemies && Directives.CanThrowGrenades) {
         tmpAction = BehaviorThrowGrenade(game, enemies);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, friends, immediate_threat);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
+#endif
       if (null != tmpAction) return tmpAction;
 
       bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
@@ -287,22 +315,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(enemies).Percepted as Actor);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
+#endif
           if (null != tmpAction) return tmpAction;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
         tmpAction = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "medicating");
+#endif
       if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resting");
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (null != enemies && assistLeader) {    // difference between civilian and CHAR/soldier is ok here
         Percept target = FilterNearest(enemies);
         tmpAction = BehaviorChargeEnemy(target);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "assisting leader in melee");
+#endif
           m_Actor.Activity = Activity.FIGHTING;
           m_Actor.TargetActor = target.Percepted as Actor;
           return tmpAction;
@@ -311,14 +354,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // handle food after enemies check
       tmpAction = BehaviorEatProactively(game);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "eating proactively");
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorEat();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "eating -- hunger");
+#endif
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
           tmpAction = BehaviorGoEatCorpse(percepts1);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "cannibalism");
+#endif
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
@@ -337,6 +389,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
             else if (!goal_action.IsLegal()) Objectives.Remove(o);
 #endif
+#if TRACE_SELECTACTION
+            else {
+              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task");
+              return goal_action;
+            }
+#else
+            else return goal_action;
+#endif
           }
         }
       }
@@ -344,17 +404,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && OkToSleepNow) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "securing perimeter");
+#endif
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
         tmpAction = BehaviorSleep(game);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "sleeping");
+#endif
           if (tmpAction is ActionSleep)
             m_Actor.Activity = Activity.SLEEPING;
           return tmpAction;
         }
       }
       tmpAction = BehaviorDropUselessItem();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ditching useless item");
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (null == enemies && Directives.CanTakeItems) {
@@ -370,15 +439,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (perceptList2 != null) {
           Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
-          ActorAction actorAction5 = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
-          if (actorAction5 != null && actorAction5.IsLegal()) {
+          tmpAction = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
+          if (null != tmpAction && tmpAction.IsLegal()) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
+#endif
             m_Actor.Activity = Activity.IDLE;
-            return actorAction5;
+            return tmpAction;
           }
           // XXX the main valid way this could fail, is a stack behind a non-walkable, etc., object that isn't a container
           // could happen in normal play in the sewers
           // under is handled within the Behavior functions
-#if DATAFLOW_TRACE
+#if TRACE_SELECTACTION
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
           MarkTileAsTaboo(percept.Location.Position,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
@@ -407,6 +479,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
               tmpAction = new ActionTrade(m_Actor, actor);
               if (tmpAction.IsLegal()) {
+#if TRACE_SELECTACTION
+                if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "trading");
+#endif
                 MarkActorAsRecentTrade(actor);
                 game.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
                 return tmpAction;
@@ -414,6 +489,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             } else {
               tmpAction = BehaviorIntelligentBumpToward(actor.Location.Position);
               if (null != tmpAction) {
+#if TRACE_SELECTACTION
+                if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "preparing to trade");
+#endif
                 m_Actor.Activity = Activity.FOLLOWING;
                 m_Actor.TargetActor = actor;
                 return tmpAction;
@@ -435,6 +513,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (target != null) {
           tmpAction = BehaviorChargeEnemy(target);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");
+#endif
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
             m_Actor.Activity = Activity.FIGHTING;
@@ -445,10 +526,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (game.Rules.RollChance(USE_STENCH_KILLER_CHANCE)) {    // civilian-specific
         tmpAction = BehaviorUseStenchKiller();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using stench killer");
+#endif
         if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);    // civilian-specific
       if (null != tmpAction) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "closing door");
+#endif
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
@@ -456,9 +543,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Model.Abilities.HasSanity) {  // not logically civilian-specific, but needs a rework anyway
         if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
           tmpAction = BehaviorUseEntertainment();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using entertainment");
+#endif
           if (null != tmpAction)  return tmpAction;
         }
         tmpAction = BehaviorDropBoringEntertainment(game);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "drop boring entertainment");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
@@ -466,6 +559,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "following leader");
+#endif
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
           return tmpAction;
@@ -477,6 +573,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking lead");
+#endif
             m_Actor.TargetActor = target.Percepted as Actor;
             return tmpAction;
           }
@@ -499,6 +598,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         critical.IntersectWith(items);
         if (0 < critical.Count) {
           tmpAction = BehaviorResupply(critical);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying");
+#endif
           if (null != tmpAction) return tmpAction;
         }
       }
@@ -506,12 +608,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorAttackBarricade(game);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind barricade");
+#endif
           game.DoEmote(m_Actor, "Open damn it! I know there is food there!");
           return tmpAction;
         }
         if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
           tmpAction = BehaviorPushNonWalkableObjectForFood(game);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind non-walkable objects");
+#endif
             game.DoEmote(m_Actor, "Where is all the damn food?!");
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
@@ -521,20 +629,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorGoReviveCorpse(game, percepts1);  // not logically CivilianAI only
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "revive corpse");
+#endif
         return tmpAction;
       }
       if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
         tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "use exit for no good reason");
+#endif
         if (null != tmpAction) return tmpAction;
       }
       if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
       if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
         tmpAction = BehaviorBuildLargeFortification(game, 1);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
+#endif
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
@@ -542,6 +662,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
         tmpAction = BehaviorBuildSmallFortification(game);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
+#endif
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;
         }
@@ -559,6 +682,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
           tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about raid");
+#endif
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
@@ -566,6 +692,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_LastSoldierSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE)) {
           tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about soldier");
+#endif
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
@@ -573,6 +702,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_LastEnemySaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE)) {
           tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about enemy");
+#endif
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
@@ -580,12 +712,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_LastItemsSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE)) {
           tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
           if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about items");
+#endif
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
         }
         if (m_Actor.Model.Abilities.IsLawEnforcer && game.Rules.RollChance(LAW_ENFORCE_CHANCE)) {
           tmpAction = BehaviorEnforceLaw(game, friends);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law");
+#endif
           if (null != tmpAction) return tmpAction;
         }
 	  }
@@ -594,6 +732,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "dont't leave followers");
+#endif
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
             game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
           m_Actor.Activity = Activity.IDLE;
@@ -604,19 +745,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX civilians that start in a boarded-up building (sewer maintenance, gun shop, hardware store
       // should stay there until they get the all-clear from the police
 
-      // hunt down threats -- works for police
-      tmpAction = BehaviorHuntDownThreat();
-      if (null != tmpAction) return tmpAction;
+      // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
+      if (null!=legal_steps) {
 
-      // tourism -- works for police
-      tmpAction = BehaviorTourism();
-      if (null != tmpAction) return tmpAction;
+        // hunt down threats -- works for police
+        tmpAction = BehaviorHuntDownThreat();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat");
+#endif
+        if (null != tmpAction) return tmpAction;
+
+        // tourism -- works for police
+        tmpAction = BehaviorTourism();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism");
+#endif
+        if (null != tmpAction) return tmpAction;
+      }
 
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
       if (null != tmpAction) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "unguided exploration");
+#endif
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "wandering");
+#endif
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
     }

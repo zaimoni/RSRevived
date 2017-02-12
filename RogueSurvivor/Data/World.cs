@@ -48,6 +48,26 @@ namespace djack.RogueSurvivor.Data
       m_NPCready = new Queue<District>(size*size);
     }
 
+    public void DaimonMap() 
+    {
+      if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
+      Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
+      District viewpoint = Engine.Session.Get.CurrentMap.District;
+      viewpoint.DaimonMap(dest);
+      int x = 0;
+      int y = 0;
+      for(x = 0; x<Size; x++) {
+        for(y = 0; y<Size; y++) {
+          if (x== viewpoint.WorldPosition.X && y == viewpoint.WorldPosition.Y) continue;
+          District d = this[x,y];
+//        lock(d) { // this is causing a deadlock
+            d.DaimonMap(dest);
+//        }
+        }
+      }
+      dest.Close();
+    }
+
     // possible micro-optimization target
     public int PlayerCount { 
       get {
