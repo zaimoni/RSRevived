@@ -4182,20 +4182,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!Session.Get.CMDoptionExists("socrates-daimon")) return;
       AddMessage(new Data.Message("You pray for wisdom.", Session.Get.WorldTime.TurnCounter, Color.Green));
-      Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
-      Session.Get.CurrentMap.District.DaimonMap(dest);
-      int x = 0;
-      int y = 0;
-      for(x = 0; x<Session.Get.World.Size; x++) {
-        for(y = 0; y<Session.Get.World.Size; y++) {
-          if (x== Session.Get.CurrentMap.District.WorldPosition.X && y == Session.Get.CurrentMap.District.WorldPosition.Y) continue;
-          District d = Session.Get.World[x,y];
-//        lock(d) { // this is causing a deadlock
-            d.DaimonMap(dest);
-//        }
-        }
-      }
-      dest.Close();
+      Session.Get.World.DaimonMap();
       AddMessage(new Data.Message("Your prayers are unclearly answered.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
     }
 
