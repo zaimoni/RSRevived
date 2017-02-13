@@ -10544,6 +10544,14 @@ namespace djack.RogueSurvivor.Engine
           imageID = null;
           break;
       }
+
+	  ThreatTracking threats = m_Player.Threats;    // these two should agree on whether they're null or not
+      LocationSet sights_to_see = m_Player.InterestingLocs;
+
+      // as drawing is slow, we should be able to get away with thrashing the garbage collector here
+      HashSet<Point> tainted = threats?.ThreatWhere(map) ?? new HashSet<Point>();
+      HashSet<Point> tourism = sights_to_see?.In(map) ?? new HashSet<Point>();
+
       Point point = new Point();
       bool isUndead = m_Player.Model.Abilities.IsUndead;
       bool flag1 = m_Player.Model.StartingSheet.BaseSmellRating > 0;
@@ -10559,6 +10567,15 @@ namespace djack.RogueSurvivor.Engine
             tile.IsInView = player;
             tile.IsVisited = m_Player.Controller.IsKnown(new Location(map,point));
             DrawTile(tile, screen, tint);
+            if (tainted.Contains(point)) {
+              if (tourism.Contains(point)) {
+                m_UI.UI_DrawImage(GameImages.THREAT_AND_TOURISM_OVERLAY, screen.X, screen.Y, tint);
+              } else {
+                m_UI.UI_DrawImage(GameImages.THREAT_OVERLAY, screen.X, screen.Y, tint);
+              }
+            } else if (tourism.Contains(point)) {
+              m_UI.UI_DrawImage(GameImages.TOURISM_OVERLAY, screen.X, screen.Y, tint);
+            }
           } else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
             DrawExit(screen);
           if (player) {

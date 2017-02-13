@@ -402,6 +402,11 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ROT5_2 = "rot5_2";
     private const string FOLDER = "Resources\\Images\\";
 
+    // monochrome overlays
+    public const string THREAT_OVERLAY = "threat";
+    public const string TOURISM_OVERLAY = "tourism";
+    public const string THREAT_AND_TOURISM_OVERLAY = "threat_tourism";
+
     public static void LoadResources(IRogueUI ui)
     {
       Notify(ui, "icons...");
@@ -798,6 +803,10 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ROT4_2);
       Load(ROT5_1);
       Load(ROT5_2);
+      Notify(ui, "CGI...");
+      MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x19ff0000));
+      MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x190000ff));
+      MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x19ff00ff));
       Notify(ui, "done!");
     }
 
@@ -811,6 +820,17 @@ namespace djack.RogueSurvivor.Gameplay
       } catch (Exception ex) {
         throw new ArgumentException("coud not load image id=" + id + "; file=" + filename);
       }
+    }
+
+    private static void MonochromeTile(string id, Color tint)
+    {
+      Bitmap img = new Bitmap(RogueGame.TILE_SIZE,RogueGame.TILE_SIZE);
+      for (int x = 0; x < RogueGame.TILE_SIZE; ++x) {
+        for (int y = 0; y < RogueGame.TILE_SIZE; ++y) {
+          img.SetPixel(x,y,tint);
+        }
+      }
+      GameImages.s_Images.Add(id, img);
     }
 
     private static Image MakeGrayLevel(Bitmap img)
