@@ -1770,38 +1770,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmp = null;
       if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
         game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-      if (position == m_Actor.Location.Position) {
+      bool may_take = (position == m_Actor.Location.Position);
+      // XXX ActionGetFromContainer is obsolete.  Bypass BehaviorIntelligentBumpToward for containers.
+      // currently all containers are not-walkable for UI reasons.
+      if (mapObjectAt != null && mapObjectAt.IsContainer /* && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor) */
+          && 1==Rules.GridDistance(m_Actor.Location.Position,position))
+        may_take = true;
+
+      if (may_take) {
         tmp = new ActionTakeItem(m_Actor, position, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
           if (recover is ActionDropItem) {
-            Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, (recover as ActionDropItem).Item.Model.ID));
             if (obj.Model.ID == (recover as ActionDropItem).Item.Model.ID) return null;
+            Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, (recover as ActionDropItem).Item.Model.ID));
           }
           Objectives.Add(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
           return recover;
         }
         return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
       }
-      // BehaviorIntelligentBumpToward will return null if a get item from container is invalid, so need to prevent that
-      // best range depends on other factors
-      if (m_Actor.Inventory.IsFull) { 
-        if (null != recover && recover.IsLegal()) {
-          if (recover is ActionDropItem) {
-            Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, (recover as ActionDropItem).Item.Model.ID));
-            if (obj.Model.ID == (recover as ActionDropItem).Item.Model.ID) return null;
-          }
-          return recover;
-        }
-      }
-      tmp = BehaviorIntelligentBumpToward(position);
-      ActionGetFromContainer tmp2 = (tmp as ActionGetFromContainer);
-      if (null != tmp2 && tmp2.Item != obj) {
-        // translate the desired action
-        tmp = new ActionTakeItem(m_Actor, position, obj);
-      }
-      return tmp;
+
+      return BehaviorIntelligentBumpToward(position);
     }
 
 #if FAIL
