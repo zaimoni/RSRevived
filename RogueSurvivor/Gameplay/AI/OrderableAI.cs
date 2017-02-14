@@ -48,6 +48,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       public int TurnCounter { get { return turn; } }
       public bool IsExpired { get { return _isExpired; } }
+      public Actor Actor { get { return m_Actor; } }
 
       protected Objective(int t0, Actor who)
       {
@@ -111,6 +112,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
     }
+
+#if FAIL
+    [Serializable]
+    public Goal_PickupAt : Objective
+    {
+      public readonly GameItems.IDs target;
+      public readonly Location loc;
+
+      public Goal_PickupAt(int t0, Actor who, GameItems.IDs _target, Location _loc)
+      : base(t0,who)
+      {
+        target = _target;
+        loc = _loc;
+      }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        
+        // if the target location is in LoS, and does not contain the target, expire
+        if (m_Actor.Location.Map==loc.Map && m_Actor.Controller.FOV.Contains(loc.Position)) {
+          Inventory inv = loc.Map.GetItemsAt(loc.Position);
+          if (null == inv) {
+           _isExpired = true;  // invalid, expire
+           return false;
+          }
+        }
+        ////
+        
+        return false;
+      }
+    }
+#endif
 
 #if FAIL
     [Serializable]
