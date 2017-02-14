@@ -221,15 +221,6 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public int CountItemsMatching(Predicate<Item> fn)
-    {
-      int num = 0;
-      foreach (Item mItem in m_Items) {
-        if (fn(mItem)) ++num;
-      }
-      return num;
-    }
-
     public bool HasItemMatching(Predicate<Item> fn)
     {
       foreach (Item mItem in m_Items) {

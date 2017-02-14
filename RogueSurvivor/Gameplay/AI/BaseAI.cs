@@ -416,11 +416,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (string.IsNullOrEmpty(reason)) return false;
       Inventory itemsAt = map.GetItemsAt(pos);
-      return itemsAt == null || itemsAt.CountItemsMatching(it =>
+      if (null == itemsAt) return true;
+      return 3 >= itemsAt.Items.Count(it =>
       {
-        ItemTrap itemTrap = it as ItemTrap;
-        return null != itemTrap && itemTrap.IsActivated;
-      }) <= 3;
+          ItemTrap itemTrap = it as ItemTrap;
+          return null != itemTrap && itemTrap.IsActivated;
+      });
     }
 
     protected ActorAction BehaviorAttackBarricade(RogueGame game)
