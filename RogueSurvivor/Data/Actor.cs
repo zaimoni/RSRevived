@@ -1046,6 +1046,30 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // We do not handle the enemy relations here.
+    HashSet<Actor> Allies {
+      get {
+        HashSet<Actor> ret = new HashSet<Actor>();
+        // 1) police have all other police as allies.
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
+          foreach(Map m in Location.Map.District.Maps) {
+            List<Actor> tmp = m.Police;
+            if (null == tmp) continue;
+            ret.UnionWith(tmp);
+          }
+          ret.Remove(this);
+        }
+        // 2) leader/follower cliques are allies.
+        if (0 < CountFollowers) ret.UnionWith(m_Followers);
+        else if (HasLeader) {
+          ret.Add(Leader);
+          ret.UnionWith(Leader.Followers);
+          ret.Remove(this);
+        }
+        return (0<ret.Count ? ret : null);
+      }
+    }
+
     // map-related, loosely
     public bool WouldBeAdjacentToEnemy(Map map,Point p)
     {
