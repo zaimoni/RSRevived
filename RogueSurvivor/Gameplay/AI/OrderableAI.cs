@@ -105,9 +105,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(Point pt in m_Actor.Controller.FOV) {
           Inventory inv = m_Actor.Location.Map.GetItemsAt(pt);
           if (null == inv) continue;
-          if (inv.HasItemMatching(it=>Avoid==it.Model.ID)) return false;
+          if (inv.Has(Avoid)) return false;
         }
-        if (m_Actor.Inventory.HasItemMatching(it => Avoid == it.Model.ID)) return false;
+        if (m_Actor.Inventory.Has(Avoid)) return false;
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;
       }

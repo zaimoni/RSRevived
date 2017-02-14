@@ -699,7 +699,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "dragged corpse";
         return false;
       }
-      if (!actor.Inventory.HasItemMatching((Predicate<Item>) (it => it.Model.ID == GameItems.IDs.MEDICINE_MEDIKIT)))
+      if (!actor.Inventory.Has(GameItems.IDs.MEDICINE_MEDIKIT))
       {
         reason = "no medikit";
         return false;

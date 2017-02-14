@@ -191,6 +191,19 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public bool Has(Gameplay.GameItems.IDs id)
+    {
+      return null != GetFirst(id);
+    }
+
+    public Item GetFirst(Gameplay.GameItems.IDs id)
+    {
+      foreach (Item it in m_Items) {
+        if (id == it.Model.ID) return it;
+      }
+      return null;
+    }
+
     public List<_T_> GetItemsByType<_T_>() where _T_ : Item
     {
       List<_T_> tList = null;
@@ -219,14 +232,6 @@ namespace djack.RogueSurvivor.Data
         if (tmp != null && (fn == null || fn(tmp))) return tmp;
       }
       return null;
-    }
-
-    public bool HasItemMatching(Predicate<Item> fn)
-    {
-      foreach (Item mItem in m_Items) {
-        if (fn(mItem)) return true;
-      }
-      return false;
     }
   }
 }
