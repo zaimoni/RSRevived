@@ -747,7 +747,59 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
       if (null!=legal_steps) {
+#if DEBUG
+        // XXX static variable candidate
+        List<Gameplay.GameItems.IDs> ammo = new List<Gameplay.GameItems.IDs>() {GameItems.IDs.AMMO_LIGHT_PISTOL,
+            GameItems.IDs.AMMO_HEAVY_PISTOL,
+            GameItems.IDs.AMMO_SHOTGUN,
+            GameItems.IDs.AMMO_LIGHT_RIFLE,
+            GameItems.IDs.AMMO_HEAVY_RIFLE,
+            GameItems.IDs.AMMO_BOLTS};
+        HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();
+        critical.IntersectWith(ammo);
+        if (0 >= critical.Count) {
+          // hunt down threats -- works for police
+          tmpAction = BehaviorHuntDownThreatCurrentMap();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map");
+#endif
+          if (null != tmpAction) return tmpAction;
 
+          // hunt down threats -- works for police
+          if (m_Actor.Location.Map==m_Actor.Location.Map.District.EntryMap) {
+            tmpAction = BehaviorHuntDownThreatOtherMaps();
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- on surface");
+#endif
+            if (null != tmpAction) return tmpAction;
+          }
+        }
+
+        // tourism -- works for police
+        tmpAction = BehaviorTourismCurrentMap();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, current map");
+#endif
+        if (null != tmpAction) return tmpAction;
+
+        if (0 >= critical.Count) {
+          // hunt down threats -- works for police
+          if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
+            tmpAction = BehaviorHuntDownThreatOtherMaps();
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- on surface");
+#endif
+            if (null != tmpAction) return tmpAction;
+          }
+        }
+
+        // tourism -- works for police
+        tmpAction = BehaviorTourismOtherMaps();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, current map");
+#endif
+        if (null != tmpAction) return tmpAction;
+#else
         // hunt down threats -- works for police
         tmpAction = BehaviorHuntDownThreat();
 #if TRACE_SELECTACTION
@@ -761,6 +813,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism");
 #endif
         if (null != tmpAction) return tmpAction;
+#endif
       }
 
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
