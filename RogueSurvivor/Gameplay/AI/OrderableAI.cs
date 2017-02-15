@@ -1934,6 +1934,153 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
+    protected ActorAction BehaviorHeadForExit(Dictionary<Point,Exit> valid_exits)
+    {
+      Contract.Requires(null!=valid_exits);
+      if (0 >= valid_exits.Count) return null;
+      if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
+        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      }
+      return BehaviorHastyNavigate(valid_exits.Keys);
+    }
+
+    protected ActorAction BehaviorHuntDownThreatCurrentMap()
+    {
+      ThreatTracking threats = m_Actor.Threats;
+      if (null == threats) return null;
+      // 1) clear the current map, unless it's non-vintage sewers
+      HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+      if (0<tainted.Count) return BehaviorNavigate(tainted);
+      return null;
+    }
+
+    protected ActorAction BehaviorTourismCurrentMap()
+    {
+      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      if (null == sights_to_see) return null;
+      // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
+      HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
+      if (0<tainted.Count) return BehaviorNavigate(tainted);
+      return null;
+    }
+
+    // note that the return value is aliased to the incoming value if no change is made
+    private HashSet<Map> IgnoreMapsCoveredByAllies(HashSet<Map> possible_destinations)
+    {
+      HashSet<Actor> allies = m_Actor.Allies;
+      if (null==allies) return possible_destinations;
+      allies.IntersectWith(allies.Where(a => !a.HasLeader));
+      allies.IntersectWith(allies.Where(a => possible_destinations.Contains(a.Location.Map)));
+      if (0 >= allies.Count) return possible_destinations;
+      HashSet<Map> ret = new HashSet<Map>(possible_destinations);
+      ret.ExceptWith(allies.Select(a => a.Location.Map));
+      return ret;
+    }
+
+    protected ActorAction BehaviorHuntDownThreatOtherMaps()
+    {
+      ThreatTracking threats = m_Actor.Threats;
+      if (null == threats) return null;
+
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      // XXX probably should exclude secret maps
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+      // but ignore the sewers if we're not vintage
+      if (Session.Get.HasZombiesInSewers) {
+        possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
+      }
+      if (0>=possible_destinations.Count) return null;
+      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+
+      if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) 
+        return BehaviorHeadForExit(valid_exits);    // done
+        
+      // try to pick something reasonable
+      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
+      foreach(Map m in possible_destinations) {
+        hazards[m] = threats.ThreatWhere(m);
+      }
+      hazards.OnlyIf(val=>0<val.Count);
+      if (hazards.ContainsKey(m_Actor.Location.Map.District.EntryMap)) {
+        // if the entry map has a problem, go for it
+        valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
+        return BehaviorHeadForExit(valid_exits);
+      }
+      if (0 >= hazards.Count) return null;  // defer to tourism
+      possible_destinations.IntersectWith(hazards.Keys);
+      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+
+      // Non-entry map destinations with non-follower allies are already handled
+      HashSet<Map> unhandled = IgnoreMapsCoveredByAllies(possible_destinations);
+      if (0 >= unhandled.Count) return null;    // defer to tourism
+
+      valid_exits.OnlyIf(e=>unhandled.Contains(e.ToMap));
+      return BehaviorHeadForExit(valid_exits);
+    }
+
+    protected ActorAction BehaviorTourismOtherMaps()
+    {
+      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      if (null == sights_to_see) return null;
+
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      // XXX probably should exclude secret maps
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+
+      if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
+        return BehaviorHeadForExit(valid_exits);    // done
+        
+      // try to pick something reasonable
+      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
+      foreach(Map m in possible_destinations) {
+        hazards[m] = sights_to_see.In(m);
+      }
+      hazards.OnlyIf(val=>0<val.Count);
+      if (hazards.ContainsKey(m_Actor.Location.Map.District.EntryMap)) {
+        // if the entry map has a problem, go for it
+        valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
+        return BehaviorHeadForExit(valid_exits);
+      }
+
+      if (0 >= hazards.Count) {
+        // done here
+        if (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap) return null;    // where we need to be
+        if (possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) {
+          valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
+          return BehaviorHeadForExit(valid_exits);
+        }
+        if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
+#if DEBUG
+        throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
+#else
+        return null;    // XXX should use Map::PathTo but it doesn't have the ordering knowledge required yet
+#endif
+      }
+
+      possible_destinations.IntersectWith(hazards.Keys);
+      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+
+      // Non-entry map destinations with non-follower allies are already handled
+      HashSet<Map> unhandled = IgnoreMapsCoveredByAllies(possible_destinations);
+      if (0 >= unhandled.Count) {
+        // done here
+        if (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap) return null;    // where we need to be
+        if (possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) {
+          valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
+          return BehaviorHeadForExit(valid_exits);
+        }
+        if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
+#if DEBUG
+        throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
+#else
+        return null;    // XXX should use Map::PathTo but it doesn't have the ordering knowledge required yet
+#endif
+      }
+ 
+      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+      return BehaviorHeadForExit(valid_exits);
+    }
+
     protected ActorAction BehaviorHuntDownThreat()
     {
       ThreatTracking threats = m_Actor.Threats;
@@ -1972,12 +2119,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         possible_destinations.Add(m_Actor.Location.Map.District.EntryMap);
       }
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
-      if (0>=valid_exits.Count) return null;
-      if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
-        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-      }
-
-      return BehaviorHastyNavigate(valid_exits.Keys);
+      return BehaviorHeadForExit(valid_exits);
     }
 
     protected ActorAction BehaviorTourism()
@@ -2027,17 +2169,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_TOURISM
       if (m_Actor.IsDebuggingTarget && 0 >= valid_exits.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, "all exits for tourism pruned");
 #endif
-      if (0>=valid_exits.Count) return null;
-      if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
-#if TRACE_TOURISM
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using exit");
-#endif
-        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-      }
-#if TRACE_TOURISM
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hasty navigating to exit");
-#endif
-      return BehaviorHastyNavigate(valid_exits.Keys);
+      return BehaviorHeadForExit(valid_exits);
     }
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)

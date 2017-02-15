@@ -1047,7 +1047,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // We do not handle the enemy relations here.
-    HashSet<Actor> Allies {
+    public HashSet<Actor> Allies {
       get {
         HashSet<Actor> ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
