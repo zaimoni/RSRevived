@@ -17,7 +17,9 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal class GameItems : ItemModelDB
   {
-    private static readonly ItemModel[] m_Models = new ItemModel[(int) GameItems.IDs._COUNT];
+    private static readonly ItemModel[] m_Models = new ItemModel[(int) IDs._COUNT];
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> ammo;
+            
     private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
     private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
     private GameItems.MedecineData DATA_MEDICINE_PILLS_STA;
@@ -653,6 +655,16 @@ namespace djack.RogueSurvivor.Gameplay
       {
         return this[GameItems.IDs.UNIQUE_SUBWAY_BADGE];
       }
+    }
+
+    static GameItems()
+    {
+      ammo = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs>() { IDs.AMMO_LIGHT_PISTOL,
+            IDs.AMMO_HEAVY_PISTOL,
+            IDs.AMMO_SHOTGUN,
+            IDs.AMMO_LIGHT_RIFLE,
+            IDs.AMMO_HEAVY_RIFLE,
+            IDs.AMMO_BOLTS});
     }
 
     public GameItems()
