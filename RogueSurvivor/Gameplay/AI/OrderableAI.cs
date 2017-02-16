@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_TOURISM
+// #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
 // #define TRACE_NAVIGATE
 
 using djack.RogueSurvivor.Data;
@@ -1874,6 +1874,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
     {
       Contract.Requires(0<tainted.Count());
+#if DEBUG
+      Contract.Requires(!tainted.Contains(m_Actor.Location.Position));  // propagated up from FloodfillPathfinder::GoalDistance
+#else
+      if (tainted.Contains(m_Actor.Location.Position)) return null;
+#endif
 
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
@@ -1968,12 +1973,42 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private HashSet<Map> IgnoreMapsCoveredByAllies(HashSet<Map> possible_destinations)
     {
       HashSet<Actor> allies = m_Actor.Allies;
+#if TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
+      if (m_Actor.IsDebuggingTarget && null==allies) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": null==allies");
+#endif
       if (null==allies) return possible_destinations;
       allies.IntersectWith(allies.Where(a => !a.HasLeader));
       allies.IntersectWith(allies.Where(a => possible_destinations.Contains(a.Location.Map)));
+#if TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
+      if (m_Actor.IsDebuggingTarget && 0 >= allies.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no allies in target maps");
+#endif
       if (0 >= allies.Count) return possible_destinations;
+#if TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
+      if (m_Actor.IsDebuggingTarget) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": allies");
+        foreach(Actor a in allies) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, a.Name+" in "+a.Location.Map.ToString());
+        }
+      }
+#endif
       HashSet<Map> ret = new HashSet<Map>(possible_destinations);
+#if TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
+      if (m_Actor.IsDebuggingTarget) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+possible_destinations.Count.ToString()+","+ret.Count.ToString());
+        foreach(Map m in ret) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, m.ToString());
+        }
+      }
+#endif
       ret.ExceptWith(allies.Select(a => a.Location.Map));
+#if TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
+      if (m_Actor.IsDebuggingTarget) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+possible_destinations.Count.ToString()+","+ret.Count.ToString());
+        foreach(Map m in ret) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, m.ToString());
+        }
+      }
+#endif
       return ret;
     }
 
@@ -2077,7 +2112,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       }
  
-      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+      valid_exits.OnlyIf(e=>unhandled.Contains(e.ToMap));
       return BehaviorHeadForExit(valid_exits);
     }
 
