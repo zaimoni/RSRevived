@@ -11149,6 +11149,35 @@ namespace djack.RogueSurvivor.Engine
       return new ColorString(Color.White,string.Format("{0}h", (object)FoodToHoursUntilHungry(actor.FoodPoints)));
     }
 
+    private ColorString ActorRotHungerStatus(Actor actor)
+    {
+      if (actor.IsRotStarving) return new ColorString(Color.Red,"STARVING!");
+      if (actor.IsRotHungry) return new ColorString(Color.Yellow,"Hungry");
+      return new ColorString(Color.White,string.Format("{0}h", (object)FoodToHoursUntilRotHungry(actor.FoodPoints)));
+    }
+
+    private ColorString ActorRunningStatus(Actor actor)
+    {
+      if (actor.IsRunning) return new ColorString(Color.LightGreen, "RUNNING!");
+      if (actor.CanRun()) return new ColorString(Color.Green, "can run");
+      if (actor.IsTired) return new ColorString(Color.Gray, "TIRED");
+      return new ColorString(Color.Red,string.Empty);
+    }
+
+    private ColorString ActorSleepStatus(Actor actor)
+    {
+      if (actor.IsExhausted) return new ColorString(Color.Red, "EXHAUSTED!");
+      if (actor.IsSleepy) return new ColorString(Color.Yellow, "Sleepy");
+      return new ColorString(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy));
+    }
+
+    private ColorString ActorSanityStatus(Actor actor)
+    {
+      if (actor.IsInsane) return new ColorString(Color.Red, "INSANE!");
+      if (actor.IsDisturbed) return new ColorString(Color.Yellow, "Disturbed");
+      return new ColorString(Color.White, string.Format("{0}h", actor.HoursUntilUnstable));
+    }
+
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
@@ -11158,57 +11187,34 @@ namespace djack.RogueSurvivor.Engine
       DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue1), gx + 84 + 100, gy, new Color?());
       gy += 14;
-      if (actor.Model.Abilities.CanTire)
-      {
+      if (actor.Model.Abilities.CanTire) {
         int maxValue2 = actor.MaxSTA;
         m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", (object) actor.StaminaPoints), gx, gy, new Color?());
         DrawBar(actor.StaminaPoints, actor.PreviousStaminaPoints, maxValue2, 10, 100, 14, gx + 70, gy, Color.Green, Color.DarkGreen, Color.LightGreen, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsRunning)
-          m_UI.UI_DrawStringBold(Color.LightGreen, "RUNNING!", gx + 126 + 100, gy, new Color?());
-        else if (actor.CanRun())
-          m_UI.UI_DrawStringBold(Color.Green, "can run", gx + 126 + 100, gy, new Color?());
-        else if (actor.IsTired)
-          m_UI.UI_DrawStringBold(Color.Gray, "TIRED", gx + 126 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(ActorRunningStatus(actor), gx + 126 + 100, gy);
       }
       gy += 14;
-      if (actor.Model.Abilities.HasToEat)
-      {
+      if (actor.Model.Abilities.HasToEat) {
         int maxValue2 = actor.MaxFood;
         m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
         DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorHungerStatus(actor), gx + 126 + 100, gy);
-      }
-      else if (actor.Model.Abilities.IsRotting)
-      {
+      } else if (actor.Model.Abilities.IsRotting) {
         int maxValue2 = actor.MaxRot;
         m_UI.UI_DrawStringBold(Color.White, string.Format("ROT {0}", (object) actor.FoodPoints), gx, gy, new Color?());
         DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.ROT_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsRotHungry) {
-          if (actor.IsRotStarving)
-            m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
-          else
-            m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
-        }
-        else
-          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilRotHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(ActorRotHungerStatus(actor), gx + 126 + 100, gy);
       }
       gy += 14;
-      if (actor.Model.Abilities.HasToSleep)
-      {
+      if (actor.Model.Abilities.HasToSleep) {
         int maxValue2 = actor.MaxSleep;
         m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", (object) actor.SleepPoints), gx, gy, new Color?());
         DrawBar(actor.SleepPoints, actor.PreviousSleepPoints, maxValue2, Actor.SLEEP_SLEEPY_LEVEL, 100, 14, gx + 70, gy, Color.Blue, Color.DarkBlue, Color.LightBlue, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsSleepy) {
-          if (actor.IsExhausted)
-            m_UI.UI_DrawStringBold(Color.Red, "EXHAUSTED!", gx + 126 + 100, gy, new Color?());
-          else
-            m_UI.UI_DrawStringBold(Color.Yellow, "Sleepy", gx + 126 + 100, gy, new Color?());
-        } else
-          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy), gx + 126 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(ActorSleepStatus(actor), gx + 126 + 100, gy);
       }
       gy += 14;
       if (actor.Model.Abilities.HasSanity) {
@@ -11216,13 +11222,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", (object) actor.Sanity), gx, gy, new Color?());
         DrawBar(actor.Sanity, actor.PreviousSanity, maxValue2, Rules.ActorDisturbedLevel(actor), 100, 14, gx + 70, gy, Color.Orange, Color.DarkOrange, Color.OrangeRed, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsDisturbed) {
-          if (actor.IsInsane)
-            m_UI.UI_DrawStringBold(Color.Red, "INSANE!", gx + 126 + 100, gy, new Color?());
-          else
-            m_UI.UI_DrawStringBold(Color.Yellow, "Disturbed", gx + 126 + 100, gy, new Color?());
-        } else
-          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", actor.HoursUntilUnstable), gx + 126 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(ActorSanityStatus(actor), gx + 126 + 100, gy);
       }
       if (Session.Get.HasInfection && !actor.Model.Abilities.IsUndead) {
         int maxValue2 = actor.InfectionHPs;

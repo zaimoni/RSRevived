@@ -296,7 +296,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string DOG_SKIN2 = "Actors\\Decoration\\dog_skin2";
     public const string DOG_SKIN3 = "Actors\\Decoration\\dog_skin3";
     public const string ITEM_SLOT = "Items\\itemslot";
-    public const string ITEM_EQUIPPED = "Items\\itemequipped";
+    public const string ITEM_EQUIPPED = "Items\\itemequipped";  // XXX should be CGI
     public const string ITEM_AMMO_LIGHT_PISTOL = "Items\\item_ammo_light_pistol";
     public const string ITEM_AMMO_HEAVY_PISTOL = "Items\\item_ammo_heavy_pistol";
     public const string ITEM_AMMO_LIGHT_RIFLE = "Items\\item_ammo_light_rifle";
