@@ -43,6 +43,7 @@ namespace djack.RogueSurvivor.Engine
     void UI_DrawRect(Color color, Rectangle rect);
     void UI_FillRect(Color color, Rectangle rect);
     void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor = null);
+    void UI_DrawString(ColorString text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawStringBold(ColorString text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);

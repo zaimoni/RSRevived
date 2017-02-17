@@ -272,6 +272,12 @@ namespace djack.RogueSurvivor
       m_GameCanvas.AddString(m_NormalFont, color, text, gx, gy);
     }
 
+    public void UI_DrawString(ColorString text, int gx, int gy, Color? shadowColor)
+    {
+      if (!string.IsNullOrEmpty(text.Value))
+        UI_DrawString(text.Key, text.Value, gx, gy, shadowColor);
+    }
+
     public void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor)
     {
       if (shadowColor.HasValue)

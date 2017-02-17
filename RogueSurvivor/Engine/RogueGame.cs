@@ -10430,6 +10430,17 @@ namespace djack.RogueSurvivor.Engine
       return m_MapViewRect.Contains(mapPosition);
     }
 
+    private ColorString WeatherStatusText()
+    {
+      switch(Session.Get.CurrentMap.Lighting)
+      {
+        case Lighting.DARKNESS: return new ColorString(Color.Blue,"Darkness");
+        case Lighting.OUTSIDE: return new ColorString(WeatherColor(Session.Get.World.Weather),DescribeWeather(Session.Get.World.Weather));
+        case Lighting.LIT: return new ColorString(Color.Yellow,"Lit");
+        default: throw new ArgumentOutOfRangeException("unhandled lighting");
+      }
+    }
+
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void RedrawPlayScreen()
     {
@@ -10447,25 +10458,7 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", (object)Session.Get.WorldTime.Day), 680, 704, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", (object)Session.Get.WorldTime.Hour), 680, 716, new Color?());
                 m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), 808, 704, new Color?());
-                Color color;
-                string text;
-                switch (Session.Get.CurrentMap.Lighting) {
-                    case Lighting.DARKNESS:
-                        color = Color.Blue;
-                        text = "Darkness";
-                        break;
-                    case Lighting.OUTSIDE:
-                        color = WeatherColor(Session.Get.World.Weather);
-                        text = DescribeWeather(Session.Get.World.Weather);
-                        break;
-                    case Lighting.LIT:
-                        color = Color.Yellow;
-                        text = "Lit";
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException("unhandled lighting");
-                }
-                m_UI.UI_DrawString(color, text, 808, 716);
+                m_UI.UI_DrawString(WeatherStatusText(), 808, 716);
                 m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", (object)Session.Get.WorldTime.TurnCounter), 680, 728);
                 m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object)Session.Get.Scoring.TotalPoints, (object)(int)(100.0 * (double)Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), (object)Session.DescShortGameMode(Session.Get.GameMode)), 808, 728);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object)(1 + Session.Get.Scoring.ReincarnationNumber), (object)(1 + RogueGame.s_Options.MaxReincarnations)), 808, 740);
