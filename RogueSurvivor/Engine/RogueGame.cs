@@ -10535,10 +10535,10 @@ namespace djack.RogueSurvivor.Engine
       string imageID;
       switch (Session.Get.World.Weather) {
         case Weather.RAIN:
-          imageID = Session.Get.WorldTime.TurnCounter % 2 == 0 ? "weather_rain1" : "weather_rain2";
+          imageID = Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_RAIN1 : GameImages.WEATHER_RAIN2;
           break;
         case Weather.HEAVY_RAIN:
-          imageID = Session.Get.WorldTime.TurnCounter % 2 == 0 ? "weather_heavy_rain1" : "weather_heavy_rain2";
+          imageID = Session.Get.WorldTime.TurnCounter % 2 == 0 ? GameImages.WEATHER_HEAVY_RAIN1 : GameImages.WEATHER_HEAVY_RAIN2;
           break;
         default:
           imageID = null;
@@ -10681,7 +10681,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawExit(Point screen)
     {
-      m_UI.UI_DrawImage("map_exit", screen.X, screen.Y);
+      m_UI.UI_DrawImage(GameImages.MAP_EXIT, screen.X, screen.Y);
     }
 
     public void DrawTileRectangle(Point mapPosition, Color color)
@@ -10935,7 +10935,7 @@ namespace djack.RogueSurvivor.Engine
       int gy2 = gy;
       int num3 = 0;
       foreach (Corpse c in list) {
-        if (c.IsDragged) m_UI.UI_DrawImage("corpse_dragged", gx2, gy2);
+        if (c.IsDragged) m_UI.UI_DrawImage(GameImages.CORPSE_DRAGGED, gx2, gy2);
         DrawCorpse(c, gx2, gy2, Color.White);
         if (++num3 >= slots) break;
         gx2 += TILE_SIZE;
@@ -11093,10 +11093,10 @@ namespace djack.RogueSurvivor.Engine
             if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
             Tile tileAt = map.GetTileAt(pos);
             string imageID = null;
-            if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG1)) imageID = "mini_player_tag";
-            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG2)) imageID = "mini_player_tag2";
-            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG3)) imageID = "mini_player_tag3";
-            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG4)) imageID = "mini_player_tag4";
+            if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG1)) imageID = GameImages.MINI_PLAYER_TAG1;
+            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG2)) imageID = GameImages.MINI_PLAYER_TAG2;
+            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG3)) imageID = GameImages.MINI_PLAYER_TAG3;
+            else if (tileAt.HasDecoration(GameImages.DECO_PLAYER_TAG4)) imageID = GameImages.MINI_PLAYER_TAG4;
             if (imageID != null) {
               Point point = new Point(MINIMAP_X + pos.X * MINITILE_SIZE, MINIMAP_Y + pos.Y * MINITILE_SIZE);
               m_UI.UI_DrawImage(imageID, point.X - 1, point.Y - 1);
@@ -11130,7 +11130,7 @@ namespace djack.RogueSurvivor.Engine
             if (follower.Location.Map == m_Player.Location.Map) {
               ItemTracker itemTracker2 = follower.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
               if (itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader) {
-                DrawDetected(follower, "mini_follower_position", "track_follower_position");
+                DrawDetected(follower, GameImages.MINI_FOLLOWER_POSITION, GameImages.TRACK_FOLLOWER_POSITION);
               }
             }
           }
@@ -11139,22 +11139,22 @@ namespace djack.RogueSurvivor.Engine
           foreach (Actor actor in map.Actors) {
             if (actor != m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == m_Player.Location.Map && Rules.GridDistance(actor.Location.Position, m_Player.Location.Position) <= Rules.ZTRACKINGRADIUS)
             {
-              DrawDetected(actor, "mini_undead_position", "track_undead_position");
+              DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION);
             }
           }
         }
         if (find_blackops) { 
           foreach (Actor actor in map.Actors) {
             if (actor != m_Player && actor.Faction == GameFactions.TheBlackOps && actor.Location.Map == m_Player.Location.Map) {
-              DrawDetected(actor, "mini_blackops_position", "track_blackops_position");
+              DrawDetected(actor, GameImages.MINI_BLACKOPS_POSITION, GameImages.TRACK_BLACKOPS_POSITION);
             }
           }
         }
         if (find_police) { 
           foreach (Actor actor in map.Actors) {
             if (actor != m_Player && actor.Faction == GameFactions.ThePolice && actor.Location.Map == m_Player.Location.Map) {
-              DrawDetected(actor, "mini_police_position", "track_police_position");
-//            DrawDetected(actor, Color.Blue, "track_police_position");
+              DrawDetected(actor, GameImages.MINI_POLICE_POSITION, GameImages.TRACK_POLICE_POSITION);
+//            DrawDetected(actor, Color.Blue, GameImages.TRACK_POLICE_POSITION);
             }
           }
         }
@@ -11162,7 +11162,7 @@ namespace djack.RogueSurvivor.Engine
       Point position = m_Player.Location.Position;
       int x1 = MINIMAP_X + position.X * 2;
       int y1 = MINIMAP_Y + position.Y * 2;
-      m_UI.UI_DrawImage("mini_player_position", x1 - 1, y1 - 1);
+      m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, x1 - 1, y1 - 1);
     }
 
     public void DrawActorStatus(Actor actor, int gx, int gy)

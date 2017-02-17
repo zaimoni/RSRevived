@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string OBJ_HOSPITAL_DOOR_OPEN = "MapObjects\\hospital_door_open";
     public const string OBJ_HOSPITAL_DOOR_CLOSED = "MapObjects\\hospital_door_closed";
     public const string OBJ_HOSPITAL_DOOR_BROKEN = "MapObjects\\hospital_door_broken";
-    public const string PLAYER_FOLLOWER = "Actors\\player_follower";
+    public const string PLAYER_FOLLOWER = "Actors\\player_follower";    // XXX these three should be CGI
     public const string PLAYER_FOLLOWER_TRUST = "Actors\\player_follower_trust";
     public const string PLAYER_FOLLOWER_BOND = "Actors\\player_follower_bond";
     public const string ACTOR_SKELETON = "Actors\\skeleton";
