@@ -2271,7 +2271,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is BatteryPowered) { 
         --(it as BatteryPowered).Batteries;
-        if (IsPlayer && it is ItemLight) Controller.UpdateSensors();
+        if (it is ItemLight) Controller.UpdateSensors();
         return;
       }
     }
