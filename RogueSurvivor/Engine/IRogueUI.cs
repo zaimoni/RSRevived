@@ -7,6 +7,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using System.Security.Permissions;
+using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -43,6 +44,7 @@ namespace djack.RogueSurvivor.Engine
     void UI_FillRect(Color color, Rectangle rect);
     void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor = null);
+    void UI_DrawStringBold(ColorString text, int gx, int gy, Color? shadowColor = null);
     void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy);
 
 #region Minimap painting

@@ -14,6 +14,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
 using System.Diagnostics.Contracts;
+using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor
 {
@@ -261,35 +262,42 @@ namespace djack.RogueSurvivor
 
     public void UI_DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo)
     {
-            m_GameCanvas.AddLine(color, gxFrom, gyFrom, gxTo, gyTo);
+      m_GameCanvas.AddLine(color, gxFrom, gyFrom, gxTo, gyTo);
     }
 
     public void UI_DrawString(Color color, string text, int gx, int gy, Color? shadowColor)
     {
       if (shadowColor.HasValue)
-                m_GameCanvas.AddString(m_NormalFont, shadowColor.Value, text, gx + 1, gy + 1);
-            m_GameCanvas.AddString(m_NormalFont, color, text, gx, gy);
+        m_GameCanvas.AddString(m_NormalFont, shadowColor.Value, text, gx + 1, gy + 1);
+      m_GameCanvas.AddString(m_NormalFont, color, text, gx, gy);
     }
 
     public void UI_DrawStringBold(Color color, string text, int gx, int gy, Color? shadowColor)
     {
       if (shadowColor.HasValue)
-                m_GameCanvas.AddString(m_BoldFont, shadowColor.Value, text, gx + 1, gy + 1);
-            m_GameCanvas.AddString(m_BoldFont, color, text, gx, gy);
+        m_GameCanvas.AddString(m_BoldFont, shadowColor.Value, text, gx + 1, gy + 1);
+      m_GameCanvas.AddString(m_BoldFont, color, text, gx, gy);
     }
+
+    public void UI_DrawStringBold(ColorString text, int gx, int gy, Color? shadowColor = null)
+    {
+      if (!string.IsNullOrEmpty(text.Value))
+        UI_DrawStringBold(text.Key, text.Value, gx, gy, shadowColor);
+    }
+
 
     public void UI_DrawRect(Color color, Rectangle rect)
     {
       if (rect.Width <= 0 || rect.Height <= 0)
         throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
-            m_GameCanvas.AddRect(color, rect);
+      m_GameCanvas.AddRect(color, rect);
     }
 
     public void UI_FillRect(Color color, Rectangle rect)
     {
       if (rect.Width <= 0 || rect.Height <= 0)
         throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
-            m_GameCanvas.AddFilledRect(color, rect);
+      m_GameCanvas.AddFilledRect(color, rect);
     }
 
     public void UI_DrawPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, int gx, int gy)

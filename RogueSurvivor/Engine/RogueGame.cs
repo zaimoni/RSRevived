@@ -28,6 +28,7 @@ using System.Windows.Forms;
 using System.Security.Permissions;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -11141,6 +11142,13 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, x1 - 1, y1 - 1);
     }
 
+    private ColorString ActorHungerStatus(Actor actor)
+    {
+      if (actor.IsStarving) return new ColorString(Color.Red,"STARVING!");
+      if (actor.IsHungry) return new ColorString(Color.Yellow,"Hungry");
+      return new ColorString(Color.White,string.Format("{0}h", (object)FoodToHoursUntilHungry(actor.FoodPoints)));
+    }
+
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
@@ -11170,14 +11178,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", (object) actor.FoodPoints), gx, gy, new Color?());
         DrawBar(actor.FoodPoints, actor.PreviousFoodPoints, maxValue2, Actor.FOOD_HUNGRY_LEVEL, 100, 14, gx + 70, gy, Color.Chocolate, Color.Brown, Color.Beige, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", (object) maxValue2), gx + 84 + 100, gy, new Color?());
-        if (actor.IsHungry) {
-          if (actor.IsStarving)
-            m_UI.UI_DrawStringBold(Color.Red, "STARVING!", gx + 126 + 100, gy, new Color?());
-          else
-            m_UI.UI_DrawStringBold(Color.Yellow, "Hungry", gx + 126 + 100, gy, new Color?());
-        }
-        else
-          m_UI.UI_DrawStringBold(Color.White, string.Format("{0}h", (object)FoodToHoursUntilHungry(actor.FoodPoints)), gx + 126 + 100, gy, new Color?());
+        m_UI.UI_DrawStringBold(ActorHungerStatus(actor), gx + 126 + 100, gy);
       }
       else if (actor.Model.Abilities.IsRotting)
       {
