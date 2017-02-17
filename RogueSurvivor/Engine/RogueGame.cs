@@ -11345,10 +11345,10 @@ namespace djack.RogueSurvivor.Engine
       if (!(it is ItemTrap)) return;
       ItemTrap itemTrap = it as ItemTrap;
       if (itemTrap.IsTriggered) {
-        m_UI.UI_DrawImage("Icons\\trap_triggered", gx, gy);
+        m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED, gx, gy);
       } else {
         if (!itemTrap.IsActivated) return;
-        m_UI.UI_DrawImage("Icons\\trap_activated", gx, gy);
+        m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED, gx, gy);
       }
     }
 
