@@ -355,26 +355,17 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
-    public Point? GetExitPos(Exit exit)
-    {
-      if (exit == null) return null;
-      foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
-        if (mExit.Value == exit) return mExit.Key;
-      }
-      return null;
-    }
-
-	public List<Point> ExitLocations(IEnumerable<Exit> src)
+	public List<Point> ExitLocations(HashSet<Exit> src)
 	{
+      if (null==src || 0 >= src.Count) return null;
 	  List<Point> ret = new List<Point>();
-	  foreach(Exit e in src) {
-	    Point? pt = GetExitPos(e);
-		if (pt.HasValue) ret.Add(pt.Value);
-	  }
+      foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
+        if (src.Contains(mExit.Value)) ret.Add(mExit.Key);
+      }
 	  return (0<ret.Count ? ret : null);
 	}
 
-	Dictionary<Point,int> OneStepForPathfinder(Point pt)
+    Dictionary<Point,int> OneStepForPathfinder(Point pt)
 	{
 	  Dictionary<Point,int> ret = new Dictionary<Point, int>();
 	  foreach(Direction dir in Direction.COMPASS) {
