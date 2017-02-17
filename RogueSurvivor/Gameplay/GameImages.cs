@@ -63,7 +63,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ICON_SCENT_LIVING = "Icons\\scent_living";
     public const string ICON_SCENT_ZOMBIEMASTER = "Icons\\scent_zm";
     public const string ICON_SCENT_LIVING_SUPRESSOR = "Icons\\scent_living_supressor";
-    public const string ICON_AGGRESSOR = "Icons\\enemy_you_aggressor";
+    public const string ICON_AGGRESSOR = "Icons\\enemy_you_aggressor";  // XXX these three should be CGI
     public const string ICON_INDIRECT_ENEMIES = "Icons\\enemy_indirect";
     public const string ICON_SELF_DEFENCE = "Icons\\enemy_you_self_defence";
     public const string ICON_TRAP_ACTIVATED = "Icons\\trap_activated";

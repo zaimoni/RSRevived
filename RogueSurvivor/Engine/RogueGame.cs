@@ -10526,7 +10526,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMap(Map map, Color tint)
     {
 */
-    public void DrawMap(Map map)
+    public void DrawMap(Map map)    // XXX not at all clear why this and the functions it controls are public
     {
       Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
       int num1 = Math.Max(-1, m_MapViewRect.Left);
@@ -10729,14 +10729,13 @@ namespace djack.RogueSurvivor.Engine
     {
       int x = screen.X;
       int y = screen.Y;
-      if (actor.Leader != null && actor.Leader == m_Player)
-      {
+      if (actor.Leader != null && actor.Leader == m_Player) {
         if (m_Rules.HasActorBondWith(actor, m_Player))
-                    m_UI.UI_DrawImage("Actors\\player_follower_bond", x, y, tint);
+          m_UI.UI_DrawImage("Actors\\player_follower_bond", x, y, tint);
         else if (m_Rules.IsActorTrustingLeader(actor))
-                    m_UI.UI_DrawImage("Actors\\player_follower_trust", x, y, tint);
+          m_UI.UI_DrawImage("Actors\\player_follower_trust", x, y, tint);
         else
-                    m_UI.UI_DrawImage("Actors\\player_follower", x, y, tint);
+          m_UI.UI_DrawImage("Actors\\player_follower", x, y, tint);
       }
       int gx1 = x;
       int gy1 = y;
@@ -10753,8 +10752,7 @@ namespace djack.RogueSurvivor.Engine
       DrawActorEquipment(actor, gx1, gy1, DollPart.RIGHT_HAND, tint);
       int gx2 = gx1;
       int gy2 = gy1;
-      if (m_Player != null)
-      {
+      if (m_Player != null) {
         if (m_Player.IsSelfDefenceFrom(actor))
           m_UI.UI_DrawImage("Icons\\enemy_you_self_defence", gx2, gy2, tint);
         else if (m_Player.IsAggressorOf(actor))
@@ -10803,58 +10801,36 @@ namespace djack.RogueSurvivor.Engine
           break;
         case Activity.CHASING:
         case Activity.FIGHTING:
-          if (!actor.IsPlayer && actor.TargetActor != null) {
-            if (actor.TargetActor == m_Player) {
-              m_UI.UI_DrawImage(GameImages.ACTIVITY_CHASING_PLAYER, gx2, gy2, tint);
-              goto case Activity.IDLE;
-            } else {
-              m_UI.UI_DrawImage(GameImages.ACTIVITY_CHASING, gx2, gy2, tint);
-              goto case Activity.IDLE;
-            }
-          } else goto case Activity.IDLE;
+          if (!actor.IsPlayer && null != actor.TargetActor) {
+            m_UI.UI_DrawImage(((actor.TargetActor == m_Player) ? GameImages.ACTIVITY_CHASING_PLAYER : GameImages.ACTIVITY_CHASING), gx2, gy2, tint);
+          }
+          goto case Activity.IDLE;
         case Activity.TRACKING:
           if (!actor.IsPlayer) {
             m_UI.UI_DrawImage(GameImages.ACTIVITY_TRACKING, gx2, gy2, tint);
-            goto case Activity.IDLE;
-          } else goto case Activity.IDLE;
+          }
+          goto case Activity.IDLE;
         case Activity.FLEEING:
-          if (!actor.IsPlayer)
-          {
-                        m_UI.UI_DrawImage("Activities\\fleeing", gx2, gy2, tint);
-            goto case Activity.IDLE;
+          if (!actor.IsPlayer) {
+            m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING, gx2, gy2, tint);
           }
-          else
-            goto case Activity.IDLE;
+          goto case Activity.IDLE;
         case Activity.FOLLOWING:
-          if (!actor.IsPlayer && actor.TargetActor != null)
-          {
-            if (actor.TargetActor.IsPlayer)
-            {
-                            m_UI.UI_DrawImage("Activities\\following_player", gx2, gy2);
-              goto case Activity.IDLE;
-            }
-            else
-            {
-                            m_UI.UI_DrawImage("Activities\\following", gx2, gy2);
-              goto case Activity.IDLE;
-            }
+          if (!actor.IsPlayer && null != actor.TargetActor) {
+            m_UI.UI_DrawImage((actor.TargetActor.IsPlayer ? GameImages.ACTIVITY_FOLLOWING_PLAYER : GameImages.ACTIVITY_FOLLOWING), gx2, gy2);
           }
-          else
-            goto case Activity.IDLE;
+          goto case Activity.IDLE;
         case Activity.SLEEPING:
-                    m_UI.UI_DrawImage("Activities\\sleeping", gx2, gy2);
+          m_UI.UI_DrawImage(GameImages.ACTIVITY_SLEEPING, gx2, gy2);
           goto case Activity.IDLE;
         case Activity.FOLLOWING_ORDER:
-                    m_UI.UI_DrawImage("Activities\\following_order", gx2, gy2);
+          m_UI.UI_DrawImage(GameImages.ACTIVITY_FOLLOWING_ORDER, gx2, gy2);
           goto case Activity.IDLE;
         case Activity.FLEEING_FROM_EXPLOSIVE:
-          if (!actor.IsPlayer)
-          {
-                        m_UI.UI_DrawImage("Activities\\fleeing_explosive", gx2, gy2, tint);
-            goto case Activity.IDLE;
+          if (!actor.IsPlayer) {
+            m_UI.UI_DrawImage(GameImages.ACTIVITY_FLEEING_FROM_EXPLOSIVE, gx2, gy2, tint);
           }
-          else
-            goto case Activity.IDLE;
+          goto case Activity.IDLE;
         default:
           throw new InvalidOperationException("unhandled activity " + (object) actor.Activity);
       }
@@ -10863,19 +10839,17 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, Color tint)
     {
       List<string> decorations = actor.Doll.GetDecorations(part);
-      if (decorations == null)
-        return;
+      if (decorations == null) return;
       foreach (string imageID in decorations)
-                m_UI.UI_DrawImage(imageID, gx, gy, tint);
+        m_UI.UI_DrawImage(imageID, gx, gy, tint);
     }
 
     public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, float rotation, float scale)
     {
       List<string> decorations = actor.Doll.GetDecorations(part);
-      if (decorations == null)
-        return;
+      if (decorations == null) return;
       foreach (string imageID in decorations)
-                m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
+        m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
     }
 
     public void DrawActorEquipment(Actor actor, int gx, int gy, DollPart part, Color tint)
@@ -10955,12 +10929,11 @@ namespace djack.RogueSurvivor.Engine
     {
       Point point = new Point(16, 16);
       if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
-                AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.TargetActor.Location.Position), "Icons\\is_target"));
-      foreach (Actor actor1 in actor.Location.Map.Actors)
-      {
+      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
+      foreach (Actor actor1 in actor.Location.Map.Actors) {
         if (actor1 != actor && !actor1.IsDead && (IsVisibleToPlayer(actor1) && actor1.TargetActor == actor) && (actor1.Activity == Activity.CHASING || actor1.Activity == Activity.FIGHTING))
         {
-                    AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), "Icons\\is_targetted"));
+          AddOverlay(new RogueGame.OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
           break;
         }
       }
@@ -10969,17 +10942,14 @@ namespace djack.RogueSurvivor.Engine
     public void DrawPlayerActorTargets(Actor player)
     {
       Point point = new Point(16, 16);
-      if (player.TargetActor != null && !player.TargetActor.IsDead && IsVisibleToPlayer(player.TargetActor))
-      {
+      if (player.TargetActor != null && !player.TargetActor.IsDead && IsVisibleToPlayer(player.TargetActor)) {
         Point screen = MapToScreen(player.TargetActor.Location.Position);
-                m_UI.UI_DrawImage("Icons\\is_target", screen.X, screen.Y);
+        m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
-      foreach (Actor actor in player.Location.Map.Actors)
-      {
-        if (actor != player && !actor.IsDead && (IsVisibleToPlayer(actor) && actor.TargetActor == player) && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING))
-        {
+      foreach (Actor actor in player.Location.Map.Actors) {
+        if (actor != player && !actor.IsDead && (IsVisibleToPlayer(actor) && actor.TargetActor == player) && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
           Point screen = MapToScreen(player.Location.Position);
-                    m_UI.UI_DrawImage("Icons\\is_targetted", screen.X, screen.Y);
+          m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
           break;
         }
       }
@@ -10987,20 +10957,19 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawItemsStack(Inventory inventory, int gx, int gy, Color tint)
     {
-      if (inventory == null)
-        return;
+      if (inventory == null) return;
       foreach (Item it in inventory.Items)
-                DrawItem(it, gx, gy, tint);
+        DrawItem(it, gx, gy, tint);
     }
 
     public void DrawMapIcon(Point position, string imageID)
     {
-            m_UI.UI_DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
+      m_UI.UI_DrawImage(imageID, position.X * TILE_SIZE, position.Y * TILE_SIZE);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy)
     {
-            DrawMapHealthBar(hitPoints, maxHitPoints, gx, gy, Color.Red);
+      DrawMapHealthBar(hitPoints, maxHitPoints, gx, gy, Color.Red);
     }
 
     public void DrawMapHealthBar(int hitPoints, int maxHitPoints, int gx, int gy, Color barColor)
@@ -11008,34 +10977,31 @@ namespace djack.RogueSurvivor.Engine
       int x = gx + 4;
       int y = gy + TILE_SIZE - 4;
       int width = (int) (20.0 * (double) hitPoints / (double) maxHitPoints);
-            m_UI.UI_FillRect(Color.Black, new Rectangle(x, y, 20, 4));
+      m_UI.UI_FillRect(Color.Black, new Rectangle(x, y, 20, 4));
       if (width <= 0) return;
       m_UI.UI_FillRect(barColor, new Rectangle(x + 1, y + 1, width, 2));
     }
 
     public void DrawBar(int value, int previousValue, int maxValue, int refValue, int maxWidth, int height, int gx, int gy, Color fillColor, Color lossFillColor, Color gainFillColor, Color emptyColor)
     {
-            m_UI.UI_FillRect(emptyColor, new Rectangle(gx, gy, maxWidth, height));
+      m_UI.UI_FillRect(emptyColor, new Rectangle(gx, gy, maxWidth, height));
       int width1 = (int) ((double) maxWidth * (double) previousValue / (double) maxValue);
       int width2 = (int) ((double) maxWidth * (double) value / (double) maxValue);
-      if (value > previousValue)
-      {
+      if (value > previousValue) {
         if (width2 > 0)
-                    m_UI.UI_FillRect(gainFillColor, new Rectangle(gx, gy, width2, height));
+          m_UI.UI_FillRect(gainFillColor, new Rectangle(gx, gy, width2, height));
         if (width1 > 0)
-                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width1, height));
-      }
-      else if (value < previousValue)
-      {
+          m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width1, height));
+      } else if (value < previousValue) {
         if (width1 > 0)
-                    m_UI.UI_FillRect(lossFillColor, new Rectangle(gx, gy, width1, height));
+          m_UI.UI_FillRect(lossFillColor, new Rectangle(gx, gy, width1, height));
         if (width2 > 0)
-                    m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
+          m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
       }
       else if (width2 > 0)
-                m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
+        m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
       int num = (int) ((double) maxWidth * (double) refValue / (double) maxValue);
-            m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
+        m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
     }
 
     private void DrawDetected(Actor actor, string minimap_img, string map_img)
@@ -11359,7 +11325,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawItem(Item it, int gx, int gy)
     {
-            DrawItem(it, gx, gy, Color.White);
+      DrawItem(it, gx, gy, Color.White);
     }
 
     public void DrawItem(Item it, int gx, int gy, Color tint)
