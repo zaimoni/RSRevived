@@ -33,6 +33,18 @@ namespace Zaimoni.Data
       /* if (8*radius>i) */ return new Point(-radius + origin.X, (i-7* radius) + origin.Y);
     }
 
+    // low-level bitmap manipulations.  Technically redundant due to System.Drawing.Graphics.
+    public static Bitmap MonochromeRectangle(Color tint, int w, int h)
+    {
+      Bitmap img = new Bitmap(w,h);
+      for (int x = 0; x < w; ++x) {
+        for (int y = 0; y < h; ++y) {
+          img.SetPixel(x,y,tint);
+        }
+      }
+      return img;
+    }
+
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
     public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {

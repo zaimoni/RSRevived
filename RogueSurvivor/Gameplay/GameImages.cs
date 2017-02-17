@@ -824,13 +824,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static void MonochromeTile(string id, Color tint)
     {
-      Bitmap img = new Bitmap(RogueGame.TILE_SIZE,RogueGame.TILE_SIZE);
-      for (int x = 0; x < RogueGame.TILE_SIZE; ++x) {
-        for (int y = 0; y < RogueGame.TILE_SIZE; ++y) {
-          img.SetPixel(x,y,tint);
-        }
-      }
-      GameImages.s_Images.Add(id, img);
+      GameImages.s_Images.Add(id, Zaimoni.Data.ext_Drawing.MonochromeRectangle(tint, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE));
     }
 
     private static Image MakeGrayLevel(Bitmap img)
