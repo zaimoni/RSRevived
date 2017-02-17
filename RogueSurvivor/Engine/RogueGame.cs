@@ -10725,17 +10725,26 @@ namespace djack.RogueSurvivor.Engine
       drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
     }
 
+    private string FollowerIcon(Actor actor)
+    {
+      if (m_Rules.HasActorBondWith(actor, actor.Leader)) return GameImages.PLAYER_FOLLOWER_BOND;
+      if (m_Rules.IsActorTrustingLeader(actor)) return GameImages.PLAYER_FOLLOWER_TRUST;
+      return GameImages.PLAYER_FOLLOWER;
+    }
+
+    private string ThreatIcon(Actor actor)
+    {
+      if (m_Player.WillActAgainBefore(actor)) return GameImages.ICON_THREAT_SAFE;
+      if (Rules.WillOtherActTwiceBefore(m_Player, actor)) return GameImages.ICON_THREAT_HIGH_DANGER;
+      return GameImages.ICON_THREAT_DANGER;
+    }
+
     public void DrawActorSprite(Actor actor, Point screen, Color tint)
     {
       int x = screen.X;
       int y = screen.Y;
       if (actor.Leader != null && actor.Leader == m_Player) {
-        if (m_Rules.HasActorBondWith(actor, m_Player))
-          m_UI.UI_DrawImage("Actors\\player_follower_bond", x, y, tint);
-        else if (m_Rules.IsActorTrustingLeader(actor))
-          m_UI.UI_DrawImage("Actors\\player_follower_trust", x, y, tint);
-        else
-          m_UI.UI_DrawImage("Actors\\player_follower", x, y, tint);
+        m_UI.UI_DrawImage(FollowerIcon(actor), x, y, tint);
       }
       int gx1 = x;
       int gy1 = y;
@@ -10743,7 +10752,7 @@ namespace djack.RogueSurvivor.Engine
       DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
+      DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);   // XXX why are we double-drawing the torse decoration?
       DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
       DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
@@ -10754,11 +10763,11 @@ namespace djack.RogueSurvivor.Engine
       int gy2 = gy1;
       if (m_Player != null) {
         if (m_Player.IsSelfDefenceFrom(actor))
-          m_UI.UI_DrawImage("Icons\\enemy_you_self_defence", gx2, gy2, tint);
+          m_UI.UI_DrawImage(GameImages.ICON_SELF_DEFENCE, gx2, gy2, tint);
         else if (m_Player.IsAggressorOf(actor))
-          m_UI.UI_DrawImage("Icons\\enemy_you_aggressor", gx2, gy2, tint);
+          m_UI.UI_DrawImage(GameImages.ICON_AGGRESSOR, gx2, gy2, tint);
         else if (m_Player.AreIndirectEnemies(actor))
-          m_UI.UI_DrawImage("Icons\\enemy_indirect", gx2, gy2, tint);
+          m_UI.UI_DrawImage(GameImages.ICON_INDIRECT_ENEMIES, gx2, gy2, tint);
       }
       switch (actor.Activity) {
         case Activity.IDLE:
@@ -10789,15 +10798,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
           if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !actor.IsEnemyOf(m_Player))) break;
-          if (m_Player.WillActAgainBefore(actor)) {
-            m_UI.UI_DrawImage(GameImages.ICON_THREAT_SAFE, gx2, gy2, tint);
-            break;
-          }
-          if (Rules.WillOtherActTwiceBefore(m_Player, actor)) {
-            m_UI.UI_DrawImage(GameImages.ICON_THREAT_HIGH_DANGER, gx2, gy2, tint);
-            break;
-          }
-          m_UI.UI_DrawImage(GameImages.ICON_THREAT_DANGER, gx2, gy2, tint);
+          m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
           break;
         case Activity.CHASING:
         case Activity.FIGHTING:
