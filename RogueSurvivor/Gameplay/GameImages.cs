@@ -804,9 +804,9 @@ namespace djack.RogueSurvivor.Gameplay
       Load(ROT5_1);
       Load(ROT5_2);
       Notify(ui, "CGI...");
-      MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x19ff0000));
-      MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x190000ff));
-      MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x19ff00ff));
+      MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x32ff0000));
+      MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x320000ff));
+      MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x32ff00ff));
       Notify(ui, "done!");
     }
 
