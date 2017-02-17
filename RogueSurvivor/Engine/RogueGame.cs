@@ -1550,7 +1550,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2010 Express", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "(zaimoni)", 0, gy1, new Color?());
-      m_UI.UI_DrawString(Color.White, "- C# NET 3.5, Microsoft Visual C# 2015 Community", 256, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- C# NET 4.6, Microsoft Visual C# 2015 Community", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Graphics softwares", 0, gy1, new Color?());
       m_UI.UI_DrawString(Color.White, "- Inkscape, Paint.NET", 256, gy1, new Color?());
@@ -10581,7 +10581,7 @@ namespace djack.RogueSurvivor.Engine
 #if NO_PEACE_WALLS
           } else if (map.IsMapBoundary(x, y)) {
             Exit tmp = map.GetExitAt(point);
-            if (null!=tmp && ""==tmp.ReasonIsBlocked(m_Player))
+            if (null!=tmp && string.IsEmptyOrNull(tmp.ReasonIsBlocked(m_Player)))
               DrawExit(screen);
           }
 #else
