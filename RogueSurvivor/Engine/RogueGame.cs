@@ -10746,7 +10746,6 @@ namespace djack.RogueSurvivor.Engine
       DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);   // XXX why are we double-drawing the torse decoration?
       DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
       DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
       DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
