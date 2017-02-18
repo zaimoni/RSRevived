@@ -45,6 +45,44 @@ namespace Zaimoni.Data
       return img;
     }
 
+    // y and x1 aware of negative offsets being from the other end
+    // half-open interval [x0,x1[
+    public static void HLine(this Bitmap img, Color tint, int y, int x0, int x1)
+    {
+      if (img.Height < y) return;
+      if (0 > y) {
+        y += img.Height;
+        if (0 > y) return;
+      }
+      if (0 > x1) {
+        x1 += img.Width+1;
+        if (0 > x1) return;
+      } else if (img.Width < x1) x1 = img.Width;
+      if (0 > x0) x0 = 0;
+      while(x0<x1) {
+        img.SetPixel(x0++, y, tint);
+      }
+    }
+
+    // x and y1 aware of negative offsets being from the other end
+    // half-open interval [y0,y1[
+    public static void VLine(this Bitmap img, Color tint, int x, int y0, int y1)
+    {
+      if (img.Width < x) return;
+      if (0 > x) {
+        x += img.Width;
+        if (0 > x) return;
+      }
+      if (0 > y1) {
+        y1 += img.Height+1;
+        if (0 > y1) return;
+      } else if (img.Height < y1) y1 = img.Height;
+      if (0 > y0) y0 = 0;
+      while(y0 < y1) {
+        img.SetPixel(x, y0++, tint);
+      }
+    }
+
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
     public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {

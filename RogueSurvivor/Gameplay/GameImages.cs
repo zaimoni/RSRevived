@@ -4,10 +4,13 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define CGI_ICONS
+
 using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -389,7 +392,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string WEATHER_RAIN2 = "weather_rain2";
     public const string WEATHER_HEAVY_RAIN1 = "weather_heavy_rain1";
     public const string WEATHER_HEAVY_RAIN2 = "weather_heavy_rain2";
-    public const string CORPSE_DRAGGED = "corpse_dragged";
+    public const string CORPSE_DRAGGED = "corpse_dragged";  // XXX should be CGI
     public const string ROT1_1 = "rot1_1";
     public const string ROT1_2 = "rot1_2";
     public const string ROT2_1 = "rot2_1";
@@ -579,7 +582,10 @@ namespace djack.RogueSurvivor.Gameplay
       Load(OBJ_HOSPITAL_DOOR_CLOSED);
       Load(OBJ_HOSPITAL_DOOR_BROKEN);
       Notify(ui, "actors...");
+#if CGI_ICONS
+#else
       Load(PLAYER_FOLLOWER);
+#endif
       Load(PLAYER_FOLLOWER_TRUST);
       Load(PLAYER_FOLLOWER_BOND);
       Load(ACTOR_SKELETON);
@@ -696,8 +702,11 @@ namespace djack.RogueSurvivor.Gameplay
       Load(DOG_SKIN2);
       Load(DOG_SKIN3);
       Notify(ui, "items...");
+#if CGI_ICONS
+#else
       Load(ITEM_SLOT);
       Load(ITEM_EQUIPPED);
+#endif
       Load(ITEM_AMMO_LIGHT_PISTOL);
       Load(ITEM_AMMO_HEAVY_PISTOL);
       Load(ITEM_AMMO_LIGHT_RIFLE);
@@ -807,6 +816,12 @@ namespace djack.RogueSurvivor.Gameplay
       MonochromeTile(THREAT_OVERLAY, Color.FromArgb(0x32ff0000));
       MonochromeTile(TOURISM_OVERLAY, Color.FromArgb(0x320000ff));
       MonochromeTile(THREAT_AND_TOURISM_OVERLAY, Color.FromArgb(0x32ff00ff));
+#if CGI_ICONS
+      // cf competing implementation : RogueGame::OverlayRect class
+      MonochromeBorderTile(ITEM_EQUIPPED, Color.FromArgb(0x26,0x80,0), Color.FromArgb(0x4c,0xff,0));    // PNG measured background was a5h ffh 7fh, no easy way to reconcile with screen
+      MonochromeBorderTile(PLAYER_FOLLOWER, Color.Transparent, Color.FromArgb(0x00,0x99,0x99));
+      MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.FromArgb(0xc0, 0xc0, 0xc0), Color.FromArgb(0x80, 0x80, 0x80));
+#endif
       Notify(ui, "done!");
     }
 
@@ -825,6 +840,28 @@ namespace djack.RogueSurvivor.Gameplay
     private static void MonochromeTile(string id, Color tint)
     {
       GameImages.s_Images.Add(id, Zaimoni.Data.ext_Drawing.MonochromeRectangle(tint, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE));
+    }
+
+    private static void MonochromeBorderTile(string id, Color background, Color border)
+    {
+      Bitmap img = ext_Drawing.MonochromeRectangle(background, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE);
+      img.HLine(border,0,0,-1);
+      img.HLine(border,-1,0,-1);
+      img.VLine(border,0,1,-2);
+      img.VLine(border,-1,1,-2);
+      GameImages.s_Images.Add(id, img);
+    }
+
+    private static void MonochromeDropshadowTile(string id, Color background, Color border, Color shadow)
+    {
+      Bitmap img = ext_Drawing.MonochromeRectangle(background, RogueGame.TILE_SIZE, RogueGame.TILE_SIZE);
+      img.HLine(border,0,0,-1);
+      img.HLine(border,-1,0,-1);
+      img.VLine(border,0,1,-2);
+      img.VLine(border,-1,1,-2);
+      img.HLine(shadow,1,1,-2);
+      img.VLine(shadow,1,2,-2);
+      GameImages.s_Images.Add(id, img);
     }
 
     private static Image MakeGrayLevel(Bitmap img)
