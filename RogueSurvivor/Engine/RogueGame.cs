@@ -9,6 +9,7 @@
 #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
 // #define NO_PEACE_WALLS
+// #define SPEEDY_GONZALES
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -8046,31 +8047,34 @@ namespace djack.RogueSurvivor.Engine
         SetCurrentMap(exitAt.ToMap);
       }
       OnActorEnterTile(actor);
-      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, map, position, exitAt.Location);
+      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location);
       return true;
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void DoFollowersEnterMap(Actor leader, Map fromMap, Point fromPos, Location to)
+    private void DoFollowersEnterMap(Actor leader, Location to)
     {
+      Map fromMap = leader.Location.Map;
+      Point fromPos = leader.Location.Position;
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
         List<Point> pointList = null;
-        if (Rules.IsAdjacent(fromPos, fo.Location.Position)) {
+        if (Rules.IsAdjacent(leader.Location, fo.Location)) {
           pointList = to.Map.FilterAdjacentInMap(to.Position, (Predicate<Point>) (pt => to.Map.IsWalkableFor(pt, fo)));
           flag3 = pointList != null && pointList.Count != 0;
         }
         if (!flag3) {
-          if (actorList == null) actorList = new List<Actor>(3);
-          actorList.Add(fo);
+          (actorList ?? (actorList = new List<Actor>())).Add(fo);
         } else if (TryActorLeaveTile(fo)) {
           Point position = pointList[m_Rules.Roll(0, pointList.Count)];
           fromMap.RemoveActor(fo);
           to.Map.PlaceActorAt(fo, position);
           to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
-          if (fromMap.District != to.Map.District) fo.ActionPoints += fo.Speed;
+#if SPEEDY_GONZALES
+          if (fromMap.District != to.Map.District) fo.ActionPoints += fo.Speed; // Yes, run *four* squares on the first turn in a new district!
+#endif
         }      
       }
       if (actorList == null) return;
@@ -8083,7 +8087,7 @@ namespace djack.RogueSurvivor.Engine
             Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} was left behind.", other.TheName));
             ClearMessages();
             if (other.IsPlayer) {
-              AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, fromMap.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+              AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, other.Location.Map.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
             } else {
               AddMessage(new Data.Message(string.Format("{0} could not follow you out of the district and left you!", other.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
             }

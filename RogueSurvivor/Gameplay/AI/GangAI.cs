@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons) {
+      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null != current_enemies) {
         // ranged weapon: prefer to maintain LoF when retreating
         MaximizeRangedTargets(retreat, current_enemies);
         MaximizeRangedTargets(run_retreat, current_enemies);
