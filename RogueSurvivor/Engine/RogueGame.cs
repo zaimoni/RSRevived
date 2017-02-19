@@ -8985,7 +8985,6 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Item obj = it;
-      bool flag = false;
       if (it is ItemTrap) {
         ItemTrap itemTrap1 = it as ItemTrap;
         ItemTrap itemTrap2 = itemTrap1.Clone();
@@ -8994,18 +8993,16 @@ namespace djack.RogueSurvivor.Engine
         obj = itemTrap2;
         if (itemTrap2.TrapModel.ActivatesWhenDropped) itemTrap2.IsActivated = true;
         itemTrap1.IsActivated = false;
-      }
-      else flag = it.IsUseless;
-      if (flag) {
+      };
+      if (it.IsUseless) {
         DiscardItem(actor, it);
-        if (!ForceVisibleToPlayer(actor)) return;
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), it));
-      } else {
-        if (obj == it) DropItem(actor, it);
-        else DropCloneItem(actor, it, obj);
-        if (!ForceVisibleToPlayer(actor)) return;
-        AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DROP), obj));
+        if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DISCARD), it));
+        return;
       }
+      // XXX using containers can go here, but we may want a different action anyway
+      if (obj == it) DropItem(actor, it);
+      else DropCloneItem(actor, it, obj);
+      if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DROP), obj));
     }
 
     private void DiscardItem(Actor actor, Item it)

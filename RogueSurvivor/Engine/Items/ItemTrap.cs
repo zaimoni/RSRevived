@@ -48,7 +48,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public ItemTrap Clone()
     {
-      return new ItemTrap((ItemModel)TrapModel);
+      return new ItemTrap(TrapModel);
     }
   }
 }

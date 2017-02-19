@@ -300,6 +300,14 @@ namespace djack.RogueSurvivor.Gameplay
       Models.Actors = this;
     }
 
+/*
+to transform from MALE_CIVILIAN to POLICEMAN:
+* man -> policeman
+* men -> policemen
+* flavor text becomes To protect and to die
+* add  | Abilities.Flags.IS_LAW_ENFORCER
+*/
+
     public void CreateModels()
     {
       this[GameActors.IDs._FIRST] = new ActorModel("Actors\\skeleton", DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, DATA_SKELETON.FLAVOR, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
