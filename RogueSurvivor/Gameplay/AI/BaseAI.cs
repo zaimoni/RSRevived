@@ -832,6 +832,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmpAction;
     }
 
+    // Feral dogs use BehaviorFightOrFlee, so we can't just sink it down to OrderableAI
     protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
     {
       Percept target = FilterNearest(enemies);
@@ -890,7 +891,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (choiceEval != null)
             return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
         }
-        if (m_Actor.Model.Abilities.AI_CanUseAIExits && game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE)) {
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (null != tmpAction) {
             bool flag3 = true;
@@ -904,6 +905,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
+        // XXX we should run for the exit here
+        // XXX should be damage-field based
         if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
           tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (null != tmpAction) {
