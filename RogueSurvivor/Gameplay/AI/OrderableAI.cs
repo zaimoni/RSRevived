@@ -1622,6 +1622,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+    protected ActorAction BehaviorDropBoringEntertainment()
+    {
+      Inventory inventory = m_Actor.Inventory;
+      if (inventory.IsEmpty) return null;
+      foreach (Item it in inventory.Items) {
+        if (it is ItemEntertainment && m_Actor.IsBoredOf(it))
+          return new ActionDropItem(m_Actor, it);
+      }
+      return null;
+    }
+
     // stench killer support -- don't want to lock down to the only user, CivilianAI
     // actually, this particular heuristic is *bad* because it causes the z to lose tracking too close to shelter.
     protected bool IsGoodStenchKillerSpot(Map map, Point pos)

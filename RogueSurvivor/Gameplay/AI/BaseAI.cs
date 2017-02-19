@@ -523,17 +523,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanUse(itemEntertainment) ? new ActionUseItem(m_Actor, itemEntertainment) : null);
     }
 
-    protected ActorAction BehaviorDropBoringEntertainment(RogueGame game)
-    {
-      Inventory inventory = m_Actor.Inventory;
-      if (inventory.IsEmpty) return null;
-      foreach (Item it in inventory.Items) {
-        if (it is ItemEntertainment && m_Actor.IsBoredOf(it))
-          return new ActionDropItem(m_Actor, it);
-      }
-      return null;
-    }
-
 	protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
 	{
 	  if (null == enemies) return null;
