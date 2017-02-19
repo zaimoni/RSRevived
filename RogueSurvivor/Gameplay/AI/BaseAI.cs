@@ -514,15 +514,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionUseItem(m_Actor, choiceEval.Choice);
     }
 
-    protected ActorAction BehaviorUseEntertainment()
-    {
-      Inventory inventory = m_Actor.Inventory;
-      if (inventory.IsEmpty) return null;
-      ItemEntertainment itemEntertainment = inventory.GetFirst<ItemEntertainment>();
-      if (itemEntertainment == null) return null;
-      return (m_Actor.CanUse(itemEntertainment) ? new ActionUseItem(m_Actor, itemEntertainment) : null);
-    }
-
 	protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
 	{
 	  if (null == enemies) return null;
