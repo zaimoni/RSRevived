@@ -367,7 +367,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // random insane actions which could pick up ranged weapons.
       // Thus, no AI that calls this function has a usable firearm in inventory.
 
-      Item equippedWeapon = GetEquippedWeapon();
+      Item equippedWeapon = m_Actor.GetEquippedWeapon();
       ItemMeleeWeapon bestMeleeWeapon = m_Actor.GetBestMeleeWeapon();   // rely on OrderableAI doing the right thing
 
       if (bestMeleeWeapon == null) {
@@ -1037,16 +1037,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.Model.Abilities.IsIntelligent)
         return BehaviorStupidBumpToward(percept.Location.Position);
       return BehaviorIntelligentBumpToward(percept.Location.Position);
-    }
-
-    // XXX why not delegate to Actor ...
-    protected Item GetEquippedWeapon()
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemWeapon) return obj;
-      }
-      return null;
     }
 
     protected void RunIfPossible()
