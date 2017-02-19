@@ -690,8 +690,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle alleysRect = Rectangle.FromLTRB(left1, top1, right, bottom);
       MapObjectFill(map, alleysRect, (Func<Point, MapObject>) (pt =>
       {
-        if (!horizontalAlleys ? (pt.X - alleysRect.Left) % 2 == 1 && pt.Y != centralAlley : (pt.Y - alleysRect.Top) % 2 == 1 && pt.X != centralAlley)
-          return MakeObjShelf();
+        if (!horizontalAlleys ? (pt.X - alleysRect.Left) % 2 == 1 && pt.Y != centralAlley : (pt.Y - alleysRect.Top) % 2 == 1 && pt.X != centralAlley) {
+          Session.Get.PoliceInvestigate.Record(map, pt);    // works because items chance morally hardcoded to 100% [cf ItemInShopShelfChance]
+          return MakeObjShelf();    // XXX why not the shop items as well at this time?
+        }
         return null;
       }));
       int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
@@ -1584,6 +1586,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               {
                 Item it = MakeRandomBedroomItem();
                 if (it != null) map.DropItemAt(it, pt2);
+                Session.Get.PoliceInvestigate.Record(map, pt2);
                 return MakeObjNightTable("MapObjects\\nighttable");
               }));
               return MakeObjBed("MapObjects\\bed");
@@ -1597,6 +1600,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             {
               Item it = MakeRandomBedroomItem();
               if (it != null) map.DropItemAt(it, pt);
+              Session.Get.PoliceInvestigate.Record(map, pt);
               return (m_DiceRoller.RollChance(50) ? MakeObjWardrobe("MapObjects\\wardrobe") : MakeObjDrawer());
             }));
           break;
@@ -1614,6 +1618,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 Item it = MakeRandomKitchenItem();
                 if (it != null) map.DropItemAt(it, pt);
               }
+              Session.Get.PoliceInvestigate.Record(map, pt);
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
@@ -1640,6 +1645,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               Item it = MakeRandomKitchenItem();
               if (it != null) map.DropItemAt(it, pt);
             }
+            Session.Get.PoliceInvestigate.Record(map, pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
             {
               return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
@@ -1655,6 +1661,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               Item it = MakeRandomKitchenItem();
               if (it != null) map.DropItemAt(it, pt);
             }
+            Session.Get.PoliceInvestigate.Record(map, pt);
             return MakeObjFridge();
           }));
           break;
