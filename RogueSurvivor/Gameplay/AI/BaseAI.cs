@@ -1049,38 +1049,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn=null)
-    {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
-      ItemRangedWeapon obj1 = null;
-      int num1 = 0;
-      IEnumerable<ItemRangedWeapon> rws = m_Actor.Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(w=>null!=w);
-      if (null!=fn) rws = rws.Where(w=>fn(w));
-      foreach (ItemRangedWeapon w in rws) {
-        bool flag = false;
-        if (w.Ammo > 0) flag = true;
-        else {
-          IEnumerable<ItemAmmo> ammos = m_Actor.Inventory.Items.Select(it=>it as ItemAmmo).Where(ammo=>null!=ammo && ammo.AmmoType==w.AmmoType);
-          if (null!=fn) ammos = ammos.Where(ammo=>fn(ammo));
-          flag = ammos.Any();
-        }
-        if (flag) {
-          int num2 = ScoreRangedWeapon(w);
-          if (num2 > num1) {
-            obj1 = w;
-            num1 = num2;
-          }
-        }
-      }
-      return obj1;
-    }
-
-    protected static int ScoreRangedWeapon(ItemRangedWeapon w)
-    {
-      ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
-      return 1000 * rangedWeaponModel.Attack.Range + rangedWeaponModel.Attack.DamageValue;
-    }
-
     protected void RunIfPossible()
     {
       if (!m_Actor.CanRun()) return;
