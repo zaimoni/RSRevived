@@ -627,7 +627,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // but all body armors are equipped to the torso slot(?)
     private ItemBodyArmor GetEquippedBodyArmor()
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj.IsEquipped && obj is ItemBodyArmor) return obj as ItemBodyArmor;
       }
@@ -892,7 +892,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // This is only called when the actor is hungry.  It doesn't need to do food value corrections
     protected ItemFood GetBestEdibleItem()
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int need = m_Actor.MaxFood - m_Actor.FoodPoints;
       ItemFood obj1 = null;
@@ -917,7 +917,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // an AI uses the behavior based on this
     protected ItemFood GetBestPerishableItem(RogueGame game)
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
       int need = m_Actor.MaxFood - m_Actor.FoodPoints;
       ItemFood obj1 = null;
@@ -960,7 +960,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ItemLight GetEquippedLight()
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj.IsEquipped && obj is ItemLight) return obj as ItemLight;
       }
@@ -987,7 +987,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Item GetEquippedCellPhone()
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj.IsEquipped && obj is ItemTracker && (obj as ItemTracker).CanTrackFollowersOrLeader)
           return obj;
@@ -1078,7 +1078,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private bool IsItemWorthTellingAbout(Item it)
     {
-      return it != null && !(it is ItemBarricadeMaterial) && (m_Actor.Inventory == null || m_Actor.Inventory.IsEmpty || !m_Actor.Inventory.Contains(it));
+      return it != null && !(it is ItemBarricadeMaterial) && (m_Actor.Inventory.IsEmpty || !m_Actor.Inventory.Contains(it));
     }
 
     protected ActorAction BehaviorTellFriendAboutPercept(RogueGame game, Percept percept)
@@ -1645,7 +1645,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ItemSprayScent GetEquippedStenchKiller()
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
         if (obj.IsEquipped && obj is ItemSprayScent && ((obj as ItemSprayScent).Model as ItemSprayScentModel).Odor == Odor.PERFUME_LIVING_SUPRESSOR)
           return obj as ItemSprayScent;
@@ -1655,7 +1655,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ItemSprayScent GetFirstStenchKiller(Predicate<ItemSprayScent> fn)
     {
-      if (null == m_Actor.Inventory || m_Actor.Inventory.IsEmpty) return null;
+      if (m_Actor.Inventory.IsEmpty) return null;
       return m_Actor.Inventory.GetFirstMatching<ItemSprayScent>(fn);
     }
 

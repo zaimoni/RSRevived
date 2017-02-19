@@ -32,12 +32,13 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null != startingSheet);
       Contract.Requires(null != defaultController);
       Contract.Requires(defaultController.IsSubclassOf(typeof(ActorController)));
-      // using logical XOR to restate IFF
+      // using logical XOR to restate IFF, logical OR to restate logical implication
       Contract.Requires(abilities.HasInventory ^ (0 >= startingSheet.BaseInventoryCapacity));
       Contract.Requires((abilities.HasToEat || abilities.IsRotting) ^ (0 >= startingSheet.BaseFoodPoints));
       Contract.Requires(abilities.HasToSleep ^ (0 >= startingSheet.BaseSleepPoints));
       Contract.Requires(abilities.HasSanity ^ (0 >= startingSheet.BaseSanity));
       Contract.Requires(!abilities.CanTrade || defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)));
+      Contract.Requires(!defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)) || abilities.HasInventory);
 
       ImageID = imageID;
       DollBody = body;
