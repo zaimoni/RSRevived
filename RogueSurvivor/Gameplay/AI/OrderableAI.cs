@@ -1207,6 +1207,124 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(target1.Location.Position);
     }
 
+    // sunk from BaseAI
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
+    {
+      Percept target = FilterNearest(enemies);
+      bool doRun = false;	// only matters when fleeing
+      Actor enemy = target.Percepted as Actor;
+      bool decideToFlee;
+      if (HasEquipedRangedWeapon(enemy))
+        decideToFlee = false;
+      else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
+        decideToFlee = false;
+      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+        decideToFlee = true;
+      else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
+	    decideToFlee = false;
+      } else {
+        switch (courage) {
+          case ActorCourage.COWARD:
+            decideToFlee = true;
+            doRun = true;
+            break;
+          case ActorCourage.CAUTIOUS:
+          case ActorCourage.COURAGEOUS:
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
+            doRun = !HasSpeedAdvantage(m_Actor, enemy);
+            break;
+          default:
+            throw new ArgumentOutOfRangeException("unhandled courage");
+        }
+      }
+      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
+      }
+
+      ActorAction tmpAction = null;
+
+      if (decideToFlee) {
+        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
+        if (m_Actor.Model.Abilities.CanUseMapObjects) {
+          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+          {
+            Point point = m_Actor.Location.Position + dir;
+            DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
+            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanClose(door)) && (Rules.GridDistance(point, enemy.Location.Position) != 1 || !enemy.CanClose(door));
+          }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+          if (choiceEval != null)
+            return new ActionCloseDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
+        }
+        if (m_Actor.Model.Abilities.CanBarricade) {
+          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+          {
+            Point point = m_Actor.Location.Position + dir;
+            DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
+            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanBarricade(door));
+          }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+          if (choiceEval != null)
+            return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
+        }
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
+          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
+          if (null != tmpAction) {
+            bool flag3 = true;
+            if (m_Actor.HasLeader) {
+              Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+              if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
+            }
+            if (flag3) {
+              m_Actor.Activity = Activity.FLEEING;
+              return tmpAction;
+            }
+          }
+        }
+        // XXX we should run for the exit here
+        // XXX should be damage-field based
+        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
+          tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
+          }
+        }
+        tmpAction = BehaviorWalkAwayFrom(enemies);
+        if (null != tmpAction) {
+          if (doRun) RunIfPossible();
+          m_Actor.Activity = Activity.FLEEING;
+          return tmpAction;
+        }
+        if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
+          if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
+            game.DoEmote(m_Actor, emotes[1]);
+          return BehaviorMeleeAttack(target.Percepted as Actor);
+        }
+        return null;
+      } // if (decldeToFlee)
+
+      // redo the pause check
+      if (m_Actor.Speed > enemy.Speed) {
+        int dist = Rules.GridDistance(m_Actor.Location.Position,target.Location.Position);
+        if (m_Actor.WillActAgainBefore(enemy) && 2==dist) {
+          // Neither free hit, nor clearly safe to close.  Main options are charge-hit and wait
+          // We could also reposition for tactical advantage i.e. ability to retreat
+          return new ActionWait(m_Actor);   // default
+        }
+      }
+
+      // charge
+      tmpAction = BehaviorChargeEnemy(target);
+      if (null != tmpAction) {
+        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
+          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
+        m_Actor.Activity = Activity.FIGHTING;
+        m_Actor.TargetActor = target.Percepted as Actor;
+        return tmpAction;
+      }
+      return null;
+    }
+
 	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
 	{
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);

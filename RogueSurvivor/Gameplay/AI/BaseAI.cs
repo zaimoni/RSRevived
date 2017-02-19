@@ -27,10 +27,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal abstract class BaseAI : ActorController
     {
-    private const int FLEE_THROUGH_EXIT_CHANCE = 50;
-    private const int EMOTE_FLEE_CHANCE = 30;
+    protected const int FLEE_THROUGH_EXIT_CHANCE = 50;
+    protected const int EMOTE_FLEE_CHANCE = 30;
     private const int EMOTE_FLEE_TRAPPED_CHANCE = 50;
-    private const int EMOTE_CHARGE_CHANCE = 30;
+    protected const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
     private const float LEADER_LOF_PENALTY = 1f;
     private Location m_prevLocation;
@@ -832,9 +832,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmpAction;
     }
 
-    // Feral dogs use BehaviorFightOrFlee, so we can't just sink it down to OrderableAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
+    // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, string[] emotes)
     {
+      ActorCourage courage = ActorCourage.CAUTIOUS;
       Percept target = FilterNearest(enemies);
       bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted as Actor;
@@ -845,22 +846,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
         decideToFlee = true;
-      else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
-	    decideToFlee = false;
-      } else {
-        switch (courage) {
-          case ActorCourage.COWARD:
-            decideToFlee = true;
-            doRun = true;
-            break;
-          case ActorCourage.CAUTIOUS:
-          case ActorCourage.COURAGEOUS:
-            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(m_Actor, enemy);
-            break;
-          default:
-            throw new ArgumentOutOfRangeException("unhandled courage");
-        }
+      else {
+        decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
+        doRun = !HasSpeedAdvantage(m_Actor, enemy);
       }
       if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
         decideToFlee = true;    // but do not run as otherwise we won't build up stamina
@@ -871,26 +859,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (decideToFlee) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
-        if (m_Actor.Model.Abilities.CanUseMapObjects) {
-          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-          {
-            Point point = m_Actor.Location.Position + dir;
-            DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
-            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanClose(door)) && (Rules.GridDistance(point, enemy.Location.Position) != 1 || !enemy.CanClose(door));
-          }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-          if (choiceEval != null)
-            return new ActionCloseDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
-        }
-        if (m_Actor.Model.Abilities.CanBarricade) {
-          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-          {
-            Point point = m_Actor.Location.Position + dir;
-            DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
-            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanBarricade(door));
-          }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-          if (choiceEval != null)
-            return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
-        }
+        // using map objects goes here
+        // barricading goes here
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (null != tmpAction) {
