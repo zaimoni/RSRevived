@@ -300,8 +300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           m_Actor.TargetActor = m_Actor.Leader;
           return tmpAction;
         }
-      }
-      if (!(m_Actor.HasLeader && !DontFollowLeader) && m_Actor.CountFollowers < m_Actor.MaxFollowers) {
+      } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         Percept target = FilterNearest(friends);
         if (target != null) {
           tmpAction = BehaviorLeadActor(target);
@@ -311,6 +310,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+
+      // critical item memory check goes here
+
       if (m_Actor.CountFollowers > 0) {
         Actor target;
         tmpAction = BehaviorDontLeaveFollowersBehind(3, out target);
