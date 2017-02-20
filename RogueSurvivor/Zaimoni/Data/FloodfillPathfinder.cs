@@ -93,14 +93,11 @@ namespace Zaimoni.Data
             Contract.Requires(!goals.Contains(start));
             if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
-            Queue<T> gen0 = new Queue<T>();
-            foreach(T tmp in goals) {
-                if (_blacklist.Contains(tmp)) continue;
-                if (!_inDomain(tmp)) continue;
-                _map[tmp] = 0;
-                gen0.Enqueue(tmp);
-            }
-            while(0 < gen0.Count && 0 < max_depth && !_map.ContainsKey(start)) {
+
+            Queue<T> gen0 = new Queue<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
+            foreach(T tmp in goals) _map[tmp] = 0;
+
+            while (0 < gen0.Count && 0 < max_depth && !_map.ContainsKey(start)) {
                 --max_depth;
                 Queue<T> gen1 = new Queue<T>();
                 Dictionary<T,Dictionary<T, int>> candidate_dict = new Dictionary<T, Dictionary<T, int>>();
@@ -142,14 +139,11 @@ namespace Zaimoni.Data
         {
             Contract.Requires(null != goals);
             _map.Clear();
-            Queue<T> gen0 = new Queue<T>();
-            foreach(T tmp in goals) {
-                if (_blacklist.Contains(tmp)) continue;
-                if (!_inDomain(tmp)) continue;
-                _map[tmp] = 0;
-                gen0.Enqueue(tmp);
-            }
-            while(0 < gen0.Count && 0 < max_depth) {
+
+            Queue<T> gen0 = new Queue<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
+            foreach (T tmp in goals) _map[tmp] = 0;
+
+            while (0 < gen0.Count && 0 < max_depth) {
                 --max_depth;
                 Queue<T> gen1 = new Queue<T>();
                 Dictionary<T,Dictionary<T, int>> candidate_dict = new Dictionary<T, Dictionary<T, int>>();
