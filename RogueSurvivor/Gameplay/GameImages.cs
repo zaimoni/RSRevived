@@ -585,8 +585,8 @@ namespace djack.RogueSurvivor.Gameplay
 #if CGI_ICONS
 #else
       Load(PLAYER_FOLLOWER);
-#endif
       Load(PLAYER_FOLLOWER_TRUST);
+#endif
       Load(PLAYER_FOLLOWER_BOND);
       Load(ACTOR_SKELETON);
       Load(ACTOR_RED_EYED_SKELETON);
@@ -820,7 +820,8 @@ namespace djack.RogueSurvivor.Gameplay
       // cf competing implementation : RogueGame::OverlayRect class
       MonochromeBorderTile(ITEM_EQUIPPED, Color.FromArgb(0x26,0x80,0), Color.FromArgb(0x4c,0xff,0));    // PNG measured background was a5h ffh 7fh, no easy way to reconcile with screen
       MonochromeBorderTile(PLAYER_FOLLOWER, Color.Transparent, Color.FromArgb(0x00,0x99,0x99));
-      MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.FromArgb(0xc0, 0xc0, 0xc0), Color.FromArgb(0x80, 0x80, 0x80));
+      MonochromeBorderTile(PLAYER_FOLLOWER_TRUST, Color.Transparent, Color.Cyan);
+      MonochromeDropshadowTile(ITEM_SLOT, Color.Transparent, Color.Silver, Color.Gray);
 #endif
       Notify(ui, "done!");
     }
