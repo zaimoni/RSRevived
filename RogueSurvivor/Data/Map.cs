@@ -1021,10 +1021,15 @@ namespace djack.RogueSurvivor.Data
       return Direction.COMPASS.Select(dir => position + dir).Any(p=>IsInBounds(p) && predicateFn(p));
     }
 
-    public int CountAdjacentInMap(Point position, Predicate<Point> predicateFn)
+    public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)
     {
       if (!IsInBounds(position)) return 0;
       return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
+    }
+
+    public int CountAdjacentTo(int x, int y, Predicate<Point> predicateFn)
+    {
+      return CountAdjacentTo(new Point(x,y), predicateFn);
     }
 
     public void ForEachAdjacent(Point position, Action<Point> fn)

@@ -1416,8 +1416,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.GetExitAt(point) != null || map.GetTileAt(point.X, point.Y).IsInside))
           return false;
-        int num1 = map.CountAdjacentInMap(point, (Predicate<Point>) (ptAdj => !map.GetTileAt(ptAdj).Model.IsWalkable));
-        int num2 = map.CountAdjacentInMap(point, (Predicate<Point>) (ptAdj =>
+        int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileAt(ptAdj).Model.IsWalkable));
+        int num2 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj =>
         {
           Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
           return fortification != null && !fortification.IsTransparent;

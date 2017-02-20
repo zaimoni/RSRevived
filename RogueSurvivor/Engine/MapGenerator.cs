@@ -289,20 +289,9 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #region Predicates and Actions
-    public int CountForEachAdjacent(Map map, int x, int y, Func<Point, bool> checkFn)
-    {
-      int num = 0;
-      Point point = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS) {
-        Point p = point + direction;
-        if (map.IsInBounds(p) && checkFn(p)) ++num;
-      }
-      return num;
-    }
-
     public int CountAdjWalls(Map map, int x, int y)
     {
-      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => !map.GetTileModelAt(pt).IsWalkable));
+      return map.CountAdjacentTo(x, y, pt => !map.GetTileModelAt(pt).IsWalkable);
     }
 
     public int CountAdjWalls(Map map, Point p)
@@ -312,28 +301,27 @@ namespace djack.RogueSurvivor.Engine
 
     public int CountAdjWalkables(Map map, int x, int y)
     {
-      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetTileModelAt(pt).IsWalkable));
+      return map.CountAdjacentTo(x, y, pt => map.GetTileModelAt(pt).IsWalkable);
     }
 
     public int CountAdjDoors(Map map, int x, int y)
     {
-      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.GetMapObjectAt(pt.X, pt.Y) is DoorWindow));
+      return map.CountAdjacentTo(x, y, pt => map.GetMapObjectAt(pt.X, pt.Y) is DoorWindow);
     }
 
     public void PlaceIf(Map map, int x, int y, TileModel floor, Func<int, int, bool> predicateFn, Func<int, int, MapObject> createFn)
     {
-      if (!predicateFn(x, y))
-        return;
+      Contract.Requires(null != predicateFn);
+      Contract.Requires(null != createFn);
       MapObject mapObj = createFn(x, y);
-      if (mapObj == null)
-        return;
-      map.SetTileModelAt(x, y, floor);
-            MapObjectPlace(map, x, y, mapObj);
+      if (mapObj == null) return;
+      map.SetTileModelAt(x, y, floor);  // XXX wasn't this already done by the caller?
+      MapObjectPlace(map, x, y, mapObj);
     }
 
     public bool IsAccessible(Map map, int x, int y)
     {
-      return CountForEachAdjacent(map, x, y, (Func<Point, bool>) (pt => map.IsWalkable(pt.X, pt.Y))) >= 6;
+      return map.CountAdjacentTo(x, y, pt => map.IsWalkable(pt.X, pt.Y)) >= 6;
     }
 
     public bool HasNoObjectAt(Map map, int x, int y)
