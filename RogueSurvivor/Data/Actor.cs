@@ -799,21 +799,36 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
+    public Attack UnarmedMeleeAttack(Actor target=null)
+    {
+      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+      num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+      if (target != null && target.Model.Abilities.IsUndead)
+        num4 += DamageBonusVsUndeads;
+      Attack baseAttack = Model.StartingSheet.UnarmedAttack;
+      float num5 = (float)baseAttack.HitValue + (float) num3;
+      if (IsExhausted) num5 /= 2f;
+      else if (IsSleepy) num5 *= 0.75f;
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
+    }
+
     // does not properly account for martial arts
     public ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn=null)
     {
       if (Inventory == null) return null;
       List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
       if (null == tmp) return null;
+      int martial_arts_rating = UnarmedMeleeAttack().Rating;
       int num1 = 0;
       ItemMeleeWeapon itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         if (fn == null || fn(obj)) {
           int num2 = (obj.Model as ItemMeleeWeaponModel).Attack.Rating;
-          if (num2 > num1) {
-            num1 = num2;
-            itemMeleeWeapon1 = obj;
-          }
+          if (num2 <= martial_arts_rating || num2 <= num1) continue;
+          num1 = num2;
+          itemMeleeWeapon1 = obj;
         }
       }
       return itemMeleeWeapon1;

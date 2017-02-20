@@ -758,16 +758,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              Attack tmp_attack = m_Actor.MeleeAttack(en);
+              Attack tmp_attack = m_Actor.UnarmedMeleeAttack(en);
               if (en.HitPoints>tmp_attack.DamageValue/2) continue;
               // can one-shot
               if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
                 tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) return tmpAction;
+                if (null != tmpAction) {
+                  if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
+                    Item tmp_w = m_Actor.GetEquippedWeapon();
+                    if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
+                  }
+                  return tmpAction;
+                }
               }
               if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
                 tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) return tmpAction;
+                if (null != tmpAction) {
+                  if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
+                    Item tmp_w = m_Actor.GetEquippedWeapon();
+                    if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
+                  }
+                  return tmpAction;
+                }
               }
             }
           }

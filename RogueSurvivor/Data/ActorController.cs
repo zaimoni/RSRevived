@@ -278,7 +278,8 @@ namespace djack.RogueSurvivor.Data
             }
         if (it is ItemMeleeWeapon)
             {
-            if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return true;   // martial artists+melee weapons needs work
+            Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+            if ((it.Model as ItemMeleeWeaponModel).Attack.Rating <= martial_arts.Rating) return true;
             // do not trade away the best melee weapon.  Others ok.
             return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
             }
@@ -344,8 +345,9 @@ namespace djack.RogueSurvivor.Data
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemMeleeWeapon) {
-        // better handling of martial arts requires better attack juggling in general
-        if (m_Actor.Sheet.SkillTable.GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs.MARTIAL_ARTS) > 0) return false;
+        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+        if ((it.Model as ItemMeleeWeaponModel).Attack.Rating <= martial_arts.Rating) return false;
+
         if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           return (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
