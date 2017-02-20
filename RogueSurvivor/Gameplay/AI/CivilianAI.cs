@@ -321,7 +321,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee(game, enemies, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
+        tmpAction = BehaviorFightOrFlee(game, enemies, damage_field, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif

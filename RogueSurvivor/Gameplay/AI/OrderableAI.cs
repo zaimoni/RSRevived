@@ -1240,7 +1240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
     {
       Percept target = FilterNearest(enemies);
       bool doRun = false;	// only matters when fleeing
@@ -1312,15 +1312,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
-        // XXX we should run for the exit here
-        // XXX should be damage-field based
-        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
+        // XXX we should run for the exit here ...
+        if (null==damage_field || !damage_field.ContainsKey(m_Actor.Location.Position)) {
           tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
             return tmpAction;
           }
         }
+        // XXX or run for the exit here
         tmpAction = BehaviorWalkAwayFrom(enemies);
         if (null != tmpAction) {
           if (doRun) RunIfPossible();

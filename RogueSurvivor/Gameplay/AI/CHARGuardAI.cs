@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null != current_enemies) {
         object percepted = FilterNearest(current_enemies).Percepted;
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, true, true, ActorCourage.COURAGEOUS, CHARGuardAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
       if (null != friends) {
