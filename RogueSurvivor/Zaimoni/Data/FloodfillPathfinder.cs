@@ -94,85 +94,24 @@ namespace Zaimoni.Data
             if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
 
-            Queue<T> gen0 = new Queue<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
-            foreach(T tmp in goals) _map[tmp] = 0;
+            HashSet<T> now = new HashSet<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
+            foreach(T tmp in now) _map[tmp] = 0;
 
-            while (0 < gen0.Count && 0 < max_depth && !_map.ContainsKey(start)) {
-                --max_depth;
-                Queue<T> gen1 = new Queue<T>();
-                Dictionary<T,Dictionary<T, int>> candidate_dict = new Dictionary<T, Dictionary<T, int>>();
-                while (0 < gen0.Count) {
-                    T tmp = gen0.Dequeue();
-                    Dictionary<T, int> candidates = _forward(tmp);
-                    Dictionary<T, int> legal = new Dictionary<T, int>();
-                    foreach (T tmp2 in candidates.Keys) {
-                        if (_blacklist.Contains(tmp2)) continue;
-                        if (_map.ContainsKey(tmp2)) continue;
-                        if (!_inDomain(tmp2)) continue;
-                        legal[tmp2] = candidates[tmp2];
-                    }
-                    if (0 < legal.Count) candidate_dict[tmp] = legal;
-                }
-                gen0 = new Queue<T>(candidate_dict.Keys);
-                while (0< gen0.Count) {
-                    T tmp = gen0.Dequeue();
-                    int Distance = _map[tmp];
-                    foreach (T tmp2 in candidate_dict[tmp].Keys) {
-                        if (!_map.ContainsKey(tmp2)) {
-                            _map[tmp2] = Distance + candidate_dict[tmp][tmp2];
-                            gen1.Enqueue(tmp2);
-                            continue;
-                        }
-                        if (_map[tmp2] > Distance + candidate_dict[tmp][tmp2]) _map[tmp2] = Distance + candidate_dict[tmp][tmp2];
-                    }
-                }
-                gen0 = gen1;
-            }
-        }
-        public void GoalDistance(T goal, int max_depth)
-        {
-            T[] tmp = { goal };
-            GoalDistance(tmp, max_depth);
-        }
-
-        public void GoalDistance(IEnumerable<T> goals, int max_depth)
-        {
-            Contract.Requires(null != goals);
-            _map.Clear();
-
-            Queue<T> gen0 = new Queue<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
-            foreach (T tmp in goals) _map[tmp] = 0;
-
-            while (0 < gen0.Count && 0 < max_depth) {
-                --max_depth;
-                Queue<T> gen1 = new Queue<T>();
-                Dictionary<T,Dictionary<T, int>> candidate_dict = new Dictionary<T, Dictionary<T, int>>();
-                while (0 < gen0.Count) {
-                    T tmp = gen0.Dequeue();
-                    Dictionary<T, int> candidates = _forward(tmp);
-                    Dictionary<T, int> legal = new Dictionary<T, int>();
-                    foreach (T tmp2 in candidates.Keys) {
-                        if (_blacklist.Contains(tmp2)) continue;
-                        if (_map.ContainsKey(tmp2)) continue;
-                        if (!_inDomain(tmp2)) continue;
-                        legal[tmp2] = candidates[tmp2];
-                    }
-                    if (0 < legal.Count) candidate_dict[tmp] = legal;
-                }
-                gen0 = new Queue<T>(candidate_dict.Keys);
-                while (0< gen0.Count) {
-                    T tmp = gen0.Dequeue();
-                    int Distance = _map[tmp];
-                    foreach (T tmp2 in candidate_dict[tmp].Keys) {
-                        if (!_map.ContainsKey(tmp2)) {
-                            _map[tmp2] = Distance + candidate_dict[tmp][tmp2];
-                            gen1.Enqueue(tmp2);
-                            continue;
-                        }
-                        if (_map[tmp2] > Distance + candidate_dict[tmp][tmp2]) _map[tmp2] = Distance + candidate_dict[tmp][tmp2];
-                    }
-                }
-                gen0 = gen1;
+            while(0<now.Count && 0 < max_depth--) {
+              HashSet<T> next = new HashSet<T>();
+              foreach(T tmp in now) {
+                int dist = _map[tmp];
+                Dictionary<T, int> candidates = _forward(tmp);
+                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                  if (_blacklist.Contains(tmp2.Key)) continue;
+                  if (!_inDomain(tmp2.Key)) continue;
+                  int new_dist = dist+tmp2.Value;
+                  if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
+                  _map[tmp2.Key] = new_dist;
+                  next.Add(tmp2.Key);
+                } 
+              }
+              now = next;
             }
         }
 
