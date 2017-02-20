@@ -2320,7 +2320,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, int.MaxValue,m_Actor.Location.Position);
 
-      // no cross-district pathfinding
+      // currently, there are no cross-district AI exits.
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
       valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
         MapObject mapObjectAt = exit.Location.MapObject;
@@ -2336,14 +2336,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 >= remote_where_to_go.Count) continue;
         Dictionary<Point,Exit> exits_for_m = new Dictionary<Point,Exit>(valid_exits);
         exits_for_m.OnlyIf(exit => exit.ToMap == m);
+        List<Point> remote_dests = new List<Point>(exits_for_m.Values.Select(exit => exit.Location.Position));
+        FloodfillPathfinder<Point> remote_navigate = m.PathfindSteps(m_Actor);
+        if (1==remote_dests.Count) {
+          remote_navigate.GoalDistance(remote_where_to_go,int.MaxValue,remote_dests[0]);
+        } else {
+          remote_navigate.GoalDistance(remote_where_to_go,int.MaxValue,remote_dests);
+        }
+        Dictionary<Point,int> remote_costs = new Dictionary<Point,int>();
         foreach(KeyValuePair<Point, Exit> tmp in exits_for_m) {
-          FloodfillPathfinder<Point> remote_navigate = m.PathfindSteps(m_Actor);
-          remote_navigate.GoalDistance(remote_where_to_go,int.MaxValue,tmp.Value.Location.Position);
           int cost = remote_navigate.Cost(tmp.Value.Location.Position);
           if (int.MaxValue == cost) continue;   // not in domain
-          navigate.ReviseGoalDistance(tmp.Key,cost+1,m_Actor.Location.Position);
+          remote_costs[tmp.Key] = cost;
+        }
+        while(0 < remote_costs.Count) {
+          int r_cost = remote_costs.Values.Min();
+          List<KeyValuePair<Point,int>> pts = remote_costs.Where(tmp => tmp.Value==r_cost).ToList();
+          navigate.ReviseGoalDistance(pts[0].Key,r_cost+1,m_Actor.Location.Position);
         }
       }
+      if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
 
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
       ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);

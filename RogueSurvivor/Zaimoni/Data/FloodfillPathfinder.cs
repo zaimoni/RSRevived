@@ -115,6 +115,35 @@ namespace Zaimoni.Data
             }
         }
 
+        public void GoalDistance(IEnumerable<T> goals, int max_depth, IEnumerable<T> start)
+        {
+            Contract.Requires(null != start);
+            Contract.Requires(null != goals);
+//          Contract.Requires(!goals.Contains(start));
+            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException("start","illegal value");
+            _map.Clear();
+
+            HashSet<T> now = new HashSet<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
+            foreach(T tmp in now) _map[tmp] = 0;
+
+            while(0<now.Count && start.Any(pos => !_map.ContainsKey(pos)) && 0 < max_depth--) {
+              HashSet<T> next = new HashSet<T>();
+              foreach(T tmp in now) {
+                int dist = _map[tmp];
+                Dictionary<T, int> candidates = _forward(tmp);
+                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                  if (_blacklist.Contains(tmp2.Key)) continue;
+                  if (!_inDomain(tmp2.Key)) continue;
+                  int new_dist = dist+tmp2.Value;
+                  if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
+                  _map[tmp2.Key] = new_dist;
+                  next.Add(tmp2.Key);
+                } 
+              }
+              now = next;
+            }
+        }
+
         public void ReviseGoalDistance(T pos, int new_cost, T start)
         {
             if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
