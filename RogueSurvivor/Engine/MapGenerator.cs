@@ -313,9 +313,10 @@ namespace djack.RogueSurvivor.Engine
     {
       Contract.Requires(null != predicateFn);
       Contract.Requires(null != createFn);
+      if (!predicateFn(x, y)) return;
       MapObject mapObj = createFn(x, y);
       if (mapObj == null) return;
-      map.SetTileModelAt(x, y, floor);  // XXX wasn't this already done by the caller?
+      map.SetTileModelAt(x, y, floor);
       MapObjectPlace(map, x, y, mapObj);
     }
 

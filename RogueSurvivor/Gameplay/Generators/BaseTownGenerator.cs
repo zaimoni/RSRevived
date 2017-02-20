@@ -615,12 +615,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual bool PlaceDoorIfAccessible(Map map, int x, int y, TileModel floor, int minAccessibility, DoorWindow door)
     {
-      int num = 0;
-      Point point1 = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS) {
-        Point point2 = point1 + direction;
-        if (map.IsWalkable(point2.X, point2.Y)) ++num;
-      }
+      Point pt = new Point(x, y);
+      int num = Direction.COMPASS.Select(d => pt+d).Count(pt2 => map.IsWalkable(pt2));  // includes IsInBounds check
       if (num < minAccessibility) return false;
       PlaceDoorIfNoObject(map, x, y, floor, door);
       return true;
@@ -630,7 +626,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       int num = 0;
       Point point1 = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS) {
+      foreach (Direction direction in Direction.COMPASS) {  // micro-optimized: loop combines a reject-any check with a counting operation
         Point point2 = point1 + direction;
         if (map.IsWalkable(point2.X, point2.Y)) ++num;
         if (map.GetMapObjectAt(point2.X, point2.Y) is DoorWindow) return false;

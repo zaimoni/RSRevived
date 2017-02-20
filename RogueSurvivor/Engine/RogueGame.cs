@@ -9694,18 +9694,14 @@ namespace djack.RogueSurvivor.Engine
         tileAt1.AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
         map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_BLOODIED_FLOOR));
       }
-      foreach (Direction direction in Direction.COMPASS) {
-        if (m_Rules.RollChance(20)) {
-          Point p = position + direction;
-          if (map.IsInBounds(p)) {
-            Tile tileAt2 = map.GetTileAt(p.X, p.Y);
-            if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL)) {
-              tileAt2.AddDecoration(GameImages.DECO_BLOODIED_WALL);
-              map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p.X, p.Y, GameImages.DECO_BLOODIED_WALL));
-            }
-          }
-        }
-      }
+      map.ForEachAdjacent(position,(p => {
+        if (!m_Rules.RollChance(20)) return;
+        Tile tileAt2 = map.GetTileAt(p);
+        if (!tileAt2.Model.IsWalkable && !tileAt2.HasDecoration(GameImages.DECO_BLOODIED_WALL)) {
+          tileAt2.AddDecoration(GameImages.DECO_BLOODIED_WALL);
+          map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, p.X, p.Y, GameImages.DECO_BLOODIED_WALL));
+        }        
+      }));
     }
 
     public void UndeadRemains(Map map, Point position)

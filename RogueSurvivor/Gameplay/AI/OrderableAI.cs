@@ -1642,7 +1642,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);    // XXX can be called from simulation thread
 
       List<Point> has_container = new List<Point>();
-      foreach(Point pos in Direction.COMPASS.Select(d => m_Actor.Location.Position+d)) {
+      foreach(Point pos in Direction.COMPASS.Select(dir => m_Actor.Location.Position+dir)) {
         if (!m_Actor.Location.Map.IsInBounds(pos)) continue;
         MapObject container = m_Actor.Location.Map.GetMapObjectAt(pos);
         if (null == container) continue;
