@@ -1369,9 +1369,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	    Exit exitAt = a_map.GetExitAt(m_Actor.Location.Position);
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
           return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-	    navigate.GoalDistance(a_map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
+	    navigate.GoalDistance(a_map.ExitLocations(valid_exits), m_Actor.Location.Position);
 	  } else {
-	    navigate.GoalDistance(dest.Position,int.MaxValue,m_Actor.Location.Position);
+	    navigate.GoalDistance(dest.Position, m_Actor.Location.Position);
 	  }
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
@@ -2073,7 +2073,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+      navigate.GoalDistance(tainted, m_Actor.Location.Position);
 #if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget && !navigate.Domain.Contains(m_Actor.Location.Position)) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": navigate destination unreachable from ("+m_Actor.Location.Position.X.ToString()+","+ m_Actor.Location.Position.Y.ToString() + ")");
@@ -2122,7 +2122,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Contract.Requires(0<tainted.Count());
 
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      navigate.GoalDistance(tainted,int.MaxValue,m_Actor.Location.Position);
+      navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
       ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);
@@ -2318,7 +2318,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, int.MaxValue,m_Actor.Location.Position);
+      if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, m_Actor.Location.Position);
 
       // currently, there are no cross-district AI exits.
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
@@ -2339,9 +2339,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Point> remote_dests = new List<Point>(exits_for_m.Values.Select(exit => exit.Location.Position));
         FloodfillPathfinder<Point> remote_navigate = m.PathfindSteps(m_Actor);
         if (1==remote_dests.Count) {
-          remote_navigate.GoalDistance(remote_where_to_go,int.MaxValue,remote_dests[0]);
+          remote_navigate.GoalDistance(remote_where_to_go, remote_dests[0]);
         } else {
-          remote_navigate.GoalDistance(remote_where_to_go,int.MaxValue,remote_dests);
+          remote_navigate.GoalDistance(remote_where_to_go, remote_dests);
         }
         Dictionary<Point,int> remote_costs = new Dictionary<Point,int>();
         foreach(KeyValuePair<Point, Exit> tmp in exits_for_m) {
@@ -2356,6 +2356,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+
+      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      int current_cost = navigate.Cost(m_Actor.Location.Position);
+      if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
+        return BehaviorUseExit(BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      }
 
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
       ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);

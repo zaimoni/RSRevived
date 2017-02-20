@@ -79,14 +79,14 @@ namespace Zaimoni.Data
             _blacklist.Remove(src);
         }
 
-		public void GoalDistance(T goal, int max_depth, T start)
+		public void GoalDistance(T goal, T start, int max_depth=int.MaxValue)
 		{
 		  T[] tmp = { goal };
-		  GoalDistance(tmp,max_depth,start);
+		  GoalDistance(tmp,start);
 		}
 
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
-        public void GoalDistance(IEnumerable<T> goals, int max_depth, T start)
+        public void GoalDistance(IEnumerable<T> goals, T start, int max_depth=int.MaxValue)
         {
             Contract.Requires(null != start);
             Contract.Requires(null != goals);
@@ -115,7 +115,7 @@ namespace Zaimoni.Data
             }
         }
 
-        public void GoalDistance(IEnumerable<T> goals, int max_depth, IEnumerable<T> start)
+        public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_depth = int.MaxValue)
         {
             Contract.Requires(null != start);
             Contract.Requires(null != goals);
