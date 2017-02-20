@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 namespace Zaimoni.Data
 {
     /// <summary>
-    /// basic floodfill pathfinder
+    /// basic floodfill pathfinder.  Morally a Dijkstra mapper.
     /// </summary>
     /// <typeparam name="T">The coordinate type of the space the path is through; for Map, Point.</typeparam>
     public class FloodfillPathfinder<T>
@@ -97,7 +97,7 @@ namespace Zaimoni.Data
             HashSet<T> now = new HashSet<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
             foreach(T tmp in now) _map[tmp] = 0;
 
-            while(0<now.Count && 0 < max_depth--) {
+            while(0<now.Count && !_map.ContainsKey(start) && 0 < max_depth--) {
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
                 int dist = _map[tmp];
@@ -106,6 +106,34 @@ namespace Zaimoni.Data
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
                   int new_dist = dist+tmp2.Value;
+                  if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
+                  _map[tmp2.Key] = new_dist;
+                  next.Add(tmp2.Key);
+                } 
+              }
+              now = next;
+            }
+        }
+
+        public void ReviseGoalDistance(T pos, int new_cost, T start)
+        {
+            if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
+            int current_start_cost = (_map.ContainsKey(start) ? _map[start] : int.MaxValue);
+            if (current_start_cost <= new_cost) return;   // we assume the _forward cost function is not pathological i.e. all costs positive
+          
+            HashSet<T> now = new HashSet<T>(){pos};
+            _map[pos] = new_cost;
+          
+            while(0<now.Count && !now.Contains(start)) {
+              HashSet<T> next = new HashSet<T>();
+              foreach(T tmp in now) {
+                int dist = _map[tmp];
+                Dictionary<T, int> candidates = _forward(tmp);
+                foreach (KeyValuePair<T, int> tmp2 in candidates) {
+                  if (_blacklist.Contains(tmp2.Key)) continue;
+                  if (!_inDomain(tmp2.Key)) continue;
+                  int new_dist = dist+tmp2.Value;
+                  if (current_start_cost <= new_dist) continue;
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
