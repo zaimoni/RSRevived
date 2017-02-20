@@ -118,7 +118,7 @@ namespace Zaimoni.Data
         public void ReviseGoalDistance(T pos, int new_cost, T start)
         {
             if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
-            int current_start_cost = (_map.ContainsKey(start) ? _map[start] : int.MaxValue);
+            int current_start_cost = Cost(start);
             if (current_start_cost <= new_cost) return;   // we assume the _forward cost function is not pathological i.e. all costs positive
           
             HashSet<T> now = new HashSet<T>(){pos};
@@ -145,11 +145,9 @@ namespace Zaimoni.Data
 
         public IEnumerable<T> Domain { get { return _map.Keys; } }
 
-        public int Cost(T current_pos)
+        public int Cost(T pos)
         {
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
-//          Contract.EndContractBlock();
-            return _map[current_pos];
+            return _map.ContainsKey(pos) ? _map[pos] : int.MaxValue;
         }
 
         public Dictionary<T, int> Approach(T current_pos) {

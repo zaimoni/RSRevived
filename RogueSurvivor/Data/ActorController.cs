@@ -60,6 +60,15 @@ namespace djack.RogueSurvivor.Data
     public List<Gameplay.GameItems.IDs> WhatHaveISeen() { return ItemMemory?.WhatHaveISeen(); }
     public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
 
+    public HashSet<Point> WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
+      HashSet<Point> ret = new HashSet<Point>();
+      foreach(Gameplay.GameItems.IDs it in src) {
+        Dictionary<Location, int> tmp = WhereIs(it);
+        tmp.OnlyIf(loc=>loc.Map == map);
+        ret.UnionWith(tmp.Keys.Select(loc => loc.Position));
+      }
+      return ret;
+    }
 
     public abstract List<Percept> UpdateSensors();
 

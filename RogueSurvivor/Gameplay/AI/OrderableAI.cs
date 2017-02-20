@@ -2310,37 +2310,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
-      HashSet<Point> where_to_go = new HashSet<Point>();
-      HashSet<Map> away_maps = new HashSet<Map>();
-      foreach(GameItems.IDs it in critical) {
-        Dictionary<Location, int> tmp = WhereIs(it);
-        // no cross-district finding for now
-        tmp.OnlyIf(loc=>loc.Map.District == m_Actor.Location.Map.District);
-        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) tmp.OnlyIf(loc=>loc.Map == m_Actor.Location.Map);
-        foreach(Location loc in tmp.Keys) {
-          if (loc.Map == m_Actor.Location.Map) {
-            where_to_go.Add(loc.Position);
-            continue;
-          }
-          away_maps.Add(loc.Map);
-        }
-      }  
+      // bootstrap the current map
+      HashSet<Point> where_to_go = WhereIs(critical, m_Actor.Location.Map);
+      if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
+        if (0 >= where_to_go.Count) return null;
+        return BehaviorHastyNavigate(where_to_go);
+      }
 
-      if (0<away_maps.Count) {
-        Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
-        HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
-        possible_destinations.IntersectWith(away_maps);
-        if (0<possible_destinations.Count) {
-          valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
-          if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
-            return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-          }
-          where_to_go.UnionWith(valid_exits.Keys);
+      FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, int.MaxValue,m_Actor.Location.Position);
+
+      // no cross-district pathfinding
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
+        MapObject mapObjectAt = exit.Location.MapObject;
+        if (null == mapObjectAt) return true;
+        if (mapObjectAt.IsCouch) return true;   // XXX probably not if someone's sleeping on it
+        if (!mapObjectAt.IsJumpable) return false;
+        return m_Actor.CanJump;
+      });
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+
+      foreach(Map m in possible_destinations) {
+        HashSet<Point> remote_where_to_go = WhereIs(critical, m);
+        if (0 >= remote_where_to_go.Count) continue;
+        Dictionary<Point,Exit> exits_for_m = new Dictionary<Point,Exit>(valid_exits);
+        exits_for_m.OnlyIf(exit => exit.ToMap == m);
+        foreach(KeyValuePair<Point, Exit> tmp in exits_for_m) {
+          FloodfillPathfinder<Point> remote_navigate = m.PathfindSteps(m_Actor);
+          remote_navigate.GoalDistance(remote_where_to_go,int.MaxValue,tmp.Value.Location.Position);
+          int cost = remote_navigate.Cost(tmp.Value.Location.Position);
+          if (int.MaxValue == cost) continue;   // not in domain
+          navigate.ReviseGoalDistance(tmp.Key,cost+1,m_Actor.Location.Position);
         }
       }
 
-      if (0>=where_to_go.Count) return null;
-      return BehaviorNavigate(where_to_go);
+      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+      ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);
+      ActionMoveStep test = ret as ActionMoveStep;
+      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      return ret;
     }
 
     protected bool NeedsLight()
