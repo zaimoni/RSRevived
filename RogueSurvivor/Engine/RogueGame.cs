@@ -8255,6 +8255,13 @@ namespace djack.RogueSurvivor.Engine
     // fn is the UI message
     private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Predicate<Actor> pred)
     {
+      if (null!=fn) {
+        if (m_Player.Location.Map.District==target.Location.Map.District) {
+          m_Player.MessagePlayerOnce(fn,pred);
+        } else {
+          target.MessagePlayerOnce(fn, pred);
+        }
+      }
       Faction faction = target.Faction;
       foreach (Map map in target.Location.Map.District.Maps) {
         foreach (Actor actor in map.Actors) {
@@ -8262,13 +8269,6 @@ namespace djack.RogueSurvivor.Engine
             aggressor.MarkAsAgressorOf(actor);
             actor.MarkAsSelfDefenceFrom(aggressor);
           }
-        }
-      }
-      if (null!=fn) {
-        if (m_Player.Location.Map.District==target.Location.Map.District) {
-          m_Player.MessagePlayerOnce(fn,pred);
-        } else {
-          target.MessagePlayerOnce(fn, pred);
         }
       }
     }
