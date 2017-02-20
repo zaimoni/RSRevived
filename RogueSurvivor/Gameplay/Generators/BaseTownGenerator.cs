@@ -2148,7 +2148,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Point point2 = new Point(underground.Width / 2, underground.Height / 2);
       AddExit(underground, point2, surfaceMap, point1, GameImages.DECO_STAIRS_UP, true);
       AddExit(surfaceMap, point1, underground, point2, GameImages.DECO_STAIRS_DOWN, true);
-      ForEachAdjacent(underground, point2.X, point2.Y, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
+      underground.ForEachAdjacent(point2, (Action<Point>) (pt => underground.AddDecorationAt(GameImages.DECO_CHAR_FLOOR_LOGO, pt)));
       Rectangle rect1 = Rectangle.FromLTRB(0, 0, underground.Width / 2 - 1, underground.Height / 2 - 1);
       Rectangle rect2 = Rectangle.FromLTRB(underground.Width / 2 + 1 + 1, 0, underground.Width, rect1.Bottom);
       Rectangle rect3 = Rectangle.FromLTRB(0, underground.Height / 2 + 1 + 1, rect1.Right, underground.Height);
@@ -2320,12 +2320,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DoForEachTile(wallsRect, (Action<Point>) (pt =>
       {
         if (!(map.GetMapObjectAt(pt) is DoorWindow)) return;
-        map.ForEachAdjacentInMap(pt, (Action<Point>) (ptAdj =>
+        map.ForEachAdjacent(pt, (Action<Point>) (ptAdj =>
         {
           Tile tileAt = map.GetTileAt(ptAdj);
           if (tileAt.Model.IsWalkable) return;
           tileAt.RemoveAllDecorations();
-          tileAt.AddDecoration("Tiles\\Decoration\\power_sign_big");
+          tileAt.AddDecoration(GameImages.DECO_POWER_SIGN_BIG);
         }));
       }));
       DoForEachTile(roomRect, (Action<Point>) (pt =>

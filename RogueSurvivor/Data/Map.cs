@@ -1027,14 +1027,18 @@ namespace djack.RogueSurvivor.Data
       return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
     }
 
-    public void ForEachAdjacentInMap(Point position, Action<Point> fn)
+    public void ForEachAdjacent(Point position, Action<Point> fn)
     {
       Contract.Requires(null != fn);
       if (!IsInBounds(position)) return;
-      foreach (Direction direction in Direction.COMPASS) {
-        Point p = position + direction;
+      foreach (Point p in Direction.COMPASS.Select(d => position+d)) {
         if (IsInBounds(p)) fn(p);
       }
+    }
+
+    public void ForEachAdjacent(int x, int y, Action<Point> fn)
+    {
+      ForEachAdjacent(new Point(x,y),fn);
     }
 
     public Point? FindFirstInMap(Predicate<Point> predicateFn)

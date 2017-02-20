@@ -289,15 +289,6 @@ namespace djack.RogueSurvivor.Engine
     }
 
 #region Predicates and Actions
-    public void ForEachAdjacent(Map map, int x, int y, Action<Point> doFn)
-    {
-      Point point = new Point(x, y);
-      foreach (Direction direction in Direction.COMPASS) {
-        Point p = point + direction;
-        if (map.IsInBounds(p)) doFn(p);
-      }
-    }
-
     public int CountForEachAdjacent(Map map, int x, int y, Func<Point, bool> checkFn)
     {
       int num = 0;

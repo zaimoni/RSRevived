@@ -7881,7 +7881,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       bool visible = ForceVisibleToPlayer(actor);
-      map.ForEachAdjacentInMap(position, (Action<Point>) (adj =>
+      map.ForEachAdjacent(position, (Action<Point>) (adj =>
       {
         Actor actorAt = map.GetActorAt(adj);
         if (actorAt == null || !actorAt.Model.Abilities.IsUndead || (!actorAt.IsEnemyOf(actor) || m_Rules.ZGrabChance(actorAt, actor) == 0) || !m_Rules.RollChance(m_Rules.ZGrabChance(actorAt, actor)))
