@@ -1635,15 +1635,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret.Any() ? ret.ToList() : null;
     }
 
-    protected ActionDropItem BehaviorDropItem(Item it)
+    protected ActorAction BehaviorDropItem(Item it)
     {
       if (it == null) return null;
       if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
-      MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);
+      MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);    // XXX can be called from simulation thread
+
+      List<Point> has_container = new List<Point>();
+      foreach(Point pos in Direction.COMPASS.Select(d => m_Actor.Location.Position+d)) {
+        if (!m_Actor.Location.Map.IsInBounds(pos)) continue;
+        MapObject container = m_Actor.Location.Map.GetMapObjectAt(pos);
+        if (null == container) continue;
+        if (!container.IsContainer) continue;
+        Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(pos);
+        if (null != itemsAt)
+          {
+          if (itemsAt.CountItems+1 >= itemsAt.MaxCapacity) continue; // practical consideration
+#if DEBUG
+          if (itemsAt.IsFull) throw new InvalidOperationException("illegal put into container attempted");
+#endif
+          }
+#if DEBUG
+        if (!RogueForm.Game.Rules.CanActorPutItemIntoContainer(m_Actor, pos)) throw new InvalidOperationException("illegal put into container attempted");
+#endif
+        has_container.Add(pos);
+      }
+      if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, has_container[RogueForm.Game.Rules.Roll(0, has_container.Count)]);
+
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
-    protected ActionDropItem BehaviorDropUselessItem()
+    protected ActorAction BehaviorDropUselessItem()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item it in m_Actor.Inventory.Items) {

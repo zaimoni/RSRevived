@@ -148,6 +148,7 @@
   <ItemGroup>
     <Compile Include="Data\BatteryPowered.cs" />
     <Compile Include="Data\ThreatTracking.cs" />
+    <Compile Include="Engine\Actions\ActionPutInContainer.cs" />
     <Compile Include="Engine\WAVSoundManager.cs" />
     <Compile Include="RogueForm.cs">
       <SubType>Form</SubType>
