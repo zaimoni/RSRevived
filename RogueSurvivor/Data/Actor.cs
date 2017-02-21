@@ -594,7 +594,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
-        if ("Cop David Cordell"==Name && 7==Inventory.CountItems) return true;
         return false;
       }
     }
@@ -1903,7 +1902,8 @@ namespace djack.RogueSurvivor.Data
       List<ItemFood> tmp = Inventory.GetItemsByType<ItemFood>();
       if (null == tmp) return false;
       int turnCounter = Location.Map.LocalTime.TurnCounter;
-      int num = 0;
+//    int num = 0;
+      int num = m_FoodPoints-FOOD_HUNGRY_LEVEL;
       foreach (ItemFood tmpFood in tmp) {
         num += tmpFood.NutritionAt(turnCounter);
         if (num >= nutritionNeed) return true;
