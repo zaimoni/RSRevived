@@ -2389,8 +2389,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ThreatTracking threats = m_Actor.Threats;
           LocationSet sights_to_see = m_Actor.InterestingLocs;
           int no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
-          HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor, m_Actor.Location, no_light_range);
-          HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor, m_Actor.Location, no_light_range+3);
+          HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range);
+          HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor.Location, no_light_range+3);
           danger_point_FOV.ExceptWith(no_light_FOV);
           if (null!=threats) {
             HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map);

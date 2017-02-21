@@ -11,7 +11,7 @@ namespace Zaimoni.Data
       private readonly Dictionary<int, Dictionary<K,V> > _map = new Dictionary<int, Dictionary<K, V>>();
       private int _now = 0;
 
-      public void Expire(int t0) { _map.OnlyIf(t => t > t0); }
+      public bool Expire(int t0) { _map.OnlyIf(t => t > t0); return 0 >= _map.Count; }
       public void Now(int t0) {
         if (!_map.ContainsKey(t0)) _map[t0] = new Dictionary<K, V>();
         _now = t0;

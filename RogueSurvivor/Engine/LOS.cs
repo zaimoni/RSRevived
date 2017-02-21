@@ -16,6 +16,18 @@ namespace djack.RogueSurvivor.Engine
 {
   internal static class LOS
   {
+    // FOV cache subsystem -- this is to enable removing FOV data from the savefile.
+    // 0.9.9 unstable 2017-02-17 had a measured load time of over 3 minutes 30 seconds at turn 0, and one minute 45 seconds at turn 90.
+    // at that version, the game seems to run perfectly fast once loaded (on the development machine) so trading speed of the game for speed of loading
+    // makes sense.
+    private static readonly Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>>();
+
+    public static void Expire(Map m, int t0) { if (FOVcache[m].Expire(t0)) FOVcache.Remove(m); }
+    public static void Now(Map map, int t0) { 
+      if (!FOVcache.ContainsKey(map)) FOVcache[map] = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
+      FOVcache[map].Now(t0); 
+    }
+
 #if ANGBAND
 #else
     private static bool AsymetricBresenhamTrace(int maxSteps, Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
@@ -73,7 +85,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
 #if ANGBAND
-    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
+        private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
@@ -219,9 +231,9 @@ namespace djack.RogueSurvivor.Engine
             }));
       return fireLineClear;
 #endif
-        }
+    }
 
-        public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
+    public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
@@ -274,10 +286,16 @@ namespace djack.RogueSurvivor.Engine
 
     // To cache FOV centrally, we would have to be able to invalidate on change of mapobject position or transparency reliably
     // and also ditch the cache when it got "old"
-	// note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
-    public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc, int maxRange)
+    // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
+    public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
+#if FAIL
+      HashSet<Point> visibleSet
+      if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),visibleSet) return visibleSet;
+      visibleSet = new HashSet<Point>();
+#else
       HashSet<Point> visibleSet = new HashSet<Point>();
+#endif
       Point position = a_loc.Position;
       Map map = a_loc.Map;
       int x1 = position.X - maxRange;
@@ -321,12 +339,15 @@ namespace djack.RogueSurvivor.Engine
         if (num >= 3) pointList2.Add(point2);
       }
       visibleSet.UnionWith(pointList2);
+#if FAIL
+      FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),visibleSet);
+#endif
       return visibleSet;
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)
     {
-      return ComputeFOVFor(actor,a_loc, actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather));
+      return ComputeFOVFor(a_loc, actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather));
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor)
