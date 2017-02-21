@@ -594,6 +594,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
+        if ("Cop David Cordell"==Name && 7==Inventory.CountItems) return true;
         return false;
       }
     }
@@ -799,6 +800,19 @@ namespace djack.RogueSurvivor.Data
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
     }
 
+    public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor target = null)
+    {
+      Attack baseAttack = model.BaseMeleeAttack(Sheet);
+      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      if (target != null && target.Model.Abilities.IsUndead)
+        num4 += DamageBonusVsUndeads;
+      float num5 = (float)baseAttack.HitValue + (float) num3;
+      if (IsExhausted) num5 /= 2f;
+      else if (IsSleepy) num5 *= 0.75f;
+      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
+    }
+
     public Attack UnarmedMeleeAttack(Actor target=null)
     {
       int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
@@ -825,7 +839,7 @@ namespace djack.RogueSurvivor.Data
       ItemMeleeWeapon itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         if (fn == null || fn(obj)) {
-          int num2 = (obj.Model as ItemMeleeWeaponModel).Attack.Rating;
+          int num2 = MeleeWeaponAttack(obj.Model as ItemMeleeWeaponModel).Rating;    // XXX should disallow martial arts bonus
           if (num2 <= martial_arts_rating || num2 <= num1) continue;
           num1 = num2;
           itemMeleeWeapon1 = obj;

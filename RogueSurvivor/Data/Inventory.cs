@@ -43,7 +43,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Inventory(int maxCapacity)
+    // for debugging
+    public Item Slot0 { get { return this[0]; } }
+    public Item Slot1 { get { return this[1]; } }
+    public Item Slot2 { get { return this[2]; } }
+    public Item Slot3 { get { return this[3]; } }
+    public Item Slot4 { get { return this[4]; } }
+    public Item Slot5 { get { return this[5]; } }
+    public Item Slot6 { get { return this[6]; } }
+    public Item Slot7 { get { return this[7]; } }
+    public Item Slot8 { get { return this[8]; } }
+    public Item Slot9 { get { return this[9]; } }
+
+        public Inventory(int maxCapacity)
     {
       Contract.Requires(0 <= maxCapacity);
       MaxCapacity = maxCapacity;
