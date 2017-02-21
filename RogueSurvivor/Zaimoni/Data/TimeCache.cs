@@ -41,5 +41,10 @@ namespace Zaimoni.Data
           x.Value.Remove(key);
         }
       }
+
+      public void Validate(Predicate<V> fn)
+      {
+        _map[_now].OnlyIf(fn);
+      }
     }
 }

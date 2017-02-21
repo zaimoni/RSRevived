@@ -75,17 +75,17 @@ namespace djack.RogueSurvivor.Data
         return m_Location;
       }
       set {
+        InvalidateLOS();
         m_Location = value;
+        InvalidateLOS();
       }
     }
 
     public virtual bool IsTransparent {
       get {
-        if (m_FireState == MapObject.Fire.ONFIRE)
-          return false;
-        if (m_BreakState == MapObject.Break.BROKEN || m_FireState == MapObject.Fire.ASHES)
-          return true;
-        return GetFlag(MapObject.Flags.IS_MATERIAL_TRANSPARENT);
+        if (Fire.ONFIRE == m_FireState) return false;
+        if (m_BreakState == Break.BROKEN || m_FireState == Fire.ASHES) return true;
+        return GetFlag(Flags.IS_MATERIAL_TRANSPARENT);
       }
     }
 
@@ -146,12 +146,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public MapObject.Break BreakState {
+    public Break BreakState {
       get {
         return m_BreakState;
       }
-      set {
+      set { // Cf IsTransparent which affects LOS calculations
+        Break old = m_BreakState;
         m_BreakState = value;
+        if ((Break.BROKEN == old)!=(Break.BROKEN == value)) InvalidateLOS();
       }
     }
 
@@ -202,36 +204,36 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsFlammable
-    {
-      get
-      {
-        if (m_FireState != MapObject.Fire.ONFIRE)
-          return m_FireState == MapObject.Fire.BURNABLE;
+    public bool IsFlammable {
+      get {
+        if (m_FireState != Fire.ONFIRE)
+          return m_FireState == Fire.BURNABLE;
         return true;
       }
     }
 
     public bool IsOnFire {
       get {
-        return m_FireState == MapObject.Fire.ONFIRE;
+        return m_FireState == Fire.ONFIRE;
       }
     }
 
-    public bool IsBurntToAshes
-    {
-      get
-      {
-        return m_FireState == MapObject.Fire.ASHES;
+    public bool IsBurntToAshes {
+      get {
+        return m_FireState == Fire.ASHES;
       }
     }
 
-    public MapObject.Fire FireState {
+    public Fire FireState {
       get {
         return m_FireState;
       }
-      set {
+      set { // cf IsTransparent which affects LOS calculations
+        Fire old = m_FireState;
         m_FireState = value;
+        if (   (Fire.ONFIRE == old) != (Fire.ONFIRE == value)
+            || (Fire.ASHES == old)  != (Fire.ASHES == value))
+          InvalidateLOS();
       }
     }
 
@@ -265,6 +267,11 @@ namespace djack.RogueSurvivor.Data
       m_FireState = burnable;
       if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
+    }
+
+    protected void InvalidateLOS() 
+    {
+      if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
 
     private string ReasonCantPushTo(Point toPos)

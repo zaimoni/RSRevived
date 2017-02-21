@@ -1205,6 +1205,7 @@ namespace djack.RogueSurvivor.Data
 
     private void ReconstructAuxiliaryFields()
     {
+      Engine.LOS.Now(this);
       m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList)
         m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);

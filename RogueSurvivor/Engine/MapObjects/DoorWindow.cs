@@ -69,11 +69,14 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public void Barricade(int delta)
     {
+      int old = BarricadePoints;
       BarricadePoints += delta;
+      if ((0 < old)!=(0 < BarricadePoints)) InvalidateLOS();
     }
 
     private void _SetState(int newState)
-    {
+    { // cf IsTransparent
+      if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
       switch (newState) {
         case STATE_CLOSED:
           ImageID = m_ClosedImageID;

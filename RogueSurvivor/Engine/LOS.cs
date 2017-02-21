@@ -28,6 +28,11 @@ namespace djack.RogueSurvivor.Engine
       FOVcache[map].Now(map.LocalTime.TurnCounter); 
     }
 
+    public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
+      if (FOVcache.ContainsKey(map)) FOVcache[map].Validate(fn);
+    }
+
+
 #if ANGBAND
 #else
     private static bool AsymetricBresenhamTrace(int maxSteps, Map map, int xFrom, int yFrom, int xTo, int yTo, List<Point> line, Func<int, int, bool> fn)
