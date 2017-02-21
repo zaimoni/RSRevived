@@ -717,7 +717,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return obj1;
     }
 
-    // forked from BaseAI::BehaviorEquipWeapon
+    private ActorAction BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
+    {
+      if (en.HitPoints>tmp_attack.DamageValue/2) return null;
+      ActorAction tmpAction = null;
+      // can one-shot
+      if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
+        tmpAction = BehaviorMeleeAttack(en);
+        if (null != tmpAction) return tmpAction;
+      }
+      if (one_on_one && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
+        tmpAction = BehaviorMeleeAttack(en);
+        if (null != tmpAction) return tmpAction;
+      }
+      return null;
+    }
+
+        // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
       Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
@@ -736,22 +752,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              Attack tmp_attack = m_Actor.HypotheticalMeleeAttack((tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet),en);
-              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
-              // can one-shot
-              if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
-                tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) {
-                  if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
-                  return tmpAction;
-                }
-              }
-              if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
-                tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) {
-                  if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
-                  return tmpAction;
-                }
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.HypotheticalMeleeAttack((tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet), en),null==immediate_threat || (1==immediate_threat.Count && immediate_threat.Contains(en)));
+              if (null != tmpAction) {
+                if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
+                return tmpAction;
               }
             }
           } else { // also check for no-weapon one-shotting
@@ -759,27 +763,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
               Attack tmp_attack = m_Actor.UnarmedMeleeAttack(en);
-              if (en.HitPoints>tmp_attack.DamageValue/2) continue;
-              // can one-shot
-              if (!m_Actor.WillTireAfter(Rules.STAMINA_COST_MELEE_ATTACK + tmp_attack.StaminaPenalty)) {    // safe
-                tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) {
-                  if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
-                    Item tmp_w = m_Actor.GetEquippedWeapon();
-                    if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
-                  }
-                  return tmpAction;
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == immediate_threat || (1 == immediate_threat.Count && immediate_threat.Contains(en)));
+              if (null != tmpAction) {
+                if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
+                  Item tmp_w = m_Actor.GetEquippedWeapon();
+                  if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
                 }
-              }
-              if (1==enemies.Count && tmp_attack.HitValue>=2*en.CurrentDefence.Value) { // probably ok
-                tmpAction = BehaviorMeleeAttack(en);
-                if (null != tmpAction) {
-                  if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
-                    Item tmp_w = m_Actor.GetEquippedWeapon();
-                    if (null != tmp_w) game.DoUnequipItem(m_Actor,tmp_w);
-                  }
-                  return tmpAction;
-                }
+                return tmpAction;
               }
             }
           }
