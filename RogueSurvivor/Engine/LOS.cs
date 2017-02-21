@@ -275,12 +275,11 @@ namespace djack.RogueSurvivor.Engine
     // To cache FOV centrally, we would have to be able to invalidate on change of mapobject position or transparency reliably
     // and also ditch the cache when it got "old"
 	// note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
-    public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)
+    public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc, int maxRange)
     {
       HashSet<Point> visibleSet = new HashSet<Point>();
       Point position = a_loc.Position;
       Map map = a_loc.Map;
-      int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
       int x1 = position.X - maxRange;
       int x2 = position.X + maxRange;
       int y1 = position.Y - maxRange;
@@ -323,6 +322,11 @@ namespace djack.RogueSurvivor.Engine
       }
       visibleSet.UnionWith(pointList2);
       return visibleSet;
+    }
+
+    public static HashSet<Point> ComputeFOVFor(Actor actor, Location a_loc)
+    {
+      return ComputeFOVFor(actor,a_loc, actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather));
     }
 
     public static HashSet<Point> ComputeFOVFor(Actor actor)

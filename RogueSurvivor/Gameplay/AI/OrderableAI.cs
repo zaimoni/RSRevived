@@ -2384,18 +2384,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
         default:
 #endif
           if (!m_Actor.Location.Map.LocalTime.IsNight) return false;
-          // XXX should base lighting on threat tracking/tourism
-#if FAIL
+
+          // use threat tracking/tourism when available
           ThreatTracking threats = m_Actor.Threats;
           LocationSet sights_to_see = m_Actor.InterestingLocs;
           int no_light_range = m_Actor.FOVrangeNoFlashlight(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
-          HashSet<Point> no_light_FOV = ComputeFOVFor(m_Actor, m_Actor.Location.Map.LocalTime, Weather weather, Location a_loc, no_light_range);
-          HashSet<Point> danger_point_FOV = ComputeFOVFor(Actor actor, WorldTime time, Weather weather, Location a_loc, no_light_range+3);
+          HashSet<Point> no_light_FOV = LOS.ComputeFOVFor(m_Actor, m_Actor.Location, no_light_range);
+          HashSet<Point> danger_point_FOV = LOS.ComputeFOVFor(m_Actor, m_Actor.Location, no_light_range+3);
+          danger_point_FOV.ExceptWith(no_light_FOV);
           if (null!=threats) {
+            HashSet<Point> tainted = threats.ThreatWhere(m_Actor.Location.Map);
+            tainted.IntersectWith(danger_point_FOV);
+            if (0<tainted.Count) return true;
           }
           if (null!=sights_to_see) {
+            HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
+            tainted.IntersectWith(danger_point_FOV);
+            if (0<tainted.Count) return true;
           }
-#endif
+          if (null!=threats && null!=sights_to_see) return false;
+
+          // resume legacy implementation
           if (Session.Get.World.Weather != Weather.HEAVY_RAIN) return !m_Actor.IsInside;
           return true;
 #if DEBUG
