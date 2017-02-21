@@ -19,30 +19,30 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   [Serializable]
   internal class LOSSensor : Sensor
   {
-    private HashSet<Point> m_FOV;
-    private readonly LOSSensor.SensingFilter m_Filters;
+    private Actor m_Actor=null;
+    private readonly SensingFilter m_Filters;
 
     public HashSet<Point> FOV {
       get {
-//      Contract.Ensures(null!=Contract.Result<HashSet<Point>>());  // final fix for this breaks saveload
-        return m_FOV;
+        return LOS.ComputeFOVFor(m_Actor);
       }
     }
 
-    public LOSSensor.SensingFilter Filters {
+    public SensingFilter Filters {
       get {
         return m_Filters;
       }
     }
 
-    public LOSSensor(LOSSensor.SensingFilter filters)
+    public LOSSensor(SensingFilter filters)
     {
       m_Filters = filters;
     }
 
     public override List<Percept> Sense(Actor actor)
     {
-      m_FOV = LOS.ComputeFOVFor(actor);
+      m_Actor = actor;
+      HashSet<Point> m_FOV = FOV;
       actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);
       int num = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
       List<Percept> perceptList = new List<Percept>();
