@@ -556,6 +556,7 @@ namespace djack.RogueSurvivor.Data
         m_aux_ActorsByPosition.Remove(actor.Location.Position);
       else {
         m_ActorsList.Add(actor);
+        Engine.LOS.Now(this);
         if (actor.IsPlayer) m_aux_Players = null;
       }
       m_aux_ActorsByPosition.Add(position, actor);

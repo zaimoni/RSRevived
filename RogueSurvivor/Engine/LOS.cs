@@ -22,10 +22,10 @@ namespace djack.RogueSurvivor.Engine
     // makes sense.
     private static readonly Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>>();
 
-    public static void Expire(Map m, int t0) { if (FOVcache[m].Expire(t0)) FOVcache.Remove(m); }
-    public static void Now(Map map, int t0) { 
+    public static void Expire(Map m) { if (FOVcache.ContainsKey(m) && FOVcache[m].Expire(m.LocalTime.TurnCounter-2)) FOVcache.Remove(m); }
+    public static void Now(Map map) { 
       if (!FOVcache.ContainsKey(map)) FOVcache[map] = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
-      FOVcache[map].Now(t0); 
+      FOVcache[map].Now(map.LocalTime.TurnCounter); 
     }
 
 #if ANGBAND

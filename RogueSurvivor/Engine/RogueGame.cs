@@ -2863,6 +2863,9 @@ namespace djack.RogueSurvivor.Engine
       bool wasNight = map.LocalTime.IsNight;
       ++map.LocalTime.TurnCounter;
       bool isDay = !map.LocalTime.IsNight;
+
+      if (0 < map.CountActors) LOS.Now(map);
+      LOS.Expire(map);
 #endregion
 #region Check for NPC upgrade
 	  if (wasNight != isDay) return;	// night/day did not end, do not upgrade skills
