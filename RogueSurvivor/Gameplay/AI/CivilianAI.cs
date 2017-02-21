@@ -635,12 +635,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         return tmpAction;
       }
-      if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
-        tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
+      if (!HaveThreatsInCurrentMap() && !HaveTourismInCurrentMap()) { 
+        if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
+          tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "use exit for no good reason");
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "use exit for no good reason");
 #endif
-        if (null != tmpAction) return tmpAction;
+          if (null != tmpAction) return tmpAction;
+        }
       }
       if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
         tmpAction = BehaviorBuildTrap(game);

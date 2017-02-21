@@ -2151,6 +2151,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorHastyNavigate(valid_exits.Keys);
     }
 
+    protected bool HaveThreatsInCurrentMap()
+    {
+      ThreatTracking threats = m_Actor.Threats;
+      if (null == threats) return false;
+      HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+      return 0<tainted.Count;   // XXX could be more efficient?
+    }
+
     protected ActorAction BehaviorHuntDownThreatCurrentMap()
     {
       ThreatTracking threats = m_Actor.Threats;
@@ -2159,6 +2167,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
       if (0<tainted.Count) return BehaviorNavigate(tainted);
       return null;
+    }
+
+    protected bool HaveTourismInCurrentMap()
+    {
+      LocationSet sights_to_see = m_Actor.InterestingLocs;
+      if (null == sights_to_see) return false;
+      HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
+      return 0<tainted.Count;   // XXX could be more efficient?
     }
 
     protected ActorAction BehaviorTourismCurrentMap()
