@@ -94,7 +94,7 @@ namespace Zaimoni.Data
             if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
 
-            HashSet<T> now = new HashSet<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
+            HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
             foreach(T tmp in now) _map[tmp] = 0;
 
             while(0<now.Count && !_map.ContainsKey(start) && 0 < max_depth--) {
@@ -123,7 +123,7 @@ namespace Zaimoni.Data
             if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
 
-            HashSet<T> now = new HashSet<T>(goals.Where(tmp => _blacklist.Contains(tmp) && _inDomain(tmp)));
+            HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
             foreach(T tmp in now) _map[tmp] = 0;
 
             while(0<now.Count && start.Any(pos => !_map.ContainsKey(pos)) && 0 < max_depth--) {
