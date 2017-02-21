@@ -54,14 +54,17 @@ namespace djack.RogueSurvivor.Data
 
     public void Expose() { IsSecret = false; }
 
-    public Lighting Lighting
-    {
-      get {
-        return m_Lighting;
+    public Lighting Lighting { get { return m_Lighting; } }
+    public bool Illuminate(bool on) {
+      Contract.Requires(Lighting.OUTSIDE!=Lighting);
+      if (on) {
+        if (Lighting.LIT==Lighting) return false;
+        m_Lighting = Lighting.LIT;
+        return true;
       }
-      set {
-        m_Lighting = value;
-      }
+      if (Lighting.DARKNESS==Lighting) return false;
+      m_Lighting = Lighting.DARKNESS;
+      return true;
     }
 
     public IEnumerable<Zone> Zones { get { return m_Zones; } }
@@ -93,7 +96,7 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<OdorScent> Scents { get { return m_Scents; } }
 
-    public Map(int seed, string name, District d, int width, int height, bool secret=false)
+    public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
       Contract.Requires(null != name);
       Contract.Requires(0 < width);
@@ -105,7 +108,7 @@ namespace djack.RogueSurvivor.Data
 	  District = d;
       Rect = new Rectangle(0, 0, width, height);
       LocalTime = new WorldTime();
-      Lighting = Lighting.OUTSIDE;
+      m_Lighting = light;
       IsSecret = secret;
       m_TileIDs = new byte[width, height];
       m_IsInside = new byte[width*height-1/8+1];

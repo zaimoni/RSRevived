@@ -13018,8 +13018,7 @@ namespace djack.RogueSurvivor.Engine
       if (map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
         lock (Session.Get) {
           if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
-            if (map.Lighting != Lighting.LIT) {
-              map.Lighting = Lighting.LIT;
+            if (map.Illuminate(true)) {
               if (0 < map.PlayerCount) {
                 ClearMessages();
                 AddMessage(new Data.Message("The Facility lights turn on!", map.LocalTime.TurnCounter, Color.Green));
@@ -13028,8 +13027,7 @@ namespace djack.RogueSurvivor.Engine
               if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY))
                 ShowNewAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY);
             }
-          } else if (map.Lighting != Lighting.DARKNESS) {
-            map.Lighting = Lighting.DARKNESS;
+          } else if (map.Illuminate(false)) {
             if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The Facility lights turn off!", map.LocalTime.TurnCounter, Color.Red));
@@ -13041,8 +13039,7 @@ namespace djack.RogueSurvivor.Engine
       if (map == map.District.SubwayMap) {
         lock (Session.Get) {
           if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
-            if (map.Lighting != Lighting.LIT) {
-              map.Lighting = Lighting.LIT;
+            if (map.Illuminate(true)) {
               if (0 < map.PlayerCount) {
                 ClearMessages();
                 AddMessage(new Data.Message("The station power turns on!", map.LocalTime.TurnCounter, Color.Green));
@@ -13051,14 +13048,13 @@ namespace djack.RogueSurvivor.Engine
               }
               map.OpenAllGates();
             }
-          } else if (map.Lighting != Lighting.DARKNESS) {
+          } else if (map.Illuminate(false)) {
             if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The station power turns off!", map.LocalTime.TurnCounter, Color.Red));
               AddMessage(new Data.Message("You hear the gates closing.", map.LocalTime.TurnCounter, Color.Red));
               RedrawPlayScreen();
             }
-            map.Lighting = Lighting.DARKNESS;
             CloseAllGates(map,"gates");
           }
         }
@@ -13121,21 +13117,21 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoHospitalPowerOn()
     {
-      Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Lighting = Lighting.LIT;
-      Session.Get.UniqueMaps.Hospital_Offices.TheMap.Lighting = Lighting.LIT;
-      Session.Get.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting.LIT;
-      Session.Get.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.LIT;
-      Session.Get.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.LIT;
+      Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Illuminate(true);
+      Session.Get.UniqueMaps.Hospital_Offices.TheMap.Illuminate(true);
+      Session.Get.UniqueMaps.Hospital_Patients.TheMap.Illuminate(true);
+      Session.Get.UniqueMaps.Hospital_Power.TheMap.Illuminate(true);
+      Session.Get.UniqueMaps.Hospital_Storage.TheMap.Illuminate(true);
       Session.Get.UniqueMaps.Hospital_Storage.TheMap.OpenAllGates();    // other hospital maps do not have gates so no-op
     }
 
     private void DoHospitalPowerOff()
     {
-      Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Lighting = Lighting.DARKNESS;
-      Session.Get.UniqueMaps.Hospital_Offices.TheMap.Lighting = Lighting.DARKNESS;
-      Session.Get.UniqueMaps.Hospital_Patients.TheMap.Lighting = Lighting.DARKNESS;
-      Session.Get.UniqueMaps.Hospital_Power.TheMap.Lighting = Lighting.DARKNESS;
-      Session.Get.UniqueMaps.Hospital_Storage.TheMap.Lighting = Lighting.DARKNESS;
+      Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Illuminate(false);
+      Session.Get.UniqueMaps.Hospital_Offices.TheMap.Illuminate(false);
+      Session.Get.UniqueMaps.Hospital_Patients.TheMap.Illuminate(false);
+      Session.Get.UniqueMaps.Hospital_Power.TheMap.Illuminate(false);
+      Session.Get.UniqueMaps.Hospital_Storage.TheMap.Illuminate(false);
       Map theMap = Session.Get.UniqueMaps.Hospital_Storage.TheMap;
       CloseAllGates(Session.Get.UniqueMaps.Hospital_Storage.TheMap,"gate");
     }
