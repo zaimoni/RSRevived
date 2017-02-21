@@ -2099,9 +2099,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Map GenerateUniqueMap_CHARUnderground(Map surfaceMap, Zone officeZone)
     {
       Contract.Requires(null != surfaceMap);
-      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceMap.District.WorldPosition.X, surfaceMap.District.WorldPosition.Y), surfaceMap.District, 100, 100) {
+      Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceMap.District.WorldPosition.X, surfaceMap.District.WorldPosition.Y), surfaceMap.District, 100, 100, true) {
         Lighting = Lighting.DARKNESS,
-        IsSecret = true,
       };
       TileFill(underground, m_Game.GameTiles.FLOOR_OFFICE, true);
       TileRectangle(underground, m_Game.GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));

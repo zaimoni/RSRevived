@@ -12564,7 +12564,7 @@ namespace djack.RogueSurvivor.Engine
           ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
           Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
           Session.Get.CHARUndergroundFacility_Activated = true;
-          Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.IsSecret = false;
+          Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Expose();
           Map surfaceMap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap;
 		  // XXX reduced to integrity checking by Exit constructor adjustment
           Point? local_0 = surfaceMap.FindFirstInMap((Predicate<Point>) (pt =>
