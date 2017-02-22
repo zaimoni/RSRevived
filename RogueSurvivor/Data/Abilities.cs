@@ -64,13 +64,15 @@ namespace djack.RogueSurvivor.Data
 
     public bool AI_NotInterestedInRangedWeapons { get { return Flags.NONE != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); } }
 
-    public bool ZombieAI_AssaultBreakables { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_ASSAULT_BREAKABLES); } }
+    public bool ZombieAI_AssaultBreakables { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_ASSAULT_BREAKABLES); } }  // XXX dead flag
 
     public bool ZombieAI_Explore { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_EXPLORE); } }
 
     public Abilities(Flags in_flags)
     {
       Contract.Requires((Flags.NONE != (in_flags & Flags.HAS_INVENTORY)) || (Flags.NONE == (in_flags & Flags.CAN_TRADE)));
+      Contract.Requires((Flags.NONE != (in_flags & Flags.UNDEAD)) || (Flags.NONE == (in_flags & Flags.UNDEAD_MASTER)));
+      Contract.Requires((Flags.NONE != (in_flags & Flags.CAN_JUMP)) || (Flags.NONE == (in_flags & Flags.CAN_JUMP_STUMBLE)));
       m_Flags = in_flags;
     }
 
