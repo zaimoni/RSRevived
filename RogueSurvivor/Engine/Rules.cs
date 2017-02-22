@@ -886,27 +886,6 @@ namespace djack.RogueSurvivor.Engine
       return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location.Position, murderer.Location.Position);
     }
 
-    public float ComputeMapPowerRatio(Map map)
-    {
-      int num1;
-      int num2 = num1 = 0;
-      foreach (MapObject mapObject in map.MapObjects)
-      {
-        PowerGenerator powerGenerator = mapObject as PowerGenerator;
-        if (powerGenerator != null)
-        {
-          if (powerGenerator.IsOn)
-            ++num1;
-          else
-            ++num2;
-        }
-      }
-      int num3 = num1 + num2;
-      if (num3 == 0)
-        return 0.0f;
-      return (float) num1 / (float) num3;
-    }
-
     public int BlastDamage(int distance, BlastAttack attack)
     {
       if (distance < 0 || distance > attack.Radius)

@@ -7109,8 +7109,7 @@ namespace djack.RogueSurvivor.Engine
           stringList.Add("Currently ON.");
         else
           stringList.Add("Currently OFF.");
-        float mapPowerRatio = m_Rules.ComputeMapPowerRatio(obj.Location.Map);
-        stringList.Add(string.Format("The power gauge reads {0}%.", (object) (int) (100.0 * (double) mapPowerRatio)));
+        stringList.Add(string.Format("The power gauge reads {0}%.", (object) (int) (100.0 * obj.Location.Map.PowerRatio)));
       } else if (obj is Board) {
         stringList.Add("The text reads : ");
         stringList.AddRange((obj as Board).Text);
@@ -13017,7 +13016,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = location.Map;
       if (map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
         lock (Session.Get) {
-          if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
+          if (1.0 <= map.PowerRatio) {
             if (map.Illuminate(true)) {
               if (0 < map.PlayerCount) {
                 ClearMessages();
@@ -13038,7 +13037,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (map == map.District.SubwayMap) {
         lock (Session.Get) {
-          if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
+          if (1.0 <= map.PowerRatio) {
             if (map.Illuminate(true)) {
               if (0 < map.PlayerCount) {
                 ClearMessages();
@@ -13061,7 +13060,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) {
         lock (Session.Get) {
-          if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
+          if (1.0 <= map.PowerRatio) {
             if (0 < map.PlayerCount) {
               ClearMessages();
               AddMessage(new Data.Message("The cells are opening.", map.LocalTime.TurnCounter, Color.Green));
@@ -13081,7 +13080,7 @@ namespace djack.RogueSurvivor.Engine
       // XXX multi-PC, or NPC operation of the generators, needs more work for the messaging to work here
       if (map != Session.Get.UniqueMaps.Hospital_Power.TheMap) return;
       lock (Session.Get) {
-        if ((double)m_Rules.ComputeMapPowerRatio(map) >= 1.0) {
+        if (1.0 <= map.PowerRatio) {
           if (0 < map.PlayerCount) {
             ClearMessages();
             AddMessage(new Data.Message("The lights turn on and you hear something opening upstairs.", map.LocalTime.TurnCounter, Color.Green));

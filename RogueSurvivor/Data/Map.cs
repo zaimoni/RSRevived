@@ -48,7 +48,9 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     [NonSerialized]
-    private List<Actor> m_aux_Players;
+    private List<Actor> m_aux_Players = null;
+    [NonSerialized]
+    private List<Engine.MapObjects.PowerGenerator> cache_PowerGenerators = null;
 
     public bool IsSecret { get; private set; }
 
@@ -737,7 +739,32 @@ namespace djack.RogueSurvivor.Data
         mapObject.ImageID = Gameplay.GameImages.OBJ_GATE_OPEN;
       }
     }
- 
+
+    private void regen_PowerGenerators()
+    {
+      cache_PowerGenerators = MapObjects.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList();
+    }
+
+    public IEnumerable<Engine.MapObjects.PowerGenerator> PowerGenerators {
+      get {
+        if (null == cache_PowerGenerators) regen_PowerGenerators();
+        return cache_PowerGenerators;
+      }
+    }
+
+    public int CountPowerGenerators {
+      get {
+        if (null == cache_PowerGenerators) regen_PowerGenerators();
+        return cache_PowerGenerators.Count;
+      }
+    }
+
+    public double PowerRatio {
+      get {
+        return (double)(PowerGenerators.Count(it => it.IsOn))/CountPowerGenerators;
+      }
+    }
+
     public Inventory GetItemsAt(Point position)
     {
       Contract.Ensures(null == Contract.Result<Inventory>() || !Contract.Result<Inventory>().IsEmpty);
@@ -1248,8 +1275,6 @@ namespace djack.RogueSurvivor.Data
         if (null != tmp.Controller) continue;
         tmp.Controller = tmp.Model.InstanciateController();
       }
-
-      m_aux_Players = null;
     }
 
     public void OptimizeBeforeSaving()
