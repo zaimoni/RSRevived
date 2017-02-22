@@ -1705,9 +1705,23 @@ namespace djack.RogueSurvivor.Data
     public int SleepToHoursUntilSleepy {
       get {
         int num = SleepPoints - SLEEP_SLEEPY_LEVEL;
-        if (Location.Map.LocalTime.IsNight) num /= 2;
         if (num <= 0) return 0;
-        return num / WorldTime.TURNS_PER_HOUR;
+        WorldTime now = new WorldTime(Location.Map.LocalTime);
+        int turns = 0;
+        while(0<num) {
+          int next_strike_of_hour = WorldTime.TURNS_PER_HOUR*(now.TurnCounter/WorldTime.TURNS_PER_HOUR+1);
+          int awake_cost = (now.IsNight ? 2 : 1);
+          int delta_t = next_strike_of_hour - now.TurnCounter;
+          int SLP_cost = awake_cost*delta_t;
+          if (SLP_cost > num) {
+            turns += num/awake_cost;
+            break;
+          }
+          num -= SLP_cost;
+          turns += delta_t;
+          now.TurnCounter = next_strike_of_hour;
+        }
+        return turns / WorldTime.TURNS_PER_HOUR;
       }
     }
 
