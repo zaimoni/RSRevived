@@ -115,32 +115,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #if FAIL
     [Serializable]
-    public Goal_PickupAt : Objective
+    public Goal_PathTo : Objective
     {
-      public readonly GameItems.IDs target;
-      public readonly Location loc;
+      private HashSet<Location> _locs;
 
-      public Goal_PickupAt(int t0, Actor who, GameItems.IDs _target, Location _loc)
+      public Goal_PathTo(int t0, Actor who, Location loc)
       : base(t0,who)
       {
-        target = _target;
-        loc = _loc;
+        _locs = new HashSet<Location>(){loc};
+      }
+
+      public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs)
+      : base(t0,who)
+      {
+        _locs = new HashSet<Location>(){loc};
       }
 
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        
-        // if the target location is in LoS, and does not contain the target, expire
-        if (m_Actor.Location.Map==loc.Map && m_Actor.Controller.FOV.Contains(loc.Position)) {
-          Inventory inv = loc.Map.GetItemsAt(loc.Position);
-          if (null == inv) {
-           _isExpired = true;  // invalid, expire
-           return false;
-          }
+
+        if (!valid_fn(this)) {
+          _isExpired = true;
+          return false;
         }
-        ////
-        
+
+        if (nonpathing_action(this,ret)) return true;
+
+        FloodfillPathfinder<Point> tmp = m_Actor.Location.Map.PathfindSteps(m_Actor);
+        // ...        
         return false;
       }
     }

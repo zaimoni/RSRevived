@@ -588,14 +588,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != items) {
         HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
         // while we want to account for what our followers want, we don't want to block our followers from the items either
-#if FAIL
-        if (0 < m_Actor.CountFollowers) {
-          foreach (Actor fo in m_Actor.Followers) {
-            HashSet<Gameplay.GameItems.IDs> fo_crit = (fo.Controller as OrderableAI)?.WhatDoINeedNow();
-            if (null != fo_crit) critical.UnionWith(fo_crit);
-          }
-        }
-#endif
         critical.IntersectWith(items);
         if (0 < critical.Count) {
           tmpAction = BehaviorResupply(critical);
