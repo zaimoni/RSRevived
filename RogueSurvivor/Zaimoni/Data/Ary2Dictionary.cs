@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Zaimoni.Data
 {
@@ -13,12 +14,12 @@ namespace Zaimoni.Data
     class Ary2Dictionary<Key1, Key2, Range>
     {
         readonly private Dictionary<Key1, Range> _no_entries;
-        readonly private Dictionary<Key1, Dictionary<Key2, Range>> _first_second_dict;  // not correct...should be Key1,KeyValuePair<Range,HashSet<Key2>>
+        readonly private Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>> _first_second_dict;
         readonly private Dictionary<Key2, Dictionary<Key1, Range>> _second_first_dict;
 
         public Ary2Dictionary() {
             _no_entries = new Dictionary<Key1, Range>();
-            _first_second_dict = new Dictionary<Key1, Dictionary<Key2, Range>>();
+            _first_second_dict = new Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>>();
             _second_first_dict = new Dictionary<Key2, Dictionary<Key1, Range>>();
         }
 
@@ -37,17 +38,15 @@ namespace Zaimoni.Data
         public bool HaveEverSeen(Key1 key, out Range value) {
             if (_no_entries.TryGetValue(key, out value)) return true;
             if (_first_second_dict.ContainsKey(key)) {
-                foreach (Range tmp in _first_second_dict[key].Values) {
-                    value = tmp;
-                    return true;
-                }
+                value = _first_second_dict[key].Key;
+                return true;
             }
             return false;
         }
 
         // Yes, value copy for these two
-        public Dictionary<Key2,Range> WhatIsAt(Key1 key) {
-            if (_first_second_dict.ContainsKey(key)) return new Dictionary<Key2, Range>(_first_second_dict[key]);
+        public HashSet<Key2> WhatIsAt(Key1 key) {
+            if (_first_second_dict.ContainsKey(key)) return _first_second_dict[key].Value;
             return null;
         }
 
@@ -62,66 +61,43 @@ namespace Zaimoni.Data
         }
 
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
-            if (null == keys2) {
-                if (_first_second_dict.ContainsKey(key))  Remove(_first_second_dict[key].Keys, key);
+            List<Key2> expired = new List<Key2>();
+            if (null == keys2 || 0==keys2.Count()) {
                 _first_second_dict.Remove(key);
                 _no_entries[key] = value;
+                Remove(key);
                 return;
             }
 
-            // there was a pre-existing entry.  Take a set difference and update.
-            bool at_least_one_key2 = false;
-            HashSet<Key2> removed = (_first_second_dict.ContainsKey(key) ? new HashSet<Key2>(_first_second_dict[key].Keys) : new HashSet<Key2>());
-            foreach (Key2 tmp in keys2) {
-                removed.Remove(tmp);
-                at_least_one_key2 = true;
+            HashSet<Key2> incoming = new HashSet<Key2>(keys2);
+            _first_second_dict[key] = new KeyValuePair<Range, HashSet<Key2>>(value, new HashSet<Key2>(incoming));
+            foreach (KeyValuePair<Key2, Dictionary<Key1, Range>> tmp in _second_first_dict) {
+                if (incoming.Contains(tmp.Key)) {
+                  tmp.Value[key] = value;
+                  incoming.Remove(tmp.Key);
+                  continue;
+                }
+                tmp.Value.Remove(key);
+                if (0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
-            if (!at_least_one_key2) { // keys2 morally null
-                if (_first_second_dict.ContainsKey(key))  Remove(_first_second_dict[key].Keys, key);
-                _first_second_dict.Remove(key);
-                _no_entries[key] = value;
-                return;
+            foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            foreach(Key2 tmp in incoming) {
+              Dictionary<Key1,Range> tmp2 = new Dictionary<Key1, Range>();
+              tmp2[key] = value;
+              _second_first_dict[tmp] = tmp2;
             }
 
-            if (0 < removed.Count) {
-                Remove(removed, key);
-                foreach(Key2 tmp in removed) {
-                    _first_second_dict[key].Remove(tmp);
-                }
-            }
-#if FAIL
-            if (0 < changed.Count)
-            {
-                Update(changed, key, value);
-                if (!_first_second_dict.ContainsKey(key)) _first_second_dict[key] = new Dictionary<Key2, Range>(changed.Count);
-                foreach (Key2 tmp in changed)
-                {
-                    _first_second_dict[key][tmp] = value;
-                }
-            }
-#else
-            Update(keys2, key, value);
-            if (!_first_second_dict.ContainsKey(key)) _first_second_dict[key] = new Dictionary<Key2, Range>();
-            foreach (Key2 tmp in keys2) {
-                _first_second_dict[key][tmp] = value;
-            }
-#endif
             _no_entries.Remove(key);
         }
 
-        private void Remove(IEnumerable<Key2> src, Key1 key) {
-            if (null == src) return;
-            foreach(Key2 tmp in src) {
-                _second_first_dict[tmp].Remove(key);
-                if (0 == _second_first_dict[tmp].Count) _second_first_dict.Remove(tmp);
+        private void Remove(Key1 key)
+        {
+            List<Key2> expired = new List<Key2>();
+            foreach (KeyValuePair<Key2, Dictionary<Key1, Range>> tmp in _second_first_dict) {
+                tmp.Value.Remove(key);
+                if (0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
-        }
-
-        private void Update(IEnumerable<Key2> src, Key1 key, Range value) {
-            foreach (Key2 tmp in src) {
-                if (!_second_first_dict.ContainsKey(tmp)) _second_first_dict[tmp] = new Dictionary<Key1, Range>(1);
-                _second_first_dict[tmp][key] = value;
-            }
+            foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
         }
 
 #if FAIL
