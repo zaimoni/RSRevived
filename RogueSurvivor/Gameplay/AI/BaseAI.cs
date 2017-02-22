@@ -291,6 +291,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
+    protected ActorAction BehaviorHeadFor(Point goal)
+    {
+      if (m_Actor.Model.Abilities.IsIntelligent) return BehaviorIntelligentBumpToward(goal);
+      return BehaviorStupidBumpToward(goal);
+    }
+
     // A number of the melee enemy targeting sequences not only work on grid distance,
     // they need to return a coordinated action/target pair.
     protected ActorAction TargetGridMelee(List<Percept> perceptList)
@@ -486,32 +492,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);
       ActionPush tmp = new ActionPush(m_Actor, mapObjectAt1, game.Rules.RollDirection());
       return (tmp.IsLegal() ? tmp : null);
-    }
-
-    protected ActionUseItem BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
-    {
-      Inventory inventory = m_Actor.Inventory;
-      if (inventory == null || inventory.IsEmpty) return null;
-      bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
-      bool needSTA = m_Actor.IsTired;
-      bool needSLP = m_Actor.WouldLikeToSleep;
-      bool needCure = m_Actor.Infection > 0;
-      bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
-      if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
-      List<ItemMedicine> itemsByType = inventory.GetItemsByType<ItemMedicine>();
-      if (itemsByType == null) return null;
-      BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
-      {
-        int num = 0;
-        if (needHP) num += factorHealing * it.Healing;
-        if (needSTA) num += factorStamina * it.StaminaBoost;
-        if (needSLP) num += factorSleep * it.SleepBoost;
-        if (needCure) num += factorCure * it.InfectionCure;
-        if (needSan) num += factorSan * it.SanityCure;
-        return (float) num;
-      }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-      if (choiceEval == null || (double) choiceEval.Value <= 0.0) return null;
-      return new ActionUseItem(m_Actor, choiceEval.Choice);
     }
 
 	protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
@@ -799,14 +779,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorChargeEnemy(Percept target)
+    protected virtual ActorAction BehaviorChargeEnemy(Percept target)
     {
       Actor actor = target.Percepted as Actor;
       ActorAction tmpAction = BehaviorMeleeAttack(actor);
       if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
-        return (ActorAction)BehaviorUseMedecine(0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
-      tmpAction = BehaviorIntelligentBumpToward(target.Location.Position);
+        return new ActionWait(m_Actor);
+      tmpAction = BehaviorHeadFor(target.Location.Position);
       if (null == tmpAction) return null;
       if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
       return tmpAction;
@@ -821,8 +801,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor enemy = target.Percepted as Actor;
       bool decideToFlee;
       if (HasEquipedRangedWeapon(enemy))
-        decideToFlee = false;
-      else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
         decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
         decideToFlee = true;
@@ -856,14 +834,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here
-        // XXX should be damage-field based
-        if (!(enemy.GetEquippedWeapon() is ItemRangedWeapon) && !Rules.IsAdjacent(m_Actor.Location, enemy.Location)) {
-          tmpAction = BehaviorUseMedecine(2, 2, 1, 0, 0);
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.FLEEING;
-            return tmpAction;
-          }
-        }
         tmpAction = BehaviorWalkAwayFrom(enemies);
         if (null != tmpAction) {
           if (doRun) RunIfPossible();
@@ -1008,9 +978,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (m_Actor.Location.Position==percept.Location.Position) {
         return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
 	  }
-      if (!m_Actor.Model.Abilities.IsIntelligent)
-        return BehaviorStupidBumpToward(percept.Location.Position);
-      return BehaviorIntelligentBumpToward(percept.Location.Position);
+      return BehaviorHeadFor(percept.Location.Position);
     }
 
     protected ActorAction BehaviorGoReviveCorpse(RogueGame game, List<Percept> percepts)
@@ -1034,9 +1002,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionReviveCorpse(m_Actor, corpse);
         }
 	  }
-      if (!m_Actor.Model.Abilities.IsIntelligent)
-        return BehaviorStupidBumpToward(percept.Location.Position);
-      return BehaviorIntelligentBumpToward(percept.Location.Position);
+      return BehaviorHeadFor(percept.Location.Position);
     }
 
     protected void RunIfPossible()

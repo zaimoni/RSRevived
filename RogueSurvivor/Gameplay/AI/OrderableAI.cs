@@ -1291,6 +1291,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(target1.Location.Position);
     }
 
+    protected ActionUseItem BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
+    {
+      Inventory inventory = m_Actor.Inventory;
+      if (inventory == null || inventory.IsEmpty) return null;
+      bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
+      bool needSTA = m_Actor.IsTired;
+      bool needSLP = m_Actor.WouldLikeToSleep;
+      bool needCure = m_Actor.Infection > 0;
+      bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
+      if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
+      List<ItemMedicine> itemsByType = inventory.GetItemsByType<ItemMedicine>();
+      if (itemsByType == null) return null;
+      BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
+      {
+        int num = 0;
+        if (needHP) num += factorHealing * it.Healing;
+        if (needSTA) num += factorStamina * it.StaminaBoost;
+        if (needSLP) num += factorSleep * it.SleepBoost;
+        if (needCure) num += factorCure * it.InfectionCure;
+        if (needSan) num += factorSan * it.SanityCure;
+        return (float) num;
+      }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+      if (choiceEval == null || (double) choiceEval.Value <= 0.0) return null;
+      return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
+    }
+
+    protected override ActorAction BehaviorChargeEnemy(Percept target)
+    {
+      Actor actor = target.Percepted as Actor;
+      ActorAction tmpAction = BehaviorMeleeAttack(actor);
+      if (null != tmpAction) return tmpAction;
+      if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
+        return (ActorAction)BehaviorUseMedecine(0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
+      tmpAction = BehaviorHeadFor(target.Location.Position);
+      if (null == tmpAction) return null;
+      if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
+      return tmpAction;
+    }
+
     // sunk from BaseAI
     protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
     {
