@@ -6962,7 +6962,7 @@ namespace djack.RogueSurvivor.Engine
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
           stringList.Add(string.Format("Foo : {0} {1}h", (object) actor.FoodPoints, (object)FoodToHoursUntilHungry(actor.FoodPoints)));
-          stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, actor.SleepToHoursUntilSleepy));
+          stringList.Add(string.Format("Slp : {0} {1}h", (object) actor.SleepPoints, actor.HoursUntilSleepy));
           stringList.Add(string.Format("San : {0} {1}h", (object) actor.Sanity, actor.HoursUntilUnstable));
           stringList.Add(string.Format("Inf : {0} {1}%", (object) actor.Infection, actor.InfectionPercent));
         } else
@@ -11157,7 +11157,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsExhausted) return new ColorString(Color.Red, "EXHAUSTED!");
       if (actor.IsSleepy) return new ColorString(Color.Yellow, "Sleepy");
-      return new ColorString(Color.White, string.Format("{0}h", (object) actor.SleepToHoursUntilSleepy));
+      return new ColorString(Color.White, string.Format("{0}h", (object) actor.HoursUntilSleepy));
     }
 
     private ColorString ActorSanityStatus(Actor actor)

@@ -1702,7 +1702,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // sleep
-    public int SleepToHoursUntilSleepy {
+    public int TurnsUntilSleepy { 
       get {
         int num = SleepPoints - SLEEP_SLEEPY_LEVEL;
         if (num <= 0) return 0;
@@ -1721,14 +1721,20 @@ namespace djack.RogueSurvivor.Data
           turns += delta_t;
           now.TurnCounter = next_strike_of_hour;
         }
-        return turns / WorldTime.TURNS_PER_HOUR;
+        return turns;
+      }
+    }
+
+    public int HoursUntilSleepy {
+      get {
+        return TurnsUntilSleepy/WorldTime.TURNS_PER_HOUR;
       }
     }
 
     public bool IsAlmostSleepy {
       get {
         if (!Model.Abilities.HasToSleep) return false;
-        return 3 >= SleepToHoursUntilSleepy;
+        return 3 >= HoursUntilSleepy;
       }
     }
 
