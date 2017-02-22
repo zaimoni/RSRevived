@@ -86,7 +86,7 @@ namespace Zaimoni.Data
 		}
 
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
-        public void GoalDistance(IEnumerable<T> goals, T start, int max_depth=int.MaxValue)
+        public void GoalDistance(IEnumerable<T> goals, T start, int max_cost=int.MaxValue)
         {
             Contract.Requires(null != start);
             Contract.Requires(null != goals);
@@ -97,15 +97,16 @@ namespace Zaimoni.Data
             HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
             foreach(T tmp in now) _map[tmp] = 0;
 
-            while(0<now.Count && !_map.ContainsKey(start) && 0 < max_depth--) {
+            while(0<now.Count && !_map.ContainsKey(start)) {
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
-                int dist = _map[tmp];
+                int cost = _map[tmp];
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
-                  int new_dist = dist+tmp2.Value;
+                  if (max_cost-cost<=tmp2.Value) continue;
+                  int new_dist = cost+tmp2.Value;
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
@@ -115,7 +116,7 @@ namespace Zaimoni.Data
             }
         }
 
-        public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_depth = int.MaxValue)
+        public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
             Contract.Requires(null != start);
             Contract.Requires(null != goals);
@@ -126,15 +127,16 @@ namespace Zaimoni.Data
             HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
             foreach(T tmp in now) _map[tmp] = 0;
 
-            while(0<now.Count && start.Any(pos => !_map.ContainsKey(pos)) && 0 < max_depth--) {
+            while(0<now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
-                int dist = _map[tmp];
+                int cost = _map[tmp];
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
-                  int new_dist = dist+tmp2.Value;
+                  if (max_cost-cost<=tmp2.Value) continue;
+                  int new_dist = cost+tmp2.Value;
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
@@ -147,8 +149,8 @@ namespace Zaimoni.Data
         public void ReviseGoalDistance(T pos, int new_cost, T start)
         {
             if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
-            int current_start_cost = Cost(start);
-            if (current_start_cost <= new_cost) return;   // we assume the _forward cost function is not pathological i.e. all costs positive
+            int max_cost = Cost(start);
+            if (max_cost <= new_cost) return;   // we assume the _forward cost function is not pathological i.e. all costs positive
           
             HashSet<T> now = new HashSet<T>(){pos};
             _map[pos] = new_cost;
@@ -156,13 +158,13 @@ namespace Zaimoni.Data
             while(0<now.Count && !now.Contains(start)) {
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
-                int dist = _map[tmp];
+                int cost = _map[tmp];
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
-                  int new_dist = dist+tmp2.Value;
-                  if (current_start_cost <= new_dist) continue;
+                  if (max_cost-cost<=tmp2.Value) continue;
+                  int new_dist = cost+tmp2.Value;
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
