@@ -248,54 +248,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!=enemies) {
-        // ranged weapon: prefer to maintain LoF when retreating
-        MaximizeRangedTargets(retreat, enemies);
-        MaximizeRangedTargets(run_retreat, enemies);
-        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed < 2 * m_Actor.Speed);
-        if (!fast_enemies.Any()) {
-          // ranged weapon: fast retreat ok
-          // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
-          // XXX we also want to be close enough to fire at all
-          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
-          if (null != tmpAction) {
+      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, friends, enemies, slow_melee_threat);
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ranged weapon retreat");
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
 #endif
-		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-            if (null != tmpAction2) {
-              if (safe_run_retreat) RunIfPossible();
-              else RunIfAdvisable(tmpAction2.dest.Position);
-            }
-            m_Actor.Activity = Activity.FLEEING;
-            return tmpAction;
-          }
-        }
-      }
-
-      // need stamina to melee: slow retreat ok
-      if (null != retreat && WillTireAfterAttack(m_Actor)) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "too tired for melee retreat");
-#endif
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
-        }
-      }
-      // have slow enemies nearby
-      if (null != retreat && null != slow_melee_threat) {
-	    tmpAction = DecideMove(retreat, enemies, friends);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "slow melee retreat");
-#endif
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
-        }
-      }
-      // end melee risk management check
+      if (null != tmpAction) return tmpAction;
 
       if (null != enemies && Directives.CanThrowGrenades) {
         tmpAction = BehaviorThrowGrenade(game, enemies);

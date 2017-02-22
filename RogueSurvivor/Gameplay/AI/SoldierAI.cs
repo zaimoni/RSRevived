@@ -148,44 +148,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!= current_enemies) {
-        // ranged weapon: prefer to maintain LoF when retreating
-        MaximizeRangedTargets(retreat, current_enemies);
-        MaximizeRangedTargets(run_retreat, current_enemies);
-        IEnumerable<Actor> fast_enemies = current_enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed < 2 * m_Actor.Speed);
-        if (!fast_enemies.Any()) {
-          // ranged weapon: fast retreat ok
-          // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
-          // XXX we also want to be close enough to fire at all
-          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, current_enemies, friends) : ((null != retreat) ? DecideMove(retreat, current_enemies, friends) : null));
-          if (null != tmpAction) {
-		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-            if (null != tmpAction2) {
-              if (safe_run_retreat) RunIfPossible();
-              else RunIfAdvisable(tmpAction2.dest.Position);
-            }
-            m_Actor.Activity = Activity.FLEEING;
-            return tmpAction;
-          }
-        }
-      }
-      // need stamina to melee: slow retreat ok
-      if (null != retreat && WillTireAfterAttack(m_Actor)) {
-	    tmpAction = DecideMove(retreat, current_enemies, friends);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
-        }
-      }
-      // have slow enemies nearby
-      if (null != retreat && null != slow_melee_threat) {
-	    tmpAction = DecideMove(retreat, current_enemies, friends);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
-        }
-      }
-      // end melee risk management check
+      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, friends, current_enemies, slow_melee_threat);
+      if (null != tmpAction) return tmpAction;
 
       if (null != current_enemies) {
         tmpAction = BehaviorThrowGrenade(game, current_enemies);

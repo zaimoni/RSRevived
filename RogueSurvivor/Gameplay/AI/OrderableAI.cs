@@ -646,6 +646,53 @@ namespace djack.RogueSurvivor.Gameplay.AI
       game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
+    protected ActorAction ManageMeleeRisk(List<Point> legal_steps, List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> friends, List<Percept> enemies, List<Actor> slow_melee_threat)
+    {
+      ActorAction tmpAction = null;
+      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!=enemies) {
+        // ranged weapon: prefer to maintain LoF when retreating
+        MaximizeRangedTargets(retreat, enemies);
+        MaximizeRangedTargets(run_retreat, enemies);
+        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed < 2 * m_Actor.Speed);
+        if (!fast_enemies.Any()) {
+          // ranged weapon: fast retreat ok
+          // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
+          // XXX we also want to be close enough to fire at all
+          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
+          if (null != tmpAction) {
+		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+            if (null != tmpAction2) {
+              if (safe_run_retreat) RunIfPossible();
+              else RunIfAdvisable(tmpAction2.dest.Position);
+            }
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
+          }
+        }
+      }
+
+      if (null != retreat) {
+        // need stamina to melee: slow retreat ok
+        if (WillTireAfterAttack(m_Actor)) {
+	      tmpAction = DecideMove(retreat, enemies, friends);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
+          }
+        }
+        // have slow enemies nearby
+        if (null != slow_melee_threat) {
+	      tmpAction = DecideMove(retreat, enemies, friends);
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
+          }
+        }
+      }
+      // end melee risk management check
+      return null;
+    }
+
     private void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
     {
       Attack tmp = m_Actor.HypotheticalRangedAttack((rw.Model as ItemRangedWeaponModel).Attack, dist, en);
@@ -736,7 +783,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-        // forked from BaseAI::BehaviorEquipWeapon
+    // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
       Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
