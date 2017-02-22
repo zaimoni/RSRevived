@@ -64,7 +64,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool AI_NotInterestedInRangedWeapons { get { return Flags.NONE != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); } }
 
+#if FAIL
     public bool ZombieAI_AssaultBreakables { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_ASSAULT_BREAKABLES); } }  // XXX dead flag
+#endif
 
     public bool ZombieAI_Explore { get { return Flags.NONE != (m_Flags & Flags.ZOMBIEAI_EXPLORE); } }
 
@@ -105,7 +107,7 @@ namespace djack.RogueSurvivor.Data
       IS_ROTTING = 1 << 22,         // XXX very similar to HAS_TO_EAT
       AI_CAN_USE_AI_EXITS = 1 << 23,
       AI_NOT_INTERESTED_IN_RANGED_WEAPONS = 1 << 24,
-      ZOMBIEAI_ASSAULT_BREAKABLES = 1 << 25,
+//    ZOMBIEAI_ASSAULT_BREAKABLES = 1 << 25,
       ZOMBIEAI_EXPLORE = 1 << 26,
     }
   }

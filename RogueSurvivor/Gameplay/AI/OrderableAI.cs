@@ -1678,15 +1678,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
       if (null != armor) return BehaviorDropItem(armor); 
-      return null;
+
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
       if (null != weapon) {
         int martial_arts_rating = m_Actor.UnarmedMeleeAttack().Rating;
         int weapon_rating = m_Actor.MeleeWeaponAttack(weapon.Model as ItemMeleeWeaponModel).Rating;
         if (weapon_rating <= martial_arts_rating) return BehaviorDropItem(weapon);
       }
-
-
+      return null;
     }
 
     protected ActorAction BehaviorDropBoringEntertainment()
