@@ -13,7 +13,7 @@ namespace Zaimoni.Data
     class Ary2Dictionary<Key1, Key2, Range>
     {
         readonly private Dictionary<Key1, Range> _no_entries;
-        readonly private Dictionary<Key1, Dictionary<Key2, Range>> _first_second_dict;
+        readonly private Dictionary<Key1, Dictionary<Key2, Range>> _first_second_dict;  // not correct...should be Key1,KeyValuePair<Range,HashSet<Key2>>
         readonly private Dictionary<Key2, Dictionary<Key1, Range>> _second_first_dict;
 
         public Ary2Dictionary() {
@@ -123,5 +123,19 @@ namespace Zaimoni.Data
                 _second_first_dict[tmp][key] = value;
             }
         }
+
+#if FAIL
+        public void Instruct(Ary2Dictionary<Key1, Key2, Range> student)
+        {
+            Range student_last_taught;
+            foreach(KeyValuePair<Key1, Range> tmp in _no_entries) {
+              if (student.HaveEverSeen(tmp.Key, out student_last_taught) && student_last_taught>=tmp.Value) continue;
+              student.Set(tmp.Key,null,tmp.Value);
+            }
+
+            foreach(KeyValuePair<Key1, Dictionary<Key2, Range>> tmp in _first_second_dict) {
+            }
+        }
+#endif
     }
 }
