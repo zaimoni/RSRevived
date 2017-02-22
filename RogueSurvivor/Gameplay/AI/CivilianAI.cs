@@ -252,24 +252,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ranged weapon: prefer to maintain LoF when retreating
         MaximizeRangedTargets(retreat, enemies);
         MaximizeRangedTargets(run_retreat, enemies);
-
-        // ranged weapon: fast retreat ok
-        // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
-        // XXX we also want to be close enough to fire at all
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
-        if (null != tmpAction) {
+        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed < 2 * m_Actor.Speed);
+        if (!fast_enemies.Any()) {
+          // ranged weapon: fast retreat ok
+          // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
+          // XXX we also want to be close enough to fire at all
+          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
+          if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ranged weapon retreat");
 #endif
-		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) {
-            if (safe_run_retreat) RunIfPossible();
-            else RunIfAdvisable(tmpAction2.dest.Position);
+		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+            if (null != tmpAction2) {
+              if (safe_run_retreat) RunIfPossible();
+              else RunIfAdvisable(tmpAction2.dest.Position);
+            }
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
           }
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
         }
       }
+
       // need stamina to melee: slow retreat ok
       if (null != retreat && WillTireAfterAttack(m_Actor)) {
 	    tmpAction = DecideMove(retreat, enemies, friends);

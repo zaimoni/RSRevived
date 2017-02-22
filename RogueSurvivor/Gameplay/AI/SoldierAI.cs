@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -147,23 +148,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null != current_enemies) {
+      if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!= current_enemies) {
         // ranged weapon: prefer to maintain LoF when retreating
         MaximizeRangedTargets(retreat, current_enemies);
         MaximizeRangedTargets(run_retreat, current_enemies);
-
-        // ranged weapon: fast retreat ok
-        // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
-        // XXX we also want to be close enough to fire at all
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, current_enemies, friends) : ((null != retreat) ? DecideMove(retreat, current_enemies, friends) : null));
-        if (null != tmpAction) {
-		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) {
-            if (safe_run_retreat) RunIfPossible();
-            else RunIfAdvisable(tmpAction2.dest.Position);
+        IEnumerable<Actor> fast_enemies = current_enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed < 2 * m_Actor.Speed);
+        if (!fast_enemies.Any()) {
+          // ranged weapon: fast retreat ok
+          // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
+          // XXX we also want to be close enough to fire at all
+          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, current_enemies, friends) : ((null != retreat) ? DecideMove(retreat, current_enemies, friends) : null));
+          if (null != tmpAction) {
+		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+            if (null != tmpAction2) {
+              if (safe_run_retreat) RunIfPossible();
+              else RunIfAdvisable(tmpAction2.dest.Position);
+            }
+            m_Actor.Activity = Activity.FLEEING;
+            return tmpAction;
           }
-          m_Actor.Activity = Activity.FLEEING;
-          return tmpAction;
         }
       }
       // need stamina to melee: slow retreat ok
