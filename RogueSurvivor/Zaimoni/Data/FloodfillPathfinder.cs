@@ -101,11 +101,12 @@ namespace Zaimoni.Data
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
                 int cost = _map[tmp];
+                int max_delta_cost = max_cost - cost;
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
-                  if (max_cost-cost<=tmp2.Value) continue;
+                  if (max_delta_cost <= tmp2.Value) continue;
                   int new_dist = cost+tmp2.Value;
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
@@ -131,11 +132,12 @@ namespace Zaimoni.Data
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
                 int cost = _map[tmp];
+                int max_delta_cost = max_cost - cost;
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
-                  if (max_cost-cost<=tmp2.Value) continue;
+                  if (max_delta_cost<= tmp2.Value) continue;
                   int new_dist = cost+tmp2.Value;
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
