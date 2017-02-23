@@ -1709,9 +1709,8 @@ namespace djack.RogueSurvivor.Data
         WorldTime now = new WorldTime(Location.Map.LocalTime);
         int turns = 0;
         while(0<num) {
-          int next_strike_of_hour = WorldTime.TURNS_PER_HOUR*(now.TurnCounter/WorldTime.TURNS_PER_HOUR+1);
+          int delta_t = WorldTime.TURNS_PER_HOUR-now.Tick;
           int awake_cost = (now.IsNight ? 2 : 1);
-          int delta_t = next_strike_of_hour - now.TurnCounter;
           int SLP_cost = awake_cost*delta_t;
           if (SLP_cost > num) {
             turns += num/awake_cost;
@@ -1719,7 +1718,7 @@ namespace djack.RogueSurvivor.Data
           }
           num -= SLP_cost;
           turns += delta_t;
-          now.TurnCounter = next_strike_of_hour;
+          now.TurnCounter += delta_t;
         }
         return turns;
       }

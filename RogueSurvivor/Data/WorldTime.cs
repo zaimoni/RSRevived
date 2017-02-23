@@ -13,16 +13,16 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class WorldTime : ISerializable
     {
-    public const int TURNS_PER_HOUR = 30;
-    public const int TURNS_PER_DAY = 24*TURNS_PER_HOUR;
+    public const int HOURS_PER_DAY = 24;    // not scalable
+    public const int TURNS_PER_HOUR = 30;   // defines space-time scale
+    public const int TURNS_PER_DAY = HOURS_PER_DAY * TURNS_PER_HOUR;
+    private static readonly DayPhase[] _phases = new DayPhase[HOURS_PER_DAY];
+    private static readonly bool[] _is_night = new bool[HOURS_PER_DAY];
 
     private int m_TurnCounter;
     private int m_Day;
     private int m_Hour;
-    private DayPhase m_Phase;
-    private bool m_IsNight;
-    private bool m_IsStrikeOfMidnight;
-    private bool m_IsStrikeOfMidday;
+    private int m_Tick;
 
     public int TurnCounter
     {
@@ -33,46 +33,79 @@ namespace djack.RogueSurvivor.Data
       set {
         Contract.Requires(0<=value);
         m_TurnCounter = value;
-        RecomputeDate();
+        m_Day = Math.DivRem(m_TurnCounter,TURNS_PER_DAY,out m_Hour);
+        m_Hour = Math.DivRem(m_Hour,TURNS_PER_HOUR,out m_Tick);
       }
     }
 
-    public int Day {
-      get {
-        return m_Day;
-      }
-    }
+    public int Day { get { return m_Day; } }
+    public int Hour { get { return m_Hour; } }
+    public int Tick { get { return m_Tick; } }
+    public bool IsNight { get { return _is_night[m_Hour]; } }
+    public DayPhase Phase { get { return _phases[m_Hour]; } }
+    public bool IsStrikeOfHour(int n) { return n==m_Hour && 0==m_Tick; }
+    public bool IsStrikeOfMidnight { get { return IsStrikeOfHour(0); } }
+    public bool IsStrikeOfMidday { get { return IsStrikeOfHour(12); } }
 
-    public int Hour {
-      get {
-        return m_Hour;
-      }
+    static WorldTime()
+    {
+      int hour=0;
+      do {
+        switch (hour)
+        {
+        case 0:
+          _phases[hour] = DayPhase.MIDNIGHT;
+          _is_night[hour] = true;
+          break;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          _phases[hour] = DayPhase.DEEP_NIGHT;
+          _is_night[hour] = true;
+          break;
+        case 6:
+          _phases[hour] = DayPhase.SUNRISE;
+          _is_night[hour] = false;
+          break;
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+          _phases[hour] = DayPhase.MORNING;
+          _is_night[hour] = false;
+          break;
+        case 12:
+          _phases[hour] = DayPhase.MIDDAY;
+          _is_night[hour] = false;
+          break;
+        case 13:
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+          _phases[hour] = DayPhase.AFTERNOON;
+          _is_night[hour] = false;
+          break;
+        case 18:
+          _phases[hour] = DayPhase.SUNSET;
+          _is_night[hour] = true;
+          break;
+        case 19:
+        case 20:
+        case 21:
+        case 22:
+        case 23:
+          _phases[hour] = DayPhase.EVENING;
+          _is_night[hour] = true;
+          break;
+        default:
+          throw new ArgumentOutOfRangeException("unhandled hour",hour.ToString());
+        }
+      } while(++hour < HOURS_PER_DAY);
     }
-
-    public bool IsNight {
-      get {
-        return m_IsNight;
-      }
-    }
-
-    public DayPhase Phase {
-      get {
-        return m_Phase;
-      }
-    }
-
-    public bool IsStrikeOfMidnight {
-      get {
-        return m_IsStrikeOfMidnight;
-      }
-    }
-
-    public bool IsStrikeOfMidday {
-      get {
-        return m_IsStrikeOfMidday;
-      }
-    }
-
 
     public WorldTime(WorldTime src)
       : this(src.TurnCounter)
@@ -98,73 +131,6 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("TurnCounter", m_TurnCounter);
     }
 #endregion
-
-    private void RecomputeDate()
-    {
-      int num1 = m_TurnCounter;
-      m_Day = num1 / TURNS_PER_DAY;
-      int num2 = num1 - m_Day * TURNS_PER_DAY;
-      m_Hour = num2 / TURNS_PER_HOUR;
-      int num3 = num2 - m_Hour * TURNS_PER_HOUR;
-      switch (m_Hour)
-      {
-        case 0:
-          m_Phase = DayPhase.MIDNIGHT;
-          m_IsNight = true;
-          break;
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-          m_Phase = DayPhase.DEEP_NIGHT;
-          m_IsNight = true;
-          break;
-        case 6:
-          m_Phase = DayPhase.SUNRISE;
-          m_IsNight = false;
-          break;
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-          m_Phase = DayPhase.MORNING;
-          m_IsNight = false;
-          break;
-        case 12:
-          m_Phase = DayPhase.MIDDAY;
-          m_IsNight = false;
-          break;
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-          m_Phase = DayPhase.AFTERNOON;
-          m_IsNight = false;
-          break;
-        case 18:
-          m_Phase = DayPhase.SUNSET;
-          m_IsNight = true;
-          break;
-        case 19:
-        case 20:
-        case 21:
-        case 22:
-        case 23:
-          m_Phase = DayPhase.EVENING;
-          m_IsNight = true;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled hour",m_Hour.ToString()+"; "+m_TurnCounter.ToString());
-      }
-       // the only updates happening to TurnCounter are from operator++
-       // that is, the old value used for strike of midnight/midday is always
-       // one less than the current value
-       m_IsStrikeOfMidnight = (0 == num3 && m_Phase == DayPhase.MIDNIGHT);
-       m_IsStrikeOfMidday = (0 == num3 && m_Phase == DayPhase.MIDDAY);
-     }
 
     public override string ToString()
     {
