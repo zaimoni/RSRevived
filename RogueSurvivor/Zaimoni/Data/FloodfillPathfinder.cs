@@ -79,42 +79,17 @@ namespace Zaimoni.Data
             _blacklist.Remove(src);
         }
 
-		public void GoalDistance(T goal, T start, int max_depth=int.MaxValue)
+		public void GoalDistance(T goal, T start, int max_cost=int.MaxValue)
 		{
 		  T[] tmp = { goal };
-		  GoalDistance(tmp,start);
+		  GoalDistance(tmp,start,max_cost);
 		}
 
         // basic pathfinding.  _map is initialized with a cost function measuring how expensive moving to any goal is.
         public void GoalDistance(IEnumerable<T> goals, T start, int max_cost=int.MaxValue)
         {
-            Contract.Requires(null != start);
-            Contract.Requires(null != goals);
-            Contract.Requires(!goals.Contains(start));
-            if (!_inDomain(start)) throw new ArgumentOutOfRangeException("start","illegal value");
-            _map.Clear();
-
-            HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
-            foreach(T tmp in now) _map[tmp] = 0;
-
-            while(0<now.Count && !_map.ContainsKey(start)) {
-              HashSet<T> next = new HashSet<T>();
-              foreach(T tmp in now) {
-                int cost = _map[tmp];
-                int max_delta_cost = max_cost - cost;
-                Dictionary<T, int> candidates = _forward(tmp);
-                foreach (KeyValuePair<T, int> tmp2 in candidates) {
-                  if (_blacklist.Contains(tmp2.Key)) continue;
-                  if (!_inDomain(tmp2.Key)) continue;
-                  if (max_delta_cost <= tmp2.Value) continue;
-                  int new_dist = cost+tmp2.Value;
-                  if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
-                  _map[tmp2.Key] = new_dist;
-                  next.Add(tmp2.Key);
-                } 
-              }
-              now = next;
-            }
+            T[] tmp = { start };
+            GoalDistance(goals, tmp, max_cost);
         }
 
         public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
@@ -125,26 +100,43 @@ namespace Zaimoni.Data
             if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
 
+            // a proper Dijkstra search is in increasing cost order
+            Dictionary<int, HashSet<T>> _now = new Dictionary<int, HashSet<T>>();
             HashSet<T> now = new HashSet<T>(goals.Where(tmp => !_blacklist.Contains(tmp) && _inDomain(tmp)));
             foreach(T tmp in now) _map[tmp] = 0;
+            _now[0] = now;
 
-            while(0<now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
-              HashSet<T> next = new HashSet<T>();
-              foreach(T tmp in now) {
-                int cost = _map[tmp];
-                int max_delta_cost = max_cost - cost;
+            while(0<_now.Count && start.Any(pos => !_map.ContainsKey(pos))) {
+              int cost = _now.Keys.Min();
+              int max_delta_cost = max_cost - cost;
+              foreach(T tmp in _now[cost]) {
                 Dictionary<T, int> candidates = _forward(tmp);
                 foreach (KeyValuePair<T, int> tmp2 in candidates) {
                   if (_blacklist.Contains(tmp2.Key)) continue;
                   if (!_inDomain(tmp2.Key)) continue;
                   if (max_delta_cost<= tmp2.Value) continue;
-                  int new_dist = cost+tmp2.Value;
-                  if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
-                  _map[tmp2.Key] = new_dist;
-                  next.Add(tmp2.Key);
+#if DEBUG
+                  if (0 >= tmp2.Value) throw new InvalidOperationException("pathological cost function given to FloodfillFinder");
+#else
+                  if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
+#endif
+                  int new_cost = cost+tmp2.Value;
+                  if (!_map.ContainsKey(tmp2.Key)) {
+                    _map[tmp2.Key] = new_cost;
+                    if (_now.ContainsKey(new_cost)) _now[new_cost].Add(tmp2.Key);
+                    else _now[new_cost] = new HashSet<T>(){tmp2.Key};
+                    continue;
+                  };
+                  int old_cost = _map[tmp2.Key];
+                  if (old_cost <= new_cost) continue;
+                  _now[old_cost].Remove(tmp2.Key);
+                  if (0 >= _now[old_cost].Count) _now.Remove(old_cost);
+                  if (_now.ContainsKey(new_cost)) _now[new_cost].Add(tmp2.Key);
+                  else _now[new_cost] = new HashSet<T>(){tmp2.Key};
+                  _map[tmp2.Key] = new_cost;
                 } 
               }
-              now = next;
+              _now.Remove(cost);
             }
         }
 
