@@ -2337,7 +2337,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
       // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
       // but ignore the sewers if we're not vintage
       if (Session.Get.HasZombiesInSewers) {
         possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
@@ -2378,7 +2378,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
       // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
 
       if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
         return BehaviorHeadForExit(valid_exits);    // done
