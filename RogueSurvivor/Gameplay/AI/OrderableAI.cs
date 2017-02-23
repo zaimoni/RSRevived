@@ -1729,6 +1729,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorDropItem(Item it)
     {
       if (it == null) return null;
+      // use stimulants before dropping them
+      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
+        ItemMedicine stim2 = m_Actor.Inventory.GetBestDestackable(it) as ItemMedicine;
+        if (null != stim2) {
+          int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
+          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
+          if (num4 <= need) {
+            if (m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
+          }
+        }
+      }
+
       if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
       MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);    // XXX can be called from simulation thread
 
