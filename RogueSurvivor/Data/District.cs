@@ -135,6 +135,15 @@ namespace djack.RogueSurvivor.Data
 //    map.District = null;
     }
 
+    public bool HasAccessiblePowerGenerators {
+      get {
+        if (0 < (m_SubwayMap?.CountPowerGenerators ?? 0)) return true;
+        // The hospital doesn't count, here.
+        // The police station is arguable, but the plot consequences are such that the current generator in the jails shouldn't count.
+        return false;
+      }
+    }
+
     // possible micro-optimization target
     public int PlayerCount { 
       get {
