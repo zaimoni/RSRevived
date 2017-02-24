@@ -763,7 +763,7 @@ namespace djack.RogueSurvivor.Data
       } else {
         Exit exitAt = Location.Map.GetExitAt(Location.Position);
         if (exitAt == null) return "not reachable";
-        if (target.Location.Map.GetExitAt(target.Location.Position) == null) return "not reachable";
+        if (!target.Location.Map.HasExitAt(target.Location.Position)) return "not reachable";
         if (exitAt.Location != target.Location) return "not reachable";
       }
       if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
@@ -1543,7 +1543,7 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantUseExit(Point exitPoint)
     {
-      if (Location.Map.GetExitAt(exitPoint) == null) return "no exit there";
+      if (!Location.Map.HasExitAt(exitPoint)) return "no exit there";
       if (!IsPlayer && !Model.Abilities.AI_CanUseAIExits) return "this AI can't use exits";
       if (IsSleeping) return "is sleeping";
       return "";

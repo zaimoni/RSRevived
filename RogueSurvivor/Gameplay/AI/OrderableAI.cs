@@ -1505,7 +1505,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.GetExitAt(point) != null || map.GetTileAt(point.X, point.Y).IsInside))
+        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.HasExitAt(point) || map.GetTileAt(point).IsInside))
           return false;
         int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileAt(ptAdj).Model.IsWalkable));
         int num2 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj =>
@@ -1554,7 +1554,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.GetExitAt(point) != null)
+        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.HasExitAt(point))
           return false;
         return IsDoorwayOrCorridor(map, point);
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
@@ -1808,12 +1808,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // stench killer support -- don't want to lock down to the only user, CivilianAI
     // actually, this particular heuristic is *bad* because it causes the z to lose tracking too close to shelter.
-    protected bool IsGoodStenchKillerSpot(Map map, Point pos)
+    private bool IsGoodStenchKillerSpot(Map map, Point pos)
     {
       if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
       if (PrevLocation.Map.GetTileAt(PrevLocation.Position).IsInside != map.GetTileAt(pos).IsInside) return true;
-      MapObject mapObjectAt = map.GetMapObjectAt(pos);
-      return mapObjectAt != null && mapObjectAt is DoorWindow || map.GetExitAt(pos) != null;
+      if (map.HasExitAt(pos)) return true;
+      return null != map.GetMapObjectAt(pos) as DoorWindow;
     }
 
     protected ItemSprayScent GetEquippedStenchKiller()

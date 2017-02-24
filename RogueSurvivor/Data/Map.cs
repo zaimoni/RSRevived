@@ -307,10 +307,7 @@ namespace djack.RogueSurvivor.Data
       return m_Decorations.ContainsKey(pt) && m_Decorations[pt].Contains(imageID);
     }
 
-    public void RemoveAllDecorationsAt(Point pt)
-    {
-      m_Decorations.Remove(pt);
-    }
+    public void RemoveAllDecorationsAt(Point pt) { m_Decorations.Remove(pt); }
 
     public void RemoveDecorationAt(string imageID, Point pt)
     {
@@ -320,6 +317,9 @@ namespace djack.RogueSurvivor.Data
       m_Decorations.Remove(pt);
     }
 
+    public bool HasExitAt(Point pos) { return m_Exits.ContainsKey(pos); }
+    public bool HasExitAt(int x, int y) { return m_Exits.ContainsKey(new Point(x,y)); }
+
     public Exit GetExitAt(Point pos)
     {
       Exit exit;
@@ -328,10 +328,7 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public Exit GetExitAt(int x, int y)
-    {
-      return GetExitAt(new Point(x, y));
-    }
+    public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }
 
     public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
       Contract.Requires(null != fn);
@@ -342,10 +339,7 @@ namespace djack.RogueSurvivor.Data
       return ret;
     }
 
-    public void SetExitAt(Point pos, Exit exit)
-    {
-      m_Exits.Add(pos, exit);
-    }
+    public void SetExitAt(Point pos, Exit exit) { m_Exits.Add(pos, exit); }
 
     public void RemoveExitAt(Point pos)
     {
@@ -356,7 +350,7 @@ namespace djack.RogueSurvivor.Data
     {
       for (int left = rect.Left; left < rect.Right; ++left) {
         for (int top = rect.Top; top < rect.Bottom; ++top) {
-          if (GetExitAt(left, top) != null) return true;
+          if (HasExitAt(left, top)) return true;
         }
       }
       return false;
@@ -1108,7 +1102,7 @@ namespace djack.RogueSurvivor.Data
         foreach(int x in Enumerable.Range(0, Width)) {
           // XXX does not handle transparent walls or opaque non-walls
           ascii_map[y][x] = (GetTileModelAt(x,y).IsWalkable ? "." : "#");    // typical floor tile if walkable, typical wall otherwise
-          if (null!=GetExitAt(x,y)) ascii_map[y][x] = ">";                  // downwards exit
+          if (HasExitAt(x,y)) ascii_map[y][x] = ">";                  // downwards exit
 #region map objects
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {

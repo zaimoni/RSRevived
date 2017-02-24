@@ -418,7 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else {
         MapObject mapObjectAt = map.GetMapObjectAt(pos);
         if (mapObjectAt != null && mapObjectAt is DoorWindow) reason = "protecting the doorway with";
-        else if (map.GetExitAt(pos) != null) reason = "protecting the exit with";
+        else if (map.HasExitAt(pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;
       Inventory itemsAt = map.GetItemsAt(pos);
@@ -774,7 +774,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       if (!(m_Actor.Location.Position == percept.Location.Position))
         return BehaviorIntelligentBumpToward(percept.Location.Position);
-      if (map.GetExitAt(m_Actor.Location.Position) != null && m_Actor.Model.Abilities.AI_CanUseAIExits)
+      if (map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
         return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       return null;
     }

@@ -6265,11 +6265,11 @@ namespace djack.RogueSurvivor.Engine
             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
 			return null != door && m_Player.CanBarricade(door);
           }));
-        case AdvisorHint.EXIT_STAIRS_LADDERS: return map.GetExitAt(position) != null;
+        case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(position);
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
           foreach (Direction direction in Direction.COMPASS) {
             Point point = position + direction;
-            if (!map.IsInBounds(point) && map.GetExitAt(point) != null) return true;
+            if (!map.IsInBounds(point) && map.HasExitAt(point)) return true;
           }
           return false;
         case AdvisorHint.STATE_SLEEPY: return m_Player.IsSleepy;
@@ -10575,7 +10575,7 @@ namespace djack.RogueSurvivor.Engine
               DrawExit(screen);
           }
 #else
-          } else if (map.IsMapBoundary(x, y) && map.GetExitAt(point) != null)
+          } else if (map.IsMapBoundary(x, y) && map.HasExitAt(point))
             DrawExit(screen);
 #endif
           if (player) {
@@ -11030,7 +11030,7 @@ namespace djack.RogueSurvivor.Engine
           for (pos.X = 0; pos.X < map.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
+              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
             }
           }
 		} else {
@@ -11044,7 +11044,7 @@ namespace djack.RogueSurvivor.Engine
               }
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
               if (tourism.Contains(pos)) continue;  // sights to see are blacked out of the minimap, but not the main map
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.GetExitAt(pos) != null ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
+              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
             }
           }
 		}

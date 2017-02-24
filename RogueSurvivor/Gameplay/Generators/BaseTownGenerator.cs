@@ -248,10 +248,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               if (tileAt.Model.IsWalkable && sewers.GetMapObjectAt(x, y) == null && !tileAt.IsInside && ((tileAt.Model == m_Game.GameTiles.FLOOR_WALKWAY || tileAt.Model == m_Game.GameTiles.FLOOR_GRASS) && surface.GetMapObjectAt(x, y) == null))
               {
                 Point point = new Point(x, y);
-                if (!sewers.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => sewers.GetExitAt(p) != null)) && !surface.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => surface.GetExitAt(p) != null)))
+                if (!sewers.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => sewers.HasExitAt(p))) && !surface.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => surface.HasExitAt(p))))
                 {
-                  AddExit(sewers, point, surface, point, "Tiles\\Decoration\\sewer_ladder", true);
-                  AddExit(surface, point, sewers, point, "Tiles\\Decoration\\sewer_hole", true);
+                  AddExit(sewers, point, surface, point, GameImages.DECO_SEWER_LADDER, true);
+                  AddExit(surface, point, sewers, point, GameImages.DECO_SEWER_HOLE, true);
                   ++countLinks;
                 }
               }
@@ -804,7 +804,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MakeWalkwayZones(map, b);
       if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
         int seed = map.Seed << 1 ^ basename.GetHashCode();
-        string name = "basement-" + basename;
+        string name = "basement-" + basename + string.Format("{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object)(b.BuildingRect.Left + b.BuildingRect.Width / 2), (object)(b.BuildingRect.Top + b.BuildingRect.Height / 2));
         rectangle = b.BuildingRect;
         int width = rectangle.Width;
         int height = rectangle.Height;
@@ -815,7 +815,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
           if (shopBasement.IsWalkable(pt.X, pt.Y)) Session.Get.PoliceInvestigate.Record(shopBasement, pt);  // don't do the bounding walls
-          if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.GetExitAt(pt) != null) return;
+          if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.HasExitAt(pt)) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceMapObjectAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
@@ -2042,7 +2042,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
-        if (basement.GetExitAt(pt) != null) return null;
+        if (basement.HasExitAt(pt)) return null;
         if (!basement.IsWalkable(pt.X, pt.Y)) return null;
         switch (m_DiceRoller.Roll(0, 5)) {
           case 0:
@@ -2051,7 +2051,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             return MakeObjBarrels();
           case 2:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
-            return MakeObjTable("MapObjects\\table");
+            return MakeObjTable(GameImages.OBJ_TABLE);
           case 3:
             basement.DropItemAt(MakeShopConstructionItem(), pt);
             return MakeObjDrawer();
@@ -2060,7 +2060,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #else
           default:
 #endif
-            return MakeObjBed("MapObjects\\bed");
+            return MakeObjBed(GameImages.OBJ_BED);
 #if DEBUG
           default:
             throw new ArgumentOutOfRangeException("unhandled roll");
@@ -2070,11 +2070,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (Session.Get.HasZombiesInBasements)
         DoForEachTile(basement.Rect, (Action<Point>) (pt =>
         {
-          if (!basement.IsWalkable(pt.X, pt.Y) || basement.GetExitAt(pt) != null || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
+          if (!basement.IsWalkable(pt.X, pt.Y) || basement.HasExitAt(pt) || !m_DiceRoller.RollChance(HOUSE_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
           basement.PlaceActorAt(CreateNewBasementRatZombie(0), pt);
         }));
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
-        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => basement.GetExitAt(pt) == null && basement.IsWalkable(pt.X, pt.Y) && (basement.GetMapObjectAt(pt) == null && basement.GetItemsAt(pt) == null)), m_DiceRoller, (Func<Point, MapObject>) (pt =>
+        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(pt) && basement.IsWalkable(pt.X, pt.Y) && (basement.GetMapObjectAt(pt) == null && basement.GetItemsAt(pt) == null)), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           basement.DropItemAt(MakeItemGrenade(), pt);
           basement.DropItemAt(MakeItemGrenade(), pt);
@@ -2179,15 +2179,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               break;
             case 1:
               basename = "Storage";
-                            MakeCHARStorageRoom(underground, rectangle);
+              MakeCHARStorageRoom(underground, rectangle);
               break;
             case 2:
               basename = "Living";
-                            MakeCHARLivingRoom(underground, rectangle);
+              MakeCHARLivingRoom(underground, rectangle);
               break;
             case 3:
               basename = "Pharmacy";
-                            MakeCHARPharmacyRoom(underground, rectangle);
+              MakeCHARPharmacyRoom(underground, rectangle);
               break;
             default:
               throw new ArgumentOutOfRangeException("unhandled role");
@@ -2199,20 +2199,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         for (int y = 0; y < underground.Height; ++y) {
           if (m_DiceRoller.RollChance(25)) {
             Tile tileAt = underground.GetTileAt(x, y);
-            if (!tileAt.Model.IsWalkable)
-              tileAt.AddDecoration(BaseTownGenerator.CHAR_POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.CHAR_POSTERS.Length)]);
-            else
-              continue;
+            if (tileAt.Model.IsWalkable) continue;
+            tileAt.AddDecoration(BaseTownGenerator.CHAR_POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.CHAR_POSTERS.Length)]);
           }
           if (m_DiceRoller.RollChance(20)) {
             Tile tileAt = underground.GetTileAt(x, y);
-            if (tileAt.Model.IsWalkable)
-              tileAt.AddDecoration("Tiles\\Decoration\\bloodied_floor");
-            else
-              tileAt.AddDecoration("Tiles\\Decoration\\bloodied_wall");
+            tileAt.AddDecoration(tileAt.Model.IsWalkable ? GameImages.DECO_BLOODIED_FLOOR : GameImages.DECO_BLOODIED_WALL);
           }
         }
       }
+      Predicate<Point> actor_ok_here = pt => !underground.HasExitAt(pt);
       int width = underground.Width;
       for (int index1 = 0; index1 < width; ++index1) {
         Actor newUndead = CreateNewUndead(0);
@@ -2221,12 +2217,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (index2 == newUndead.Model.ID) break;
           newUndead.Model = m_Game.GameActors[index2];
         }
-        ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newUndead, (Predicate<Point>) (pt => underground.GetExitAt(pt) == null));
+        ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newUndead, actor_ok_here);
       }
       int num1 = underground.Width / 10;
       for (int index = 0; index < num1; ++index) {
         Actor newCharGuard = CreateNewCHARGuard(0);
-        ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newCharGuard, (Predicate<Point>) (pt => underground.GetExitAt(pt) == null));
+        ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newCharGuard, actor_ok_here);
       }
       return underground;
     }
@@ -2236,7 +2232,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
-        if (map.GetExitAt(pt) != null) return null;
+        if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
         map.DropItemAt(!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(20) ? (!m_DiceRoller.RollChance(30) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle())) : (Item)MakeItemGrenade()) : (Item)(m_DiceRoller.RollChance(50) ? MakeItemZTracker() : MakeItemBlackOpsGPS())) : (Item)MakeItemCHARLightBodyArmor(), pt);
         return MakeObjShelf();
@@ -2249,7 +2245,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
-        if (map.GetExitAt(pt) != null) return null;
+        if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(50)) return null;
         return (m_DiceRoller.RollChance(50) ? MakeObjJunk() : MakeObjBarrels());
       }));
@@ -2267,18 +2263,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
-        if (map.GetExitAt(pt) != null) return null;
+        if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
-        if (m_DiceRoller.RollChance(50)) return MakeObjBed("MapObjects\\bed");
+        if (m_DiceRoller.RollChance(50)) return MakeObjBed(GameImages.OBJ_BED);
         return MakeObjFridge();
       }));
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) > 0) return null;
-        if (map.GetExitAt(pt) != null) return null;
+        if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(30)) return null;
-        if (!m_DiceRoller.RollChance(30)) return MakeObjChair("MapObjects\\char_chair");
-        MapObject mapObject = MakeObjTable("MapObjects\\char_table");
+        if (!m_DiceRoller.RollChance(30)) return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
+        MapObject mapObject = MakeObjTable(GameImages.OBJ_CHAR_TABLE);
         map.DropItemAt(MakeItemCannedFood(), pt);
         return mapObject;
       }));
@@ -2289,7 +2285,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(map, roomRect, (Func<Point, MapObject>) (pt =>
       {
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
-        if (map.GetExitAt(pt) != null) return null;
+        if (map.HasExitAt(pt)) return null;
         if (!m_DiceRoller.RollChance(20)) return null;
         map.DropItemAt(MakeHospitalItem(), pt);
         return MakeObjShelf();
@@ -2312,7 +2308,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       DoForEachTile(roomRect, (Action<Point>) (pt =>
       {
-        if (!map.GetTileModelAt(pt).IsWalkable || map.GetExitAt(pt) != null || CountAdjWalls(map, pt.X, pt.Y) < 3) return;
+        if (!map.GetTileModelAt(pt).IsWalkable || map.HasExitAt(pt) || CountAdjWalls(map, pt.X, pt.Y) < 3) return;
         map.PlaceMapObjectAt(MakeObjPowerGenerator(), pt);
       }));
     }
