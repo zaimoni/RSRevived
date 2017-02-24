@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (enemies != null) {
           tmpAction = TargetGridMelee(FilterCurrent(enemies));
           if (null != tmpAction) return tmpAction;
-          tmpAction = TargetGridMelee(enemies.Filter(p => p.Turn != m_Actor.Location.Map.LocalTime.TurnCounter));
+          tmpAction = TargetGridMelee(FilterOld(enemies));
           if (null != tmpAction) return tmpAction;
         }
       }

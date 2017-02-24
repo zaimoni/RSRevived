@@ -102,6 +102,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Filter(p => p.Turn == turnCounter);
     }
 
+    protected List<Percept_<_T_>> FilterOld<_T_>(List<Percept_<_T_>> percepts) where _T_:class
+    {
+      int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
+      return percepts.Filter(p => p.Turn < turnCounter);
+    }
+
     // GangAI's mugging target selection triggered a race condition 
     // that allowed a non-null non-empty percepts
     // to be seen as returning null from FilterNearest anyway, from
