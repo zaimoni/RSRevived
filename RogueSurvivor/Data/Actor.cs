@@ -48,6 +48,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
+    public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_TOUGH_HP_BONUS = 3;
@@ -64,6 +65,7 @@ namespace djack.RogueSurvivor.Data
     public static int SKILL_MARTIAL_ARTS_DMG_BONUS = 1;
     public static int SKILL_STRONG_DMG_BONUS = 2;
     public static int SKILL_ZAGILE_ATK_BONUS = 1;
+    public static float SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1f;
     public static int SKILL_ZSTRONG_DMG_BONUS = 2;
 
     private Actor.Flags m_Flags;
@@ -1929,6 +1931,17 @@ namespace djack.RogueSurvivor.Data
         if (num >= nutritionNeed) return true;
       }
       return false;
+    }
+
+    public int ItemNutritionValue(int baseValue)
+    {
+      int num = (int) ((double) baseValue * (double) SKILL_LIGHT_EATER_FOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
+      return baseValue + num;
+    }
+
+    public int BiteNutritionValue(int baseValue)
+    {
+      return (int) (10.0 + (double) (SKILL_ZLIGHT_EATER_FOOD_BONUS * (float) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER)) + (double) (SKILL_LIGHT_EATER_FOOD_BONUS * (float) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER))) * baseValue;
     }
 
     // prevents sinking IsInterestingTradeItem and IsTradeableItem below ActorController (these must work for both OrderableAI and PlayerController)

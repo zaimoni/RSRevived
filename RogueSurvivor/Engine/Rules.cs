@@ -38,7 +38,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
-    public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static int SKILL_LIGHT_FEET_TRAP_BONUS = 5;
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
     public static float SKILL_MEDIC_BONUS = 0.2f;
@@ -58,7 +57,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
     public static int SKILL_ZGRAB_CHANCE = 2;
     public static float SKILL_ZINFECTOR_BONUS = 0.1f;
-    public static float SKILL_ZLIGHT_EATER_FOOD_BONUS = 0.1f;
     public const int BASE_ACTION_COST = 100;
     public const int BASE_SPEED = 100;
     public const int STAMINA_COST_RUNNING = 4;
@@ -783,12 +781,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public static int ActorItemNutritionValue(Actor actor, int baseValue)
-    {
-      int num = (int) ((double) baseValue * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
-      return baseValue + num;
-    }
-
     public static int ActorSanRegenValue(Actor actor, int baseValue)
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE));
@@ -897,11 +889,6 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = (int) ((double) Rules.SKILL_ZEATER_REGEN_BONUS * (double) a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_EATER) * (double) dmg);
       return dmg + num;
-    }
-
-    public static int ActorBiteNutritionValue(Actor actor, int baseValue)
-    {
-      return (int) (10.0 + (double) (Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS * (float) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER)) + (double) (Rules.SKILL_LIGHT_EATER_FOOD_BONUS * (float) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER))) * baseValue;
     }
 
     public int CorpseEeatingInfectionTransmission(int infection)

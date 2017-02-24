@@ -4486,9 +4486,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (a.Model.Abilities.IsUndead) {
         a.RegenHitPoints(Rules.ActorBiteHpRegen(a, num));
-        a.RottingEat(Rules.ActorBiteNutritionValue(a, num));
+        a.RottingEat(a.BiteNutritionValue(num));
       } else {
-        a.LivingEat(Rules.ActorBiteNutritionValue(a, num));
+        a.LivingEat(a.BiteNutritionValue(num));
         a.Infect(m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
       }
       SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
@@ -7399,7 +7399,7 @@ namespace djack.RogueSurvivor.Engine
       } else
         stringList.Add("Always fresh.");
       int baseValue = f.NutritionAt(Session.Get.WorldTime.TurnCounter);
-      int num = m_Player == null ? baseValue : Rules.ActorItemNutritionValue(m_Player, baseValue);
+      int num = m_Player == null ? baseValue : m_Player.ItemNutritionValue(baseValue);
       if (num == itemFoodModel.Nutrition)
         stringList.Add(string.Format("Nutrition   : +{0}", (object) baseValue));
       else
@@ -7604,7 +7604,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.LEADERSHIP:
           return string.Format("+{0} max Followers", (object) Actor.SKILL_LEADERSHIP_FOLLOWER_BONUS);
         case Skills.IDs.LIGHT_EATER:
-          return string.Format("+{0}% max FOO, +{1}% item food points", (object) (int) (100.0 * (double) Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_LIGHT_EATER_FOOD_BONUS));
+          return string.Format("+{0}% max FOO, +{1}% item food points", (object) (int) (100.0 * (double) Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Actor.SKILL_LIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.LIGHT_FEET:
           return string.Format("+{0}% to avoid and escape traps", (object) Rules.SKILL_LIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.LIGHT_SLEEPER:
@@ -7632,7 +7632,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.Z_INFECTOR:
           return string.Format("+{0}% infection damage", (object) (int) (100.0 * (double) Rules.SKILL_ZINFECTOR_BONUS));
         case Skills.IDs.Z_LIGHT_EATER:
-          return string.Format("+{0}% max ROT, +{1}% from eating", (object) (int) (100.0 * (double) Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS));
+          return string.Format("+{0}% max ROT, +{1}% from eating", (object) (int) (100.0 * (double) Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS), (object) (int) (100.0 * (double) Actor.SKILL_ZLIGHT_EATER_FOOD_BONUS));
         case Skills.IDs.Z_LIGHT_FEET:
           return string.Format("+{0}% to avoid traps", (object) Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
         case Skills.IDs.Z_STRONG:
@@ -8307,7 +8307,7 @@ namespace djack.RogueSurvivor.Engine
           InflictDamage(defender, num3);
           if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead) {
             attacker.RegenHitPoints(Rules.ActorBiteHpRegen(attacker, num3));
-            attacker.RottingEat(Rules.ActorBiteNutritionValue(attacker, num3));
+            attacker.RottingEat(attacker.BiteNutritionValue(num3));
             if (player2)
               AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_FEAST_ON), defender, " flesh !"));
             defender.Infect(Rules.InfectionForDamage(attacker, num3));
@@ -9042,7 +9042,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-      actor.LivingEat(Rules.ActorItemNutritionValue(actor, baseValue));
+      actor.LivingEat(actor.ItemNutritionValue(baseValue));
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
       bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -9060,7 +9060,7 @@ namespace djack.RogueSurvivor.Engine
       } else {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-        actor.LivingEat(Rules.ActorItemNutritionValue(actor, baseValue));
+        actor.LivingEat(actor.ItemNutritionValue(baseValue));
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)

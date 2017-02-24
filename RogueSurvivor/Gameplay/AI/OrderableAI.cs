@@ -1011,7 +1011,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == food) continue;
         if (!food.IsPerishable) continue;
         if (food.IsSpoiledAt(turnCounter)) continue;
-        int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(turnCounter));
+        int num4 = m_Actor.ItemNutritionValue(food.NutritionAt(turnCounter));
         if (num4 > need) continue; // more work needed
         int num3 = need-num4;
         if (num3 > rating) {
@@ -1908,7 +1908,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+          int num4 = m_Actor.ItemNutritionValue(food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4 <= need) {
             if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
           }
@@ -1933,7 +1933,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != food) {
           // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
           int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = Rules.ActorItemNutritionValue(m_Actor,food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+          int num4 = m_Actor.ItemNutritionValue(food.NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter));
           if (num4*food.Quantity <= need) {
             if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
           }

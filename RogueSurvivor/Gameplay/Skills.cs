@@ -157,7 +157,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData1 = data[9];
       Actor.SKILL_LEADERSHIP_FOLLOWER_BONUS = (int) skillData1.VALUE1;
       skillData1 = data[10];
-      Rules.SKILL_LIGHT_EATER_FOOD_BONUS = skillData1.VALUE1;
+      Actor.SKILL_LIGHT_EATER_FOOD_BONUS = skillData1.VALUE1;
       Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS = skillData1.VALUE2;
       Skills.SkillData skillData2 = data[11];
       Rules.SKILL_LIGHT_FEET_TRAP_BONUS = (int) skillData2.VALUE1;
@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData2 = data[22];
       Rules.SKILL_ZGRAB_CHANCE = (int) skillData2.VALUE1;
       skillData2 = data[24];
-      Rules.SKILL_ZLIGHT_EATER_FOOD_BONUS = skillData2.VALUE1;
+      Actor.SKILL_ZLIGHT_EATER_FOOD_BONUS = skillData2.VALUE1;
       Actor.SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = skillData2.VALUE2;
       skillData2 = data[25];
       Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS = (int) skillData2.VALUE1;
