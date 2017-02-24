@@ -1923,6 +1923,7 @@ namespace djack.RogueSurvivor.Data
       int turnCounter = Location.Map.LocalTime.TurnCounter;
 //    int num = 0;
       int num = m_FoodPoints-FOOD_HUNGRY_LEVEL;
+      if (num >= nutritionNeed) return true;
       foreach (ItemFood tmpFood in tmp) {
         num += tmpFood.NutritionAt(turnCounter);
         if (num >= nutritionNeed) return true;

@@ -729,6 +729,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
 
+#if FAIL
+        if (m_Actor.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 0<m_Actor.Location.Map.CountPowerGenerators && 1.0>PowerRatio) {
+          IEnumerable<Engine.MapObjects.PowerGenerator> want_on = PowerGenerators.Where(obj => !obj.IsOn);
+          // ...
+        }
+#endif
+
         if (0 >= critical.Count) {
           // hunt down threats -- works for police
           if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
