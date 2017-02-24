@@ -2434,17 +2434,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorHeadForExit(valid_exits);
     }
 
-    protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
+    protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)
     {
-      // bootstrap the current map
-      HashSet<Point> where_to_go = WhereIs(critical, m_Actor.Location.Map);
-      if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        if (0 >= where_to_go.Count) return null;
-        return BehaviorHastyNavigate(where_to_go);
-      }
-
       FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
+      HashSet<Point> where_to_go = targets_at(m_Actor.Location.Map);
       if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, m_Actor.Location.Position);
+      if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
+        if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+        return navigate;
+      }
 
       // currently, there are no cross-district AI exits.
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
@@ -2455,20 +2453,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!mapObjectAt.IsJumpable) return false;
         return m_Actor.CanJump;
       });
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap));
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
 
       foreach(Map m in possible_destinations) {
-        HashSet<Point> remote_where_to_go = WhereIs(critical, m);
+        HashSet<Point> remote_where_to_go = targets_at(m);
         if (0 >= remote_where_to_go.Count) continue;
         Dictionary<Point,Exit> exits_for_m = new Dictionary<Point,Exit>(valid_exits);
         exits_for_m.OnlyIf(exit => exit.ToMap == m);
         List<Point> remote_dests = new List<Point>(exits_for_m.Values.Select(exit => exit.Location.Position));
         FloodfillPathfinder<Point> remote_navigate = m.PathfindSteps(m_Actor);
-        if (1==remote_dests.Count) {
-          remote_navigate.GoalDistance(remote_where_to_go, remote_dests[0]);
-        } else {
-          remote_navigate.GoalDistance(remote_where_to_go, remote_dests);
-        }
+        remote_navigate.GoalDistance(remote_where_to_go, remote_dests);
+
         Dictionary<Point,int> remote_costs = new Dictionary<Point,int>();
         foreach(KeyValuePair<Point, Exit> tmp in exits_for_m) {
           int cost = remote_navigate.Cost(tmp.Value.Location.Position);
@@ -2482,11 +2477,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+      return navigate;
+    }
 
-      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
-      int current_cost = navigate.Cost(m_Actor.Location.Position);
-      if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
-        return BehaviorUseExit(BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+    protected ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
+    {
+      FloodfillPathfinder<Point> navigate = PathfinderFor(targets_at);
+      if (null == navigate) return null;
+      if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
+        List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+        int current_cost = navigate.Cost(m_Actor.Location.Position);
+        if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
+          return BehaviorUseExit(BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        }
       }
 
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
@@ -2494,6 +2497,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
+    }
+
+    protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
+    {
+      return BehaviorPathTo(m => WhereIs(critical, m));
     }
 
     protected bool NeedsLight()
