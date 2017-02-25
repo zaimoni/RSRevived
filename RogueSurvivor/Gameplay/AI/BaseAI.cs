@@ -240,7 +240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ActorAction a = Rules.IsBumpableFor(m_Actor, location);
         if (a == null) {
           if (m_Actor.Model.Abilities.IsUndead && m_Actor.AbleToPush) {
-            MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(location.Position);
+            MapObject mapObjectAt = location.MapObject;
             if (mapObjectAt != null && m_Actor.CanPush(mapObjectAt)) {
               Direction pushDir = RogueForm.Game.Rules.RollDirection();
               if (mapObjectAt.CanPushTo(mapObjectAt.Location.Position + pushDir))
