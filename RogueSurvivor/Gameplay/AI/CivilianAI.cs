@@ -728,17 +728,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
 
-#if FAIL
-        if (m_Actor.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 0<m_Actor.Location.Map.CountPowerGenerators && 1.0> m_Actor.Location.Map.PowerRatio) {
+        // jails generator has plot effects, does not illuminate the map
+        if (m_Actor.Location.Map != Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 0<m_Actor.Location.Map.CountPowerGenerators && 1.0> m_Actor.Location.Map.PowerRatio) {
           IEnumerable<Engine.MapObjects.PowerGenerator> want_on = m_Actor.Location.Map.PowerGenerators.Where(obj => !obj.IsOn);
           foreach(Engine.MapObjects.PowerGenerator gen in want_on) {
             if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
               return new ActionSwitchPowerGenerator(m_Actor, gen);
             }
           }
-          // ...
+          return BehaviorHastyNavigate(new HashSet<Point>(want_on.Select(gen => gen.Location.Position)));
         }
-#endif
 
         if (0 >= critical.Count) {
           // hunt down threats -- works for police
