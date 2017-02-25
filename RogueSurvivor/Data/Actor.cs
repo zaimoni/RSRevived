@@ -1944,6 +1944,11 @@ namespace djack.RogueSurvivor.Data
       return (int) (10.0 + (double) (SKILL_ZLIGHT_EATER_FOOD_BONUS * (float) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_EATER)) + (double) (SKILL_LIGHT_EATER_FOOD_BONUS * (float) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER))) * baseValue;
     }
 
+    public int CurrentNutritionOf(ItemFood food)
+    {
+      return ItemNutritionValue(food.NutritionAt(Location.Map.LocalTime.TurnCounter));
+    }
+
     // prevents sinking IsInterestingTradeItem and IsTradeableItem below ActorController (these must work for both OrderableAI and PlayerController)
     public List<Item> GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {

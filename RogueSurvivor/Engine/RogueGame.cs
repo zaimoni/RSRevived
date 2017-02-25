@@ -9041,8 +9041,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoEatFoodFromGround(Actor actor, ItemFood food)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-      actor.LivingEat(actor.ItemNutritionValue(baseValue));
+      actor.LivingEat(actor.CurrentNutritionOf(food));
       actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
       bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
@@ -9059,8 +9058,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage("Don't waste food!"));
       } else {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-        int baseValue = food.NutritionAt(actor.Location.Map.LocalTime.TurnCounter);
-        actor.LivingEat(actor.ItemNutritionValue(baseValue));
+        actor.LivingEat(actor.CurrentNutritionOf(food));
         actor.Inventory.Consume(food);
         if (food.Model == GameItems.CANNED_FOOD) {
           ItemTrap itemTrap = new ItemTrap(GameItems.EMPTY_CAN)
