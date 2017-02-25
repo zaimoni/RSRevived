@@ -148,7 +148,7 @@ namespace djack.RogueSurvivor.Data
           Actor moving = (sender as Actor);
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
-            List<Point> tmp = moving.OneStepRange(moving.Location.Map, moving.Location.Position);
+            List<Point> tmp = moving.LegalSteps;
             if (null == tmp) return;
 			tmp.Add(moving.Location.Position);
             foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map, tmp);

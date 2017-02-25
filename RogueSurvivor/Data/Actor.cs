@@ -1180,6 +1180,8 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+    public List<Point> LegalSteps { get { return OneStepRange(Location.Map, Location.Position);  } }
+
     public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
     {
       Contract.Requires(0<now.Count());

@@ -482,7 +482,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
     {
       if (0>=goals.Count) return null;
-      List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      List<Point> legal_steps = m_Actor.LegalSteps;
       if (null == legal_steps) return null;
       if (2 <= legal_steps.Count) legal_steps = DecideMove_WaryOfTraps(legal_steps);
       if (2 <= legal_steps.Count) {
@@ -2485,7 +2485,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       FloodfillPathfinder<Point> navigate = PathfinderFor(targets_at);
       if (null == navigate) return null;
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        List<Point> legal_steps = m_Actor.OneStepRange(m_Actor.Location.Map,m_Actor.Location.Position);
+        List<Point> legal_steps = m_Actor.LegalSteps;
         int current_cost = navigate.Cost(m_Actor.Location.Position);
         if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
           return BehaviorUseExit(BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
