@@ -730,8 +730,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
 
 #if FAIL
-        if (m_Actor.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 0<m_Actor.Location.Map.CountPowerGenerators && 1.0>PowerRatio) {
-          IEnumerable<Engine.MapObjects.PowerGenerator> want_on = PowerGenerators.Where(obj => !obj.IsOn);
+        if (m_Actor.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 0<m_Actor.Location.Map.CountPowerGenerators && 1.0> m_Actor.Location.Map.PowerRatio) {
+          IEnumerable<Engine.MapObjects.PowerGenerator> want_on = m_Actor.Location.Map.PowerGenerators.Where(obj => !obj.IsOn);
+          foreach(Engine.MapObjects.PowerGenerator gen in want_on) {
+            if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
+              return new ActionSwitchPowerGenerator(m_Actor, gen);
+            }
+          }
           // ...
         }
 #endif
