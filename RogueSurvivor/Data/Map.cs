@@ -759,6 +759,17 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool HasItemsAt(Point position)
+    {
+      if (!IsInBounds(position)) return false;
+      return m_GroundItemsByPosition.ContainsKey(position);
+    }
+
+    public bool HasItemsAt(int x, int y)
+    {
+      return HasItemsAt(new Point(x, y));
+    }
+
     public Inventory GetItemsAt(Point position)
     {
       Contract.Ensures(null == Contract.Result<Inventory>() || !Contract.Result<Inventory>().IsEmpty);

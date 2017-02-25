@@ -2074,7 +2074,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           basement.PlaceActorAt(CreateNewBasementRatZombie(0), pt);
         }));
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
-        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(pt) && basement.IsWalkable(pt.X, pt.Y) && (basement.GetMapObjectAt(pt) == null && basement.GetItemsAt(pt) == null)), m_DiceRoller, (Func<Point, MapObject>) (pt =>
+        MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(pt) && basement.IsWalkable(pt.X, pt.Y) && (basement.GetMapObjectAt(pt) == null && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           basement.DropItemAt(MakeItemGrenade(), pt);
           basement.DropItemAt(MakeItemGrenade(), pt);

@@ -12038,7 +12038,7 @@ namespace djack.RogueSurvivor.Engine
       if (zoneByPartialName != null)
         m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, (Func<Point, bool>) (pt =>
         {
-          return map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null && map.GetItemsAt(pt) == null;
+          return map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null && !map.HasItemsAt(pt);
         }), roller, (Func<Point, MapObject>) (pt => m_TownGenerator.MakeObjBoard("MapObjects\\announcement_board", new string[7]
         {
           "TO SEWER WORKERS :",
