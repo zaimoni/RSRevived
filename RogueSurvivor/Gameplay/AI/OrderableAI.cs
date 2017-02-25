@@ -203,7 +203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           HashSet<Exit> valid_exits;
           HashSet<Map> exit_maps = m_Actor.Location.Map.PathTo(dest.Map, out valid_exits);
 
-	      Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+	      Exit exitAt = m_Actor.Location.Exit;
           if (exitAt != null && exit_maps.Contains(exitAt.ToMap) && m_Actor.CanUseExit(m_Actor.Location.Position))
             return new ActionUseExit(m_Actor, m_Actor.Location.Position);   // would prefer return BehaviorUseExit(game, BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES)
 	      navigate.GoalDistance(m_Actor.Location.Map.ExitLocations(valid_exits),int.MaxValue,m_Actor.Location.Position);
@@ -1394,7 +1394,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
-              Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+              Exit exitAt = m_Actor.Location.Exit;
               if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
@@ -1457,7 +1457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         HashSet<Exit> valid_exits;
         HashSet<Map> exit_maps = a_map.PathTo(dest.Map, out valid_exits);
 
-	    Exit exitAt = a_map.GetExitAt(m_Actor.Location.Position);
+	    Exit exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
           return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
 	    navigate.GoalDistance(a_map.ExitLocations(valid_exits), m_Actor.Location.Position);

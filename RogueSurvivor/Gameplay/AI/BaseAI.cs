@@ -745,7 +745,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int num = Rules.GridDistance(m_Actor.Location.Position, other.Location.Position);
       if (FOV.Contains(other.Location.Position) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
-        Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+        Exit exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
           return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
@@ -830,7 +830,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) {
             bool flag3 = true;
             if (m_Actor.HasLeader) {
-              Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
+              Exit exitAt = m_Actor.Location.Exit;
               if (exitAt != null) flag3 = m_Actor.Leader.Location.Map == exitAt.ToMap;
             }
             if (flag3) {
@@ -922,9 +922,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorUseExit(BaseAI.UseExitFlags useFlags)
     {
-      Exit exitAt = m_Actor.Location.Map.GetExitAt(m_Actor.Location.Position);
-      if (exitAt == null) return null;
-      if (!exitAt.IsAnAIExit) return null;
+      Exit exitAt = m_Actor.Location.Exit;
+      if (!exitAt?.IsAnAIExit ?? true) return null;
       if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;

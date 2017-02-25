@@ -763,7 +763,7 @@ namespace djack.RogueSurvivor.Data
       if (Location.Map == target.Location.Map) {
         if (!Rules.IsAdjacent(Location.Position, target.Location.Position)) return "not adjacent";
       } else {
-        Exit exitAt = Location.Map.GetExitAt(Location.Position);
+        Exit exitAt = Location.Exit;
         if (exitAt == null) return "not reachable";
         if (!target.Location.Map.HasExitAt(target.Location.Position)) return "not reachable";
         if (exitAt.Location != target.Location) return "not reachable";

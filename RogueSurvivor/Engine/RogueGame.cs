@@ -4813,7 +4813,7 @@ namespace djack.RogueSurvivor.Engine
         Direction direction = WaitDirectionOrCancel();
         if (direction == null) flag1 = false;
         else if (direction == Direction.NEUTRAL) {
-          Exit exitAt = player.Location.Map.GetExitAt(player.Location.Position);
+          Exit exitAt = player.Location.Exit;
           if (exitAt == null) AddMessage(MakeErrorMessage("No exit there."));
           else {
             Actor actorAt = exitAt.Location.Actor;
@@ -8000,13 +8000,13 @@ namespace djack.RogueSurvivor.Engine
     public bool DoLeaveMap(Actor actor, Point exitPoint, bool askForConfirmation)
     {
       bool isPlayer = actor.IsPlayer;
-      Map map = actor.Location.Map;
-      Point position = actor.Location.Position;
-      Exit exitAt = map.GetExitAt(exitPoint);
+      Exit exitAt = actor.Location.Exit;
       if (exitAt == null) {
         if (isPlayer) AddMessage(MakeErrorMessage("There is nowhere to go there."));
         return true;
       }
+      Map map = actor.Location.Map;
+      Point position = actor.Location.Position;
       if (isPlayer && askForConfirmation) {
         ClearMessages();
         AddMessage(MakeYesNoMessage(string.Format("REALLY LEAVE {0}", (object) map.Name)));
