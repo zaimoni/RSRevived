@@ -572,7 +572,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return taint_exposed.Keys.ToList();
     }
 
-    protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies, List<Percept> friends)
+    protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies=null, List<Percept> friends=null)
 	{
 	  Contract.Requires(null != src);
 	  List<Point> tmp = src.ToList();

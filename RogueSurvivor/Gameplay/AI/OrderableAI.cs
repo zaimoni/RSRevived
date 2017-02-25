@@ -506,7 +506,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         legal_steps = new List<Point>(efficiency.Keys);
       }
 
-	  ActorAction tmpAction = DecideMove(legal_steps, null, null);
+	  ActorAction tmpAction = DecideMove(legal_steps);
       if (null != tmpAction) {
 		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
         if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
@@ -658,7 +658,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           // ranged weapon: fast retreat ok
           // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
           // XXX we also want to be close enough to fire at all
-          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat, enemies, friends) : null));
+          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
           if (null != tmpAction) {
 		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
             if (null != tmpAction2) {
@@ -1468,7 +1468,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
 	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
-      ActorAction tmp3 = DecideMove(tmp.Keys, null, null);   // only called when no enemies in sight anyway
+      ActorAction tmp3 = DecideMove(tmp.Keys);   // only called when no enemies in sight anyway
       ActionMoveStep tmp2 = tmp3 as ActionMoveStep;
       if (null != tmp2) {
         Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
@@ -2218,7 +2218,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       int most_exposed = exposed.Values.Max();
       if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
-      ActorAction ret = DecideMove(exposed.Keys.ToList(), null, null);
+      ActorAction ret = DecideMove(exposed.Keys);
 #if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
 #endif
@@ -2235,7 +2235,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
-      ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);
+      ActorAction ret = DecideMove(dest.Keys);
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
@@ -2493,7 +2493,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
-      ActorAction ret = DecideMove(dest.Keys.ToList(), null, null);
+      ActorAction ret = DecideMove(dest.Keys);
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
