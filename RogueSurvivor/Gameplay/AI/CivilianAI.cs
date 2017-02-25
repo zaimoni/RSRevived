@@ -467,8 +467,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (a == m_Actor || a.IsDead || (a.Inventory == null || a.Inventory.IsEmpty) || (a.Leader == m_Actor || m_Actor.Leader == a))
             return false;
           if (a.Inventory.Has<ItemFood>()) return true;
-          Inventory itemsAt = a.Location.Map.GetItemsAt(a.Location.Position);
-          return null != itemsAt && itemsAt.Has<ItemFood>();
+          return a.Location.Items?.Has<ItemFood>() ?? false;
         }));
         if (target != null) {
           tmpAction = BehaviorChargeEnemy(target);

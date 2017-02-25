@@ -4260,7 +4260,7 @@ namespace djack.RogueSurvivor.Engine
         itemPos = InventorySlotToScreen(INVENTORYPANEL_X, INVENTORYPANEL_Y, inventorySlot1.X, inventorySlot1.Y);
         return inventory[index1];
       }
-      Inventory itemsAt = m_Player.Location.Map.GetItemsAt(m_Player.Location.Position);
+      Inventory itemsAt = m_Player.Location.Items;
       Point inventorySlot2 = MouseToInventorySlot(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, screen.X, screen.Y);
       itemPos = InventorySlotToScreen(INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y, inventorySlot2.X, inventorySlot2.Y);
       if (itemsAt == null) return null;
@@ -4586,7 +4586,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool DoPlayerItemSlotTake(Actor player, int slot)
     {
-      Inventory itemsAt = player.Location.Map.GetItemsAt(player.Location.Position);
+      Inventory itemsAt = player.Location.Items;
       if (itemsAt == null) {
         AddMessage(MakeErrorMessage("No items on ground."));
         return false;
@@ -7835,18 +7835,16 @@ namespace djack.RogueSurvivor.Engine
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
 #endif
       if (m_Rules.IsTrapCoveringMapObjectThere(map, position)) return;
-      Inventory itemsAt = map.GetItemsAt(position);
-      if (itemsAt == null) return;
-      List<Item> objList = (List<Item>) null;
-      foreach (Item obj in itemsAt.Items) {
-        ItemTrap trap = obj as ItemTrap;
-        if (trap != null && trap.IsActivated && TryTriggerTrap(trap, actor)) {
-          if (objList == null) objList = new List<Item>(itemsAt.CountItems);
-          objList.Add(obj);
+      List<ItemTrap> trapsAt = actor.Location.Items.GetItemsByType<ItemTrap>();
+      if (null == trapsAt) return;
+      List<ItemTrap> trapList = null;
+      foreach (ItemTrap trap in trapsAt) {
+        if (trap.IsActivated && TryTriggerTrap(trap, actor)) {
+          (trapList ?? (trapList = new List<ItemTrap>())).Add(trap);
         }
       }
-      if (objList != null) {
-        foreach (Item it in objList)
+      if (null != trapList) {
+        foreach (ItemTrap it in trapList)
           map.RemoveItemAt(it, position);
       }
       if (0 >= actor.HitPoints) KillActor(null, actor, "trap");
@@ -8630,7 +8628,7 @@ namespace djack.RogueSurvivor.Engine
         } else
           AddMessage(new Data.Message(string.Format("{0} is hit for no damage.", (object) actorAt.Name), map.LocalTime.TurnCounter, Color.White));
       }
-      Inventory itemsAt = map.GetItemsAt(location.Position);
+      Inventory itemsAt = location.Items;
       if (itemsAt != null) {
         ExplosionChainReaction(itemsAt, location);
         int chance = num1;
@@ -9042,7 +9040,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.LivingEat(actor.CurrentNutritionOf(food));
-      actor.Location.Map.GetItemsAt(actor.Location.Position).Consume(food);
+      actor.Location.Items.Consume(food);
       bool player = ForceVisibleToPlayer(actor);
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_EAT), food));
       if (!food.IsSpoiledAt(actor.Location.Map.LocalTime.TurnCounter) || !m_Rules.RollChance(Rules.FOOD_EXPIRED_VOMIT_CHANCE))
@@ -10463,7 +10461,7 @@ namespace djack.RogueSurvivor.Engine
                   DrawActorStatus(m_Player, 680, 4);
                   if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
                     DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
-                  DrawInventory(m_Player.Location.Map.GetItemsAt(m_Player.Location.Position), "Items on ground", true, 10, 10, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  DrawInventory(m_Player.Location.Items, "Items on ground", true, 10, 10, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
                     DrawActorSkillTable(m_Player, 680, 352);

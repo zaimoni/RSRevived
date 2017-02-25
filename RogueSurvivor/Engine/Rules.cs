@@ -250,8 +250,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "not food";
         return false;
       }
-      Inventory itemsAt = actor.Location.Map.GetItemsAt(actor.Location.Position);
-      if (itemsAt == null || !itemsAt.Contains(it))
+      if (!actor.Location.Items?.Contains(it) ?? true)
       {
         reason = "item not here";
         return false;

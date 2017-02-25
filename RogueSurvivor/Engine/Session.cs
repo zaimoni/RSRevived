@@ -175,7 +175,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     public void ForcePoliceKnown(Location loc) {   // for world creation
-      Inventory tmp = loc.Map.GetItemsAt(loc.Position);
+      Inventory tmp = loc.Items;
       HashSet<Gameplay.GameItems.IDs> seen_items = (null == tmp ? null : new HashSet<Gameplay.GameItems.IDs>(tmp.Items.Select(x => x.Model.ID)));
       m_PoliceItemMemory.Set(loc, seen_items, 0);
     }

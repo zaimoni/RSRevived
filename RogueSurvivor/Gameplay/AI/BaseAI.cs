@@ -966,8 +966,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (stacksPercepts == null) return null;
       List<Percept> percepts = stacksPercepts.Filter(p => (p.Percepted as Inventory).Has<ItemFood>());
       if (percepts == null) return null;
-      Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
-      ItemFood firstByType = itemsAt?.GetFirst<ItemFood>();
+      ItemFood firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);
       Percept percept = FilterNearest(percepts);
       return BehaviorStupidBumpToward(percept.Location.Position);
