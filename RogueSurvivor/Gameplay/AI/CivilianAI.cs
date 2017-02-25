@@ -337,6 +337,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      IEnumerable<Engine.MapObjects.PowerGenerator> generators_off = GeneratorsToTurnOn;    // reused much later
+      {
+        if (null != generators_off) {
+          foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {
+            if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
+              return new ActionSwitchPowerGenerator(m_Actor, gen);
+            }
+          }
+        }
+      }
+
       // the new objectives system should trigger after all enemies-handling behavior
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -729,15 +740,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
 
         // jails generator has plot effects, does not illuminate the map
-        if (m_Actor.Location.Map != Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && 0<m_Actor.Location.Map.CountPowerGenerators && 1.0> m_Actor.Location.Map.PowerRatio) {
-          IEnumerable<Engine.MapObjects.PowerGenerator> want_on = m_Actor.Location.Map.PowerGenerators.Where(obj => !obj.IsOn);
-          foreach(Engine.MapObjects.PowerGenerator gen in want_on) {
-            if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
-              return new ActionSwitchPowerGenerator(m_Actor, gen);
-            }
-          }
-          return BehaviorHastyNavigate(new HashSet<Point>(want_on.Select(gen => gen.Location.Position)));
+        if (null != generators_off) {
+          return BehaviorHastyNavigate(new HashSet<Point>(generators_off.Select(gen => gen.Location.Position)));
         }
+
+#if FAIL
+        if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators && WantToRecharge) {
+          
+        }
+#endif
 
         if (0 >= critical.Count) {
           // hunt down threats -- works for police
