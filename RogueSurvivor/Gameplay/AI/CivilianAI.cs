@@ -746,7 +746,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #if FAIL
         if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators && WantToRecharge) {
-          
+          return 
         }
 #endif
 

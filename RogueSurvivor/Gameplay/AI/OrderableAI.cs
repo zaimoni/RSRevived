@@ -601,6 +601,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       get {
         if (null != m_Actor.Threats) return true;   // hunting threat
         if (null != m_Actor.InterestingLocs) return true;   // tourism
+        if (m_Actor.HasLeader && (m_Actor.Leader.Controller as OrderableAI).HasBehaviorThatRecallsToSurface) return true;   // if leader has recall-to-surface behavior, following him recalls to surface
         return false;
       }
     }
@@ -2498,9 +2499,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return navigate;
     }
 
-    protected ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
+    protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
     {
-      FloodfillPathfinder<Point> navigate = PathfinderFor(targets_at);
       if (null == navigate) return null;
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
         List<Point> legal_steps = m_Actor.LegalSteps;
@@ -2515,6 +2515,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
+    }
+
+    protected ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
+    {
+      return BehaviorPathTo(PathfinderFor(targets_at));
     }
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
