@@ -739,14 +739,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
 
-        // jails generator has plot effects, does not illuminate the map
         if (null != generators_off) {
-          return BehaviorHastyNavigate(new HashSet<Point>(generators_off.Select(gen => gen.Location.Position)));
+          tmpAction = BehaviorHastyNavigate(new HashSet<Point>(generators_off.Select(gen => gen.Location.Position)));
+          if (null != tmpAction) return tmpAction;
         }
 
 #if FAIL
         if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators && WantToRecharge) {
-          return 
+          FloodfillPathfinder<Point> navigate = PathfinderFor(Func<Map, HashSet<Point>> targets_at);
+          if (navigate.Cost(m_Actor.Location.Position) <= ...) {
+            tmpAction = BehaviorPathTo(navigate);
+            if (null != tmpAction) return tmpAction;
+          }
         }
 #endif
 
