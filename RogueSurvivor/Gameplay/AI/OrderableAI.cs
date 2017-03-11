@@ -616,6 +616,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    protected bool WantToRecharge(ItemLight it)
+    {
+      int burn_time = 0;
+      switch(it.Model.ID)
+      {
+      case GameItems.IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration+2*WorldTime.TURNS_PER_HOUR;
+        break;
+      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration+WorldTime.TURNS_PER_HOUR;
+        break;
+#if DEBUG
+      default: throw new InvalidOperationException("Unhandled light type " + it.Model.ID.ToString());
+#else
+      default: return false;
+#endif
+      }
+      return it.Batteries<burn_time;
+    }
+
+    protected bool WantToRechargeAtDawn(ItemLight it)
+    {
+      int burn_time = 0;
+      int reserve = 0;
+      switch(it.Model.ID)
+      {
+      case GameItems.IDs.LIGHT_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.SunsetToDawnDuration;
+        reserve = 2*WorldTime.TURNS_PER_HOUR;
+        break;
+      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT: burn_time = m_Actor.Location.Map.LocalTime.MidnightToDawnDuration;
+        reserve = WorldTime.TURNS_PER_HOUR;
+        break;
+#if DEBUG
+      default: throw new InvalidOperationException("Unhandled light type " + it.Model.ID.ToString());
+#else
+      default: return false;
+#endif
+      }
+      return it.Batteries-burn_time<reserve;
+    }
+
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;

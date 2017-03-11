@@ -162,5 +162,20 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires((int.MaxValue-(TURNS_PER_DAY*day))/TURNS_PER_HOUR>=hour);
       return TURNS_PER_DAY*day + TURNS_PER_HOUR*hour;
     }
+
+    public int MidnightToDawnDuration {
+      get {
+        if (6>m_Hour) return Turn(m_Day,6)-TurnCounter;
+        return 6*TURNS_PER_HOUR;
+      }
+    }
+
+    public int SunsetToDawnDuration {
+      get {
+        if (6>m_Hour) return Turn(m_Day,6)-TurnCounter;
+        if (18<=m_Hour) return Turn(m_Day+1,6)-TurnCounter;
+        return 12*TURNS_PER_HOUR;      
+      }
+    }
   }
 }

@@ -471,6 +471,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       } // null == enemies && Directives.CanTakeItems
+
+      // XXX attempting extortion from cops should have consequences.
+      // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.Has<ItemFood>()))
       {
         Percept target = FilterNearest(percepts1.FilterT<Actor>(a =>
