@@ -2368,11 +2368,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
     {
-      foreach (Actor actor in map.Actors)
-      {
-        OrderableAI orderableAi = actor.Controller as OrderableAI;
-        if (orderableAi != null)
-          orderableAi.OnRaid(raid, new Location(map, position), map.LocalTime.TurnCounter);
+      foreach (Actor actor in map.Actors) {
+        (actor.Controller as OrderableAI)?.OnRaid(raid, new Location(map, position), map.LocalTime.TurnCounter);
       }
     }
 

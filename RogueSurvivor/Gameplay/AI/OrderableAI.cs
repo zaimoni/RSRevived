@@ -655,6 +655,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it.Batteries-burn_time<reserve;
     }
 
+    // XXX *could* eliminate int turn by defining it as location.Map.LocalTime.TurnCounter
     public void OnRaid(RaidType raid, Location location, int turn)
     {
       if (m_Actor.IsSleeping) return;
