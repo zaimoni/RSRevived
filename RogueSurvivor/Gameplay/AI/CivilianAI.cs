@@ -300,8 +300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != enemies && assistLeader) {    // difference between civilian and CHAR/soldier is ok here
-        Percept target = FilterNearest(enemies);
-        tmpAction = BehaviorChargeEnemy(target);
+        tmpAction = BehaviorChargeEnemy(FilterNearest(enemies));
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "assisting leader in melee");
