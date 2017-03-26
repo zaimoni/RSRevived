@@ -789,6 +789,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Actor actor = target.Percepted as Actor;
       ActorAction tmpAction = BehaviorMeleeAttack(actor);
+#if DEBUG
+      // XXX there is some common post-processing we want done regardless of the exact path.  This abuse of try-catch-finally probably is a speed hit.
+      try {
+        if (null != tmpAction) return tmpAction;
+        if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
+          return new ActionWait(m_Actor);
+        tmpAction = BehaviorHeadFor(target.Location.Position);
+        if (null == tmpAction) return null;
+        if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
+        return tmpAction;
+      } catch(System.Exception e) {
+        throw;
+      } finally {
+        if (null != tmpAction) {
+          m_Actor.Activity = Activity.FIGHTING;
+          m_Actor.TargetActor = actor;
+        }
+      }
+#else
       if (null != tmpAction) return tmpAction;
       if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
         return new ActionWait(m_Actor);
@@ -796,6 +815,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == tmpAction) return null;
       if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
       return tmpAction;
+#endif
     }
 
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
@@ -869,8 +889,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_CHARGE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[2], (object) enemy.Name));
-        m_Actor.Activity = Activity.FIGHTING;
-        m_Actor.TargetActor = target.Percepted as Actor;
         return tmpAction;
       }
       return null;

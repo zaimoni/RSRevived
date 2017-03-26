@@ -165,11 +165,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           target = new Percept((object) actor, m_Actor.Location.Map.LocalTime.TurnCounter, actor.Location);
         }
         tmpAction = BehaviorChargeEnemy(target);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = target.Percepted as Actor;
-          return tmpAction;
-        }
+        if (null != tmpAction) return tmpAction;
       }
 
       // the new objectives system should trigger after all enemies-handling behavior

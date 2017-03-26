@@ -306,8 +306,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "assisting leader in melee");
 #endif
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = target.Percepted as Actor;
           return tmpAction;
         }
       }
@@ -491,8 +489,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
-            m_Actor.Activity = Activity.FIGHTING;
-            m_Actor.TargetActor = target.Percepted as Actor;
             return tmpAction;
           }
         }

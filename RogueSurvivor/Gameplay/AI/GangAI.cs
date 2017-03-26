@@ -163,13 +163,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != old_enemies && !m_Actor.IsTired) {    // difference between gang and CHAR/soldier is ok here
-        Percept target = FilterNearest(old_enemies);
-        tmpAction = BehaviorChargeEnemy(target);
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.FIGHTING;
-          m_Actor.TargetActor = target.Percepted as Actor;
-          return tmpAction;
-        }
+        tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies));
+        if (null != tmpAction) return tmpAction;
       }
 
       // handle food after enemies checks
