@@ -469,7 +469,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       } // null == enemies && Directives.CanTakeItems
 
-      // XXX attempting extortion from cops should have consequences.
+      // attempting extortion from cops should have consequences.
       // XXX as should doing it to a civilian whose leader is a cop (and in communication)
       if (RogueGame.Options.IsAggressiveHungryCiviliansOn && percepts1 != null && (!m_Actor.HasLeader && !m_Actor.Model.Abilities.IsLawEnforcer) && (m_Actor.IsHungry && !m_Actor.Has<ItemFood>()))
       {
@@ -488,6 +488,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
               game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
+            if (!m_Actor.TargetActor.IsSleeping) {
+              if (m_Actor.TargetActor.Faction.ID.ExtortionIsAggression()) {
+                game.DoMakeAggression(m_Actor,m_Actor.TargetActor);
+              } else if (m_Actor.TargetActor.Faction.ID.LawIgnoresExtortion()) {
+                game.DoMakeAggression(m_Actor.TargetActor,m_Actor);
+              } // XXX the target needs an AI modifier to handle this appropriately
+            }
             return tmpAction;
           }
         }

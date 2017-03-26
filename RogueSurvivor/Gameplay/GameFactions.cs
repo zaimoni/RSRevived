@@ -209,4 +209,21 @@ namespace djack.RogueSurvivor.Gameplay
       _COUNT = 11,
     }
   }
+
+  static internal class GameFactions_ext
+  {
+    static public bool ExtortionIsAggression(this int x)
+    {
+      if ((int)GameFactions.IDs.ThePolice==x) return true;   // law enforcement
+      if ((int)GameFactions.IDs.TheArmy==x) return true;     // martial law enforcement
+      return false;
+    }
+    static public bool LawIgnoresExtortion(this int x)
+    {
+      if ((int)GameFactions.IDs.TheBikers==x) return true;   // enemy of police
+      if ((int)GameFactions.IDs.TheGangstas==x) return true; // enemy of police
+      if ((int)GameFactions.IDs.TheFerals==x) return true;   // people are more important than dogs
+      return false;
+    }
+  }
 }
