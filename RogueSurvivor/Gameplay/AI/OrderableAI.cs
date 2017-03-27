@@ -655,6 +655,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it.Batteries-burn_time<reserve;
     }
 
+    public bool InCommunicationWith(Actor a)
+    {
+      if (m_Actor==a) return true;
+      if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return false;
+      if (a.IsSleeping) return false;
+      if (a.Location.Map == m_Actor.Location.Map && a.Controller.FOV.Contains(m_Actor.Location.Position)) return true;
+      if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return true;
+      if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return true;
+      if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
+      return false; 
+    }
+
     // XXX *could* eliminate int turn by defining it as location.Map.LocalTime.TurnCounter
     public void OnRaid(RaidType raid, Location location, int turn)
     {
@@ -1128,16 +1140,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected Item GetEquippedCellPhone()
-    {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemTracker && (obj as ItemTracker).CanTrackFollowersOrLeader)
-          return obj;
-      }
-      return null;
-    }
-
     /// <returns>true if and only if a cell phone is required to be equipped</returns>
     protected bool BehaviorEquipCellPhone(RogueGame game)
     {
@@ -1149,7 +1151,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       else return false; // XXX could dial 911, at least while that desk is manned
 
-      Item equippedCellPhone = GetEquippedCellPhone();
+      ItemTracker equippedCellPhone = m_Actor.GetEquippedCellPhone();
       if (equippedCellPhone != null) {
         if (wantCellPhone) return true;
         game.DoUnequipItem(m_Actor, equippedCellPhone);

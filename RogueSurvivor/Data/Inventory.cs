@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Data
     public Item Slot8 { get { return this[8]; } }
     public Item Slot9 { get { return this[9]; } }
 
-        public Inventory(int maxCapacity)
+    public Inventory(int maxCapacity)
     {
       Contract.Requires(0 <= maxCapacity);
       MaxCapacity = maxCapacity;

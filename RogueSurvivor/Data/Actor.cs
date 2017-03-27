@@ -903,6 +903,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
+    public bool HasActiveArmyRadio { 
+      get {
+        if ((int)Gameplay.GameFactions.IDs.TheArmy==m_FactionID) return true;
+        return false;
+      }
+    }
+
+    public ItemTracker GetEquippedCellPhone()
+    {
+      return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
+    }
+
     public void MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
     {
       Contract.Requires(null!=fn);
