@@ -634,6 +634,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return it.Batteries<burn_time;
     }
 
+    protected bool WantToRecharge() {
+      return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRecharge(it)) ?? false;
+    }
+
     protected bool WantToRechargeAtDawn(ItemLight it)
     {
       int burn_time = 0;
@@ -653,6 +657,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       }
       return it.Batteries-burn_time<reserve;
+    }
+
+    protected bool WantToRechargeAtDawn() {
+      return m_Actor.Inventory.GetItemsByType<ItemLight>()?.Any(it => WantToRechargeAtDawn(it)) ?? false;
     }
 
     public bool InCommunicationWith(Actor a)

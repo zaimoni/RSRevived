@@ -749,15 +749,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
 
-#if FAIL
-        if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators && WantToRecharge) {
-          FloodfillPathfinder<Point> navigate = PathfinderFor(Func<Map, HashSet<Point>> targets_at);
-          if (navigate.Cost(m_Actor.Location.Position) <= ...) {
+        if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators) {
+          if (WantToRecharge()) {
+            FloodfillPathfinder<Point> navigate = PathfinderFor(m => new HashSet<Point>((m.PowerGenerators).Select(obj => obj.Location.Position)));
             tmpAction = BehaviorPathTo(navigate);
             if (null != tmpAction) return tmpAction;
           }
-        }
+#if FAIL
+          if (WantToRechargeAtDawn()) {
+            FloodfillPathfinder<Point> navigate = PathfinderFor(m => new HashSet<Point>(m.PowerGenerators).Select(obj => obj.Location.Position));
+            if (navigate.Cost(m_Actor.Location.Position) <= ...) {
+              tmpAction = BehaviorPathTo(navigate);
+              if (null != tmpAction) return tmpAction;
+            }
+          }
 #endif
+        }
 
         if (0 >= critical.Count) {
           // hunt down threats -- works for police
