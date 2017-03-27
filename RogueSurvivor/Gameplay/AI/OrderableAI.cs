@@ -2561,6 +2561,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int r_cost = remote_costs.Values.Min();
           List<KeyValuePair<Point,int>> pts = remote_costs.Where(tmp => tmp.Value==r_cost).ToList();
           navigate.ReviseGoalDistance(pts[0].Key,r_cost+1,m_Actor.Location.Position);
+          remote_costs.OnlyIf(val => r_cost<val);
         }
       }
       if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;

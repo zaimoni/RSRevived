@@ -173,6 +173,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ExpireTaboos();
 
       List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == enemies ? "null == enemies" : enemies.Count.ToString()+" enemies"));
+#endif
       // civilians track how long since they've seen trouble
       if (null != enemies) m_SafeTurns = 0;
       else ++m_SafeTurns;
@@ -290,11 +293,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
 #if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorUseMedecine ok"); // TRACER
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "medicating");
 #endif
       if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
 #if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorRestIfTired ok"); // TRACER
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resting");
 #endif
       if (null != tmpAction) return tmpAction;
@@ -312,10 +317,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // handle food after enemies check
       tmpAction = BehaviorEatProactively(game);
 #if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorEatProactively ok"); // XXX TRACER
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "eating proactively");
 #endif
       if (null != tmpAction) return tmpAction;
 
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (m_Actor.IsHungry ? "hungry" : "not hungry")); // XXX TRACER
+#endif
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorEat();
 #if TRACE_SELECTACTION
@@ -346,6 +355,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // the new objectives system should trigger after all enemies-handling behavior
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives"); // XXX TRACER
+#endif
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
@@ -395,6 +407,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null == enemies && Directives.CanTakeItems) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");   // XXX TRACER
+#endif
         Map map = m_Actor.Location.Map;
         List<Percept> perceptList2 = percepts1.FilterT<Inventory>().FilterOut(p =>
         {
@@ -467,6 +482,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
         }
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");   // XXX TRACER
+#endif
       } // null == enemies && Directives.CanTakeItems
 
       // attempting extortion from cops should have consequences.
@@ -565,8 +583,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // while we want to account for what our followers want, we don't want to block our followers from the items either
         critical.IntersectWith(items);
         if (0 < critical.Count) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
+#endif
           tmpAction = BehaviorResupply(critical);
 #if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok");
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying");
 #endif
           if (null != tmpAction) return tmpAction;
@@ -717,6 +739,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
       if (null!=legal_steps) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
+#endif
         HashSet<GameItems.IDs> critical = WhatDoINeedNow();
         critical.IntersectWith(GameItems.ammo);
         if (0 >= critical.Count) {
@@ -780,9 +805,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // tourism -- works for police
         tmpAction = BehaviorTourismOtherMaps();
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, current map");
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, other map");
 #endif
         if (null != tmpAction) return tmpAction;
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "advanced pathing failed");
+#endif
       }
 
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
@@ -794,7 +822,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "wandering");
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "wandering");
 #endif
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
