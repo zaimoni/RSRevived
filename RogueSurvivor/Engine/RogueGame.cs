@@ -7832,7 +7832,7 @@ namespace djack.RogueSurvivor.Engine
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
 #endif
       if (m_Rules.IsTrapCoveringMapObjectThere(map, position)) return;
-      List<ItemTrap> trapsAt = actor.Location.Items.GetItemsByType<ItemTrap>();
+      List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>();
       if (null == trapsAt) return;
       List<ItemTrap> trapList = null;
       foreach (ItemTrap trap in trapsAt) {
@@ -7997,7 +7997,7 @@ namespace djack.RogueSurvivor.Engine
     public bool DoLeaveMap(Actor actor, Point exitPoint, bool askForConfirmation)
     {
       bool isPlayer = actor.IsPlayer;
-      Exit exitAt = actor.Location.Exit;
+      Exit exitAt = actor.Location.Map.GetExitAt(exitPoint);
       if (exitAt == null) {
         if (isPlayer) AddMessage(MakeErrorMessage("There is nowhere to go there."));
         return true;
