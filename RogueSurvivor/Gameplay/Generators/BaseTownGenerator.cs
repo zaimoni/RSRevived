@@ -798,6 +798,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || !(mapObjectAt.ImageID == "MapObjects\\shop_shelf")) return false;    // XXX leave unconverted as a red flag for ImageID abuse
+        Session.Get.PoliceInvestigate.Record(map, pt);
         return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
       }), (Func<Point, Item>) (pt => MakeRandomShopItem(shopType)));
       map.AddZone(MakeUniqueZone(basename, b.BuildingRect));
@@ -819,6 +820,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceMapObjectAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
+              Session.Get.PoliceInvestigate.Record(map, pt);
               Item it = MakeRandomShopItem(shopType);
               if (it != null) shopBasement.DropItemAt(it, pt);
             }
@@ -1284,6 +1286,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeShopConstructionItem(), pt);
+          Session.Get.PoliceInvestigate.Record(map, pt);
           return MakeObjTable("MapObjects\\table");
         }));
       if (m_DiceRoller.RollChance(33)) {
@@ -1297,6 +1300,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeItemCannedFood(), pt);
+          Session.Get.PoliceInvestigate.Record(map, pt);
           return MakeObjFridge();
         }));
       }
@@ -2080,6 +2084,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           basement.DropItemAt(MakeItemGrenade(), pt);
           for (int index = 0; index < 5; ++index)
             basement.DropItemAt(MakeShopGunshopItem(), pt);
+          Session.Get.PoliceInvestigate.Record(basement, pt);
           return MakeObjShelf();
         }));
       return basement;
@@ -2789,12 +2794,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakeHospitalOfficeRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
     {
-            TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, room);
-            TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
+      TileFill(map, m_Game.GameTiles.FLOOR_PLANKS, room);
+      TileRectangle(map, m_Game.GameTiles.WALL_HOSPITAL, room);
       map.AddZone(MakeUniqueZone(baseZoneName, room));
       int x1 = isFacingEast ? room.Right - 1 : room.Left;
       int y = room.Top + 2;
-            PlaceDoor(map, x1, y, m_Game.GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
+      PlaceDoor(map, x1, y, m_Game.GameTiles.FLOOR_TILES, MakeObjWoodenDoor());
       int x2 = isFacingEast ? room.Left + 2 : room.Right - 3;
       map.PlaceMapObjectAt(MakeObjTable("MapObjects\\table"), new Point(x2, y));
       map.PlaceMapObjectAt(MakeObjChair("MapObjects\\chair"), new Point(x2 - 1, y));
