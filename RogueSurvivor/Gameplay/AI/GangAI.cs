@@ -243,7 +243,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }));
         if (null!=victimize) {
           Actor target = victimize.Percepted as Actor;
-          Item obj = FirstInterestingItem(target.Inventory);
+          Item obj = target.Inventory?.GetFirstMatching<Item>(it => IsInterestingItem(it));
           game.DoMakeAggression(m_Actor, target);
           m_Actor.Activity = Activity.CHASING;
           m_Actor.TargetActor = target;

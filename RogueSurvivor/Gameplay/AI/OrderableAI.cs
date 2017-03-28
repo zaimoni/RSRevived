@@ -568,6 +568,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
+#if FAIL
+    // If an item would be IsInterestingItem(it), its ID should be in this set
+    public HashSet<GameItems.IDs> WhatDoIWantNow()
+    {
+      HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
+
+      return ret;
+    }
+
+    // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
+#endif
+
     public bool IsRationalTradeItem(Actor speaker, Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
     {
       Contract.Requires(null!=speaker);
@@ -1712,15 +1724,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (inv == null) return false;
       return HasAnyInterestingItem(inv.Items);
-    }
-
-    protected Item FirstInterestingItem(Inventory inv)
-    {
-      if (inv == null) return null;
-      foreach (Item it in inv.Items) {
-        if (IsInterestingItem(it)) return it;
-      }
-      return null;
     }
 
     protected bool RHSMoreInteresting(Item lhs, Item rhs)
