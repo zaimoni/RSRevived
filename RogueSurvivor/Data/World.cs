@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
@@ -94,15 +95,14 @@ namespace djack.RogueSurvivor.Data
 
     public void MakePC(string target) {
       if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
+        string[] names = Engine.Session.CommandLineOptions["PC"].Split('\0');
         foreach(District d in m_DistrictsGrid) {
           foreach(Map m in d.Maps) {
-            foreach(Actor a in m.Actors) {   
-              if (a.UnmodifiedName!= Engine.Session.CommandLineOptions["PC"]) continue;
-              if (!a.IsPlayer) {
-                a.Controller = new PlayerController();
-                a.Controller.UpdateSensors();
-              }
-              return;
+            foreach(Actor a in m.Actors) {
+              if (!names.Contains(a.UnmodifiedName)) continue;
+              if (a.IsPlayer) continue;
+              a.Controller = new PlayerController();
+              a.Controller.UpdateSensors();
             }
           }
         }

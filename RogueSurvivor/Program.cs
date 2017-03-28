@@ -23,7 +23,11 @@ namespace djack.RogueSurvivor
         bool reading_PC = false;
         foreach(string tmp in args) {
           if (reading_PC) {
-            Engine.Session.CommandLineOptions["PC"] = tmp;
+            if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
+              Engine.Session.CommandLineOptions["PC"] += "\0"+tmp;
+            } else {
+              Engine.Session.CommandLineOptions["PC"] = tmp;
+            }
           }
           if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) { 
             int tmp2;
