@@ -10323,40 +10323,7 @@ namespace djack.RogueSurvivor.Engine
     private void CheckWeatherChange()
     {
       if (m_Rules.RollChance(33)) {
-        Weather weather;
-        string text;
-        switch (Session.Get.World.Weather) {
-          case Weather.CLEAR:
-            weather = Weather.CLOUDY;
-            text = "Clouds are hiding the sky.";
-            break;
-          case Weather.CLOUDY:
-            if (m_Rules.RollChance(50)) {
-              weather = Weather.CLEAR;
-              text = "The sky is clear again.";
-              break;
-            }
-            weather = Weather.RAIN;
-            text = "Rain is starting to fall.";
-            break;
-          case Weather.RAIN:
-            if (m_Rules.RollChance(50)) {
-              weather = Weather.CLOUDY;
-              text = "The rain has stopped.";
-              break;
-            }
-            weather = Weather.HEAVY_RAIN;
-            text = "The weather is getting worse!";
-            break;
-          case Weather.HEAVY_RAIN:
-            weather = Weather.RAIN;
-            text = "The rain is less heavy.";
-            break;
-          default:
-            throw new ArgumentOutOfRangeException("unhandled weather");
-        }
-        Session.Get.World.Weather = weather;
-        AddMessage(new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.White));
+        AddMessage(new Data.Message(Session.Get.World.WeatherChanges(), Session.Get.WorldTime.TurnCounter, Color.White));
         Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("The weather changed to {0}.", (object)DescribeWeather(Session.Get.World.Weather)));
       } else
         AddMessage(new Data.Message("The weather stays the same.", Session.Get.WorldTime.TurnCounter, Color.White));
@@ -11826,7 +11793,6 @@ namespace djack.RogueSurvivor.Engine
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       Session.Get.World = new World(size);
       World world = Session.Get.World;
-      world.Weather = (Weather)m_Rules.Roll(0, (int)Weather._COUNT);
       List<Point> pointList = new List<Point>();
       for (int x = 0; x < world.Size; ++x) {
         for (int y = 0; y < world.Size; ++y)

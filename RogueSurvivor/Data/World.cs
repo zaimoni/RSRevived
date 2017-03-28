@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Data
     private readonly Queue<District> m_PCready;
     private readonly Queue<District> m_NPCready;
 
-    public Weather Weather { get; set; }
+    public Weather Weather { get; private set; }
 
     public int Size { get { return m_Size; } }
 
@@ -44,7 +44,8 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(0 < size);
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
-      Weather = Weather.CLEAR;
+//    Weather = Weather.CLEAR;
+      Weather = (Weather)RogueForm.Game.Rules.Roll(0, (int)Weather._COUNT);
       m_PCready = new Queue<District>(size*size);
       m_NPCready = new Queue<District>(size*size);
     }
@@ -67,6 +68,39 @@ namespace djack.RogueSurvivor.Data
         }
       }
       dest.Close();
+    }
+
+    public string WeatherChanges()
+    {
+      switch (Weather) {
+        case Weather.CLEAR:
+          Weather = Weather.CLOUDY;
+          return "Clouds are hiding the sky.";
+        case Weather.CLOUDY:
+          if (RogueForm.Game.Rules.RollChance(50)) {
+            Weather = Weather.CLEAR;
+            return "The sky is clear again.";
+          }
+          Weather = Weather.RAIN;
+          return "Rain is starting to fall.";
+        case Weather.RAIN:
+          if (RogueForm.Game.Rules.RollChance(50)) {
+            Weather = Weather.CLOUDY;
+            return "The rain has stopped.";
+          }
+          Weather = Weather.HEAVY_RAIN;
+          return "The weather is getting worse!";
+#if DEBUG
+        case Weather.HEAVY_RAIN:
+#else
+        default:
+#endif
+          Weather = Weather.RAIN;
+          return "The rain is less heavy.";
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException("unhandled weather");
+#endif
+      }
     }
 
     // possible micro-optimization target
