@@ -232,7 +232,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // taboos really belong here
     private Dictionary<Item, int> m_TabooItems = null;
-    private Dictionary<Point, int> m_TabooTiles = null;
     private List<Actor> m_TabooTrades = null;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
@@ -2668,19 +2667,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_TabooItems.Count == 0) m_TabooItems = null;
     }
 
-    protected void MarkTileAsTaboo(Point p, int expiresTurn)
-    {
-      if (m_TabooTiles == null) m_TabooTiles = new Dictionary<Point,int>(1);
-      else if (m_TabooTiles.ContainsKey(p)) return;
-      m_TabooTiles.Add(p, expiresTurn);
-    }
-
-    public bool IsTileTaboo(Point p)
-    {
-      if (m_TabooTiles == null) return false;
-      return m_TabooTiles.ContainsKey(p);
-    }
-
     protected void MarkActorAsRecentTrade(Actor other)
     {
       if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
@@ -2701,10 +2687,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != m_TabooItems) {
         m_TabooItems.OnlyIf(val => val<=time);
         if (0 == m_TabooItems.Count) m_TabooItems = null;
-      }
-      if (null != m_TabooTiles) {
-        m_TabooTiles.OnlyIf(val => val<=time);
-        if (0 == m_TabooTiles.Count) m_TabooTiles = null;
       }
       // actors ok to clear at midnight
       if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
