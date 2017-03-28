@@ -1707,7 +1707,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.MaxUndeads -= 10;
                 break;
               case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-#if STABLE_SIM_OPTIOnAL
+#if STABLE_SIM_OPTIONAL
                 if (RogueGame.s_Options.SimulateDistricts != GameOptions.SimRatio._FIRST)
                 {
                   RogueGame.s_Options.SimulateDistricts = RogueGame.s_Options.SimulateDistricts - 1;
@@ -1716,12 +1716,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
                 break;
               case GameOptions.IDs.GAME_SIMULATE_SLEEP:
-#if STABLE_SIM_OPTIOnAL
+#if STABLE_SIM_OPTIONAL
                 RogueGame.s_Options.SimulateWhenSleeping = !RogueGame.s_Options.SimulateWhenSleeping;
 #endif
                 break;
               case GameOptions.IDs.GAME_SIM_THREAD:
-#if STABLE_SIM_OPTIOnAL
+#if STABLE_SIM_OPTIONAL
                 RogueGame.s_Options.SimThread = !RogueGame.s_Options.SimThread;
 #endif
                 break;
@@ -1842,7 +1842,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.MaxUndeads += 10;
                 break;
               case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-#if STABLE_SIM_OPTIOnAL
+#if STABLE_SIM_OPTIONAL
                 if (RogueGame.s_Options.SimulateDistricts != GameOptions.SimRatio.FULL)
                 {
                   RogueGame.s_Options.SimulateDistricts = RogueGame.s_Options.SimulateDistricts + 1;
@@ -1851,12 +1851,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
                 break;
               case GameOptions.IDs.GAME_SIMULATE_SLEEP:
-#if STABLE_SIM_OPTIOnAL
+#if STABLE_SIM_OPTIONAL
                 RogueGame.s_Options.SimulateWhenSleeping = !RogueGame.s_Options.SimulateWhenSleeping;
 #endif
                 break;
               case GameOptions.IDs.GAME_SIM_THREAD:
-#if STABLE_SIM_OPTIOnAL
+#if STABLE_SIM_OPTIONAL
                 RogueGame.s_Options.SimThread = !RogueGame.s_Options.SimThread;
 #endif
                 break;
