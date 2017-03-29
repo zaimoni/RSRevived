@@ -1050,45 +1050,59 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  // favoring accuracy would stop here
 	}
 
-    protected int GridDistancesSum(Point from, List<Percept> goals)
-    {
-      int num = 0;
-      foreach (Percept goal in goals)
-        num += Rules.GridDistance(from, goal.Location.Position);
-      return num;
-    }
-
+    /// <summary>
+    /// Compute safety from a list of dangers at a given position.
+    /// </summary>
+    /// <param name="from">position to compute the safety</param>
+    /// <param name="dangers">dangers to avoid</param>
+    /// <returns>a heuristic value, the higher the better the safety from the dangers</returns>
     protected float SafetyFrom(Point from, List<Percept> dangers)
     {
       Map map = m_Actor.Location.Map;
-      float num1 = (float) (GridDistancesSum(from, dangers) / (1 + dangers.Count));
-      int num2 = 0;
+
+      // Heuristics:
+      // Primary: Get away from dangers.
+      // Weighting factors:
+      // 1 Avoid getting in corners.
+      // 2 Prefer going outside/inside if majority of dangers are inside/outside.
+      // 3 If can tire, prefer not jumping.
+#region Primary: Get away from dangers.
+      float avgDistance = (float) (dangers.Select(p => p.Location.Position).Sum(pt => Rules.GridDistance(from, pt))) / (1 + dangers.Count);
+#endregion
+#region 1 Avoid getting in corners.
+      int countFreeSquares = 0;
       foreach (Direction direction in Direction.COMPASS) {
         Point point = from + direction;
         if (point == m_Actor.Location.Position || map.IsWalkableFor(point, m_Actor))
-          ++num2;
+          ++countFreeSquares;
       }
-      float num3 = (float) num2 * 0.1f;
-      bool isInside = map.GetTileAt(from).IsInside;
-      int num4 = 0;
+      float avoidCornerBonus = countFreeSquares * 0.1f;
+#endregion
+#region 2 Prefer going outside/inside if majority of dangers are inside/outside.
+      bool isFromInside = map.GetTileAt(from).IsInside;
+      int majorityDangersInside = 0;
       foreach (Percept danger in dangers) {
         if (map.GetTileAt(danger.Location.Position).IsInside)
-          ++num4;
+          ++majorityDangersInside;
         else
-          --num4;
+          --majorityDangersInside;
       }
-      float num5 = 0.0f;
-      if (isInside) {
-        if (num4 < 0) num5 = 1.25f;
+      const float inOutFactor = 1.25f;
+      float inOutBonus = 0.0f;
+      if (isFromInside) {
+        if (majorityDangersInside < 0) inOutBonus = inOutFactor;
       }
-      else if (num4 > 0) num5 = 1.25f;
-      float num6 = 0.0f;
+      else if (majorityDangersInside > 0) inOutBonus = inOutFactor;
+#endregion
+#region 3 If can tire, prefer not jumping.
+      float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
         MapObject mapObjectAt = map.GetMapObjectAt(from);
-        if (mapObjectAt != null && mapObjectAt.IsJumpable) num6 = 0.1f;
+        if (mapObjectAt != null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
       }
-      float num7 = 1f + num3 + num5 - num6;
-      return num1 * num7;
+#endregion
+      float heuristicFactorBonus = 1f + avoidCornerBonus + inOutBonus - jumpPenalty;
+      return avgDistance * heuristicFactorBonus;
     }
 
     protected BaseAI.ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
