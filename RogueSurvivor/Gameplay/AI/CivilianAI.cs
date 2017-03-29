@@ -68,6 +68,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       "MEIN FUHRER!",
       "KOMM HIER BITE"
     };
+    private const int LOS_MEMORY = 1;   // just enough memory to not walk into exploding grenades
     private const int FOLLOW_NPCLEADER_MAXDIST = 1;
     private const int FOLLOW_PLAYERLEADER_MAXDIST = 1;
     private const int USE_EXIT_CHANCE = 20;
@@ -88,14 +89,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly LOSSensor m_LOSSensor;
+    private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     private int m_SafeTurns = 0;
     private readonly ExplorationData m_Exploration = new ExplorationData();
     private string[] m_Emotes;
 
     public CivilianAI()
     {
-      m_LOSSensor = new LOSSensor(VISION_SEES);
       m_Emotes = CivilianAI.FIGHT_EMOTES;
     }
 
@@ -119,10 +119,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override List<Percept> UpdateSensors()
     {
-      return m_LOSSensor.Sense(m_Actor);
+      return m_MemLOSSensor.Sense(m_Actor);
     }
 
-    public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
+    public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }
 
     // return value must contain a {0} placeholder for the target name
     private string LeaderText_NotLeavingBehind(Actor target)
@@ -144,7 +144,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end item juggling check
 
-      List<Percept> percepts1 = FilterSameMap(UpdateSensors());
+      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+      List<Percept> percepts1 = FilterCurrent(percepts_all);
 
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
@@ -200,7 +201,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       HashSet<Actor> immediate_threat = new HashSet<Actor>();
       if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
       AddTrapsToDamageField(damage_field, percepts1);
-      bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts1);  // only civilians and soldiers respect explosives; CHAR and gang don't
+      bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts_all);  // only civilians and soldiers respect explosives; CHAR and gang don't
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       if (0>= immediate_threat.Count) immediate_threat = null;
@@ -270,7 +271,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (null != tmpAction) return tmpAction;
 
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 
