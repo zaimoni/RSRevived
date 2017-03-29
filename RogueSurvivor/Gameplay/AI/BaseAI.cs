@@ -343,7 +343,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        float num = SafetyFrom(location.Position, goals);
+        float num = SafetyFrom(location.Position, goals.Select(p => p.Location.Position));
         if (m_Actor.HasLeader) {
           num -= (float)Rules.StdDistance(location.Position, m_Actor.Leader.Location.Position);
           if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
@@ -1056,7 +1056,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <param name="from">position to compute the safety</param>
     /// <param name="dangers">dangers to avoid</param>
     /// <returns>a heuristic value, the higher the better the safety from the dangers</returns>
-    protected float SafetyFrom(Point from, List<Percept> dangers)
+    protected float SafetyFrom(Point from, IEnumerable<Point> dangers)
     {
       Map map = m_Actor.Location.Map;
 
@@ -1067,7 +1067,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // 2 Prefer going outside/inside if majority of dangers are inside/outside.
       // 3 If can tire, prefer not jumping.
 #region Primary: Get away from dangers.
-      float avgDistance = (float) (dangers.Select(p => p.Location.Position).Sum(pt => Rules.GridDistance(from, pt))) / (1 + dangers.Count);
+      float avgDistance = (float) (dangers.Sum(pt => Rules.GridDistance(from, pt))) / (1 + dangers.Count());
 #endregion
 #region 1 Avoid getting in corners.
       int countFreeSquares = map.CountAdjacentTo(from,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
@@ -1076,8 +1076,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 2 Prefer going outside/inside if majority of dangers are inside/outside.
       bool isFromInside = map.GetTileAt(from).IsInside;
       int majorityDangersInside = 0;
-      foreach (Percept danger in dangers) {
-        if (map.GetTileAt(danger.Location.Position).IsInside)
+      foreach (Point danger in dangers) {
+        if (map.GetTileAt(danger).IsInside)
           ++majorityDangersInside;
         else
           --majorityDangersInside;
