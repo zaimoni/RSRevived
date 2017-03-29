@@ -1276,17 +1276,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
-    protected ActorAction BehaviorFleeFromExplosives(List<Percept> itemStacks)
-    {
-      List<Percept> goals = itemStacks.FilterT<Inventory>(inv => inv.Has<ItemPrimedExplosive>());
-      if (null == goals) return null;
-      ActorAction actorAction = BehaviorWalkAwayFrom(goals);
-      if (actorAction == null) return null;
-      RunIfPossible();
-	  m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
-      return actorAction;
-    }
-
     protected ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;

@@ -323,11 +323,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected ActorAction BehaviorWalkAwayFrom(RogueGame game, Percept goal)
-    {
-      return BehaviorWalkAwayFrom(new List<Percept>(1) { goal });
-    }
-
     protected ActorAction BehaviorWalkAwayFrom(List<Percept> goals)
     {
       Actor leader = m_Actor.Leader;
