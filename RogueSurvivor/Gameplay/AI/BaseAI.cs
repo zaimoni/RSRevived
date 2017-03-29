@@ -1070,12 +1070,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       float avgDistance = (float) (dangers.Select(p => p.Location.Position).Sum(pt => Rules.GridDistance(from, pt))) / (1 + dangers.Count);
 #endregion
 #region 1 Avoid getting in corners.
-      int countFreeSquares = 0;
-      foreach (Direction direction in Direction.COMPASS) {
-        Point point = from + direction;
-        if (point == m_Actor.Location.Position || map.IsWalkableFor(point, m_Actor))
-          ++countFreeSquares;
-      }
+      int countFreeSquares = map.CountAdjacentTo(from,pt => pt == m_Actor.Location.Position || map.IsWalkableFor(pt, m_Actor));
       float avoidCornerBonus = countFreeSquares * 0.1f;
 #endregion
 #region 2 Prefer going outside/inside if majority of dangers are inside/outside.
