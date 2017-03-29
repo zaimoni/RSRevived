@@ -10,7 +10,6 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
-using djack.RogueSurvivor.Engine.AI;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
@@ -138,7 +137,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tmp.Any()) return true;
         tmp = tmp.Except(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
-        ret = (m_Actor.Controller as BaseAI).WalkAwayFrom(tmp);
+        ret = (m_Actor.Controller as BaseAI).WalkAwayFrom(tmp.Select(loc => loc.Position));
         return true;
       }
     }
@@ -1541,7 +1540,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX or run for the exit here
-        tmpAction = BehaviorWalkAwayFrom(enemies);
+        tmpAction = BehaviorWalkAwayFrom(enemies.Select(p => p.Location.Position));
         if (null != tmpAction) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;

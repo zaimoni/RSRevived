@@ -323,7 +323,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected ActorAction BehaviorWalkAwayFrom(List<Percept> goals)
+    protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
       Actor leader = m_Actor.Leader;
       ItemRangedWeapon leader_rw = (m_Actor.HasLeader ? m_Actor.Leader.GetEquippedWeapon() as ItemRangedWeapon : null);
@@ -337,7 +337,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
         Location location = m_Actor.Location + dir;
-        float num = SafetyFrom(location.Position, goals.Select(p => p.Location.Position));
+        float num = SafetyFrom(location.Position, goals);
         if (m_Actor.HasLeader) {
           num -= (float)Rules.StdDistance(location.Position, m_Actor.Leader.Location.Position);
           if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
@@ -852,7 +852,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX we should run for the exit here
-        tmpAction = BehaviorWalkAwayFrom(enemies);
+        tmpAction = BehaviorWalkAwayFrom(enemies.Select(p => p.Location.Position));
         if (null != tmpAction) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
