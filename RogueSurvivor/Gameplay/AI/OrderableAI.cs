@@ -112,9 +112,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#if FAIL
     [Serializable]
-    public Goal_BreakLineOfSight : Objective
+    internal class Goal_BreakLineOfSight : Objective
     {
       private HashSet<Location> _locs;
 
@@ -127,21 +126,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_BreakLineOfSight(int t0, Actor who, IEnumerable<Location> locs)
       : base(t0,who)
       {
-        _locs = new HashSet<Location>(){loc};
+        _locs = new HashSet<Location>(locs);
       }
 
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-        IEnumerable<Point> tmp = _locs.Where(loc => loc.Map==m_Actor.Map).Select(loc => loc.Position);
+        IEnumerable<Point> tmp = _locs.Where(loc => loc.Map==m_Actor.Location.Map).Select(loc => loc.Position);
         if (!tmp.Any()) return true;
         tmp = tmp.Except(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
-        ret = (m_Actor.Controller as BaseAI).WalkAwayFrom(tmp.Select(loc => loc.Position));
+        ret = (m_Actor.Controller as BaseAI).BehaviorWalkAwayFrom(tmp);
         return true;
       }
     }
-#endif
 
 #if FAIL
     [Serializable]
@@ -1508,12 +1506,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < close_doors.Count) {
           int i = game.Rules.Roll(0, close_doors.Count);
           foreach(DoorWindow door in close_doors.Values) {
-            if (0 >= i--) return new ActionCloseDoor(m_Actor, door);
+            if (0 >= i--) {
+              Objectives.Add(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
+              return new ActionCloseDoor(m_Actor, door);
+            }
           }
         } else if (0 < barricade_doors.Count) {
           int i = game.Rules.Roll(0, barricade_doors.Count);
           foreach(DoorWindow door in barricade_doors.Values) {
-            if (0 >= i--) return new ActionBarricadeDoor(m_Actor, door);
+            if (0 >= i--) {
+              Objectives.Add(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
+              return new ActionBarricadeDoor(m_Actor, door);
+            }
           }
         }
         }   // enable automatic GC

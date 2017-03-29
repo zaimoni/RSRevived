@@ -323,7 +323,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
+    public ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
       Actor leader = m_Actor.Leader;
       ItemRangedWeapon leader_rw = (m_Actor.HasLeader ? m_Actor.Leader.GetEquippedWeapon() as ItemRangedWeapon : null);
