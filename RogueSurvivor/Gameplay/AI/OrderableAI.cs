@@ -115,6 +115,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 #if FAIL
     [Serializable]
+    public Goal_BreakLineOfSight : Objective
+    {
+      private HashSet<Location> _locs;
+
+      public Goal_BreakLineOfSight(int t0, Actor who, Location loc)
+      : base(t0,who)
+      {
+        _locs = new HashSet<Location>(){loc};
+      }
+
+      public Goal_BreakLineOfSight(int t0, Actor who, IEnumerable<Location> locs)
+      : base(t0,who)
+      {
+        _locs = new HashSet<Location>(){loc};
+      }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        IEnumerable<Point> tmp = _locs.Where(loc => loc.Map==m_Actor.Map).Select(loc => loc.Position);
+        if (!tmp.Any()) return true;
+        tmp = tmp.Except(m_Actor.Controller.FOV);
+        if (!tmp.Any()) return true;
+        ret = (m_Actor.Controller as BaseAI).WalkAwayFrom(tmp);
+        return true;
+      }
+    }
+#endif
+
+#if FAIL
+    [Serializable]
     public Goal_PathTo : Objective
     {
       private HashSet<Location> _locs;
