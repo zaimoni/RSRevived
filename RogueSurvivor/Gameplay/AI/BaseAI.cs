@@ -331,14 +331,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorWalkAwayFrom(List<Percept> goals)
     {
       Actor leader = m_Actor.Leader;
-      bool leaderIsFiring = m_Actor.HasLeader && m_Actor.Leader.GetEquippedWeapon() is ItemRangedWeapon;
-      Actor actor = (leaderIsFiring ? GetNearestTargetFor(m_Actor.Leader) : null);
+      ItemRangedWeapon leader_rw = (m_Actor.HasLeader ? m_Actor.Leader.GetEquippedWeapon() as ItemRangedWeapon : null);
+      Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
       bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
       List<Point> leaderLoF = null;
       if (checkLeaderLoF) {
         leaderLoF = new List<Point>(1);
-        ItemRangedWeapon itemRangedWeapon = m_Actor.Leader.GetEquippedWeapon() as ItemRangedWeapon;
-        LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (itemRangedWeapon.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
+        LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (leader_rw.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
       }
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
