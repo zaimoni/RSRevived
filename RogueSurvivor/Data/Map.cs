@@ -422,11 +422,13 @@ namespace djack.RogueSurvivor.Data
             if (p == actor.Location.Position) continue;
             ActorAction tmp = Engine.Rules.IsBumpableFor(actor, new Location(this, p));
             if (null==tmp) {
-              m_StepPather.Blacklist(p);
+              ret.Blacklist(p);
               continue;
             }
-            if (tmp is Engine.Actions.ActionBump) tmp = (tmp as Engine.Actions.ActionBump).ConcreteAction;
-            if (Engine.Rules.IsAdjacent(p, actor.Location.Position) && tmp is Engine.Actions.ActionChat) m_StepPather.Blacklist(p);
+            if (Engine.Rules.IsAdjacent(p, actor.Location.Position)) {
+              if (tmp is Engine.Actions.ActionBump) tmp = (tmp as Engine.Actions.ActionBump).ConcreteAction;
+              if (tmp is Engine.Actions.ActionChat) ret.Blacklist(p);
+            }
 	      }
 	    }
       }
