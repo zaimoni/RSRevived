@@ -1284,13 +1284,9 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantBarricade(DoorWindow door)
     {
       Contract.Requires(null != door);
-      if (!Model.Abilities.CanBarricade) return "no ability to barricade";
-      if (!door.IsClosed && !door.IsBroken) return "not closed or broken";
-      if (door.BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
-      if (door.Location.Actor != null) return "someone is there";
-      if (Inventory == null || Inventory.IsEmpty) return "no items";
-      if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
-      return "";
+      string reason;
+      if (!door.CanBarricade(out reason)) return reason;
+      return ReasonCouldntBarricade();
     }
 
     public bool CanBarricade(DoorWindow door, out string reason)
@@ -1322,26 +1318,6 @@ namespace djack.RogueSurvivor.Data
     public bool CouldBarricade()
     {
       return string.IsNullOrEmpty(ReasonCouldntBarricade());
-    }
-
-    private string ReasonCantBarricadeThis(DoorWindow door)
-    {
-      Contract.Requires(null != door);
-      if (!door.IsClosed && !door.IsBroken) return "not closed or broken";
-      if (door.BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
-      if (door.Location.Actor != null) return "someone is there";
-      return "";
-    }
-
-    public bool CanBarricadeThis(DoorWindow door, out string reason)
-    {
-      reason = ReasonCantBarricadeThis(door);
-      return string.IsNullOrEmpty(reason);
-    }
-
-    public bool CanBarricadeThis(DoorWindow door)
-    {
-      return string.IsNullOrEmpty(ReasonCantBarricadeThis(door));
     }
 
     private string ReasonCantBash(DoorWindow door)

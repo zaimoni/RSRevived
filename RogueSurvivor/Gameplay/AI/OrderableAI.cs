@@ -1482,7 +1482,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
           if (m_Actor.CanClose(door)) {
             if ((1 < Rules.GridDistance(pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
-          } else if (could_barricade && m_Actor.CanBarricadeThis(door)) {
+          } else if (could_barricade && door.CanBarricade()) {
             barricade_doors[pt] = door;
           }
         }

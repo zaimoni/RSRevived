@@ -74,6 +74,25 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       if ((0 < old)!=(0 < BarricadePoints)) InvalidateLOS();
     }
 
+    private string ReasonCantBarricade()
+    {
+      if (!IsClosed && !IsBroken) return "not closed or broken";
+      if (BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
+      if (Location.Actor != null) return "someone is there";
+      return "";
+    }
+
+    public bool CanBarricade(out string reason)
+    {
+      reason = ReasonCantBarricade();
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBarricade()
+    {
+      return string.IsNullOrEmpty(ReasonCantBarricade());
+    }
+
     private void _SetState(int newState)
     { // cf IsTransparent
       if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
