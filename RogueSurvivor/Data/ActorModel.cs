@@ -38,6 +38,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(abilities.HasToSleep ^ (0 >= startingSheet.BaseSleepPoints));
       Contract.Requires(abilities.HasSanity ^ (0 >= startingSheet.BaseSanity));
       Contract.Requires(!abilities.CanTrade || defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)));
+      Contract.Requires(!abilities.CanBarricade || defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)));
       Contract.Requires(!defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)) || abilities.HasInventory);
 
       ImageID = imageID;

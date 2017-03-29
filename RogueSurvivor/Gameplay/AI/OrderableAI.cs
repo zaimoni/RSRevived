@@ -1469,26 +1469,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (decideToFlee) {
         if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
           game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
-        if (m_Actor.Model.Abilities.CanUseMapObjects) {
-          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-          {
-            Point point = m_Actor.Location.Position + dir;
-            DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
-            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanClose(door)) && (Rules.GridDistance(point, enemy.Location.Position) != 1 || !enemy.CanClose(door));
-          }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-          if (choiceEval != null)
-            return new ActionCloseDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
+        // All OrderableAI instances currently can both use map objects, and barricade
+        // there is an inventory check requirement on barricading as well
+        // due to preconditions it is mutually exclusive that a door be closable or barricadable
+        {
+        bool could_barricade = m_Actor.CouldBarricade();
+        Dictionary<Point,DoorWindow> close_doors = new Dictionary<Point,DoorWindow>();
+        Dictionary<Point,DoorWindow> barricade_doors = new Dictionary<Point,DoorWindow>();
+        foreach(Point pt in Direction.COMPASS_LIST.Select(dir => m_Actor.Location.Position + dir)) {
+          DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(pt) as DoorWindow;
+          if (null == door) continue;
+          if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
+          if (m_Actor.CanClose(door)) {
+            if ((1 < Rules.GridDistance(pt, enemy.Location.Position) || !enemy.CanClose(door))) close_doors[pt] = door;
+          } else if (could_barricade && m_Actor.CanBarricadeThis(door)) {
+            barricade_doors[pt] = door;
+          }
         }
-        if (m_Actor.Model.Abilities.CanBarricade) {
-          BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-          {
-            Point point = m_Actor.Location.Position + dir;
-            DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(point) as DoorWindow;
-            return door != null && (IsBetween(m_Actor.Location.Position, point, enemy.Location.Position) && m_Actor.CanBarricade(door));
-          }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
-          if (choiceEval != null)
-            return new ActionBarricadeDoor(m_Actor, m_Actor.Location.Map.GetMapObjectAt(m_Actor.Location.Position + choiceEval.Choice) as DoorWindow);
+        if (0 < close_doors.Count) {
+          int i = game.Rules.Roll(0, close_doors.Count);
+          foreach(DoorWindow door in close_doors.Values) {
+            if (0 >= i--) return new ActionCloseDoor(m_Actor, door);
+          }
+        } else if (0 < barricade_doors.Count) {
+          int i = game.Rules.Roll(0, barricade_doors.Count);
+          foreach(DoorWindow door in barricade_doors.Values) {
+            if (0 >= i--) return new ActionBarricadeDoor(m_Actor, door);
+          }
         }
+        }   // enable automatic GC
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.NONE);
           if (null != tmpAction) {

@@ -75,6 +75,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires((Flags.NONE != (in_flags & Flags.HAS_INVENTORY)) || (Flags.NONE == (in_flags & Flags.CAN_TRADE)));
       Contract.Requires((Flags.NONE != (in_flags & Flags.UNDEAD)) || (Flags.NONE == (in_flags & Flags.UNDEAD_MASTER)));
       Contract.Requires((Flags.NONE != (in_flags & Flags.CAN_JUMP)) || (Flags.NONE == (in_flags & Flags.CAN_JUMP_STUMBLE)));
+      Contract.Requires((Flags.NONE != (in_flags & Flags.CAN_USE_MAP_OBJECTS)) || (Flags.NONE == (in_flags & Flags.CAN_BARRICADE)));
       m_Flags = in_flags;
     }
 

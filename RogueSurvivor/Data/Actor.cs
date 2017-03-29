@@ -1304,7 +1304,47 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantBarricade(door));
     }
 
-	private string ReasonCantBash(DoorWindow door)
+    // we have a for loop that requires splitting CanBarricade into two halves for efficiency
+    private string ReasonCouldntBarricade()
+    {
+      if (!Model.Abilities.CanBarricade) return "no ability to barricade";
+      if (Inventory == null || Inventory.IsEmpty) return "no items";
+      if (!Inventory.Has<ItemBarricadeMaterial>()) return "no barricading material";
+      return "";
+    }
+
+    public bool CouldBarricade(out string reason)
+    {
+      reason = ReasonCouldntBarricade();
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CouldBarricade()
+    {
+      return string.IsNullOrEmpty(ReasonCouldntBarricade());
+    }
+
+    private string ReasonCantBarricadeThis(DoorWindow door)
+    {
+      Contract.Requires(null != door);
+      if (!door.IsClosed && !door.IsBroken) return "not closed or broken";
+      if (door.BarricadePoints >= Rules.BARRICADING_MAX) return "barricade limit reached";
+      if (door.Location.Actor != null) return "someone is there";
+      return "";
+    }
+
+    public bool CanBarricadeThis(DoorWindow door, out string reason)
+    {
+      reason = ReasonCantBarricadeThis(door);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBarricadeThis(DoorWindow door)
+    {
+      return string.IsNullOrEmpty(ReasonCantBarricadeThis(door));
+    }
+
+    private string ReasonCantBash(DoorWindow door)
 	{
 	  Contract.Requires(null != door);
       if (!Model.Abilities.CanBashDoors) return "can't bash doors";
