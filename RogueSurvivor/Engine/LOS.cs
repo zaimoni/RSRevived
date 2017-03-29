@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 #define ANGBAND
+#define FOV_CACHE
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -292,11 +293,12 @@ namespace djack.RogueSurvivor.Engine
     // To cache FOV centrally, we would have to be able to invalidate on change of mapobject position or transparency reliably
     // and also ditch the cache when it got "old"
     // note that actors only block their own hypothetical lines of fire, not hypothetical throwing lines or hypothetical FOV
+    // the return of a cached value is assumed to be by value
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
-#if FAIL
-      HashSet<Point> visibleSet
-      if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),visibleSet) return visibleSet;
+#if FOV_CACHE
+      HashSet<Point> visibleSet;
+      if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>();
 #else
       HashSet<Point> visibleSet = new HashSet<Point>();
@@ -344,8 +346,8 @@ namespace djack.RogueSurvivor.Engine
         if (num >= 3) pointList2.Add(point2);
       }
       visibleSet.UnionWith(pointList2);
-#if FAIL
-      FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),visibleSet);
+#if FOV_CACHE
+      FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),new HashSet<Point>(visibleSet));
 #endif
       return visibleSet;
     }
