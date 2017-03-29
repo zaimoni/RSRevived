@@ -186,9 +186,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-	public bool AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+    public bool AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept_<Inventory>> goals)
 	{
-      List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemPrimedExplosive>());
       if (null == goals) return false;
       bool in_blast_field = false;
 	  IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p=>new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
@@ -210,6 +209,11 @@ namespace djack.RogueSurvivor.Data
 	    }
 	  }
       return in_blast_field;
+	}
+
+    public bool AddExplosivesToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+	{
+      return AddExplosivesToDamageField(damage_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
 	}
 
     public void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)

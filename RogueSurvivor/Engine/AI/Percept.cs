@@ -69,8 +69,7 @@ namespace djack.RogueSurvivor.Engine.AI
 	  return (tmp.Any() ? tmp.ToList() : null);
 	}
 
-        // for completeness
-#if FAIL
+    // for completeness
 	internal static List<Percept_<_T_>> FilterCast<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn=null) where _T_:class
 	{
       if (null == percepts || 0 == percepts.Count()) return null;
@@ -83,7 +82,6 @@ namespace djack.RogueSurvivor.Engine.AI
 	  }
 	  return ret;
 	}
-#endif
 
     internal static Percept_<_T_> FilterFirst<_T_>(this IEnumerable<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {

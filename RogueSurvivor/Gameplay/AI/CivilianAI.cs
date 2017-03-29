@@ -189,7 +189,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      // obsolete: not needed with AddExplosivesToDamageField
       ActorAction tmpAction = null;
 
       // melee risk management check
