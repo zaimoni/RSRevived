@@ -8145,9 +8145,10 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PERSUADE), follower, " to leave."));
     }
 
+    // It breaks immersion to have to run, rather than wait, to adjust the energy level above 50
     public void DoWait(Actor actor)
     {
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      actor.Wait();
       if (ForceVisibleToPlayer(actor)) {
         if (actor.StaminaPoints < actor.MaxSTA)
           AddMessage(MakeMessage(actor, string.Format("{0} {1} breath.", (object) Conjugate(actor, VERB_CATCH), (object) HisOrHer(actor))));

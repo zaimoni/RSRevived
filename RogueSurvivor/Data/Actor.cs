@@ -1408,6 +1408,12 @@ namespace djack.RogueSurvivor.Data
       m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
     }
 
+    public void Wait()
+    {
+      m_ActionPoints = 0;
+      m_LastActionTurn = Location.Map.LocalTime.TurnCounter;
+    }
+
     public bool CanActThisTurn {
       get {
         return 0 < m_ActionPoints;
