@@ -965,26 +965,6 @@ namespace djack.RogueSurvivor.Engine
       return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
     }
 
-    public bool IsTrapCoveringMapObjectThere(Map map, Point pos)
-    {
-      MapObject mapObjectAt = map.GetMapObjectAt(pos);
-      if (mapObjectAt == null)
-        return false;
-      if (mapObjectAt.IsJumpable)
-        return true;
-      if (mapObjectAt.IsWalkable)
-        return !(mapObjectAt is DoorWindow);
-      return false;
-    }
-
-    public bool IsTrapTriggeringMapObjectThere(Map map, Point pos)
-    {
-      MapObject mapObjectAt = map.GetMapObjectAt(pos);
-      if (mapObjectAt == null || mapObjectAt.IsWalkable || mapObjectAt.IsJumpable)
-        return false;
-      return !(mapObjectAt is DoorWindow);
-    }
-
     public int ZGrabChance(Actor grabber, Actor victim)
     {
       return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * Rules.SKILL_ZGRAB_CHANCE;

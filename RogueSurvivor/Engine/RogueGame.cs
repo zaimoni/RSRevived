@@ -7831,7 +7831,7 @@ namespace djack.RogueSurvivor.Engine
 #if ENABLE_THREAT_TRACKING
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
 #endif
-      if (m_Rules.IsTrapCoveringMapObjectThere(map, position)) return;
+      if (map.IsTrapCoveringMapObjectAt(position)) return;
       List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>();
       if (null == trapsAt) return;
       List<ItemTrap> trapList = null;
@@ -7852,7 +7852,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = actor.Location.Map;
       Point position = actor.Location.Position;
       bool canLeave = true;
-      if (!m_Rules.IsTrapCoveringMapObjectThere(map, position)) {
+      if (!map.IsTrapCoveringMapObjectAt(position)) {
         Inventory itemsAt = map.GetItemsAt(position);
         if (itemsAt != null) {
           List<Item> objList = null;
@@ -7935,8 +7935,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void CheckMapObjectTriggersTraps(Map map, Point pos)
     {
-      if (!m_Rules.IsTrapTriggeringMapObjectThere(map, pos)) return;
-      MapObject mapObjectAt = map.GetMapObjectAt(pos);
+      MapObject mapObjectAt = map.GetTrapTriggeringMapObjectAt(pos);
+      if (null == mapObjectAt) return;
       Inventory itemsAt = map.GetItemsAt(pos);
       if (itemsAt == null) return;
       List<Item> objList = null;

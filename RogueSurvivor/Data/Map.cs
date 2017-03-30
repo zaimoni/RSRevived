@@ -728,6 +728,25 @@ namespace djack.RogueSurvivor.Data
       m_aux_MapObjectsByPosition.Remove(new Point(x, y));
     }
 
+    public bool IsTrapCoveringMapObjectAt(Point pos)
+    {
+      MapObject mapObjectAt = GetMapObjectAt(pos);
+      if (mapObjectAt == null) return false;
+      if (mapObjectAt is DoorWindow) return false;
+      if (mapObjectAt.IsJumpable) return true;
+      return mapObjectAt.IsWalkable;
+    }
+
+    public MapObject GetTrapTriggeringMapObjectAt(Point pos)
+    {
+      MapObject mapObjectAt = GetMapObjectAt(pos);
+      if (mapObjectAt == null) return null;
+      if (mapObjectAt is DoorWindow) return null;
+      if (mapObjectAt.IsJumpable) return null;
+      if (mapObjectAt.IsWalkable) return null;
+      return mapObjectAt;
+    }
+
     public void OpenAllGates()
     {
       foreach(MapObject mapObject in MapObjects.Where(obj=>Gameplay.GameImages.OBJ_GATE_CLOSED==obj.ImageID)) {
