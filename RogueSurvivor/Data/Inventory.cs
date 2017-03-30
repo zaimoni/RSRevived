@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class Inventory
   {
-    private readonly List<Item> m_Items;
+    private readonly List<Item> m_Items = new List<Item>(1);
     public int MaxCapacity { get; set; }    // Actor requires a public setter
 
     public IEnumerable<Item> Items { get { return m_Items; } }
@@ -59,7 +59,6 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(0 <= maxCapacity);
       MaxCapacity = maxCapacity;
-      m_Items = new List<Item>(1);
     }
 
     public bool AddAll(Item it)
@@ -244,6 +243,15 @@ namespace djack.RogueSurvivor.Data
         if (tmp != null && (fn == null || fn(tmp))) return tmp;
       }
       return null;
+    }
+
+    public override string ToString()
+    {
+      string ret = "inv/"+m_Items.Count.ToString();
+      foreach (Item obj in m_Items) {
+        ret += "\n"+obj.ToString();
+      }
+      return ret;
     }
   }
 }

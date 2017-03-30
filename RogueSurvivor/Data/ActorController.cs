@@ -346,7 +346,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (it is ItemMeleeWeapon) {
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
-        if ((it.Model as ItemMeleeWeaponModel).Attack.Rating <= martial_arts.Rating) return false;
+        if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;
 
         if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
