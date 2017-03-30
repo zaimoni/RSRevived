@@ -226,7 +226,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Model.Abilities.IsIntelligent && null != m_Actor.Location.Map.GetActivatedTrapAt((m_Actor.Location + dir).Position))
           num -= 1000;
         return (float) num;
-      }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+      }), (a, b) => a > b);
       return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
@@ -256,7 +256,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (float)Rules.StdDistance(location.Position, goal);
       }), (Func<float, float, bool>) ((a, b) =>
       {
-        if (!float.IsNaN(a)) return (double) a < (double) b;
+        if (!float.IsNaN(a)) return a < b;
         return false;
       }));
       if (choiceEval != null) return choiceEval.Choice;
@@ -343,7 +343,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
         }
         return num;
-      }), (Func<float, float, bool>) ((a, b) => a > b));
+      }), (a, b) => a > b);
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
@@ -916,7 +916,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (float) (num + game.Rules.Roll(0, 10));
       }), (Func<float, float, bool>) ((a, b) =>
       {
-        if (!float.IsNaN(a)) return (double) a > (double) b;
+        if (!float.IsNaN(a)) return a > b;
         return false;
       }));
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);

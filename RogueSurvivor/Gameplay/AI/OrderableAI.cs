@@ -771,7 +771,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ranged weapon: prefer to maintain LoF when retreating
         MaximizeRangedTargets(retreat, enemies);
         MaximizeRangedTargets(run_retreat, enemies);
-        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed < 2 * m_Actor.Speed);
+        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed <= 2 * m_Actor.Speed);   // typically rats.
         if (!fast_enemies.Any()) {
           // ranged weapon: fast retreat ok
           // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
@@ -1409,7 +1409,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (needCure) num += factorCure * it.InfectionCure;
         if (needSan) num += factorSan * it.SanityCure;
         return (float) num;
-      }), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+      }), (a, b) => a > b);
       if (choiceEval == null || (double) choiceEval.Value <= 0.0) return null;
       return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
     }
@@ -1645,7 +1645,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return fortification != null && !fortification.IsTransparent;
         }));
         return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
-      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, true)) return null;
@@ -1688,7 +1688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.HasExitAt(point))
           return false;
         return IsDoorwayOrCorridor(map, point);
-      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (Func<float, float, bool>) ((a, b) => (double) a > (double) b));
+      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, false)) return null;
