@@ -249,6 +249,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // if we have no enemies and have not fled an explosion, our friends can see that we're safe
+      if (null == enemies && null != friends) {
+        Dictionary<Actor,ThreatTracking> observers = new Dictionary<Actor, ThreatTracking>();
+        foreach(Percept fr in friends) {
+          Actor friend = fr.Percepted as Actor;
+          ThreatTracking ally_threat = friend.Threats;
+          if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
+          if (!InCommunicationWith(friend)) continue;
+          observers[friend] = ally_threat;
+        }
+        // but this won't trigger if any of our friends are mutual enemies
+        if (0<observers.Count) {
+          foreach(KeyValuePair<Actor,ThreatTracking> wary in observers) {
+            List<Actor> tmp = (1<friends.Count ? wary.Key.GetEnemiesInFov(FOV) : null); // XXX could do a specialized bool test and avoid the sorting overhead
+            if (null == tmp) wary.Value.Cleared(m_Actor.Location.Map,FOV);
+          }
+        }
+      }
+
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, friends, enemies, slow_melee_threat);
