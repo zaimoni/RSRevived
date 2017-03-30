@@ -303,6 +303,7 @@ namespace djack.RogueSurvivor.Engine
 #else
       HashSet<Point> visibleSet = new HashSet<Point>();
 #endif
+      double edge_of_maxrange = maxRange+0.5;
       Point position = a_loc.Position;
       Map map = a_loc.Map;
       int x1 = position.X - maxRange;
@@ -317,7 +318,10 @@ namespace djack.RogueSurvivor.Engine
         point1.X = x3;
         for (int y3 = y1; y3 <= y2; ++y3) {
           point1.Y = y3;
-          if ((double)Rules.LOSDistance(position, point1) > (double)maxRange) continue;
+          // We want to reject points that are out of range, but still look circular in an open space
+          // the historical multipler was Math.Sqrt(.75)
+          // however, since we are in a cartesian gridspace the "radius to the edge of the square at max_range on the coordinate axis" is "radius to midpoint of square"+.5
+          if (Rules.StdDistance(position, point1) > edge_of_maxrange) continue;
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;
