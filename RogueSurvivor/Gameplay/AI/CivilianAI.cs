@@ -344,9 +344,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       IEnumerable<Engine.MapObjects.PowerGenerator> generators_off = GeneratorsToTurnOn;    // reused much later
-      foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {
-        if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
-          return new ActionSwitchPowerGenerator(m_Actor, gen);
+      if (null != generators_off) {
+        foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {
+          if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
+            return new ActionSwitchPowerGenerator(m_Actor, gen);
+          }
         }
       }
 
@@ -760,7 +762,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
 
-        if (0<generators_off.Count()) {
+        if (null!= generators_off && 0<generators_off.Count()) {
           tmpAction = BehaviorHastyNavigate(new HashSet<Point>(generators_off.Select(gen => gen.Location.Position)));
           if (null != tmpAction) return tmpAction;
         }
