@@ -402,31 +402,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public List<Actor> GetEnemiesInFov(Actor actor, HashSet<Point> fov)
-    {
-      Contract.Requires(null != actor);
-      Contract.Requires(null != fov);
-      List<Actor> actorList = (List<Actor>) null;
-      foreach (Point position in fov) {
-        Actor actorAt = actor.Location.Map.GetActorAt(position);
-        if (actorAt != null && actorAt != actor && actor.IsEnemyOf(actorAt)) {
-          if (actorList == null)
-            actorList = new List<Actor>(3);
-          actorList.Add(actorAt);
-        }
-      }
-      if (actorList != null) {
-        Point a_pos = actor.Location.Position;
-        actorList.Sort((Comparison<Actor>) ((a, b) =>
-        {
-          double num1 = Rules.StdDistance(a.Location.Position, a_pos);
-          double num2 = Rules.StdDistance(b.Location.Position, a_pos);
-          return num1.CompareTo(num2);
-        }));
-      }
-      return actorList;
-    }
-
     public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF)
     {
       string reason;

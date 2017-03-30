@@ -1089,6 +1089,29 @@ namespace djack.RogueSurvivor.Data
       return false;
     }
 
+    // not just our FoV.
+    public List<Actor> GetEnemiesInFov(HashSet<Point> fov)
+    {
+      Contract.Requires(null != fov);
+      List<Actor> actorList = null;
+      foreach (Point position in fov) {
+        Actor actorAt = Location.Actor;
+        if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
+          (actorList ?? (actorList = new List<Actor>(3))).Add(actorAt);
+        }
+      }
+      if (actorList != null) {
+        Point a_pos = Location.Position;
+        actorList.Sort((Comparison<Actor>) ((a, b) =>
+        {
+          double num1 = Rules.StdDistance(a.Location.Position, a_pos);
+          double num2 = Rules.StdDistance(b.Location.Position, a_pos);
+          return num1.CompareTo(num2);
+        }));
+      }
+      return actorList;
+    }
+
     // We do not handle the enemy relations here.
     public HashSet<Actor> Allies {
       get {
