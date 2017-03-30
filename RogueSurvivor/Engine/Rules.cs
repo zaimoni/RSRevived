@@ -743,11 +743,9 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
-    public static double LOSDistance(Point from, Point to)
+    public static double LOSDistance(Point from, Point to)  // morally StdDistance*~0.866
     {
-      int num1 = to.X - from.X;
-      int num2 = to.Y - from.Y;
-      return Math.Sqrt(0.75 * (double) (num1 * num1 + num2 * num2));
+      return Math.Sqrt(0.75)*StdDistance(from,to);
     }
 
     public static bool WillOtherActTwiceBefore(Actor actor, Actor other)
