@@ -12,9 +12,8 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
-  [Serializable]
-  internal abstract class Sensor
+  internal interface Sensor
   {
-    public abstract List<Percept> Sense(Actor actor);
+    List<Percept> Sense(Actor actor);
   }
 }

@@ -32,14 +32,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
+    private LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
     public FeralDogAI()
-    { 
+    {
     }
 
     public override HashSet<Point> FOV { get { return m_LOSSensor.FOV; } }
+    protected override void SensorsOwnedBy(Actor actor) { m_LOSSensor.OwnedBy(actor); }
 
     public override List<Percept> UpdateSensors()
     {

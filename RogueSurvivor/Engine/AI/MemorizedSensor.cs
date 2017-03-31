@@ -45,7 +45,7 @@ namespace djack.RogueSurvivor.Engine.AI
       m_Percepts = tmp.ToList();
     }
 
-    public override List<Percept> Sense(Actor actor)
+    public List<Percept> Sense(Actor actor)
     {
       Forget(actor);
 

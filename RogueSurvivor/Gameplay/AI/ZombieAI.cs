@@ -58,6 +58,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }
+    protected override void SensorsOwnedBy(Actor actor) { (m_MemLOSSensor.Sensor as LOSSensor).OwnedBy(actor); }
 
     protected override ActorAction SelectAction(RogueGame game)
     {

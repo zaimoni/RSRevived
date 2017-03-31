@@ -39,7 +39,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       m_Filters = filters;
     }
 
-    public override List<Percept> Sense(Actor actor)
+    public void OwnedBy(Actor actor)
+    {
+      m_Actor = actor;
+    }
+
+    public List<Percept> Sense(Actor actor)
     {
       m_Actor = actor;
       HashSet<Point> m_FOV = FOV;

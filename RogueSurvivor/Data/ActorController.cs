@@ -30,8 +30,10 @@ namespace djack.RogueSurvivor.Data
     public virtual void TakeControl(Actor actor)
     {
       m_Actor = actor;
-      if (null!=actor.Location.Map) UpdateSensors();
+      SensorsOwnedBy(actor);
     }
+
+    protected abstract void SensorsOwnedBy(Actor actor);
 
     public virtual void LeaveControl()
     {
