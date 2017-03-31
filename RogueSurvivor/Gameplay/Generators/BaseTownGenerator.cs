@@ -1175,7 +1175,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       bool flag = false;
       for (int left = b.BuildingRect.Left; left < b.BuildingRect.Right && !flag; ++left) {
         for (int top = b.BuildingRect.Top; top < b.BuildingRect.Bottom && !flag; ++top) {
-          if (!map.GetTileAt(left, top).IsInside) {
+          if (!map.IsInsideAt(left, top)) {
             DoorWindow doorWindow = map.GetMapObjectAt(left, top) as DoorWindow;
             if (doorWindow != null && !doorWindow.IsWindow)
               flag = true;
@@ -1186,7 +1186,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         do {
           int x = m_DiceRoller.Roll(b.BuildingRect.Left, b.BuildingRect.Right);
           int y = m_DiceRoller.Roll(b.BuildingRect.Top, b.BuildingRect.Bottom);
-          if (!map.GetTileAt(x, y).IsInside) {
+          if (!map.IsInsideAt(x, y)) {
             DoorWindow doorWindow = map.GetMapObjectAt(x, y) as DoorWindow;
             if (doorWindow != null && doorWindow.IsWindow) {
               map.RemoveMapObjectAt(x, y);

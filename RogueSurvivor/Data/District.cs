@@ -57,7 +57,7 @@ namespace djack.RogueSurvivor.Data
         if (null != m_EntryMap.Police) {
           for (pos.X = 0; pos.X < m_EntryMap.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < m_EntryMap.Height; ++pos.Y) {
-              if (m_EntryMap.GetTileAt(pos.X, pos.Y).IsInside) continue;
+              if (m_EntryMap.IsInsideAt(pos)) continue;
               Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pos));
             }
           }

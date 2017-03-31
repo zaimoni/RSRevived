@@ -3260,7 +3260,7 @@ namespace djack.RogueSurvivor.Engine
           point.X = m_Rules.RollChance(50) ? 0 : map.Width - 1;
           point.Y = m_Rules.RollY(map);
         }
-        if (mustBeOutside && map.GetTileAt(point.X, point.Y).IsInside) continue;
+        if (mustBeOutside && map.IsInsideAt(point)) continue;
         if (!map.IsWalkableFor(point, actorToSpawn)) continue;
         if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
         if (actorToSpawn.WouldBeAdjacentToEnemy(map, point)) continue;
@@ -3284,7 +3284,7 @@ namespace djack.RogueSurvivor.Engine
         p.X = num3;
         p.Y = num4;
         map.TrimToBounds(ref p);
-        if (!map.GetTileAt(p.X, p.Y).IsInside && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
+        if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
           map.PlaceActorAt(actorToSpawn, p);
           return true;
         }
@@ -12249,7 +12249,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Controller = (ActorController) new PlayerController();
       if (townGen.ActorPlace(roller, 10 * map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
       {
-        bool isInside = map.GetTileAt(pt.X, pt.Y).IsInside;
+        bool isInside = map.IsInsideAt(pt);
         if (m_CharGen.IsUndead && isInside || !m_CharGen.IsUndead && !isInside || RogueGame.IsInCHAROffice(new Location(map, pt)))
           return false;
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
@@ -12258,8 +12258,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       })) || townGen.ActorPlace(roller, map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
       {
-        if (map.GetTileAt(pt.X, pt.Y).IsInside)
-          return !RogueGame.IsInCHAROffice(new Location(map, pt));
+        if (map.IsInsideAt(pt)) return !IsInCHAROffice(new Location(map, pt));
         return false;
       })))
         return;

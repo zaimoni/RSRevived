@@ -237,6 +237,18 @@ namespace djack.RogueSurvivor.Data
       SetIsInsideAt(pt.X,pt.Y, inside);
     }
 
+    public bool IsInsideAt(int x, int y)
+    {
+      int i = y*Width+x;
+      return 0!=(m_IsInside[i/8] & (1<<(i%8)));
+    }
+
+    public bool IsInsideAt(Point p)
+    {
+      int i = p.Y*Width+p.X;
+      return 0!=(m_IsInside[i/8] & (1<<(i%8)));
+    }
+
     public void SetTileModelAt(int x, int y, TileModel model)
     {
       if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("position out of map bounds");

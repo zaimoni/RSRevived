@@ -22,23 +22,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Map map = base.Generate(seed, name);
       int maxTries = 10 * map.Width * map.Height;
+      Predicate<Point> outside_test = pt => !map.IsInsideAt(pt);
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
         if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
           Actor newPoliceman = CreateNewPoliceman(0);
-          ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+          ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, outside_test);
         } else {
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
-          ActorPlace(m_DiceRoller, maxTries, map, newCivilian, (Predicate<Point>) (pt => map.GetTileAt(pt.X, pt.Y).IsInside));
+          ActorPlace(m_DiceRoller, maxTries, map, newCivilian, pt => map.IsInsideAt(pt));
         }
       }
       for (int index = 0; index < RogueGame.Options.MaxDogs; ++index) {
         Actor newFeralDog = CreateNewFeralDog(0);
-        ActorPlace(m_DiceRoller, maxTries, map, newFeralDog, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+        ActorPlace(m_DiceRoller, maxTries, map, newFeralDog, outside_test);
       }
       int num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
       for (int index = 0; index < num; ++index) {
         Actor newUndead = CreateNewUndead(0);
-        ActorPlace(m_DiceRoller, maxTries, map, newUndead, (Predicate<Point>) (pt => !map.GetTileAt(pt.X, pt.Y).IsInside));
+        ActorPlace(m_DiceRoller, maxTries, map, newUndead, outside_test);
       }
       return map;
     }
