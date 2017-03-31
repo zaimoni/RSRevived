@@ -77,8 +77,7 @@ namespace Zaimoni.Data
                   incoming.Remove(tmp.Key);
                   continue;
                 }
-                tmp.Value.Remove(key);
-                if (0 >= tmp.Value.Count) expired.Add(tmp.Key);
+                if (tmp.Value.Remove(key) && 0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
             foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
             foreach(Key2 tmp in incoming) {
