@@ -11980,7 +11980,7 @@ namespace djack.RogueSurvivor.Engine
 #if NO_PEACE_WALLS
       return toMap.GetTileModelAt(to).IsWalkable;
 #else
-      return toMap.GetTileModelAt(to).IsWalkable && !toMap.HasMapObjectAt(to) == null;
+      return toMap.GetTileModelAt(to).IsWalkable && !toMap.HasMapObjectAt(to);
 #endif
     }
 
