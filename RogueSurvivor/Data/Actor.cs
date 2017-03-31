@@ -1093,7 +1093,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null != fov);
       List<Actor> actorList = null;
       foreach (Point position in fov) {
-        Actor actorAt = Location.Actor;
+        Actor actorAt = Location.Map.GetActorAt(position);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
           (actorList ?? (actorList = new List<Actor>(3))).Add(actorAt);
         }
