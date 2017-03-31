@@ -12246,7 +12246,7 @@ namespace djack.RogueSurvivor.Engine
         actor.RecomputeStartingStats();
         actor.CreateCivilianDeductFoodSleep(m_Rules);
       }
-      actor.Controller = (ActorController) new PlayerController();
+      actor.Controller = new PlayerController();
       if (townGen.ActorPlace(roller, 10 * map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
       {
         bool isInside = map.IsInsideAt(pt);

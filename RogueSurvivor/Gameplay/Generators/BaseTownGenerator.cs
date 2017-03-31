@@ -3070,7 +3070,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.GangID = gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Controller = new GangAI();
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : MakeItemBaseballBat());
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
       int count = new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY;
@@ -3085,7 +3084,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.GangID = gangId;
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.Controller = (ActorController) new GangAI();
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : (Item)MakeItemBaseballBat());
       int count = new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY;
       if (count > 0)
