@@ -710,7 +710,7 @@ namespace djack.RogueSurvivor.Data
       if (mapObjectAt == mapObj) return;
       if (mapObjectAt != null)
         throw new InvalidOperationException("another mapObject already at position");
-      if (!GetTileAt(position.X, position.Y).Model.IsWalkable)
+      if (!GetTileModelAt(position).IsWalkable)
         throw new InvalidOperationException("cannot place map objects on unwalkable tiles");
       if (HasMapObject(mapObj))
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);

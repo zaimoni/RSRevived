@@ -10652,7 +10652,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawMapObject(MapObject mapObj, Point screen, Color tint)
     {
-      if (mapObj.IsMovable && mapObj.Location.Map.GetTileAt(mapObj.Location.Position.X, mapObj.Location.Position.Y).Model.IsWater) {
+      if (mapObj.IsMovable && mapObj.Location.Map.GetTileModelAt(mapObj.Location.Position).IsWater) {
         int num = (mapObj.Location.Position.X + Session.Get.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
         screen.Y -= num;
       }

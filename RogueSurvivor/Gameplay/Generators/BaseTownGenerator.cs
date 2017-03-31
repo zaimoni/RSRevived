@@ -234,7 +234,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       do {
         for (int x = 0; x < sewers.Width; ++x) {
           for (int y = 0; y < sewers.Height; ++y) {
-            if (m_DiceRoller.RollChance(3) && sewers.GetTileAt(x, y).Model.IsWalkable) {
+            if (m_DiceRoller.RollChance(3) && sewers.GetTileModelAt(x, y).IsWalkable) {
               Tile tileAt = surface.GetTileAt(x, y);
               if (tileAt.Model.IsWalkable && sewers.GetMapObjectAt(x, y) == null && !tileAt.IsInside && ((tileAt.Model == m_Game.GameTiles.FLOOR_WALKWAY || tileAt.Model == m_Game.GameTiles.FLOOR_GRASS) && surface.GetMapObjectAt(x, y) == null))
               {
@@ -262,7 +262,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           bool flag = true;
           for (int left = mSurfaceBlock.Rectangle.Left; left < mSurfaceBlock.Rectangle.Right && flag; ++left) {
             for (int top = mSurfaceBlock.Rectangle.Top; top < mSurfaceBlock.Rectangle.Bottom && flag; ++top) {
-              if (sewers.GetTileAt(left, top).Model.IsWalkable)
+              if (sewers.GetTileModelAt(left, top).IsWalkable)
                 flag = false;
             }
           }
@@ -468,7 +468,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       do {
         int x2 = m_DiceRoller.Roll(10, subway.Width - 10);
         int y2 = direction == Direction.N ? railY - 1 : railY + height;
-        if (!subway.GetTileAt(x2, y2).Model.IsWalkable) {
+        if (!subway.GetTileModelAt(x2, y2).IsWalkable) {
           rect = direction != Direction.N ? new Rectangle(x2, y2, toolsRoomWidth, toolsRoomHeight) : new Rectangle(x2, y2 - toolsRoomHeight + 1, toolsRoomWidth, toolsRoomHeight);
           flag1 = CheckForEachTile(rect, (Predicate<Point>) (pt => !subway.GetTileAt(pt).Model.IsWalkable));
         }
@@ -620,7 +620,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(map, rect, (Func<Point, MapObject>) (pt =>
       {
         if (m_DiceRoller.RollChance(m_Params.WreckedCarChance)) {
-          Tile tileAt = map.GetTileAt(pt.X, pt.Y);
+          Tile tileAt = map.GetTileAt(pt);
           if (!tileAt.IsInside && tileAt.Model.IsWalkable && tileAt.Model != m_Game.GameTiles.FLOOR_GRASS) {
             MapObject mapObj = MakeObjWreckedCar(m_DiceRoller);
             if (m_DiceRoller.RollChance(50)) mapObj.Ignite();
@@ -774,7 +774,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             throw new ArgumentOutOfRangeException("unhandled side");
 #endif
         }
-        if (!map.GetTileAt(x2, y2).Model.IsWalkable)
+        if (!map.GetTileModelAt(x2, y2).IsWalkable)
           PlaceDoor(map, x2, y2, m_Game.GameTiles.FLOOR_TILES, MakeObjWindow());
       }
       if (shopType == BaseTownGenerator.ShopType.GUNSHOP)
@@ -1100,7 +1100,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
       foreach (Rectangle rect4 in rectangleList)
-        ItemsDrop(map, rect4, (Func<Point, bool>) (pt => map.GetTileAt(pt.X, pt.Y).Model == m_Game.GameTiles.FLOOR_OFFICE && map.GetMapObjectAt(pt) == null), (Func<Point, Item>) (pt => MakeRandomCHAROfficeItem()));
+        ItemsDrop(map, rect4, (Func<Point, bool>) (pt => map.GetTileModelAt(pt) == m_Game.GameTiles.FLOOR_OFFICE && map.GetMapObjectAt(pt) == null), pt => MakeRandomCHAROfficeItem());
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
       zone.SetGameAttribute<bool>("CHAR Office", true);
       map.AddZone(zone);
@@ -1258,7 +1258,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddExit(map, exitPosition, linkedMap, exitPosition, (isSurface ? GameImages.DECO_SEWER_HOLE : GameImages.DECO_SEWER_LADDER), true);
       if (!isSurface) {
         Point p = new Point(x, y) + direction;
-        while (map.IsInBounds(p) && !map.GetTileAt(p.X, p.Y).Model.IsWalkable) {
+        while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p.X, p.Y, m_Game.GameTiles.FLOOR_CONCRETE);
           p += direction;
         }
@@ -1372,7 +1372,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           Session.Get.ForcePoliceKnown(new Location(map, pt));
         }));
         Point p = new Point(x1, num) + direction;
-        while (map.IsInBounds(p) && !map.GetTileAt(p.X, p.Y).Model.IsWalkable) {
+        while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p.X, p.Y, m_Game.GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X - 1, p.Y, m_Game.GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X + 1, p.Y, m_Game.GameTiles.FLOOR_CONCRETE);
@@ -2017,7 +2017,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         point.X = m_DiceRoller.Roll(buildingRect.Left, buildingRect.Right);
         point.Y = m_DiceRoller.Roll(buildingRect.Top, buildingRect.Bottom);
       }
-      while (!map.GetTileAt(point.X, point.Y).Model.IsWalkable || map.GetMapObjectAt(point.X, point.Y) != null);
+      while (!map.GetTileModelAt(point).IsWalkable || map.GetMapObjectAt(point) != null);
       Point basementStairs = new Point(point.X - buildingRect.Left, point.Y - buildingRect.Top);
       AddExit(map, point, basement, basementStairs, "Tiles\\Decoration\\stairs_down", true);
       AddExit(basement, basementStairs, map, point, "Tiles\\Decoration\\stairs_up", true);
