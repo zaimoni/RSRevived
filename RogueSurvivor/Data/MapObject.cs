@@ -279,7 +279,7 @@ namespace djack.RogueSurvivor.Data
       Map tmp = Location.Map;
       if (!tmp.IsInBounds(toPos)) return "out of map";
       if (!tmp.GetTileModelAt(toPos).IsWalkable) return "blocked by an obstacle";
-      if (tmp.GetMapObjectAt(toPos) != null) return "blocked by an object";
+      if (tmp.HasMapObjectAt(toPos)) return "blocked by an object";
       if (tmp.GetActorAt(toPos) != null) return "blocked by someone";
       return "";
     }

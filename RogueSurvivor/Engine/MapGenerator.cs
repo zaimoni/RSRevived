@@ -203,8 +203,7 @@ namespace djack.RogueSurvivor.Engine
 #region Map Objects
     public void MapObjectPlace(Map map, int x, int y, MapObject mapObj)
     {
-      if (map.GetMapObjectAt(x, y) != null) return;
-      map.PlaceMapObjectAt(mapObj, new Point(x, y));
+      if (!map.HasMapObjectAt(x, y)) map.PlaceMapObjectAt(mapObj, new Point(x, y));
     }
 
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
@@ -222,8 +221,8 @@ namespace djack.RogueSurvivor.Engine
         point.X = x;
         for (int y = top; y < top + height; ++y) {
           point.Y = y;
-          MapObject mapObj = createFn(point);
-          if (mapObj != null && map.GetMapObjectAt(x, y) == null)
+          MapObject mapObj = createFn(point);   // XXX RNG potentially involved
+          if (mapObj != null && !map.HasMapObjectAt(x, y))
             map.PlaceMapObjectAt(mapObj, point);
         }
       }
@@ -242,7 +241,7 @@ namespace djack.RogueSurvivor.Engine
         point.X = x;
         for (int y = top; y < top + height; ++y) {
           point.Y = y;
-          if (isGoodPosFn(point) && map.GetMapObjectAt(x, y) == null) {
+          if (isGoodPosFn(point) && !map.HasMapObjectAt(x, y)) {
             (pointList ?? (pointList = new List<Point>())).Add(point);
           }
         }

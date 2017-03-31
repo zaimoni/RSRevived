@@ -414,8 +414,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!isInside && map.GetCorpsesAt(pos) != null) reason = "that corpse will serve as a bait for";
       else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
-        MapObject mapObjectAt = map.GetMapObjectAt(pos);
-        if (mapObjectAt != null && mapObjectAt is DoorWindow) reason = "protecting the doorway with";
+        DoorWindow door = map.GetMapObjectAt(pos) as DoorWindow;
+        if (door != null) reason = "protecting the doorway with";
         else if (map.HasExitAt(pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;

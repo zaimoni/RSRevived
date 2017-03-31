@@ -3101,7 +3101,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!map.IsInBounds(x, y)) return false;
       Tile tileAt = map.GetTileAt(x, y);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && map.GetMapObjectAt(x, y) == null) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && !map.HasMapObjectAt(x, y)) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
@@ -4496,7 +4496,7 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Map map = actor.Location.Map;
-      List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt => map.GetActorAt(pt) == null && map.GetMapObjectAt(pt) == null));
+      List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt => map.GetActorAt(pt) == null && !map.HasMapObjectAt(pt)));
       if (pointList == null) {
         if (!player) return;
         AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", (object) Conjugate(actor, VERB_HAVE), (object) corpse.DeadGuy.Name)));
@@ -5382,7 +5382,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "someone there";
         return false;
       }
-      if (map.GetMapObjectAt(pos) != null) {
+      if (map.HasMapObjectAt(pos)) {
         reason = "something there";
         return false;
       }
@@ -11980,7 +11980,7 @@ namespace djack.RogueSurvivor.Engine
 #if NO_PEACE_WALLS
       return toMap.GetTileModelAt(to).IsWalkable;
 #else
-      return toMap.GetTileModelAt(to).IsWalkable && toMap.GetMapObjectAt(to.X, to.Y) == null;
+      return toMap.GetTileModelAt(to).IsWalkable && !toMap.HasMapObjectAt(to) == null;
 #endif
     }
 

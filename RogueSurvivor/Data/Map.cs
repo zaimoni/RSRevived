@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInBounds(Point p)
     {
-      return IsInBounds(p.X, p.Y);
+      return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
     }
 
     public void TrimToBounds(ref int x, ref int y)
@@ -714,6 +714,16 @@ namespace djack.RogueSurvivor.Data
       return GetMapObjectAt(new Point(x, y));
     }
 
+    public bool HasMapObjectAt(Point position)
+    {
+      return m_aux_MapObjectsByPosition.ContainsKey(position);
+    }
+
+    public bool HasMapObjectAt(int x, int y)
+    {
+      return m_aux_MapObjectsByPosition.ContainsKey(new Point(x, y));
+    }
+
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
       Contract.Requires(null != mapObj);
@@ -1037,9 +1047,7 @@ namespace djack.RogueSurvivor.Data
       if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsTransparent)
         return false;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
-      if (mapObjectAt == null)
-        return true;
-      return mapObjectAt.IsTransparent;
+      return null == mapObjectAt || mapObjectAt.IsTransparent;
     }
 
     public bool IsWalkable(int x, int y)
@@ -1047,9 +1055,7 @@ namespace djack.RogueSurvivor.Data
       if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsWalkable)
         return false;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
-      if (mapObjectAt == null)
-        return true;
-      return mapObjectAt.IsWalkable;
+      return null == mapObjectAt || mapObjectAt.IsWalkable;
     }
 
     public bool IsWalkable(Point p)
