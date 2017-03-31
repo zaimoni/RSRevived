@@ -578,11 +578,11 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveActor(Actor actor)
     {
-      if (!m_ActorsList.Contains(actor)) return;
-      m_ActorsList.Remove(actor);
-      m_aux_ActorsByPosition.Remove(actor.Location.Position);
-      m_iCheckNextActorIndex = 0;
-      m_aux_Players = null;
+      if (m_ActorsList.Remove(actor)) {
+        m_aux_ActorsByPosition.Remove(actor.Location.Position);
+        m_iCheckNextActorIndex = 0;
+        m_aux_Players = null;
+      }
     }
 
     public Actor NextActorToAct { 
@@ -993,7 +993,7 @@ namespace djack.RogueSurvivor.Data
         throw new ArgumentOutOfRangeException("position");
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null)
-                AddNewScent(new OdorScent(odor, strengthChange, position));
+        AddNewScent(new OdorScent(odor, strengthChange, position));
       else
         scentByOdor.Change(strengthChange);
     }
@@ -1003,12 +1003,9 @@ namespace djack.RogueSurvivor.Data
       if (!IsInBounds(position))
         throw new ArgumentOutOfRangeException(string.Format("position; ({0},{1}) map {2} odor {3}", (object) position.X, (object) position.Y, (object) Name, (object) odor.ToString()));
       OdorScent scentByOdor = GetScentByOdor(odor, position);
-      if (scentByOdor == null)
-      {
+      if (scentByOdor == null) {
         AddNewScent(new OdorScent(odor, freshStrength, position));
-      }
-      else
-      {
+      } else {
         if (scentByOdor.Strength >= freshStrength) return;
         scentByOdor.Set(freshStrength);
       }
@@ -1016,14 +1013,11 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveScent(OdorScent scent)
     {
-            m_Scents.Remove(scent);
+      m_Scents.Remove(scent);
       List<OdorScent> odorScentList;
-      if (!m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
-        return;
+      if (!m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList)) return;
       odorScentList.Remove(scent);
-      if (odorScentList.Count != 0)
-        return;
-            m_aux_ScentsByPosition.Remove(scent.Position);
+      if (0 >= odorScentList.Count) m_aux_ScentsByPosition.Remove(scent.Position);
     }
 
     public bool IsTransparent(int x, int y)

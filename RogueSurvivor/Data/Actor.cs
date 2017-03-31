@@ -1025,16 +1025,14 @@ namespace djack.RogueSurvivor.Data
     {
       if (m_AggressorOf == null) return;
       m_AggressorOf.Remove(other);
-      if (m_AggressorOf.Count != 0) return;
-      m_AggressorOf = null;
+      if (0 >= m_AggressorOf.Count) m_AggressorOf = null;
     }
 
     public void RemoveSelfDefenceFrom(Actor other)
     {
       if (m_SelfDefenceFrom == null) return;
       m_SelfDefenceFrom.Remove(other);
-      if (m_SelfDefenceFrom.Count != 0) return;
-      m_SelfDefenceFrom = null;
+      if (0 >= m_SelfDefenceFrom.Count) m_SelfDefenceFrom = null;
     }
 
     public void RemoveAllAgressorSelfDefenceRelations()

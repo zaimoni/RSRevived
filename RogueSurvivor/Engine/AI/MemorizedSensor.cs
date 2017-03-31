@@ -60,8 +60,7 @@ namespace djack.RogueSurvivor.Engine.AI
           }
         }
       }
-      foreach (Percept percept in tmp)
-        m_Percepts.Add(percept);
+      m_Percepts.AddRange(tmp);
       return m_Percepts;
     }
   }

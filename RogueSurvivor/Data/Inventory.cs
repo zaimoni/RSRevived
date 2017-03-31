@@ -128,8 +128,7 @@ namespace djack.RogueSurvivor.Data
     public void Consume(Item it)
     {
       Contract.Requires(null!=it);
-      if (--it.Quantity > 0) return;
-      m_Items.Remove(it);
+      if (0 >= --it.Quantity) m_Items.Remove(it);
     }
 
     private int AddToStack(Item from, int addThis, Item to)

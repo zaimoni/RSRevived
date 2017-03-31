@@ -93,11 +93,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public BaseTownGenerator(RogueGame game, BaseTownGenerator.Parameters parameters)
+    public BaseTownGenerator(RogueGame game, Parameters parameters)
       : base(game)
     {
-            m_Params = parameters;
-            m_DiceRoller = new DiceRoller();
+      m_Params = parameters;
+      m_DiceRoller = new DiceRoller();
     }
 
     public override Map Generate(int seed, string name)
@@ -106,29 +106,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = new Map(seed, name, m_Params.District, m_Params.MapWidth, m_Params.MapHeight);
 
       TileFill(map, m_Game.GameTiles.FLOOR_GRASS);
-      List<BaseTownGenerator.Block> list = new List<BaseTownGenerator.Block>();
+      List<Block> list = new List<Block>();
       Rectangle rect = new Rectangle(0, 0, map.Width, map.Height);
       MakeBlocks(map, true, ref list, rect);
-      List<BaseTownGenerator.Block> blockList1 = new List<BaseTownGenerator.Block>((IEnumerable<BaseTownGenerator.Block>) list);
-      List<BaseTownGenerator.Block> blockList2 = new List<BaseTownGenerator.Block>(blockList1.Count);
-      m_SurfaceBlocks = new List<BaseTownGenerator.Block>(list.Count);
-      foreach (BaseTownGenerator.Block copyFrom in list)
-        m_SurfaceBlocks.Add(new BaseTownGenerator.Block(copyFrom));
-      if (m_Params.GeneratePoliceStation)
-      {
-        BaseTownGenerator.Block policeBlock;
+      List<Block> blockList1 = new List<Block>(list);
+      List<Block> blockList2 = new List<Block>(blockList1.Count);
+      m_SurfaceBlocks = new List<Block>(list.Count);
+      foreach (Block copyFrom in list)
+        m_SurfaceBlocks.Add(new Block(copyFrom));
+      if (m_Params.GeneratePoliceStation) {
+        Block policeBlock;
         MakePoliceStation(map, list, out policeBlock);
         blockList1.Remove(policeBlock);
       }
-      if (m_Params.GenerateHospital)
-      {
-        BaseTownGenerator.Block hospitalBlock;
-                MakeHospital(map, list, out hospitalBlock);
+      if (m_Params.GenerateHospital) {
+        Block hospitalBlock;
+        MakeHospital(map, list, out hospitalBlock);
         blockList1.Remove(hospitalBlock);
       }
       blockList2.Clear();
-      foreach (BaseTownGenerator.Block b in blockList1)
-      {
+      foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ShopBuildingChance) && MakeShopBuilding(map, b))
           blockList2.Add(b);
       }
@@ -136,41 +133,35 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         blockList1.Remove(block);
       blockList2.Clear();
       int num = 0;
-      foreach (BaseTownGenerator.Block b in blockList1)
-      {
-        if (m_Params.District.Kind == DistrictKind.BUSINESS && num == 0 || m_DiceRoller.RollChance(m_Params.CHARBuildingChance))
-        {
-          BaseTownGenerator.CHARBuildingType charBuildingType = MakeCHARBuilding(map, b);
-          if (charBuildingType == BaseTownGenerator.CHARBuildingType.OFFICE)
-          {
+      foreach (Block b in blockList1) {
+        if (m_Params.District.Kind == DistrictKind.BUSINESS && num == 0 || m_DiceRoller.RollChance(m_Params.CHARBuildingChance)) {
+          CHARBuildingType charBuildingType = MakeCHARBuilding(map, b);
+          if (charBuildingType == CHARBuildingType.OFFICE) {
             ++num;
-                        PopulateCHAROfficeBuilding(map, b);
+            PopulateCHAROfficeBuilding(map, b);
           }
-          if (charBuildingType != BaseTownGenerator.CHARBuildingType.NONE)
-            blockList2.Add(b);
+          if (charBuildingType != CHARBuildingType.NONE) blockList2.Add(b);
         }
       }
-      foreach (BaseTownGenerator.Block block in blockList2)
+      foreach (Block block in blockList2)
         blockList1.Remove(block);
       blockList2.Clear();
-      foreach (BaseTownGenerator.Block b in blockList1)
-      {
+      foreach (Block b in blockList1) {
         if (m_DiceRoller.RollChance(m_Params.ParkBuildingChance) && MakeParkBuilding(map, b))
           blockList2.Add(b);
       }
-      foreach (BaseTownGenerator.Block block in blockList2)
+      foreach (Block block in blockList2)
         blockList1.Remove(block);
       blockList2.Clear();
-      foreach (BaseTownGenerator.Block b in blockList1)
-      {
-                MakeHousingBuilding(map, b);
+      foreach (Block b in blockList1) {
+        MakeHousingBuilding(map, b);
         blockList2.Add(b);
       }
-      foreach (BaseTownGenerator.Block block in blockList2)
+      foreach (Block block in blockList2)
         blockList1.Remove(block);
-            AddWreckedCarsOutside(map, rect);
-            DecorateOutsideWallsWithPosters(map, rect, m_Params.PostersChance);
-            DecorateOutsideWallsWithTags(map, rect, m_Params.TagsChance);
+      AddWreckedCarsOutside(map, rect);
+      DecorateOutsideWallsWithPosters(map, rect, m_Params.PostersChance);
+      DecorateOutsideWallsWithTags(map, rect, m_Params.TagsChance);
       return map;
     }
 
@@ -269,30 +260,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2 && (mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 && !IsThereASpecialBuilding(surface, mSurfaceBlock.InsideRect)))
         {
           bool flag = true;
-          for (int left = mSurfaceBlock.Rectangle.Left; left < mSurfaceBlock.Rectangle.Right && flag; ++left)
-          {
-            for (int top = mSurfaceBlock.Rectangle.Top; top < mSurfaceBlock.Rectangle.Bottom && flag; ++top)
-            {
+          for (int left = mSurfaceBlock.Rectangle.Left; left < mSurfaceBlock.Rectangle.Right && flag; ++left) {
+            for (int top = mSurfaceBlock.Rectangle.Top; top < mSurfaceBlock.Rectangle.Bottom && flag; ++top) {
               if (sewers.GetTileAt(left, top).Model.IsWalkable)
                 flag = false;
             }
           }
-          if (flag)
-          {
-            if (blockList == null)
-              blockList = new List<BaseTownGenerator.Block>(m_SurfaceBlocks.Count);
-            blockList.Add(mSurfaceBlock);
+          if (flag) {
+            (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
             break;
           }
         }
       }
       Rectangle buildingRect;
-      if (blockList != null)
-      {
+      if (blockList != null) {
         BaseTownGenerator.Block block = blockList[m_DiceRoller.Roll(0, blockList.Count)];
-                ClearRectangle(surface, block.BuildingRect);
-                TileFill(surface, m_Game.GameTiles.FLOOR_CONCRETE, block.BuildingRect);
-                m_SurfaceBlocks.Remove(block);
+        ClearRectangle(surface, block.BuildingRect);
+        TileFill(surface, m_Game.GameTiles.FLOOR_CONCRETE, block.BuildingRect);
+        m_SurfaceBlocks.Remove(block);
         BaseTownGenerator.Block b1 = new BaseTownGenerator.Block(block.Rectangle);
         buildingRect = b1.BuildingRect;
         int x = buildingRect.Left + buildingRect.Width / 2;
@@ -300,9 +285,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int num2 = buildingRect.Height / 2;
         int y = top + num2;
         Point exitPosition = new Point(x, y);
-                MakeSewersMaintenanceBuilding(surface, true, b1, sewers, exitPosition);
+        MakeSewersMaintenanceBuilding(surface, true, b1, sewers, exitPosition);
         BaseTownGenerator.Block b2 = new BaseTownGenerator.Block(block.Rectangle);
-                MakeSewersMaintenanceBuilding(sewers, false, b2, surface, exitPosition);
+        MakeSewersMaintenanceBuilding(sewers, false, b2, surface, exitPosition);
       }
 #endregion
 
