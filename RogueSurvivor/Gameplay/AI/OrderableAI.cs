@@ -1636,9 +1636,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.HasExitAt(point) || map.GetTileAt(point).IsInside))
+        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
-        int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileAt(ptAdj).Model.IsWalkable));
+        int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable));
         int num2 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj =>
         {
           Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
@@ -1933,7 +1933,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private bool IsGoodStenchKillerSpot(Map map, Point pos)
     {
       if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
-      if (PrevLocation.Map.GetTileAt(PrevLocation.Position).IsInside != map.GetTileAt(pos).IsInside) return true;
+      if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != map.IsInsideAt(pos)) return true;
       if (map.HasExitAt(pos)) return true;
       return null != map.GetMapObjectAt(pos) as DoorWindow;
     }

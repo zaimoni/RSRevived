@@ -384,7 +384,7 @@ namespace djack.RogueSurvivor.Data
 	  foreach(Direction dir in Direction.COMPASS) {
 	    Point dest = pt+dir;
 	    if (!IsInBounds(dest)) continue;
-		if (!GetTileAt(dest).Model.IsWalkable) continue;
+		if (!GetTileModelAt(dest).IsWalkable) continue;
 	    MapObject tmp = GetMapObjectAt(dest);
 	    if (null==tmp || tmp.IsWalkable || tmp.IsJumpable) {
 	      ret[dest] = 1;

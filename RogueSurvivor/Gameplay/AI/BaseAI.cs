@@ -410,9 +410,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool IsGoodTrapSpot(Map map, Point pos, out string reason)
     {
       reason = "";
-      bool isInside = map.GetTileAt(pos).IsInside;
+      bool isInside = map.IsInsideAt(pos);
       if (!isInside && map.GetCorpsesAt(pos) != null) reason = "that corpse will serve as a bait for";
-      else if (m_prevLocation.Map.GetTileAt(m_prevLocation.Position).IsInside != isInside) reason = "protecting the building with";
+      else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
         MapObject mapObjectAt = map.GetMapObjectAt(pos);
         if (mapObjectAt != null && mapObjectAt is DoorWindow) reason = "protecting the doorway with";
@@ -908,7 +908,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
         if (null != map.GetActivatedTrapAt(position)) num += -50;
-        if (map.GetTileAt(position).IsInside) {
+        if (map.IsInsideAt(position)) {
           if (map.LocalTime.IsNight) num += 50;
         }
         else if (!map.LocalTime.IsNight) num += 50;
@@ -1068,10 +1068,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       float avoidCornerBonus = countFreeSquares * 0.1f;
 #endregion
 #region 2 Prefer going outside/inside if majority of dangers are inside/outside.
-      bool isFromInside = map.GetTileAt(from).IsInside;
+      bool isFromInside = map.IsInsideAt(from);
       int majorityDangersInside = 0;
       foreach (Point danger in dangers) {
-        if (map.GetTileAt(danger).IsInside)
+        if (map.IsInsideAt(danger))
           ++majorityDangersInside;
         else
           --majorityDangersInside;

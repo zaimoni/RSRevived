@@ -294,7 +294,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #region 6. Some rooms.
       foreach (BaseTownGenerator.Block block in list)
       {
-        if (m_DiceRoller.RollChance(SEWERS_ROOM_CHANCE) && CheckForEachTile(block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileAt(pt).Model.IsWalkable)))
+        if (m_DiceRoller.RollChance(SEWERS_ROOM_CHANCE) && CheckForEachTile(block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileModelAt(pt).IsWalkable)))
         {
           TileFill(sewers, m_Game.GameTiles.FLOOR_CONCRETE, block.InsideRect);
           Map map1 = sewers;
@@ -470,7 +470,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int y2 = direction == Direction.N ? railY - 1 : railY + height;
         if (!subway.GetTileModelAt(x2, y2).IsWalkable) {
           rect = direction != Direction.N ? new Rectangle(x2, y2, toolsRoomWidth, toolsRoomHeight) : new Rectangle(x2, y2 - toolsRoomHeight + 1, toolsRoomWidth, toolsRoomHeight);
-          flag1 = CheckForEachTile(rect, (Predicate<Point>) (pt => !subway.GetTileAt(pt).Model.IsWalkable));
+          flag1 = CheckForEachTile(rect, (Predicate<Point>) (pt => !subway.GetTileModelAt(pt).IsWalkable));
         }
         ++num3;
       }
@@ -1425,7 +1425,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         map.AddDecorationAt("Tiles\\Decoration\\power_sign_big", point2.X, point2.Y + 1);
         MapObjectFill(map, rect2, (Func<Point, MapObject>) (pt =>
         {
-          if (!map.GetTileAt(pt).Model.IsWalkable) return null;
+          if (!map.GetTileModelAt(pt).IsWalkable) return null;
           if (CountAdjWalls(map, pt.X, pt.Y) < 3 || CountAdjDoors(map, pt.X, pt.Y) > 0) return null;
           return MakeObjPowerGenerator();
         }));

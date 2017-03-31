@@ -11957,7 +11957,7 @@ namespace djack.RogueSurvivor.Engine
           for (point.X = 0; point.X < entryMap.Width; ++point.X) {
             for (point.Y = 0; point.Y < entryMap.Height; ++point.Y) {
               bool flag = false;
-              if (!entryMap.GetTileAt(point).IsInside) flag = true;
+              if (!entryMap.IsInsideAt(point)) flag = true;
               else { 
                 List<Zone> zonesAt2 = entryMap.GetZonesAt(point.X, point.Y);
                 if (zonesAt2 != null && zonesAt2[0] == zone) flag = true;
