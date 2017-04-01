@@ -593,7 +593,7 @@ namespace djack.RogueSurvivor.Data
       if (m_ActorsList.Remove(actor)) {
         m_aux_ActorsByPosition.Remove(actor.Location.Position);
         m_iCheckNextActorIndex = 0;
-        m_aux_Players = null;
+        if (actor.IsPlayer) m_aux_Players = null;
       }
     }
 
