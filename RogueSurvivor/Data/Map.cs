@@ -1248,7 +1248,7 @@ namespace djack.RogueSurvivor.Data
               case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }          
-            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>\n");
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>\n");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
 #endregion
@@ -1257,7 +1257,7 @@ namespace djack.RogueSurvivor.Data
       if (0>=inv_data.Count && 0>=actor_data.Count) return;
       if (0<actor_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=left>");
-        dest.WriteLine("<tr><th>pos</th><th>name</th><th>AP</th><th>HP</th></tr>");
+        dest.WriteLine("<tr><th>pos</th><th>name</th><th>Priority</th><th>AP</th><th>HP</th></tr>");
         foreach(string s in actor_data) dest.WriteLine(s);
         dest.WriteLine("</table>");
       }
