@@ -732,7 +732,7 @@ namespace djack.RogueSurvivor.Engine
     private void GameLoop()
     {
       HandleMainMenu();
-      while (m_Player != null && !m_Player.IsDead && m_IsGameRunning) {
+      while (0<Session.Get.World.PlayerCount && m_IsGameRunning) {
         District d = Session.Get.World.CurrentPlayerDistrict();
         if (null == d) {
           if (null == Session.Get.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
@@ -2309,6 +2309,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
       lock(district) {
+      bool IsPCdistrict = (0 < district.PlayerCount);
       foreach(Map current in district.Maps) {
         // not processing secret maps used to be a micro-optimization; now a hang bug
         while(!current.IsSecret && null != current.NextActorToAct) {
@@ -2316,7 +2317,7 @@ namespace djack.RogueSurvivor.Engine
           if (district == Session.Get.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
             if (0>=Session.Get.World.PlayerCount) HandleReincarnation();
           }
-          if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
+          if (!m_IsGameRunning || m_HasLoadedGame || (IsPCdistrict && 0>=Session.Get.World.PlayerCount)) return;
         }
       }
 
@@ -2410,7 +2411,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       else if (nextActorToAct.IsPlayer) {
         HandlePlayerActor(nextActorToAct);
-        if (!m_IsGameRunning || m_HasLoadedGame || m_Player.IsDead) return;
+        if (!m_IsGameRunning || m_HasLoadedGame || 0>=Session.Get.World.PlayerCount) return;
         CheckSpecialPlayerEventsAfterAction(nextActorToAct);
       }
       else HandleAiActor(nextActorToAct);
