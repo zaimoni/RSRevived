@@ -725,7 +725,7 @@ namespace djack.RogueSurvivor.Engine
       return other.ActionPoints + other.Speed > BASE_ACTION_COST;
     }
 
-    public bool IsMurder(Actor killer, Actor victim)
+    public static bool IsMurder(Actor killer, Actor victim)
     {
       if (null == killer) return false;
       if (null == victim) return false;
@@ -820,7 +820,7 @@ namespace djack.RogueSurvivor.Engine
       return Rules.SKILL_CHARISMATIC_TRADE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CHARISMATIC);
     }
 
-    public int ActorUnsuspicousChance(Actor observer, Actor actor)
+    public static int ActorUnsuspicousChance(Actor observer, Actor actor)
     {
       int num1 = Rules.SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
       int num2 = 0;
@@ -859,7 +859,7 @@ namespace djack.RogueSurvivor.Engine
       return dmg + num;
     }
 
-    public int CorpseEeatingInfectionTransmission(int infection)
+    public static int CorpseEatingInfectionTransmission(int infection)
     {
       return (int) (0.1 * (double) infection);
     }
@@ -879,7 +879,7 @@ namespace djack.RogueSurvivor.Engine
       return CORPSE_DECAY_PER_TURN;
     }
 
-    public int CorpseZombifyChance(Corpse c, WorldTime timeNow, bool checkDelay = true)
+    public static int CorpseZombifyChance(Corpse c, WorldTime timeNow, bool checkDelay = true)
     {
       int num1 = timeNow.TurnCounter - c.Turn;
       if (checkDelay && num1 < CORPSE_ZOMBIFY_DELAY) return 0;
@@ -934,7 +934,7 @@ namespace djack.RogueSurvivor.Engine
       return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
     }
 
-    public int ZGrabChance(Actor grabber, Actor victim)
+    public static int ZGrabChance(Actor grabber, Actor victim)
     {
       return grabber.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_GRAB) * Rules.SKILL_ZGRAB_CHANCE;
     }

@@ -2457,10 +2457,10 @@ namespace djack.RogueSurvivor.Engine
           List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
           List<Corpse> corpseList2 = new List<Corpse>(map.CountCorpses);
           foreach (Corpse corpse in map.Corpses) {
-            if (m_Rules.RollChance(m_Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
+            if (m_Rules.RollChance(Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
               corpseList1.Add(corpse);
             } else {
-                            InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
+              InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
               if ((double) corpse.HitPoints <= 0.0) corpseList2.Add(corpse);
             }
           }
@@ -4487,7 +4487,7 @@ namespace djack.RogueSurvivor.Engine
         a.RottingEat(a.BiteNutritionValue(num));
       } else {
         a.LivingEat(a.BiteNutritionValue(num));
-        a.Infect(m_Rules.CorpseEeatingInfectionTransmission(c.DeadGuy.Infection));
+        a.Infect(Rules.CorpseEatingInfectionTransmission(c.DeadGuy.Infection));
       }
       SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", (object) a.Name, (object) c.DeadGuy.Name));
     }
@@ -7199,7 +7199,7 @@ namespace djack.RogueSurvivor.Engine
       int skillLevel = m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
       stringList.Add(string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")));
       stringList.Add(string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")));
-      stringList.Add(string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * m_Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")));
+      stringList.Add(string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")));
       stringList.Add(" ");
 	  stringList.Add(DescribeCorpseLong_DescRotLevel(c.RotLevel));
       stringList.Add(string.Format("Revive    : {0}.", (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(m_Rules.CorpseReviveChance(m_Player, c)) : "???")));
@@ -7882,7 +7882,7 @@ namespace djack.RogueSurvivor.Engine
       map.ForEachAdjacent(position, (Action<Point>) (adj =>
       {
         Actor actorAt = map.GetActorAt(adj);
-        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || (!actorAt.IsEnemyOf(actor) || m_Rules.ZGrabChance(actorAt, actor) == 0) || !m_Rules.RollChance(m_Rules.ZGrabChance(actorAt, actor)))
+        if (actorAt == null || !actorAt.Model.Abilities.IsUndead || !actorAt.IsEnemyOf(actor) || !m_Rules.RollChance(Rules.ZGrabChance(actorAt, actor)))
           return;
         if (visible)
           AddMessage(MakeMessage(actorAt, Conjugate(actorAt, VERB_GRAB), actor));
@@ -8197,7 +8197,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsSleeping) return;
       Faction faction = target.Faction;
       if (faction == GameFactions.ThePolice) {
-        if (aggressor.Model.Abilities.IsLawEnforcer && !m_Rules.IsMurder(aggressor, target)) return;
+        if (aggressor.Model.Abilities.IsLawEnforcer && !Rules.IsMurder(aggressor, target)) return;
         OnMakeEnemyOfCop(aggressor, target, wasAlreadyEnemy);
       } else {
         if (faction != GameFactions.TheArmy) return;
@@ -8311,7 +8311,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (defender.HitPoints <= 0) {
             if (player2 || player1) {
-              AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
+              AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
               AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_KILLED));
               RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
@@ -8435,7 +8435,7 @@ namespace djack.RogueSurvivor.Engine
             InflictDamage(defender, dmg);
             if (defender.HitPoints <= 0) {
               if (player1) {
-                AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (m_Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
+                AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
                 AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_KILLED));
                 RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
@@ -9537,7 +9537,7 @@ namespace djack.RogueSurvivor.Engine
         }
         deadGuy.Leader.RemoveFollower(deadGuy);
       }
-      bool flag1 = killer != null && m_Rules.IsMurder(killer, deadGuy);
+      bool flag1 = killer != null && Rules.IsMurder(killer, deadGuy);
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.Location.Map.RemoveActor(deadGuy);
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty) {
@@ -9731,7 +9731,7 @@ namespace djack.RogueSurvivor.Engine
       }
       List<Zone> zonesAt = m_Player.Location.Map.GetZonesAt(m_Player.Location.Position.X, m_Player.Location.Position.Y);
       Session.Get.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", (object)m_Player.Location.Map.Name, (object) zonesAt[0].Name) : m_Player.Location.Map.Name;
-      Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", (object) reason) : string.Format("{0} by {1} {2}", m_Rules.IsMurder(killer, m_Player) ? (object) "Murdered" : (object) "Killed", (object) killer.Model.Name, (object) killer.TheName);
+      Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", (object) reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, m_Player) ? (object) "Murdered" : (object) "Killed", (object) killer.Model.Name, (object) killer.TheName);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
       int index = m_Rules.Roll(0, GameTips.TIPS.Length);
       AddOverlay(new RogueGame.OverlayPopup(new string[3]

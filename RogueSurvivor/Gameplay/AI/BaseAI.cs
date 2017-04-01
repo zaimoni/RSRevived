@@ -957,7 +957,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == percepts1) return null;
       Percept percept = FilterNearest(percepts1);
       Actor target = percept.Percepted as Actor;
-      if (game.Rules.RollChance(game.Rules.ActorUnsuspicousChance(m_Actor, target))) {
+      if (game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, target))) {
         game.DoEmote(target, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
         return null;
       }
