@@ -1599,6 +1599,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
       ActorAction tmp3 = DecideMove(tmp.Keys);   // only called when no enemies in sight anyway
+#if DEBUG
+      if (null == tmp3) throw new InvalidOperationException("DecideMove failed in no-fail situation");
+#endif
       ActionMoveStep tmp2 = tmp3 as ActionMoveStep;
       if (null != tmp2) {
         Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
@@ -2341,6 +2344,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int most_exposed = exposed.Values.Max();
       if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
       ActorAction ret = DecideMove(exposed.Keys);
+#if DEBUG
+      if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
+#endif
 #if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
 #endif
@@ -2358,6 +2364,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
       ActorAction ret = DecideMove(dest.Keys);
+#if DEBUG
+      if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
+#endif
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
@@ -2616,6 +2625,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
       ActorAction ret = DecideMove(dest.Keys);
+#if DEBUG
+      if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
+#endif
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
