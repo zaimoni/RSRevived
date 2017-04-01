@@ -69,6 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
       }
       m_Actor.IsRunning = false;
+      m_Actor.Activity = Activity.IDLE; // backstop
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
       List<Percept> old_enemies = FilterEnemies(percepts1);

@@ -12,7 +12,6 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -88,6 +87,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
       }
       m_Actor.IsRunning = false;
+      m_Actor.Activity = Activity.IDLE; // backstop
 
       m_Exploration.Update(m_Actor.Location);
 

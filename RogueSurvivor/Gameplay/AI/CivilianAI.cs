@@ -169,6 +169,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
       }
       m_Actor.IsRunning = false;
+      m_Actor.Activity = Activity.IDLE; // backstop
 
       m_Exploration.Update(m_Actor.Location);
 
