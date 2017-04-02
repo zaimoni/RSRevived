@@ -7978,7 +7978,11 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         return false;
       }
+#if SPEEDY_GONZALES
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+#else
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+#endif
       if (isPlayer && exitAt.ToMap.District != map.District) 
         BeforePlayerEnterDistrict(exitAt.ToMap.District);
       string reason = exitAt.ReasonIsBlocked(actor);
@@ -7992,7 +7996,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.DraggedCorpse != null) map.RemoveCorpse(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
       exitAt.Location.PlaceActor(actor);
-      exitAt.ToMap.MoveActorToFirstPosition(actor);
+      exitAt.ToMap.MoveActorToFirstPosition(actor); // XXX change target for NO_PEACE_WALLS; when entering a district that executes before ours we should be *last* -- if we can see what we're getting into
       if (actor.DraggedCorpse != null) exitAt.Location.AddCorpse(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer)
       AddMessage(MakeMessage(actor, string.Format("{0} {1}.", (object)Conjugate(actor, VERB_ENTER), (object) exitAt.ToMap.Name)));
@@ -12267,6 +12271,10 @@ namespace djack.RogueSurvivor.Engine
         StopSimThread();
         lock (m_SimMutex) {
           double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
+          // The no-skew scheduling should mean the following is not necessary.
+          // a district after the PC's will run in order.  It's ok for the turn counter to not increment.
+          // a district before the PCs will already be "current"
+#if FAIL
           double num1 = 0.0;
           bool flag = false;
           while (entryMap.LocalTime.TurnCounter <= Session.Get.WorldTime.TurnCounter) {
@@ -12304,6 +12312,7 @@ namespace djack.RogueSurvivor.Engine
             }
             if (!flag) SimulateDistrict(district);
           }
+#endif
         }
         RestartSimThread();
         RemoveLastMessage();
