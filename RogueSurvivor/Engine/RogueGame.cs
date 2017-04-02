@@ -2326,16 +2326,6 @@ namespace djack.RogueSurvivor.Engine
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District finished: "+district.Name);
 #endif
-
-#if STABLE_SIM_OPTIONAL
-      // if simulation is disabled or threaded, do not try to simulate further
-      if (!RogueGame.s_Options.IsSimON || m_Player == null || RogueGame.s_Options.SimThread) return;
-      // current player has left district
-      if (m_Player.Location.Map.District != district) return;
-      // player is not sleeping
-      if (!m_Player.IsSleeping || !RogueGame.s_Options.SimulateWhenSleeping) return;
-      SimulateNearbyDistricts(district);
-#endif
     }
 
     private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
@@ -2658,9 +2648,7 @@ namespace djack.RogueSurvivor.Engine
                   m_MusicManager.ResumeLooping(GameMusics.SLEEP);
                 AddMessage(new Data.Message("...zzZZZzzZ...", map.LocalTime.TurnCounter, Color.DarkCyan));
                 RedrawPlayScreen();
-#if STABLE_SIM_OPTIONAL
-                if (RogueGame.s_Options.SimThread) Thread.Sleep(10);
-#endif
+                Thread.Sleep(10);
               } else if (m_Rules.RollChance(MESSAGE_NPC_SLEEP_SNORE_CHANCE) && ForceVisibleToPlayer(actor)) {
                 AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_SNORE))));
                 RedrawPlayScreen();
@@ -9885,14 +9873,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), (object) RogueGame.s_Options.StarvedZombificationChance));
       if (!RogueGame.s_Options.RevealStartingDistrict)
         textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), RogueGame.s_Options.RevealStartingDistrict ? (object) "yes" : (object) "no"));
-#if STABLE_SIM_OPTIONAL
-      if (RogueGame.s_Options.SimulateDistricts != GameOptions.SimRatio.FULL)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_DISTRICTS), (object) GameOptions.Name(RogueGame.s_Options.SimulateDistricts)));
-      if (RogueGame.s_Options.SimulateWhenSleeping)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), RogueGame.s_Options.SimulateWhenSleeping ? (object) "yes" : (object) "no"));
-#else
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), (object) "no"));
-#endif
+      textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), (object) "no [hardcoded]"));
       if (RogueGame.s_Options.ZombieInvasionDailyIncrease != GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE)
         textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), (object) RogueGame.s_Options.ZombieInvasionDailyIncrease));
       if (RogueGame.s_Options.ZombificationChance != GameOptions.DEFAULT_ZOMBIFICATION_CHANCE)
@@ -12281,12 +12262,6 @@ namespace djack.RogueSurvivor.Engine
       if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
       Map entryMap = district.EntryMap;
       int turnCounter = entryMap.LocalTime.TurnCounter;
-#if STABLE_SIM_OPTIONAL
-      if (!RogueGame.s_Options.IsSimON) { 
-        foreach (Map map in district.Maps)
-          map.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
-      } else {
-#endif
         m_MusicManager.StopAll();
         m_MusicManager.Play(GameMusics.INTERLUDE);
         StopSimThread();
@@ -12333,9 +12308,6 @@ namespace djack.RogueSurvivor.Engine
         RestartSimThread();
         RemoveLastMessage();
         m_MusicManager.StopAll();
-#if STABLE_SIM_OPTIONAL
-      }
-#endif
     }
 
     private RogueGame.SimFlags ComputeSimFlagsForTurn(int turn)
@@ -12396,9 +12368,6 @@ namespace djack.RogueSurvivor.Engine
 
     private void StartSimThread()
     {
-#if STABLE_SIM_OPTIONAL
-      if (!RogueGame.s_Options.IsSimON || !RogueGame.s_Options.SimThread) return;
-#endif
       if (m_SimThread == null) {
         m_SimThread = new Thread(new ThreadStart(SimThreadProc));
         m_SimThread.Name = "Simulation Thread";

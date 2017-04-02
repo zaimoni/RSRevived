@@ -298,42 +298,6 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-#if STABLE_SIM_OPTIONAL
-    public float SimRatioFloat
-    {
-      get {
-        return GameOptions.SimRatioToFloat(GameOptions.SimRatio.FULL);
-      }
-    }
-#endif
-
-#if STABLE_SIM_OPTIONAL
-    public bool SimulateWhenSleeping
-    {
-      get {
-        return false;
-      }
-    }
-#endif
-
-#if STABLE_SIM_OPTIONAL
-    public bool IsSimON
-    {
-      get {
-        return GameOptions.SimRatio.FULL != GameOptions.SimRatio._FIRST;
-      }
-    }
-#endif
-
-#if STABLE_SIM_OPTIONAL
-    public bool SimThread
-    {
-      get {
-        return true;
-      }
-    }
-#endif
-
     public int DistrictSize
     {
       get
@@ -926,23 +890,11 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.IDs.GAME_MAX_UNDEADS:
           return string.Format("{0:D3}*  (default {1:D3})", (object)MaxUndeads, (object) DEFAULT_MAX_UNDEADS);
         case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-#if STABLE_SIM_OPTIONAL
-          return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(SimulateDistricts), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
-#else
           return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(GameOptions.SimRatio.FULL), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
-#endif
         case GameOptions.IDs.GAME_SIMULATE_SLEEP:
-#if STABLE_SIM_OPTIONAL
-          return !SimulateWhenSleeping ? "NO*   (default NO)" : "YES*  (default NO)";
-#else
-          return "NO*   (default NO)";
-#endif
+          return "NO [hardcoded]";
         case GameOptions.IDs.GAME_SIM_THREAD:
-#if STABLE_SIM_OPTIONAL
-          return !SimThread ? "NO*   (default YES)" : "YES*  (default YES)";
-#else
-          return "YES*  (default YES)";
-#endif
+          return "YES [hardcoded]";
         case GameOptions.IDs.GAME_CITY_SIZE:
           return string.Format("{0:D2}*   (default {1:D2})", (object)CitySize, (object) DEFAULT_CITY_SIZE);
         case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
