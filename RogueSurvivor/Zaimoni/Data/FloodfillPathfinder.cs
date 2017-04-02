@@ -119,18 +119,14 @@ namespace Zaimoni.Data
                   if (0 >= tmp2.Value) continue;    // disallow pathological cost functions
 #endif
                   int new_cost = cost+tmp2.Value;
-                  if (!_map.ContainsKey(tmp2.Key)) {
-                    _map[tmp2.Key] = new_cost;
-                    if (_now.ContainsKey(new_cost)) _now[new_cost].Add(tmp2.Key);
-                    else _now[new_cost] = new HashSet<T>(){tmp2.Key};
-                    continue;
-                  };
-                  int old_cost = _map[tmp2.Key];
-                  if (old_cost <= new_cost) continue;
-                  if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
+                  if (_map.ContainsKey(tmp2.Key)) {
+                    int old_cost = _map[tmp2.Key];
+                    if (old_cost <= new_cost) continue;
+                    if (_now[old_cost].Remove(tmp2.Key) && 0 >= _now[old_cost].Count) _now.Remove(old_cost);
+                  }
+                  _map[tmp2.Key] = new_cost;
                   if (_now.ContainsKey(new_cost)) _now[new_cost].Add(tmp2.Key);
                   else _now[new_cost] = new HashSet<T>(){tmp2.Key};
-                  _map[tmp2.Key] = new_cost;
                 } 
               }
               _now.Remove(cost);
