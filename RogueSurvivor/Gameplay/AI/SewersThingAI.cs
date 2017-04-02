@@ -52,7 +52,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
-      List<Percept> enemies = FilterEnemies(percepts1);
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
       ActorAction tmpAction;
       if (enemies != null) {
         tmpAction = TargetGridMelee(FilterCurrent(enemies));

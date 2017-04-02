@@ -67,7 +67,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> enemies = FilterEnemies(percepts1);
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
       ActorAction tmpAction;
       if (enemies != null) {
         tmpAction = TargetGridMelee(FilterCurrent(enemies));

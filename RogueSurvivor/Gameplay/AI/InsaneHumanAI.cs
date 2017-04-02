@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = BehaviorEquipWeapon(game);
       if (null != tmpAction) return tmpAction;
       if (game.Rules.RollChance(ATTACK_CHANCE)) {
-        List<Percept> enemies = FilterEnemies(percepts1);
+        List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
         if (enemies != null) {
           tmpAction = TargetGridMelee(FilterCurrent(enemies));
           if (null != tmpAction) return tmpAction;
