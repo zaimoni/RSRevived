@@ -249,12 +249,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (location.Position == goal || IsValidMoveTowardGoalAction(a)) return a;
         return null;
-      }), (Func<Direction, float>) (dir =>
-      {
-        Location location = m_Actor.Location + dir;
-        if (distanceFn != null) return distanceFn(location.Position, goal);
-        return (float)Rules.StdDistance(location.Position, goal);
-      }), (a, b) => a < b);
+      }), dir => distanceFn(m_Actor.Location.Position + dir, goal), (a, b) => a < b);
       if (choiceEval != null) return choiceEval.Choice;
       return null;
     }

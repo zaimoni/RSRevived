@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor.Data
 
     public static Location operator +(Location lhs, Direction rhs)
     {
-      return new Location(lhs.m_Map, new Point(lhs.m_Position.X + rhs.Vector.X, lhs.m_Position.Y + rhs.Vector.Y));
+      return new Location(lhs.m_Map, lhs.m_Position+rhs);
     }
 
     // thin wrappers
