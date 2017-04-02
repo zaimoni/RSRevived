@@ -1054,4 +1054,25 @@ namespace djack.RogueSurvivor.Engine
       _COUNT = 6,
     }
   }
+
+  internal static class GameOptions_ext
+  {
+    public static bool HighDetail(this GameOptions.SimRatio x, int turn)
+    {
+      switch(x) {
+        case GameOptions.SimRatio._FIRST: return true;
+        case GameOptions.SimRatio.ONE_QUARTER: return turn % 4 != 0;
+        case GameOptions.SimRatio.ONE_THIRD: return turn % 3 != 0;
+        case GameOptions.SimRatio.HALF: return turn % 2 == 1;
+        case GameOptions.SimRatio.TWO_THIRDS: return turn % 3 == 2;
+        case GameOptions.SimRatio.THREE_QUARTER: return turn % 4 == 3;
+#if DEBUG
+        case GameOptions.SimRatio.FULL: return false;
+        default: throw new ArgumentOutOfRangeException("unhandled simRatio");
+#else
+        default: return false;
+#endif
+      }
+    }
+  }
 }

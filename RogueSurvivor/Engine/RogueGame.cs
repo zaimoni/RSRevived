@@ -12313,33 +12313,7 @@ namespace djack.RogueSurvivor.Engine
     private RogueGame.SimFlags ComputeSimFlagsForTurn(int turn)
     {
 #if STABLE_SIM_OPTIONAL
-      bool flag;
-      switch (RogueGame.s_Options.SimulateDistricts)
-      {
-        case GameOptions.SimRatio._FIRST:
-          flag = true;
-          break;
-        case GameOptions.SimRatio.ONE_QUARTER:
-          flag = turn % 4 != 0;
-          break;
-        case GameOptions.SimRatio.ONE_THIRD:
-          flag = turn % 3 != 0;
-          break;
-        case GameOptions.SimRatio.HALF:
-          flag = turn % 2 == 1;
-          break;
-        case GameOptions.SimRatio.TWO_THIRDS:
-          flag = turn % 3 == 2;
-          break;
-        case GameOptions.SimRatio.THREE_QUARTER:
-          flag = turn % 4 == 3;
-          break;
-        case GameOptions.SimRatio.FULL:
-          flag = false;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled simRatio");
-      }
+      bool flag = RogueGame.s_Options.SimulateDistricts.HighDetail(turn);
       return !flag ? RogueGame.SimFlags.HIDETAIL_TURN : RogueGame.SimFlags.LODETAIL_TURN;
 #else
       return RogueGame.SimFlags.HIDETAIL_TURN;
