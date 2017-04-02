@@ -293,18 +293,8 @@ namespace djack.RogueSurvivor.Engine
     public GameOptions.SimRatio SimulateDistricts
     {
       get{
-#if STABLE_SIM_OPTIONAL
-        return m_SimulateDistricts;
-#else
         return GameOptions.SimRatio.FULL;
-#endif
       }
-#if STABLE_SIM_OPTIONAL
-      set {
-        m_SimulateDistricts = value;
-        m_cachedSimRatioFloat = GameOptions.SimRatioToFloat(m_SimulateDistricts);
-      }
-#endif
     }
 #endif
 
@@ -312,11 +302,7 @@ namespace djack.RogueSurvivor.Engine
     public float SimRatioFloat
     {
       get {
-#if STABLE_SIM_OPTIONAL
-        return m_cachedSimRatioFloat;
-#else
         return GameOptions.SimRatioToFloat(GameOptions.SimRatio.FULL);
-#endif
       }
     }
 #endif
@@ -325,17 +311,8 @@ namespace djack.RogueSurvivor.Engine
     public bool SimulateWhenSleeping
     {
       get {
-#if STABLE_SIM_OPTIONAL
-        return m_SimulateWhenSleeping;
-#else
         return false;
-#endif
       }
-#if STABLE_SIM_OPTIONAL
-      set {
-        m_SimulateWhenSleeping = value;
-      }
-#endif
     }
 #endif
 
@@ -343,11 +320,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsSimON
     {
       get {
-#if STABLE_SIM_OPTIONAL
-        return m_SimulateDistricts != GameOptions.SimRatio._FIRST;
-#else
         return GameOptions.SimRatio.FULL != GameOptions.SimRatio._FIRST;
-#endif
       }
     }
 #endif
@@ -356,17 +329,8 @@ namespace djack.RogueSurvivor.Engine
     public bool SimThread
     {
       get {
-#if STABLE_SIM_OPTIONAL
-        return m_SimThread;
-#else
         return true;
-#endif
       }
-#if STABLE_SIM_OPTIONAL
-      set {
-        m_SimThread = value;
-      }
-#endif
     }
 #endif
 
@@ -694,7 +658,8 @@ namespace djack.RogueSurvivor.Engine
             m_EnabledAdvisor = true;
             m_CombatAssistant = false;
 #if STABLE_SIM_OPTIONAL
-            SimulateDistricts = GameOptions.SimRatio.FULL;
+            m_SimulateDistricts = SimRatio.FULL;
+            m_cachedSimRatioFloat = SimRatioToFloat(SimRatio.FULL);
             m_SimulateWhenSleeping = false;
             m_SimThread = true;
 #endif
