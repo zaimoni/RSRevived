@@ -23,6 +23,10 @@ namespace djack.RogueSurvivor.Engine.Actions
       Contract.Requires(null != it);
       m_Position = position;
       m_Item = it;
+#if DEBUG
+      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
+      if (null == itemsAt || !itemsAt.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
+#endif
     }
 
     public Item Item {
@@ -39,6 +43,11 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override void Perform()
     {
       RogueForm.Game.DoTakeItem(m_Actor, m_Position, m_Item);
+    }
+
+    public override string ToString()
+    {
+      return m_Actor.Name + " takes " + m_Item;
     }
   }
 }

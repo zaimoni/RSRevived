@@ -1176,13 +1176,7 @@ namespace djack.RogueSurvivor.Data
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
             string item_str = "&"; // Angband/Nethack pile.
             foreach (Item it in inv.Items) {
-              if (it.Model.IsStackable) { 
-                inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.Model.ID.ToString()+" ("+it.Quantity.ToString()+")</td></tr>\n");
-              } else if (it is Engine.Items.ItemRangedWeapon) {
-                inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.Model.ID.ToString()+" ("+(it as Engine.Items.ItemRangedWeapon).Ammo.ToString()+")</td></tr>\n");
-              } else {
-                inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.Model.ID.ToString()+"</td></tr>\n");
-              }
+              inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>\n");
             }
             ascii_map[y][x] = item_str;
           }

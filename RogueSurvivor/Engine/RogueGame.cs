@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define DATAFLOW_TRACE
+#define DATAFLOW_TRACE
 
 #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
@@ -8864,20 +8864,29 @@ namespace djack.RogueSurvivor.Engine
     public void DoTakeItem(Actor actor, Point position, Item it)
     {
       Map map = actor.Location.Map;
+#if DEBUG
+      if (!map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
+#endif
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
+#if DEBUG
+      string actor_inv_before = actor.Inventory.ToString();
+      string stack_inv_before = map.GetItemsAt(position).ToString();
+#endif
       int quantity = it.Quantity;
       int quantityAdded;
       actor.Inventory.AddAsMuchAsPossible(it, out quantityAdded);
-      if (quantityAdded == quantity) {
-        Inventory itemsAt = map.GetItemsAt(position);
-        if (itemsAt != null && itemsAt.Contains(it))
-          map.RemoveItemAt(it, position);
-      }
+      if (quantityAdded == quantity) map.RemoveItemAt(it, position);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         DoEquipItem(actor, it);
+#if DEBUG
+      string err = "";
+      if (actor_inv_before == actor.Inventory.ToString()) err += actor.Name+"'s inventory unchanged: "+actor_inv_before+"\n";
+      if (stack_inv_before == map.GetItemsAt(position).ToString()) err += "stack inventory unchanged: "+stack_inv_before;
+      if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
+#endif
     }
 
     public void DoGiveItemTo(Actor actor, Actor target, Item gift)

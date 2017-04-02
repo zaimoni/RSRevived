@@ -95,5 +95,11 @@ namespace djack.RogueSurvivor.Data
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;
     }
+
+    public override string ToString()
+    {
+      if (Model.IsStackable) return Model.ID.ToString()+" ("+Quantity.ToString()+")";
+      return Model.ID.ToString();
+    }
   }
 }
