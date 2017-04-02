@@ -338,13 +338,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // handle food after enemies check
       tmpAction = BehaviorEatProactively(game);
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorEatProactively ok"); // XXX TRACER
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorEatProactively ok");
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "eating proactively");
 #endif
       if (null != tmpAction) return tmpAction;
 
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (m_Actor.IsHungry ? "hungry" : "not hungry")); // XXX TRACER
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (m_Actor.IsHungry ? "hungry" : "not hungry"));
 #endif
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorEat();
@@ -365,17 +365,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       IEnumerable<Engine.MapObjects.PowerGenerator> generators_off = GeneratorsToTurnOn;    // reused much later
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == generators_off ? "no generators to turn on" : generators_off.Count().ToString()+" genberators to turn on"));
+#endif
       if (null != generators_off) {
         foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {
           if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
             return new ActionSwitchPowerGenerator(m_Actor, gen);
           }
         }
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "not adjacent to a generator");
+#endif
       }
 
       // the new objectives system should trigger after all enemies-handling behavior
 #if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives"); // XXX TRACER
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
 #endif
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
@@ -427,7 +433,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == enemies && Directives.CanTakeItems) {
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");   // XXX TRACER
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");
 #endif
         Map map = m_Actor.Location.Map;
         List<Percept> perceptList2 = percepts1.FilterT<Inventory>().FilterOut(p =>
@@ -497,7 +503,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");   // XXX TRACER
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");
 #endif
       } // null == enemies && Directives.CanTakeItems
 
