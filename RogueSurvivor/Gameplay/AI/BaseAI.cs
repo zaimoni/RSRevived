@@ -254,11 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = m_Actor.Location + dir;
         if (distanceFn != null) return distanceFn(location.Position, goal);
         return (float)Rules.StdDistance(location.Position, goal);
-      }), (Func<float, float, bool>) ((a, b) =>
-      {
-        if (!float.IsNaN(a)) return a < b;
-        return false;
-      }));
+      }), (a, b) => a < b);
       if (choiceEval != null) return choiceEval.Choice;
       return null;
     }
@@ -909,11 +905,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (!map.LocalTime.IsNight) num += 50;
         if (dir == prevDirection) num += 25;
         return (float) (num + game.Rules.Roll(0, 10));
-      }), (Func<float, float, bool>) ((a, b) =>
-      {
-        if (!float.IsNaN(a)) return a > b;
-        return false;
-      }));
+      }), (a, b) => a > b);
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
     }
@@ -1089,21 +1081,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return avgDistance * heuristicFactorBonus;
     }
 
+    // isBetterThanEvalFn will never see NaN
     protected BaseAI.ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
-      bool flag = false;
-      float num = 0.0f;
+      float num = float.NaN;
       List<BaseAI.ChoiceEval<_T_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_T_>>(listOfChoices.Count);
       foreach(_T_ tmp in listOfChoices) {
         if (isChoiceValidFn(tmp)) {
           float f = evalChoiceFn(tmp);
           if (float.IsNaN(f)) continue;
           choiceEvalList1.Add(new BaseAI.ChoiceEval<_T_>(tmp, f));
-          if (!flag || isBetterEvalThanFn(f, num)) {
-            flag = true;
-            num = f;
-          }
+          if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) num = f;
         }
       }
       if (choiceEvalList1.Count == 0) return null;
@@ -1112,26 +1101,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(BaseAI.ChoiceEval<_T_> tmp in choiceEvalList1) {
         if (tmp.Value == num) choiceEvalList2.Add(tmp);
       }
+      if (choiceEvalList2.Count == 0) throw new InvalidOperationException("best-seen rating not recorded");
       return choiceEvalList2[RogueForm.Game.Rules.Roll(0, choiceEvalList2.Count)];
     }
 
+    // isBetterThanEvalFn will never see NaN
     protected BaseAI.ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
-      bool flag = false;
-      float num = 0.0f;
+      float num = float.NaN;
       List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_DATA_>>(listOfChoices.Count);
-      foreach(_T_ tmp in listOfChoices)
-      {
+      foreach(_T_ tmp in listOfChoices) {
         _DATA_ choice = isChoiceValidFn(tmp);
         if (null == choice) continue;
         float f = evalChoiceFn(tmp);
         if (float.IsNaN(f)) continue;
         choiceEvalList1.Add(new BaseAI.ChoiceEval<_DATA_>(choice, f));
-        if (!flag || isBetterEvalThanFn(f, num)) {
-          flag = true;
-          num = f;
-        }
+        if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) num = f;
       }
       if (choiceEvalList1.Count == 0) return null;
       if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
@@ -1139,7 +1125,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(BaseAI.ChoiceEval<_DATA_> tmp in choiceEvalList1) {
         if (tmp.Value == num) choiceEvalList2.Add(tmp);
       }
-      if (choiceEvalList2.Count == 0) return null;
+      if (choiceEvalList2.Count == 0) throw new InvalidOperationException("best-seen rating not recorded");
       return choiceEvalList2[RogueForm.Game.Rules.Roll(0, choiceEvalList2.Count)];
     }
 
