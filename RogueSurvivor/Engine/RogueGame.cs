@@ -12263,9 +12263,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    // looks good in single-player but not really honest with the no-skew scheduler (and possibly can mess it up)
+    // problems with turn skew should be handled in simulation (BeforePlayerEnterDistrict)
     private void OnPlayerLeaveDistrict()
     {
-      Session.Get.CurrentMap.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
+//    Session.Get.CurrentMap.LocalTime.TurnCounter = Session.Get.WorldTime.TurnCounter;
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
