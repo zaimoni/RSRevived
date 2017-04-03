@@ -640,7 +640,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       get {
         if (null != m_Actor.Threats) return true;   // hunting threat
         if (null != m_Actor.InterestingLocs) return true;   // tourism
-        if (m_Actor.HasLeader && (m_Actor.Leader.Controller as OrderableAI).HasBehaviorThatRecallsToSurface) return true;   // if leader has recall-to-surface behavior, following him recalls to surface
+        if (m_Actor.HasLeader) {
+          if (m_Actor.Leader.IsPlayer) return true; // typically true...staying in the subway forever isn't a good idea
+          if ((m_Actor.Leader.Controller as OrderableAI)?.HasBehaviorThatRecallsToSurface ?? false) return true;   // if leader has recall-to-surface behavior, following him recalls to surface
+        }
         return false;
       }
     }
