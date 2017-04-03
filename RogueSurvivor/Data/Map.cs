@@ -1152,6 +1152,16 @@ namespace djack.RogueSurvivor.Data
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
             } else if (Gameplay.GameImages.OBJ_TREE == tmp_obj.ImageID) {
               ascii_map[y][x] = "&#x2663;"; // unicode: card suit club looks enough like a tree
+#if FAIL
+            } else if (Gameplay.GameImages.OBJ_CAR1 == tmp_obj.ImageID) {
+              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+            } else if (Gameplay.GameImages.OBJ_CAR2 == tmp_obj.ImageID) {
+              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+            } else if (Gameplay.GameImages.OBJ_CAR3 == tmp_obj.ImageID) {
+              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+            } else if (Gameplay.GameImages.OBJ_CAR4 == tmp_obj.ImageID) {
+              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+#endif
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) { 
               ascii_map[y][x] = "|"; // gate; iron wall; car
             } else {
@@ -1176,7 +1186,7 @@ namespace djack.RogueSurvivor.Data
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
             string item_str = "&"; // Angband/Nethack pile.
             foreach (Item it in inv.Items) {
-              inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>\n");
+              inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
             }
             ascii_map[y][x] = item_str;
           }
@@ -1242,7 +1252,7 @@ namespace djack.RogueSurvivor.Data
               case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }          
-            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>\n");
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
 #endregion
