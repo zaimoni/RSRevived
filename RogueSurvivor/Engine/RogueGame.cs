@@ -8863,16 +8863,15 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTakeItem(Actor actor, Point position, Item it)
     {
+      Contract.Requires(actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? false);
       Map map = actor.Location.Map;
-#if DEBUG
-      if (!map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
-#endif
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
 #if DEBUG
       string actor_inv_before = actor.Inventory.ToString();
       string stack_inv_before = map.GetItemsAt(position).ToString();
+      if (0< map.GetItemsAt(position).Items.Intersect(actor.Inventory.Items).Count()) throw new InvalidOperationException("inventories not disjoint before:\n"+actor.Name + "'s inventory: " + actor_inv_before + "\nstack inventory: " + stack_inv_before);
 #endif
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
       int quantity = it.Quantity;
       int quantityAdded;
       actor.Inventory.AddAsMuchAsPossible(it, out quantityAdded);
@@ -8884,8 +8883,9 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       string err = "";
       if (actor_inv_before == actor.Inventory.ToString()) err += actor.Name+"'s inventory unchanged: "+actor_inv_before+"\n";
-      if (stack_inv_before == map.GetItemsAt(position).ToString()) err += "stack inventory unchanged: "+stack_inv_before;
+      if (stack_inv_before == map.GetItemsAt(position)?.ToString()) err += "stack inventory unchanged: "+stack_inv_before;
       if (!string.IsNullOrEmpty(err)) throw new InvalidOperationException(err);
+      if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
 #endif
     }
 
