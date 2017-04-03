@@ -35,8 +35,11 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
     }
 
+    // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
     {
+      Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Position);
+      if (!itemsAt?.Contains(m_Item) ?? false) return false;
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
 
