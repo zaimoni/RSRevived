@@ -1115,13 +1115,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MapObjectFill(map, b.BuildingRect, (Func<Point, MapObject>) (pt =>
       {
         if (pt.X == b.BuildingRect.Left || pt.X == b.BuildingRect.Right - 1 || pt.Y == b.BuildingRect.Top || pt.Y == b.BuildingRect.Bottom - 1)
-          return MakeObjFence("MapObjects\\fence");
+          return MakeObjFence();
         return null;
       }));
       MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {
-        if (m_DiceRoller.RollChance(PARK_TREE_CHANCE)) return MakeObjTree("MapObjects\\tree");
-        return null;
+        return (m_DiceRoller.RollChance(PARK_TREE_CHANCE) ? MakeObjTree() : null);
       }));
       MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
       {

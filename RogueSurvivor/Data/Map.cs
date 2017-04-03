@@ -1150,8 +1150,10 @@ namespace djack.RogueSurvivor.Data
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
+            } else if (Gameplay.GameImages.OBJ_TREE == tmp_obj.ImageID) {
+              ascii_map[y][x] = "&#x2663;"; // unicode: card suit club looks enough like a tree
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) { 
-              ascii_map[y][x] = "|"; // either a gate or an iron wall.
+              ascii_map[y][x] = "|"; // gate; iron wall; car
             } else {
               Engine.MapObjects.DoorWindow tmp_door = tmp_obj as Engine.MapObjects.DoorWindow;
               if (null!=tmp_door) {

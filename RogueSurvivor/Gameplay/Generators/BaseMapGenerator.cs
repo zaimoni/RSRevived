@@ -643,9 +643,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjFence(string fenceImageID)
+    protected MapObject MakeObjFence()
     {
-      return new MapObject("fence", fenceImageID, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 400)
+      return new MapObject("fence", GameImages.OBJ_FENCE, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 400)
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
@@ -690,9 +690,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return fortification;
     }
 
-    protected MapObject MakeObjTree(string treeImageID)
+    protected MapObject MakeObjTree()
     {
-      return new MapObject("tree", treeImageID, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, 400)
+      return new MapObject("tree", GameImages.OBJ_TREE, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, 400)
       {
         GivesWood = true
       };
