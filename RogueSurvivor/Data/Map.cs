@@ -1146,21 +1146,23 @@ namespace djack.RogueSurvivor.Data
           ascii_map[y][x] = (GetTileModelAt(x,y).IsWalkable ? "." : "#");    // typical floor tile if walkable, typical wall otherwise
           if (HasExitAt(x,y)) ascii_map[y][x] = ">";                  // downwards exit
 #region map objects
+          const string tree_symbol = "&#x2663;"; // unicode: card suit club looks enough like a tree
+          const string car_symbol = "<span class='car'>&#x1F698;</span>";   // unicode: oncoming car
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
             } else if (Gameplay.GameImages.OBJ_TREE == tmp_obj.ImageID) {
-              ascii_map[y][x] = "&#x2663;"; // unicode: card suit club looks enough like a tree
-#if FAIL
+              ascii_map[y][x] = tree_symbol; 
+#if DEBUG
             } else if (Gameplay.GameImages.OBJ_CAR1 == tmp_obj.ImageID) {
-              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+              ascii_map[y][x] = car_symbol; // unicode: oncoming car
             } else if (Gameplay.GameImages.OBJ_CAR2 == tmp_obj.ImageID) {
-              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+              ascii_map[y][x] = car_symbol; // unicode: oncoming car
             } else if (Gameplay.GameImages.OBJ_CAR3 == tmp_obj.ImageID) {
-              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+              ascii_map[y][x] = car_symbol; // unicode: oncoming car
             } else if (Gameplay.GameImages.OBJ_CAR4 == tmp_obj.ImageID) {
-              ascii_map[y][x] = "&#x1F698;"; // unicode: oncoming car
+              ascii_map[y][x] = car_symbol; // unicode: oncoming car
 #endif
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) { 
               ascii_map[y][x] = "|"; // gate; iron wall; car

@@ -54,6 +54,17 @@ namespace djack.RogueSurvivor.Data
     {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
+
+      // initiate HTML page so we can style things properly
+      dest.WriteLine("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+      dest.WriteLine("<html><head>");
+      // CSS styles
+      dest.WriteLine("<style type='text/css'>\n<!--");
+      dest.WriteLine("pre {font-family: 'Courier New', monospace; font-size:15px}");
+      dest.WriteLine(".car {font-size:9px}");
+      dest.WriteLine("-->\n</style>");
+      dest.WriteLine("</head><body>");
+
       District viewpoint = Engine.Session.Get.CurrentMap.District;
       viewpoint.DaimonMap(dest);
       int x = 0;
@@ -67,6 +78,9 @@ namespace djack.RogueSurvivor.Data
 //        }
         }
       }
+
+      // typical HTML page termination
+      dest.WriteLine("</body></html>");
       dest.Close();
     }
 
