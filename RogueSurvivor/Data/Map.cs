@@ -853,12 +853,10 @@ namespace djack.RogueSurvivor.Data
         inventory.AddAll(it);
       } else if (itemsAt.IsFull) {
         int quantity = it.Quantity;
-        int quantityAdded;
-        itemsAt.AddAsMuchAsPossible(it, out quantityAdded);
-        if (quantityAdded >= quantity)
-          return;
+        int quantityAdded = itemsAt.AddAsMuchAsPossible(it);
+        if (quantityAdded >= quantity) return;
         itemsAt.RemoveAllQuantity(itemsAt.BottomItem);
-        itemsAt.AddAsMuchAsPossible(it, out quantityAdded);
+        /* quantityAdded += */ itemsAt.AddAsMuchAsPossible(it);
       }
       else
         itemsAt.AddAll(it);

@@ -81,14 +81,14 @@ namespace djack.RogueSurvivor.Data
       return true;
     }
 
-    public bool AddAsMuchAsPossible(Item it, out int quantityAdded)
+    public int AddAsMuchAsPossible(Item it)
     {
       Contract.Requires(null!=it);
       int quantity = it.Quantity;
+      int quantityAdded = 0;
       int stackedQuantity;
       List<Item> itemsStackableWith = GetItemsStackableWith(it, out stackedQuantity);
       if (itemsStackableWith != null) {
-        quantityAdded = 0;
         foreach (Item to in itemsStackableWith) {
           int stack = AddToStack(it, it.Quantity - quantityAdded, to);
           quantityAdded += stack;
@@ -101,15 +101,12 @@ namespace djack.RogueSurvivor.Data
           }
         } else
           it.Quantity = 0;
-        return true;
+        return quantityAdded;
       }
-      if (IsFull) {
-        quantityAdded = 0;
-        return false;
-      }
-      quantityAdded = it.Quantity;
+      if (IsFull) return 0;
+
       m_Items.Add(it);
-      return true;
+      return it.Quantity;
     }
 
     public bool CanAddAtLeastOne(Item it)

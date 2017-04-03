@@ -8873,8 +8873,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
       int quantity = it.Quantity;
-      int quantityAdded;
-      actor.Inventory.AddAsMuchAsPossible(it, out quantityAdded);
+      int quantityAdded = actor.Inventory.AddAsMuchAsPossible(it);
       if (quantityAdded == quantity) map.RemoveItemAt(it, position);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(map, position)))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
@@ -8906,8 +8905,8 @@ namespace djack.RogueSurvivor.Engine
 
       if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
       int quantity = gift.Quantity;
-      int quantityAdded;
-      if (target.Inventory.AddAsMuchAsPossible(gift, out quantityAdded) && quantityAdded==quantity)
+      int quantityAdded = target.Inventory.AddAsMuchAsPossible(gift);
+      if (quantityAdded==quantity)
         actor.Inventory.RemoveAllQuantity(gift);
       
       target.SpendActionPoints(Rules.BASE_ACTION_COST);
