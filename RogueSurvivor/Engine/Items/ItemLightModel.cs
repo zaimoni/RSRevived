@@ -32,13 +32,15 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemLightModel(string aName, string theNames, string imageID, int fovBonus, int maxBatteries, string outOfBatteriesImageID)
+    public ItemLightModel(string aName, string theNames, string imageID, int fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
       : base(aName, theNames, imageID)
     {
       m_FovBonus = fovBonus;
       m_MaxBatteries = maxBatteries;
       m_OutOfBatteriesImageID = outOfBatteriesImageID;
       DontAutoEquip = true;
+      EquipmentPart = DollPart.LEFT_HAND;
+      FlavorDescription = flavor;
     }
   }
 }
