@@ -1298,6 +1298,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileRectangle(map, m_Game.GameTiles.WALL_SUBWAY, b.BuildingRect);
       DoForEachTile(b.BuildingRect,(Action<Point>)(pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
+          Session.Get.PoliceInvestigate.Seen(map, pt);
       }));
       Direction direction;
       int x1;
@@ -1308,8 +1309,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
           num = b.BuildingRect.Top;
           if (isSurface) {
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 - 1, num);
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 + 1, num);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 - 1, num);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 + 1, num);
             break;
           }
           break;
@@ -1318,8 +1319,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
           num = b.BuildingRect.Bottom - 1;
           if (isSurface) {
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 - 1, num);
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1 + 1, num);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 - 1, num);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 + 1, num);
             break;
           }
           break;
@@ -1328,8 +1329,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Left;
           num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           if (isSurface) {
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num - 1);
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num + 1);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num - 1);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num + 1);
             break;
           }
           break;
@@ -1342,8 +1343,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           x1 = b.BuildingRect.Right - 1;
           num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           if (isSurface) {
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num - 1);
-            map.AddDecorationAt("Tiles\\Decoration\\subway_building", x1, num + 1);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num - 1);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num + 1);
             break;
           }
           break;
@@ -1419,8 +1420,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         TileFill(map, m_Game.GameTiles.FLOOR_CONCRETE, rect2);
         TileRectangle(map, m_Game.GameTiles.WALL_STONE, rect2);
         PlaceDoor(map, point2.X, point2.Y, m_Game.GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-        map.AddDecorationAt("Tiles\\Decoration\\power_sign_big", point2.X, point2.Y - 1);
-        map.AddDecorationAt("Tiles\\Decoration\\power_sign_big", point2.X, point2.Y + 1);
+        map.AddDecorationAt(GameImages.DECO_POWER_SIGN_BIG, point2.X, point2.Y - 1);
+        map.AddDecorationAt(GameImages.DECO_POWER_SIGN_BIG, point2.X, point2.Y + 1);
         MapObjectFill(map, rect2, (Func<Point, MapObject>) (pt =>
         {
           if (!map.GetTileModelAt(pt).IsWalkable) return null;
