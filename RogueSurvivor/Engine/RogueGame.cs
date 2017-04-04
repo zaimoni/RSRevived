@@ -903,13 +903,9 @@ namespace djack.RogueSurvivor.Engine
       if (!HandleNewGameMode() || !HandleNewCharacterRace(roller, out isUndead)) return false;
       m_CharGen.IsUndead = isUndead;
       if (isUndead) {
-        GameActors.IDs modelID;
-        if (!HandleNewCharacterUndeadType(roller, out modelID)) return false;
-        m_CharGen.UndeadModel = modelID;
+        if (!HandleNewCharacterUndeadType(roller, out m_CharGen.UndeadModel)) return false;
       } else {
-        bool isMale;
-        if (!HandleNewCharacterGender(roller, out isMale)) return false;
-        m_CharGen.IsMale = isMale;
+        if (!HandleNewCharacterGender(roller, out m_CharGen.IsMale)) return false;
       }
       if (!isUndead) {
         Skills.IDs skID;
@@ -1147,28 +1143,32 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewCharacterUndeadType(DiceRoller roller, out GameActors.IDs modelID)
     {
-      ActorModel skeleton = GameActors.Skeleton;
-      ActorModel zombie = GameActors.Zombie;
-      ActorModel maleZombified = GameActors.MaleZombified;
-      ActorModel femaleZombified = GameActors.FemaleZombified;
-      ActorModel zombieMaster = GameActors.ZombieMaster;
-      string[] entries = new string[6]
+      const int undead_count = 5;
+
+      ActorModel[] undead = new ActorModel[undead_count] {
+        GameActors.Skeleton,
+        GameActors.Zombie,
+        GameActors.MaleZombified,
+        GameActors.FemaleZombified,
+        GameActors.ZombieMaster
+      };
+      string[] entries = new string[undead_count+1]
       {
         "*Random*",
-        skeleton.Name,
-        zombie.Name,
-        maleZombified.Name,
-        femaleZombified.Name,
-        zombieMaster.Name
+        undead[0].Name,
+        undead[1].Name,
+        undead[2].Name,
+        undead[3].Name,
+        undead[4].Name
       };
-      string[] values = new string[6]
+      string[] values = new string[undead_count+1]
       {
         "(picks a type at random for you)",
-        DescribeUndeadModelStatLine(skeleton),
-        DescribeUndeadModelStatLine(zombie),
-        DescribeUndeadModelStatLine(maleZombified),
-        DescribeUndeadModelStatLine(femaleZombified),
-        DescribeUndeadModelStatLine(zombieMaster)
+        DescribeUndeadModelStatLine(undead[0]),
+        DescribeUndeadModelStatLine(undead[1]),
+        DescribeUndeadModelStatLine(undead[2]),
+        DescribeUndeadModelStatLine(undead[3]),
+        DescribeUndeadModelStatLine(undead[4])
       };
       modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
       int currentChoice = 0;
@@ -1186,48 +1186,16 @@ namespace djack.RogueSurvivor.Engine
             switch (currentChoice) {
               case 0:
                 currentChoice = roller.Roll(0, 5);
-                switch (currentChoice) {
-                  case 0:
-                    modelID = GameActors.IDs._FIRST;
-                    break;
-                  case 1:
-                    modelID = GameActors.IDs.UNDEAD_ZOMBIE;
-                    break;
-                  case 2:
-                    modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-                    break;
-                  case 3:
-                    modelID = GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED;
-                    break;
-                  case 4:
-                    modelID = GameActors.IDs.UNDEAD_ZOMBIE_MASTER;
-                    break;
-                  default:
-                    throw new ArgumentOutOfRangeException("unhandled select " + (object) currentChoice);
-                }
+                modelID = undead[currentChoice].ID;
                 int gy3 = gy2 + 14;
-                                m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3);
                 int gy4 = gy3 + 14;
-                                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
-                                m_UI.UI_Repaint();
-                if (WaitYesOrNo())return true;
+                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
+                m_UI.UI_Repaint();
+                if (WaitYesOrNo()) return true;
                 break;
-              case 1:
-                modelID = GameActors.IDs._FIRST;
-                return true;
-              case 2:
-                modelID = GameActors.IDs.UNDEAD_ZOMBIE;
-                return true;
-              case 3:
-                modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-                m_CharGen.IsMale = true;
-                return true;
-              case 4:
-                modelID = GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED;
-                m_CharGen.IsMale = false;
-                return true;
-              case 5:
-                modelID = GameActors.IDs.UNDEAD_ZOMBIE_MASTER;
+              default:
+                modelID = undead[currentChoice-1].ID;
                 return true;
             }
             break;
@@ -12121,7 +12089,7 @@ namespace djack.RogueSurvivor.Engine
             break;
           case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
           case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
-            Actor anonymous = (m_CharGen.IsMale ? m_GameActors.MaleCivilian : m_GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
+            Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? m_GameActors.FemaleCivilian : m_GameActors.MaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
             townGen.DressCivilian(roller, anonymous);
             townGen.GiveNameToActor(roller, anonymous);
             actor = Zombify((Actor) null, anonymous, true);
@@ -12141,9 +12109,12 @@ namespace djack.RogueSurvivor.Engine
       actor.Controller = new PlayerController();
       if (townGen.ActorPlace(roller, 10 * map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
       {
-        bool isInside = map.IsInsideAt(pt);
-        if (m_CharGen.IsUndead && isInside || !m_CharGen.IsUndead && !isInside || RogueGame.IsInCHAROffice(new Location(map, pt)))
-          return false;
+        if (map.IsInsideAt(pt)) {
+          if (m_CharGen.IsUndead) return false;
+        } else {
+          if (!m_CharGen.IsUndead) return false;
+        }
+        if (IsInCHAROffice(new Location(map, pt))) return false;
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (m_CharGen.IsUndead) return mapObjectAt == null;
         if (mapObjectAt != null) return mapObjectAt.IsCouch;
@@ -13309,13 +13280,10 @@ namespace djack.RogueSurvivor.Engine
 
     private struct CharGen
     {
-      public bool IsUndead { get; set; }
-
-      public GameActors.IDs UndeadModel { get; set; }
-
-      public bool IsMale { get; set; }
-
-      public Skills.IDs StartingSkill { get; set; }
+      public bool IsUndead;
+      public GameActors.IDs UndeadModel;
+      public bool IsMale;
+      public Skills.IDs StartingSkill;
     }
 
     [System.Flags]

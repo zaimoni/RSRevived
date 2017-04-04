@@ -568,5 +568,17 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           default: return from;
         }
 	  }
+
+      internal static bool IsFemale(this GameActors.IDs x)
+      {
+        switch(x) {
+          case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
+          case GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE:
+          case GameActors.IDs.UNDEAD_FEMALE_DISCIPLE:
+          case GameActors.IDs.FEMALE_CIVILIAN:
+            return true;
+          default: return false;
+        }
+      }
 	}
 }
