@@ -5883,43 +5883,21 @@ namespace djack.RogueSurvivor.Engine
       if (2 > inv.CountItems) throw new ArgumentOutOfRangeException("inv","inventory was not a stack");
       if (1 != Rules.GridDistance(player.Location.Position,src)) throw new ArgumentOutOfRangeException("src", "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
 
-      bool flag1 = true;
-      int num1 = 0;
-      do {
-        ClearOverlays();
-        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      Func<int,string> label = index => string.Format("{0}/{1} {2}.", (object) (index + 1), (object) inv.CountItems, (object)DescribeItemShort(inv[index]));
+      Predicate<int> details = index => {
+        Item obj = inv[index];
+        string reason;
+        if (player.CanGet(obj, out reason)) {
+          DoTakeItem(player, src, obj);
+          return true;
+        }
         ClearMessages();
-        AddMessage(new Data.Message("Taking...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        int num2;
-        for (num2 = 0; num2 < 5 && num1 + num2 < inv.CountItems; ++num2) {
-          int index = num1 + num2;
-          AddMessage(new Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) inv.CountItems, (object)DescribeItemShort(inv[index])), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        }
-        if (num2 < inv.CountItems)
-          AddMessage(new Data.Message("9. next", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
-        else if (choiceNumber == 9) {
-          num1 += 5;
-          if (num1 >= inv.CountItems) num1 = 0;
-        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
-          int index = num1 + choiceNumber - 1;
-          Item obj = inv[index];
-          string reason;
-          if (player.CanGet(obj, out reason)) {
-            DoTakeItem(player, src, obj);
-            flag1 = false;
-          } else {
-            ClearMessages();
-            AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", (object) player.TheName, (object)DescribeItemShort(obj), (object) reason)));
-            AddMessagePressEnter();
-          }
-        }
-      }
-      while (flag1);
-      ClearOverlays();
+        AddMessage(MakeErrorMessage(string.Format("{0} take {1} : {2}.", (object) player.TheName, (object)DescribeItemShort(obj), (object) reason)));
+        AddMessagePressEnter();
+        return false;
+      };
+
+      PagedMenu("Taking...", inv.CountItems, label, details);
     }
 
     private void HandleAiActor(Actor aiActor)
