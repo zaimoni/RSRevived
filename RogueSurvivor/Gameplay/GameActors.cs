@@ -427,7 +427,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
         }
       }
       Notify(ui, "parsing CSV...");
-      CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), 16);
+      CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), ActorData.COUNT_FIELDS);
       Notify(ui, "reading data...");
       CreateModels(toTable);
       Notify(ui, "done!");
@@ -511,39 +511,24 @@ to transform from MALE_CIVILIAN to POLICEMAN:
     {
       public const int COUNT_FIELDS = 16;
 
-      public string NAME { get; set; }
-
-      public string PLURAL { get; set; }
-
-      public int SPD { get; set; }
-
-      public int HP { get; set; }
-
-      public int STA { get; set; }
-
-      public int ATK { get; set; }
-
-      public int DMG { get; set; }
-
-      public int DEF { get; set; }
-
-      public int PRO_HIT { get; set; }
-
-      public int PRO_SHOT { get; set; }
-
-      public int FOV { get; set; }
-
-      public int AUDIO { get; set; }
-
-      public int SMELL { get; set; }
-
-      public int SCORE { get; set; }
-
-      public string FLAVOR { get; set; }
-
-      public static GameActors.ActorData FromCSVLine(CSVLine line)
+      public string NAME;
+      public string PLURAL;
+      public int SPD;
+      public int HP;
+      public int STA;
+      public int ATK;
+      public int DMG;
+      public int DEF;
+      public int PRO_HIT;
+      public int PRO_SHOT;
+      public int FOV;
+      public int AUDIO;
+      public int SMELL;
+      public int SCORE;
+      public string FLAVOR;
+      public static ActorData FromCSVLine(CSVLine line)
       {
-        return new GameActors.ActorData()
+        return new ActorData()
         {
           NAME = line[1].ParseText(),
           PLURAL = line[2].ParseText(),

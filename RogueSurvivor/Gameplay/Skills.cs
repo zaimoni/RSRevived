@@ -96,7 +96,7 @@ namespace djack.RogueSurvivor.Gameplay
     {
 	  Contract.Requires(!string.IsNullOrEmpty(path));
       Skills.SkillData[] data;
-      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", 6, new Func<CSVLine, Skills.SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
+      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, new Func<CSVLine, Skills.SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
       {
         Skills.IDs._FIRST,
         Skills.IDs.AWAKE,
@@ -249,15 +249,11 @@ namespace djack.RogueSurvivor.Gameplay
     {
       public const int COUNT_FIELDS = 6;
 
-      public string NAME { get; set; }
-
-      public float VALUE1 { get; set; }
-
-      public float VALUE2 { get; set; }
-
-      public float VALUE3 { get; set; }
-
-      public float VALUE4 { get; set; }
+      public string NAME;
+      public float VALUE1;
+      public float VALUE2;
+      public float VALUE3;
+      public float VALUE4;
 
       public static Skills.SkillData FromCSVLine(CSVLine line)
       {
