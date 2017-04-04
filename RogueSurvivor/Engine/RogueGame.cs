@@ -1185,8 +1185,7 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Return:
             switch (currentChoice) {
               case 0:
-                currentChoice = roller.Roll(0, 5);
-                modelID = undead[currentChoice].ID;
+                modelID = undead[roller.Roll(0, 5)].ID;
                 int gy3 = gy2 + 14;
                 m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3);
                 int gy4 = gy3 + 14;
@@ -3994,6 +3993,38 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
     }
 
+    private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
+    {
+      bool flag1 = true;
+      int num1 = 0;
+      do {
+        ClearOverlays();
+        AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        ClearMessages();
+        AddMessage(new Data.Message(header, Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        int num2;
+        for (num2 = 0; num2 < MAX_MESSAGES-2 && num1 + num2 < strict_ub; ++num2) {
+          int index = num1 + num2;
+          AddMessage(new Data.Message((1+num2).ToString()+" "+label(index), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        }
+        if (num2 < strict_ub)
+          AddMessage(new Data.Message("9. next", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+        RedrawPlayScreen();
+        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
+        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
+        else if (choiceNumber == 9) {
+          num1 += MAX_MESSAGES-2;
+          if (num1 >= strict_ub) num1 = 0;
+        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
+          int index = num1 + choiceNumber - 1;
+          if (details(index)) flag1 = false;
+        }
+      }
+      while (flag1);
+      ClearOverlays();
+    }
+
     private void HandleItemInfo()
     {
       List<Gameplay.GameItems.IDs> item_classes = m_Player.Controller.WhatHaveISeen();
@@ -4002,42 +4033,21 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
       item_classes.Sort();
-      
-      bool flag1 = true;
-      int num1 = 0;
-      do {
-        ClearOverlays();
-        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-        ClearMessages();
-        AddMessage(new Data.Message("Reviewing...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        int num2;
-        for (num2 = 0; num2 < 5 && num1 + num2 < item_classes.Count; ++num2) {
-          int index = num1 + num2;
-          AddMessage(new Data.Message(string.Format("{0}. {1}/{2} {3}.", (object) (1 + num2), (object) (index + 1), (object) item_classes.Count, item_classes[index].ToString()), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
+
+      Func<int,string> label = index => string.Format("{0}/{1} {2}.", (object) (index + 1), (object) item_classes.Count, item_classes[index].ToString());
+      Predicate<int> details = index => {
+        Gameplay.GameItems.IDs item_type = item_classes[index];
+        Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
+        List<string> tmp = new List<string>();
+        foreach(Location tmp2 in catalog.Keys) {
+          tmp.Add(tmp2.ToString()+": "+catalog[tmp2].ToString());
+          if (20<tmp.Count) break;
         }
-        if (num2 < item_classes.Count)
-          AddMessage(new Data.Message("9. next", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        RedrawPlayScreen();
-        KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-        int choiceNumber = KeyToChoiceNumber(keyEventArgs.KeyCode);
-        if (keyEventArgs.KeyCode == Keys.Escape) flag1 = false;
-        else if (choiceNumber == 9) {
-          num1 += 5;
-          if (num1 >= item_classes.Count) num1 = 0;
-        } else if (choiceNumber >= 1 && choiceNumber <= num2) {
-          int index = num1 + choiceNumber - 1;
-          Gameplay.GameItems.IDs item_type = item_classes[index];
-          Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
-          List<string> tmp = new List<string>();
-          foreach(Location tmp2 in catalog.Keys) {
-            tmp.Add(tmp2.ToString()+": "+catalog[tmp2].ToString());
-            if (20<tmp.Count) break;
-          }
-          ShowSpecialDialogue(m_Player,tmp.ToArray());
-        }
-      }
-      while (flag1);
-      ClearOverlays();
+        ShowSpecialDialogue(m_Player,tmp.ToArray());
+        return false;
+      };
+
+      PagedMenu("Reviewing...", item_classes.Count, label, details);
     }
 
     private void HandleDaimonMap()
