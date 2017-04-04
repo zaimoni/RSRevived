@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Data
     public ActorSheet StartingSheet { get; private set; }
     public Abilities Abilities { get; private set; }
     public Type DefaultController { get; private set; }
-    public int CreatedCount { get; private set; }
+    public int CreatedCount { get; private set; }   // XXX resets on restart
     public int ScoreValue { get; private set; }
     public string FlavorDescription { get; private set; }
 

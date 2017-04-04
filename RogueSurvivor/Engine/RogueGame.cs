@@ -732,7 +732,7 @@ namespace djack.RogueSurvivor.Engine
     private void GameLoop()
     {
       HandleMainMenu();
-      while (0<Session.Get.World.PlayerCount && m_IsGameRunning) {
+      while (m_IsGameRunning && 0 < Session.Get.World.PlayerCount) {
         District d = Session.Get.World.CurrentPlayerDistrict();
         if (null == d) {
           if (null == Session.Get.World.CurrentSimulationDistrict()) throw new InvalidOperationException("no districts available to simulate");
