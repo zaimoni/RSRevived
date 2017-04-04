@@ -11057,7 +11057,7 @@ namespace djack.RogueSurvivor.Engine
       gy += 14;
       Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
       if (actor.Model.Abilities.IsUndead)
-        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} FoV {2} En {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, (object) actor.KillsCount), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, (object) actor.KillsCount), gx, gy, new Color?());
       else
         m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), (object) actor.CountFollowers, (object)actor.MaxFollowers), gx, gy, new Color?());
     }
