@@ -33,33 +33,6 @@ namespace djack.RogueSurvivor.Gameplay
     private const int NO_SANITY = 0;
     private const int NO_SMELL = 0;
     private const int NO_AUDIO = 0;
-    private GameActors.ActorData DATA_SKELETON;
-    private GameActors.ActorData DATA_RED_EYED_SKELETON;
-    private GameActors.ActorData DATA_RED_SKELETON;
-    private GameActors.ActorData DATA_ZOMBIE;
-    private GameActors.ActorData DATA_DARK_EYED_ZOMBIE;
-    private GameActors.ActorData DATA_DARK_ZOMBIE;
-    private GameActors.ActorData DATA_MALE_ZOMBIFIED;
-    private GameActors.ActorData DATA_FEMALE_ZOMBIFIED;
-    private GameActors.ActorData DATA_MALE_NEOPHYTE;
-    private GameActors.ActorData DATA_FEMALE_NEOPHYTE;
-    private GameActors.ActorData DATA_MALE_DISCIPLE;
-    private GameActors.ActorData DATA_FEMALE_DISCIPLE;
-    private GameActors.ActorData DATA_ZM;
-    private GameActors.ActorData DATA_ZP;
-    private GameActors.ActorData DATA_ZL;
-    private GameActors.ActorData DATA_RAT_ZOMBIE;
-    private GameActors.ActorData DATA_SEWERS_THING;
-    private GameActors.ActorData DATA_MALE_CIVILIAN;
-    private GameActors.ActorData DATA_FEMALE_CIVILIAN;
-    private GameActors.ActorData DATA_FERAL_DOG;
-    private GameActors.ActorData DATA_POLICEMAN;
-    private GameActors.ActorData DATA_CHAR_GUARD;
-    private GameActors.ActorData DATA_NATGUARD;
-    private GameActors.ActorData DATA_BIKER_MAN;
-    private GameActors.ActorData DATA_GANGSTA_MAN;
-    private GameActors.ActorData DATA_BLACKOPS_MAN;
-    private GameActors.ActorData DATA_JASON_MYERS;
 
     public ActorModel this[int id] {
       get {
@@ -308,13 +281,44 @@ to transform from MALE_CIVILIAN to POLICEMAN:
 * add  | Abilities.Flags.IS_LAW_ENFORCER
 */
 
-    public void CreateModels()
+    public void CreateModels(CSVTable toTable)
     {
       const Abilities.Flags STD_ZOMBIFYING = Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS;
       const Abilities.Flags STD_ZM = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_JUMP_STUMBLE;
       const Abilities.Flags STD_LIVING = Abilities.Flags.HAS_INVENTORY | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_TIRE | Abilities.Flags.CAN_RUN;
       const Abilities.Flags STD_HUMAN = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE;
       const Abilities.Flags STD_SANE = Abilities.Flags.HAS_SANITY | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT;
+
+      Func<CSVLine, GameActors.ActorData> parse_fn = new Func<CSVLine, GameActors.ActorData>(GameActors.ActorData.FromCSVLine);
+      ActorData DATA_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn, GameActors.IDs._FIRST);
+      ActorData DATA_RED_EYED_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
+      ActorData DATA_RED_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RED_SKELETON);
+      ActorData DATA_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE);
+      ActorData DATA_DARK_EYED_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE);
+      ActorData DATA_DARK_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_DARK_ZOMBIE);
+      ActorData DATA_MALE_ZOMBIFIED = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_ZOMBIFIED);
+      ActorData DATA_FEMALE_ZOMBIFIED = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED);
+      ActorData DATA_MALE_NEOPHYTE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_NEOPHYTE);
+      ActorData DATA_FEMALE_NEOPHYTE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE);
+      ActorData DATA_MALE_DISCIPLE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_DISCIPLE);
+      ActorData DATA_FEMALE_DISCIPLE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_DISCIPLE);
+      ActorData DATA_ZM = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_MASTER);
+      ActorData DATA_ZL = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_LORD);
+      ActorData DATA_ZP = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_PRINCE);
+      ActorData DATA_RAT_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RAT_ZOMBIE);
+      ActorData DATA_SEWERS_THING = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.SEWERS_THING);
+      ActorData DATA_MALE_CIVILIAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.MALE_CIVILIAN);
+      ActorData DATA_FEMALE_CIVILIAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.FEMALE_CIVILIAN);
+      ActorData DATA_FERAL_DOG = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.FERAL_DOG);
+      ActorData DATA_POLICEMAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.POLICEMAN);
+      ActorData DATA_CHAR_GUARD = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.CHAR_GUARD);
+      ActorData DATA_NATGUARD = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.ARMY_NATIONAL_GUARD);
+      ActorData DATA_BIKER_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.BIKER_MAN);
+      ActorData DATA_GANGSTA_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.GANGSTA_MAN);
+      ActorData DATA_BLACKOPS_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.BLACKOPS_MAN);
+      ActorData DATA_JASON_MYERS = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.JASON_MYERS);
+
+      // XXX postprocessing stage should go here
 
       this[GameActors.IDs._FIRST] = new ActorModel(GameImages.ACTOR_SKELETON, DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, DATA_SKELETON.FLAVOR, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
           Abilities.Flags.UNDEAD),
@@ -425,35 +429,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       Notify(ui, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), 16);
       Notify(ui, "reading data...");
-      Func<CSVLine, GameActors.ActorData> parse_fn = new Func<CSVLine, GameActors.ActorData>(GameActors.ActorData.FromCSVLine);
-      DATA_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn, GameActors.IDs._FIRST);
-      DATA_RED_EYED_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RED_EYED_SKELETON);
-      DATA_RED_SKELETON = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RED_SKELETON);
-      DATA_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE);
-      DATA_DARK_EYED_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_DARK_EYED_ZOMBIE);
-      DATA_DARK_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_DARK_ZOMBIE);
-      DATA_MALE_ZOMBIFIED = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_ZOMBIFIED);
-      DATA_FEMALE_ZOMBIFIED = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED);
-      DATA_MALE_NEOPHYTE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_NEOPHYTE);
-      DATA_FEMALE_NEOPHYTE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_NEOPHYTE);
-      DATA_MALE_DISCIPLE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_MALE_DISCIPLE);
-      DATA_FEMALE_DISCIPLE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_FEMALE_DISCIPLE);
-      DATA_ZM = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_MASTER);
-      DATA_ZL = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_LORD);
-      DATA_ZP = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_ZOMBIE_PRINCE);
-      DATA_RAT_ZOMBIE = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.UNDEAD_RAT_ZOMBIE);
-      DATA_SEWERS_THING = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.SEWERS_THING);
-      DATA_MALE_CIVILIAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.MALE_CIVILIAN);
-      DATA_FEMALE_CIVILIAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.FEMALE_CIVILIAN);
-      DATA_FERAL_DOG = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.FERAL_DOG);
-      DATA_POLICEMAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.POLICEMAN);
-      DATA_CHAR_GUARD = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.CHAR_GUARD);
-      DATA_NATGUARD = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.ARMY_NATIONAL_GUARD);
-      DATA_BIKER_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.BIKER_MAN);
-      DATA_GANGSTA_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.GANGSTA_MAN);
-      DATA_BLACKOPS_MAN = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.BLACKOPS_MAN);
-      DATA_JASON_MYERS = toTable.GetDataFor<GameActors.ActorData, GameActors.IDs>(parse_fn,  GameActors.IDs.JASON_MYERS);
-      CreateModels();
+      CreateModels(toTable);
       Notify(ui, "done!");
       return true;
     }
