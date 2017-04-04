@@ -1026,8 +1026,6 @@ namespace djack.RogueSurvivor.Engine
         "Eat brains and die again."
       };
       isUndead = false;
-      bool flag1 = true;
-      bool flag2 = false;
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
@@ -1049,28 +1047,18 @@ namespace djack.RogueSurvivor.Engine
                 int gy4 = gy3 + 14;
                 m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
                 m_UI.UI_Repaint();
-                if (WaitYesOrNo()) {
-                  flag2 = true;
-                  flag1 = false;
-                  break;
-                }
+                if (WaitYesOrNo()) return true;
                 break;
               case 1:
                 isUndead = false;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
               case 2:
                 isUndead = true;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
             }
             break;
           case Keys.Escape:
-            flag2 = false;
-            flag1 = false;
-            break;
+            return false;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1084,8 +1072,7 @@ namespace djack.RogueSurvivor.Engine
             break;
         }
       }
-      while (flag1);
-      return flag2;
+      while(true);
     }
 
     private bool HandleNewCharacterGender(DiceRoller roller, out bool isMale)
@@ -1105,8 +1092,6 @@ namespace djack.RogueSurvivor.Engine
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", (object) femaleCivilian.StartingSheet.BaseHitPoints, (object) femaleCivilian.StartingSheet.BaseDefence.Value, (object) femaleCivilian.StartingSheet.UnarmedAttack.DamageValue)
       };
       isMale = true;
-      bool flag1 = true;
-      bool flag2 = false;
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
@@ -1127,28 +1112,18 @@ namespace djack.RogueSurvivor.Engine
                 gy += 14;
                 m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
                 m_UI.UI_Repaint();
-                if (WaitYesOrNo()) {
-                  flag2 = true;
-                  flag1 = false;
-                  break;
-                }
+                if (WaitYesOrNo()) return true;
                 break;
               case 1:
                 isMale = true;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
               case 2:
                 isMale = false;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
             }
             break;
           case Keys.Escape:
-            flag2 = false;
-            flag1 = false;
-            break;
+            return false;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1162,8 +1137,7 @@ namespace djack.RogueSurvivor.Engine
             break;
         }
       }
-      while (flag1);
-      return flag2;
+      while(true);
     }
 
     private string DescribeUndeadModelStatLine(ActorModel m)
@@ -1197,8 +1171,6 @@ namespace djack.RogueSurvivor.Engine
         DescribeUndeadModelStatLine(zombieMaster)
       };
       modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-      bool flag1 = true;
-      bool flag2 = false;
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
@@ -1238,46 +1210,29 @@ namespace djack.RogueSurvivor.Engine
                 int gy4 = gy3 + 14;
                                 m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
                                 m_UI.UI_Repaint();
-                if (WaitYesOrNo())
-                {
-                  flag2 = true;
-                  flag1 = false;
-                  break;
-                }
+                if (WaitYesOrNo())return true;
                 break;
               case 1:
                 modelID = GameActors.IDs._FIRST;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
               case 2:
                 modelID = GameActors.IDs.UNDEAD_ZOMBIE;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
               case 3:
                 modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
-                                m_CharGen.IsMale = true;
-                flag2 = true;
-                flag1 = false;
-                break;
+                m_CharGen.IsMale = true;
+                return true;
               case 4:
                 modelID = GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED;
-                                m_CharGen.IsMale = false;
-                flag2 = true;
-                flag1 = false;
-                break;
+                m_CharGen.IsMale = false;
+                return true;
               case 5:
                 modelID = GameActors.IDs.UNDEAD_ZOMBIE_MASTER;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
             }
             break;
           case Keys.Escape:
-            flag2 = false;
-            flag1 = false;
-            break;
+            return false;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1291,8 +1246,7 @@ namespace djack.RogueSurvivor.Engine
             break;
         }
       }
-      while (flag1);
-      return flag2;
+      while (true);
     }
 
     private bool HandleNewCharacterSkill(DiceRoller roller, out Skills.IDs skID)
@@ -1328,16 +1282,10 @@ namespace djack.RogueSurvivor.Engine
             int gy4 = gy3 + 14;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
             m_UI.UI_Repaint();
-            if (WaitYesOrNo()) {
-              flag2 = true;
-              flag1 = false;
-              break;
-            }
+            if (WaitYesOrNo()) return true;
             break;
           case Keys.Escape:
-            flag2 = false;
-            flag1 = false;
-            break;
+            return false;
           case Keys.Up:
             if (currentChoice > 0) {
               --currentChoice;
@@ -1350,8 +1298,7 @@ namespace djack.RogueSurvivor.Engine
             break;
         }
       }
-      while (flag1);
-      return flag2;
+      while(true);
     }
 
     private void LoadManual()
