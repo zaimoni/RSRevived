@@ -922,20 +922,48 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewGameMode()
     {
-      string[] entries = new string[3]
+      string[] entries = new string[(int)GameMode_Bounds._COUNT]
       {
         Session.DescGameMode(GameMode.GM_STANDARD),
         Session.DescGameMode(GameMode.GM_CORPSES_INFECTION),
         Session.DescGameMode(GameMode.GM_VINTAGE)
       };
-      string[] values = new string[3]
+      string[] values = new string[(int)GameMode_Bounds._COUNT]
       {
         SetupConfig.GAME_NAME+" standard game.",
         "Don't get a cold. Keep an eye on your deceased diseased friends.",
         "The classic zombies next door."
       };
-      bool flag1 = true;
-      bool flag2 = false;
+      string[][] summaries = new string[(int)GameMode_Bounds._COUNT][]
+      {
+        new string[] {
+          "This is the standard game setting:",
+          "- All the kinds of undeads.",
+          "- Undeads can evolve.",
+          "- Livings can zombify instantly when dead."
+        },
+        new string[] {
+          "This is the standard game setting with corpses and infection: ",
+          "- All the kinds of undeads.",
+          "- Undeads can evolve.",
+          "- Some undeads can infect livings when damaging them.",
+          "- Livings become corpses when dead.",
+          "- Corpses will slowy rot... but may rise as undead if infected."
+        },
+        new string[] {
+          "This is the zombie game for classic hardcore fans: ",
+          "- Undeads are only zombified men and women.",
+          "- Undeads don't evolve.",
+          "- Some undeads can infect livings when damaging them.",
+          "- Livings become corpses when dead.",
+          "- Corpses will slowy rot... but may rise as undead if infected.",
+          "",
+          "NOTE:",
+          "This mode force some options OFF.",
+          "Remember to set them back ON again when you play other modes!"
+        }
+      };
+
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
@@ -945,46 +973,7 @@ namespace djack.RogueSurvivor.Engine
         int gy2 = gy1 + 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
         int gy3 = gy2 + 28;
-        string[] strArray = new string[0];
-        switch (currentChoice)
-        {
-          case 0:
-            strArray = new string[4]
-            {
-              "This is the standard game setting:",
-              "- All the kinds of undeads.",
-              "- Undeads can evolve.",
-              "- Livings can zombify instantly when dead."
-            };
-            break;
-          case 1:
-            strArray = new string[6]
-            {
-              "This is the standard game setting with corpses and infection: ",
-              "- All the kinds of undeads.",
-              "- Undeads can evolve.",
-              "- Some undeads can infect livings when damaging them.",
-              "- Livings become corpses when dead.",
-              "- Corpses will slowy rot... but may rise as undead if infected."
-            };
-            break;
-          case 2:
-            strArray = new string[10]
-            {
-              "This is the zombie game for classic hardcore fans: ",
-              "- Undeads are only zombified men and women.",
-              "- Undeads don't evolve.",
-              "- Some undeads can infect livings when damaging them.",
-              "- Livings become corpses when dead.",
-              "- Corpses will slowy rot... but may rise as undead if infected.",
-              "",
-              "NOTE:",
-              "This mode force some options OFF.",
-              "Remember to set them back ON again when you play other modes!"
-            };
-            break;
-        }
-        foreach (string text in strArray) {
+        foreach (string text in summaries[currentChoice]) {
           m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy3, new Color?());
           gy3 += 14;
         }
@@ -995,26 +984,18 @@ namespace djack.RogueSurvivor.Engine
             switch (currentChoice) {
               case 0:
                 Session.Get.GameMode = GameMode.GM_STANDARD;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
               case 1:
                 Session.Get.GameMode = GameMode.GM_CORPSES_INFECTION;
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
               case 2:
                 Session.Get.GameMode = GameMode.GM_VINTAGE;
                 ApplyOptions(false);
-                flag2 = true;
-                flag1 = false;
-                break;
+                return true;
             }
             break;
           case Keys.Escape:
-            flag2 = false;
-            flag1 = false;
-            break;
+            return false;
           case Keys.Up:
             if (currentChoice > 0) {
               --currentChoice;
@@ -1027,8 +1008,7 @@ namespace djack.RogueSurvivor.Engine
             break;
         }
       }
-      while (flag1);
-      return flag2;
+      while(true);
     }
 
     private bool HandleNewCharacterRace(DiceRoller roller, out bool isUndead)

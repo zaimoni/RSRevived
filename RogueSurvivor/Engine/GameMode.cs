@@ -15,4 +15,9 @@ namespace djack.RogueSurvivor.Engine
     GM_CORPSES_INFECTION,
     GM_VINTAGE,
   }
+
+  internal enum GameMode_Bounds
+  {
+    _COUNT = (int)GameMode.GM_VINTAGE+1
+  }
 }
