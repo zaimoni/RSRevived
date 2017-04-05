@@ -251,8 +251,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
     [Serializable]
-  internal abstract class OrderableAI : BaseAI
-  {
+  internal abstract class OrderableAI : ObjectiveAI
+    {
     private const int EMOTE_GRAB_ITEM_CHANCE = 30;
 
     // build out CivilianAI first, then fix the other AIs

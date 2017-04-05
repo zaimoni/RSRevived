@@ -10,12 +10,13 @@ using System.Collections.Generic;
 using System.Drawing;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class PlayerController : ActorController
-  {
+  internal class PlayerController : ObjectiveAI
+    {
     private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
 
@@ -77,6 +78,11 @@ namespace djack.RogueSurvivor.Data
     public override ActorAction GetAction(RogueGame game)
     {
       throw new InvalidOperationException("do not call PlayerController.GetAction()");
+    }
+
+    protected override ActorAction SelectAction(RogueGame game)
+    {
+      throw new InvalidOperationException("do not call PlayerController.SelectAction()");
     }
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
