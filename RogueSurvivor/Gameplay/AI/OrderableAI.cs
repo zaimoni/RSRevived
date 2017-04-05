@@ -717,6 +717,74 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false; 
     }
 
+    // XXX to implement
+    // core inventory should be (but is not)
+    // armor: 1 slot (done)
+    // flashlight: 1 slot (currently very low priority)
+    // melee weapon: 1 slot (done)
+    // ranged weapon w/ammo: 1 slot
+    // ammo clips: 1 slot high priority, 1 slot moderate priority (tradeable)
+    // without Hauler levels, that is 5 non-tradeable slots when fully kitted
+    // Also, has enough food checks should be based on wakeup time
+
+    // Gun bunnies would:
+    // * have a slot budget of MaxCapacity-3 or -4 for ranged weapons and ammo combined
+    // * use no more than half of that slot budget for ranged weapons, rounded up
+    // * strongly prefer one clip for each of two ranged weapons over 2 clips for a single ranged weapon
+
+    // close to the inverse of IsInterestingItem
+    public bool IsTradeableItem(Item it)
+    {
+		Contract.Requires(null != it);
+#if DEBUG
+        Contract.Requires(Actor.Model.Abilities.CanTrade);
+#endif
+        if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
+        if (it is ItemFood)
+            {
+            if (!m_Actor.Model.Abilities.HasToEat) return true;
+            if (m_Actor.IsHungry) return false; 
+            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
+              return (it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+            return true;
+            }
+        if (it is ItemRangedWeapon)
+            {
+            if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
+            ItemRangedWeapon rw = it as ItemRangedWeapon;
+            if (0 < rw.Ammo) return false;
+            if (null != m_Actor.GetCompatibleAmmoItem(rw)) return false;
+            return true;    // more work needed
+            }
+        if (it is ItemAmmo)
+            {
+            ItemAmmo am = it as ItemAmmo;
+            if (m_Actor.GetCompatibleRangedWeapon(am) == null) return true;
+            return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            }
+        if (it is ItemMeleeWeapon)
+            {
+            Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+            if ((it.Model as ItemMeleeWeaponModel).Attack.Rating <= martial_arts.Rating) return true;
+            // do not trade away the best melee weapon.  Others ok.
+            return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
+            }
+        if (it is ItemLight)
+            {
+            if (!m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2)) return false;
+            // XXX more work needed
+            return true;
+            }
+        // player should be able to trade for blue pills
+/*
+        if (it is ItemMedicine)
+            {
+            return HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            }
+*/
+        return true;    // default to ok to trade away
+    }
+
     // XXX *could* eliminate int turn by defining it as location.Map.LocalTime.TurnCounter
     public void OnRaid(RaidType raid, Location location, int turn)
     {

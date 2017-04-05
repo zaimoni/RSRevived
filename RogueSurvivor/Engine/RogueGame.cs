@@ -8565,7 +8565,7 @@ namespace djack.RogueSurvivor.Engine
       }
 
       bool wantedItem = true;
-      bool flag3 = target.Controller.IsInterestingTradeItem(speaker, itSpeaker);
+      bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, itSpeaker);
       if (target.Leader == speaker)
         wantedItem = true;
       else if (doesTargetCheckForInterestInOffer)
@@ -8766,7 +8766,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (target.Leader == actor) {
-        bool flag = target.Controller.IsInterestingItem(gift);
+        bool flag = (target.Controller as ObjectiveAI).IsInterestingItem(gift);
         if (flag)
           DoSay(target, actor, "Thank you, I really needed that!", RogueGame.Sayflags.IS_FREE_ACTION);
         else
