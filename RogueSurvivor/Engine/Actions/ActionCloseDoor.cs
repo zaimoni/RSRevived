@@ -4,12 +4,14 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
+using System.Diagnostics.Contracts;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  [Serializable]
   internal class ActionCloseDoor : ActorAction
   {
     private readonly DoorWindow m_Door;
