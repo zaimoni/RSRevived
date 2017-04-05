@@ -255,9 +255,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     private const int EMOTE_GRAB_ITEM_CHANCE = 30;
 
-    // build out CivilianAI first, then fix the other AIs
-    readonly protected List<Objective> Objectives = new List<Objective>();
-
     // taboos really belong here
     private Dictionary<Item, int> m_TabooItems = null;
     private List<Actor> m_TabooTrades = null;
