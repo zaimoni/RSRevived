@@ -150,7 +150,6 @@ namespace djack.RogueSurvivor.Data
               if (!names.Contains(a.UnmodifiedName)) continue;
               if (a.IsPlayer) continue;
               a.Controller = new PlayerController();
-              a.Controller.UpdateSensors();
             }
           }
         }

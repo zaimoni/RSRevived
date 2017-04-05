@@ -35,26 +35,27 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     };
     private static string[] CHAR_POSTERS = new string[3]
     {
-      "Tiles\\Decoration\\char_poster1",
-      "Tiles\\Decoration\\char_poster2",
-      "Tiles\\Decoration\\char_poster3"
+      GameImages.DECO_CHAR_POSTER1,
+      GameImages.DECO_CHAR_POSTER2,
+      GameImages.DECO_CHAR_POSTER3
     };
     private static readonly string[] POSTERS = new string[2]
     {
-      "Tiles\\Decoration\\posters1",
-      "Tiles\\Decoration\\posters2"
+      GameImages.DECO_POSTERS1,
+      GameImages.DECO_POSTERS2
     };
     private static readonly string[] TAGS = new string[7]
     {
-      "Tiles\\Decoration\\tags1",
-      "Tiles\\Decoration\\tags2",
-      "Tiles\\Decoration\\tags3",
-      "Tiles\\Decoration\\tags4",
-      "Tiles\\Decoration\\tags5",
-      "Tiles\\Decoration\\tags6",
-      "Tiles\\Decoration\\tags7"
+      GameImages.DECO_TAGS1,
+      GameImages.DECO_TAGS2,
+      GameImages.DECO_TAGS3,
+      GameImages.DECO_TAGS4,
+      GameImages.DECO_TAGS5,
+      GameImages.DECO_TAGS6,
+      GameImages.DECO_TAGS7
     };
-    private BaseTownGenerator.Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
+    private Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
+    private readonly string[] m_PC_names = null;
     private const int PARK_TREE_CHANCE = 25;
     private const int PARK_BENCH_CHANCE = 5;
     private const int PARK_ITEM_CHANCE = 5;
@@ -81,15 +82,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected DiceRoller m_DiceRoller;
     private List<BaseTownGenerator.Block> m_SurfaceBlocks;
 
-    public BaseTownGenerator.Parameters Params
+    public Parameters Params
     {
-      get
-      {
+      get {
         return m_Params;
       }
-      set
-      {
-                m_Params = value;
+      set { // required by District::GenerateEntryMap
+        m_Params = value;
       }
     }
 
@@ -98,6 +97,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       m_Params = parameters;
       m_DiceRoller = new DiceRoller();
+      if (Engine.Session.CommandLineOptions.ContainsKey("PC")) m_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
     }
 
     public override Map Generate(int seed, string name)
@@ -2950,6 +2950,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         GiveRandomItemToActor(m_DiceRoller, numberedName, spawnTime);
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, skills);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);
+      if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
+        numberedName.Controller = new PlayerController();
+      }
       return numberedName;
     }
 
@@ -2974,6 +2977,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
         numberedName.Inventory.AddAll(m_DiceRoller.RollChance(80) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor());
+      }
+      if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
+        numberedName.Controller = new PlayerController();
       }
       return numberedName;
     }
