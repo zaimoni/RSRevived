@@ -19,23 +19,8 @@ namespace djack.RogueSurvivor.Data
     private Rectangle m_Bounds;
     private Dictionary<string, object> m_Attributes;
 
-    public string Name {
-      get {
-        return m_Name;
-      }
-      set {
-        m_Name = value;
-      }
-    }
-
-    public Rectangle Bounds {
-      get {
-        return m_Bounds;
-      }
-      set {
-        m_Bounds = value;
-      }
-    }
+    public string Name { get { return m_Name; } }
+    public Rectangle Bounds { get { return m_Bounds; } }
 
     public Zone(string name, Rectangle bounds)
     {

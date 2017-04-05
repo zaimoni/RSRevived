@@ -65,7 +65,8 @@ namespace djack.RogueSurvivor.Data
         // all unknown squares become investigation targets
         for (pos.X = 0; pos.X < m_EntryMap.Width; ++pos.X) {
           for (pos.Y = 0; pos.Y < m_EntryMap.Height; ++pos.Y) {
-            if (Engine.Session.Get.PoliceItemMemory.HaveEverSeen(new Location(m_EntryMap, pos))) continue;
+            if (Engine.Session.Get.PoliceItemMemory.HaveEverSeen(new Location(m_EntryMap, pos))) continue;  // police already know this
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "CHAR Office")) continue;   // CHAR company town, police first assume things ok
             Engine.Session.Get.PoliceInvestigate.Record(m_EntryMap,pos);
           }
         }
