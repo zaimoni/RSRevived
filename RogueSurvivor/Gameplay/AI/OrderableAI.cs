@@ -86,6 +86,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     [Serializable]
+    internal class Goal_LastAction<T> : Objective
+    {
+      public readonly T Intent;
+
+      public Goal_LastAction(int t0, Actor who, T intent)
+      : base(t0,who)
+      {
+        Contract.Requires(null != intent);
+        Intent = intent;
+      }
+
+      public T LastAction { get {return Intent; } }
+
+      // expire when two turns old
+      // we are an influence on behaviors so we don't actually execute
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        if (2 <= m_Actor.Location.Map.LocalTime.TurnCounter - TurnCounter) {
+          _isExpired = true;
+          return true;
+        }
+        return false;
+      }
+    }
+
+    [Serializable]
     internal class Goal_DoNotPickup : Objective
     {
       public readonly GameItems.IDs Avoid;
@@ -1380,8 +1407,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
         DoorWindow door = map.GetMapObjectAt(position) as DoorWindow;
         if (null == door) continue;
         if (door.IsOpen && m_Actor.CanClose(door)) {
-          if (Rules.IsAdjacent(position, m_Actor.Location.Position))
-            return new ActionCloseDoor(m_Actor, door);
+          if (Rules.IsAdjacent(position, m_Actor.Location.Position)) {
+            // this can trigger close-open loop with someone who is merely traveling
+            // check for duplicating last action
+            if (Objectives.Where(o => o is Goal_LastAction<ActionCloseDoor> && (o as Goal_LastAction<ActionCloseDoor>).LastAction.Door==door).Any()) {
+              // break action loop; plausibly the conflicting actor will be in the doorway next time
+              return new ActionWait(m_Actor);
+            }
+            // proceed
+            ActionCloseDoor tmp = new ActionCloseDoor(m_Actor, door);
+            Objectives.Add(new Goal_LastAction<ActionCloseDoor>(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,tmp));
+            return tmp;
+          }
           want_to_resolve[position] = Rules.GridDistance(position, m_Actor.Location.Position);
         }
         if (door.IsWindow && !door.IsBarricaded && m_Actor.CanBarricade(door)) {

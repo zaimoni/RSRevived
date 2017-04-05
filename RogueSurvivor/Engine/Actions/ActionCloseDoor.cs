@@ -21,6 +21,8 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Door = door;
     }
 
+    public DoorWindow Door { get { return m_Door; } }
+
     public override bool IsLegal()
     {
       return m_Actor.CanClose(m_Door, out m_FailReason);
