@@ -867,20 +867,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         MaximizeRangedTargets(retreat, enemies);
         MaximizeRangedTargets(run_retreat, enemies);
         IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed <= 2 * m_Actor.Speed);   // typically rats.
-        if (!fast_enemies.Any()) {
-          // ranged weapon: fast retreat ok
-          // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
-          // XXX we also want to be close enough to fire at all
-          tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
-          if (null != tmpAction) {
-		    ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-            if (null != tmpAction2) {
-              if (safe_run_retreat) RunIfPossible();
-              else RunIfAdvisable(tmpAction2.dest.Position);
-            }
-            m_Actor.Activity = Activity.FLEEING;
-            return tmpAction;
+        if (fast_enemies.Any()) return null;    // not practical to run from rats.
+        // ranged weapon: fast retreat ok
+        // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
+        // XXX we also want to be close enough to fire at all
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
+        if (null != tmpAction) {
+          ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
+          if (null != tmpAction2) {
+            if (safe_run_retreat) RunIfPossible();
+            else RunIfAdvisable(tmpAction2.dest.Position);
           }
+          m_Actor.Activity = Activity.FLEEING;
+          return tmpAction;
         }
       }
 
@@ -2689,7 +2688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!mapObjectAt.IsJumpable) return false;
         return m_Actor.CanJump;
       });
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(m=>!m.IsSecret));
 
       foreach(Map m in possible_destinations) {
         HashSet<Point> remote_where_to_go = targets_at(m);

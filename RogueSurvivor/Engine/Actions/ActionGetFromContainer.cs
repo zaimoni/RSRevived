@@ -5,11 +5,12 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using System;
 using System.Drawing;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
-  internal class ActionGetFromContainer : ActorAction
+  internal class ActionGetFromContainer : ActorAction   // XXX reskinned ActionTakeItem
   {
     private readonly Point m_Position;
 
@@ -23,6 +24,10 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
       m_Position = position;
+#if DEBUG
+      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
+      if (null == itemsAt) throw new InvalidOperationException("no items in container");
+#endif
     }
 
     public override bool IsLegal()
