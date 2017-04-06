@@ -39,7 +39,7 @@ namespace djack.RogueSurvivor.Engine.Actions
     public override bool IsLegal()
     {
       Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Position);
-      if (!itemsAt?.Contains(m_Item) ?? false) return false;
+      if (!itemsAt?.Contains(m_Item) ?? true) return false;
       return m_Actor.CanGet(m_Item, out m_FailReason);
     }
 
