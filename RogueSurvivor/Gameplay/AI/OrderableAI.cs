@@ -2615,15 +2615,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return m_Actor.CanJump;
       });
       HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(m=>!m.IsSecret));
-
+      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
       foreach(Map m in possible_destinations) {
-        HashSet<Point> remote_where_to_go = targets_at(m);
-        if (0 >= remote_where_to_go.Count) continue;
+        hazards[m] = targets_at(m);
+      }
+      hazards.OnlyIf(val=>0<val.Count);
+      if (0 >= hazards.Count) {
+        if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+        return navigate;
+      }
+//    veto_hazards(hazards);
+      foreach(KeyValuePair<Map,HashSet<Point>> m_dests in hazards) {
         Dictionary<Point,Exit> exits_for_m = new Dictionary<Point,Exit>(valid_exits);
-        exits_for_m.OnlyIf(exit => exit.ToMap == m);
+        exits_for_m.OnlyIf(exit => exit.ToMap == m_dests.Key);
         List<Point> remote_dests = new List<Point>(exits_for_m.Values.Select(exit => exit.Location.Position));
-        FloodfillPathfinder<Point> remote_navigate = m.PathfindSteps(m_Actor);
-        remote_navigate.GoalDistance(remote_where_to_go, remote_dests);
+        FloodfillPathfinder<Point> remote_navigate = m_dests.Key.PathfindSteps(m_Actor);
+        remote_navigate.GoalDistance(m_dests.Value, remote_dests);
 
         Dictionary<Point,int> remote_costs = new Dictionary<Point,int>();
         foreach(KeyValuePair<Point, Exit> tmp in exits_for_m) {
