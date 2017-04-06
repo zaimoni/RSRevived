@@ -3507,6 +3507,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.ITEM_INFO:
                 HandleItemInfo();
                 break;
+              case PlayerCommand.ALLIES_INFO:
+                HandleAlliesInfo();
+                break;
               case PlayerCommand.DAIMON_MAP:    // cheat command
                 HandleDaimonMap();
                 break;
@@ -4048,6 +4051,47 @@ namespace djack.RogueSurvivor.Engine
       };
 
       PagedMenu("Reviewing...", item_classes.Count, label, details);
+    }
+
+    private void HandleAlliesInfo()
+    {
+      HashSet<Actor> player_allies = m_Player.Allies;
+      if (null == player_allies) {
+        AddMessage(new Data.Message("You have no nearby allies.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
+        return;
+      }
+      List<Actor> allies = player_allies.ToList();
+      allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
+
+      Func<int,string> label = index => allies[index].Name;
+      Predicate<int> details = index => {
+        Actor a = allies[index];
+        List<string> tmp = new List<string>(){a.Name};
+        ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
+        tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
+        List<ItemRangedWeapon> ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
+        if (null != ranged) {
+          string msg = "ranged:";
+          foreach(ItemRangedWeapon rw in ranged) {
+            msg += " "+rw.Model.ID.ToString();
+          }
+          tmp.Add(msg);
+        }
+
+        HashSet<GameItems.IDs> critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
+        if (0<critical.Count) {
+          string msg = "need now:";
+          foreach(GameItems.IDs x in critical) {
+            msg += " "+x.ToString();
+          }
+          tmp.Add(msg);
+        }
+        
+        ShowSpecialDialogue(m_Player,tmp.ToArray());
+        return false;
+      };
+
+      PagedMenu("Reviewing...", allies.Count, label, details);      
     }
 
     private void HandleDaimonMap()
