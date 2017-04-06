@@ -1591,10 +1591,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed) {
         int dist = Rules.GridDistance(m_Actor.Location.Position,target.Location.Position);
-        if (m_Actor.WillActAgainBefore(enemy) && 2==dist) {
-          // Neither free hit, nor clearly safe to close.  Main options are charge-hit and wait
-          // We could also reposition for tactical advantage i.e. ability to retreat
-          return new ActionWait(m_Actor);   // default
+        if (2==dist) {
+          if (!m_Actor.WillActAgainBefore(enemy)) return new ActionWait(m_Actor);
+          // cannot close at normal speed safely; run-hit ok but requires situational analysis
+          return new ActionWait(m_Actor);
         }
       }
 
