@@ -378,7 +378,7 @@ namespace djack.RogueSurvivor.Data
 	  return (0<ret.Count ? ret : null);
 	}
 
-    Dictionary<Point,int> OneStepForPathfinder(Point pt)
+    Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a)
 	{
 	  Dictionary<Point,int> ret = new Dictionary<Point, int>();
 	  foreach(Direction dir in Direction.COMPASS) {
@@ -423,7 +423,7 @@ namespace djack.RogueSurvivor.Data
 	{
 	  Zaimoni.Data.FloodfillPathfinder<Point> m_StepPather = null;	// convert this to a non-zerialized member variable as cache
 	  if (null == m_StepPather) {
-	    Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt));
+	    Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt, actor));
 	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
 	  }
       Zaimoni.Data.FloodfillPathfinder<Point> ret = new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
@@ -432,12 +432,8 @@ namespace djack.RogueSurvivor.Data
 		for (p.X = 0; p.X < Width; ++p.X) {
 		  for (p.Y = 0; p.Y < Height; ++p.Y) {
             if (p == actor.Location.Position) continue;
-            ActorAction tmp = Engine.Rules.IsBumpableFor(actor, new Location(this, p));
+            ActorAction tmp = Engine.Rules.IsPathableFor(actor, new Location(this, p));
             if (null==tmp) {
-              ret.Blacklist(p);
-              continue;
-            }
-            if (tmp is Engine.Actions.ActionChat) {
               ret.Blacklist(p);
               continue;
             }

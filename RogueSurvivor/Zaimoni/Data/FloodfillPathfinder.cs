@@ -67,6 +67,8 @@ namespace Zaimoni.Data
             if (_inDomain(src)) _blacklist.Add(src);
         }
 
+        public HashSet<T> black_list { get { return new HashSet<T>(_blacklist); } }
+
         public void Approve(IEnumerable<T> src)
         {
             _blacklist.ExceptWith(src);

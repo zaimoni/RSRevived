@@ -594,7 +594,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
-		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
+		ActorAction ret = Rules.IsPathableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
 		if (null != ret && ret.IsLegal()) return ret;
 		tmp.RemoveAt(i);
 	  }

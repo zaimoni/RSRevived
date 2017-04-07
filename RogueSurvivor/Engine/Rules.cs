@@ -294,6 +294,7 @@ namespace djack.RogueSurvivor.Engine
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
             return null;
           }
+          // covers barricaded broken windows...otherwise redundant.
           if (door.BarricadePoints > 0) {
             // Z will bash barricaded doors but livings won't, except for specific overrides
             // this does conflict with the tourism behavior
@@ -337,6 +338,97 @@ namespace djack.RogueSurvivor.Engine
       return IsBumpableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
+    // Pathfindability is not quite the same as bumpability
+    // * ok to break barricaded doors on fastest path
+    // * only valid for subclasses of ObjectiveAI/OrderableAI (which can pathfind in the first place).
+    // * ok to push objects aside
+    // * not ok to chat as a time-cost action (could be re-implemented)
+    private static ActorAction IsPathableFor(Actor actor, Map map, int x, int y, out string reason)
+    {
+      Contract.Requires(null != map);
+      Contract.Requires(null != actor);
+      Contract.Requires(actor.Controller is Gameplay.AI.ObjectiveAI);
+      Point point = new Point(x, y);
+      reason = "";
+      if (!map.IsInBounds(x, y)) {
+	    return (actor.CanLeaveMap(out reason) ? new ActionLeaveMap(actor, point) : null);
+      }
+      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
+      if (actionMoveStep.IsLegal()) {
+        reason = "";
+        return actionMoveStep;
+      }
+
+      // only have to be completely accurate for adjacent squares
+      if (!Rules.IsAdjacent(actor.Location.Position, new Point(x,y))) {
+        if ("not enough stamina to jump"==actionMoveStep.FailReason) return actionMoveStep;
+        if ("someone is there"==actionMoveStep.FailReason) return actionMoveStep;
+      }
+
+      reason = actionMoveStep.FailReason;
+      Actor actorAt = map.GetActorAt(point);
+      if (actorAt != null) {
+        if (actor.IsEnemyOf(actorAt)) {
+          return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
+        }
+		// player as leader should be able to switch with player as follower
+		// NPCs shouldn't be leading players anyway
+        if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
+          return new ActionSwitchPlace(actor, actorAt);
+        // no chat when pathfinding
+        return null;
+      }
+      MapObject mapObjectAt = map.GetMapObjectAt(point);
+      if (mapObjectAt != null) {
+        DoorWindow door = mapObjectAt as DoorWindow;
+        if (door != null) {
+          if (door.BarricadePoints > 0) {
+            // pathfinding livings will break barricaded doors (they'll prefer to go around it)
+            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
+            if (actor.CanBreak(door, out reason)) return new ActionBreak(actor, door);
+            reason = "cannot bash the barricade";
+            return null;
+          }
+          if (door.IsClosed) {
+            if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
+            if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
+            return null;
+          }
+        }
+        if (actor.CanGetFromContainer(point, out reason))
+          return new ActionGetFromContainer(actor, point);
+        // only Z want to break arbitrary objects; thus the guard clause
+        if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
+          return new ActionBreak(actor, mapObjectAt);
+        PowerGenerator powGen = mapObjectAt as PowerGenerator;
+        if (powGen != null) {
+          if (powGen.IsOn) {
+            Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+            tmp = actor.GetEquippedItem(DollPart.RIGHT_HAND);   // formal correctness
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+            tmp = actor.GetEquippedItem(DollPart.HIP_HOLSTER);   // the police tracker
+            if (tmp != null && actor.CanRecharge(tmp, out reason))
+              return new ActionRechargeItemBattery(actor, tmp);
+          }
+          return (actor.CanSwitch(powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
+        }
+      }
+      return null;
+    }
+
+    public static ActorAction IsPathableFor(Actor actor, Location location)
+    {
+      string reason;
+      return IsPathableFor(actor, location, out reason);
+    }
+
+    public static ActorAction IsPathableFor(Actor actor, Location location, out string reason)
+    {
+      return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
+    }
 
     public bool CanActorShout(Actor speaker)
     {

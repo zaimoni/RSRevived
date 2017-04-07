@@ -2342,9 +2342,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget && !navigate.Domain.Contains(m_Actor.Location.Position)) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": navigate destination unreachable from ("+m_Actor.Location.Position.X.ToString()+","+ m_Actor.Location.Position.Y.ToString() + ")");
+        List<string> msg = new List<string>();
         foreach(Point pt in navigate.Domain) {
-          Logger.WriteLine(Logger.Stage.RUN_MAIN, "("+pt.X.ToString()+","+pt.Y.ToString()+"): "+navigate.Cost(pt));
+          msg.Add("(" + pt.X.ToString() + "," + pt.Y.ToString() + "): " + navigate.Cost(pt));
         }
+        msg.Sort();
+        foreach(string x in msg) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
+        }
+        msg.Clear();
+        foreach(Point pt in navigate.black_list) {
+          msg.Add("(" + pt.X.ToString() + "," + pt.Y.ToString() + "): " + navigate.Cost(pt));
+        }
+        msg.Sort();
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "black list");
+        foreach(string x in msg) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
+        }
+
       }
 #endif
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
@@ -2355,10 +2370,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Point pt in dest.Keys) {
 #if TRACE_NAVIGATE
         string err = "";
-        ActorAction tmp = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt), out err);
+        ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt), out err);
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": ("+pt.X.ToString()+","+pt.Y.ToString()+") "+(null==tmp ? "null ("+err+")" : tmp.ToString()));
 #else
-        ActorAction tmp = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt));
+        ActorAction tmp = Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,pt));
 #endif
         if (null == tmp || !tmp.IsLegal() || !IsLegalPathingAction(tmp)) continue;
         HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
@@ -2466,6 +2481,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           foreach(Point pt in tainted) {
             locs.Add("\n"+(new Location(m_Actor.Location.Map,pt)).ToString());
           }
+          locs.Sort();
           throw new InvalidOperationException("unreachable tourism destinations"+string.Concat(locs.ToArray()));
         }
         return ret;
