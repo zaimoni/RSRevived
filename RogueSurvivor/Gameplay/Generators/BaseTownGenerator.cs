@@ -799,7 +799,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
-          if (shopBasement.IsWalkable(pt.X, pt.Y)) Session.Get.PoliceInvestigate.Record(shopBasement, pt);  // don't do the bounding walls
+          Session.Get.PoliceInvestigate.Record(shopBasement, pt);
           if (!shopBasement.IsWalkable(pt.X, pt.Y) || shopBasement.HasExitAt(pt)) return;
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceMapObjectAt(MakeObjShelf(), pt);
@@ -2022,7 +2022,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       AddExit(basement, basementStairs, map, point, "Tiles\\Decoration\\stairs_up", true);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
       {
-        if (basement.IsWalkable(pt.X, pt.Y)) Session.Get.PoliceInvestigate.Record(basement,pt); // don't do the bounding walls
+        Session.Get.PoliceInvestigate.Record(basement,pt);
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
         Session.Get.PoliceInvestigate.Seen(basement,pt);    // not so freak coincidence for pillars to be completely screened
         basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);

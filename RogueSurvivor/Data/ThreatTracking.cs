@@ -188,15 +188,16 @@ namespace djack.RogueSurvivor.Data
 
       public void Record(Map m, IEnumerable<Point> pts)
       {
-        lock(_locs) {  
+        lock(_locs) {
 		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
-          _locs[m].UnionWith(pts);
+          _locs[m].UnionWith(pts.Where(pt => m.GetTileModelAt(pt).IsWalkable));
         }
       }
 
       public void Record(Map m, Point pt)
       {
-        lock(_locs) {  
+        lock(_locs) {
+          if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles  
 		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
           _locs[m].Add(pt);
         }
@@ -205,6 +206,7 @@ namespace djack.RogueSurvivor.Data
       public void Record(Location loc)
       {
 		lock(_locs) {
+          if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return; // reject unwalkable tiles  
 		  if (!_locs.ContainsKey(loc.Map)) _locs[loc.Map] = new HashSet<Point>();
           _locs[loc.Map].Add(loc.Position);
 		}

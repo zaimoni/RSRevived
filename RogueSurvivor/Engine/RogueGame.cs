@@ -2254,9 +2254,7 @@ namespace djack.RogueSurvivor.Engine
           }
       }
 
-#if DATAFLOW_TRACE
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
-#endif
+      if (nextActorToAct.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
       nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
       if (nextActorToAct.Controller == null)
 #if DEBUG
@@ -5960,9 +5958,7 @@ namespace djack.RogueSurvivor.Engine
       if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
       if (!actorAction.IsLegal()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
 #endif
-#if DATAFLOW_TRACE
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
-#endif
+      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
       actorAction.Perform();
     }
 

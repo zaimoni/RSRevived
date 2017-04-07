@@ -2426,7 +2426,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == threats) return null;
       // 1) clear the current map, unless it's non-vintage sewers
       HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+#if DEBUG
+      if (0<tainted.Count) {
+        ActorAction ret = BehaviorNavigate(tainted);
+        if (null == ret) throw new InvalidOperationException("unreachable threat destinations");
+        return ret;
+      }
+#else
       if (0<tainted.Count) return BehaviorNavigate(tainted);
+#endif
       return null;
     }
 
@@ -2444,7 +2452,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == sights_to_see) return null;
       // 1) clear the current map.  Sewers is ok for this as it shouldn't normally be interesting
       HashSet<Point> tainted = sights_to_see.In(m_Actor.Location.Map);
+#if DEBUG
+      if (0<tainted.Count) {
+        ActorAction ret = BehaviorNavigate(tainted);
+        if (null == ret) throw new InvalidOperationException("unreachable tourism destinations");
+        return ret;
+      }
+#else
       if (0<tainted.Count) return BehaviorNavigate(tainted);
+#endif
       return null;
     }
 
