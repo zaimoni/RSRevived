@@ -4617,7 +4617,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePlayerRunToggle(Actor player)
     {
       string reason;
-      if (!player.CanRun(out reason)) {
+      if (!player.CanRun(out reason) && !player.IsRunning) {
         AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", (object) reason)));
       } else {
         player.IsRunning = !player.IsRunning;
