@@ -24,6 +24,8 @@ for graphical programs.
 
 This option influences loading the game.  "name", is the name of an NPC to be converted into a PC.
 
+It may also be used to control additional PCs at game start (police and civilians, for now); best results in conjunction with --seed.
+
 --seed=[int]
 
 This option only influences New Game.  If provided, the master RNG seed, 
