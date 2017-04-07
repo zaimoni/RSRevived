@@ -4061,7 +4061,7 @@ namespace djack.RogueSurvivor.Engine
       List<Actor> allies = player_allies.ToList();
       allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
 
-      Func<int,string> label = index => allies[index].Name;
+      Func<int,string> label = index => allies[index].Name+(allies[index].HasLeader ? "(leader "+allies[index].Leader.Name+")"  : "");
       Predicate<int> details = index => {
         Actor a = allies[index];
         List<string> tmp = new List<string>(){a.Name};
