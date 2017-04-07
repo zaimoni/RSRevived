@@ -982,18 +982,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.IsRunning = true;
     }
 
-	protected void RunIfReasonable(Point dest)
-	{
-      if (!m_Actor.CanRun()) return;
-      if (m_Actor.WillTireAfterRunning(dest)) return;
-	  if (!m_Actor.RunIsFreeMove) {
-        m_Actor.IsRunning = true;	// re-setup free move
-		return;
-	  }
-	  // past this point, "reasonable" can vary.  One can either favor accuracy with ranged weapons, or try to move as fast as possible without compromising stance
-	  // favoring accuracy would stop here
-	}
-
     /// <summary>
     /// Compute safety from a list of dangers at a given position.
     /// </summary>

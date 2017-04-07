@@ -2358,6 +2358,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    // April 7 2017: This is called directly only by the same-map threat and tourism behaviors
+    // These two behaviors both like a "spread out" where each non-follower ally heads for the targets nearer to them than
+    // to the other non-follower allies
     protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
     {
       Contract.Requires(0<tainted.Count());
