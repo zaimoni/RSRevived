@@ -2429,7 +2429,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (0<tainted.Count) {
         ActorAction ret = BehaviorNavigate(tainted);
-        if (null == ret) throw new InvalidOperationException("unreachable threat destinations");
+        if (null == ret) {
+          List<string> locs = new List<string>(tainted.Count);
+          foreach(Point pt in tainted) {
+            locs.Add("\n"+(new Location(m_Actor.Location.Map,pt)).ToString());
+          }
+          throw new InvalidOperationException("unreachable threat destinations" + string.Concat(locs.ToArray()));
+        }
         return ret;
       }
 #else
@@ -2455,7 +2461,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (0<tainted.Count) {
         ActorAction ret = BehaviorNavigate(tainted);
-        if (null == ret) throw new InvalidOperationException("unreachable tourism destinations");
+        if (null == ret) {
+          List<string> locs = new List<string>(tainted.Count);
+          foreach(Point pt in tainted) {
+            locs.Add("\n"+(new Location(m_Actor.Location.Map,pt)).ToString());
+          }
+          throw new InvalidOperationException("unreachable tourism destinations"+string.Concat(locs.ToArray()));
+        }
         return ret;
       }
 #else
