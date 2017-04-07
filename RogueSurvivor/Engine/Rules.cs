@@ -295,6 +295,8 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
           if (door.BarricadePoints > 0) {
+            // Z will bash barricaded doors but livings won't, except for specific overrides
+            // this does conflict with the tourism behavior
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
             reason = "cannot bash the barricade";
             return null;
@@ -302,6 +304,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (actor.CanGetFromContainer(point, out reason))
           return new ActionGetFromContainer(actor, point);
+        // only Z want to break arbitrary objects; thus the guard clause
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);
         PowerGenerator powGen = mapObjectAt as PowerGenerator;

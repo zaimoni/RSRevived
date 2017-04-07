@@ -437,9 +437,9 @@ namespace djack.RogueSurvivor.Data
               ret.Blacklist(p);
               continue;
             }
-            if (Engine.Rules.IsAdjacent(p, actor.Location.Position)) {
-              if (tmp is Engine.Actions.ActionBump) tmp = (tmp as Engine.Actions.ActionBump).ConcreteAction;
-              if (tmp is Engine.Actions.ActionChat) ret.Blacklist(p);
+            if (tmp is Engine.Actions.ActionChat) {
+              ret.Blacklist(p);
+              continue;
             }
 	      }
 	    }
