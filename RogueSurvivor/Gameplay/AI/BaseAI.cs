@@ -920,28 +920,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
     }
 
-    // belongs with CivilianAI, or possibly OrderableAI but NatGuard may not have access to the crime listings
-    protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts)
-    {
-      if (!m_Actor.Model.Abilities.IsLawEnforcer) return null;
-      if (percepts == null) return null;
-      List<Percept> percepts1 = percepts.FilterT<Actor>(a => 0< a.MurdersCounter && !m_Actor.IsEnemyOf(a));
-      if (null == percepts1) return null;
-      Percept percept = FilterNearest(percepts1);
-      Actor target = percept.Percepted as Actor;
-      if (game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, target))) {
-        game.DoEmote(target, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
-        return null;
-      }
-      game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", (object) target.Name));
-      int chance = Rules.ActorSpotMurdererChance(m_Actor, target);
-      if (!game.Rules.RollChance(chance)) return null;
-      game.DoMakeAggression(m_Actor, target);
-      m_Actor.TargetActor = target;
-      // players are special: they get to react to this first
-      return new ActionSay(m_Actor, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
-    }
-
     protected ActorAction BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
     {
       if (stacksPercepts == null) return null;

@@ -84,7 +84,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int USE_STENCH_KILLER_CHANCE = 75;
     private const int HUNGRY_CHARGE_EMOTE_CHANCE = 50;
     private const int HUNGRY_PUSH_OBJECTS_CHANCE = 25;
-    private const int LAW_ENFORCE_CHANCE = 30;
     private const int DONT_LEAVE_BEHIND_EMOTE_CHANCE = 50;
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
@@ -731,7 +730,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return tmpAction;
           }
         }
-        if (m_Actor.Model.Abilities.IsLawEnforcer && game.Rules.RollChance(LAW_ENFORCE_CHANCE)) {
+        if (m_Actor.Model.Abilities.IsLawEnforcer) {
           tmpAction = BehaviorEnforceLaw(game, friends);
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law");
