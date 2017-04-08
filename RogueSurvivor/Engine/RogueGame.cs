@@ -5114,7 +5114,7 @@ namespace djack.RogueSurvivor.Engine
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             string reason;
             if (actorAt != null) {
-              if (m_Rules.CanActorShove(player, actorAt, out reason)) {
+              if (player.CanShove(actorAt, out reason)) {
                 if (HandlePlayerShoveActor(player, actorAt)) {
                   flag1 = false;
                   flag2 = true;

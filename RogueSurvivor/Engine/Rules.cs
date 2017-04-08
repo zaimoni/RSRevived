@@ -481,22 +481,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanActorShove(Actor actor, Actor other, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (other == null) throw new ArgumentNullException("other");
-      if (!actor.AbleToPush) {
-        reason = "cannot shove people";
-        return false;
-      }
-      if (actor.IsTired) {
-        reason = "tired";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanShoveActorTo(Actor actor, Point toPos, out string reason)
     {
       if (actor == null)

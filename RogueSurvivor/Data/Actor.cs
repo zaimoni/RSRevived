@@ -1187,6 +1187,26 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantPush(mapObj));
     }
 
+    // currently other is unused, but that is not an invariant
+    private string ReasonCantShove(Actor other)
+    {
+      Contract.Requires(null != other);
+      if (!AbleToPush) return "cannot shove people";
+      if (IsTired) return "tired";
+      return "";
+    }
+
+    public bool CanShove(Actor other, out string reason)
+    {
+      reason = ReasonCantShove(other);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanShove(Actor other)
+    {
+      return string.IsNullOrEmpty(ReasonCantShove(other));
+    }
+
     private string ReasonCantClose(DoorWindow door)
     {
       Contract.Requires(null != door);
