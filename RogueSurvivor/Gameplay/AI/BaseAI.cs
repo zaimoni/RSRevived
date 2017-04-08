@@ -975,13 +975,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.IsRunning = true;
     }
 
-    protected void RunIfAdvisable(Point dest)
-    {
-      if (!m_Actor.CanRun()) return;
-      if (m_Actor.WillTireAfterRunning(dest)) return;
-      m_Actor.IsRunning = true;
-    }
-
     /// <summary>
     /// Compute safety from a list of dangers at a given position.
     /// </summary>

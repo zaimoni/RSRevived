@@ -17,17 +17,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal abstract class ObjectiveAI : BaseAI
   {
     readonly protected List<Objective> Objectives = new List<Objective>();
-#if FAIL
-    protected int _STA_reserve = 0;
-    int STA_reserve { get { return _STA_reserve; } };
+    private int _STA_reserve = 0;
+    int STA_reserve { get { return _STA_reserve; } }
 
     protected void RunIfAdvisable(Point dest)
     {
       if (!m_Actor.CanRun()) return;
-      if (m_Actor.WillTireAfterRunning(dest)) return;
+      if (m_Actor.WillTireAfter(STA_reserve+m_Actor.RunningStaminaCost(dest))) return;
       m_Actor.IsRunning = true;
     }
-#endif
+
+    protected void ReserveSTA(int jump, int melee, int push, int push_weight)
+    {
+      int tmp = push_weight;
+      tmp += jump*Rules.STAMINA_COST_JUMP;  
+      tmp += melee*(Rules.STAMINA_COST_MELEE_ATTACK+m_Actor.BestMeleeAttack().StaminaPenalty);
+
+      _STA_reserve = tmp+m_Actor.NightSTApenalty*(jump+melee+push);
+    }
 
         #region damage field
         protected void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
