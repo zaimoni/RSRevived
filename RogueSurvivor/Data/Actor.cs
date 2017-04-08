@@ -1207,6 +1207,28 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantShove(other));
     }
 
+    private string ReasonCantBeShovedTo(Point toPos)
+    {
+      Map map = Location.Map;
+      if (!map.IsInBounds(toPos)) return "out of map";
+      if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked";
+      MapObject mapObjectAt = map.GetMapObjectAt(toPos);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable) return "blocked by an object";
+      if (map.GetActorAt(toPos) != null) return "blocked by someone";
+      return "";
+    }
+
+    public bool CanBeShovedTo(Point toPos, out string reason)
+    {
+      reason = ReasonCantBeShovedTo(toPos);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBeShovedTo(Point toPos)
+    {
+      return string.IsNullOrEmpty(ReasonCantBeShovedTo(toPos));
+    }
+
     private string ReasonCantClose(DoorWindow door)
     {
       Contract.Requires(null != door);

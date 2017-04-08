@@ -481,33 +481,6 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    public bool CanShoveActorTo(Actor actor, Point toPos, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      Map map = actor.Location.Map;
-      if (!map.IsInBounds(toPos))
-      {
-        reason = "out of map";
-        return false;
-      }
-      if (!map.GetTileModelAt(toPos).IsWalkable) {
-        reason = "blocked";
-        return false;
-      }
-      MapObject mapObjectAt = map.GetMapObjectAt(toPos);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
-        reason = "blocked by an object";
-        return false;
-      }
-      if (map.GetActorAt(toPos) != null) {
-        reason = "blocked by someone";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF)
     {
       string reason;

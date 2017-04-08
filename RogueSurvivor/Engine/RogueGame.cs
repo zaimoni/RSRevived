@@ -1229,8 +1229,6 @@ namespace djack.RogueSurvivor.Engine
         values[id + 1] = string.Format("{0} max - {1}", (object) Skills.MaxSkillLevel(id), (object)DescribeSkillShort(idsArray[id]));
       }
       skID = Skills.IDs._FIRST;
-      bool flag1 = true;
-      bool flag2 = false;
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
@@ -5189,7 +5187,7 @@ namespace djack.RogueSurvivor.Engine
           Point point = other.Location.Position + direction;
           if (player.Location.Map.IsInBounds(point)) {
             string reason;
-            if (m_Rules.CanShoveActorTo(other, point, out reason)) {
+            if (other.CanBeShovedTo(point, out reason)) {
               DoShove(player, other, point);
               flag1 = false;
               flag2 = true;
