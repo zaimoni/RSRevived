@@ -155,12 +155,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public string UnmodifiedName
-    {
-      get {
-        return m_Name;
-      }
-    }
+    public string UnmodifiedName { get { return m_Name; } }
 
     public bool IsProperName
     {
@@ -213,11 +208,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int SpawnTime {
-      get {
-        return m_SpawnTime;
-      }
-    }
+    public int SpawnTime { get { return m_SpawnTime; } }
 
     public Gameplay.GameGangs.IDs GangID {
       get {
@@ -228,17 +219,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsInAGang {
-      get {
-        return m_GangID != 0;
-      }
-    }
-
-    public Doll Doll {
-      get {
-        return m_Doll;
-      }
-    }
+    public bool IsInAGang { get { return m_GangID != 0; } }
+    public Doll Doll { get { return m_Doll; } }
 
     public bool IsDead {
       get {
@@ -267,11 +249,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Inventory Inventory {
-      get {
-        return m_Inventory;
-      }
-    }
+    public Inventory Inventory { get { return m_Inventory; } }
 
     public int HitPoints {
       get {
@@ -282,11 +260,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int PreviousHitPoints {
-      get {
-        return m_previousHitPoints;
-      }
-    }
+    public int PreviousHitPoints { get { return m_previousHitPoints; } }
 
     public int StaminaPoints {
       get {
@@ -306,41 +280,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int FoodPoints {
-      get {
-        return m_FoodPoints;
-      }
-    }
-
-    public int PreviousFoodPoints {
-      get {
-        return m_previousFoodPoints;
-      }
-    }
-
-    public int SleepPoints {
-      get {
-        return m_SleepPoints;
-      }
-    }
-
-    public int PreviousSleepPoints {
-      get {
-        return m_previousSleepPoints;
-      }
-    }
-
-    public int Sanity {
-      get {
-        return m_Sanity;
-      }
-    }
-
-    public int PreviousSanity {
-      get {
-        return m_previousSanity;
-      }
-    }
+    public int FoodPoints { get { return m_FoodPoints; } }
+    public int PreviousFoodPoints { get { return m_previousFoodPoints; } }
+    public int SleepPoints { get { return m_SleepPoints; } }
+    public int PreviousSleepPoints { get { return m_previousSleepPoints; } }
+    public int Sanity { get { return m_Sanity; } }
+    public int PreviousSanity { get { return m_previousSanity; } }
 
     public ActorSheet Sheet {
       get {
@@ -358,11 +303,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int LastActionTurn {
-      get {
-        return m_LastActionTurn;
-      }
-    }
+    public int LastActionTurn { get { return m_LastActionTurn; } }
 
     public Location Location {
       get {
@@ -403,30 +344,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Attack CurrentMeleeAttack {
-      get {
-        return m_CurrentMeleeAttack;
-      }
-    }
-
-    public Attack CurrentRangedAttack {
-      get {
-        return m_CurrentRangedAttack;
-      }
-    }
-
-    public Defence CurrentDefence {
-      get {
-        return m_CurrentDefence;
-      }
-    }
+    public Attack CurrentMeleeAttack { get { return m_CurrentMeleeAttack; } }
+    public Attack CurrentRangedAttack { get { return m_CurrentRangedAttack; } }
+    public Defence CurrentDefence { get { return m_CurrentDefence; } }
 
     // Leadership
-    public Actor Leader {
-      get {
-        return m_Leader;
-      }
-    }
+    public Actor Leader { get { return m_Leader; } }
 
     public bool HasLeader {
       get {
@@ -444,12 +367,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Actor> Followers
-    {
-      get {
-        return (IEnumerable<Actor>)m_Followers;
-      }
-    }
+    public IEnumerable<Actor> Followers { get { return m_Followers; } }
 
     public int CountFollowers {
       get {
@@ -542,11 +460,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Actor> AggressorOf {
-      get {
-        return (IEnumerable<Actor>)m_AggressorOf;
-      }
-    }
+    public IEnumerable<Actor> AggressorOf { get { return m_AggressorOf; } }
 
     public int CountAggressorOf {
       get {
@@ -555,11 +469,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Actor> SelfDefenceFrom {
-      get {
-        return (IEnumerable<Actor>)m_SelfDefenceFrom;
-      }
-    }
+    public IEnumerable<Actor> SelfDefenceFrom { get { return m_SelfDefenceFrom; } }
 
     public int CountSelfDefenceFrom {
       get {
@@ -577,12 +487,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int Infection
-    {
-      get {
-        return m_Infection;
-      }
-    }
+    public int Infection { get { return m_Infection; } }
 
     public Corpse DraggedCorpse
     {
