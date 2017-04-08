@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Data
     public const int ROT_HUNGRY_LEVEL = 2*WorldTime.TURNS_PER_DAY;
     public const int SLEEP_SLEEPY_LEVEL = 30*WorldTime.TURNS_PER_HOUR;
     private const int STAMINA_INFINITE = 99;
-    public const int STAMINA_MIN_FOR_ACTIVITY = 10;
+    public const int STAMINA_MIN_FOR_ACTIVITY = 10; // would space-time scale if stamina itself space-time scaled
     private const int NIGHT_STA_PENALTY = 2;
     public const int STAMINA_REGEN_WAIT = 2;
     private const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
@@ -1550,13 +1550,16 @@ namespace djack.RogueSurvivor.Data
       return STAMINA_MIN_FOR_ACTIVITY > m_StaminaPoints-staminaCost;
     }
 
-    public bool WillTireAfterRunning(Point dest)
+    public int RunningStaminaCost(Point dest)
     {
       MapObject mapObjectAt = Location.Map.GetMapObjectAt(dest);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
-        return WillTireAfter(Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty);
-      }
-      return WillTireAfter(Rules.STAMINA_COST_RUNNING);
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) return Rules.STAMINA_COST_RUNNING+Rules.STAMINA_COST_JUMP+NightSTApenalty;
+      return Rules.STAMINA_COST_RUNNING;
+    }
+
+    public bool WillTireAfterRunning(Point dest)
+    {
+      return WillTireAfter(RunningStaminaCost(dest));
     }
 
     public int MaxSTA {

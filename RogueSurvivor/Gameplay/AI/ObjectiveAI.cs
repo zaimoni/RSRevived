@@ -13,12 +13,24 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
-    [Serializable]
-    internal abstract class ObjectiveAI : BaseAI
-    {
-      readonly protected List<Objective> Objectives = new List<Objective>();
+  [Serializable]
+  internal abstract class ObjectiveAI : BaseAI
+  {
+    readonly protected List<Objective> Objectives = new List<Objective>();
+#if FAIL
+    protected int _STA_reserve = 0;
+    int STA_reserve { get { return _STA_reserve; } };
 
-    protected void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
+    protected void RunIfAdvisable(Point dest)
+    {
+      if (!m_Actor.CanRun()) return;
+      if (m_Actor.WillTireAfterRunning(dest)) return;
+      m_Actor.IsRunning = true;
+    }
+#endif
+
+        #region damage field
+        protected void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
@@ -159,6 +171,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else damage_field[p.Location.Position] = damage;
       }
     }
+#endregion
 
     public virtual bool IsInterestingItem(Item it)
     {
