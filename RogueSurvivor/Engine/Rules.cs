@@ -376,6 +376,27 @@ namespace djack.RogueSurvivor.Engine
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
         // no chat when pathfinding
+        // but it is ok to shove other actors
+        if (actor.AbleToPush && actor.CanShove(actorAt)) {
+           // at least 2 destinations: ok (1 ok if adjacent)
+           // better to push to non-adjacent when pathing
+           // we are adjacent due to the early-escape above
+           Dictionary<Point,Direction> push_dest = new Dictionary<Point,Direction>();
+           foreach(Direction dir in Direction.COMPASS) {
+             Point pt = actorAt.Location.Position+dir;
+             if (!actorAt.CanBeShovedTo(pt)) continue;
+             push_dest[pt] = dir;
+           }
+
+           bool push_legal = 1<=push_dest.Count;
+           if (push_legal) {
+             List<KeyValuePair<Point,Direction>> candidates = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position,pt.Key)).ToList();
+             // XXX distance 2 case could use more work based on planned path but that's not available here (yet)
+             if (0 >= candidates.Count) candidates = push_dest.ToList();
+             return new ActionShove(actor,actorAt,candidates[RogueForm.Game.Rules.Roll(0,candidates.Count)].Value);
+           }
+        }
+        // consider re-legalizing chat here
         return null;
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);

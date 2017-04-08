@@ -2355,6 +2355,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (act is ActionBashDoor) return true;
       if (act is ActionMoveStep) return true;
       if (act is ActionBreak) return true;
+      if (act is ActionPush) return true;
+      if (act is ActionShove) return true;
       return false;
     }
 
