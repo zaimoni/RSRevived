@@ -907,6 +907,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Exit exitAt = m_Actor.Location.Exit;
       if (!exitAt?.IsAnAIExit ?? true) return null;
       if ((useFlags & BaseAI.UseExitFlags.DONT_BACKTRACK) != BaseAI.UseExitFlags.NONE && exitAt.Location == m_prevLocation) return null;
+      string reason = exitAt.ReasonIsBlocked(m_Actor);
+      if (string.IsNullOrEmpty(reason)) return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
       if ((useFlags & BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES) != BaseAI.UseExitFlags.NONE) {
         Actor actorAt = exitAt.Location.Actor;
         if (actorAt != null && m_Actor.IsEnemyOf(actorAt) && m_Actor.CanMeleeAttack(actorAt))
@@ -917,7 +919,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (mapObjectAt != null && m_Actor.CanBreak(mapObjectAt))
           return new ActionBreak(m_Actor, mapObjectAt);
       }
-      return (m_Actor.CanUseExit(m_Actor.Location.Position) ? new ActionUseExit(m_Actor, m_Actor.Location.Position) : null);
+      return null;
     }
 
     protected ActorAction BehaviorGoEatFoodOnGround(List<Percept> stacksPercepts)
