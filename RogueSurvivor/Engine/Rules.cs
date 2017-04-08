@@ -615,7 +615,7 @@ namespace djack.RogueSurvivor.Engine
         reason = string.Format("not enough barricading material, need {0}.", (object) num);
         return false;
       }
-      if (map.HasMapObjectAt(pos) || map.GetActorAt(pos) != null)
+      if (map.HasMapObjectAt(pos) || map.HasActorAt(pos))
       {
         reason = "blocked";
         return false;

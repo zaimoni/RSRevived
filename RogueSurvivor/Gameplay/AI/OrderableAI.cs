@@ -1695,7 +1695,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || (map.HasExitAt(point) || map.IsInsideAt(point)))
+        if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
         int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable));
         int num2 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj =>
@@ -1744,7 +1744,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
       {
         Point point = m_Actor.Location.Position + dir;
-        if (!map.IsInBounds(point) || !map.IsWalkable(point) || (map.IsOnMapBorder(point.X, point.Y) || map.GetActorAt(point) != null) || map.HasExitAt(point))
+        if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || map.HasExitAt(point))
           return false;
         return IsDoorwayOrCorridor(map, point);
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (a, b) => a > b);
@@ -1779,8 +1779,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Dictionary<Point,int> couches = new Dictionary<Point,int>();
       foreach (Point pt2 in m_Actor.Controller.FOV) {
         if (map.HasAnyAdjacentInMap(pt2, (Predicate<Point>)(pt => map.GetMapObjectAt(pt) is DoorWindow))) continue;
-        MapObject mapObjectAt = map.GetMapObjectAt(pt2);
-        if (mapObjectAt != null && mapObjectAt.IsCouch && map.GetActorAt(pt2) == null) {
+        if (map.HasActorAt(pt2)) continue;
+        if (map.GetMapObjectAt(pt2)?.IsCouch ?? false) {
           couches[pt2] = Rules.GridDistance(m_Actor.Location.Position, pt2);
         }
       }

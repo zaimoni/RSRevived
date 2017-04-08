@@ -1214,7 +1214,7 @@ namespace djack.RogueSurvivor.Data
       if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked";
       MapObject mapObjectAt = map.GetMapObjectAt(toPos);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable) return "blocked by an object";
-      if (map.GetActorAt(toPos) != null) return "blocked by someone";
+      if (map.HasActorAt(toPos)) return "blocked by someone";
       return "";
     }
 
@@ -2304,9 +2304,7 @@ namespace djack.RogueSurvivor.Data
           Map map = Location.Map;
           if (map.HasAnyAdjacentInMap(Location.Position, (Predicate<System.Drawing.Point>) (pt =>
               {
-                Actor actorAt = map.GetActorAt(pt);
-                if (actorAt == null) return false;
-                return 0 < actorAt.LightBonus;
+                return 0 < (map.GetActorAt(pt)?.LightBonus ?? 0);
               })))
             lightBonus = 1;
         }

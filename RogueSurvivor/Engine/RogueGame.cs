@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define DATAFLOW_TRACE
+#define DATAFLOW_TRACE
 
 #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
@@ -2318,7 +2318,7 @@ namespace djack.RogueSurvivor.Engine
           if (corpseList1.Count > 0) {
             List<Corpse> corpseList3 = new List<Corpse>(corpseList1.Count);
             foreach (Corpse corpse in corpseList1) {
-              if (map.GetActorAt(corpse.Position) == null) {
+              if (!map.HasActorAt(corpse.Position)) {
                 float num = corpse.HitPoints / (float) corpse.MaxHitPoints;
                 corpseList3.Add(corpse);
                 Zombify((Actor) null, corpse.DeadGuy, false);
@@ -2951,7 +2951,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!map.IsInBounds(x, y)) return false;
       Tile tileAt = map.GetTileAt(x, y);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && (map.GetActorAt(x, y) == null && !map.HasMapObjectAt(x, y)) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(x, y) && !map.HasMapObjectAt(x, y) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
@@ -4401,7 +4401,7 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Map map = actor.Location.Map;
-      List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt => map.GetActorAt(pt) == null && !map.HasMapObjectAt(pt)));
+      List<Point> pointList = actor.Location.Map.FilterAdjacentInMap(actor.Location.Position, (Predicate<Point>) (pt => !map.HasActorAt(pt) && !map.HasMapObjectAt(pt)));
       if (pointList == null) {
         if (!player) return;
         AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", (object) Conjugate(actor, VERB_HAVE), (object) corpse.DeadGuy.Name)));
@@ -5283,7 +5283,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "out of map";
         return false;
       }
-      if (map.GetActorAt(pos) != null) {
+      if (map.HasActorAt(pos)) {
         reason = "someone there";
         return false;
       }
@@ -11886,7 +11886,7 @@ namespace djack.RogueSurvivor.Engine
       if (zoneByPartialName != null)
         m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, (Func<Point, bool>) (pt =>
         {
-          return map.IsWalkable(pt.X, pt.Y) && map.GetActorAt(pt) == null && !map.HasItemsAt(pt);
+          return map.IsWalkable(pt.X, pt.Y) && !map.HasActorAt(pt) && !map.HasItemsAt(pt);
         }), roller, (Func<Point, MapObject>) (pt => m_TownGenerator.MakeObjBoard("MapObjects\\announcement_board", new string[7]
         {
           "TO SEWER WORKERS :",

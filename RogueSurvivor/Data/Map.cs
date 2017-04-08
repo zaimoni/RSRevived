@@ -556,6 +556,16 @@ namespace djack.RogueSurvivor.Data
       return GetActorAt(new Point(x, y));
     }
 
+    public bool HasActorAt(Point position)
+    {
+      return m_aux_ActorsByPosition.ContainsKey(position);
+    }
+
+    public bool HasActorAt(int x, int y)
+    {
+      return HasActorAt(new Point(x, y));
+    }
+
     public void PlaceActorAt(Actor actor, Point position)
     {
       Contract.Requires(null != actor);
@@ -623,7 +633,7 @@ namespace djack.RogueSurvivor.Data
           if (doorWindow != null && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (GetActorAt(x, y) != null) return "someone is there";
+      if (HasActorAt(x, y)) return "someone is there";
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
@@ -1059,10 +1069,9 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBlockingFire(int x, int y)
     {
-      if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsTransparent)
+      if (!IsInBounds(x, y) || !GetTileModelAt(x, y).IsTransparent || HasActorAt(x, y))
         return true;
-      MapObject mapObjectAt = GetMapObjectAt(x, y);
-      return mapObjectAt != null && !mapObjectAt.IsTransparent || GetActorAt(x, y) != null;
+      return !GetMapObjectAt(x, y)?.IsTransparent ?? false;
     }
 
     public bool IsBlockingThrow(int x, int y)
