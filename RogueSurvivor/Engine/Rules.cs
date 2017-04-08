@@ -12,6 +12,7 @@ using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
@@ -399,6 +400,33 @@ namespace djack.RogueSurvivor.Engine
         // only Z want to break arbitrary objects; thus the guard clause
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);
+
+        // pushing is very bad for bumping, but ok for pathing
+        if (actor.AbleToPush && actor.CanPush(mapObjectAt)) {
+           // at least 2 destinations: ok (1 ok if adjacent)
+           // better to push to non-adjacent when pathing
+           Dictionary<Point,Direction> push_dest = new Dictionary<Point,Direction>();
+           foreach(Direction dir in Direction.COMPASS) {
+             Point pt = mapObjectAt.Location.Position+dir;
+             if (!mapObjectAt.CanPushTo(pt)) continue;
+             push_dest[pt] = dir;
+           }
+
+           bool is_adjacent = Rules.IsAdjacent(actor.Location, mapObjectAt.Location);
+           bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;
+           if (push_legal) {
+             if (is_adjacent) {
+               List<KeyValuePair<Point,Direction>> candidates = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position,pt.Key)).ToList();
+               // XXX distance 2 case could use more work based on planned path but that's not available here
+               if (0 >= candidates.Count) candidates = push_dest.ToList();
+               return new ActionPush(actor,mapObjectAt,candidates[RogueForm.Game.Rules.Roll(0,candidates.Count)].Value);
+             }
+             // placeholder
+             List<Direction> candidate_dirs = push_dest.Values.ToList();
+             return new ActionPush(actor,mapObjectAt,candidate_dirs[RogueForm.Game.Rules.Roll(0,candidate_dirs.Count)]);             
+           }
+        }
+
         PowerGenerator powGen = mapObjectAt as PowerGenerator;
         if (powGen != null) {
           if (powGen.IsOn) {
