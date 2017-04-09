@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
-// #define TRACE_NAVIGATE
+#define TRACE_NAVIGATE
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -2732,7 +2732,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == navigate) return null;
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        List<Point> legal_steps = m_Actor.LegalSteps;
+        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
         int current_cost = navigate.Cost(m_Actor.Location.Position);
         if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
           return BehaviorUseExit(BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);

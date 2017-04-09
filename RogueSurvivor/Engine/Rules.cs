@@ -416,7 +416,13 @@ namespace djack.RogueSurvivor.Engine
       MapObject mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
         DoorWindow door = mapObjectAt as DoorWindow;
+#if DEBUG
+        if (actor.IsDebuggingTarget && Rules.IsAdjacent(actor.Location.Position,mapObjectAt.Location.Position)) Logger.WriteLine(Logger.Stage.RUN_MAIN, "map object: "+mapObjectAt.Location.ToString());
+#endif
         if (door != null) {
+#if DEBUG
+          if (actor.IsDebuggingTarget && Rules.IsAdjacent(actor.Location.Position, mapObjectAt.Location.Position)) Logger.WriteLine(Logger.Stage.RUN_MAIN, "door: "+door.BarricadePoints.ToString()+"/"+(door.IsClosed ? "closed" : "not closed"));
+#endif
           if (door.BarricadePoints > 0) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
@@ -425,6 +431,9 @@ namespace djack.RogueSurvivor.Engine
             return null;
           }
           if (door.IsClosed) {
+#if DEBUG
+            if (actor.IsDebuggingTarget && Rules.IsAdjacent(actor.Location.Position, mapObjectAt.Location.Position)) Logger.WriteLine(Logger.Stage.RUN_MAIN, "door: "+(actor.CanOpen(door) ? "can open" : "cannot open"));
+#endif
             if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
             return null;
