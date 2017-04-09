@@ -562,7 +562,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  ActorAction tmpAction = DecideMove(legal_steps);
       if (null != tmpAction) {
 		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-        if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+        if (null != tmpAction2) m_Actor.IsRunning = RunIfAdvisable(tmpAction2.dest.Position);
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
@@ -814,7 +814,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
           if (null != tmpAction2) {
             if (safe_run_retreat) RunIfPossible();
-            else RunIfAdvisable(tmpAction2.dest.Position);
+            else m_Actor.IsRunning = RunIfAdvisable(tmpAction2.dest.Position);
           }
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -1013,7 +1013,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null != tmpAction) {
               m_Actor.Activity = Activity.FIGHTING;
 			  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-			  if (null != tmpAction2) RunIfAdvisable(tmpAction2.dest.Position);
+			  if (null != tmpAction2) m_Actor.IsRunning = RunIfAdvisable(tmpAction2.dest.Position);
               return tmpAction;
             }
 		  }
@@ -1594,9 +1594,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Speed > enemy.Speed) {
         int dist = Rules.GridDistance(m_Actor.Location.Position,target.Location.Position);
         if (2==dist) {
-          if (!m_Actor.WillActAgainBefore(enemy)) return new ActionWait(m_Actor);
-          // cannot close at normal speed safely; run-hit ok but requires situational analysis
-          return new ActionWait(m_Actor);
+          if (   !m_Actor.WillActAgainBefore(enemy)
+              || !m_Actor.RunIsFreeMove)
+            return new ActionWait(m_Actor);
+          // cannot close at normal speed safely; run-hit may be ok
+          Dictionary<Point,ActorAction> dash_attack = new Dictionary<Point,ActorAction>();
+          ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
+          List<Point> attack_possible = m_Actor.LegalSteps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position) 
+            && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep
+            && RunIfAdvisable(pt)).ToList();
+          ReserveSTA(0,0,0,0);  // baseline
+          if (!attack_possible.Any()) return new ActionWait(m_Actor);
+          // XXX could filter down attack_possible some more
+          m_Actor.IsRunning = true;
+          return dash_attack[attack_possible[game.Rules.Roll(0,attack_possible.Count)]];
         }
       }
 
@@ -1658,7 +1669,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (null != tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
            || other.Location.Map != m_Actor.Location.Map)
-           RunIfAdvisable(tmp.dest.Position);
+           m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position);
 	  }
       return actorAction;
     }
@@ -2431,7 +2442,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
 #endif
       ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }
 
@@ -2448,7 +2459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
       ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }
 
@@ -2745,7 +2756,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
       ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }
 

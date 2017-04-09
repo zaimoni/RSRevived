@@ -21,18 +21,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private int _STA_reserve = 0;
     int STA_reserve { get { return _STA_reserve; } }
 
-    protected void RunIfAdvisable(Point dest)
+    protected bool RunIfAdvisable(Point dest)
     {
-      if (!m_Actor.CanRun()) return;
+      if (!m_Actor.CanRun()) return false;
       // we don't want preparing to push a car to block running at full stamina
       if (m_Actor.MaxSTA > m_Actor.StaminaPoints) {
         if (m_Actor.RunIsFreeMove) {
-          if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return;
+          if (m_Actor.WillTireAfter(STA_reserve + m_Actor.RunningStaminaCost(dest))) return false;
         } else {
-          if (m_Actor.WillTireAfter(STA_reserve + 2*m_Actor.RunningStaminaCost(dest)- m_Actor.NightSTApenalty)) return;
+          if (m_Actor.WillTireAfter(STA_reserve + 2*m_Actor.RunningStaminaCost(dest)- m_Actor.NightSTApenalty)) return false;
         }
       }
-      m_Actor.IsRunning = true;
+      return true;
     }
 
     protected void ReserveSTA(int jump, int melee, int push, int push_weight)   // currently jump and break have the same cost
