@@ -66,6 +66,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       
+      ClearMovePlan();
       BehaviorEquipBodyArmor(game);
 
       // start item juggling

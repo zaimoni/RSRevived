@@ -1628,7 +1628,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
-	  Dictionary<Point, int> tmp = navigate.Approach(m_Actor.Location.Position);
+	  Dictionary<Point, int> tmp = PlanApproach(navigate);
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
       ActorAction tmp3 = DecideMove(tmp.Keys);   // only called when no enemies in sight anyway
 #if DEBUG
@@ -2399,7 +2399,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
 
-      Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
+      Dictionary<Point, int> dest = PlanApproach(navigate);
       Dictionary<Point, int> exposed = new Dictionary<Point,int>();
 
       foreach(Point pt in dest.Keys) {
@@ -2442,7 +2442,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+      Dictionary<Point, int> dest = PlanApproach(navigate);
       ActorAction ret = DecideMove(dest.Keys);
 #if DEBUG
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
@@ -2739,7 +2739,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      Dictionary<Point, int> dest = new Dictionary<Point,int>(navigate.Approach(m_Actor.Location.Position));
+      Dictionary<Point, int> dest = PlanApproach(navigate);
       ActorAction ret = DecideMove(dest.Keys);
 #if DEBUG
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");

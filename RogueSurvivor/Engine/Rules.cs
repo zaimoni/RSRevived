@@ -348,6 +348,7 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(null != map);
       Contract.Requires(null != actor);
       Contract.Requires(actor.Controller is Gameplay.AI.ObjectiveAI);
+      Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
       Point point = new Point(x, y);
       reason = "";
       if (!map.IsInBounds(x, y)) {
@@ -390,9 +391,22 @@ namespace djack.RogueSurvivor.Engine
 
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
-             List<KeyValuePair<Point,Direction>> candidates = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position,pt.Key)).ToList();
-             // XXX distance 2 case could use more work based on planned path but that's not available here (yet)
-             if (0 >= candidates.Count) candidates = push_dest.ToList();
+             Dictionary<Point, int> self_block = ai.MovePlanIf(actorAt.Location.Position);
+
+             // function target
+             List<KeyValuePair<Point, Direction>> candidates = null;
+             IEnumerable<KeyValuePair<Point, Direction>> candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position, pt.Key));
+             IEnumerable<KeyValuePair<Point, Direction>> candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(actor.Location.Position, pt.Key));
+             IEnumerable< KeyValuePair < Point, Direction >> test = (null != self_block ? candidates_2.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_2);
+             if (test.Any()) candidates = test.ToList();
+             else if (2<=candidates_2.Count()) candidates = candidates_2.ToList();
+             if (null == candidates && candidates_1.Any()) {
+               test = (null != self_block ? candidates_1.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_1);
+               if (test.Any()) candidates = test.ToList();
+               else candidates = candidates_1.ToList();
+             } else candidates = candidates_2.ToList();
+             // end function target
+
              return new ActionShove(actor,actorAt,candidates[RogueForm.Game.Rules.Roll(0,candidates.Count)].Value);
            }
         }
@@ -437,9 +451,22 @@ namespace djack.RogueSurvivor.Engine
            bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;
            if (push_legal) {
              if (is_adjacent) {
-               List<KeyValuePair<Point,Direction>> candidates = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position,pt.Key)).ToList();
-               // XXX distance 2 case could use more work based on planned path but that's not available here
-               if (0 >= candidates.Count) candidates = push_dest.ToList();
+               Dictionary<Point, int> self_block = ai.MovePlanIf(mapObjectAt.Location.Position);
+
+               // function target
+               List<KeyValuePair<Point, Direction>> candidates = null;
+               IEnumerable<KeyValuePair<Point, Direction>> candidates_2 = push_dest.Where(pt => !Rules.IsAdjacent(actor.Location.Position, pt.Key));
+               IEnumerable<KeyValuePair<Point, Direction>> candidates_1 = push_dest.Where(pt => Rules.IsAdjacent(actor.Location.Position, pt.Key));
+               IEnumerable< KeyValuePair < Point, Direction >> test = (null != self_block ? candidates_2.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_2);
+               if (test.Any()) candidates = test.ToList();
+               else if (2<=candidates_2.Count()) candidates = candidates_2.ToList();
+               if (null == candidates && candidates_1.Any()) {
+                 test = (null != self_block ? candidates_1.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_1);
+                 if (test.Any()) candidates = test.ToList();
+                 else candidates = candidates_1.ToList();
+               } else candidates = candidates_2.ToList();
+               // end function target
+
                return new ActionPush(actor,mapObjectAt,candidates[RogueForm.Game.Rules.Roll(0,candidates.Count)].Value);
              }
              // placeholder
