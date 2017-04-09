@@ -17,6 +17,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   internal abstract class ObjectiveAI : BaseAI
   {
     readonly protected List<Objective> Objectives = new List<Objective>();
+    readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
     private int _STA_reserve = 0;
     int STA_reserve { get { return _STA_reserve; } }
 
@@ -43,8 +44,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _STA_reserve = tmp+m_Actor.NightSTApenalty*(jump+melee+push);
     }
 
-        #region damage field
-        protected void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
+    // these two return a value copy for correctness
+    protected Dictionary<Point, int> PlanApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
+    {
+      PlannedMoves.Clear();
+      Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
+      PlannedMoves[m_Actor.Location.Position] = dest;
+      foreach(Point pt in dest.Keys) {
+        if (0>navigate.Cost(pt)) continue;
+        PlannedMoves[pt] = navigate.Approach(pt);
+      }
+      return new Dictionary<Point,int>(PlannedMoves[m_Actor.Location.Position]);
+    }
+
+    protected void ClearMovePlan()
+    {
+      PlannedMoves.Clear();
+    }
+
+    public Dictionary<Point, int> MovePlanIf(Point pt)
+    {
+      if (!PlannedMoves.ContainsKey(pt)) return null;
+      return new Dictionary<Point,int>(PlannedMoves[pt]);
+    }
+
+#region damage field
+    protected void VisibleMaximumDamage(Dictionary<Point, int> ret,List<Actor> slow_melee_threat, HashSet<Actor> immediate_threat)
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
