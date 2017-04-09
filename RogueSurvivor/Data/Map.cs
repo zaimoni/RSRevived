@@ -387,6 +387,12 @@ namespace djack.RogueSurvivor.Data
 		if (!GetTileModelAt(dest).IsWalkable) continue;
 	    MapObject tmp = GetMapObjectAt(dest);
 	    if (null==tmp || tmp.IsWalkable || tmp.IsJumpable) {
+          // check for actor: pushing actors is impolite so penalize more than for objects
+          Actor other = GetActorAt(dest);
+          if (null!=other && !a.IsEnemyOf(other)) {
+            ret[dest] = 4;
+            continue;
+          }
 	      ret[dest] = 1;
 	      continue;
 	    }
