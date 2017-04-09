@@ -1283,6 +1283,7 @@ namespace djack.RogueSurvivor.Data
         foreach(string s in inv_data) dest.WriteLine(s);
         dest.WriteLine("</table>");
       }
+      dest.WriteLine("<a name='"+Name+"'></a>");
       dest.WriteLine("<pre style='clear:both'>");
       foreach (int y in Enumerable.Range(0, Height)) {
         dest.WriteLine(String.Join("",ascii_map[y]));
