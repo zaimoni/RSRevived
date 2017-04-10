@@ -9443,6 +9443,7 @@ namespace djack.RogueSurvivor.Engine
           if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(chance))
             DropItem(deadGuy, it);
         }
+        Session.Get.PoliceInvestigate.Record(deadGuy.Location.Map,deadGuy.Location.Position);  // cheating ai: police consider death drops tourism targets
       }
 
       if (!deadGuy.Model.Abilities.IsUndead) SplatterBlood(deadGuy.Location.Map, deadGuy.Location.Position);
