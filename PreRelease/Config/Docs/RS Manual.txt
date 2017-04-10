@@ -215,7 +215,6 @@ Business and deliveries doesn't work well during apocalypses. First arrived, fir
 - CHAR Agency        : open 24/24.
 - CHAR Offices       : private property, you are not supposed to go there...
 
-
 > DAY AND NIGHT
 During the night your FoV (field of view = distance at which you can see) diminish and you tire faster.
 Undeads are not affected by day or night.
@@ -624,6 +623,11 @@ Also remember that in addition to having smell, some undeads have a visual memor
 > CITY INFO  (default I)
 Show information you know about the city, such as the city districts layout.
 
+> ITEM INFO (hard-coded Shift-I)
+Review where you have seen items.
+
+> ALLIES OVERVIEW (hard-coded Ctrl-O)
+Basic overview of your allies.  Always includes followers.  Police get a review of all other police in the district as well.
 
 > MESSAGES LOG  (default Shift-M)
 Show more recent messages.

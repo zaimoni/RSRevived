@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
-#define TRACE_NAVIGATE
+// #define TRACE_NAVIGATE
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;

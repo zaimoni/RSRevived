@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Engine
       if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;
 
       // allow configuring this when we want to break format : V.0.10.0
-      if (key.KeyData == (Keys.O | Keys.Shift)) return PlayerCommand.ALLIES_INFO;
+      if (key.KeyData == (Keys.O | Keys.Control)) return PlayerCommand.ALLIES_INFO;
 
       PlayerCommand playerCommand = RogueGame.KeyBindings.Get(key.KeyData);
       if (playerCommand != PlayerCommand.NONE)
