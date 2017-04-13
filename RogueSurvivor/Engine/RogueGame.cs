@@ -2928,7 +2928,7 @@ namespace djack.RogueSurvivor.Engine
       for (int x3 = x1; x3 <= x2; ++x3) {
         for (int y3 = y1; y3 <= y2; ++y3) {
           if (IsSuitableDropSuppliesPoint(map, x3, y3)) {
-            Item it = m_Rules.RollChance(80) ? (Item)m_TownGenerator.MakeItemArmyRation() : (Item)m_TownGenerator.MakeItemMedikit();
+            Item it = m_Rules.RollChance(80) ? (Item)BaseMapGenerator.MakeItemArmyRation() : (Item)BaseMapGenerator.MakeItemMedikit();
             map.DropItemAt(it, x3, y3);
           }
         }
@@ -3198,7 +3198,7 @@ namespace djack.RogueSurvivor.Engine
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Sgt");
       armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
-        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemZTracker());
+        armyNationalGuard.Inventory.AddAll(BaseMapGenerator.MakeItemZTracker());
       return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true) ? armyNationalGuard : null);
     }
 
@@ -3206,7 +3206,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Pvt");
       if (m_Rules.RollChance(50))
-        armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemCombatKnife());
+        armyNationalGuard.Inventory.AddAll(BaseMapGenerator.MakeItemCombatKnife());
       else
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());
       return (SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? armyNationalGuard : null);
@@ -9131,14 +9131,14 @@ namespace djack.RogueSurvivor.Engine
       if (mapObj.GivesWood) {
         int val2 = 1 + mapObj.MaxHitPoints / 40;
         while (val2 > 0) {
-          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(m_GameItems.WOODENPLANK) {
-            Quantity = Math.Min(m_GameItems.WOODENPLANK.StackingLimit, val2)
+          ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(GameItems.WOODENPLANK) {
+            Quantity = Math.Min(GameItems.WOODENPLANK.StackingLimit, val2)
           };
           val2 -= barricadeMaterial.Quantity;
           mapObj.Location.Map.DropItemAt(barricadeMaterial, mapObj.Location.Position);
         }
         if (m_Rules.RollChance(Rules.IMPROVED_WEAPONS_FROM_BROKEN_WOOD_CHANCE)) {
-          ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon(m_GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon(m_GameItems.IMPROVISED_CLUB);
+          ItemMeleeWeapon itemMeleeWeapon = !m_Rules.RollChance(50) ? new ItemMeleeWeapon(GameItems.IMPROVISED_SPEAR) : new ItemMeleeWeapon(GameItems.IMPROVISED_CLUB);
           mapObj.Location.Map.DropItemAt(itemMeleeWeapon, mapObj.Location.Position);
         }
       }
@@ -9435,7 +9435,7 @@ namespace djack.RogueSurvivor.Engine
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty) {
         // the implicit police radio goes explicit on death, as a generic item
         if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID && m_Rules.RollChance(Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE)) {
-          deadGuy.Location.Map.DropItemAt(m_TownGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
+          deadGuy.Location.Map.DropItemAt(BaseMapGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
         }
         Item[] objArray = deadGuy.Inventory.Items.ToArray();
         foreach (Item it in objArray) {
@@ -11947,9 +11947,9 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.AWAKE,5);
       named.StartingSkill(Skills.IDs.FIREARMS,5);
       named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN));
-      named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor(named,false,true, "You hear christmas music and drunken vomiting.", GameMusics.SANTAMAN_THEME_SONG);

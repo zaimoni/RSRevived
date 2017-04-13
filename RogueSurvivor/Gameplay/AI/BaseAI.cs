@@ -951,7 +951,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;
-      if (!m_Actor.HasItemOfModel(game.GameItems.MEDIKIT)) return null;
+      if (!m_Actor.HasItemOfModel(GameItems.MEDIKIT)) return null;
       List<Percept> corpsePercepts = percepts.FilterT<List<Corpse>>().Filter(p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {

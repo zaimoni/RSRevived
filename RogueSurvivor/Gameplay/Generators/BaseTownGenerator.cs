@@ -354,22 +354,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #region 8. Items.
       for (int x = 0; x < sewers.Width; ++x) {
         for (int y = 0; y < sewers.Height; ++y) {
-          if (m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE) && sewers.IsWalkable(x, y))
-          {
+          if (m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE) && sewers.IsWalkable(x, y)) {
             Item it;
-            switch (m_DiceRoller.Roll(0, 3))
-            {
+            switch (m_DiceRoller.Roll(0, 3)) {
               case 0:
                 it = MakeItemBigFlashlight();
                 break;
               case 1:
                 it = MakeItemCrowbar();
                 break;
+#if DEBUG
               case 2:
+#else
+              default:
+#endif
                 it = MakeItemSprayPaint();
                 break;
-              default:
-                throw new ArgumentOutOfRangeException("unhandled roll");
+#if DEBUG
+              default: throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
             }
             sewers.DropItemAt(it, x, y);
           }
@@ -1680,20 +1683,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       switch (m_DiceRoller.Roll(0, 6))
       {
-        case 0:
-          return MakeItemBandages();
-        case 1:
-          return MakeItemMedikit();
-        case 2:
-          return MakeItemPillsSLP();
-        case 3:
-          return MakeItemPillsSTA();
-        case 4:
-          return MakeItemPillsSAN();
+        case 0: return MakeItemBandages();
+        case 1: return MakeItemMedikit();
+        case 2: return MakeItemPillsSLP();
+        case 3: return MakeItemPillsSTA();
+        case 4: return MakeItemPillsSAN();
+#if DEBUG
         case 5:
-          return MakeItemStenchKiller();
+#else
         default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
+          return MakeItemStenchKiller();
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
       }
     }
 
@@ -1748,7 +1751,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 9:
         case 10:
         case 11:
-          return (Item)MakeItemWoodenPlank();
+          return MakeItemWoodenPlank();
         case 12:
         case 13:
         case 14:
@@ -1840,22 +1843,21 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       switch (m_DiceRoller.Roll(0, (Session.Get.HasInfection ? 7 : 6)))
       {
-        case 0:
-          return MakeItemBandages();
-        case 1:
-          return MakeItemMedikit();
-        case 2:
-          return MakeItemPillsSLP();
-        case 3:
-          return MakeItemPillsSTA();
-        case 4:
-          return MakeItemPillsSAN();
-        case 5:
-          return MakeItemStenchKiller();
+        case 0: return MakeItemBandages();
+        case 1: return MakeItemMedikit();
+        case 2: return MakeItemPillsSLP();
+        case 3: return MakeItemPillsSTA();
+        case 4: return MakeItemPillsSAN();
+        case 5: return MakeItemStenchKiller();
+#if DEBUG
         case 6:
-          return MakeItemPillsAntiviral();
+#else
         default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
+          return MakeItemPillsAntiviral();
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#endif
       }
     }
 
@@ -1954,24 +1956,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       switch (m_DiceRoller.Roll(0, 8))
       {
-        case 0:
-          return MakeItemSprayPaint();
-        case 1:
-          return MakeItemBaseballBat();
-        case 2:
-          return MakeItemPillsSLP();
-        case 3:
-          return MakeItemPillsSTA();
-        case 4:
-          return MakeItemPillsSAN();
-        case 5:
-          return MakeItemFlashlight();
-        case 6:
-          return MakeItemCellPhone();
+        case 0: return MakeItemSprayPaint();
+        case 1: return MakeItemBaseballBat();
+        case 2: return MakeItemPillsSLP();
+        case 3: return MakeItemPillsSTA();
+        case 4: return MakeItemPillsSAN();
+        case 5: return MakeItemFlashlight();
+        case 6: return MakeItemCellPhone();
+#if DEBUG
         case 7:
-          return (Item)MakeItemWoodenPlank();
+#else
         default:
-          throw new ArgumentOutOfRangeException("unhandled item roll");
+#endif
+          return MakeItemWoodenPlank();
+#if DEBUG
+        default: throw new ArgumentOutOfRangeException("unhandled item roll");
+#endif
       }
     }
 
@@ -3056,7 +3056,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       numberedName.Inventory.AddAll(MakeItemHeavyPistolAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyBodyArmor());
       ItemBarricadeMaterial barricadeMaterial = MakeItemWoodenPlank();
-      barricadeMaterial.Quantity = m_Game.GameItems.WOODENPLANK.StackingLimit;
+      barricadeMaterial.Quantity = GameItems.WOODENPLANK.StackingLimit;
       numberedName.Inventory.AddAll(barricadeMaterial);
       // National Guard training includes firing range and construction.
       // The minimum physical fitness standards slide off with age.

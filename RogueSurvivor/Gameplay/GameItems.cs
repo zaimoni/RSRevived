@@ -105,555 +105,418 @@ namespace djack.RogueSurvivor.Gameplay
 	  return m_Models[id] as _T_;
 	}
 
-    public ItemMedicineModel BANDAGE
-    {
-      get
-      {
-        return this[GameItems.IDs._FIRST] as ItemMedicineModel;
+    static public ItemMedicineModel BANDAGE {
+      get {
+        return m_Models[(int)IDs._FIRST] as ItemMedicineModel;
       }
     }
 
-    public ItemMedicineModel MEDIKIT
-    {
-      get
-      {
-        return this[GameItems.IDs.MEDICINE_MEDIKIT] as ItemMedicineModel;
+    static public ItemMedicineModel MEDIKIT {
+      get {
+        return m_Models[(int)IDs.MEDICINE_MEDIKIT] as ItemMedicineModel;
       }
     }
 
-    public ItemMedicineModel PILLS_STA
-    {
-      get
-      {
-        return this[GameItems.IDs.MEDICINE_PILLS_STA] as ItemMedicineModel;
+    static public ItemMedicineModel PILLS_STA {
+      get {
+        return m_Models[(int)IDs.MEDICINE_PILLS_STA] as ItemMedicineModel;
       }
     }
 
-    public ItemMedicineModel PILLS_SLP
-    {
-      get
-      {
-        return this[GameItems.IDs.MEDICINE_PILLS_SLP] as ItemMedicineModel;
+    static public ItemMedicineModel PILLS_SLP {
+      get {
+        return m_Models[(int)IDs.MEDICINE_PILLS_SLP] as ItemMedicineModel;
       }
     }
 
-    public ItemMedicineModel PILLS_SAN
-    {
-      get
-      {
-        return this[GameItems.IDs.MEDICINE_PILLS_SAN] as ItemMedicineModel;
+    static public ItemMedicineModel PILLS_SAN {
+      get {
+        return m_Models[(int)IDs.MEDICINE_PILLS_SAN] as ItemMedicineModel;
       }
     }
 
-    public ItemMedicineModel PILLS_ANTIVIRAL
-    {
-      get
-      {
-        return this[GameItems.IDs.MEDICINE_PILLS_ANTIVIRAL] as ItemMedicineModel;
+    static public ItemMedicineModel PILLS_ANTIVIRAL {
+      get {
+        return m_Models[(int)IDs.MEDICINE_PILLS_ANTIVIRAL] as ItemMedicineModel;
       }
     }
 
-    public ItemFoodModel ARMY_RATION
-    {
-      get
-      {
-        return this[GameItems.IDs.FOOD_ARMY_RATION] as ItemFoodModel;
+    static public ItemFoodModel ARMY_RATION {
+      get {
+        return m_Models[(int)IDs.FOOD_ARMY_RATION] as ItemFoodModel;
       }
     }
 
-    public ItemFoodModel GROCERIES
-    {
-      get
-      {
-        return this[GameItems.IDs.FOOD_GROCERIES] as ItemFoodModel;
+    static public ItemFoodModel GROCERIES {
+      get {
+        return m_Models[(int)IDs.FOOD_GROCERIES] as ItemFoodModel;
       }
     }
 
-    public ItemFoodModel CANNED_FOOD
-    {
-      get
-      {
-        return this[GameItems.IDs.FOOD_CANNED_FOOD] as ItemFoodModel;
+    static public ItemFoodModel CANNED_FOOD {
+      get {
+        return m_Models[(int)IDs.FOOD_CANNED_FOOD] as ItemFoodModel;
       }
     }
 
-    public ItemMeleeWeaponModel CROWBAR
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_CROWBAR] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel CROWBAR {
+      get {
+        return m_Models[(int)IDs.MELEE_CROWBAR] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel BASEBALLBAT
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_BASEBALLBAT] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel BASEBALLBAT {
+      get {
+        return m_Models[(int)IDs.MELEE_BASEBALLBAT] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel COMBAT_KNIFE
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_COMBAT_KNIFE] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel COMBAT_KNIFE {
+      get {
+        return m_Models[(int)IDs.MELEE_COMBAT_KNIFE] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel UNIQUE_JASON_MYERS_AXE
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_JASON_MYERS_AXE] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel UNIQUE_JASON_MYERS_AXE {
+      get {
+        return m_Models[(int)IDs.UNIQUE_JASON_MYERS_AXE] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel GOLFCLUB
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_GOLFCLUB] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel GOLFCLUB {
+      get {
+        return m_Models[(int)IDs.MELEE_GOLFCLUB] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel HUGE_HAMMER
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_HUGE_HAMMER] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel HUGE_HAMMER {
+      get {
+        return m_Models[(int)IDs.MELEE_HUGE_HAMMER] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel SMALL_HAMMER
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_SMALL_HAMMER] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel SMALL_HAMMER {
+      get {
+        return m_Models[(int)IDs.MELEE_SMALL_HAMMER] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel IRON_GOLFCLUB
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_IRON_GOLFCLUB] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel IRON_GOLFCLUB {
+      get {
+        return m_Models[(int)IDs.MELEE_IRON_GOLFCLUB] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel SHOVEL
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_SHOVEL] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel SHOVEL {
+      get {
+        return m_Models[(int)IDs.MELEE_SHOVEL] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel SHORT_SHOVEL
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_SHORT_SHOVEL] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel SHORT_SHOVEL {
+      get {
+        return m_Models[(int)IDs.MELEE_SHORT_SHOVEL] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel TRUNCHEON
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_TRUNCHEON] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel TRUNCHEON {
+      get {
+        return m_Models[(int)IDs.MELEE_TRUNCHEON] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel IMPROVISED_CLUB
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_IMPROVISED_CLUB] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel IMPROVISED_CLUB {
+      get {
+        return m_Models[(int)IDs.MELEE_IMPROVISED_CLUB] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel IMPROVISED_SPEAR
-    {
-      get
-      {
-        return this[GameItems.IDs.MELEE_IMPROVISED_SPEAR] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel IMPROVISED_SPEAR {
+      get {
+        return m_Models[(int)IDs.MELEE_IMPROVISED_SPEAR] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel UNIQUE_FAMU_FATARU_KATANA
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_FAMU_FATARU_KATANA] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel UNIQUE_FAMU_FATARU_KATANA {
+      get {
+        return m_Models[(int)IDs.UNIQUE_FAMU_FATARU_KATANA] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel UNIQUE_BIGBEAR_BAT
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_BIGBEAR_BAT] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel UNIQUE_BIGBEAR_BAT {
+      get {
+        return m_Models[(int)IDs.UNIQUE_BIGBEAR_BAT] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemMeleeWeaponModel UNIQUE_ROGUEDJACK_KEYBOARD
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_ROGUEDJACK_KEYBOARD] as ItemMeleeWeaponModel;
+    static public ItemMeleeWeaponModel UNIQUE_ROGUEDJACK_KEYBOARD {
+      get {
+        return m_Models[(int)IDs.UNIQUE_ROGUEDJACK_KEYBOARD] as ItemMeleeWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel ARMY_PISTOL
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_ARMY_PISTOL] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel ARMY_PISTOL {
+      get {
+        return m_Models[(int)IDs.RANGED_ARMY_PISTOL] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel ARMY_RIFLE
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_ARMY_RIFLE] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel ARMY_RIFLE {
+      get {
+        return m_Models[(int)IDs.RANGED_ARMY_RIFLE] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel HUNTING_CROSSBOW
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_HUNTING_CROSSBOW] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel HUNTING_CROSSBOW {
+      get {
+        return m_Models[(int)IDs.RANGED_HUNTING_CROSSBOW] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel HUNTING_RIFLE
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_HUNTING_RIFLE] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel HUNTING_RIFLE {
+      get {
+        return m_Models[(int)IDs.RANGED_HUNTING_RIFLE] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel KOLT_REVOLVER
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_KOLT_REVOLVER] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel KOLT_REVOLVER {
+      get {
+        return m_Models[(int)IDs.RANGED_KOLT_REVOLVER] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel PISTOL
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_PISTOL] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel PISTOL {
+      get {
+        return m_Models[(int)IDs.RANGED_PISTOL] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel PRECISION_RIFLE
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_PRECISION_RIFLE] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel PRECISION_RIFLE {
+      get {
+        return m_Models[(int)IDs.RANGED_PRECISION_RIFLE] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel SHOTGUN
-    {
-      get
-      {
-        return this[GameItems.IDs.RANGED_SHOTGUN] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel SHOTGUN {
+      get {
+        return m_Models[(int)IDs.RANGED_SHOTGUN] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel UNIQUE_SANTAMAN_SHOTGUN
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel UNIQUE_SANTAMAN_SHOTGUN {
+      get {
+        return m_Models[(int)IDs.UNIQUE_SANTAMAN_SHOTGUN] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemRangedWeaponModel UNIQUE_HANS_VON_HANZ_PISTOL
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL] as ItemRangedWeaponModel;
+    static public ItemRangedWeaponModel UNIQUE_HANS_VON_HANZ_PISTOL {
+      get {
+        return m_Models[(int)IDs.UNIQUE_HANS_VON_HANZ_PISTOL] as ItemRangedWeaponModel;
       }
     }
 
-    public ItemAmmoModel AMMO_LIGHT_PISTOL
-    {
-      get
-      {
-        return this[GameItems.IDs.AMMO_LIGHT_PISTOL] as ItemAmmoModel;
+    static public ItemAmmoModel AMMO_LIGHT_PISTOL {
+      get {
+        return m_Models[(int)IDs.AMMO_LIGHT_PISTOL] as ItemAmmoModel;
       }
     }
 
-    public ItemAmmoModel AMMO_HEAVY_PISTOL
-    {
-      get
-      {
-        return this[GameItems.IDs.AMMO_HEAVY_PISTOL] as ItemAmmoModel;
+    static public ItemAmmoModel AMMO_HEAVY_PISTOL {
+      get {
+        return m_Models[(int)IDs.AMMO_HEAVY_PISTOL] as ItemAmmoModel;
       }
     }
 
-    public ItemAmmoModel AMMO_LIGHT_RIFLE
-    {
-      get
-      {
-        return this[GameItems.IDs.AMMO_LIGHT_RIFLE] as ItemAmmoModel;
+    static public ItemAmmoModel AMMO_LIGHT_RIFLE {
+      get {
+        return m_Models[(int)IDs.AMMO_LIGHT_RIFLE] as ItemAmmoModel;
       }
     }
 
-    public ItemAmmoModel AMMO_HEAVY_RIFLE
-    {
-      get
-      {
-        return this[GameItems.IDs.AMMO_HEAVY_RIFLE] as ItemAmmoModel;
+    static public ItemAmmoModel AMMO_HEAVY_RIFLE {
+      get {
+        return m_Models[(int)IDs.AMMO_HEAVY_RIFLE] as ItemAmmoModel;
       }
     }
 
-    public ItemAmmoModel AMMO_SHOTGUN
-    {
-      get
-      {
-        return this[GameItems.IDs.AMMO_SHOTGUN] as ItemAmmoModel;
+    static public ItemAmmoModel AMMO_SHOTGUN {
+      get {
+        return m_Models[(int)IDs.AMMO_SHOTGUN] as ItemAmmoModel;
       }
     }
 
-    public ItemAmmoModel AMMO_BOLTS
-    {
-      get
-      {
-        return this[GameItems.IDs.AMMO_BOLTS] as ItemAmmoModel;
+    static public ItemAmmoModel AMMO_BOLTS {
+      get {
+        return m_Models[(int)IDs.AMMO_BOLTS] as ItemAmmoModel;
       }
     }
 
-    public ItemGrenadeModel GRENADE
-    {
-      get
-      {
-        return this[GameItems.IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel;
+    static public ItemGrenadeModel GRENADE {
+      get {
+        return m_Models[(int)IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel;
       }
     }
 
-    public ItemGrenadePrimedModel GRENADE_PRIMED
-    {
-      get
-      {
-        return this[GameItems.IDs.EXPLOSIVE_GRENADE_PRIMED] as ItemGrenadePrimedModel;
+    static public ItemGrenadePrimedModel GRENADE_PRIMED {
+      get {
+        return m_Models[(int)IDs.EXPLOSIVE_GRENADE_PRIMED] as ItemGrenadePrimedModel;
       }
     }
 
-    public ItemBarricadeMaterialModel WOODENPLANK
-    {
-      get
-      {
-        return this[GameItems.IDs.BAR_WOODEN_PLANK] as ItemBarricadeMaterialModel;
+    static public ItemBarricadeMaterialModel WOODENPLANK {
+      get {
+        return m_Models[(int)IDs.BAR_WOODEN_PLANK] as ItemBarricadeMaterialModel;
       }
     }
 
-    public ItemBodyArmorModel ARMY_BODYARMOR
-    {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_ARMY_BODYARMOR] as ItemBodyArmorModel;
+    static public ItemBodyArmorModel ARMY_BODYARMOR {
+      get {
+        return m_Models[(int)IDs.ARMOR_ARMY_BODYARMOR] as ItemBodyArmorModel;
       }
     }
 
-    public ItemBodyArmorModel CHAR_LT_BODYARMOR
+    static public ItemBodyArmorModel CHAR_LT_BODYARMOR
     {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_CHAR_LIGHT_BODYARMOR] as ItemBodyArmorModel;
+      get {
+        return m_Models[(int)IDs.ARMOR_CHAR_LIGHT_BODYARMOR] as ItemBodyArmorModel;
       }
     }
 
-    public ItemBodyArmorModel HELLS_SOULS_JACKET
-    {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_HELLS_SOULS_JACKET] as ItemBodyArmorModel;
+    static public ItemBodyArmorModel HELLS_SOULS_JACKET {
+      get {
+        return m_Models[(int)IDs.ARMOR_HELLS_SOULS_JACKET] as ItemBodyArmorModel;
       }
     }
 
-    public ItemBodyArmorModel FREE_ANGELS_JACKET
-    {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_FREE_ANGELS_JACKET] as ItemBodyArmorModel;
+    static public ItemBodyArmorModel FREE_ANGELS_JACKET {
+      get {
+        return m_Models[(int)IDs.ARMOR_FREE_ANGELS_JACKET] as ItemBodyArmorModel;
       }
     }
 
-    public ItemBodyArmorModel POLICE_JACKET
-    {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_POLICE_JACKET] as ItemBodyArmorModel;
+    static public ItemBodyArmorModel POLICE_JACKET {
+      get {
+        return m_Models[(int)IDs.ARMOR_POLICE_JACKET] as ItemBodyArmorModel;
       }
     }
 
-    public ItemBodyArmorModel POLICE_RIOT
-    {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_POLICE_RIOT] as ItemBodyArmorModel;
+    static public ItemBodyArmorModel POLICE_RIOT {
+      get {
+        return m_Models[(int)IDs.ARMOR_POLICE_RIOT] as ItemBodyArmorModel;
       }
     }
 
-    public ItemBodyArmorModel HUNTER_VEST
-    {
-      get
-      {
-        return this[GameItems.IDs.ARMOR_HUNTER_VEST] as ItemBodyArmorModel;
+    static public ItemBodyArmorModel HUNTER_VEST {
+      get {
+        return m_Models[(int)IDs.ARMOR_HUNTER_VEST] as ItemBodyArmorModel;
       }
     }
 
-    public ItemTrackerModel BLACKOPS_GPS
-    {
-      get
-      {
-        return this[GameItems.IDs.TRACKER_BLACKOPS] as ItemTrackerModel;
+    static public ItemTrackerModel BLACKOPS_GPS {
+      get {
+        return m_Models[(int)IDs.TRACKER_BLACKOPS] as ItemTrackerModel;
       }
     }
 
-    public ItemTrackerModel CELL_PHONE
-    {
-      get
-      {
-        return this[GameItems.IDs.TRACKER_CELL_PHONE] as ItemTrackerModel;
+    static public ItemTrackerModel CELL_PHONE {
+      get {
+        return m_Models[(int)IDs.TRACKER_CELL_PHONE] as ItemTrackerModel;
       }
     }
 
-    public ItemTrackerModel ZTRACKER
-    {
-      get
-      {
-        return this[GameItems.IDs.TRACKER_ZTRACKER] as ItemTrackerModel;
+    static public ItemTrackerModel ZTRACKER {
+      get {
+        return m_Models[(int)IDs.TRACKER_ZTRACKER] as ItemTrackerModel;
       }
     }
 
-    public ItemTrackerModel POLICE_RADIO
-    {
-      get
-      {
-        return this[GameItems.IDs.TRACKER_POLICE_RADIO] as ItemTrackerModel;
+    static public ItemTrackerModel POLICE_RADIO {
+      get {
+        return m_Models[(int)IDs.TRACKER_POLICE_RADIO] as ItemTrackerModel;
       }
     }
 
-    public ItemSprayPaintModel SPRAY_PAINT1
-    {
-      get
-      {
-        return this[GameItems.IDs.SPRAY_PAINT1] as ItemSprayPaintModel;
+    static public ItemSprayPaintModel SPRAY_PAINT1 {
+      get{
+        return m_Models[(int)IDs.SPRAY_PAINT1] as ItemSprayPaintModel;
       }
     }
 
-    public ItemSprayPaintModel SPRAY_PAINT2
-    {
-      get
-      {
-        return this[GameItems.IDs.SPRAY_PAINT2] as ItemSprayPaintModel;
+    static public ItemSprayPaintModel SPRAY_PAINT2 {
+      get {
+        return m_Models[(int)IDs.SPRAY_PAINT2] as ItemSprayPaintModel;
       }
     }
 
-    public ItemSprayPaintModel SPRAY_PAINT3
-    {
-      get
-      {
-        return this[GameItems.IDs.SPRAY_PAINT3] as ItemSprayPaintModel;
+    static public ItemSprayPaintModel SPRAY_PAINT3 {
+      get {
+        return m_Models[(int)IDs.SPRAY_PAINT3] as ItemSprayPaintModel;
       }
     }
 
-    public ItemSprayPaintModel SPRAY_PAINT4
-    {
-      get
-      {
-        return this[GameItems.IDs.SPRAY_PAINT4] as ItemSprayPaintModel;
+    static public ItemSprayPaintModel SPRAY_PAINT4 {
+      get {
+        return m_Models[(int)IDs.SPRAY_PAINT4] as ItemSprayPaintModel;
       }
     }
 
-    public ItemLightModel FLASHLIGHT
-    {
-      get
-      {
-        return this[GameItems.IDs.LIGHT_FLASHLIGHT] as ItemLightModel;
+    static public ItemLightModel FLASHLIGHT {
+      get {
+        return m_Models[(int)IDs.LIGHT_FLASHLIGHT] as ItemLightModel;
       }
     }
 
-    public ItemLightModel BIG_FLASHLIGHT
-    {
-      get
-      {
-        return this[GameItems.IDs.LIGHT_BIG_FLASHLIGHT] as ItemLightModel;
+    static public ItemLightModel BIG_FLASHLIGHT {
+      get {
+        return m_Models[(int)IDs.LIGHT_BIG_FLASHLIGHT] as ItemLightModel;
       }
     }
 
-    public ItemModel STENCH_KILLER
-    {
-      get
-      {
-        return this[GameItems.IDs.SCENT_SPRAY_STENCH_KILLER];
+    static public ItemModel STENCH_KILLER {
+      get {
+        return m_Models[(int)IDs.SCENT_SPRAY_STENCH_KILLER];
       }
     }
 
-    public ItemModel EMPTY_CAN
-    {
-      get
-      {
-        return this[GameItems.IDs.TRAP_EMPTY_CAN];
+    static public ItemModel EMPTY_CAN {
+      get {
+        return m_Models[(int)IDs.TRAP_EMPTY_CAN];
       }
     }
 
-    public ItemModel BEAR_TRAP
-    {
-      get
-      {
-        return this[GameItems.IDs.TRAP_BEAR_TRAP];
+    static public ItemModel BEAR_TRAP {
+      get {
+        return m_Models[(int)IDs.TRAP_BEAR_TRAP];
       }
     }
 
-    public ItemModel SPIKES
-    {
-      get
-      {
-        return this[GameItems.IDs.TRAP_SPIKES];
+    static public ItemModel SPIKES {
+      get {
+        return m_Models[(int)IDs.TRAP_SPIKES];
       }
     }
 
-    public ItemModel BARBED_WIRE
-    {
-      get
-      {
-        return this[GameItems.IDs.TRAP_BARBED_WIRE];
+    static public ItemModel BARBED_WIRE {
+      get {
+        return m_Models[(int)IDs.TRAP_BARBED_WIRE];
       }
     }
 
-    public ItemModel BOOK
-    {
-      get
-      {
-        return this[GameItems.IDs.ENT_BOOK];
+    static public ItemModel BOOK {
+      get {
+        return m_Models[(int)IDs.ENT_BOOK];
       }
     }
 
-    public ItemModel MAGAZINE
-    {
-      get
-      {
-        return this[GameItems.IDs.ENT_MAGAZINE];
+    static public ItemModel MAGAZINE {
+      get {
+        return m_Models[(int)IDs.ENT_MAGAZINE];
       }
     }
 
-    public ItemModel UNIQUE_SUBWAY_BADGE
-    {
-      get
-      {
-        return this[GameItems.IDs.UNIQUE_SUBWAY_BADGE];
+    static public ItemModel UNIQUE_SUBWAY_BADGE {
+      get {
+        return m_Models[(int)IDs.UNIQUE_SUBWAY_BADGE];
       }
     }
 
