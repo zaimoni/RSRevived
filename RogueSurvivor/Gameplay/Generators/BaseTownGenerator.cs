@@ -2752,28 +2752,27 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int x = isFacingEast ? room.Right - 1 : room.Left;
       PlaceDoor(map, x, room.Top + 1, m_Game.GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
       Point position1 = new Point(room.Left + room.Width / 2, room.Bottom - 2);
-      map.PlaceMapObjectAt(MakeObjBed("MapObjects\\hospital_bed"), position1);
-      map.PlaceMapObjectAt(MakeObjChair("MapObjects\\hospital_chair"), new Point(isFacingEast ? position1.X + 1 : position1.X - 1, position1.Y));
+      map.PlaceMapObjectAt(MakeObjBed(GameImages.OBJ_HOSPITAL_BED), position1);
+      map.PlaceMapObjectAt(MakeObjChair(GameImages.OBJ_HOSPITAL_CHAIR), new Point(isFacingEast ? position1.X + 1 : position1.X - 1, position1.Y));
       Point position2 = new Point(isFacingEast ? position1.X - 1 : position1.X + 1, position1.Y);
-      map.PlaceMapObjectAt(MakeObjNightTable("MapObjects\\hospital_nighttable"), position2);
-      if (m_DiceRoller.RollChance(50)) {
-        int num = m_DiceRoller.Roll(0, 3);
-        Item it = null;
-        switch (num) {
-          case 0:
-            it = MakeShopPharmacyItem();
-            break;
-          case 1:
-            it = MakeItemGroceries();
-            break;
-          case 2:
-            it = MakeItemBook();
-            break;
+      map.PlaceMapObjectAt(MakeObjNightTable(GameImages.OBJ_HOSPITAL_NIGHT_TABLE), position2);
+
+      // Inefficient, but avoids polluting interface
+      Func<Item> furnish = () => {
+        switch (m_DiceRoller.Roll(0, 3)) {
+          case 0: return MakeShopPharmacyItem();
+          case 1: return MakeItemGroceries();
+#if DEBUG
+          case 2: return MakeItemBook();
+          default: throw new InvalidOperationException("unhandled roll result");
+#else
+          default: return MakeItemBook();
+#endif
         }
-        if (it != null)
-          map.DropItemAt(it, position2);
-      }
-      map.PlaceMapObjectAt(MakeObjWardrobe("MapObjects\\hospital_wardrobe"), new Point(isFacingEast ? room.Left + 1 : room.Right - 2, room.Top + 1));
+      };
+
+      if (m_DiceRoller.RollChance(50)) map.DropItemAt(furnish(), position2);
+      map.PlaceMapObjectAt(MakeObjWardrobe(GameImages.OBJ_HOSPITAL_WARDROBE), new Point(isFacingEast ? room.Left + 1 : room.Right - 2, room.Top + 1));
     }
 
     private void MakeHospitalOfficeRoom(Map map, string baseZoneName, Rectangle room, bool isFacingEast)
