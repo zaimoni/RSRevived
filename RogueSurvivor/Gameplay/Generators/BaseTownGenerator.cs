@@ -2735,65 +2735,43 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
     {
-      Item it;
-      if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
-        switch (roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))) {
-          case 0:
-            it = MakeItemGrenade();
-            break;
-          case 1:
-            it = MakeItemArmyBodyArmor();
-            break;
-          case 2:
-            it = MakeItemHeavyPistolAmmo();
-            break;
-          case 3:
-            it = MakeItemHeavyRifleAmmo();
-            break;
-          case 4:
-            it = MakeItemCombatKnife();
-            break;
-          case 5:
-            it = MakeItemPillsAntiviral();
-            break;
-          default: throw new ArgumentOutOfRangeException("unhandled roll");
+      Func<Item> equip_this = () => {
+        if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
+          switch (roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))) {
+            case 0: return MakeItemGrenade();
+            case 1: return MakeItemArmyBodyArmor();
+            case 2: return MakeItemHeavyPistolAmmo();
+            case 3: return MakeItemHeavyRifleAmmo();
+            case 4: return MakeItemCombatKnife();
+#if DEBUG
+            case 5: return MakeItemPillsAntiviral();
+            default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+            default: return MakeItemPillsAntiviral();
+#endif
+          }
         }
-      } else {
+    
         switch (roller.Roll(0, 10)) {
-          case 0:
-            it = MakeRandomShopItem(ShopType.CONSTRUCTION);
-            break;
-          case 1:
-            it = MakeRandomShopItem(ShopType._FIRST);
-            break;
-          case 2:
-            it = MakeRandomShopItem(ShopType.GROCERY);
-            break;
-          case 3:
-            it = MakeRandomShopItem(ShopType.GUNSHOP);
-            break;
-          case 4:
-            it = MakeRandomShopItem(ShopType.PHARMACY);
-            break;
-          case 5:
-            it = MakeRandomShopItem(ShopType.SPORTSWEAR);
-            break;
-          case 6:
-            it = MakeRandomShopItem(ShopType.HUNTING);
-            break;
-          case 7:
-            it = MakeRandomParkItem();
-            break;
-          case 8:
-            it = MakeRandomBedroomItem();
-            break;
-          case 9:
-            it = MakeRandomKitchenItem();
-            break;
+          case 0: return MakeRandomShopItem(ShopType.CONSTRUCTION);
+          case 1: return MakeRandomShopItem(ShopType._FIRST);
+          case 2: return MakeRandomShopItem(ShopType.GROCERY);
+          case 3: return MakeRandomShopItem(ShopType.GUNSHOP);
+          case 4: return MakeRandomShopItem(ShopType.PHARMACY);
+          case 5: return MakeRandomShopItem(ShopType.SPORTSWEAR);
+          case 6: return MakeRandomShopItem(ShopType.HUNTING);
+          case 7: return MakeRandomParkItem();
+          case 8: return MakeRandomBedroomItem();
+#if DEBUG
+          case 9: return MakeRandomKitchenItem();
           default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+          default: return MakeRandomKitchenItem();
+#endif
         }
-      }
-      if (null != it) actor.Inventory.AddAll(it);
+      };
+
+      actor.Inventory.AddAll(equip_this());
     }
 
     public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
