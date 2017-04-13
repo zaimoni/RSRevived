@@ -1279,7 +1279,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
           return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
-        }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjBed("MapObjects\\bed")));
+        }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjBed(GameImages.OBJ_BED)));
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
           return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
@@ -1563,12 +1563,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
-                Item it = MakeRandomBedroomItem();
-                if (it != null) map.DropItemAt(it, pt2);
+                map.DropItemAt(MakeRandomBedroomItem(), pt2);
                 Session.Get.PoliceInvestigate.Record(map, pt2);
-                return MakeObjNightTable("MapObjects\\nighttable");
+                return MakeObjNightTable(GameImages.OBJ_NIGHT_TABLE);
               }));
-              return MakeObjBed("MapObjects\\bed");
+              return MakeObjBed(GameImages.OBJ_BED);
             }));
           int num2 = m_DiceRoller.Roll(1, 4);
           for (int index = 0; index < num2; ++index)
@@ -1577,10 +1576,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
-              Item it = MakeRandomBedroomItem();
-              if (it != null) map.DropItemAt(it, pt);
+              map.DropItemAt(MakeRandomBedroomItem(), pt);
               Session.Get.PoliceInvestigate.Record(map, pt);
-              return (m_DiceRoller.RollChance(50) ? MakeObjWardrobe("MapObjects\\wardrobe") : MakeObjDrawer());
+              return (m_DiceRoller.RollChance(50) ? MakeObjWardrobe(GameImages.OBJ_WARDROBE) : MakeObjDrawer());
             }));
           break;
         case 5:
@@ -1830,7 +1828,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 4:
           return MakeHuntingShopItem();
         case 5:
-          return MakeRandomBedroomItem();
+          return MakeRandomBedroomItem();   // non-null return
         default:
           throw new ArgumentOutOfRangeException("unhandled roll");
       }
@@ -1858,59 +1856,40 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public Item MakeRandomBedroomItem()
+    private Item MakeRandomBedroomItem()
     {
-      switch (m_DiceRoller.Roll(0, 24))
-      {
+      switch (m_DiceRoller.Roll(0, 24)) {
         case 0:
-        case 1:
-          return MakeItemBandages();
-        case 2:
-          return MakeItemPillsSTA();
-        case 3:
-          return MakeItemPillsSLP();
-        case 4:
-          return MakeItemPillsSAN();
+        case 1: return MakeItemBandages();
+        case 2: return MakeItemPillsSTA();
+        case 3: return MakeItemPillsSLP();
+        case 4: return MakeItemPillsSAN();
         case 5:
         case 6:
         case 7:
-        case 8:
-          return MakeItemBaseballBat();
-        case 9:
-          return MakeItemRandomPistol();
+        case 8: return MakeItemBaseballBat();
+        case 9: return MakeItemRandomPistol();
         case 10:
-          if (m_DiceRoller.RollChance(30))
-          {
-            if (m_DiceRoller.RollChance(50))
-              return MakeItemShotgun();
-            return MakeItemHuntingRifle();
-          }
-          if (m_DiceRoller.RollChance(50))
-            return MakeItemShotgunAmmo();
-          return MakeItemLightRifleAmmo();
+          if (m_DiceRoller.RollChance(30)) return (m_DiceRoller.RollChance(50) ? MakeItemShotgun() : MakeItemHuntingRifle());
+          return (m_DiceRoller.RollChance(50) ? MakeItemShotgunAmmo() : MakeItemLightRifleAmmo());
         case 11:
         case 12:
-        case 13:
-          return MakeItemCellPhone();
+        case 13: return MakeItemCellPhone();
         case 14:
-        case 15:
-          return MakeItemFlashlight();
+        case 15: return MakeItemFlashlight();
         case 16:
-        case 17:
-          return MakeItemLightPistolAmmo();
+        case 17: return MakeItemLightPistolAmmo();
         case 18:
-        case 19:
-          return MakeItemStenchKiller();
-        case 20:
-          return MakeItemHunterVest();
+        case 19: return MakeItemStenchKiller();
+        case 20: return MakeItemHunterVest();
+#if DEBUG
         case 21:
         case 22:
-        case 23:
-          if (m_DiceRoller.RollChance(50))
-            return MakeItemBook();
-          return MakeItemMagazines();
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+        case 23: return (m_DiceRoller.RollChance(50) ? MakeItemBook() : MakeItemMagazines());
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return (m_DiceRoller.RollChance(50) ? MakeItemBook() : MakeItemMagazines());
+#endif
       }
     }
 
