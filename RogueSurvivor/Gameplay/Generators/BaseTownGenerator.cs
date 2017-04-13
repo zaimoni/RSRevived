@@ -1834,10 +1834,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public Item MakeHospitalItem()
+    private Item MakeHospitalItem()
     {
-      switch (m_DiceRoller.Roll(0, (Session.Get.HasInfection ? 7 : 6)))
-      {
+      switch (m_DiceRoller.Roll(0, (Session.Get.HasInfection ? 7 : 6))) {
         case 0: return MakeItemBandages();
         case 1: return MakeItemMedikit();
         case 2: return MakeItemPillsSLP();
@@ -1845,13 +1844,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         case 4: return MakeItemPillsSAN();
         case 5: return MakeItemStenchKiller();
 #if DEBUG
-        case 6:
-#else
-        default:
-#endif
-          return MakeItemPillsAntiviral();
-#if DEBUG
+        case 6: return MakeItemPillsAntiviral();
         default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return MakeItemPillsAntiviral();
 #endif
       }
     }
