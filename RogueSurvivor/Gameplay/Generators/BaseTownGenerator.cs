@@ -1594,8 +1594,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
-                Item it = MakeRandomKitchenItem();
-                if (it != null) map.DropItemAt(it, pt);
+                map.DropItemAt(MakeRandomKitchenItem(), pt);
               }
               Session.Get.PoliceInvestigate.Record(map, pt);
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
@@ -1621,8 +1620,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
-              Item it = MakeRandomKitchenItem();
-              if (it != null) map.DropItemAt(it, pt);
+              map.DropItemAt(MakeRandomKitchenItem(), pt);
             }
             Session.Get.PoliceInvestigate.Record(map, pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
@@ -1637,8 +1635,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
-              Item it = MakeRandomKitchenItem();
-              if (it != null) map.DropItemAt(it, pt);
+              map.DropItemAt(MakeRandomKitchenItem(), pt);
             }
             Session.Get.PoliceInvestigate.Record(map, pt);
             return MakeObjFridge();
@@ -1917,11 +1914,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    public Item MakeRandomKitchenItem()
+    private ItemFood MakeRandomKitchenItem()
     {
-      if (m_DiceRoller.RollChance(50))
-        return MakeItemCannedFood();
-      return MakeItemGroceries();
+      return (m_DiceRoller.RollChance(50) ? MakeItemCannedFood() : MakeItemGroceries());
     }
 
     public Item MakeRandomCHAROfficeItem()
