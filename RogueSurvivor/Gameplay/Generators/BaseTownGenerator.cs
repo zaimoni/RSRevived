@@ -1644,167 +1644,129 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    protected Item MakeRandomShopItem(BaseTownGenerator.ShopType shop)
+    private Item MakeRandomShopItem(ShopType shop)
     {
-      switch (shop)
-      {
-        case BaseTownGenerator.ShopType._FIRST:
-          return MakeShopGeneralItem();
-        case BaseTownGenerator.ShopType.GROCERY:
-          return MakeShopGroceryItem();
-        case BaseTownGenerator.ShopType.SPORTSWEAR:
-          return MakeShopSportsWearItem();
-        case BaseTownGenerator.ShopType.PHARMACY:
-          return MakeShopPharmacyItem();
-        case BaseTownGenerator.ShopType.CONSTRUCTION:
-          return MakeShopConstructionItem();
-        case BaseTownGenerator.ShopType.GUNSHOP:
-          return MakeShopGunshopItem();
-        case BaseTownGenerator.ShopType.HUNTING:
-          return MakeHuntingShopItem();
-        default:
-          throw new ArgumentOutOfRangeException("unhandled shoptype");
+      switch (shop) {
+        case ShopType._FIRST: return MakeShopGeneralItem();
+        case ShopType.GROCERY: return MakeShopGroceryItem();
+        case ShopType.SPORTSWEAR: return MakeShopSportsWearItem();
+        case ShopType.PHARMACY: return MakeShopPharmacyItem();
+        case ShopType.CONSTRUCTION: return MakeShopConstructionItem();
+        case ShopType.GUNSHOP: return MakeShopGunshopItem();
+        case ShopType.HUNTING: return MakeHuntingShopItem();
+        default: throw new ArgumentOutOfRangeException("unhandled shoptype");
       }
     }
 
-    public Item MakeShopGroceryItem()
+    private ItemFood MakeShopGroceryItem()
     {
-      if (m_DiceRoller.RollChance(50))
-        return MakeItemCannedFood();
-      return MakeItemGroceries();
+      return (m_DiceRoller.RollChance(50) ? MakeItemCannedFood() : MakeItemGroceries());
     }
 
-    public Item MakeShopPharmacyItem()
+    private Item MakeShopPharmacyItem()
     {
-      switch (m_DiceRoller.Roll(0, 6))
-      {
+      switch (m_DiceRoller.Roll(0, 6)) {
         case 0: return MakeItemBandages();
         case 1: return MakeItemMedikit();
         case 2: return MakeItemPillsSLP();
         case 3: return MakeItemPillsSTA();
         case 4: return MakeItemPillsSAN();
 #if DEBUG
-        case 5:
-#else
-        default:
-#endif
-          return MakeItemStenchKiller();
-#if DEBUG
+        case 5: return MakeItemStenchKiller();
         default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return MakeItemStenchKiller();
 #endif
       }
     }
 
-    public Item MakeShopSportsWearItem()
+    private Item MakeShopSportsWearItem()
     {
       switch (m_DiceRoller.Roll(0, 10))
       {
-        case 0:
-          if (m_DiceRoller.RollChance(30))
-            return MakeItemHuntingRifle();
-          return MakeItemLightRifleAmmo();
-        case 1:
-          if (m_DiceRoller.RollChance(30))
-            return MakeItemHuntingCrossbow();
-          return MakeItemBoltsAmmo();
+        case 0: return (m_DiceRoller.RollChance(30) ? (Item)MakeItemHuntingRifle() : MakeItemLightRifleAmmo());
+        case 1: return (m_DiceRoller.RollChance(30) ? (Item)MakeItemHuntingCrossbow() : MakeItemBoltsAmmo());
         case 2:
         case 3:
         case 4:
-        case 5:
-          return MakeItemBaseballBat();
+        case 5: return MakeItemBaseballBat();
         case 6:
-        case 7:
-          return MakeItemIronGolfClub();
+        case 7: return MakeItemIronGolfClub();
         case 8:
-        case 9:
-          return MakeItemGolfClub();
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+#if DEBUG
+        case 9: return MakeItemGolfClub();
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return MakeItemGolfClub();
+#endif
       }
     }
 
-    public Item MakeShopConstructionItem()
+    private Item MakeShopConstructionItem()
     {
-      switch (m_DiceRoller.Roll(0, 24))
-      {
+      switch (m_DiceRoller.Roll(0, 24)) {
         case 0:
         case 1:
-        case 2:
-          if (!m_DiceRoller.RollChance(50))
-            return MakeItemShortShovel();
-          return MakeItemShovel();
+        case 2: return (m_DiceRoller.RollChance(50) ? MakeItemShovel() : MakeItemShortShovel());
         case 3:
         case 4:
-        case 5:
-          return MakeItemCrowbar();
+        case 5: return MakeItemCrowbar();
         case 6:
         case 7:
-        case 8:
-          if (!m_DiceRoller.RollChance(50))
-            return MakeItemSmallHammer();
-          return MakeItemHugeHammer();
+        case 8: return (m_DiceRoller.RollChance(50) ? MakeItemHugeHammer() : MakeItemSmallHammer());
         case 9:
         case 10:
-        case 11:
-          return MakeItemWoodenPlank();
+        case 11: return MakeItemWoodenPlank();
         case 12:
         case 13:
-        case 14:
-          return MakeItemFlashlight();
+        case 14: return MakeItemFlashlight();
         case 15:
         case 16:
-        case 17:
-          return MakeItemBigFlashlight();
+        case 17: return MakeItemBigFlashlight();
         case 18:
         case 19:
-        case 20:
-          return MakeItemSpikes();
+        case 20: return MakeItemSpikes();
+#if DEBUG
         case 21:
         case 22:
-        case 23:
-          return MakeItemBarbedWire();
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+        case 23: return MakeItemBarbedWire();
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return MakeItemBarbedWire();
+#endif
       }
     }
 
-    public Item MakeShopGunshopItem()
+    private Item MakeShopGunshopItem()
     {
-      if (m_DiceRoller.RollChance(40))
-      {
-        switch (m_DiceRoller.Roll(0, 4))
-        {
-          case 0:
-            return MakeItemRandomPistol();
-          case 1:
-            return MakeItemShotgun();
-          case 2:
-            return MakeItemHuntingRifle();
-          case 3:
-            return MakeItemHuntingCrossbow();
-          default:
-            return (Item) null;
+      if (m_DiceRoller.RollChance(40)) {
+        switch (m_DiceRoller.Roll(0, 4)) {
+          case 0: return MakeItemRandomPistol();
+          case 1: return MakeItemShotgun();
+          case 2: return MakeItemHuntingRifle();
+#if DEBUG
+          case 3: return MakeItemHuntingCrossbow();
+          default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+          default: return MakeItemHuntingCrossbow();
+#endif
         }
       }
-      else
-      {
-        switch (m_DiceRoller.Roll(0, 4))
-        {
-          case 0:
-            return MakeItemLightPistolAmmo();
-          case 1:
-            return MakeItemShotgunAmmo();
-          case 2:
-            return MakeItemLightRifleAmmo();
-          case 3:
-            return MakeItemBoltsAmmo();
-          default:
-            return (Item) null;
-        }
+
+      switch (m_DiceRoller.Roll(0, 4)) {
+        case 0: return MakeItemLightPistolAmmo();
+        case 1: return MakeItemShotgunAmmo();
+        case 2: return MakeItemLightRifleAmmo();
+#if DEBUG
+        case 3: return MakeItemBoltsAmmo();
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return MakeItemBoltsAmmo();
+#endif
       }
     }
 
-    public Item MakeHuntingShopItem()
+    private Item MakeHuntingShopItem()
     {
       if (m_DiceRoller.RollChance(50)) {
         if (m_DiceRoller.RollChance(40)) return (0 == m_DiceRoller.Roll(0, 2) ? MakeItemHuntingRifle() : MakeItemHuntingCrossbow());
@@ -1813,24 +1775,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return (0 == m_DiceRoller.Roll(0, 2) ? (Item)MakeItemHunterVest() : (Item)MakeItemBearTrap());
     }
 
-    public Item MakeShopGeneralItem()
+    private Item MakeShopGeneralItem()
     {
-      switch (m_DiceRoller.Roll(0, 6))
-      {
-        case 0:
-          return MakeShopPharmacyItem();
-        case 1:
-          return MakeShopSportsWearItem();
-        case 2:
-          return MakeShopConstructionItem();
-        case 3:
-          return MakeShopGroceryItem();
-        case 4:
-          return MakeHuntingShopItem();
-        case 5:
-          return MakeRandomBedroomItem();   // non-null return
-        default:
-          throw new ArgumentOutOfRangeException("unhandled roll");
+      switch (m_DiceRoller.Roll(0, 6)) {
+        case 0: return MakeShopPharmacyItem();
+        case 1: return MakeShopSportsWearItem();
+        case 2: return MakeShopConstructionItem();
+        case 3: return MakeShopGroceryItem();
+        case 4: return MakeHuntingShopItem();
+#if DEBUG
+        case 5: return MakeRandomBedroomItem();
+        default: throw new ArgumentOutOfRangeException("unhandled roll");
+#else
+        default: return MakeRandomBedroomItem();
+#endif
       }
     }
 
@@ -2775,7 +2733,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
     }
 
-    public void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
+    private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
     {
       Item it;
       if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
@@ -2798,32 +2756,30 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           case 5:
             it = MakeItemPillsAntiviral();
             break;
-          default:
-            it = (Item) null;
-            break;
+          default: throw new ArgumentOutOfRangeException("unhandled roll");
         }
       } else {
         switch (roller.Roll(0, 10)) {
           case 0:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType.CONSTRUCTION);
+            it = MakeRandomShopItem(ShopType.CONSTRUCTION);
             break;
           case 1:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType._FIRST);
+            it = MakeRandomShopItem(ShopType._FIRST);
             break;
           case 2:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType.GROCERY);
+            it = MakeRandomShopItem(ShopType.GROCERY);
             break;
           case 3:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType.GUNSHOP);
+            it = MakeRandomShopItem(ShopType.GUNSHOP);
             break;
           case 4:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType.PHARMACY);
+            it = MakeRandomShopItem(ShopType.PHARMACY);
             break;
           case 5:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType.SPORTSWEAR);
+            it = MakeRandomShopItem(ShopType.SPORTSWEAR);
             break;
           case 6:
-            it = MakeRandomShopItem(BaseTownGenerator.ShopType.HUNTING);
+            it = MakeRandomShopItem(ShopType.HUNTING);
             break;
           case 7:
             it = MakeRandomParkItem();
@@ -2834,14 +2790,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           case 9:
             it = MakeRandomKitchenItem();
             break;
-          default:
-            it = (Item) null;
-            break;
+          default: throw new ArgumentOutOfRangeException("unhandled roll");
         }
       }
-      if (it == null)
-        return;
-      actor.Inventory.AddAll(it);
+      if (null != it) actor.Inventory.AddAll(it);
     }
 
     public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
