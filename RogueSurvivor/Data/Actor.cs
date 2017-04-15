@@ -1893,6 +1893,15 @@ namespace djack.RogueSurvivor.Data
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
+    public bool HasAtLeastFullStackOfItemTypeOrModel(Gameplay.GameItems.IDs it, int n)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      ItemModel model = Models.Items[(int)it];
+      if (model.IsStackable)
+        return CountItemsQuantityOfModel(model) >= n * model.StackingLimit;
+      return CountItemsQuantityOfModel(model) >= n; // XXX assumes each model goes with a specific item type
+    }
+
     public ItemMeleeWeapon GetWorstMeleeWeapon()
     {
       if (null == Inventory) return null;
@@ -1914,13 +1923,24 @@ namespace djack.RogueSurvivor.Data
     }
 
     // we prefer to return weapons that need reloading.
-    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
+    private ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmoModel am)
     {
-      if (null == Inventory) return null;
+      Contract.Requires(null != am);
+      Contract.Requires(null != Inventory);
       IEnumerable<ItemRangedWeapon> tmp = Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(rw=> null!=rw && rw.AmmoType == am.AmmoType);
       if (!tmp.Any()) return null;
       IEnumerable<ItemRangedWeapon> tmp2 = tmp.Where(rw=> rw.Ammo<(rw.Model as ItemRangedWeaponModel).MaxAmmo);
       return tmp2.FirstOrDefault() ?? tmp.FirstOrDefault();
+    }
+
+    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
+    {
+      return GetCompatibleRangedWeapon(am.Model as ItemAmmoModel);
+    }
+
+    public ItemRangedWeapon GetCompatibleRangedWeapon(Gameplay.GameItems.IDs am)
+    {
+      return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
     }
 
     public ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)

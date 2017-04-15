@@ -299,10 +299,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
 
-      if (m_Actor.IsHungry && m_Actor.Model.Abilities.HasToEat) {
-        ret.Add(GameItems.IDs.FOOD_ARMY_RATION);
-        ret.Add(GameItems.IDs.FOOD_GROCERIES);
-        ret.Add(GameItems.IDs.FOOD_CANNED_FOOD);
+      if (/* m_Actor.Model.Abilities.HasToEat && */ m_Actor.IsHungry) {
+        ret.UnionWith(GameItems.food);
       }
 
       if (!m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {
@@ -343,17 +341,79 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-#if FAIL
-    // If an item would be IsInterestingItem(it), its ID should be in this set
+    // If an item would be IsInterestingItem(it), its ID should be in this set if not handled by WhatDoINeedNow().
+    // items flagged here should "be more interesting" than what we have
     public HashSet<GameItems.IDs> WhatDoIWantNow()
     {
       HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
 
-      return ret;
+      if (/* m_Actor.Model.Abilities.HasToEat && */ !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) {
+        ret.UnionWith(GameItems.food);
+      }
+#if FAIL
+      // needs substantial work...in particular, weapons w/o ammo need to have their own id values to be ignored here
+      if (   !m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons
+          && 0 >= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) // XXX rules out AI gun bunnies
+        {
+        ret.UnionWith(GameItems.ranged);
+        }
+#endif
+
+      foreach (GameItems.IDs am in GameItems.ammo) {
+        if (m_Actor.GetCompatibleRangedWeapon(am) == null) continue;
+        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) continue;
+        ret.Add(am);
+      }
+
+      { // scoping brace
+      Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+      foreach(GameItems.IDs melee in GameItems.melee) {
+        ItemMeleeWeaponModel model = Models.Items[(int)melee] as ItemMeleeWeaponModel;
+        if (m_Actor.MeleeWeaponAttack(model).Rating <= martial_arts.Rating) continue;
+        if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
+          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
+          if ((weapon.Model as ItemMeleeWeaponModel).Attack.Rating < model.Attack.Rating) ret.Add(melee);
+          continue;
+        }
+        if (1<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
+          ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
+          if (null == weapon) {  // martial arts invalidates starting baton for police
+            ret.Add(melee);
+            continue;
+          };
+          if ((weapon.Model as ItemMeleeWeaponModel).Attack.Rating < model.Attack.Rating) ret.Add(melee);
+          continue;
+        }
+        ret.Add(melee);
+      }
+      } // end scoping brace
+
+#if FAIL
+      if (it is ItemMedicine)
+        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+      if (it is ItemBodyArmor) { 
+        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
+        if (null == armor) return true;
+        return armor.Rating < (it as ItemBodyArmor).Rating;
+      }
+#endif
+#if FAIL
+      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))
+        return false;
+      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
+#endif
+#if FAIL
+	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
+
+      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
+      if (Gameplay.GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI) && !(m_Actor.Controller is Gameplay.AI.SoldierAI)) return false;
+
+      // only civilians use stench killer
+      if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
+#endif
+            return ret;
     }
 
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
-#endif
-
   }
 }

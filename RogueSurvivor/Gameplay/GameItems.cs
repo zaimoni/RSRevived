@@ -19,6 +19,8 @@ namespace djack.RogueSurvivor.Gameplay
   {
     private static readonly ItemModel[] m_Models = new ItemModel[(int) IDs._COUNT];
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> ammo;
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> food;
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> melee;
             
     private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
     private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
@@ -528,6 +530,22 @@ namespace djack.RogueSurvivor.Gameplay
             IDs.AMMO_LIGHT_RIFLE,
             IDs.AMMO_HEAVY_RIFLE,
             IDs.AMMO_BOLTS});
+      food = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs>() { IDs.FOOD_ARMY_RATION,
+            IDs.FOOD_GROCERIES,
+            IDs.FOOD_CANNED_FOOD});
+      melee= new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs>() { IDs.MELEE_BASEBALLBAT,
+            IDs.MELEE_COMBAT_KNIFE,
+            IDs.MELEE_CROWBAR,
+            IDs.UNIQUE_JASON_MYERS_AXE,
+            IDs.MELEE_HUGE_HAMMER,
+            IDs.MELEE_SMALL_HAMMER,
+            IDs.MELEE_GOLFCLUB,
+            IDs.MELEE_IRON_GOLFCLUB,
+            IDs.MELEE_SHOVEL,
+            IDs.MELEE_SHORT_SHOVEL,
+            IDs.MELEE_TRUNCHEON,
+            IDs.MELEE_IMPROVISED_CLUB,
+            IDs.MELEE_IMPROVISED_SPEAR});
     }
 
     public GameItems()
