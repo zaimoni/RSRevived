@@ -7,54 +7,43 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemBodyArmor : Item
   {
-    public int Protection_Hit { get; private set; }
+    public int Protection_Hit { get { return (Model as ItemBodyArmorModel).Protection_Hit; } }
+    public int Protection_Shot { get { return (Model as ItemBodyArmorModel).Protection_Shot; } }
+    public int Encumbrance { get { return (Model as ItemBodyArmorModel).Encumbrance; } }
+    public int Weight { get { return (Model as ItemBodyArmorModel).Weight; } }
+    public int Rating { get { return (Model as ItemBodyArmorModel).Rating; } }
 
-    public int Protection_Shot { get; private set; }
-
-    public int Encumbrance { get; private set; }
-
-    public int Weight { get; private set; }
-
-    public ItemBodyArmor(ItemModel model)
+    public ItemBodyArmor(ItemBodyArmorModel model)
       : base(model)
     {
-      if (!(model is ItemBodyArmorModel))
-        throw new ArgumentException("model is not a BodyArmorModel");
-      ItemBodyArmorModel itemBodyArmorModel = model as ItemBodyArmorModel;
-            Protection_Hit = itemBodyArmorModel.Protection_Hit;
-            Protection_Shot = itemBodyArmorModel.Protection_Shot;
-            Encumbrance = itemBodyArmorModel.Encumbrance;
-            Weight = itemBodyArmorModel.Weight;
+      Contract.Requires(null != model);
     }
 
     public bool IsHostileForCops()
     {
-      return Array.IndexOf<GameItems.IDs>(GameFactions.BAD_POLICE_OUTFITS, (GameItems.IDs)Model.ID) >= 0;
+      return Array.IndexOf(GameFactions.BAD_POLICE_OUTFITS, Model.ID) >= 0;
     }
 
     public bool IsFriendlyForCops()
     {
-      return Array.IndexOf<GameItems.IDs>(GameFactions.GOOD_POLICE_OUTFITS, (GameItems.IDs)Model.ID) >= 0;
+      return Array.IndexOf(GameFactions.GOOD_POLICE_OUTFITS, Model.ID) >= 0;
     }
 
     public bool IsHostileForBiker(GameGangs.IDs gangID)
     {
-      return Array.IndexOf<GameItems.IDs>(GameGangs.BAD_GANG_OUTFITS[(int) gangID], (GameItems.IDs)Model.ID) >= 0;
+      return Array.IndexOf(GameGangs.BAD_GANG_OUTFITS[(int) gangID], Model.ID) >= 0;
     }
 
     public bool IsFriendlyForBiker(GameGangs.IDs gangID)
     {
-      return Array.IndexOf<GameItems.IDs>(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], (GameItems.IDs)Model.ID) >= 0;
-    }
-
-    public int Rating { 
-      get { return Protection_Hit + Protection_Shot; }
+      return Array.IndexOf(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], Model.ID) >= 0;
     }
   }
 }

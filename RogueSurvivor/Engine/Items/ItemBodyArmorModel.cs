@@ -54,5 +54,9 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       return new Defence(-m_Encumbrance, m_Protection_Hit, m_Protection_Shot);
     }
+
+    public int Rating { 
+      get { return m_Protection_Hit + m_Protection_Shot; }
+    }
   }
 }
