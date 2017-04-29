@@ -388,14 +388,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       } // end scoping brace
 
+      ItemBodyArmor curr_armor = m_Actor.GetBestBodyArmor();
+      if (null == curr_armor) {
+        ret.UnionWith(GameItems.armor);
+      } else {
+        int curr_rating = curr_armor.Rating;
+        foreach (GameItems.IDs armor in GameItems.armor) {
+          if (curr_rating >= (Models.Items[(int)armor] as ItemBodyArmorModel).Rating) continue;
+          ret.Add(armor);
+        }
+      }
 #if FAIL
       if (it is ItemMedicine)
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-      if (it is ItemBodyArmor) { 
-        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
-        if (null == armor) return true;
-        return armor.Rating < (it as ItemBodyArmor).Rating;
-      }
 #endif
 #if FAIL
       if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))

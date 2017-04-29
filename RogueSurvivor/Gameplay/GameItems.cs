@@ -19,6 +19,7 @@ namespace djack.RogueSurvivor.Gameplay
   {
     private static readonly ItemModel[] m_Models = new ItemModel[(int) IDs._COUNT];
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> ammo;
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> armor;
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> food;
     public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> melee;
             
@@ -530,6 +531,13 @@ namespace djack.RogueSurvivor.Gameplay
             IDs.AMMO_LIGHT_RIFLE,
             IDs.AMMO_HEAVY_RIFLE,
             IDs.AMMO_BOLTS});
+      armor = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs>() { IDs.ARMOR_ARMY_BODYARMOR,
+            IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
+            IDs.ARMOR_HELLS_SOULS_JACKET,
+            IDs.ARMOR_FREE_ANGELS_JACKET,
+            IDs.ARMOR_POLICE_JACKET,
+            IDs.ARMOR_POLICE_RIOT,
+            IDs.ARMOR_HUNTER_VEST});
       food = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs>() { IDs.FOOD_ARMY_RATION,
             IDs.FOOD_GROCERIES,
             IDs.FOOD_CANNED_FOOD});
