@@ -12,8 +12,10 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemRangedWeapon : ItemWeapon
   {
+    new public ItemRangedWeaponModel Model { get {return base.Model as ItemRangedWeaponModel; } }
+    public AmmoType AmmoType { get { return Model.AmmoType; } }
+
     private int m_Ammo;
-    private readonly AmmoType m_AmmoType;   // assuming this is a trade memory for speed issue
 
     public int Ammo {
       get {
@@ -24,17 +26,10 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public AmmoType AmmoType {
-      get {
-        return m_AmmoType;
-      }
-    }
-
     public ItemRangedWeapon(ItemRangedWeaponModel model)
       : base(model)
     {
       m_Ammo = model.MaxAmmo;
-      m_AmmoType = model.AmmoType;
     }
 
     public override string ToString()

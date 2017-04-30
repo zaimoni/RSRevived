@@ -14,11 +14,12 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemBodyArmor : Item
   {
-    public int Protection_Hit { get { return (Model as ItemBodyArmorModel).Protection_Hit; } }
-    public int Protection_Shot { get { return (Model as ItemBodyArmorModel).Protection_Shot; } }
-    public int Encumbrance { get { return (Model as ItemBodyArmorModel).Encumbrance; } }
-    public int Weight { get { return (Model as ItemBodyArmorModel).Weight; } }
-    public int Rating { get { return (Model as ItemBodyArmorModel).Rating; } }
+    new public ItemBodyArmorModel Model { get {return base.Model as ItemBodyArmorModel; } }
+    public int Protection_Hit { get { return Model.Protection_Hit; } }
+    public int Protection_Shot { get { return Model.Protection_Shot; } }
+    public int Encumbrance { get { return Model.Encumbrance; } }
+    public int Weight { get { return Model.Weight; } }
+    public int Rating { get { return Model.Rating; } }
 
     public ItemBodyArmor(ItemBodyArmorModel model)
       : base(model)

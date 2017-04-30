@@ -12,24 +12,16 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemMedicine : Item
   {
-    public int Healing { get; private set; }
-
-    public int StaminaBoost { get; private set; }
-
-    public int SleepBoost { get; private set; }
-
-    public int InfectionCure { get; private set; }
-
-    public int SanityCure { get; private set; }
+    new public ItemMedicineModel Model { get {return base.Model as ItemMedicineModel; } }    
+    public int Healing { get { return Model.Healing; } }
+    public int StaminaBoost { get { return Model.StaminaBoost; } }
+    public int SleepBoost { get { return Model.SleepBoost; } }
+    public int InfectionCure { get { return Model.InfectionCure; } }
+    public int SanityCure { get { return Model.SanityCure; } }
 
     public ItemMedicine(ItemMedicineModel model)
       : base(model)
     {
-      Healing = model.Healing;
-      StaminaBoost = model.StaminaBoost;
-      SleepBoost = model.SleepBoost;
-      InfectionCure = model.InfectionCure;
-      SanityCure = model.SanityCure;
     }
   }
 }

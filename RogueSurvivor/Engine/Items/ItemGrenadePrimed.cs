@@ -11,6 +11,7 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemGrenadePrimed : ItemPrimedExplosive
   {
+    new public ItemGrenadePrimedModel Model { get {return base.Model as ItemGrenadePrimedModel; } }  
     public ItemGrenadePrimed(ItemGrenadePrimedModel model)
       : base(model)
     {

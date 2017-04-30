@@ -557,7 +557,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "no grenade equiped";
         return false;
       }
-      ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? (itemGrenadePrimed.Model as ItemGrenadePrimedModel).GrenadeModel : itemGrenade.Model as ItemGrenadeModel;
+      ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
       int maxRange = ActorMaxThrowRange(actor, itemGrenadeModel.MaxThrowDistance);
       if (Rules.GridDistance(actor.Location.Position, pos) > maxRange)
       {
@@ -1044,17 +1044,17 @@ namespace djack.RogueSurvivor.Engine
     {
       if (a.Model.Abilities.IsSmall && RollChance(90)) return false;
       int num = 0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS);
-      return RollChance(trap.TrapModel.TriggerChance * trap.Quantity - num);
+      return RollChance(trap.Model.TriggerChance * trap.Quantity - num);
     }
 
     public bool CheckTrapTriggers(ItemTrap trap, MapObject mobj)
     {
-      return RollChance(trap.TrapModel.TriggerChance * mobj.Weight);
+      return RollChance(trap.Model.TriggerChance * mobj.Weight);
     }
 
     public bool CheckTrapStepOnBreaks(ItemTrap trap, MapObject mobj = null)
     {
-      int breakChance = trap.TrapModel.BreakChance;
+      int breakChance = trap.Model.BreakChance;
       if (mobj != null)
         breakChance *= mobj.Weight;
       return RollChance(breakChance);
@@ -1062,12 +1062,12 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckTrapEscapeBreaks(ItemTrap trap, Actor a)
     {
-      return RollChance(trap.TrapModel.BreakChanceWhenEscape);
+      return RollChance(trap.Model.BreakChanceWhenEscape);
     }
 
     public bool CheckTrapEscape(ItemTrap trap, Actor a)
     {
-      return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.TrapModel.BlockChance * trap.Quantity));
+      return RollChance(0 + (a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_FEET) * Rules.SKILL_LIGHT_FEET_TRAP_BONUS + a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_LIGHT_FEET) * Rules.SKILL_ZLIGHT_FEET_TRAP_BONUS) + (100 - trap.Model.BlockChance * trap.Quantity));
     }
 
     public static int ZGrabChance(Actor grabber, Actor victim)

@@ -745,7 +745,7 @@ namespace djack.RogueSurvivor.Data
       ItemMeleeWeapon itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
         if (fn == null || fn(obj)) {
-          int num2 = MeleeWeaponAttack(obj.Model as ItemMeleeWeaponModel).Rating;    // XXX should disallow martial arts bonus
+          int num2 = MeleeWeaponAttack(obj.Model).Rating;    // XXX should disallow martial arts bonus
           if (num2 <= martial_arts_rating || num2 <= num1) continue;
           num1 = num2;
           itemMeleeWeapon1 = obj;
@@ -761,7 +761,7 @@ namespace djack.RogueSurvivor.Data
     public Attack BestMeleeAttack(Actor target = null)
     {
       ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon();
-      Attack base_melee_attack = (null!=tmp_melee ? (tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(Sheet) : CurrentMeleeAttack);
+      Attack base_melee_attack = (null!=tmp_melee ? tmp_melee.Model.BaseMeleeAttack(Sheet) : CurrentMeleeAttack);
       return HypotheticalMeleeAttack(base_melee_attack, target);
     }
 
@@ -1905,7 +1905,7 @@ namespace djack.RogueSurvivor.Data
     public ItemMeleeWeapon GetWorstMeleeWeapon()
     {
       if (null == Inventory) return null;
-      return Inventory.Items.Select(it=>it as ItemMeleeWeapon).Where(w=>null!=w).Minimize(w=>(w.Model as ItemMeleeWeaponModel).Attack.Rating);
+      return Inventory.Items.Select(it=>it as ItemMeleeWeapon).Where(w=>null!=w).Minimize(w=>w.Model.Attack.Rating);
     }
 
     public ItemBodyArmor GetBestBodyArmor(Predicate<ItemBodyArmor> fn=null)
@@ -1929,13 +1929,13 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null != Inventory);
       IEnumerable<ItemRangedWeapon> tmp = Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(rw=> null!=rw && rw.AmmoType == am.AmmoType);
       if (!tmp.Any()) return null;
-      IEnumerable<ItemRangedWeapon> tmp2 = tmp.Where(rw=> rw.Ammo<(rw.Model as ItemRangedWeaponModel).MaxAmmo);
+      IEnumerable<ItemRangedWeapon> tmp2 = tmp.Where(rw=> rw.Ammo<rw.Model.MaxAmmo);
       return tmp2.FirstOrDefault() ?? tmp.FirstOrDefault();
     }
 
     public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
     {
-      return GetCompatibleRangedWeapon(am.Model as ItemAmmoModel);
+      return GetCompatibleRangedWeapon(am.Model);
     }
 
     public ItemRangedWeapon GetCompatibleRangedWeapon(Gameplay.GameItems.IDs am)
@@ -2072,7 +2072,7 @@ namespace djack.RogueSurvivor.Data
         ItemAmmo itemAmmo = it as ItemAmmo;
         ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
-        if (itemRangedWeapon.Ammo >= (itemRangedWeapon.Model as ItemRangedWeaponModel).MaxAmmo) return "weapon already fully loaded";
+        if (itemRangedWeapon.Ammo >= itemRangedWeapon.Model.MaxAmmo) return "weapon already fully loaded";
       }
       else if (it is ItemSprayScent)
       {
@@ -2080,7 +2080,7 @@ namespace djack.RogueSurvivor.Data
       }
       else if (it is ItemTrap)
       {
-        if (!(it as ItemTrap).TrapModel.UseToActivate) return "does not activate manually";
+        if (!(it as ItemTrap).Model.UseToActivate) return "does not activate manually";
       }
       else if (it is ItemEntertainment)
       {

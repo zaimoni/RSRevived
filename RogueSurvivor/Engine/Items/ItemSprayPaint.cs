@@ -12,6 +12,7 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemSprayPaint : Item
   {
+    new public ItemSprayPaintModel Model { get {return base.Model as ItemSprayPaintModel; } }
     public int PaintQuantity { get; set; }
 
     public override bool IsUseless {

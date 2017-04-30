@@ -13,6 +13,8 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemTrap : Item
   {
+    new public ItemTrapModel Model { get { return base.Model as ItemTrapModel; } }
+
     private bool m_IsActivated;
     private bool m_IsTriggered;
 
@@ -34,21 +36,14 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemTrapModel TrapModel {
-      get {
-        return Model as ItemTrapModel;
-      }
-    }
-
-    public ItemTrap(ItemModel model)
+    public ItemTrap(ItemTrapModel model)
       : base(model)
     {
-      Contract.Requires(model is ItemTrapModel);
     }
 
     public ItemTrap Clone()
     {
-      return new ItemTrap(TrapModel);
+      return new ItemTrap(Model);
     }
   }
 }

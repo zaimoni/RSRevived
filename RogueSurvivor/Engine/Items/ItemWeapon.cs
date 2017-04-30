@@ -12,11 +12,10 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemWeapon : Item
   {
-    public ItemWeapon(ItemModel model)
+    new public ItemWeaponModel Model { get {return base.Model as ItemWeaponModel; } }    
+    public ItemWeapon(ItemWeaponModel model)
       : base(model)
     {
-      if (!(model is ItemWeaponModel))
-        throw new ArgumentException("model is not a WeaponModel");
     }
   }
 }

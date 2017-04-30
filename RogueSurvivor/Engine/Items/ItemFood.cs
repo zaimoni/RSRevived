@@ -13,6 +13,7 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemFood : Item
   {
+    new public ItemFoodModel Model { get {return base.Model as ItemFoodModel; } }
     public int Nutrition { get; private set; }
     public bool IsPerishable { get; private set; }
     public WorldTime BestBefore { get; private set; }

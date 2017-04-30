@@ -12,6 +12,8 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemBarricadeMaterial : Item
   {
+    new public ItemBarricadeMaterialModel Model { get {return base.Model as ItemBarricadeMaterialModel; } }
+
     public ItemBarricadeMaterial(ItemBarricadeMaterialModel model)
       : base(model)
     {

@@ -12,12 +12,12 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemAmmo : Item
   {
-    public readonly AmmoType AmmoType;
+    new public ItemAmmoModel Model { get {return base.Model as ItemAmmoModel; } }
+    public AmmoType AmmoType { get { return Model.AmmoType; } }
 
     public ItemAmmo(ItemAmmoModel model)
       : base(model)
     {
-      AmmoType = model.AmmoType;
       Quantity = model.MaxQuantity;
     }
   }

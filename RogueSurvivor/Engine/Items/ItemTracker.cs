@@ -12,9 +12,10 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemTracker : Item, BatteryPowered
     {
+    new public ItemTrackerModel Model { get {return base.Model as ItemTrackerModel; } }
     private int m_Batteries;
 
-    public ItemTrackerModel.TrackingFlags Tracking { get; private set; }
+    public ItemTrackerModel.TrackingFlags Tracking { get { return Model.Tracking; } }
 
     public bool CanTrackFollowersOrLeader {
       get {
@@ -46,15 +47,11 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       set {
         if (value < 0) value = 0;
-        m_Batteries = Math.Min(value, (Model as ItemTrackerModel).MaxBatteries);
+        m_Batteries = Math.Min(value, Model.MaxBatteries);
       }
     }
 
-    public int MaxBatteries {
-       get {
-         return (Model as ItemTrackerModel).MaxBatteries;
-       }
-    }
+    public int MaxBatteries { get { return Model.MaxBatteries; } }
 
     public override bool IsUseless { 
       get { return 0 >= m_Batteries; }
@@ -63,13 +60,12 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemTracker(ItemTrackerModel model)
       : base(model)
     {
-      Tracking = model.Tracking;
       Batteries = model.MaxBatteries;
     }
 
     public void Recharge()
     {
-      Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, (Model as ItemTrackerModel).MaxBatteries/8);
+      Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, Model.MaxBatteries/8);
     }
   }
 }

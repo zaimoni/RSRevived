@@ -845,7 +845,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private void ETAToKill(Actor en, int dist, ItemRangedWeapon rw, Dictionary<Actor, int> best_weapon_ETAs, Dictionary<Actor, ItemRangedWeapon> best_weapons=null)
     {
-      Attack tmp = m_Actor.HypotheticalRangedAttack((rw.Model as ItemRangedWeaponModel).Attack, dist, en);
+      Attack tmp = m_Actor.HypotheticalRangedAttack(rw.Model.Attack, dist, en);
 	  int a_dam = tmp.DamageValue - en.CurrentDefence.Protection_Shot;
       if (0 >= a_dam) return;   // do not update ineffective weapons
       int a_kill_b_in = ((8*en.HitPoints)/(5*a_dam))+2;	// assume bad luck when attacking.
@@ -853,7 +853,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a_kill_b_in > rw.Ammo) {  // account for reloading weapon
         int turns = a_kill_b_in-rw.Ammo;
         a_kill_b_in++;
-        a_kill_b_in += turns/(rw.Model as ItemRangedWeaponModel).MaxAmmo;        
+        a_kill_b_in += turns/rw.Model.MaxAmmo;        
       }
       if (null == best_weapons) {
         best_weapon_ETAs[en] = a_kill_b_in;
@@ -867,7 +867,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         best_weapon_ETAs[en] = a_kill_b_in;
         return;
       } else if (2 == best_weapon_ETAs[en]) {
-        Attack tmp2 = m_Actor.HypotheticalRangedAttack((best_weapons[en].Model as ItemRangedWeaponModel).Attack, dist, en);
+        Attack tmp2 = m_Actor.HypotheticalRangedAttack(best_weapons[en].Model.Attack, dist, en);
         if (tmp.DamageValue < tmp2.DamageValue) {   // lower damage for overkill is usually better
           best_weapons[en] = rw;
           best_weapon_ETAs[en] = a_kill_b_in;
@@ -887,8 +887,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected static int ScoreRangedWeapon(ItemRangedWeapon w)
     {
-      ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
-      return 1000 * rangedWeaponModel.Attack.Range + rangedWeaponModel.Attack.DamageValue;
+      Attack rw_attack = w.Model.Attack;
+      return 1000 * rw_attack.Range + rw_attack.DamageValue;
     }
 
     protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn=null)
@@ -952,7 +952,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.HypotheticalMeleeAttack((tmp_melee.Model as ItemMeleeWeaponModel).BaseMeleeAttack(m_Actor.Sheet), en),null==immediate_threat || (1==immediate_threat.Count && immediate_threat.Contains(en)));
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.HypotheticalMeleeAttack(tmp_melee.Model.BaseMeleeAttack(m_Actor.Sheet), en),null==immediate_threat || (1==immediate_threat.Count && immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
                 return tmpAction;
@@ -995,7 +995,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // at this point, null != enemies, we have a ranged weapon available, and melee one-shot is not feasible
       // also, damage field should be non-null because enemies is non-null
 
-      int best_range = available_ranged_weapons.Select(rw => (rw.Model as ItemRangedWeaponModel).Attack.Range).Max();
+      int best_range = available_ranged_weapons.Select(rw => rw.Model.Attack.Range).Max();
       List<Percept> en_in_range = FilterFireTargets(enemies,best_range);
       
       // if no enemies in range, or just one available ranged weapon, use the best one
@@ -1255,7 +1255,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (enemies.Count < 3) return null;
       ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>((Predicate<ItemGrenade>) (it => !IsItemTaboo(it)));
       if (firstGrenade == null) return null;
-      ItemGrenadeModel itemGrenadeModel = firstGrenade.Model as ItemGrenadeModel;
+      ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
       int maxRange = Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
       Point? nullable = null;
       int num1 = 0;
@@ -1972,7 +1972,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
       if (null != weapon) {
         int martial_arts_rating = m_Actor.UnarmedMeleeAttack().Rating;
-        int weapon_rating = m_Actor.MeleeWeaponAttack(weapon.Model as ItemMeleeWeaponModel).Rating;
+        int weapon_rating = m_Actor.MeleeWeaponAttack(weapon.Model).Rating;
         if (weapon_rating <= martial_arts_rating) return BehaviorDropItem(weapon);
       }
       return null;
@@ -2013,7 +2013,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemSprayScent && ((obj as ItemSprayScent).Model as ItemSprayScentModel).Odor == Odor.PERFUME_LIVING_SUPRESSOR)
+        if (obj.IsEquipped && obj is ItemSprayScent && (obj as ItemSprayScent).Model.Odor == Odor.PERFUME_LIVING_SUPRESSOR)
           return obj as ItemSprayScent;
       }
       return null;
@@ -2030,7 +2030,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemSprayScent itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
       if (itemSprayScent == null) return null;
       if (itemSprayScent.IsUseless) return null;
-      if ((itemSprayScent.Model as ItemSprayScentModel).Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
+      if (itemSprayScent.Model.Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
       if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return null;
       return (m_Actor.CanUse(itemSprayScent) ? new ActionUseItem(m_Actor, itemSprayScent) : null);
     }
@@ -2091,7 +2091,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != melee) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           if (2<=melee.Count) return BehaviorDropItem(weapon);
-          if (it is ItemMeleeWeapon && (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating) return BehaviorDropItem(weapon);
+          if (it is ItemMeleeWeapon && weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating) return BehaviorDropItem(weapon);
         }
       }
 
@@ -2163,7 +2163,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tracker_ok) return null;   // tracker normally not worth clearing a slot for
       }
       // ditch an unwanted tracker if possible
-      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>((Predicate<ItemTracker>) (it2 => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it2.Model.ID));
+      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it2.Model.ID);
       if (null != tmpTracker) return BehaviorDropItem(tmpTracker);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.

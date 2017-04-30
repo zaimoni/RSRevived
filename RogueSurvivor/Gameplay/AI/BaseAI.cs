@@ -318,7 +318,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> leaderLoF = null;
       if (checkLeaderLoF) {
         leaderLoF = new List<Point>(1);
-        LOS.CanTraceFireLine(leader.Location, actor.Location.Position, (leader_rw.Model as ItemRangedWeaponModel).Attack.Range, leaderLoF);
+        LOS.CanTraceFireLine(leader.Location, actor.Location.Position, leader_rw.Model.Attack.Range, leaderLoF);
       }
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
       {
@@ -376,7 +376,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int num = 0;
       foreach (Item obj in itemsAt.Items) {
         ItemTrap itemTrap = obj as ItemTrap;
-        if (itemTrap != null) num += itemTrap.TrapModel.Damage;
+        if (itemTrap != null) num += itemTrap.Model.Damage;
       }
       return num;
     }
@@ -387,7 +387,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (itemTrap == null) return null;
       string reason;
       if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out reason)) return null;
-      if (!itemTrap.IsActivated && !itemTrap.TrapModel.ActivatesWhenDropped)
+      if (!itemTrap.IsActivated && !itemTrap.Model.ActivatesWhenDropped)
         return new ActionUseItem(m_Actor, itemTrap);
       game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) reason, (object) itemTrap.AName));
       return new ActionDropItem(m_Actor, itemTrap);

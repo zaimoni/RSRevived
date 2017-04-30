@@ -475,45 +475,45 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    static public ItemModel STENCH_KILLER {
+    static public ItemSprayScentModel STENCH_KILLER {
       get {
-        return m_Models[(int)IDs.SCENT_SPRAY_STENCH_KILLER];
+        return m_Models[(int)IDs.SCENT_SPRAY_STENCH_KILLER] as ItemSprayScentModel;
       }
     }
 
-    static public ItemModel EMPTY_CAN {
+    static public ItemTrapModel EMPTY_CAN {
       get {
-        return m_Models[(int)IDs.TRAP_EMPTY_CAN];
+        return m_Models[(int)IDs.TRAP_EMPTY_CAN] as ItemTrapModel;
       }
     }
 
-    static public ItemModel BEAR_TRAP {
+    static public ItemTrapModel BEAR_TRAP {
       get {
-        return m_Models[(int)IDs.TRAP_BEAR_TRAP];
+        return m_Models[(int)IDs.TRAP_BEAR_TRAP] as ItemTrapModel;
       }
     }
 
-    static public ItemModel SPIKES {
+    static public ItemTrapModel SPIKES {
       get {
-        return m_Models[(int)IDs.TRAP_SPIKES];
+        return m_Models[(int)IDs.TRAP_SPIKES] as ItemTrapModel;
       }
     }
 
-    static public ItemModel BARBED_WIRE {
+    static public ItemTrapModel BARBED_WIRE {
       get {
-        return m_Models[(int)IDs.TRAP_BARBED_WIRE];
+        return m_Models[(int)IDs.TRAP_BARBED_WIRE] as ItemTrapModel;
       }
     }
 
-    static public ItemModel BOOK {
+    static public ItemEntertainmentModel BOOK {
       get {
-        return m_Models[(int)IDs.ENT_BOOK];
+        return m_Models[(int)IDs.ENT_BOOK] as ItemEntertainmentModel;
       }
     }
 
-    static public ItemModel MAGAZINE {
+    static public ItemEntertainmentModel MAGAZINE {
       get {
-        return m_Models[(int)IDs.ENT_MAGAZINE];
+        return m_Models[(int)IDs.ENT_MAGAZINE] as ItemEntertainmentModel;
       }
     }
 

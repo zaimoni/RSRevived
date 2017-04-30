@@ -12,19 +12,11 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemEntertainment : Item
   {
-    public ItemEntertainmentModel EntertainmentModel
-    {
-      get
-      {
-        return Model as ItemEntertainmentModel;
-      }
-    }
+    new public ItemEntertainmentModel Model { get {return base.Model as ItemEntertainmentModel; } }
 
-    public ItemEntertainment(ItemModel model)
+    public ItemEntertainment(ItemEntertainmentModel model)
       : base(model)
     {
-      if (!(model is ItemEntertainmentModel))
-        throw new ArgumentException("model is not a EntertainmentModel");
     }
   }
 }

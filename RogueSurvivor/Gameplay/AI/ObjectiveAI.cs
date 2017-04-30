@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool in_blast_field = false;
       IEnumerable<Percept_<ItemPrimedExplosive>> explosives = goals.Select(p => new Percept_<ItemPrimedExplosive>((p.Percepted as Inventory).GetFirst<ItemPrimedExplosive>(), p.Turn, p.Location));
       foreach (Percept_<ItemPrimedExplosive> exp in explosives) {
-        BlastAttack tmp_blast = (exp.Percepted.Model as ItemExplosiveModel).BlastAttack;
+        BlastAttack tmp_blast = exp.Percepted.Model.BlastAttack;
         Point pt = exp.Location.Position;
         if (damage_field.ContainsKey(pt)) damage_field[pt] += tmp_blast.Damage[0];
         else damage_field[pt] = tmp_blast.Damage[0];
@@ -204,7 +204,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Percept p in goals) {
         List<ItemTrap> tmp = (p.Percepted as Inventory).GetItemsByType<ItemTrap>();
         if (null == tmp) continue;
-        int damage = tmp.Sum(trap => (trap.IsActivated ? trap.TrapModel.Damage : 0));   // XXX wrong for barbed wire
+        int damage = tmp.Sum(trap => (trap.IsActivated ? trap.Model.Damage : 0));   // XXX wrong for barbed wire
         if (0 >= damage) continue;
         if (damage_field.ContainsKey(p.Location.Position)) damage_field[p.Location.Position] += damage;
         else damage_field[p.Location.Position] = damage;
@@ -259,12 +259,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-          return (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
+          return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
         if (1<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
           ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
           if (null == weapon) return true;  // martial arts invalidates starting baton for police
-          return (weapon.Model as ItemMeleeWeaponModel).Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
+          return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
         return true;
       }
@@ -372,7 +372,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.MeleeWeaponAttack(model).Rating <= martial_arts.Rating) continue;
         if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-          if ((weapon.Model as ItemMeleeWeaponModel).Attack.Rating < model.Attack.Rating) ret.Add(melee);
+          if (weapon.Model.Attack.Rating < model.Attack.Rating) ret.Add(melee);
           continue;
         }
         if (1<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
@@ -381,7 +381,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             ret.Add(melee);
             continue;
           };
-          if ((weapon.Model as ItemMeleeWeaponModel).Attack.Rating < model.Attack.Rating) ret.Add(melee);
+          if (weapon.Model.Attack.Rating < model.Attack.Rating) ret.Add(melee);
           continue;
         }
         ret.Add(melee);

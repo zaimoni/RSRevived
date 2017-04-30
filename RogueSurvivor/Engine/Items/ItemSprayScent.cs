@@ -12,18 +12,17 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemSprayScent : Item
   {
+    new public ItemSprayScentModel Model { get {return base.Model as ItemSprayScentModel; } }
     public int SprayQuantity { get; set; }
 
     public override bool IsUseless {
       get { return 0 >= SprayQuantity; }
     }
 
-    public ItemSprayScent(ItemModel model)
+    public ItemSprayScent(ItemSprayScentModel model)
       : base(model)
     {
-      if (!(model is ItemSprayScentModel))
-        throw new ArgumentException("model is not a ItemScentSprayModel");
-            SprayQuantity = (model as ItemSprayScentModel).MaxSprayQuantity;
+      SprayQuantity = model.MaxSprayQuantity;
     }
   }
 }

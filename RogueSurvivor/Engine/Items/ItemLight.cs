@@ -12,6 +12,7 @@ namespace djack.RogueSurvivor.Engine.Items
   [Serializable]
   internal class ItemLight : Item, BatteryPowered
     {
+    new public ItemLightModel Model { get {return base.Model as ItemLightModel; } }
     private int m_Batteries;
 
     public int Batteries {
@@ -20,26 +21,17 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       set {
         if (value < 0) value = 0;
-        m_Batteries = Math.Min(value, (Model as ItemLightModel).MaxBatteries);
+        m_Batteries = Math.Min(value, Model.MaxBatteries);
       }
     }
 
-     public int MaxBatteries {
-       get {
-         return (Model as ItemLightModel).MaxBatteries;
-       }
-    }
-
-    public int FovBonus {
-      get {
-        return (Model as ItemLightModel).FovBonus;
-      }
-    }
+    public int MaxBatteries { get { return Model.MaxBatteries; } }
+    public int FovBonus { get { return Model.FovBonus; } }
 
     public override string ImageID {
       get {
         if (IsEquipped && Batteries > 0) return base.ImageID;
-        return (Model as ItemLightModel).OutOfBatteriesImageID;
+        return Model.OutOfBatteriesImageID;
       }
     }
 
@@ -55,7 +47,7 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public void Recharge()
     {
-      Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, (Model as ItemLightModel).MaxBatteries/8);
+      Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, Model.MaxBatteries/8);
     }
   }
 }
