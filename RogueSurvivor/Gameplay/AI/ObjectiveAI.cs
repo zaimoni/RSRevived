@@ -65,6 +65,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public Dictionary<Point, int> MovePlanIf(Point pt)
     {
       if (!PlannedMoves.ContainsKey(pt)) return null;
+      if (null==PlannedMoves[pt]) return null;  // XXX probably being used incorrectly
       return new Dictionary<Point,int>(PlannedMoves[pt]);
     }
 
