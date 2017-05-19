@@ -4073,14 +4073,34 @@ namespace djack.RogueSurvivor.Engine
           }
           tmp.Add(msg);
         }
+        List<Gameplay.GameItems.IDs> items = (a.Controller as ObjectiveAI).WhatHaveISeen();
 
         HashSet<GameItems.IDs> critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
-        if (0<critical.Count) {
+        critical.IntersectWith(items);
+;       if (0<critical.Count) {
           string msg = "need now:";
           foreach(GameItems.IDs x in critical) {
+            if (60<msg.Length) {
+              tmp.Add(msg);
+              msg = "need now:";
+            }
             msg += " "+x.ToString();
           }
           tmp.Add(msg);
+        } else {
+          critical = (a.Controller as ObjectiveAI).WhatDoIWantNow();
+          critical.IntersectWith(items);
+          if (0<critical.Count) {
+            string msg = "want now:";
+            foreach(GameItems.IDs x in critical) {
+              if (60<msg.Length) {
+                tmp.Add(msg);
+                msg = "want now:";
+              }
+              msg += " "+x.ToString();
+            }
+            tmp.Add(msg);
+          }
         }
         
         ShowSpecialDialogue(m_Player,tmp.ToArray());
