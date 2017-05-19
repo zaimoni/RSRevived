@@ -439,7 +439,9 @@ namespace djack.RogueSurvivor.Data
 		  for (p.Y = 0; p.Y < Height; ++p.Y) {
             if (p == actor.Location.Position) continue;
             ActorAction tmp = Engine.Rules.IsPathableFor(actor, new Location(this, p));
+            // XXX if inventory is full, then a container would return null but should be pathable anyway
             if (null==tmp) {
+              if (actor.Location.Map.GetMapObjectAt(p)?.IsContainer ?? false) continue;
               ret.Blacklist(p);
               continue;
             }
