@@ -2628,10 +2628,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LocationSet sights_to_see = m_Actor.InterestingLocs;
       if (null == sights_to_see) return null;
 
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      // XXX probably should exclude secret maps
+      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
+
+      if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
+        return BehaviorHeadForExit(valid_exits);    // done
+
       HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
       allies.IntersectWith(allies.Where(a => !a.HasLeader));
       HashSet<Map> covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
-      return BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
+      ActorAction tmp = BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
+      if (null!=tmp) return tmp;
+
+      // done here
+      if (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap) return null;    // where we need to be
+      if (possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) {
+        valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
+        return BehaviorHeadForExit(valid_exits);
+      }
+      if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
+#if DEBUG
+      throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
+#else
+      return null;    // XXX should use Map::PathTo but it doesn't have the ordering knowledge required yet
+#endif
     }
 
     protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)
