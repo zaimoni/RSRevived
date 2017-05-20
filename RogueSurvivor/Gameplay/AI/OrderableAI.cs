@@ -2640,7 +2640,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       HashSet<Point> where_to_go = targets_at(m_Actor.Location.Map);
       if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, m_Actor.Location.Position);
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
-        if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+        if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
         return navigate;
       }
 
@@ -2660,7 +2660,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       hazards.OnlyIf(val=>0<val.Count);
       if (0 >= hazards.Count) {
-        if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+        if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
         return navigate;
       }
 //    veto_hazards(hazards);
@@ -2678,7 +2678,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           navigate.ReviseGoalDistance(tmp.Key, cost+1,m_Actor.Location.Position);
         }
       }
-      if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       return navigate;
     }
 
