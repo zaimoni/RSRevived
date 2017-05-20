@@ -653,34 +653,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
       }
-      if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
-        tmpAction = BehaviorBuildTrap(game);
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
-#endif
-        if (null != tmpAction) return tmpAction;
-      }
-
-      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
-        tmpAction = BehaviorBuildLargeFortification(game, 1);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
-#endif
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-      }
-      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
-        tmpAction = BehaviorBuildSmallFortification(game);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
-#endif
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-      }
 
       Percept percept1 = percepts1.FilterFirst(p =>
       {
@@ -691,46 +663,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (percept1 != null) m_LastSoldierSaw = percept1;
 
 	  if (null != friends) {
-        if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
-          if (null != tmpAction) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about raid");
-#endif
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        }
-        if (m_LastSoldierSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
-          if (null != tmpAction) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about soldier");
-#endif
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        }
-        if (m_LastEnemySaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
-          if (null != tmpAction) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about enemy");
-#endif
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        }
-        if (m_LastItemsSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE)) {
-          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
-          if (null != tmpAction) {
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about items");
-#endif
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-        }
         if (m_Actor.Model.Abilities.IsLawEnforcer) {
           tmpAction = BehaviorEnforceLaw(game, friends);
 #if TRACE_SELECTACTION
@@ -740,24 +672,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 	  }
 
-      if (m_Actor.CountFollowers > 0) {
-        Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
-        if (null != tmpAction) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "dont't leave followers");
-#endif
-          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
-            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-      }
-
       // XXX civilians that start in a boarded-up building (sewer maintenance, gun shop, hardware store
       // should stay there until they get the all-clear from the police
 
       // The newer movement behaviors using floodfill pathing, etc. depend on there being legal walking moves
+#region floodfill pathfinder
       if (null!=legal_steps) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
@@ -848,6 +767,93 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "advanced pathing failed");
 #endif
+      }
+#endregion
+
+      if (game.Rules.RollChance(BUILD_TRAP_CHANCE)) {
+        tmpAction = BehaviorBuildTrap(game);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build trap");
+#endif
+        if (null != tmpAction) return tmpAction;
+      }
+
+      if (game.Rules.RollChance(BUILD_LARGE_FORT_CHANCE)) { // difference in relative ordering with soldiers is ok
+        tmpAction = BehaviorBuildLargeFortification(game, 1);
+        if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build large fortification");
+#endif
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+      if (game.Rules.RollChance(BUILD_SMALL_FORT_CHANCE)) {
+        tmpAction = BehaviorBuildSmallFortification(game);
+        if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "build small fortification");
+#endif
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
+      }
+
+	  if (null != friends) {
+        if (m_LastRaidHeard != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_RAID_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastRaidHeard);
+          if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about raid");
+#endif
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+        }
+        if (m_LastSoldierSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_SOLDIER_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastSoldierSaw);
+          if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about soldier");
+#endif
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+        }
+        if (m_LastEnemySaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ENEMY_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastEnemySaw);
+          if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about enemy");
+#endif
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+        }
+        if (m_LastItemsSaw != null && game.Rules.RollChance(TELL_FRIEND_ABOUT_ITEMS_CHANCE)) {
+          tmpAction = BehaviorTellFriendAboutPercept(game, m_LastItemsSaw);
+          if (null != tmpAction) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "chat about items");
+#endif
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+        }
+	  }
+
+      if (m_Actor.CountFollowers > 0) {
+        Actor target;
+        tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
+        if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "dont't leave followers");
+#endif
+          if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
+            game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));
+          m_Actor.Activity = Activity.IDLE;
+          return tmpAction;
+        }
       }
 
       tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
