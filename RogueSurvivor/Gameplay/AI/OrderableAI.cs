@@ -2622,67 +2622,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorHeadForExit(valid_exits);
     }
 
+    // XXX sewers are not guaranteed to be fully connected, so we want reachable exits
     protected ActorAction BehaviorTourismOtherMaps()
     {
       LocationSet sights_to_see = m_Actor.InterestingLocs;
       if (null == sights_to_see) return null;
 
-      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
-      // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
-
-      if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
-        return BehaviorHeadForExit(valid_exits);    // done
-        
-      // try to pick something reasonable
-      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
-      foreach(Map m in possible_destinations) {
-        hazards[m] = sights_to_see.In(m);
-      }
-      hazards.OnlyIf(val=>0<val.Count);
-      if (hazards.ContainsKey(m_Actor.Location.Map.District.EntryMap)) {
-        // if the entry map has a problem, go for it
-        valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
-        return BehaviorHeadForExit(valid_exits);
-      }
-
-      if (0 >= hazards.Count) {
-        // done here
-        if (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap) return null;    // where we need to be
-        if (possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) {
-          valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
-          return BehaviorHeadForExit(valid_exits);
-        }
-        if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
-#if DEBUG
-        throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
-#else
-        return null;    // XXX should use Map::PathTo but it doesn't have the ordering knowledge required yet
-#endif
-      }
-
-      possible_destinations.IntersectWith(hazards.Keys);
-      valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
-
-      // Non-entry map destinations with non-follower allies are already handled
-      HashSet<Map> unhandled = IgnoreMapsCoveredByAllies(possible_destinations);
-      if (0 >= unhandled.Count) {
-        // done here
-        if (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap) return null;    // where we need to be
-        if (possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) {
-          valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
-          return BehaviorHeadForExit(valid_exits);
-        }
-        if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
-#if DEBUG
-        throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
-#else
-        return null;    // XXX should use Map::PathTo but it doesn't have the ordering knowledge required yet
-#endif
-      }
- 
-      valid_exits.OnlyIf(e=>unhandled.Contains(e.ToMap));
-      return BehaviorHeadForExit(valid_exits);
+      HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
+      allies.IntersectWith(allies.Where(a => !a.HasLeader));
+      HashSet<Map> covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
+      return BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
     }
 
     protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)
@@ -2722,17 +2671,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         FloodfillPathfinder<Point> remote_navigate = m_dests.Key.PathfindSteps(m_Actor);
         remote_navigate.GoalDistance(m_dests.Value, remote_dests);
 
-        Dictionary<Point,int> remote_costs = new Dictionary<Point,int>();
         foreach(KeyValuePair<Point, Exit> tmp in exits_for_m) {
+          if (!remote_navigate.Domain.Contains(tmp.Value.Location.Position)) return null;
           int cost = remote_navigate.Cost(tmp.Value.Location.Position);
-          if (int.MaxValue == cost) continue;   // not in domain
-          remote_costs[tmp.Key] = cost;
-        }
-        while(0 < remote_costs.Count) {
-          int r_cost = remote_costs.Values.Min();
-          List<KeyValuePair<Point,int>> pts = remote_costs.Where(tmp => tmp.Value==r_cost).ToList();
-          navigate.ReviseGoalDistance(pts[0].Key,r_cost+1,m_Actor.Location.Position);
-          remote_costs.OnlyIf(val => r_cost<val);
+          if (int.MaxValue == cost) continue;   // should be same as not in domain, but evidently not.
+          navigate.ReviseGoalDistance(tmp.Key, cost+1,m_Actor.Location.Position);
         }
       }
       if (int.MaxValue==navigate.Cost(m_Actor.Location.Position)) return null;
