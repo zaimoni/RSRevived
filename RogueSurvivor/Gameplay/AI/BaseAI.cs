@@ -601,6 +601,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return null;
 	}
 
+    // direct move cost adapter; note reference copy of parameter
+    protected ActorAction DecideMove(Dictionary<Point,int> dests)
+	{
+	  Contract.Requires(null != dests);
+      int min_cost = dests.Values.Min();
+      dests.OnlyIf(val => min_cost>=val);
+      return DecideMove(dests.Keys);
+	}
+
     // src_r2 is the desired destination list
     // src are legal steps
     protected ActorAction DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2, List<Percept> enemies, List<Percept> friends)

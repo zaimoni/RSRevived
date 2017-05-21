@@ -1639,9 +1639,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
-	  Dictionary<Point, int> tmp = PlanApproach(navigate);
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
-      ActorAction tmp3 = DecideMove(tmp.Keys);   // only called when no enemies in sight anyway
+      ActorAction tmp3 = DecideMove(PlanApproach(navigate));   // only called when no enemies in sight anyway
 #if DEBUG
       if (null == tmp3) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
@@ -2450,9 +2449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Point pt in exposed.Keys) {
         costs[pt] = navigate.Cost(pt);
       }
-      most_exposed = costs.Values.Min();
-      costs.OnlyIf(val => most_exposed >= val);
-      ActorAction ret = DecideMove(costs.Keys);
+      ActorAction ret = DecideMove(costs);
 #if DEBUG
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
@@ -2471,8 +2468,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-      Dictionary<Point, int> dest = PlanApproach(navigate);
-      ActorAction ret = DecideMove(dest.Keys);
+      ActorAction ret = DecideMove(PlanApproach(navigate));
 #if DEBUG
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
@@ -2732,8 +2728,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      Dictionary<Point, int> dest = PlanApproach(navigate);
-      ActorAction ret = DecideMove(dest.Keys);
+      ActorAction ret = DecideMove(PlanApproach(navigate));
 #if DEBUG
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
