@@ -735,7 +735,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
             tmpAction = BehaviorHuntDownThreatOtherMaps();
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- on surface");
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface");
 #endif
             if (null != tmpAction) return tmpAction;
           }
@@ -767,6 +767,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "advanced pathing failed");
 #endif
+
+        // if we cannot do anyting constructive, hunt down threat even if critical shortage
+        if (0 < critical.Count) {
+          // hunt down threats -- works for police
+          tmpAction = BehaviorHuntDownThreatCurrentMap();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map");
+#endif
+          if (null != tmpAction) return tmpAction;
+
+          // hunt down threats -- works for police
+          tmpAction = BehaviorHuntDownThreatOtherMaps();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- cannot prepare");
+#endif
+          if (null != tmpAction) return tmpAction;
+        }
       }
 #endregion
 
