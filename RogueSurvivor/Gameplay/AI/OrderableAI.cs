@@ -2405,7 +2405,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(string x in msg) {
           Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
         }
-
       }
 #endif
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
@@ -2429,12 +2428,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget && 0 >= dest.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no possible moves for navigation");
       if (m_Actor.IsDebuggingTarget && 0 >= exposed.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no acceptable moves for navigation");
+      if (m_Actor.IsDebuggingTarget && 0 < exposed.Count) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": consdiring navigation from ("+m_Actor.Location.Position.X.ToString()+","+ m_Actor.Location.Position.Y.ToString() + ")");
+        List<string> msg = new List<string>();
+        msg.Add("src:(" + m_Actor.Location.Position.X.ToString() + "," + m_Actor.Location.Position.Y.ToString() + "): " + navigate.Cost(m_Actor.Location.Position).ToString());
+        foreach(Point pt in exposed.Keys) {
+          msg.Add("(" + pt.X.ToString() + "," + pt.Y.ToString() + "): " + navigate.Cost(pt).ToString() + "," + exposed[pt].ToString());
+        }
+        msg.Sort();
+        foreach(string x in msg) {
+          Logger.WriteLine(Logger.Stage.RUN_MAIN, x);
+        }
+        msg.Clear();
+      }
 #endif
       if (0 >= exposed.Count) return null;
 
       int most_exposed = exposed.Values.Max();
       if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
-      ActorAction ret = DecideMove(exposed.Keys);
+      Dictionary<Point, int> costs = new Dictionary<Point,int>();
+      foreach(Point pt in exposed.Keys) {
+        costs[pt] = navigate.Cost(pt);
+      }
+      most_exposed = costs.Values.Min();
+      costs.OnlyIf(val => most_exposed >= val);
+      ActorAction ret = DecideMove(costs.Keys);
 #if DEBUG
       if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
 #endif
