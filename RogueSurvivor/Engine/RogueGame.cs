@@ -10897,8 +10897,11 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_SetMinimapColor(pos.X, pos.Y, Color.Maroon);
                 continue;
               }
+              if (tourism.Contains(pos)) {
+                m_UI.UI_SetMinimapColor(pos.X, pos.Y, Color.Magenta);
+                continue;
+              }
               if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
-              if (tourism.Contains(pos)) continue;  // sights to see are blacked out of the minimap, but not the main map
               m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
             }
           }
