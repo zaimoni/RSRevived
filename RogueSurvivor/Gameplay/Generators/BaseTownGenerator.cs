@@ -1955,6 +1955,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Session.Get.PoliceInvestigate.Seen(basement,pt);    // not so freak coincidence for pillars to be completely screened
         basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
       }));
+      // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
+#if FAIL
+      HashSet<Point> tainted = Session.Get.PoliceInvestigate.In(basement);
+      // 0<tainted.Count by construction
+      // basementStairs not tainted by construction
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = basement.PathfindSteps(m_Actor);   // use model instead of actor here
+      navigate.GoalDistance(basementStairs, tainted);   // may need another thin wrapper
+      tainted.ExceptWith(navigate.Domain);
+      if (0<tainted.Count) // ... recovery code
+#endif
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
