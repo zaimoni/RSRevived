@@ -59,6 +59,7 @@ namespace djack.RogueSurvivor.Data
       }
 	  // deal with vision capabilities
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(VISION_SEES());
+      SensorsOwnedBy(actor);
     }
 
     public override void LeaveControl()
