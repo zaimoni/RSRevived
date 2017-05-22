@@ -17,8 +17,16 @@ AI overhaul includes but is not limited to
 * The police are learning what organized force means.
 ** They now can sweep the districts (cheating eidetic memory, but mostly not using the exact location of unsighted z).  
    This includes limited cross-map pathfinding, but it does account for non-vintage mode sewers being unclearable.
+*** CHAR building codes have requirements on the police accessibility of residential basements.  You plausibly have 
+    three to four game hours to get any survivalist grenades before the police do.
+**** There were RNG side effects.  If you use a seed from 0.9.8
+***** The overall map layout is the same.
+***** All items should be where they were.  Random quantities are expected to be different.
+***** A noticeable minority of livings will have different name/gender.
+***** The type of z of the day-zero cold start are completely inconsistent.  Positions are consistent.
 ** If you have an active police radio, the chatter may be informative.
-** Threat tracking and newly interesting locations to see have transparent overlays for police.
+** Threat tracking and newly interesting locations to see have transparent overlays for police.  The minimap also reports on these, 
+   with inconsistent color coding to the overlays.
 
 REVIVED 0.9.8 CHANGES
 ------------------
