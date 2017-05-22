@@ -1931,6 +1931,57 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
+    // CHAR building codes have accounted for the possibility of a Z apocalypse.
+    private void _HouseBasementCornerBuildingCode(Map basement, Point basementStairs,Point corner, Point diag_step)
+    {
+      Point large = (basement.Rect.Bottom <= basement.Rect.Right ? new Point(corner.X,diag_step.Y) : new Point(diag_step.X,corner.Y));
+      Point small = (basement.Rect.Bottom > basement.Rect.Right ? new Point(corner.X,diag_step.Y) : new Point(diag_step.X,corner.Y));
+      if (   m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(large)
+          && m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(small)) {
+        if (corner==basementStairs) {
+          // The Sokoban gate is required to work.
+          basement.SetTileModelAt(diag_step.X, diag_step.Y, m_Game.GameTiles.FLOOR_CONCRETE);
+          Session.Get.PoliceInvestigate.Record(basement,diag_step);
+          basement.SetTileModelAt(large.X, large.Y, m_Game.GameTiles.FLOOR_CONCRETE);
+          Session.Get.PoliceInvestigate.Record(basement,large);
+        } else if (   m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(diag_step)
+                   && m_Game.GameTiles.FLOOR_CONCRETE == basement.GetTileModelAt(corner)) {
+          basement.SetTileModelAt(corner.X, corner.Y, m_Game.GameTiles.WALL_BRICK);
+          basement.SetTileModelAt(diag_step.X, diag_step.Y, m_Game.GameTiles.FLOOR_CONCRETE);
+          Session.Get.PoliceInvestigate.Record(basement,diag_step);
+          Session.Get.PoliceInvestigate.Seen(basement,corner);
+        }
+      }
+    }
+
+    private bool _ForceHouseBasementConnected(Map basement,Point basementStairs)
+    {
+      // basement.Rect.Top and basement.Rect.Left are hardcoded 0
+      // coordinates 0, width-1, height-1 are already brick walls
+      // basic disconnects is, with two walls:
+      // XXX
+      // X.X
+      // XXX
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(1,1), new Point(2,2));
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(1, basement.Rect.Bottom-2), new Point(2, basement.Rect.Bottom - 3));
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, 1), new Point(basement.Rect.Right - 3, 2));
+      _HouseBasementCornerBuildingCode(basement, basementStairs, new Point(basement.Rect.Right - 2, basement.Rect.Bottom - 2), new Point(basement.Rect.Right - 3, basement.Rect.Bottom - 3));
+#if FAIL
+      HashSet<Point> tainted = Session.Get.PoliceInvestigate.In(basement);
+      // 0<tainted.Count by construction
+      // basementStairs not tainted by construction
+      Zaimoni.Data.FloodfillPathfinder<Point> navigate = basement.PathfindSteps();   // assume an actor suitable for OrderableAI.  No actors yet so that simplifies things
+      navigate.GoalDistance(basementStairs, tainted);   // may need another thin wrapper
+      tainted.ExceptWith(navigate.Domain);
+      if (0<tainted.Count) {
+        // recovery code: find a brick wall that is adjacent to both unreachable and reachable squares, preferably 2+ uncreachable
+        // reposition brick wall from into an unreachable square
+        // redo
+      }
+#endif
+            return true;
+    }
+
     private Map GenerateHouseBasementMap(Map map, BaseTownGenerator.Block houseBlock)
     {
       Contract.Requires(null!=map.District);
@@ -1952,19 +2003,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Session.Get.PoliceInvestigate.Record(basement,pt);
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
+        if (m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(pt)) return; // already wall
+        // We are iterating all rows Y in each column X
+        // XXX so if we end up disconnecting we find out vertically
+        // basement.Rect.Top and basement.Rect.Left are hardcoded 0
+        // coordinates 0, width-1, height-1 are already brick walls
         Session.Get.PoliceInvestigate.Seen(basement,pt);    // not so freak coincidence for pillars to be completely screened
         basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
       }));
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
-#if FAIL
-      HashSet<Point> tainted = Session.Get.PoliceInvestigate.In(basement);
-      // 0<tainted.Count by construction
-      // basementStairs not tainted by construction
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = basement.PathfindSteps(m_Actor);   // use model instead of actor here
-      navigate.GoalDistance(basementStairs, tainted);   // may need another thin wrapper
-      tainted.ExceptWith(navigate.Domain);
-      if (0<tainted.Count) // ... recovery code
-#endif
+      while(!_ForceHouseBasementConnected(basement,basementStairs));
       MapObjectFill(basement, basement.Rect, (Func<Point, MapObject>) (pt =>
       {
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_OBJECT_CHANCE_PER_TILE)) return null;
