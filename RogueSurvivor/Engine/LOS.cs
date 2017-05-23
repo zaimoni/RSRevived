@@ -33,6 +33,19 @@ namespace djack.RogueSurvivor.Engine
       if (FOVcache.ContainsKey(map)) FOVcache[map].Validate(fn);
     }
 
+    // Optimal FOV offset subsystem to deal with some ugly inverse problems
+    // this is symmetric, unlike actual FOV calculations at range 5+ (range 4- is symmetric by construction)
+#if FAIL
+    private static readonly Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>> OptimalFOVOffsets = new Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>>();
+    public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(int range)
+    {
+      if (OptimalFOVOffsets.ContainsKey(range)) return OptimalFOVOffsets[range];    // TryGetValue indicated
+      List<Point> tmp = new List<Point>();
+      System.Collections.ObjectModel.ReadOnlyCollection<Point> tmp2 = new System.Collections.ObjectModel.ReadOnlyCollection<Point>(tmp);
+      OptimalFOVOffsets[range] = tmp2;
+      return tmp2;
+    }
+#endif
 
 #if ANGBAND
 #else
@@ -91,7 +104,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
 #if ANGBAND
-        private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
+    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
