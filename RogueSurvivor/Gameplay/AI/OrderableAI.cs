@@ -935,6 +935,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
+#if FAIL
+    private HashSet<Point> GetRangedAttackFromZone(List<Percept> enemies)
+    {
+      HashSet<Point> ret = new HashSet<Point>();
+      HashSet<Point> danger = new HashSet<Point>();
+      foreach(Percept en in enemies) {
+        foreach(Point pt in MaxFOV(/* range */)) {
+          Point pt2 = new Point(en.Location.Position.X+pt.X,en.Location.Position.Y+pt.Y)    // XXX would like an operator+ here
+          if (ret.Contains(pt2)) return;
+          if (danger.Contains(pt2)) return;
+          // XXX in bounds check
+          // XXX hypothetical LoF check for ret; if "safe" attack possible init danger in different/earlier loop
+        }
+      }
+      return ret;
+    }
+#endif
+
     // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
@@ -980,7 +998,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // if no ranged weapons, use BaseAI
       // OrderableAI::GetAvailableRangedWeapons knows about AI disabling of ranged weapons
-      if (null == available_ranged_weapons) return BehaviorEquipWeapon(game);
+      if (null == available_ranged_weapons) return base.BehaviorEquipWeapon(game);
 
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
       // XXX there may be more important objectives than this
@@ -1020,6 +1038,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
 		  }
         }
+
+        // XXX need to use floodfill pathfinder
+#if FAIL
+        HashSet<Point> fire_from_here = GetRangedAttackFromZone(enemies);
+        tmpAction = BehaviorNavigate(fire_from_here);
+        if (null != tmpAction) return tmpAction;
+#endif
+
       }
 
       if (null == en_in_range) return null; // no enemies in range, no constructive action: do somnething else
