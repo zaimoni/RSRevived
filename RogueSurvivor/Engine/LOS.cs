@@ -35,17 +35,46 @@ namespace djack.RogueSurvivor.Engine
 
     // Optimal FOV offset subsystem to deal with some ugly inverse problems
     // this is symmetric, unlike actual FOV calculations at range 5+ (range 4- is symmetric by construction)
-#if FAIL
     private static readonly Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>> OptimalFOVOffsets = new Dictionary<int,System.Collections.ObjectModel.ReadOnlyCollection<Point>>();
     public static System.Collections.ObjectModel.ReadOnlyCollection<Point> OptimalFOV(int range)
     {
       if (OptimalFOVOffsets.ContainsKey(range)) return OptimalFOVOffsets[range];    // TryGetValue indicated
       List<Point> tmp = new List<Point>();
+      // Cf. ComputeFOVFor
+      double edge_of_maxrange = range+0.5;
+      Point origin = new Point(0,0);
+      Point pt = new Point();
+      for (pt.X = range; pt.X > 0; --pt.X) {
+        for (pt.Y = pt.X; pt.Y >= 0; --pt.Y) {
+          // We want to reject points that are out of range, but still look circular in an open space
+          // the historical multipler was Math.Sqrt(.75)
+          // however, since we are in a cartesian gridspace the "radius to the edge of the square at max_range on the coordinate axis" is "radius to midpoint of square"+.5
+          if (Rules.StdDistance(origin, pt) > edge_of_maxrange) continue;
+          // initialize all octants at once
+          tmp.Add(pt);
+          if (pt.X == pt.Y) { // diagonal
+            tmp.Add(new Point(pt.X,-pt.Y));
+            tmp.Add(new Point(-pt.X,pt.Y));
+            tmp.Add(new Point(-pt.X,-pt.Y));
+          } else if (0 == pt.Y) {   // cardinal
+            tmp.Add(new Point(-pt.X,0));
+            tmp.Add(new Point(0,pt.X));
+            tmp.Add(new Point(0,-pt.X));
+          } else { // typical
+            tmp.Add(new Point(pt.X,-pt.Y));
+            tmp.Add(new Point(-pt.X,pt.Y));
+            tmp.Add(new Point(-pt.X,-pt.Y));
+            tmp.Add(new Point(pt.Y,pt.X));
+            tmp.Add(new Point(pt.Y,-pt.X));
+            tmp.Add(new Point(-pt.Y,pt.X));
+            tmp.Add(new Point(-pt.Y,-pt.X));
+          }
+        }
+      }
       System.Collections.ObjectModel.ReadOnlyCollection<Point> tmp2 = new System.Collections.ObjectModel.ReadOnlyCollection<Point>(tmp);
       OptimalFOVOffsets[range] = tmp2;
       return tmp2;
     }
-#endif
 
 #if ANGBAND
 #else
@@ -104,7 +133,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
 
 #if ANGBAND
-    private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
+        private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
     {
 #if DEBUG
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
