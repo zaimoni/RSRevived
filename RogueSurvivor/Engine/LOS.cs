@@ -339,35 +339,21 @@ namespace djack.RogueSurvivor.Engine
     {
       HashSet<Point> visibleSet;
       if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out visibleSet)) return new HashSet<Point>(visibleSet);
-      visibleSet = new HashSet<Point>();
-      double edge_of_maxrange = maxRange+0.5;
-      Point position = a_loc.Position;
+      visibleSet = new HashSet<Point>() { a_loc.Position };
+      if (0 >= maxRange) return visibleSet;
       Map map = a_loc.Map;
-      int x1 = position.X - maxRange;
-      int x2 = position.X + maxRange;
-      int y1 = position.Y - maxRange;
-      int y2 = position.Y + maxRange;
-      map.TrimToBounds(ref x1, ref y1);
-      map.TrimToBounds(ref x2, ref y2);
-      Point point1 = new Point();
+      Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
-      for (int x3 = x1; x3 <= x2; ++x3) {
-        point1.X = x3;
-        for (int y3 = y1; y3 <= y2; ++y3) {
-          point1.Y = y3;
-          // We want to reject points that are out of range, but still look circular in an open space
-          // the historical multipler was Math.Sqrt(.75)
-          // however, since we are in a cartesian gridspace the "radius to the edge of the square at max_range on the coordinate axis" is "radius to midpoint of square"+.5
-          if (Rules.StdDistance(position, point1) > edge_of_maxrange) continue;
+      foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>new Point(pt.X+a_loc.Position.X,pt.Y+a_loc.Position.Y))) {
+        if (!a_loc.Map.IsInBounds(point1)) continue;
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;
-            TileModel tileModel = map.GetTileModelAt(x3, y3);
+            TileModel tileModel = map.GetTileModelAt(point1);
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
-            else if (map.HasMapObjectAt(x3, y3)) flag = true;
+            else if (map.HasMapObjectAt(point1)) flag = true;
             if (flag) pointList1.Add(point1);
           } else visibleSet.Add(point1);
-        }
       }
 
       // Postprocess map objects and tiles whose edges would reasonably be seen
