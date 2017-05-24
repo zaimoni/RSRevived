@@ -1667,9 +1667,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
       ActorAction tmp3 = DecideMove(PlanApproach(navigate));   // only called when no enemies in sight anyway
-#if DEBUG
-      if (null == tmp3) throw new InvalidOperationException("DecideMove failed in no-fail situation");
-#endif
+      if (null == tmp3) return null;
       ActionMoveStep tmp2 = tmp3 as ActionMoveStep;
       if (null != tmp2) {
         Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
@@ -2495,9 +2493,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       ActorAction ret = DecideMove(PlanApproach(navigate));
-#if DEBUG
-      if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
-#endif
+      if (null == ret) return null;
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
@@ -2755,9 +2751,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       ActorAction ret = DecideMove(PlanApproach(navigate));
-#if DEBUG
-      if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
-#endif
+      if (null == ret) return null;
       ActionMoveStep test = ret as ActionMoveStep;
       if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
