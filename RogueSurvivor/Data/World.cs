@@ -61,6 +61,7 @@ namespace djack.RogueSurvivor.Data
       // CSS styles
       dest.WriteLine("<style type='text/css'>\n<!--");
       dest.WriteLine("pre {font-family: 'Courier New', monospace; font-size:15px}");
+      dest.WriteLine(".inv {font-size:11px}");
       dest.WriteLine(".car {font-size:7px}");
       dest.WriteLine("-->\n</style>");
       dest.WriteLine("</head><body>");

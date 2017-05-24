@@ -1201,7 +1201,7 @@ namespace djack.RogueSurvivor.Data
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
             string item_str = "&"; // Angband/Nethack pile.
             foreach (Item it in inv.Items) {
-              inv_data.Add("<tr><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
+              inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
             }
             ascii_map[y][x] = item_str;
           }
@@ -1267,7 +1267,7 @@ namespace djack.RogueSurvivor.Data
               case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }          
-            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
 #endregion
