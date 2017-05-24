@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 #define ANGBAND
-#define FOV_CACHE
 
 using djack.RogueSurvivor.Data;
 using System;
@@ -338,13 +337,9 @@ namespace djack.RogueSurvivor.Engine
     // the return of a cached value is assumed to be by value
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
-#if FOV_CACHE
       HashSet<Point> visibleSet;
       if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>();
-#else
-      HashSet<Point> visibleSet = new HashSet<Point>();
-#endif
       double edge_of_maxrange = maxRange+0.5;
       Point position = a_loc.Position;
       Map map = a_loc.Map;
@@ -392,9 +387,7 @@ namespace djack.RogueSurvivor.Engine
         if (num >= 3) pointList2.Add(point2);
       }
       visibleSet.UnionWith(pointList2);
-#if FOV_CACHE
       FOVcache[a_loc.Map].Set(new KeyValuePair<Point,int>(a_loc.Position,maxRange),new HashSet<Point>(visibleSet));
-#endif
       return visibleSet;
     }
 
