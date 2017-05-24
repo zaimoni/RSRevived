@@ -2919,9 +2919,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DressPolice(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Cop");
+      // Notable skills
+      // martial arts 1 makes the starting baton useless
+      // XXX probably should be used as a trade good rather than dropped ASAP
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
+      // XXX while auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
       if (m_DiceRoller.RollChance(50)) {
         numberedName.Inventory.AddAll(MakeItemPistol());
         numberedName.Inventory.AddAll(MakeItemLightPistolAmmo());
