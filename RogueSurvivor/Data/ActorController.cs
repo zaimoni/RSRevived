@@ -67,6 +67,7 @@ namespace djack.RogueSurvivor.Data
       foreach(Gameplay.GameItems.IDs it in src) {
         Dictionary<Location, int> tmp = WhereIs(it);
         tmp.OnlyIf(loc=>loc.Map == map);
+        if (0 >= tmp.Count) continue;
         ret.UnionWith(tmp.Keys.Select(loc => loc.Position));
       }
       return ret;

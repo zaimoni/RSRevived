@@ -2718,6 +2718,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       hazards.OnlyIf(val=>0<val.Count);
       if (0 >= hazards.Count) {
         if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+        if (0 >= where_to_go.Count) return null;
         return navigate;
       }
 //    veto_hazards(hazards);
@@ -2742,11 +2743,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)
     {
       if (null == navigate) return null;
+      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
         List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
         int current_cost = navigate.Cost(m_Actor.Location.Position);
         if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
-          return BehaviorUseExit(BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+          return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
         }
       }
 

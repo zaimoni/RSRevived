@@ -1961,7 +1961,7 @@ namespace djack.RogueSurvivor.Data
       int num = m_FoodPoints-FOOD_HUNGRY_LEVEL;
       if (num >= nutritionNeed) return true;
       foreach (ItemFood tmpFood in tmp) {
-        num += tmpFood.NutritionAt(turnCounter);
+        num += tmpFood.NutritionAt(turnCounter)*tmpFood.Quantity;
         if (num >= nutritionNeed) return true;
       }
       return false;
