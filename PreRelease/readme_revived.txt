@@ -1,6 +1,7 @@
 binaryonly ZIPs are meant to overwrite a stable release with compatible CSV and sound files.
 As of 0.9.1, the minimum required .NET framework is 4.6.x
 
+REVIVED 0.9.9 CHANGES
 ------------------
 * keypress buffer of size one implemented.  Only the last keypress survives.
 * new command line option --socrates-daimon.  Enables cheat commands; cf the RS Revived Manual.
