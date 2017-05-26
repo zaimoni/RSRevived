@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System.Drawing;
+using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -18,165 +19,120 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Color LIT_GRAY2 = Color.LightGray;
     private static readonly Color LIT_GRAY3 = Color.FromArgb(230, 230, 230);
     private static readonly Color LIT_BROWN = Color.BurlyWood;
-    private readonly TileModel[] m_Models = new TileModel[(int) IDs._COUNT];
+    private static readonly TileModel[] m_Models = new TileModel[(int) IDs._COUNT];
 
     public TileModel this[int id] {
       get {
+        Contract.Requires(id< (int)IDs._COUNT);
         return m_Models[id];
       }
     }
 
-    private TileModel this[GameTiles.IDs id] {
+    static public TileModel FLOOR_ASPHALT {
       get {
-        return this[(int) id];
-      }
-      set {
-        m_Models[(int) id] = value;
-        m_Models[(int) id].ID = (int) id;
+        return m_Models[(int)IDs.FLOOR_ASPHALT];
       }
     }
 
-    public TileModel FLOOR_ASPHALT
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_ASPHALT];
+    static public TileModel FLOOR_CONCRETE {
+      get {
+        return m_Models[(int)IDs.FLOOR_CONCRETE];
       }
     }
 
-    public TileModel FLOOR_CONCRETE
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_CONCRETE];
+    static public TileModel FLOOR_GRASS {
+      get {
+        return m_Models[(int)IDs.FLOOR_GRASS];
       }
     }
 
-    public TileModel FLOOR_GRASS
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_GRASS];
+    static public TileModel FLOOR_OFFICE {
+      get {
+        return m_Models[(int)IDs.FLOOR_OFFICE];
       }
     }
 
-    public TileModel FLOOR_OFFICE
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_OFFICE];
+    static public TileModel FLOOR_PLANKS {
+      get {
+        return m_Models[(int)IDs.FLOOR_PLANKS];
       }
     }
 
-    public TileModel FLOOR_PLANKS
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_PLANKS];
+    static public TileModel FLOOR_SEWER_WATER {
+      get {
+        return m_Models[(int)IDs.FLOOR_SEWER_WATER];
       }
     }
 
-    public TileModel FLOOR_SEWER_WATER
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_SEWER_WATER];
+    static public TileModel FLOOR_TILES {
+      get {
+        return m_Models[(int)IDs.FLOOR_TILES];
       }
     }
 
-    public TileModel FLOOR_TILES
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_TILES];
+    static public TileModel FLOOR_WALKWAY {
+      get {
+        return m_Models[(int)IDs.FLOOR_WALKWAY];
       }
     }
 
-    public TileModel FLOOR_WALKWAY
-    {
-      get
-      {
-        return this[GameTiles.IDs.FLOOR_WALKWAY];
+    static public TileModel ROAD_ASPHALT_EW {
+      get {
+        return m_Models[(int)IDs.ROAD_ASPHALT_EW];
       }
     }
 
-    public TileModel ROAD_ASPHALT_EW
-    {
-      get
-      {
-        return this[GameTiles.IDs.ROAD_ASPHALT_EW];
+    static public TileModel ROAD_ASPHALT_NS {
+      get {
+        return m_Models[(int)IDs.ROAD_ASPHALT_NS];
       }
     }
 
-    public TileModel ROAD_ASPHALT_NS
-    {
-      get
-      {
-        return this[GameTiles.IDs.ROAD_ASPHALT_NS];
+    static public TileModel RAIL_EW {
+      get {
+        return m_Models[(int)IDs.RAIL_EW];
       }
     }
 
-    public TileModel RAIL_EW
-    {
-      get
-      {
-        return this[GameTiles.IDs.RAIL_EW];
+    public TileModel WALL_BRICK {
+      get {
+        return m_Models[(int)IDs.WALL_BRICK];
       }
     }
 
-    public TileModel WALL_BRICK
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_BRICK];
+    static public TileModel WALL_CHAR_OFFICE {
+      get {
+        return m_Models[(int)IDs.WALL_CHAR_OFFICE];
       }
     }
 
-    public TileModel WALL_CHAR_OFFICE
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_CHAR_OFFICE];
+    static public TileModel WALL_POLICE_STATION {
+      get {
+        return m_Models[(int)IDs.WALL_POLICE_STATION];
       }
     }
 
-    public TileModel WALL_POLICE_STATION
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_POLICE_STATION];
+    static public TileModel WALL_HOSPITAL {
+      get {
+        return m_Models[(int)IDs.WALL_HOSPITAL];
       }
     }
 
-    public TileModel WALL_HOSPITAL
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_HOSPITAL];
+    static public TileModel WALL_SEWER {
+      get {
+        return m_Models[(int)IDs.WALL_SEWER];
       }
     }
 
-    public TileModel WALL_SEWER
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_SEWER];
+    static public TileModel WALL_STONE {
+      get {
+        return m_Models[(int)IDs.WALL_STONE];
       }
     }
 
-    public TileModel WALL_STONE
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_STONE];
-      }
-    }
-
-    public TileModel WALL_SUBWAY
-    {
-      get
-      {
-        return this[GameTiles.IDs.WALL_SUBWAY];
+    static public TileModel WALL_SUBWAY {
+      get {
+        return m_Models[(int)IDs.WALL_SUBWAY];
       }
     }
 
@@ -186,35 +142,37 @@ namespace djack.RogueSurvivor.Gameplay
     // * use this to implement a gun port
     // According to the map class, an opaque non-wall blocks ranged combat, but permits both walking and throwing.
     // * use this to implement a smoke grenade, or thick smoke from a fire
+    static GameTiles()
+    {
+      m_Models[(int)IDs.UNDEF] = TileModel.UNDEF;
+      m_Models[(int)IDs.FLOOR_ASPHALT] = new TileModel(GameImages.TILE_FLOOR_ASPHALT, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.FLOOR_ASPHALT };
+      m_Models[(int)IDs.FLOOR_CONCRETE] = new TileModel(GameImages.TILE_FLOOR_CONCRETE, GameTiles.LIT_GRAY2, true, true) { ID = (int)IDs.FLOOR_CONCRETE };
+      m_Models[(int)IDs.FLOOR_GRASS] = new TileModel(GameImages.TILE_FLOOR_GRASS, Color.Green, true, true) { ID = (int)IDs.FLOOR_GRASS };
+      m_Models[(int)IDs.FLOOR_OFFICE] = new TileModel(GameImages.TILE_FLOOR_OFFICE, GameTiles.LIT_GRAY3, true, true) { ID = (int)IDs.FLOOR_OFFICE };
+      m_Models[(int)IDs.FLOOR_PLANKS] = new TileModel(GameImages.TILE_FLOOR_PLANKS, GameTiles.LIT_BROWN, true, true) { ID = (int)IDs.FLOOR_PLANKS };
+      m_Models[(int)IDs.FLOOR_SEWER_WATER] = new TileModel(GameImages.TILE_FLOOR_SEWER_WATER, Color.Blue, true, true, GameImages.TILE_FLOOR_SEWER_WATER_COVER) { ID = (int)IDs.FLOOR_SEWER_WATER };
+      m_Models[(int)IDs.FLOOR_TILES] = new TileModel(GameImages.TILE_FLOOR_TILES, GameTiles.LIT_GRAY2, true, true) { ID = (int)IDs.FLOOR_TILES };
+      m_Models[(int)IDs.FLOOR_WALKWAY] = new TileModel(GameImages.TILE_FLOOR_WALKWAY, GameTiles.LIT_GRAY2, true, true) { ID = (int)IDs.FLOOR_WALKWAY };
+      m_Models[(int)IDs.ROAD_ASPHALT_EW] = new TileModel(GameImages.TILE_ROAD_ASPHALT_EW, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.ROAD_ASPHALT_EW };
+      m_Models[(int)IDs.ROAD_ASPHALT_NS] = new TileModel(GameImages.TILE_ROAD_ASPHALT_NS, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.ROAD_ASPHALT_NS };
+      m_Models[(int)IDs.RAIL_EW] = new TileModel(GameImages.TILE_RAIL_ES, GameTiles.LIT_GRAY1, true, true) { ID = (int)IDs.RAIL_EW };
+      m_Models[(int)IDs.WALL_BRICK] = new TileModel(GameImages.TILE_WALL_BRICK, GameTiles.DRK_GRAY1, false, false) { ID = (int)IDs.WALL_BRICK };
+      m_Models[(int)IDs.WALL_CHAR_OFFICE] = new TileModel(GameImages.TILE_WALL_CHAR_OFFICE, GameTiles.DRK_RED, false, false) { ID = (int)IDs.WALL_CHAR_OFFICE };
+      m_Models[(int)IDs.WALL_HOSPITAL] = new TileModel(GameImages.TILE_WALL_HOSPITAL, Color.White, false, false) { ID = (int)IDs.WALL_HOSPITAL };
+      m_Models[(int)IDs.WALL_POLICE_STATION] = new TileModel(GameImages.TILE_WALL_STONE, Color.CadetBlue, false, false) { ID = (int)IDs.WALL_POLICE_STATION };
+      m_Models[(int)IDs.WALL_SEWER] = new TileModel(GameImages.TILE_WALL_SEWER, Color.DarkGreen, false, false) { ID = (int)IDs.WALL_SEWER };
+      m_Models[(int)IDs.WALL_STONE] = new TileModel(GameImages.TILE_WALL_STONE, GameTiles.DRK_GRAY1, false, false) { ID = (int)IDs.WALL_STONE };
+      m_Models[(int)IDs.WALL_SUBWAY] = new TileModel(GameImages.TILE_WALL_STONE, Color.Blue, false, false) { ID = (int)IDs.WALL_SUBWAY };
+    }
+
     public GameTiles()
     {
       Models.Tiles = this;
-      this[GameTiles.IDs.UNDEF] = TileModel.UNDEF;
-      this[GameTiles.IDs.FLOOR_ASPHALT] = new TileModel("Tiles\\floor_asphalt", GameTiles.LIT_GRAY1, true, true);
-      this[GameTiles.IDs.FLOOR_CONCRETE] = new TileModel("Tiles\\floor_concrete", GameTiles.LIT_GRAY2, true, true);
-      this[GameTiles.IDs.FLOOR_GRASS] = new TileModel("Tiles\\floor_grass", Color.Green, true, true);
-      this[GameTiles.IDs.FLOOR_OFFICE] = new TileModel("Tiles\\floor_office", GameTiles.LIT_GRAY3, true, true);
-      this[GameTiles.IDs.FLOOR_PLANKS] = new TileModel("Tiles\\floor_planks", GameTiles.LIT_BROWN, true, true);
-      this[GameTiles.IDs.FLOOR_SEWER_WATER] = new TileModel("Tiles\\floor_sewer_water", Color.Blue, true, true, "Tiles\\floor_sewer_water_cover");
-      this[GameTiles.IDs.FLOOR_TILES] = new TileModel("Tiles\\floor_tiles", GameTiles.LIT_GRAY2, true, true);
-      this[GameTiles.IDs.FLOOR_WALKWAY] = new TileModel("Tiles\\floor_walkway", GameTiles.LIT_GRAY2, true, true);
-      this[GameTiles.IDs.ROAD_ASPHALT_EW] = new TileModel("Tiles\\road_asphalt_ew", GameTiles.LIT_GRAY1, true, true);
-      this[GameTiles.IDs.ROAD_ASPHALT_NS] = new TileModel("Tiles\\road_asphalt_ns", GameTiles.LIT_GRAY1, true, true);
-      this[GameTiles.IDs.RAIL_EW] = new TileModel("Tiles\\rail_ew", GameTiles.LIT_GRAY1, true, true);
-      this[GameTiles.IDs.WALL_BRICK] = new TileModel("Tiles\\wall_brick", GameTiles.DRK_GRAY1, false, false);
-      this[GameTiles.IDs.WALL_CHAR_OFFICE] = new TileModel("Tiles\\wall_char_office", GameTiles.DRK_RED, false, false);
-      this[GameTiles.IDs.WALL_HOSPITAL] = new TileModel("Tiles\\wall_hospital", Color.White, false, false);
-      this[GameTiles.IDs.WALL_POLICE_STATION] = new TileModel("Tiles\\wall_stone", Color.CadetBlue, false, false);
-      this[GameTiles.IDs.WALL_SEWER] = new TileModel("Tiles\\wall_sewer", Color.DarkGreen, false, false);
-      this[GameTiles.IDs.WALL_STONE] = new TileModel("Tiles\\wall_stone", GameTiles.DRK_GRAY1, false, false);
-      this[GameTiles.IDs.WALL_SUBWAY] = new TileModel("Tiles\\wall_stone", Color.Blue, false, false);
     }
 
-    public bool IsRoadModel(TileModel model)
+    static public bool IsRoadModel(TileModel model)
     {
-      if (model != this[GameTiles.IDs.ROAD_ASPHALT_EW])
-        return model == this[GameTiles.IDs.ROAD_ASPHALT_NS];
-      return true;
+      return ROAD_ASPHALT_EW==model || ROAD_ASPHALT_NS==model;
     }
 
     public enum IDs

@@ -10491,14 +10491,11 @@ namespace djack.RogueSurvivor.Engine
 
     private string MovingWaterImage(TileModel model, int turnCount)
     {
-      if (model != m_GameTiles.FLOOR_SEWER_WATER) return null;
+      if (model != GameTiles.FLOOR_SEWER_WATER) return null;
       switch (turnCount % 3) {
-        case 0:
-          return GameImages.TILE_FLOOR_SEWER_WATER_ANIM1;
-        case 1:
-          return GameImages.TILE_FLOOR_SEWER_WATER_ANIM2;
-        default:
-          return GameImages.TILE_FLOOR_SEWER_WATER_ANIM3;
+        case 0: return GameImages.TILE_FLOOR_SEWER_WATER_ANIM1;
+        case 1: return GameImages.TILE_FLOOR_SEWER_WATER_ANIM2;
+        default: return GameImages.TILE_FLOOR_SEWER_WATER_ANIM3;
       }
     }
 
