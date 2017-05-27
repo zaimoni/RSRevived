@@ -1623,17 +1623,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (   !m_Actor.WillActAgainBefore(enemy)
               || !m_Actor.RunIsFreeMove)
             return new ActionWait(m_Actor);
-          // cannot close at normal speed safely; run-hit may be ok
-          Dictionary<Point,ActorAction> dash_attack = new Dictionary<Point,ActorAction>();
-          ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
-          List<Point> attack_possible = m_Actor.LegalSteps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position) 
-            && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep
-            && RunIfAdvisable(pt)).ToList();
-          ReserveSTA(0,0,0,0);  // baseline
-          if (!attack_possible.Any()) return new ActionWait(m_Actor);
-          // XXX could filter down attack_possible some more
-          m_Actor.IsRunning = true;
-          return dash_attack[attack_possible[game.Rules.Roll(0,attack_possible.Count)]];
+          List<Point> legal_steps = m_Actor.LegalSteps;
+          if (null != legal_steps) {
+            // cannot close at normal speed safely; run-hit may be ok
+            Dictionary<Point,ActorAction> dash_attack = new Dictionary<Point,ActorAction>();
+            ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
+            List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position) 
+              && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep
+              && RunIfAdvisable(pt)).ToList();
+            ReserveSTA(0,0,0,0);  // baseline
+            if (!attack_possible.Any()) return new ActionWait(m_Actor);
+            // XXX could filter down attack_possible some more
+            m_Actor.IsRunning = true;
+            return dash_attack[attack_possible[game.Rules.Roll(0,attack_possible.Count)]];
+          }
         }
       }
 
