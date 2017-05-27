@@ -541,6 +541,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (2 <= legal_steps.Count) {
         int min_dist = goals.Values.Min();
         int near_scale = goals.Count+1;
+#if DEBUG
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, near_scale.ToString());
+#endif
         Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
         foreach(Point pt in legal_steps) {
           efficiency[pt] = 0;
@@ -553,8 +556,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
               efficiency[pt] += delta;
             }
           }
+#if DEBUG
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, pt.X.ToString()+","+pt.Y.ToString()+": "+efficiency[pt].ToString());
+#endif
         }
-        int fast_approach = efficiency.Values.Min();
+        int fast_approach = efficiency.Values.Max();
         efficiency.OnlyIf(val=>fast_approach==val);
         legal_steps = new List<Point>(efficiency.Keys);
       }
