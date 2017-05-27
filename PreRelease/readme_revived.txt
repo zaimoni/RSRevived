@@ -4,6 +4,8 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 REVIVED 0.9.9.1 CHANGES
 ------------------
 * CivilianAI/GangAI no longer hoard canned food
+* hard crash in release-mode melee behavior fixed
+* going to bed had pathing difficulties.
 
 REVIVED 0.9.9 CHANGES
 ------------------
