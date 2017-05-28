@@ -1,6 +1,11 @@
 binaryonly ZIPs are meant to overwrite a stable release with compatible CSV and sound files.
 As of 0.9.1, the minimum required .NET framework is 4.6.x
 
+REVIVED 0.9.9.2 CHANGES
+------------------
+* Self-defense when killing a cop, or a follower of a cop, will not prevent murder charges.
+
+
 REVIVED 0.9.9.1 CHANGES
 ------------------
 * CivilianAI/GangAI no longer hoard canned food
