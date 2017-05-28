@@ -868,13 +868,18 @@ namespace djack.RogueSurvivor.Engine
       if (victim.Model.Abilities.IsUndead) return false;
       if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersCounter > 0) return false;
       if (killer.Faction.IsEnemyOf(victim.Faction)) return false;
-      if (killer.IsSelfDefenceFrom(victim)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
       if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && killer.Leader.IsEnemyOf(victim)) return false;
       if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && victim.IsSelfDefenceFrom(killer.Leader)) return false;
 
+      // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
+      if (victim.Model.Abilities.IsLawEnforcer) return true;
+      if (victim.HasLeader && victim.Leader.Model.Abilities.IsLawEnforcer) return true;
+
       // resume old definition
+      if (killer.IsSelfDefenceFrom(victim)) return false;
+
       if (killer.HasLeader && killer.Leader.IsSelfDefenceFrom(victim)) return false;
       if (killer.CountFollowers > 0) {
         foreach (Actor follower in killer.Followers) {
