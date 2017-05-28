@@ -252,14 +252,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
-      if (null == enemies && null != friends) {
+      if (null == enemies) {
         Dictionary<Actor,ThreatTracking> observers = new Dictionary<Actor, ThreatTracking>();
-        foreach(Percept fr in friends) {
-          Actor friend = fr.Percepted as Actor;
-          ThreatTracking ally_threat = friend.Threats;
-          if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
-          if (!InCommunicationWith(friend)) continue;
-          observers[friend] = ally_threat;
+        if (null != friends) {
+          foreach(Percept fr in friends) {
+            Actor friend = fr.Percepted as Actor;
+            ThreatTracking ally_threat = friend.Threats;
+            if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
+            if (!InCommunicationWith(friend)) continue;
+            observers[friend] = ally_threat;
+          }
+        }
+        HashSet<Actor> allies = m_Actor.Allies; // XXX thrashes garbage collector, possibly should be handled by LoS sensor for the leader only?
+        if (null != allies) {
+          foreach(Actor friend in allies) {
+            ThreatTracking ally_threat = friend.Threats;
+            if (null == ally_threat || m_Actor.Threats == ally_threat) continue;
+            if (!InCommunicationWith(friend)) continue;
+            observers[friend] = ally_threat;
+          }
         }
         // but this won't trigger if any of our friends are mutual enemies
         if (0<observers.Count) {
