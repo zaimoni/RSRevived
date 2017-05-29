@@ -1820,302 +1820,96 @@ namespace djack.RogueSurvivor.Engine
       do
       {
         bool flag2 = RogueGame.s_KeyBindings.CheckForConflict();
-        string[] entries = new string[51]
-        {
-          "Move N",
-          "Move NE",
-          "Move E",
-          "Move SE",
-          "Move S",
-          "Move SW",
-          "Move W",
-          "Move NW",
-          "Wait",
-          "Wait 1 hour",
-          "Abandon Game",
-          "Advisor Hint",
-          "Barricade",
-          "Break",
-          "Build Large Fortification",
-          "Build Small Fortification",
-          "City Info",
-          "Item Info",
-          "Close",
-          "Fire",
-          "Give",
-          "Help",
-          "Hints screen",
-          "Initiate Trade",
-          "Item 1 slot",
-          "Item 2 slot",
-          "Item 3 slot",
-          "Item 4 slot",
-          "Item 5 slot",
-          "Item 6 slot",
-          "Item 7 slot",
-          "Item 8 slot",
-          "Item 9 slot",
-          "Item 10 slot",
-          "Lead",
-          "Load Game",
-          "Mark Enemies",
-          "Messages Log",
-          "Options",
-          "Order",
-          "Push",
-          "Quit Game",
-          "Redefine Keys",
-          "Run",
-          "Save Game",
-          "Screenshot",
-          "Shout",
-          "Sleep",
-          "Switch Place",
-          "Use Exit",
-          "Use Spray"
+        // need to maintain: label to command mapping
+        // then generate current keybindings
+        // then read off position from reference array
+        // screen layout may fail with more than 51 entries
+        KeyValuePair< string,PlayerCommand >[] command_labels = new KeyValuePair<string, PlayerCommand>[] {
+          new KeyValuePair< string,PlayerCommand >("Move N", PlayerCommand.MOVE_N),
+          new KeyValuePair< string,PlayerCommand >("Move NE", PlayerCommand.MOVE_NE),
+          new KeyValuePair< string,PlayerCommand >("Move E", PlayerCommand.MOVE_E),
+          new KeyValuePair< string,PlayerCommand >("Move SE", PlayerCommand.MOVE_SE),
+          new KeyValuePair< string,PlayerCommand >("Move S", PlayerCommand.MOVE_S),
+          new KeyValuePair< string,PlayerCommand >("Move SW", PlayerCommand.MOVE_SW),
+          new KeyValuePair< string,PlayerCommand >("Move W", PlayerCommand.MOVE_W),
+          new KeyValuePair< string,PlayerCommand >("Move NW", PlayerCommand.MOVE_NW),
+          new KeyValuePair< string,PlayerCommand >("Wait", PlayerCommand.WAIT_OR_SELF),
+          new KeyValuePair< string,PlayerCommand >("Wait 1 hour", PlayerCommand.WAIT_LONG),
+          new KeyValuePair< string,PlayerCommand >("Abandon Game", PlayerCommand.ABANDON_GAME),
+          new KeyValuePair< string,PlayerCommand >("Advisor Hint", PlayerCommand.ADVISOR),
+          new KeyValuePair< string,PlayerCommand >("Barricade", PlayerCommand.BARRICADE_MODE),
+          new KeyValuePair< string,PlayerCommand >("Break", PlayerCommand.BREAK_MODE),
+          new KeyValuePair< string,PlayerCommand >("Build Large Fortification", PlayerCommand.BUILD_LARGE_FORTIFICATION),
+          new KeyValuePair< string,PlayerCommand >("Build Small Fortification", PlayerCommand.BUILD_SMALL_FORTIFICATION),
+          new KeyValuePair< string,PlayerCommand >("City Info", PlayerCommand.CITY_INFO),
+          new KeyValuePair< string,PlayerCommand >("Item Info", PlayerCommand.ITEM_INFO),
+          new KeyValuePair< string,PlayerCommand >("Close", PlayerCommand.CLOSE_DOOR),
+          new KeyValuePair< string,PlayerCommand >("Fire", PlayerCommand.FIRE_MODE),
+          new KeyValuePair< string,PlayerCommand >("Give", PlayerCommand.GIVE_ITEM),
+          new KeyValuePair< string,PlayerCommand >("Help", PlayerCommand.HELP_MODE),
+          new KeyValuePair< string,PlayerCommand >("Hints screen", PlayerCommand.HINTS_SCREEN_MODE),
+          new KeyValuePair< string,PlayerCommand >("Initiate Trade", PlayerCommand.INITIATE_TRADE),
+          new KeyValuePair< string,PlayerCommand >("Item 1 slot", PlayerCommand.ITEM_SLOT_0),
+          new KeyValuePair< string,PlayerCommand >("Item 2 slot", PlayerCommand.ITEM_SLOT_1),
+          new KeyValuePair< string,PlayerCommand >("Item 3 slot", PlayerCommand.ITEM_SLOT_2),
+          new KeyValuePair< string,PlayerCommand >("Item 4 slot", PlayerCommand.ITEM_SLOT_3),
+          new KeyValuePair< string,PlayerCommand >("Item 5 slot", PlayerCommand.ITEM_SLOT_4),
+          new KeyValuePair< string,PlayerCommand >("Item 6 slot", PlayerCommand.ITEM_SLOT_5),
+          new KeyValuePair< string,PlayerCommand >("Item 7 slot", PlayerCommand.ITEM_SLOT_6),
+          new KeyValuePair< string,PlayerCommand >("Item 8 slot", PlayerCommand.ITEM_SLOT_7),
+          new KeyValuePair< string,PlayerCommand >("Item 9 slot", PlayerCommand.ITEM_SLOT_8),
+          new KeyValuePair< string,PlayerCommand >("Item 10 slot", PlayerCommand.ITEM_SLOT_9),
+          new KeyValuePair< string,PlayerCommand >("Lead", PlayerCommand.LEAD_MODE),
+          new KeyValuePair< string,PlayerCommand >("Load Game", PlayerCommand.LOAD_GAME),
+          new KeyValuePair< string,PlayerCommand >("Mark Enemies", PlayerCommand.MARK_ENEMIES_MODE),
+          new KeyValuePair< string,PlayerCommand >("Messages Log", PlayerCommand.MESSAGE_LOG),
+          new KeyValuePair< string,PlayerCommand >("Options", PlayerCommand.OPTIONS_MODE),
+          new KeyValuePair< string,PlayerCommand >("Order", PlayerCommand.ORDER_MODE),
+          new KeyValuePair< string,PlayerCommand >("Push", PlayerCommand.PUSH_MODE),
+          new KeyValuePair< string,PlayerCommand >("Quit Game", PlayerCommand.QUIT_GAME),
+          new KeyValuePair< string,PlayerCommand >("Redefine Keys", PlayerCommand.KEYBINDING_MODE),
+          new KeyValuePair< string,PlayerCommand >("Run", PlayerCommand.RUN_TOGGLE),
+          new KeyValuePair< string,PlayerCommand >("Save Game", PlayerCommand.SAVE_GAME),
+          new KeyValuePair< string,PlayerCommand >("Screenshot", PlayerCommand.SCREENSHOT),
+          new KeyValuePair< string,PlayerCommand >("Shout", PlayerCommand.SHOUT),
+          new KeyValuePair< string,PlayerCommand >("Sleep", PlayerCommand.SLEEP),
+          new KeyValuePair< string,PlayerCommand >("Switch Place", PlayerCommand.SWITCH_PLACE),
+          new KeyValuePair< string,PlayerCommand >("Use Exit", PlayerCommand.USE_EXIT),
+          new KeyValuePair< string,PlayerCommand >("Use Spray", PlayerCommand.USE_SPRAY),
         };
-        string[] values = new string[51]
-        {
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_N).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_NE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_E).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_SE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_S).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_SW).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_W).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MOVE_NW).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.WAIT_OR_SELF).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.WAIT_LONG).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ABANDON_GAME).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.BREAK_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.CITY_INFO).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_INFO).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.CLOSE_DOOR).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.HINTS_SCREEN_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_0).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_1).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_2).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_3).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_4).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_5).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_6).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_7).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_8).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ITEM_SLOT_9).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.LEAD_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.LOAD_GAME).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MARK_ENEMIES_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.MESSAGE_LOG).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.PUSH_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.QUIT_GAME).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.RUN_TOGGLE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.SAVE_GAME).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.SCREENSHOT).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.SHOUT).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.SLEEP).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.SWITCH_PLACE).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.USE_EXIT).ToString(),
-          RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString()
-        };
+
+        string[] entries = command_labels.Select(x => x.Key).ToArray();
+        string[] values = command_labels.Select(x => RogueGame.s_KeyBindings.Get(x.Value).ToString()).ToArray();
+
         int gy;
         int gx = gy = 0;
-                m_UI.UI_Clear(Color.Black);
-                DrawHeader();
+        m_UI.UI_Clear(Color.Black);
+        DrawHeader();
         gy += 14;
-                m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
         gy += 14;
-                DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
-        if (flag2)
-        {
-                    m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
+        if (flag2) {
+          m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
           gy += 14;
         }
-                DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
-                m_UI.UI_Repaint();
+        DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
+        m_UI.UI_Repaint();
         switch (m_UI.UI_WaitKey().KeyCode)
         {
           case Keys.Return:
-                        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", (object) entries[currentChoice]), gx, gy, new Color?());
-                        m_UI.UI_Repaint();
-            bool flag3 = true;
+            m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", (object)command_labels[currentChoice].Key), gx, gy, new Color?());
+            m_UI.UI_Repaint();
             Keys key = Keys.None;
-            do
-            {
+            while(true) {
               KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-              if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt)
-              {
+              if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt) {
                 key = keyEventArgs.KeyData;
-                flag3 = false;
+                break;
               }
-            }
-            while (flag3);
-            PlayerCommand command;
-            switch (currentChoice)
-            {
-              case 0:
-                command = PlayerCommand.MOVE_N;
-                break;
-              case 1:
-                command = PlayerCommand.MOVE_NE;
-                break;
-              case 2:
-                command = PlayerCommand.MOVE_E;
-                break;
-              case 3:
-                command = PlayerCommand.MOVE_SE;
-                break;
-              case 4:
-                command = PlayerCommand.MOVE_S;
-                break;
-              case 5:
-                command = PlayerCommand.MOVE_SW;
-                break;
-              case 6:
-                command = PlayerCommand.MOVE_W;
-                break;
-              case 7:
-                command = PlayerCommand.MOVE_NW;
-                break;
-              case 8:
-                command = PlayerCommand.WAIT_OR_SELF;
-                break;
-              case 9:
-                command = PlayerCommand.WAIT_LONG;
-                break;
-              case 10:
-                command = PlayerCommand.ABANDON_GAME;
-                break;
-              case 11:
-                command = PlayerCommand.ADVISOR;
-                break;
-              case 12:
-                command = PlayerCommand.BARRICADE_MODE;
-                break;
-              case 13:
-                command = PlayerCommand.BREAK_MODE;
-                break;
-              case 14:
-                command = PlayerCommand.BUILD_LARGE_FORTIFICATION;
-                break;
-              case 15:
-                command = PlayerCommand.BUILD_SMALL_FORTIFICATION;
-                break;
-              case 16:
-                command = PlayerCommand.CITY_INFO;
-                break;
-              case 17:
-                command = PlayerCommand.CLOSE_DOOR;
-                break;
-              case 18:
-                command = PlayerCommand.FIRE_MODE;
-                break;
-              case 19:
-                command = PlayerCommand.GIVE_ITEM;
-                break;
-              case 20:
-                command = PlayerCommand.HELP_MODE;
-                break;
-              case 21:
-                command = PlayerCommand.HINTS_SCREEN_MODE;
-                break;
-              case 22:
-                command = PlayerCommand.INITIATE_TRADE;
-                break;
-              case 23:
-                command = PlayerCommand.ITEM_SLOT_0;
-                break;
-              case 24:
-                command = PlayerCommand.ITEM_SLOT_1;
-                break;
-              case 25:
-                command = PlayerCommand.ITEM_SLOT_2;
-                break;
-              case 26:
-                command = PlayerCommand.ITEM_SLOT_3;
-                break;
-              case 27:
-                command = PlayerCommand.ITEM_SLOT_4;
-                break;
-              case 28:
-                command = PlayerCommand.ITEM_SLOT_5;
-                break;
-              case 29:
-                command = PlayerCommand.ITEM_SLOT_6;
-                break;
-              case 30:
-                command = PlayerCommand.ITEM_SLOT_7;
-                break;
-              case 31:
-                command = PlayerCommand.ITEM_SLOT_8;
-                break;
-              case 32:
-                command = PlayerCommand.ITEM_SLOT_9;
-                break;
-              case 33:
-                command = PlayerCommand.LEAD_MODE;
-                break;
-              case 34:
-                command = PlayerCommand.LOAD_GAME;
-                break;
-              case 35:
-                command = PlayerCommand.MARK_ENEMIES_MODE;
-                break;
-              case 36:
-                command = PlayerCommand.MESSAGE_LOG;
-                break;
-              case 37:
-                command = PlayerCommand.OPTIONS_MODE;
-                break;
-              case 38:
-                command = PlayerCommand.ORDER_MODE;
-                break;
-              case 39:
-                command = PlayerCommand.PUSH_MODE;
-                break;
-              case 40:
-                command = PlayerCommand.QUIT_GAME;
-                break;
-              case 41:
-                command = PlayerCommand.KEYBINDING_MODE;
-                break;
-              case 42:
-                command = PlayerCommand.RUN_TOGGLE;
-                break;
-              case 43:
-                command = PlayerCommand.SAVE_GAME;
-                break;
-              case 44:
-                command = PlayerCommand.SCREENSHOT;
-                break;
-              case 45:
-                command = PlayerCommand.SHOUT;
-                break;
-              case 46:
-                command = PlayerCommand.SLEEP;
-                break;
-              case 47:
-                command = PlayerCommand.SWITCH_PLACE;
-                break;
-              case 48:
-                command = PlayerCommand.USE_EXIT;
-                break;
-              case 49:
-                command = PlayerCommand.USE_SPRAY;
-                break;
-              default:
-                throw new InvalidOperationException("unhandled selected");
-            }
+            };
+            if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
+            PlayerCommand command = command_labels[currentChoice].Value;
             RogueGame.s_KeyBindings.Set(command, key);
             break;
           case Keys.Escape:
@@ -2129,10 +1923,10 @@ namespace djack.RogueSurvivor.Engine
               --currentChoice;
               break;
             }
-            currentChoice = entries.Length - 1;
+            currentChoice = command_labels.Length - 1;
             break;
           case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
+            currentChoice = (currentChoice + 1) % command_labels.Length;
             break;
         }
       }
