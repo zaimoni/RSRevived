@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define SUICIDE_BY_LONG_WAIT
+
 namespace djack.RogueSurvivor.Engine
 {
   internal enum PlayerCommand
@@ -29,7 +31,11 @@ namespace djack.RogueSurvivor.Engine
     MOVE_NW,
     RUN_TOGGLE,
     WAIT_OR_SELF,
+#if SUICIDE_BY_LONG_WAIT
     WAIT_LONG,
+#else
+    WAIT_LONG_XXX,  // don't want to change enumeration, but this command was a deathtrap by typo
+#endif
     BARRICADE_MODE,
     BREAK_MODE,
     BUILD_LARGE_FORTIFICATION,

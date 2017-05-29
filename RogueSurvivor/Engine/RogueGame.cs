@@ -8,6 +8,7 @@
 
 #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
+// #define SUICIDE_BY_LONG_WAIT
 // #define NO_PEACE_WALLS
 // #define SPEEDY_GONZALES
 
@@ -317,9 +318,11 @@ namespace djack.RogueSurvivor.Engine
     private readonly GameActors m_GameActors;
     private readonly GameItems m_GameItems;
     private readonly GameTiles m_GameTiles;
+#if SUICIDE_BY_LONG_WAIT
     private bool m_IsPlayerLongWait;
     private bool m_IsPlayerLongWaitForcedStop;
     private WorldTime m_PlayerLongWaitEnd;
+#endif
     private Thread m_SimThread;
 
     public Rules Rules {
@@ -464,7 +467,9 @@ namespace djack.RogueSurvivor.Engine
       Data.Message msg = MakePlayerCentricMessage(text, loc.Position);
       msg.Color = PLAYER_AUDIO_COLOR;
       AddMessage(msg);
+#if SUICIDE_BY_LONG_WAIT
       if (m_IsPlayerLongWait) m_IsPlayerLongWaitForcedStop = true;
+#endif
       RedrawPlayScreen();
     }
 
@@ -3280,6 +3285,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.CurrentMap = player.Location.Map;  // multi-PC support
       ComputeViewRect(player.Location.Position);
       Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
+#if SUICIDE_BY_LONG_WAIT
       if (m_IsPlayerLongWait) {
         if (CheckPlayerWaitLong(player)) {
           DoWait(player);
@@ -3292,6 +3298,7 @@ namespace djack.RogueSurvivor.Engine
         else
           AddMessage(new Data.Message("Wait interrupted!", Session.Get.WorldTime.TurnCounter, Color.Red));
       }
+#endif
 
       GC.Collect(); // force garbage collection when things should be slow anyway
 
@@ -3427,6 +3434,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 DoWait(player);
                 break;
+#if SUICIDE_BY_LONG_WAIT
               case PlayerCommand.WAIT_LONG:
                 if (TryPlayerInsanity()) {
                   flag1 = false;
@@ -3435,6 +3443,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 StartPlayerWaitLong(player);
                 break;
+#endif
               case PlayerCommand.BARRICADE_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerBarricade(player);
                 break;
@@ -5315,6 +5324,7 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
+#if SUICIDE_BY_LONG_WAIT
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void StartPlayerWaitLong(Actor player)
     {
@@ -5335,6 +5345,7 @@ namespace djack.RogueSurvivor.Engine
       }
       return !TryPlayerInsanity();
     }
+#endif
 
     private bool HandlePlayerOrderMode(Actor player)
     {
@@ -8179,8 +8190,9 @@ namespace djack.RogueSurvivor.Engine
       int num3 = (num1 > num2 ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
-      if (m_IsPlayerLongWait && defender.IsPlayer)
-        m_IsPlayerLongWaitForcedStop = true;
+#if SUICIDE_BY_LONG_WAIT
+      if (m_IsPlayerLongWait && defender.IsPlayer) m_IsPlayerLongWaitForcedStop = true;
+#endif
       bool player1 = ForceVisibleToPlayer(defender);
       bool player2 = player1 ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool flag = attacker.IsPlayer || defender.IsPlayer;
@@ -8308,7 +8320,9 @@ namespace djack.RogueSurvivor.Engine
         if (itemRangedWeapon == null) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
         if (DoCheckFireThrough(attacker, LoF)) return;
+#if SUICIDE_BY_LONG_WAIT
         if (m_IsPlayerLongWait && defender.IsPlayer) m_IsPlayerLongWaitForcedStop = true;
+#endif
         int num1 = (int) ((double) accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
         int num2 = m_Rules.RollSkill(defence.Value);
         bool player1 = ForceVisibleToPlayer(defender.Location);
@@ -8849,7 +8863,7 @@ namespace djack.RogueSurvivor.Engine
 
 #if DEBUG
       if (0< (actor.Location.Map.GetItemsAt(actor.Location.Position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + actor.Location.Map.GetItemsAt(actor.Location.Position).ToString());
-#endif      
+#endif
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, dest)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} {1} away", (object) Conjugate(actor,VERB_PUT), (object) gift.TheName)));
     }
@@ -9360,8 +9374,10 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+#if SUICIDE_BY_LONG_WAIT
       if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !ForceVisibleToPlayer(map, noisePosition))) return;
       m_IsPlayerLongWaitForcedStop = true;
+#endif
     }
 
     private void InflictDamage(Actor actor, int dmg)
