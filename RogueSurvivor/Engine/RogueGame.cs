@@ -6,7 +6,7 @@
 
 // #define DATAFLOW_TRACE
 
-#define STABLE_SIM_OPTIONAL
+// #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
 // #define SUICIDE_BY_LONG_WAIT
 // #define NO_PEACE_WALLS
