@@ -1834,7 +1834,9 @@ namespace djack.RogueSurvivor.Engine
           new KeyValuePair< string,PlayerCommand >("Move W", PlayerCommand.MOVE_W),
           new KeyValuePair< string,PlayerCommand >("Move NW", PlayerCommand.MOVE_NW),
           new KeyValuePair< string,PlayerCommand >("Wait", PlayerCommand.WAIT_OR_SELF),
+#if SUICIDE_BY_LONG_WAIT
           new KeyValuePair< string,PlayerCommand >("Wait 1 hour", PlayerCommand.WAIT_LONG),
+#endif
           new KeyValuePair< string,PlayerCommand >("Abandon Game", PlayerCommand.ABANDON_GAME),
           new KeyValuePair< string,PlayerCommand >("Advisor Hint", PlayerCommand.ADVISOR),
           new KeyValuePair< string,PlayerCommand >("Barricade", PlayerCommand.BARRICADE_MODE),

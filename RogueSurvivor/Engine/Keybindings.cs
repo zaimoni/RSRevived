@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define SUICIDE_BY_LONG_WAIT
+// #define SUICIDE_BY_LONG_WAIT
 
 using System;
 using System.Collections.Generic;
@@ -18,20 +18,18 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class Keybindings
   {
-    private readonly Dictionary<PlayerCommand, Keys> m_CommandToKeyData;
-    private readonly Dictionary<Keys, PlayerCommand> m_KeyToCommand;
+    private readonly Dictionary<PlayerCommand, Keys> m_CommandToKeyData = new Dictionary<PlayerCommand, Keys>();
+    private readonly Dictionary<Keys, PlayerCommand> m_KeyToCommand = new Dictionary<Keys, PlayerCommand>();
 
     public Keybindings()
     {
-            m_CommandToKeyData = new Dictionary<PlayerCommand, Keys>();
-            m_KeyToCommand = new Dictionary<Keys, PlayerCommand>();
-            ResetToDefaults();
+      ResetToDefaults();
     }
 
     public void ResetToDefaults()
     {
-            m_CommandToKeyData.Clear();
-            m_KeyToCommand.Clear();
+      m_CommandToKeyData.Clear();
+      m_KeyToCommand.Clear();
             Set(PlayerCommand.BARRICADE_MODE, Keys.B);
             Set(PlayerCommand.BREAK_MODE, Keys.K);
             Set(PlayerCommand.CLOSE_DOOR, Keys.C);
@@ -108,13 +106,11 @@ namespace djack.RogueSurvivor.Engine
     public void Set(PlayerCommand command, Keys key)
     {
       PlayerCommand key1 = Get(key);
-      if (key1 != PlayerCommand.NONE)
-                m_CommandToKeyData.Remove(key1);
+      if (key1 != PlayerCommand.NONE) m_CommandToKeyData.Remove(key1);
       Keys key2 = Get(command);
-      if (key2 != Keys.None)
-                m_KeyToCommand.Remove(key2);
-            m_CommandToKeyData[command] = key;
-            m_KeyToCommand[key] = command;
+      if (key2 != Keys.None) m_KeyToCommand.Remove(key2);
+      m_CommandToKeyData[command] = key;
+      m_KeyToCommand[key] = command;
     }
 
     public bool CheckForConflict()
