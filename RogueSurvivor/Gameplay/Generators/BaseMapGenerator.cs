@@ -181,7 +181,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Eddy",
       "Edward",
       "Elias",
-      "Elie",
+      "Eli",
       "Elmer",
       "Elton",
       "Eric",
@@ -190,7 +190,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Frank",
       "Fred",
       "Garry",
-      "Georges",
+      "George",
       "Greg",
       "Guy",
       "Gordon",
@@ -208,7 +208,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Jeff",
       "Jeffrey",
       "Jeremy",
-      "Jessie",
+      "Jesse",
       "Jesus",
       "Jim",
       "John",
@@ -283,7 +283,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Wayne",
       "Xavier"
     };
-    private static readonly string[] FEMALE_FIRST_NAMES = new string[109]
+    private static readonly string[] FEMALE_FIRST_NAMES = new string[113]
     {
       "Abigail",
       "Amanda",
@@ -318,11 +318,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Dona",
       "Elayne",
       "Eleonor",
+      "Elie",
       "Elizabeth",
       "Ester",
       "Felicia",
       "Fiona",
       "Fran",
+      "Frances",
+      "Georges",
       "Gina",
       "Ginger",
       "Gloria",
@@ -336,6 +339,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Jackie",
       "Jennifer",
       "Jess",
+      "Jessie",
       "Jill",
       "Joana",
       "Kate",
