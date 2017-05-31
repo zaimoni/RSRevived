@@ -275,7 +275,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // but this won't trigger if any of our friends are mutual enemies
         if (0<observers.Count) {
           foreach(KeyValuePair<Actor,ThreatTracking> wary in observers) {
-            List<Actor> tmp = (1<friends.Count ? wary.Key.GetEnemiesInFov(FOV) : null); // XXX could do a specialized bool test and avoid the sorting overhead
+            List<Actor> tmp = wary.Key.GetEnemiesInFov(FOV); // XXX could do a specialized bool test and avoid the sorting overhead
             if (null == tmp) wary.Value.Cleared(m_Actor.Location.Map,FOV);
           }
         }
