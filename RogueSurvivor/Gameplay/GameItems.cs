@@ -1089,7 +1089,7 @@ namespace djack.RogueSurvivor.Gameplay
       SCENT_SPRAY_STENCH_KILLER = 48,
       LIGHT_FLASHLIGHT = 49,
       LIGHT_BIG_FLASHLIGHT = 50,
-      AMMO_LIGHT_PISTOL = 51,
+      AMMO_LIGHT_PISTOL = 51,   // XXX logical origin for AmmoType enum when doing C-style conversion
       AMMO_HEAVY_PISTOL = 52,
       AMMO_LIGHT_RIFLE = 53,
       AMMO_HEAVY_RIFLE = 54,

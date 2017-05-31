@@ -1971,11 +1971,22 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }));
       if (m_DiceRoller.RollChance(HOUSE_BASEMENT_WEAPONS_CACHE_CHANCE))
         MapObjectPlaceInGoodPosition(basement, basement.Rect, (Func<Point, bool>) (pt => !basement.HasExitAt(pt) && basement.IsWalkable(pt) && (!basement.HasMapObjectAt(pt) && !basement.HasItemsAt(pt))), m_DiceRoller, (Func<Point, MapObject>) (pt =>
-        {
+        { // survivalist weapons cache.  Grenades were not acquired locally.
           basement.DropItemAt(MakeItemGrenade(), pt);
           basement.DropItemAt(MakeItemGrenade(), pt);
+#if FAIL
+          // new survivalist weapons cache is guaranteed to be usable.  There will be a primary ranged weapon (with 2 ammo clips)
+          // and a secondary ranged weapon (with one ammo clip)
+          KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = survivalist_ranged_candidates[m_DiceRoller.Roll((0,survivalist_ranged_candidates.Count)];
+          basement.DropItemAt(MakeRangedWeapon(survivalist_cache_ranged.Key), pt);
+          basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), pt);
+          basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), pt);
+          basement.DropItemAt(MakeRangedWeapon(survivalist_cache_ranged.Value), pt);
+          basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Value), pt);
+#else
           for (int index = 0; index < 5; ++index)
             basement.DropItemAt(MakeShopGunshopItem(), pt);
+#endif
           Session.Get.PoliceInvestigate.Record(basement, pt);
           return MakeObjShelf();
         }));

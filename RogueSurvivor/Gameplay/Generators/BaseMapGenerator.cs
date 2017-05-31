@@ -995,6 +995,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemBarricadeMaterial(GameItems.WOODENPLANK);
     }
 
+    // XXX These two arguably should be alternate constructors.
+    static public ItemRangedWeapon MakeRangedWeapon(GameItems.IDs x)
+    {
+      ItemModel tmp = Models.Items[(int)x];
+      ItemRangedWeaponModel rw_model = tmp as ItemRangedWeaponModel;
+      if (null != rw_model) return new ItemRangedWeapon(rw_model);
+      throw new InvalidOperationException(x.ToString()+" not a ranged weapon");
+    }
+
+    static public ItemAmmo MakeAmmo(GameItems.IDs x)
+    {
+      ItemModel tmp = Models.Items[(int)x];
+      ItemRangedWeaponModel rw_model = tmp as ItemRangedWeaponModel;
+      if (null != rw_model) tmp = Models.Items[(int)(rw_model.AmmoType)+(int)(GameItems.IDs.AMMO_LIGHT_PISTOL)];    // use the ammo of the ranged weapon instead
+      ItemAmmoModel am_model = tmp as ItemAmmoModel;
+      if (null != am_model) return new ItemAmmo(am_model);
+      throw new InvalidOperationException(x.ToString()+" not an ammo or ranged weapon");
+    }
+
     static public ItemRangedWeapon MakeItemHuntingCrossbow()
     {
       return new ItemRangedWeapon(GameItems.HUNTING_CROSSBOW);
