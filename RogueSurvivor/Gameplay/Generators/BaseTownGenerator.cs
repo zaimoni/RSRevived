@@ -8,7 +8,7 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
-using djack.RogueSurvivor.Gameplay.AI;
+using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -54,6 +54,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GameImages.DECO_TAGS6,
       GameImages.DECO_TAGS7
     };
+
+    // not going full read-only types on these two for now (relying on access control instead)
+    private readonly GameItems.IDs[] bedroom_ranged_candidates;
+    private readonly KeyValuePair<GameItems.IDs,GameItems.IDs>[] survivalist_ranged_candidates;
+
     private Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
     private readonly string[] m_PC_names = null;
     private const int PARK_TREE_CHANCE = 25;
@@ -98,6 +103,46 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_Params = parameters;
       m_DiceRoller = new DiceRoller();
       if (Engine.Session.CommandLineOptions.ContainsKey("PC")) m_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
+
+      // hook for planned pre-apocalypse politics
+      // following is RED STATE, RED CITY
+      List<GameItems.IDs> working_bedroom = new List<GameItems.IDs>()
+      { // XXX these three require firearms to be legal for civilians to generate in bedrooms
+        GameItems.IDs.RANGED_HUNTING_CROSSBOW,
+        GameItems.IDs.RANGED_HUNTING_RIFLE,
+        GameItems.IDs.RANGED_SHOTGUN,
+        // XXX these two require concealed carry to be legal to generate in bedrooms
+        GameItems.IDs.RANGED_PISTOL,
+        GameItems.IDs.RANGED_KOLT_REVOLVER
+      };
+      bedroom_ranged_candidates = working_bedroom.ToArray();
+
+      // any not-so-legal ranged weapons were obtained the same way the grenades were.  (U.S.: could be obtained via connections with a grade C license 
+      // holder [registered private army] under the 1934 automatic weapons ban.)
+      // true military weapons not represented here, the ammo is assumed too hard to get pre-apocalypse
+      // no duplication of ammo between primary and secondary ranged weapon
+      List<KeyValuePair<GameItems.IDs, GameItems.IDs>> working_survivalist = new List<KeyValuePair<GameItems.IDs, GameItems.IDs>>()
+      {
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_HUNTING_RIFLE),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_SHOTGUN),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_PISTOL),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_KOLT_REVOLVER),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_SHOTGUN),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_PISTOL),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_RIFLE, GameItems.IDs.RANGED_KOLT_REVOLVER),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_HUNTING_RIFLE),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_PISTOL),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_SHOTGUN, GameItems.IDs.RANGED_KOLT_REVOLVER),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_PISTOL, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_PISTOL, GameItems.IDs.RANGED_HUNTING_RIFLE),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_PISTOL, GameItems.IDs.RANGED_SHOTGUN),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_KOLT_REVOLVER, GameItems.IDs.RANGED_HUNTING_CROSSBOW),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_KOLT_REVOLVER, GameItems.IDs.RANGED_HUNTING_RIFLE),
+        new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_KOLT_REVOLVER, GameItems.IDs.RANGED_SHOTGUN),
+      };
+      survivalist_ranged_candidates = working_survivalist.ToArray();
     }
 
     public override Map Generate(int seed, string name)
