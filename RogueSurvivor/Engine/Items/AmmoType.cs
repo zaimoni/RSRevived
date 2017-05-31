@@ -12,9 +12,9 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     LIGHT_PISTOL = 0,
     HEAVY_PISTOL = 1,
-    SHOTGUN = 2,
-    LIGHT_RIFLE = 3,
-    HEAVY_RIFLE = 4,
+    LIGHT_RIFLE = 2,
+    HEAVY_RIFLE = 3,
+    SHOTGUN = 4,
     BOLT = 5,
 //  _COUNT = 6,
   }
