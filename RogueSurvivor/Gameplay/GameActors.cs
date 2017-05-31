@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Gameplay
   internal class GameActors : ActorModelDB
   {
     private static readonly Verb VERB_PUNCH = new Verb("punch", "punches");
-    private readonly ActorModel[] m_Models = new ActorModel[(int) IDs._COUNT];
+    private static readonly ActorModel[] m_Models = new ActorModel[(int) IDs._COUNT];
     private const int UNDEAD_FOOD = 2*Actor.ROT_HUNGRY_LEVEL;
     private const int HUMAN_HUN = 2*Actor.FOOD_HUNGRY_LEVEL;
     private const int HUMAN_SLP = 2*Actor.SLEEP_SLEEPY_LEVEL;

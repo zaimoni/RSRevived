@@ -462,19 +462,21 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GameImages.OBJ_CAR4
     };
     protected readonly RogueGame m_Game;
+    protected DiceRoller m_DiceRoller;
 
     protected BaseMapGenerator(RogueGame game)
       : base(game.Rules)
     {
-            m_Game = game;
+      m_Game = game;
+      m_DiceRoller = new DiceRoller();
     }
 
     public void DressCivilian(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-                DressCivilian(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
+        DressCivilian(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
       else
-                DressCivilian(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS, BaseMapGenerator.FEMALE_TORSOS, BaseMapGenerator.FEMALE_LEGS, BaseMapGenerator.FEMALE_SHOES);
+        DressCivilian(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS, BaseMapGenerator.FEMALE_TORSOS, BaseMapGenerator.FEMALE_LEGS, BaseMapGenerator.FEMALE_SHOES);
     }
 
     public void SkinNakedHuman(DiceRoller roller, Actor actor)

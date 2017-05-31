@@ -84,7 +84,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF = 33;
     private const int SHOP_WINDOW_CHANCE = 30;
     private const int SHOP_BASEMENT_ZOMBIE_RAT_CHANCE = 5;
-    protected DiceRoller m_DiceRoller;
     private List<BaseTownGenerator.Block> m_SurfaceBlocks;
 
     public Parameters Params
@@ -101,7 +100,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       : base(game)
     {
       m_Params = parameters;
-      m_DiceRoller = new DiceRoller();
       if (Engine.Session.CommandLineOptions.ContainsKey("PC")) m_PC_names = Engine.Session.CommandLineOptions["PC"].Split('\0');
 
       // hook for planned pre-apocalypse politics

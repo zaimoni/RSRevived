@@ -1,6 +1,16 @@
 binaryonly ZIPs are meant to overwrite a stable release with compatible CSV and sound files.
 As of 0.9.1, the minimum required .NET framework is 4.6.x
 
+REVIVED 0.10.0 CHANGES
+------------------
+* names better matched to stereotypical English gender
+* map generation radically altered.
+** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
+
+REVIVED 0.9.9.3 CHANGES
+------------------
+* hard crash in release mode fixed
+
 REVIVED 0.9.9.2 CHANGES
 ------------------
 * Self-defense when killing a cop, or a follower of a cop, will not prevent murder charges.
