@@ -2662,7 +2662,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
-      Actor numberedName = (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Patient");
@@ -2818,23 +2818,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewSurvivor(int spawnTime)
     {
-      bool flag = m_Rules.Roll(0, 2) == 0;
+      bool flag = m_DiceRoller.Roll(0, 2) == 0;
       Actor numberedName = (flag ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheSurvivors, spawnTime);
-            GiveNameToActor(m_DiceRoller, numberedName);
-            DressCivilian(m_DiceRoller, numberedName);
+      GiveNameToActor(m_DiceRoller, numberedName);
+      DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? "Actors\\Decoration\\survivor_male_bandana" : "Actors\\Decoration\\survivor_female_bandana");
       numberedName.Inventory.AddAll(MakeItemCannedFood());
       numberedName.Inventory.AddAll(MakeItemArmyRation());
-      if (m_DiceRoller.RollChance(50))
-      {
+      if (m_DiceRoller.RollChance(50)) {
         numberedName.Inventory.AddAll(MakeItemArmyRifle());
         if (m_DiceRoller.RollChance(50))
           numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
         else
           numberedName.Inventory.AddAll(MakeItemGrenade());
-      }
-      else
-      {
+      } else {
         numberedName.Inventory.AddAll(MakeItemShotgun());
         if (m_DiceRoller.RollChance(50))
           numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
@@ -2868,7 +2865,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
     {
-      Actor numberedName = (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
       DressCivilian(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       for (int index = 0; index < itemsToCarry; ++index)
@@ -2917,14 +2914,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor actor;
       if (Session.Get.HasAllZombies) {
-        int num = m_Rules.Roll(0, 100);
+        int num = m_DiceRoller.Roll(0, 100);
         actor = (num < RogueGame.Options.SpawnSkeletonChance ? m_Game.GameActors.Skeleton : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? m_Game.GameActors.Zombie : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? m_Game.GameActors.ZombieMaster : m_Game.GameActors.Skeleton))).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
       } else {
         actor = MakeZombified(null, CreateNewCivilian(spawnTime, 0, 0), spawnTime);
         int num = new WorldTime(spawnTime).Day / 2;
         if (num > 0) {
           for (int index = 0; index < num; ++index) {
-            Skills.IDs? nullable = m_Game.ZombifySkill((Skills.IDs)m_Rules.Roll(0, (int)Skills.IDs._COUNT));
+            Skills.IDs? nullable = m_Game.ZombifySkill((Skills.IDs)m_DiceRoller.Roll(0, (int)Skills.IDs._COUNT));
             if (nullable.HasValue) actor.SkillUpgrade(nullable.Value);
           }
           actor.RecomputeStartingStats();

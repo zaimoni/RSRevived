@@ -883,7 +883,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public ItemMedicine MakeItemBandages()
     {
       return new ItemMedicine(GameItems.BANDAGE) {
-        Quantity = m_Rules.Roll(1, GameItems.BANDAGE.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.BANDAGE.StackingLimit)
       };
     }
 
@@ -895,28 +895,28 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public ItemMedicine MakeItemPillsSTA()
     {
       return new ItemMedicine(GameItems.PILLS_STA) {
-        Quantity = m_Rules.Roll(1, GameItems.PILLS_STA.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_STA.StackingLimit)
       };
     }
 
     public ItemMedicine MakeItemPillsSLP()
     {
       return new ItemMedicine(GameItems.PILLS_SLP) {
-        Quantity = m_Rules.Roll(1, GameItems.PILLS_SLP.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_SLP.StackingLimit)
       };
     }
 
     public ItemMedicine MakeItemPillsSAN()
     {
       return new ItemMedicine(GameItems.PILLS_SAN) {
-        Quantity = m_Rules.Roll(1, GameItems.PILLS_SAN.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_SAN.StackingLimit)
       };
     }
 
     public ItemMedicine MakeItemPillsAntiviral()
     {
       return new ItemMedicine(GameItems.PILLS_ANTIVIRAL) {
-        Quantity = m_Rules.Roll(1, GameItems.PILLS_ANTIVIRAL.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.PILLS_ANTIVIRAL.StackingLimit)
       };
     }
 
@@ -925,20 +925,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int turnCounter = Session.Get.WorldTime.TurnCounter;
       int max = WorldTime.TURNS_PER_DAY * GameItems.GROCERIES.BestBeforeDays;
       int min = max / 2;
-      return new ItemFood(GameItems.GROCERIES, turnCounter + m_Rules.Roll(min, max));
+      return new ItemFood(GameItems.GROCERIES, turnCounter + m_DiceRoller.Roll(min, max));
     }
 
     public ItemFood MakeItemCannedFood()
     {
       return new ItemFood(GameItems.CANNED_FOOD) {
-        Quantity = m_Rules.Roll(1, GameItems.CANNED_FOOD.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.CANNED_FOOD.StackingLimit)
       };
     }
 
     public ItemMeleeWeapon MakeItemCrowbar()
     {
       return new ItemMeleeWeapon(GameItems.CROWBAR) {
-        Quantity = m_Rules.Roll(1, GameItems.CROWBAR.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.CROWBAR.StackingLimit)
       };
     }
 
@@ -1048,7 +1048,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public ItemRangedWeapon MakeItemRandomPistol()
     {
-      if (!m_Game.Rules.RollChance(50))
+      if (!m_DiceRoller.RollChance(50))
         return MakeItemKoltRevolver();
       return MakeItemPistol();
     }
@@ -1108,7 +1108,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public ItemSprayPaint MakeItemSprayPaint()
     {
       ItemSprayPaintModel itemSprayPaintModel;
-      switch (m_Game.Rules.Roll(0, 4))
+      switch (m_DiceRoller.Roll(0, 4))
       {
         case 0:
           itemSprayPaintModel = GameItems.SPRAY_PAINT1;
@@ -1202,7 +1202,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public ItemGrenade MakeItemGrenade()
     {
       return new ItemGrenade(GameItems.GRENADE, GameItems.GRENADE_PRIMED) {
-        Quantity = m_Rules.Roll(1, GameItems.GRENADE.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.GRENADE.StackingLimit)
       };
     }
 
@@ -1214,14 +1214,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public ItemTrap MakeItemSpikes()
     {
       return new ItemTrap(GameItems.SPIKES) {
-        Quantity = m_Rules.Roll(1, GameItems.BARBED_WIRE.StackingLimit)  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
+        Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit)  // XXX V.0.10.0 align?  RS Alpha 9 has this as well.
       };
     }
 
     public ItemTrap MakeItemBarbedWire()
     {
       return new ItemTrap(GameItems.BARBED_WIRE) {
-        Quantity = m_Rules.Roll(1, GameItems.BARBED_WIRE.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.BARBED_WIRE.StackingLimit)
       };
     }
 
@@ -1233,7 +1233,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public ItemEntertainment MakeItemMagazines()
     {
       return new ItemEntertainment(GameItems.MAGAZINE) {
-        Quantity = m_Rules.Roll(1, GameItems.MAGAZINE.StackingLimit)
+        Quantity = m_DiceRoller.Roll(1, GameItems.MAGAZINE.StackingLimit)
       };
     }
 
