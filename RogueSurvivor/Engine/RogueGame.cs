@@ -9809,7 +9809,13 @@ namespace djack.RogueSurvivor.Engine
           upgradeActor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
           upgradeActor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
           upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
-//        upgradeActor.Model = Models.Actors[(int)GameActors.IDs.POLICEMAN];    // XXX we want the AI update but reaction of DollBody is unclear
+#if FAIL
+          if (upgradeActor.Model.ID.IsFemale()) {   // keep this commented out until ready to test
+            upgradeActor.Model = Models.Actors[(int)GameActors.IDs.POLICEWOMAN];
+          } else {
+            upgradeActor.Model = Models.Actors[(int)GameActors.IDs.POLICEMAN];
+          }
+#endif
           upgradeActor.Controller = new PlayerController();
           AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         } else
