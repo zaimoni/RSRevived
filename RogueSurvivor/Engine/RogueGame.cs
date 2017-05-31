@@ -428,8 +428,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
       RogueGame.s_Options = new GameOptions();
       RogueGame.s_Options.ResetToDefaultValues();
-      RogueGame.s_KeyBindings = new Keybindings();
-      RogueGame.s_KeyBindings.ResetToDefaults();
+      s_KeyBindings = new Keybindings();
       RogueGame.s_Hints = new GameHintsStatus();
       RogueGame.s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");

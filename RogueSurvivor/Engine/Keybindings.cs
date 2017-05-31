@@ -141,7 +141,6 @@ namespace djack.RogueSurvivor.Engine
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("load exception : {0}.", (object) ex.ToString()));
         keybindings = new Keybindings();
-        keybindings.ResetToDefaults();
       }
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings... done!");
       return keybindings;
