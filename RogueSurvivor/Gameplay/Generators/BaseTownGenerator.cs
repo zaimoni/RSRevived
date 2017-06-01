@@ -1256,7 +1256,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }));
       }
       Actor newCivilian = CreateNewCivilian(0, RogueGame.REFUGEES_WAVE_ITEMS, 1);
-      ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+      ActorPlace(m_DiceRoller, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       map.AddZone(MakeUniqueZone("Sewers Maintenance", b.BuildingRect));
     }
 
@@ -1412,7 +1412,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           int home_district_xy = Session.Get.World.Size/2;
           if (map.District.WorldPosition == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController();
         }
-        ActorPlace(m_DiceRoller, b.Rectangle.Width * b.Rectangle.Height, map, newPoliceman, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+        ActorPlace(m_DiceRoller, map, newPoliceman, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       }
       map.AddZone(MakeUniqueZone("Subway Station", b.BuildingRect));
     }
@@ -1892,7 +1892,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
         Actor newCharGuard = CreateNewCHARGuard(0);
-        ActorPlace(m_DiceRoller, 100, map, newCharGuard, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+        ActorPlace(m_DiceRoller, map, newCharGuard, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
       }
     }
 
@@ -2161,12 +2161,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (index2 == newUndead.Model.ID) break;
           newUndead.Model = m_Game.GameActors[index2];
         }
-        ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newUndead, actor_ok_here);
+        ActorPlace(m_DiceRoller, underground, newUndead, actor_ok_here);
       }
       int num1 = underground.Width / 10;
       for (int index = 0; index < num1; ++index) {
         Actor newCharGuard = CreateNewCHARGuard(0);
-        ActorPlace(m_DiceRoller, underground.Width * underground.Height, underground, newCharGuard, actor_ok_here);
+        ActorPlace(m_DiceRoller, underground, newCharGuard, actor_ok_here);
       }
       return underground;
     }
@@ -2373,7 +2373,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       for (int index = 0; index < 5; ++index) {
         Actor newPoliceman = CreateNewPoliceman(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newPoliceman);
+        ActorPlace(m_DiceRoller, map, newPoliceman);
       }
       DoForEachTile(map.Rect, (Action<Point>)(pt => {
         Session.Get.ForcePoliceKnown(new Location(map, pt));
@@ -2512,15 +2512,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       for (int index = 0; index < 10; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
+        ActorPlace(m_DiceRoller, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
       }
+      Predicate<Point> in_corridor = (pt => map.HasZonePartiallyNamedAt(pt, "corridor"));
       for (int index = 0; index < 4; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map, newHospitalNurse, in_corridor);
       }
       for (int index = 0; index < 1; ++index) {
         Actor newHospitalDoctor = CreateNewHospitalDoctor(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map, newHospitalDoctor, in_corridor);
       }
       return map;
     }
@@ -2547,13 +2548,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MakeHospitalOfficeRoom(map, "office", room, false);
         y2 += 4;
       }
+      Predicate<Point> in_office = (pt => map.HasZonePartiallyNamedAt(pt, "office"));
       for (int index = 0; index < 5; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "office")));
+        ActorPlace(m_DiceRoller, map, newHospitalNurse, in_office);
       }
       for (int index = 0; index < 2; ++index) {
         Actor newHospitalDoctor = CreateNewHospitalDoctor(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "office")));
+        ActorPlace(m_DiceRoller, map, newHospitalDoctor, in_office);
       }
       return map;
     }
@@ -2582,15 +2584,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       for (int index = 0; index < 20; ++index) {
         Actor newHospitalPatient = CreateNewHospitalPatient(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
+        ActorPlace(m_DiceRoller, map, newHospitalPatient, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "patient room")));
       }
+      Predicate<Point> in_corridor = (pt => map.HasZonePartiallyNamedAt(pt, "corridor"));
       for (int index = 0; index < 8; ++index) {
         Actor newHospitalNurse = CreateNewHospitalNurse(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalNurse, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map, newHospitalNurse, in_corridor);
       }
       for (int index = 0; index < 2; ++index) {
         Actor newHospitalDoctor = CreateNewHospitalDoctor(0);
-        ActorPlace(m_DiceRoller, map.Width * map.Height, map, newHospitalDoctor, (Predicate<Point>) (pt => map.HasZonePartiallyNamedAt(pt, "corridor")));
+        ActorPlace(m_DiceRoller, map, newHospitalDoctor, in_corridor);
       }
       return map;
     }

@@ -11705,7 +11705,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = world[m_Rules.Roll(0, world.Size), m_Rules.Roll(0, world.Size)].SewersMap;
       Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", false, 0);
       DiceRoller roller = new DiceRoller(map.Seed);
-      if (!m_TownGenerator.ActorPlace(roller, 10000, map, named))
+      if (!m_TownGenerator.ActorPlace(roller, map, named))
         throw new InvalidOperationException("could not spawn unique The Sewers Thing");
       Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
       if (zoneByPartialName != null)
@@ -11958,7 +11958,7 @@ namespace djack.RogueSurvivor.Engine
         actor.CreateCivilianDeductFoodSleep(m_Rules);
       }
       actor.Controller = new PlayerController();
-      if (townGen.ActorPlace(roller, 10 * map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
+      if (townGen.ActorPlace(roller, map, actor, (Predicate<Point>) (pt =>
       {
         if (map.IsInsideAt(pt)) {
           if (m_CharGen.IsUndead) return false;
@@ -11970,7 +11970,7 @@ namespace djack.RogueSurvivor.Engine
         if (m_CharGen.IsUndead) return mapObjectAt == null;
         if (mapObjectAt != null) return mapObjectAt.IsCouch;
         return false;
-      })) || townGen.ActorPlace(roller, map.Width * map.Height, map, actor, (Predicate<Point>) (pt =>
+      })) || townGen.ActorPlace(roller, map, actor, (Predicate<Point>) (pt =>
       {
         if (map.IsInsideAt(pt)) return !IsInCHAROffice(new Location(map, pt));
         return false;
@@ -11978,7 +11978,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       do
         ;
-      while (!townGen.ActorPlace(roller, int.MaxValue, map, actor, (Predicate<Point>) (pt => !RogueGame.IsInCHAROffice(new Location(map, pt)))));
+      while (!townGen.ActorPlace(roller, map, actor, (Predicate<Point>) (pt => !RogueGame.IsInCHAROffice(new Location(map, pt)))));
     }
 
     private void RefreshPlayer()

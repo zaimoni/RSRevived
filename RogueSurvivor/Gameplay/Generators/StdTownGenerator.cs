@@ -21,25 +21,24 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public override Map Generate(int seed, string name)
     {
       Map map = base.Generate(seed, name);
-      int maxTries = 10 * map.Width * map.Height;
       Predicate<Point> outside_test = pt => !map.IsInsideAt(pt);
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
         if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
           Actor newPoliceman = CreateNewPoliceman(0);
-          ActorPlace(m_DiceRoller, maxTries, map, newPoliceman, outside_test);
+          ActorPlace(m_DiceRoller, map, newPoliceman, outside_test);
         } else {
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
-          ActorPlace(m_DiceRoller, maxTries, map, newCivilian, pt => map.IsInsideAt(pt));
+          ActorPlace(m_DiceRoller, map, newCivilian, pt => map.IsInsideAt(pt));
         }
       }
       for (int index = 0; index < RogueGame.Options.MaxDogs; ++index) {
         Actor newFeralDog = CreateNewFeralDog(0);
-        ActorPlace(m_DiceRoller, maxTries, map, newFeralDog, outside_test);
+        ActorPlace(m_DiceRoller, map, newFeralDog, outside_test);
       }
       int num = RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent / 100;
       for (int index = 0; index < num; ++index) {
         Actor newUndead = CreateNewUndead(0);
-        ActorPlace(m_DiceRoller, maxTries, map, newUndead, outside_test);
+        ActorPlace(m_DiceRoller, map, newUndead, outside_test);
       }
       return map;
     }
@@ -47,12 +46,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public override Map GenerateSewersMap(int seed, District district)
     {
       Map sewersMap = base.GenerateSewersMap(seed, district);
-      if (Session.Get.HasZombiesInSewers)
-      {
-        int maxTries = 10 * sewersMap.Width * sewersMap.Height;
+      if (Session.Get.HasZombiesInSewers) {
         int num = (int) (0.5 * (double) (RogueGame.Options.MaxUndeads * RogueGame.Options.DayZeroUndeadsPercent) / 100.0);
         for (int index = 0; index < num; ++index) {
-          ActorPlace(m_DiceRoller, maxTries, sewersMap, CreateNewSewersUndead(0));
+          ActorPlace(m_DiceRoller, sewersMap, CreateNewSewersUndead(0));
         }
       }
       return sewersMap;

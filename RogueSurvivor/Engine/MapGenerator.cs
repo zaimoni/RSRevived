@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define TRACKING_FLOODFILL
-
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
@@ -149,54 +147,31 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 
 #region Placing actors
-    public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor)
+    public bool ActorPlace(DiceRoller roller, Map map, Actor actor, Predicate<Point> goodPositionFn=null)
     {
-      return ActorPlace(roller, maxTries, map, actor, (Predicate<Point>) null);
+      return ActorPlace(roller, map, actor, 0, 0, map.Width, map.Height, goodPositionFn);
     }
 
-    public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, int left, int top, int width, int height)
-    {
-      return ActorPlace(roller, maxTries, map, actor, left, top, width, height, (Predicate<Point>) null);
-    }
-
-    public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, Predicate<Point> goodPositionFn)
-    {
-      return ActorPlace(roller, maxTries, map, actor, 0, 0, map.Width, map.Height, goodPositionFn);
-    }
-
-    // Las Vegas algorithm for efficiency reasons.  A temporary array of 10,000 int is unreasonable.
-    public bool ActorPlace(DiceRoller roller, int maxTries, Map map, Actor actor, int left, int top, int width, int height, Predicate<Point> goodPositionFn)
+    // Formerly Las Vegas algorithm.
+    public bool ActorPlace(DiceRoller roller, Map map, Actor actor, int left, int top, int width, int height, Predicate<Point> goodPositionFn=null)
     {
       Contract.Requires(null != map);
       Contract.Requires(null != actor);
       Point position = new Point();
-#if TRACKING_FLOODFILL
       List<Point> valid_spawn = new List<Point>();
-	  if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice])) {
-	    for (int x=left; x<left+width; ++x) {
-	      position.X = x;
-	      for (int y=top; y<top+height; ++y) {
-		    position.Y = y;
-            if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
-		      valid_spawn.Add(position);
-	        }
-		  }
-	    }
+      for (position.X = left; position.X < left+width; ++position.X) {
+	    for (position.Y = top; position.Y < top+height; ++position.Y) {
+          if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
+		    valid_spawn.Add(position);
+	      }
+		}
 	  }
-#endif
-
-      for (int index = 0; index < maxTries; ++index) {
-        position.X = roller.Roll(left, left + width);
-        position.Y = roller.Roll(top, top + height);
-        if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
-          map.PlaceActorAt(actor, position);
-#if TRACKING_FLOODFILL
-		  if (0<valid_spawn.Count) Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
-#endif
-          return true;
-        }
-      }
-      return false;
+      if (0>=valid_spawn.Count) return false;
+      position = valid_spawn[roller.Roll(0,valid_spawn.Count)];
+      map.PlaceActorAt(actor, position);
+      if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))
+        Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
+      return true;
     }
 #endregion
 
