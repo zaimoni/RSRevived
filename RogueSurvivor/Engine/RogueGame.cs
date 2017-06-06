@@ -5694,7 +5694,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessagePressEnter();
         return false;
       }
-      if (player.Location.Map != follower.Location.Map || !Rules.IsAdjacent(player.Location.Position, follower.Location.Position)) {
+      if (!Rules.IsAdjacent(player.Location, follower.Location)) {
         ClearMessages();
         AddMessage(MakeErrorMessage(string.Format("{0} is not next to you.", (object) follower.TheName)));
         AddMessagePressEnter();
@@ -10243,7 +10243,7 @@ namespace djack.RogueSurvivor.Engine
 #if NO_PEACE_WALLS
           } else if (map.IsMapBoundary(x, y)) {
             Exit tmp = map.GetExitAt(point);
-            if (null!=tmp && string.IsEmptyOrNull(tmp.ReasonIsBlocked(m_Player)))
+            if (null!=tmp && string.IsNullOrEmpty(tmp.ReasonIsBlocked(m_Player)))
               DrawExit(screen);
           }
 #else
