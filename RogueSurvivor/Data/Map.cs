@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define NO_PEACE_WALLS
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -165,6 +167,10 @@ namespace djack.RogueSurvivor.Data
     }
 #endregion
 
+    // once the peace walls are down, IsInBounds will refer to the actual map data.
+    // IsValid will allow "translating" coordinates to adjacent maps in order to fulfil the dereference
+    // IsStrictlyValid will *require* "translating" coordinates to adjacent maps in order to fulfil the dereference
+    // That is, IsValid := IsInBounds XOR IsStrictlyValid
     public bool IsInBounds(int x, int y)
     {
       return 0 <= x && x < Width && 0 <= y && y < Height;
@@ -190,6 +196,28 @@ namespace djack.RogueSurvivor.Data
       if (p.Y < 0) p.Y = 0;
       else if (p.Y > Height - 1) p.Y = Height - 1;
     }
+
+    // placeholder for define-controlled redefinitions
+    public bool IsValid(int x, int y)
+    {
+      return 0 <= x && x < Width && 0 <= y && y < Height;
+    }
+
+    public bool IsValid(Point p)
+    {
+      return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
+    }
+
+    public bool IsStrictlyValid(int x, int y)
+    {
+      return false;
+    }
+
+    public bool IsStrictlyValid(Point p)
+    {
+      return false;
+    }
+    // end placeholder for define-controlled redefinitions
 
     // these two look wrong, may need fixing later
     public bool IsMapBoundary(int x, int y)
