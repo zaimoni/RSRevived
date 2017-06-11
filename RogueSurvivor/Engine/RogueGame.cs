@@ -2749,7 +2749,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsSuitableDropSuppliesPoint(Map map, int x, int y)
     {
-      if (!map.IsInBounds(x, y)) return false;
+      if (!map.IsValid(x, y)) return false;
       Tile tileAt = map.GetTileAt(x, y);
       return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(x, y) && !map.HasMapObjectAt(x, y) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
     }
@@ -10226,7 +10226,7 @@ namespace djack.RogueSurvivor.Engine
           Point screen = MapToScreen(x, y);
           bool player = IsVisibleToPlayer(map, point);
           bool flag2 = false;
-          Tile tile = map.IsInBounds(x, y) ? map.GetTileAt(x, y) : null;
+          Tile tile = map.IsValid(x, y) ? map.GetTileAt(x, y) : null;
           if (null != tile) {
             tile.IsInView = player;
             tile.IsVisited = m_Player.Controller.IsKnown(new Location(map,point));
@@ -10264,7 +10264,7 @@ namespace djack.RogueSurvivor.Engine
             DrawMapObject(mapObjectAt, screen, tint);
             flag2 = true;
           }
-          if (!m_Player.IsSleeping && map.IsInBounds(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {
+          if (!m_Player.IsSleeping && map.IsValid(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {
             if (isUndead) {
               if (flag1) {
                 int num5 = m_Player.SmellThreshold;
@@ -11102,7 +11102,7 @@ namespace djack.RogueSurvivor.Engine
     private bool IsVisibleToPlayer(Map map, Point position)
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
-      if (!map.IsInBounds(position.X, position.Y)) return false;
+      if (!map.IsValid(position.X, position.Y)) return false;
       if (null == m_Player || map != m_Player.Location.Map) return false;
       if (m_Player.Controller.FOV.Contains(position)) return true;
       return false;

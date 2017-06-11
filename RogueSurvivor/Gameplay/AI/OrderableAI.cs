@@ -1296,7 +1296,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int num2 = 0;
           for (int x = point.X - itemGrenadeModel.BlastAttack.Radius; x <= point.X + itemGrenadeModel.BlastAttack.Radius; ++x) {
             for (int y = point.Y - itemGrenadeModel.BlastAttack.Radius; y <= point.Y + itemGrenadeModel.BlastAttack.Radius; ++y) {
-              if (!m_Actor.Location.Map.IsInBounds(x, y)) continue;
+              if (!m_Actor.Location.Map.IsValid(x, y)) continue;
               Actor actorAt = m_Actor.Location.Map.GetActorAt(x, y);
               if (null == actorAt) continue;
               if (actorAt == m_Actor) throw new ArgumentOutOfRangeException("actorAt == m_Actor"); // probably an invariant failure
