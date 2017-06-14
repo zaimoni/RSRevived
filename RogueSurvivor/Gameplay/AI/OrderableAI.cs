@@ -951,7 +951,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(Point pt in optimal_FOV.Select(p => new Point(p.X+en.Location.Position.X,p.Y+en.Location.Position.Y))) {
           if (ret.Contains(pt)) continue;
 //        if (danger.Contains(pt)) continue;
-          if (!m_Actor.Location.Map.IsInBounds(pt)) continue;
+          if (!m_Actor.Location.Map.IsValid(pt)) continue;
           List<Point> LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
           if (LOS.CanTraceHypotheticalFireLine(new Location(en.Location.Map,pt), en.Location.Position, range, m_Actor, LoF)) ret.UnionWith(LoF);
           // if "safe" attack possible init danger in different/earlier loop
@@ -1740,7 +1740,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
-        int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable));
+        int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable)); // allows IsInBounds above
         int num2 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj =>
         {
           Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
@@ -1755,7 +1755,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     protected bool IsDoorwayOrCorridor(Map map, Point pos)
-    {
+    { // all of these can use IsInBounds
       if (!map.GetTileModelAt(pos).IsWalkable) return false;
       Point p5 = pos + Direction.NE;
       bool flag_ne = map.IsInBounds(p5) && !map.GetTileModelAt(p5).IsWalkable;
@@ -1789,7 +1789,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || map.HasExitAt(point))
           return false;
-        return IsDoorwayOrCorridor(map, point);
+        return IsDoorwayOrCorridor(map, point); // this allows using IsInBounds rather than IsValid
       }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
@@ -1970,7 +1970,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Point> has_container = new List<Point>();
       foreach(Point pos in Direction.COMPASS.Select(dir => m_Actor.Location.Position+dir)) {
-        if (!m_Actor.Location.Map.IsInBounds(pos)) continue;
+        if (!m_Actor.Location.Map.IsValid(pos)) continue;
         MapObject container = m_Actor.Location.Map.GetMapObjectAt(pos);
         if (null == container) continue;
         if (!container.IsContainer) continue;

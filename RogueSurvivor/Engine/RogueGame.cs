@@ -3926,7 +3926,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Point map = MouseToMap(mousePos);
       if (!IsInViewRect(map)) return false;
-      if (!Session.Get.CurrentMap.IsInBounds(map)) return true;
+      if (!Session.Get.CurrentMap.IsValid(map)) return true;
       ClearOverlays();
       if (IsVisibleToPlayer(Session.Get.CurrentMap, map)) {
         Point screen = MapToScreen(map);
@@ -4374,7 +4374,7 @@ namespace djack.RogueSurvivor.Engine
         if (null == direction) break;
         if (Direction.NEUTRAL == direction) continue;
         Point point = player.Location.Position + direction;
-        if (!player.Location.Map.IsInBounds(point)) continue;
+        if (!player.Location.Map.IsValid(point)) continue;
         Actor actorAt = player.Location.Map.GetActorAt(point);
         if (actorAt != null) {
           string reason;
@@ -4414,7 +4414,7 @@ namespace djack.RogueSurvivor.Engine
         if (direction == null) flag1 = false;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
               string reason;
@@ -4459,7 +4459,7 @@ namespace djack.RogueSurvivor.Engine
         if (direction == null) flag1 = false;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsInBounds(point)) {  // doors never generate on map edges so IsInBounds ok
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null && mapObjectAt is DoorWindow) {
               DoorWindow door = mapObjectAt as DoorWindow;
@@ -4486,14 +4486,14 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(BARRICADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
         if (direction == null) flag1 = false;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null) {
               if (mapObjectAt is DoorWindow) {
@@ -4569,7 +4569,7 @@ namespace djack.RogueSurvivor.Engine
           }
         } else {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null) {
               string reason;
@@ -4611,7 +4611,7 @@ namespace djack.RogueSurvivor.Engine
         if (direction == null) flag1 = false;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             string reason;
             if (m_Rules.CanActorBuildFortification(player, point, isLarge, out reason)) {
               DoBuildFortification(player, point, isLarge);
@@ -4799,7 +4799,7 @@ namespace djack.RogueSurvivor.Engine
           Direction direction = RogueGame.CommandToDirection(command);
           if (direction != null) {
             Point point2 = point1 + direction;
-            if (map.IsInBounds(point2) && Rules.GridDistance(player.Location.Position, point2) <= num)
+            if (map.IsValid(point2) && Rules.GridDistance(player.Location.Position, point2) <= num)
               point1 = point2;
           }
         }
@@ -4832,24 +4832,24 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerSwitchPlace(Actor player)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(SWITCH_PLACE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+
+      bool flag2 = false;
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
+        if (direction == null) break;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
               string reason;
               if (player.CanSwitchPlaceWith(actorAt, out reason)) {
                 flag2 = true;
-                flag1 = false;
                 DoSwitchPlace(player, actorAt);
+                break;
               }
               else
                 AddMessage(MakeErrorMessage(string.Format("Can't switch place : {0}", (object) reason)));
@@ -4858,43 +4858,44 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
 
     private bool HandlePlayerTakeLead(Actor player)
     {
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+
       bool flag1 = true;
       bool flag2 = false;
-      ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
+        if (direction == null) break;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
               string reason;
               if (player.CanTakeLeadOf(actorAt, out reason)) {
                 flag2 = true;
-                flag1 = false;
                 DoTakeLead(player, actorAt);
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited {0}.", (object) actorAt.TheName));
                 AddMessage(new Data.Message("(you can now set directives and orders for your new follower).", Session.Get.WorldTime.TurnCounter, Color.White));
                 AddMessage(new Data.Message(string.Format("(to give order : press <{0}>).", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
+                break;
               } else if (actorAt.Leader == player) {
                 if (m_Rules.CanActorCancelLead(player, actorAt, out reason)) {
                   AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", (object) actorAt.TheName)));
                   RedrawPlayScreen();
                   if (WaitYesOrNo()) {
                     flag2 = true;
-                    flag1 = false;
                     DoCancelLead(player, actorAt);
                     Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Fired {0}.", (object) actorAt.TheName));
+                    break;
                   } else
                     AddMessage(new Data.Message("Good, together you are strong.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
                 } else
@@ -4906,7 +4907,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
@@ -4921,33 +4922,33 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage("Too tired to push."));
         return false;
       }
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
+
+      bool flag2 = false;
       do {
         AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
+        if (direction == null) break;
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             string reason;
             if (actorAt != null) {
               if (player.CanShove(actorAt, out reason)) {
                 if (HandlePlayerShoveActor(player, actorAt)) {
-                  flag1 = false;
                   flag2 = true;
+                  break;
                 }
               } else
                 AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} : {1}.", (object) actorAt.TheName, (object) reason)));
             } else if (mapObjectAt != null) {
               if (player.CanPush(mapObjectAt, out reason)) {
                 if (HandlePlayerPushObject(player, mapObjectAt)) {
-                  flag1 = false;
                   flag2 = true;
+                  break;
                 }
               } else
                 AddMessage(MakeErrorMessage(string.Format("Cannot move {0} : {1}.", (object) mapObjectAt.TheName, (object) reason)));
@@ -4956,71 +4957,71 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
 
     private bool HandlePlayerPushObject(Actor player, MapObject mapObj)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1]
       {
         string.Format(PUSH_OBJECT_MODE_TEXT, (object) mapObj.TheName)
       }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), SIZE_OF_TILE)));
+
+      bool flag2 = false;
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
+        if (direction == null) break;
         else if (direction != Direction.NEUTRAL) {
           Point point = mapObj.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             string reason;
             if (mapObj.CanPushTo(point, out reason)) {
               DoPush(player, mapObj, point);
-              flag1 = false;
               flag2 = true;
+              break;
             } else
               AddMessage(MakeErrorMessage(string.Format("Cannot move {0} there : {1}.", (object) mapObj.TheName, (object) reason)));
           }
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
 
     private bool HandlePlayerShoveActor(Actor player, Actor other)
     {
-      bool flag1 = true;
-      bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(new string[1]
+      AddOverlay(new OverlayPopup(new string[1]
       {
         string.Format(SHOVE_ACTOR_MODE_TEXT, (object) other.TheName)
       }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), SIZE_OF_ACTOR)));
+
+      bool flag2 = false;
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
+        if (direction == null) break;
         else if (direction != Direction.NEUTRAL) {
           Point point = other.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point)) {
+          if (player.Location.Map.IsValid(point)) {
             string reason;
             if (other.CanBeShovedTo(point, out reason)) {
               DoShove(player, other, point);
-              flag1 = false;
               flag2 = true;
+              break;
             } else
               AddMessage(MakeErrorMessage(string.Format("Cannot shove {0} there : {1}.", (object) other.TheName, (object) reason)));
           }
         }
       }
-      while (flag1);
+      while(true);
       ClearOverlays();
       return flag2;
     }
@@ -5053,51 +5054,43 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerTag(Actor player)
     {
+      ItemSprayPaint spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
+      if (spray == null) {
+        AddMessage(MakeErrorMessage("No spray paint equipped."));
+        RedrawPlayScreen();
+        return false;
+      }
+      if (spray.PaintQuantity <= 0) {
+        AddMessage(MakeErrorMessage("No paint left."));
+        RedrawPlayScreen();
+        return false;
+      }
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(TAG_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+
       bool flag1 = true;
       bool flag2 = false;
-      ItemSprayPaint spray = player.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayPaint;
-      if (spray == null)
-      {
-                AddMessage(MakeErrorMessage("No spray paint equipped."));
-                RedrawPlayScreen();
-        return false;
-      }
-      if (spray.PaintQuantity <= 0)
-      {
-                AddMessage(MakeErrorMessage("No paint left."));
-                RedrawPlayScreen();
-        return false;
-      }
-            ClearOverlays();
-            AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(TAG_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      do
-      {
-                RedrawPlayScreen();
+      do {
+        RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null)
-          flag1 = false;
-        else if (direction != Direction.NEUTRAL)
-        {
+        if (direction == null) break;
+        else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsInBounds(point))
-          {
+          if (player.Location.Map.IsInBounds(point)) {
             string reason;
-            if (CanTag(player.Location.Map, point, out reason))
-            {
-                            DoTag(player, spray, point);
-              flag1 = false;
+            if (CanTag(player.Location.Map, point, out reason)) {
+              DoTag(player, spray, point);
               flag2 = true;
-            }
-            else
-            {
-                            AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", (object) reason)));
-                            RedrawPlayScreen();
+              break;
+            } else {
+              AddMessage(MakeErrorMessage(string.Format("Can't tag there : {0}.", (object) reason)));
+              RedrawPlayScreen();
             }
           }
         }
       }
-      while (flag1);
-            ClearOverlays();
+      while(true);
+      ClearOverlays();
       return flag2;
     }
 
@@ -5439,7 +5432,7 @@ namespace djack.RogueSurvivor.Engine
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && IsInViewRect(map2)) {
+          if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               string reason;
               if (m_Rules.CanActorBuildFortification(follower, map2, isLarge, out reason)) {
@@ -5493,7 +5486,7 @@ namespace djack.RogueSurvivor.Engine
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && IsInViewRect(map2)) {
+          if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               DoorWindow door = map1.GetMapObjectAt(map2) as DoorWindow;
               if (door != null) {
@@ -5553,7 +5546,7 @@ namespace djack.RogueSurvivor.Engine
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && IsInViewRect(map2)) {
+          if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               string reason;
               if (map2 == follower.Location.Position || map1.IsWalkableFor(map2, follower, out reason)) {
@@ -5616,7 +5609,7 @@ namespace djack.RogueSurvivor.Engine
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
-          if (map1.IsInBounds(map2) && IsInViewRect(map2)) {
+          if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               bool flag3 = true;
               string reason = "";
@@ -8298,7 +8291,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool ApplyExplosionWaveSub(Location blastCenter, Point pt, int waveDistance, BlastAttack blast)
     {
-      if (!blastCenter.Map.IsInBounds(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance))
+      if (!blastCenter.Map.IsValid(pt) || !LOS.CanTraceFireLine(blastCenter, pt, waveDistance))
         return false;
       int damage = ApplyExplosionDamage(new Location(blastCenter.Map, pt), waveDistance, blast);
       if (!ForceVisibleToPlayer(blastCenter.Map, pt)) return false;

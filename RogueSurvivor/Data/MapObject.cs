@@ -277,7 +277,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantPushTo(Point toPos)
     {
       Map tmp = Location.Map;
-      if (!tmp.IsInBounds(toPos)) return "out of map";
+      if (!tmp.IsInBounds(toPos)) return "out of map";  // XXX should be IsValid but that's a completely different code path
       if (!tmp.GetTileModelAt(toPos).IsWalkable) return "blocked by an obstacle";
       if (tmp.HasMapObjectAt(toPos)) return "blocked by an object";
       if (tmp.HasActorAt(toPos)) return "blocked by someone";

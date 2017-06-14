@@ -89,14 +89,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
-        foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileModelAt(pt).IsWalkable)) {
+        foreach(Point pt in Direction.COMPASS.Select(dir=>a.Location.Position+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAt(pt).IsWalkable)) {
           melee_damage_field[pt] = a_turns*a_max_dam;
         }
         while(1<a_turns) {
           HashSet<Point> sweep = new HashSet<Point>(melee_damage_field.Keys);
           a_turns--;
           foreach(Point pt2 in sweep) {
-            foreach(Point pt in Direction.COMPASS.Select(dir=>pt2+dir).Where(pt=>map.IsInBounds(pt) && map.GetTileModelAt(pt).IsWalkable && !sweep.Contains(pt))) {
+            foreach(Point pt in Direction.COMPASS.Select(dir=>pt2+dir).Where(pt=>map.IsValid(pt) && map.GetTileModelAt(pt).IsWalkable && !sweep.Contains(pt))) {
               melee_damage_field[pt] = a_turns*a_max_dam;
             }
           }
@@ -182,7 +182,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int r = 0;
         while (++r <= tmp_blast.Radius) {
           foreach (Point p in Enumerable.Range(0, 8 * r).Select(i => exp.Location.Position.RadarSweep(r, i))) {
-            if (!exp.Location.Map.IsInBounds(p)) continue;
+            if (!exp.Location.Map.IsValid(p)) continue;
             if (!LOS.CanTraceFireLine(exp.Location, p, tmp_blast.Radius)) continue;
             if (damage_field.ContainsKey(p)) damage_field[p] += tmp_blast.Damage[r];
             else damage_field[p] = tmp_blast.Damage[r];

@@ -345,7 +345,7 @@ namespace djack.RogueSurvivor.Engine
       Point position = a_loc.Position;
       List<Point> pointList1 = new List<Point>();
       foreach(Point point1 in OptimalFOV(maxRange).Select(pt=>new Point(pt.X+a_loc.Position.X,pt.Y+a_loc.Position.Y))) {
-        if (!a_loc.Map.IsInBounds(point1)) continue;
+        if (!a_loc.Map.IsValid(point1)) continue;
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;

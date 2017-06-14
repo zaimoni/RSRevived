@@ -111,6 +111,7 @@ namespace djack.RogueSurvivor.Engine
       TileVLine(map, model, left + width - 1, top, height, decoratorFn);
     }
 
+    // dead, but typical for a map generation utility
     public Point DigUntil(Map map, TileModel model, Point startPos, Direction digDirection, Predicate<Point> stopFn)
     {
       Point p = startPos + digDirection;
