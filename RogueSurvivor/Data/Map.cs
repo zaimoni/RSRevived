@@ -181,6 +181,26 @@ namespace djack.RogueSurvivor.Data
       return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
     }
 
+    // return value of zero may be either "in bounds", or "not valid at all"
+    public int DistrictDeltaCode(Point pt)
+    {
+      int ret = 0;
+
+      if (-Engine.RogueGame.HALF_VIEW_WIDTH>pt.X) return 0;
+      else if (0>pt.X) ret -= 1;
+      else if (Width>pt.X) return 0;
+      else if (Width+Engine.RogueGame.HALF_VIEW_WIDTH > pt.X) ret += 1;
+      else return 0;
+
+      if (-Engine.RogueGame.HALF_VIEW_HEIGHT>pt.Y) return 0;
+      else if (0>pt.Y) ret -= 3;
+      else if (Height > pt.Y) return 0;
+      else if (Height+Engine.RogueGame.HALF_VIEW_HEIGHT > pt.Y) ret += 3;
+      else return 0;
+
+      return ret;
+    }
+
     public void TrimToBounds(ref int x, ref int y)
     {
       if (x < 0) x = 0;
@@ -217,7 +237,41 @@ namespace djack.RogueSurvivor.Data
     {
       return false;
     }
-    // end placeholder for define-controlled redefinitions
+        // end placeholder for define-controlled redefinitions
+
+    public Location? Normalize(Point pt)
+    {
+      if (IsInBounds(pt)) return null;
+      int map_code = District.UsesCrossDistrictView(this);
+      if (0>=map_code) return null;
+      int delta_code = DistrictDeltaCode(pt);
+      if (0==delta_code) return null;
+      Point new_district = District.WorldPosition;    // System.Drawing.Point is a struct: this is a value copy
+      Point district_delta = new Point(0,0);
+      while(0!=delta_code) {
+        Point tmp = Zaimoni.Data.ext_Drawing.sgn_from_delta_code(ref delta_code);
+        // XXX: reject Y other than 0,1 in debug mode
+        if (1==tmp.Y) {
+          district_delta.Y = tmp.X;
+          new_district.Y += tmp.X;
+          if (0>new_district.Y) return null;
+          if (Engine.Session.Get.World.Size<=new_district.Y) return null;
+        } else if (0==tmp.Y) {
+          district_delta.X = tmp.X;
+          new_district.X += tmp.X;
+          if (0>new_district.X) return null;
+          if (Engine.Session.Get.World.Size<=new_district.X) return null;
+        }
+      }
+      // following fails if district size strictly less than the half-view radius
+      Map dest = Engine.Session.Get.World[new_district.X,new_district.Y].CrossDistrictViewing(map_code);
+      if (null==dest) return null;
+      if (1==district_delta.X) pt.X -= Width;
+      else if (-1==district_delta.X) pt.X += dest.Width;
+      if (1==district_delta.Y) pt.Y -= Height;
+      else if (-1==district_delta.Y) pt.Y += dest.Height;
+      return new Location(dest,pt);
+    }
 
     // these two look wrong, may need fixing later
     public bool IsMapBoundary(int x, int y)

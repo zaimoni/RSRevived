@@ -207,8 +207,8 @@ namespace djack.RogueSurvivor.Engine
 
     public const int TILE_VIEW_WIDTH = 21;
     public const int TILE_VIEW_HEIGHT = 21;
-    private const int HALF_VIEW_WIDTH = 10;
-    private const int HALF_VIEW_HEIGHT = 10;
+    public const int HALF_VIEW_WIDTH = 10;
+    public const int HALF_VIEW_HEIGHT = 10;
     public const int CANVAS_WIDTH = 1024;
     public const int CANVAS_HEIGHT = 768;
     private const int DAMAGE_DX = 10;

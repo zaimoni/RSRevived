@@ -136,6 +136,26 @@ namespace djack.RogueSurvivor.Data
 //    map.District = null;
     }
 
+    // return value is 0 for "no", otherwise something that should have been an enum
+    public int UsesCrossDistrictView(Map m)
+    { 
+      if (m==m_EntryMap) return 1;
+      if (m==m_SewersMap) return 2;
+      if (m==m_SubwayMap) return 3;
+      return 0;
+    }
+
+    public Map CrossDistrictViewing(int x)
+    {
+      switch(x)
+      {
+      case 1: return m_EntryMap;
+      case 2: return m_SewersMap;
+      case 3: return m_SubwayMap;
+      default: return null;
+      }
+    }
+
     public bool HasAccessiblePowerGenerators {
       get {
         if (0 < (m_SubwayMap?.CountPowerGenerators ?? 0)) return true;

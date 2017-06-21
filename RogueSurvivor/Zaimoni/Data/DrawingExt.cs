@@ -33,6 +33,41 @@ namespace Zaimoni.Data
       /* if (8*radius>i) */ return new Point(-radius + origin.X, (i-7* radius) + origin.Y);
     }
 
+    // unpacking delta codes for < = >
+    public static Point sgn_from_delta_code(ref int delta_code)
+    {
+      if (0==delta_code) return new Point(0,0);
+      int scale = 3;
+      int threshold = scale/2;
+      int index = 0;
+      // XXX lack of error checking even in debug mode
+      if (0<delta_code) {
+        while(threshold < delta_code) {
+          if (threshold+scale >= delta_code) {
+            delta_code -= scale;
+            return new Point(1,index+1);
+          }
+          scale *= 3;
+          threshold = scale/2;
+          index++;
+        }
+        delta_code = 0;
+        return new Point(1,0);
+      } else {
+        while(-threshold > delta_code) {
+          if (-threshold-scale <= delta_code) {
+            delta_code += scale;
+            return new Point(-1,index+1);
+          }
+          scale *= 3;
+          threshold = scale/2;
+          index++;
+        }
+        delta_code = 0;
+        return new Point(-1,0);
+      }
+    }
+
     // low-level bitmap manipulations.  Technically redundant due to System.Drawing.Graphics.
     public static Bitmap MonochromeRectangle(Color tint, int w, int h)
     {
