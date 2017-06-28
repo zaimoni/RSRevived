@@ -273,6 +273,45 @@ namespace djack.RogueSurvivor.Data
       return new Location(dest,pt);
     }
 
+    public Location? Denormalize(Location loc)
+    {
+      if (this == loc.Map && IsValid(loc.Position)) return loc;
+#if NO_PEACE_WALLS
+      int map_code = District.UsesCrossDistrictView(this);
+      if (0>=map_code) return null;
+      if (map_code != loc.Map.District.UsesCrossDistrictView(loc.Map)) return null;
+      Point district_delta = new Point(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
+      if (-1 > district_delta.X || 1 < district_delta.X) return null;
+      if (-1 > district_delta.Y || 1 < district_delta.Y) return null;
+      Point not_in_bounds = loc.Position;
+      switch(district_delta.X)
+      {
+      case 1:
+        if (Engine.RogueGame.HALF_VIEW_WIDTH <= not_in_bounds.X) return null;
+        not_in_bounds.X += Width;
+        break;
+      case -1:
+        if (loc.Map.Width-Engine.RogueGame.HALF_VIEW_WIDTH > not_in_bounds.X) return null;
+        not_in_bounds.X -= loc.Map.Width;
+        break;
+      };
+      switch(district_delta.Y)
+      {
+      case 1:
+        if (Engine.RogueGame.HALF_VIEW_HEIGHT <= not_in_bounds.Y) return null;
+        not_in_bounds.Y += Height;
+        break;
+      case -1:
+        if (loc.Map.Width-Engine.RogueGame.HALF_VIEW_HEIGHT > not_in_bounds.Y) return null;
+        not_in_bounds.Y -= loc.Map.Height;
+        break;
+      };
+      return new Location(this,not_in_bounds);
+#else
+      return null;
+#endif
+    }
+
     // these two look wrong, may need fixing later
     public bool IsMapBoundary(int x, int y)
     {
