@@ -687,7 +687,15 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasActorAt(Point position)
     {
+#if NO_PEACE_WALLS
+      if (m_aux_ActorsByPosition.ContainsKey(position)) return true;
+      if (IsInBounds(position)) return false;
+      Location? tmp = Normalize(position);
+      if (null == tmp) return false;
+      return tmp.Value.Map.HasActorAt(tmp.Value.Position);
+#else
       return m_aux_ActorsByPosition.ContainsKey(position);
+#endif
     }
 
     public bool HasActorAt(int x, int y)
