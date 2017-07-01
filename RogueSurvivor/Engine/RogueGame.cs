@@ -11089,37 +11089,22 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsVisibleToPlayer(Location location)
     {
-      return IsVisibleToPlayer(location.Map, location.Position);
+      return m_Player?.Controller.IsVisibleTo(location) ?? false;
     }
 
     private bool IsVisibleToPlayer(Map map, Point position)
     {
-      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
-      if (null == m_Player) return false;
-#if NO_PEACE_WALLS
-      if (map != m_Player.Location.Map)
-        {
-        Location? tmp = m_Player.Location.Map.Denormalize(new Location(map, position));
-        if (null == tmp) return false;
-        return IsVisibleToPlayer(tmp.Value);
-        }
-#else
-      if (map != m_Player.Location.Map) return false;
-#endif
-      if (!map.IsValid(position.X, position.Y)) return false;
-      if (m_Player.Controller.FOV.Contains(position)) return true;
-      return false;
+      return m_Player?.Controller.IsVisibleTo(map,position) ?? false;
     }
 
     private bool IsVisibleToPlayer(Actor actor)
     {
-      if (actor == m_Player) return true;
-      return IsVisibleToPlayer(actor.Location);
+      return m_Player?.Controller.IsVisibleTo(actor) ?? false;
     }
 
     private bool IsVisibleToPlayer(MapObject mapObj)
     {
-      return IsVisibleToPlayer(mapObj.Location);
+      return m_Player?.Controller.IsVisibleTo(mapObj.Location) ?? false;
     }
 
     public void PanViewportTo(Actor player)

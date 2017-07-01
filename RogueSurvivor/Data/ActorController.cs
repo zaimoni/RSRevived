@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define NO_PEACE_WALLS
+
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.AI;
@@ -89,6 +91,49 @@ namespace djack.RogueSurvivor.Data
       HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
       if (null == tmpFOV) return false;
       return tmpFOV.Contains(x.Position);
+    }
+
+    private bool _IsVisibleTo(Map map, Point position)
+    {
+      Contract.Requires(null!=m_Actor);
+      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+#if NO_PEACE_WALLS
+      if (map != m_Actor.Location.Map)
+        {
+        Location? tmp = m_Actor.Location.Map.Denormalize(new Location(map, position));
+        if (null == tmp) return false;
+        return _IsVisibleTo(tmp.Value.Map,tmp.Value.Position);
+        }
+#else
+      if (map != m_Actor.Location.Map) return false;
+#endif
+      if (!map.IsValid(position.X, position.Y)) return false;
+      if (FOV.Contains(position)) return true;
+      return false;
+    }
+
+    private bool _IsVisibleTo(Location location)
+    {
+      return _IsVisibleTo(location.Map, location.Position);
+    }
+
+    public bool IsVisibleTo(Map map, Point position)
+    {
+      if (null == m_Actor) return false;
+      return _IsVisibleTo(map,position);
+    }
+
+    public bool IsVisibleTo(Location loc)
+    {
+      if (null == m_Actor) return false;
+      return _IsVisibleTo(loc);
+    }
+
+    public bool IsVisibleTo(Actor actor)
+    {
+      if (null == m_Actor) return false;
+      if (actor == m_Actor) return true;
+      return _IsVisibleTo(actor.Location);
     }
 
     public abstract ActorAction GetAction(RogueGame game);
