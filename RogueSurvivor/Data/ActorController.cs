@@ -88,15 +88,14 @@ namespace djack.RogueSurvivor.Data
       if (!x.Map.IsInBounds(x.Position)) return false;
       if (x.Position == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
       if (m_Actor.IsSleeping) return false;
-      HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
-      if (null == tmpFOV) return false;
-      return tmpFOV.Contains(x.Position);
+      return FOV?.Contains(x.Position) ?? false;
     }
 
+    // we would like to use the CanSee function name for these, but we probably don't need the overhead for sleeping special cases
     private bool _IsVisibleTo(Map map, Point position)
     {
       Contract.Requires(null!=m_Actor);
-      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+      Contract.Requires(null!=map);
 #if NO_PEACE_WALLS
       if (map != m_Actor.Location.Map)
         {
@@ -108,8 +107,7 @@ namespace djack.RogueSurvivor.Data
       if (map != m_Actor.Location.Map) return false;
 #endif
       if (!map.IsValid(position.X, position.Y)) return false;
-      if (FOV.Contains(position)) return true;
-      return false;
+      return FOV?.Contains(position) ?? false;
     }
 
     private bool _IsVisibleTo(Location location)
@@ -120,12 +118,14 @@ namespace djack.RogueSurvivor.Data
     public bool IsVisibleTo(Map map, Point position)
     {
       if (null == m_Actor) return false;
+      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
       return _IsVisibleTo(map,position);
     }
 
     public bool IsVisibleTo(Location loc)
     {
       if (null == m_Actor) return false;
+      if (null == loc.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
       return _IsVisibleTo(loc);
     }
 
@@ -133,7 +133,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (null == m_Actor) return false;
       if (actor == m_Actor) return true;
-      return _IsVisibleTo(actor.Location);
+      return IsVisibleTo(actor.Location);
     }
 
     public abstract ActorAction GetAction(RogueGame game);
