@@ -1118,9 +1118,18 @@ namespace djack.RogueSurvivor.Data
 
     public int GetScentByOdorAt(Odor odor, Point position)
     {
-      if (!IsValid(position)) return 0;
-      OdorScent scentByOdor = GetScentByOdor(odor, position);
-      if (scentByOdor != null) return scentByOdor.Strength;
+      if (IsInBounds(position)) {
+        OdorScent scentByOdor = GetScentByOdor(odor, position);
+        if (scentByOdor != null) return scentByOdor.Strength;
+#if NO_PEACE_WALLS
+      } else if (IsStrictlyValid(position)) {
+        Location? tmp = Normalize(position);
+        if (null != tmp) {
+          OdorScent scentByOdor = tmp.Value.Map.GetScentByOdor(odor, tmp.Value.Position);
+          if (scentByOdor != null) return scentByOdor.Strength;
+        }
+#endif
+      }
       return 0;
     }
 
