@@ -333,6 +333,13 @@ namespace djack.RogueSurvivor.Data
       return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
     }
 
+    // for when coordinates may be denormalized
+    public Tile GetTileAtExt(int x, int y)
+    {
+      int i = y*Width+x;
+      return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
+    }
+
     /// <summary>
     /// GetTileAt does not bounds-check for efficiency reasons; 
     /// the typical use case is known to be in bounds by construction.
@@ -372,8 +379,8 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTileModelAt(int x, int y, TileModel model)
     {
+      Contract.Requires(null != model);
       if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("position out of map bounds");
-      if (model == null) throw new ArgumentNullException("model");
       m_TileIDs[x, y] = (byte)(model.ID);
     }
 
@@ -385,6 +392,17 @@ namespace djack.RogueSurvivor.Data
     public TileModel GetTileModelAt(Point pt)
     {
       return GetTileModelAt(pt.X,pt.Y);
+    }
+
+    // possibly denormalized versions
+    public TileModel GetTileModelAtExt(int x, int y)
+    {
+      return Models.Tiles[m_TileIDs[x,y]];
+    }
+
+    public TileModel GetTileModelAtExt(Point pt)
+    {
+      return GetTileModelAtExt(pt.X,pt.Y);
     }
 
     // thin wrappers based on Tile API
@@ -759,7 +777,7 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null != actor);
       if (!IsInBounds(x, y)) return "out of map";
-      if (!GetTileModelAt(x, y).IsWalkable) return "blocked";
+      if (!GetTileModelAt(x, y).IsWalkable) return "blocked";   // XXX change to GetTileModelAtExt when handling peace walls
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
         if (mapObjectAt.IsJumpable) {
@@ -1194,7 +1212,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsTransparent(int x, int y)
     {
-      if (!IsValid(x, y) || !GetTileModelAt(x, y).IsTransparent)
+      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsTransparent)
         return false;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       return null == mapObjectAt || mapObjectAt.IsTransparent;
@@ -1202,7 +1220,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsWalkable(int x, int y)
     {
-      if (!IsValid(x, y) || !GetTileModelAt(x, y).IsWalkable)
+      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsWalkable)
         return false;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       return null == mapObjectAt || mapObjectAt.IsWalkable;
@@ -1215,14 +1233,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBlockingFire(int x, int y)
     {
-      if (!IsValid(x, y) || !GetTileModelAt(x, y).IsTransparent || HasActorAt(x, y))
+      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsTransparent || HasActorAt(x, y))
         return true;
       return !GetMapObjectAt(x, y)?.IsTransparent ?? false;
     }
 
     public bool IsBlockingThrow(int x, int y)
     {
-      if (!IsValid(x, y) || !GetTileModelAt(x, y).IsWalkable)
+      if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsWalkable)
         return true;
       MapObject mapObjectAt = GetMapObjectAt(x, y);
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;

@@ -640,7 +640,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       Map map = actor.Location.Map;
-      if (!map.GetTileModelAt(pos).IsWalkable)
+      if (!map.GetTileModelAtExt(pos).IsWalkable)
       {
         reason = "cannot build on walls";
         return false;

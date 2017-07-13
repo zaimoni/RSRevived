@@ -1075,7 +1075,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsInside {
       get {
-        return Location.Map.GetTileAt(Location.Position.X, Location.Position.Y).IsInside;
+        return Location.Map.GetTileAt(Location.Position).IsInside;
       }
     }
 
@@ -1216,8 +1216,8 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantBeShovedTo(Point toPos)
     {
       Map map = Location.Map;
-      if (!map.IsInBounds(toPos)) return "out of map";
-      if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked";
+      if (!map.IsInBounds(toPos)) return "out of map";  // XXX should be IsValid
+      if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked"; // XXX should be GetTileModelAtExt
       MapObject mapObjectAt = map.GetMapObjectAt(toPos);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable) return "blocked by an object";
       if (map.HasActorAt(toPos)) return "blocked by someone";

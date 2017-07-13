@@ -278,7 +278,7 @@ namespace djack.RogueSurvivor.Data
     {
       Map tmp = Location.Map;
       if (!tmp.IsInBounds(toPos)) return "out of map";  // XXX should be IsValid but that's a completely different code path
-      if (!tmp.GetTileModelAt(toPos).IsWalkable) return "blocked by an obstacle";
+      if (!tmp.GetTileModelAt(toPos).IsWalkable) return "blocked by an obstacle";   // XXX likewise should be GetTileModelAtExt
       if (tmp.HasMapObjectAt(toPos)) return "blocked by an object";
       if (tmp.HasActorAt(toPos)) return "blocked by someone";
       return "";

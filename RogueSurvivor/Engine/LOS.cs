@@ -349,7 +349,7 @@ namespace djack.RogueSurvivor.Engine
           if (visibleSet.Contains(point1)) continue;
           if (!LOS.FOVSub(a_loc, point1, maxRange, ref visibleSet)) {
             bool flag = false;
-            TileModel tileModel = map.GetTileModelAt(point1);
+            TileModel tileModel = map.GetTileModelAtExt(point1);
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
             else if (map.HasMapObjectAt(point1)) flag = true;
             if (flag) pointList1.Add(point1);
@@ -367,7 +367,7 @@ namespace djack.RogueSurvivor.Engine
         int num = 0;
         foreach (Point point3 in Direction.COMPASS.Select(dir=> point2 + dir)) {
           if (!visibleSet.Contains(point3)) continue;
-          TileModel tileModel = map.GetTileModelAt(point3);
+          TileModel tileModel = map.GetTileModelAtExt(point3);
           if (tileModel.IsTransparent && tileModel.IsWalkable) ++num;
         }
         if (num >= 3) pointList2.Add(point2);

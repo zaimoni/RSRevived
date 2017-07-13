@@ -2750,7 +2750,7 @@ namespace djack.RogueSurvivor.Engine
     private bool IsSuitableDropSuppliesPoint(Map map, int x, int y)
     {
       if (!map.IsValid(x, y)) return false;
-      Tile tileAt = map.GetTileAt(x, y);
+      Tile tileAt = map.GetTileAtExt(x, y);
       return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(x, y) && !map.HasMapObjectAt(x, y) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
     }
 
@@ -9390,8 +9390,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void SplatterBlood(Map map, Point position)
     {
-      Tile tileAt1 = map.GetTileAt(position.X, position.Y);
-      if (map.IsWalkable(position.X, position.Y) && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
+      Tile tileAt1 = map.GetTileAt(position);
+      if (tileAt1.Model.IsWalkable && !tileAt1.HasDecoration(GameImages.DECO_BLOODIED_FLOOR)) {
         tileAt1.AddDecoration(GameImages.DECO_BLOODIED_FLOOR);
         map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_BLOODIED_FLOOR));
       }
@@ -9407,7 +9407,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void UndeadRemains(Map map, Point position)
     {
-      Tile tileAt = map.GetTileAt(position.X, position.Y);
+      Tile tileAt = map.GetTileAt(position);
 //    if (!map.IsWalkable(position.X, position.Y) || tileAt.HasDecoration(GameImages.DECO_ZOMBIE_REMAINS)) return;
       tileAt.AddDecoration(GameImages.DECO_ZOMBIE_REMAINS);
       map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_ZOMBIE_REMAINS));
@@ -10219,7 +10219,7 @@ namespace djack.RogueSurvivor.Engine
           Point screen = MapToScreen(x, y);
           bool player = IsVisibleToPlayer(map, point);
           bool flag2 = false;
-          Tile tile = map.IsValid(x, y) ? map.GetTileAt(x, y) : null;
+          Tile tile = map.IsValid(x, y) ? map.GetTileAtExt(x, y) : null;
           if (null != tile) {
             tile.IsInView = player;
             tile.IsVisited = m_Player.Controller.IsKnown(new Location(map,point));

@@ -48,8 +48,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileFill(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (model == null) throw new ArgumentNullException("model");
+      Contract.Requires(null != map);
+      Contract.Requires(null != model);
       for (int x = left; x < left + width; ++x) {
         for (int y = top; y < top + height; ++y) {
           TileModel model1 = map.GetTileModelAt(x, y);
@@ -62,8 +62,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileFill(Map map, TileModel model, int left, int top, int width, int height, bool inside)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (model == null) throw new ArgumentNullException("model");
+      Contract.Requires(null != map);
+      Contract.Requires(null != model);
       for (int x = left; x < left + width; ++x) {
         for (int y = top; y < top + height; ++y) {
           map.SetTileModelAt(x, y, model);
@@ -74,8 +74,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (model == null) throw new ArgumentNullException("model");
+      Contract.Requires(null != map);
+      Contract.Requires(null != model);
       for (int x = left; x < left + width; ++x) {
         TileModel model1 = map.GetTileModelAt(x, top);
         map.SetTileModelAt(x, top, model);
@@ -86,8 +86,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (model == null) throw new ArgumentNullException("model");
+      Contract.Requires(null != map);
+      Contract.Requires(null != model);
       for (int y = top; y < top + height; ++y) {
         TileModel model1 = map.GetTileModelAt(left, y);
         map.SetTileModelAt(left, y, model);
