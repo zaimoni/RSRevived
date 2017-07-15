@@ -171,11 +171,13 @@ namespace djack.RogueSurvivor.Data
     // IsValid will allow "translating" coordinates to adjacent maps in order to fulfil the dereference
     // IsStrictlyValid will *require* "translating" coordinates to adjacent maps in order to fulfil the dereference
     // That is, IsValid := IsInBounds XOR IsStrictlyValid
+    [Pure]
     public bool IsInBounds(int x, int y)
     {
       return 0 <= x && x < Width && 0 <= y && y < Height;
     }
 
+    [Pure]
     public bool IsInBounds(Point p)
     {
       return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
@@ -387,7 +389,7 @@ namespace djack.RogueSurvivor.Data
     public void SetTileModelAt(int x, int y, TileModel model)
     {
       Contract.Requires(null != model);
-      if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("position out of map bounds");
+      Contract.Requires(IsInBounds(x, y));
       m_TileIDs[x, y] = (byte)(model.ID);
     }
 
@@ -396,6 +398,7 @@ namespace djack.RogueSurvivor.Data
       return Models.Tiles[m_TileIDs[x,y]];
     }
 
+    [Pure]
     public TileModel GetTileModelAt(Point pt)
     {
       return GetTileModelAt(pt.X,pt.Y);
@@ -903,12 +906,11 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null != mapObj);
       Contract.Requires(IsInBounds(position));
+      Contract.Requires(GetTileModelAt(position).IsWalkable);
       MapObject mapObjectAt = GetMapObjectAt(position);
       if (mapObjectAt == mapObj) return;
       if (mapObjectAt != null)
         throw new InvalidOperationException("another mapObject already at position");
-      if (!GetTileModelAt(position).IsWalkable)
-        throw new InvalidOperationException("cannot place map objects on unwalkable tiles");
       if (HasMapObject(mapObj))
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
       else
@@ -988,6 +990,7 @@ namespace djack.RogueSurvivor.Data
       return HasItemsAt(new Point(x, y));
     }
 
+    [Pure]
     public Inventory GetItemsAt(Point position)
     {
       Contract.Ensures(null == Contract.Result<Inventory>() || !Contract.Result<Inventory>().IsEmpty);
@@ -1179,22 +1182,18 @@ namespace djack.RogueSurvivor.Data
     {
       if (!m_Scents.Contains(scent)) m_Scents.Add(scent);
       List<OdorScent> odorScentList;
-      if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList))
-      {
+      if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList)) {
         odorScentList.Add(scent);
-      }
-      else
-      {
+      } else {
         odorScentList = new List<OdorScent>(2);
         odorScentList.Add(scent);
-                m_aux_ScentsByPosition.Add(scent.Position, odorScentList);
+        m_aux_ScentsByPosition.Add(scent.Position, odorScentList);
       }
     }
 
     public void ModifyScentAt(Odor odor, int strengthChange, Point position)
     {
-      if (!IsInBounds(position))    // IsInBounds should be ok here
-        throw new ArgumentOutOfRangeException("position");
+      Contract.Requires(IsInBounds(position));    // IsInBounds should be ok here
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null)
         AddNewScent(new OdorScent(odor, strengthChange, position));
@@ -1204,8 +1203,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {
-      if (!IsInBounds(position))    // IsInBounds should be ok here
-        throw new ArgumentOutOfRangeException(string.Format("position; ({0},{1}) map {2} odor {3}", (object) position.X, (object) position.Y, (object) Name, (object) odor.ToString()));
+      Contract.Requires(IsInBounds(position));  // IsInBounds should be ok here
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null) {
         AddNewScent(new OdorScent(odor, freshStrength, position));

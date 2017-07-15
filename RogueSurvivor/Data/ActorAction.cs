@@ -27,6 +27,7 @@ namespace djack.RogueSurvivor.Data
       m_Actor = actor;
     }
 
+    [Pure]
     public abstract bool IsLegal();
 
     public abstract void Perform();

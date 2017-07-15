@@ -213,6 +213,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
+    [Pure]
     public virtual bool IsInterestingItem(Item it)
     {
 	  Contract.Requires(null != it);

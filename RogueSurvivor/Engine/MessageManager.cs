@@ -34,8 +34,8 @@ namespace djack.RogueSurvivor.Engine
 
     public MessageManager(int linesSpacing, int fadeoutFactor, int historySize)
     {
-      if (linesSpacing < 0) throw new ArgumentOutOfRangeException("linesSpacing < 0");
-      if (fadeoutFactor < 0) throw new ArgumentOutOfRangeException("fadeoutFactor < 0");
+      Contract.Requires(0 <= linesSpacing);
+      Contract.Requires(0 <= fadeoutFactor);
       Contract.Requires(0 <= historySize);
       m_LinesSpacing = linesSpacing;
       m_FadeoutFactor = fadeoutFactor;

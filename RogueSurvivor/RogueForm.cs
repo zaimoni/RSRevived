@@ -294,15 +294,15 @@ namespace djack.RogueSurvivor
 
     public void UI_DrawRect(Color color, Rectangle rect)
     {
-      if (rect.Width <= 0 || rect.Height <= 0)
-        throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
+      Contract.Requires(0 < rect.Width);
+      Contract.Requires(0 < rect.Height);
       m_GameCanvas.AddRect(color, rect);
     }
 
     public void UI_FillRect(Color color, Rectangle rect)
     {
-      if (rect.Width <= 0 || rect.Height <= 0)
-        throw new ArgumentOutOfRangeException("rectangle Width/Height <= 0");
+      Contract.Requires(0 < rect.Width);
+      Contract.Requires(0 < rect.Height);
       m_GameCanvas.AddFilledRect(color, rect);
     }
 
@@ -311,8 +311,7 @@ namespace djack.RogueSurvivor
       int num1 = 0;
       int num2 = 0;
       Size[] sizeArray = new Size[lines.Length];
-      for (int index = 0; index < lines.Length; ++index)
-      {
+      for (int index = 0; index < lines.Length; ++index) {
         sizeArray[index] = TextRenderer.MeasureText(lines[index], m_BoldFont);
         if (sizeArray[index].Width > num1)
           num1 = sizeArray[index].Width;
@@ -321,20 +320,19 @@ namespace djack.RogueSurvivor
       Point location = new Point(gx, gy);
       Size size = new Size(num1 + 4, num2 + 4);
       Rectangle rect = new Rectangle(location, size);
-            m_GameCanvas.AddFilledRect(boxFillColor, rect);
-            m_GameCanvas.AddRect(boxBorderColor, rect);
+      m_GameCanvas.AddFilledRect(boxFillColor, rect);
+      m_GameCanvas.AddRect(boxBorderColor, rect);
       int gx1 = location.X + 2;
       int gy1 = location.Y + 2;
-      for (int index = 0; index < lines.Length; ++index)
-      {
-                m_GameCanvas.AddString(m_BoldFont, textColor, lines[index], gx1, gy1);
+      for (int index = 0; index < lines.Length; ++index) {
+        m_GameCanvas.AddString(m_BoldFont, textColor, lines[index], gx1, gy1);
         gy1 += sizeArray[index].Height;
       }
     }
 
     public void UI_ClearMinimap(Color color)
     {
-            m_GameCanvas.ClearMinimap(color);
+      m_GameCanvas.ClearMinimap(color);
     }
 
     public void UI_SetMinimapColor(int x, int y, Color color)

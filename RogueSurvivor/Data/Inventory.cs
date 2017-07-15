@@ -172,6 +172,7 @@ namespace djack.RogueSurvivor.Data
       return GetBestDestackable(it.Model);
     }
 
+    [Pure]
     public bool Contains(Item it)
     {
       return m_Items.Contains(it);

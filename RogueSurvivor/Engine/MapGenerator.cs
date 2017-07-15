@@ -103,8 +103,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      if (map == null) throw new ArgumentNullException("map");
-      if (model == null) throw new ArgumentNullException("model");
+      Contract.Requires(null != map);
+      Contract.Requires(null != model);
       TileHLine(map, model, left, top, width, decoratorFn);
       TileHLine(map, model, left, top + height - 1, width, decoratorFn);
       TileVLine(map, model, left, top, height, decoratorFn);
@@ -125,7 +125,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoForEachTile(Rectangle rect, Action<Point> doFn)
     {
-      if (doFn == null) throw new ArgumentNullException("doFn");
+      Contract.Requires(null != doFn);
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
         for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
@@ -136,7 +136,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckForEachTile(Rectangle rect, Predicate<Point> predFn)
     {
-      if (predFn == null) throw new ArgumentNullException("predFn");
+      Contract.Requires(null != predFn);
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
         for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {

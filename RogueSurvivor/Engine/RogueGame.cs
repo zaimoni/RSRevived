@@ -2537,27 +2537,25 @@ namespace djack.RogueSurvivor.Engine
 
     private int CountLivings(Map map)
     {
-      if (map == null) throw new ArgumentNullException("map");
+      Contract.Requires(null != map);
       return map.Actors.Count(a => !a.Model.Abilities.IsUndead);
     }
 
     private int CountFaction(Map map, Faction f)
     {
-      if (map == null) throw new ArgumentNullException("map");
+      Contract.Requires(null != map);
       return map.Actors.Count(a => a.Faction == f);
     }
 
     private int CountUndeads(Map map)
     {
-      if (map == null) throw new ArgumentNullException("map");
+      Contract.Requires(null != map);
       return map.Actors.Count(a => a.Model.Abilities.IsUndead);
     }
 
     private int CountFoodItemsNutrition(Map map)
     {
-#if DEBUG
-      if (map == null) throw new ArgumentNullException("map");
-#endif
+      Contract.Requires(null != map);
       int num1 = 0;
       Func<ItemFood,int> nutrition = (food => food.NutritionAt(map.LocalTime.TurnCounter));
       foreach (Inventory groundInventory in map.GroundInventories) {
@@ -4868,7 +4866,6 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(TAKE_LEAD_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-      bool flag1 = true;
       bool flag2 = false;
       do {
         RedrawPlayScreen();
@@ -5068,7 +5065,6 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(TAG_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
 
-      bool flag1 = true;
       bool flag2 = false;
       do {
         RedrawPlayScreen();

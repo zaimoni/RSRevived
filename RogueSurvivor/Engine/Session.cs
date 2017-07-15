@@ -189,19 +189,19 @@ namespace djack.RogueSurvivor.Engine
 
     public bool HasRaidHappened(RaidType raid, District district)
     {
-      if (district == null) throw new ArgumentNullException("district");
+      Contract.Requires(null != district);
       return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] > -1;
     }
 
     public int LastRaidTime(RaidType raid, District district)
     {
-      if (district == null) throw new ArgumentNullException("district");
+      Contract.Requires(null != district);
       return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y];
     }
 
     public void SetLastRaidTime(RaidType raid, District district, int turnCounter)
     {
-      if (district == null) throw new ArgumentNullException("district");
+      Contract.Requires(null != district);
       m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
     }
 

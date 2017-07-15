@@ -899,6 +899,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 1000 * rw_attack.Range + rw_attack.DamageValue;
     }
 
+    [Pure]
     protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn=null)
     {
       if (m_Actor.Inventory.IsEmpty) return null;
