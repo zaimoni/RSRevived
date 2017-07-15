@@ -336,8 +336,15 @@ namespace djack.RogueSurvivor.Data
     // for when coordinates may be denormalized
     public Tile GetTileAtExt(int x, int y)
     {
+#if NO_PEACE_WALLS
+      if (IsInBounds(x,y)) return GetTileAt(x,y);
+      Location? loc = Normalize(new Point(x,y));
+//    if (null == loc) throw ...;
+      return loc.Value.Map.GetTileAt(loc.Value.Position);
+#else
       int i = y*Width+x;
       return new Tile(m_TileIDs[x,y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,new Point(x,y)));
+#endif
     }
 
     /// <summary>
@@ -397,7 +404,14 @@ namespace djack.RogueSurvivor.Data
     // possibly denormalized versions
     public TileModel GetTileModelAtExt(int x, int y)
     {
+#if NO_PEACE_WALLS
+      if (IsInBounds(x,y)) return GetTileModelAt(x,y);
+      Location? loc = Normalize(new Point(x,y));
+//    if (null == loc) throw ...;
+      return loc.Value.Map.GetTileModelAt(loc.Value.Position);
+#else
       return Models.Tiles[m_TileIDs[x,y]];
+#endif
     }
 
     public TileModel GetTileModelAtExt(Point pt)
