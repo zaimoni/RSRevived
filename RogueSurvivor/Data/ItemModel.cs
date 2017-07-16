@@ -4,15 +4,16 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using Zaimoni.Data;
+
 namespace djack.RogueSurvivor.Data
 {
   internal class ItemModel
   {
     public Gameplay.GameItems.IDs ID { get; set; }
-    private string m_SingleName;
+    public readonly string SingleName;
     public readonly string PluralName;
     public bool IsPlural { get; set; }
-    public bool IsAn { get; private set; }
     public bool IsProper { get; set; }
     public readonly string ImageID;
     public string FlavorDescription { get; set; }
@@ -23,16 +24,6 @@ namespace djack.RogueSurvivor.Data
     public bool IsUnbreakable { get; set; }
     public bool IsUnique { get; set; }
     public bool IsForbiddenToAI { get; set; }
-
-    public string SingleName
-    {
-      get { return m_SingleName; }
-      private set
-      {
-         m_SingleName = value;
-         IsAn = StartsWithVowel(value);
-      }
-    }
 
     public int StackingLimit
     {
@@ -55,11 +46,6 @@ namespace djack.RogueSurvivor.Data
       SingleName = aName;
       PluralName = theNames;
       ImageID = imageID;
-    }
-
-    private bool StartsWithVowel(string name)
-    {
-      return 0 <= "AEIOUaeiou".IndexOf(name[0]);
     }
   }
 }

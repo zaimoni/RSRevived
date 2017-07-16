@@ -6,6 +6,7 @@
 
 using System;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -31,8 +32,8 @@ namespace djack.RogueSurvivor.Data
         ItemModel model = Model;
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural)
-          return "some " + model.PluralName;
-        return "the " + model.SingleName;
+          return model.PluralName.PrefixDefinitePluralArticle();
+        return model.SingleName.PrefixDefiniteSingularArticle();
       }
     }
 
@@ -41,9 +42,8 @@ namespace djack.RogueSurvivor.Data
         ItemModel model = Model;
         if (model.IsProper) return model.SingleName;
         if (m_Quantity > 1 || model.IsPlural)
-          return "some " + model.PluralName;
-        if (model.IsAn) return "an " + model.SingleName;
-        return "a " + model.SingleName;
+          return model.PluralName.PrefixIndefinitePluralArticle();
+        return model.SingleName.PrefixIndefiniteSingularArticle();
       }
     }
 

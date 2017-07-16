@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics.Contracts;
 using Point = System.Drawing.Point;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -27,22 +28,13 @@ namespace djack.RogueSurvivor.Data
 
     public string AName {
       get {
-        return (IsAn ? "an " : (IsPlural ? "some " : "a ")) + m_Name;
+        return IsPlural ? m_Name.PrefixIndefinitePluralArticle() : m_Name.PrefixIndefiniteSingularArticle();
       }
     }
 
     public string TheName {
       get {
-        return "the " + m_Name;
-      }
-    }
-
-    public bool IsAn {
-      get {
-        return GetFlag(MapObject.Flags.IS_AN);
-      }
-      set {
-        SetFlag(MapObject.Flags.IS_AN, value);
+        return m_Name.PrefixDefiniteSingularArticle();
       }
     }
 
@@ -353,7 +345,7 @@ namespace djack.RogueSurvivor.Data
     private enum Flags
     {
       NONE = 0,
-      IS_AN = 1,
+      IS_AN = 1,    // XXX dead, retaining for binary compatibility
       IS_PLURAL = 2,
       IS_MATERIAL_TRANSPARENT = 4,
       IS_WALKABLE = 8,

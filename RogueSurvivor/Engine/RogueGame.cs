@@ -31,6 +31,7 @@ using System.Security.Permissions;
 using System.Linq;
 using System.Diagnostics.Contracts;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -644,37 +645,15 @@ namespace djack.RogueSurvivor.Engine
       return !actor.Model.DollBody.IsMale ? "her" : "him";
     }
 
-    private string AorAn(string name)
-    {
-      string str1;
-      switch (name[0])
-      {
-        case 'a':
-        case 'e':
-        case 'i':
-        case 'u':
-          str1 = "an ";
-          break;
-        default:
-          str1 = "a ";
-          break;
-      }
-      string str2 = name;
-      return str1 + str2;
-    }
-
     private string TruncateString(string s, int maxLength)
     {
-      if (s.Length > maxLength)
-        return s.Substring(0, maxLength);
+      if (s.Length > maxLength) return s.Substring(0, maxLength);
       return s;
     }
 
     private void AnimDelay(int msecs)
     {
-      if (!RogueGame.s_Options.IsAnimDelayOn)
-        return;
-            m_UI.UI_Wait(msecs);
+      if (s_Options.IsAnimDelayOn) m_UI.UI_Wait(msecs);
     }
 
     public void Run()
@@ -9472,10 +9451,8 @@ namespace djack.RogueSurvivor.Engine
     private void HandlePostMortem()
     {
       WorldTime worldTime = new WorldTime(Session.Get.Scoring.TurnsSurvived);
-      bool isMale = m_Player.Model.DollBody.IsMale;
-      string str1 = isMale ? "He" : "She";
-            HisOrHer(m_Player);
-      string str2 = isMale ? "him" : "her";
+      string str1 = HisOrHer(m_Player);
+      string str2 = HimOrHer(m_Player);
       string name = m_Player.TheName.Replace("(YOU) ", "");
       string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
       Session.Get.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
@@ -9483,7 +9460,7 @@ namespace djack.RogueSurvivor.Engine
       TextFile textFile = new TextFile();
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
-      textFile.Append(string.Format("{0} was {1} and {2}.", (object) name, (object)AorAn(m_Player.Model.Name), (object)AorAn(m_Player.Faction.MemberName)));
+      textFile.Append(string.Format("{0} was {1} and {2}.", name, m_Player.Model.Name.PrefixIndefiniteSingularArticle(), m_Player.Faction.MemberName.PrefixIndefiniteSingularArticle()));
       textFile.Append(string.Format("{0} survived to see {1}.", (object) str1, (object) worldTime.ToString()));
       textFile.Append(string.Format("{0}'s spirit guided {1} for {2}.", (object) name, (object) str2, (object) @string));
       if (Session.Get.Scoring.ReincarnationNumber > 0)

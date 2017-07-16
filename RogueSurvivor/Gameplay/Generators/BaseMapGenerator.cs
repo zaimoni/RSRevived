@@ -635,9 +635,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected DoorWindow MakeObjIronDoor()
     {
-      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 8*DoorWindow.BASE_HITPOINTS) {
-        IsAn = true
-      };
+      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 8*DoorWindow.BASE_HITPOINTS);
     }
 
     protected DoorWindow MakeObjWindow()
@@ -665,7 +663,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("iron fence", GameImages.OBJ_IRON_FENCE)
       {
         IsMaterialTransparent = true,
-        IsAn = true
       };
     }
 
@@ -674,7 +671,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, MapObject.Break.BREAKABLE, MapObject.Fire.UNINFLAMMABLE, 800)
       {
         IsMaterialTransparent = true,
-        IsAn = true
       };
     }
 
@@ -748,7 +744,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         IsMaterialTransparent = true,
         JumpLevel = 1,
         IsCouch = true,
-        IsAn = true
       };
     }
 
