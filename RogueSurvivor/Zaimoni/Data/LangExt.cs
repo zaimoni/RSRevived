@@ -47,5 +47,24 @@ namespace Zaimoni.Data
         {
             return "some "+name;
         }
+
+        // XXX incomplete implementation; have a grammar text available but past a certain point you need a Noun or Verb class.
+        public static string Plural(this string name, bool plural)
+        {
+          if (!plural) return name;
+          return name+"s";
+        }
+
+        public static string Plural(this string name, int qty)
+        {
+            if (1 == qty) return name;
+            return name + "s";
+        }
+
+        // numeric.  The verbal version would be FormalQtyDesc or QtyDescFormal
+        public static string QtyDesc(this string name, int qty)
+        {
+            return qty.ToString() + " " + name.Plural(qty);
+        }
     }
 }

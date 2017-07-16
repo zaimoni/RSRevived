@@ -6642,10 +6642,10 @@ namespace djack.RogueSurvivor.Engine
       }
       if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer) {
         stringList.Add("WANTED FOR MURDER!");
-        stringList.Add(string.Format("{0} murder{1}!", (object) actor.MurdersCounter, actor.MurdersCounter > 1 ? (object) "s" : (object) ""));
+        stringList.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersCounter)));
       } else if (actor.HasLeader && actor.Leader.IsPlayer && m_Rules.IsActorTrustingLeader(actor)) {
         if (actor.MurdersCounter > 0)
-          stringList.Add(string.Format("* Confess {0} murder{1}! *", (object) actor.MurdersCounter, actor.MurdersCounter > 1 ? (object) "s" : (object) ""));
+          stringList.Add(string.Format("* Confess {0}! *", "murder".QtyDesc(actor.MurdersCounter)));
         else
           stringList.Add("Has committed no murders.");
       }
@@ -9505,7 +9505,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (!m_Player.Model.Abilities.IsUndead && m_Player.MurdersCounter > 0)
-        textFile.Append(string.Format("{0} committed {1} murder{2}!", (object) str1, (object)m_Player.MurdersCounter, m_Player.MurdersCounter > 1 ? (object) "s" : (object) ""));
+        textFile.Append(string.Format("{0} committed {1}!", str1, "murder".QtyDesc(m_Player.MurdersCounter)));
       textFile.Append(" ");
       textFile.Append("> FUN FACTS!");
       textFile.Append(string.Format("While {0} has died, others are still having fun!", (object) name));

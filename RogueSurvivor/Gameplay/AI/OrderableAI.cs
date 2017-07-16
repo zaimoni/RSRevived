@@ -1728,7 +1728,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       game.DoMakeAggression(m_Actor, target);
       m_Actor.TargetActor = target;
       // players are special: they get to react to this first
-      return new ActionSay(m_Actor, target, string.Format("HEY! YOU ARE WANTED FOR {0} MURDER{1}!", (object) target.MurdersCounter, target.MurdersCounter > 1 ? (object) "s" : (object) ""), (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
+      return new ActionSay(m_Actor, target, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(target.MurdersCounter).ToUpper()), (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
     }
 
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)

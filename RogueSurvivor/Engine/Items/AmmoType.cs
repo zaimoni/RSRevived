@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -58,7 +59,7 @@ namespace djack.RogueSurvivor.Engine.Items
     static internal string Describe(this AmmoType at, bool plural=false)
     {
       if (AmmoType.SHOTGUN == at) return at.Aggregate();
-      return at.Singular()+(plural ? "s" : ""); // regular plural in English
+      return at.Singular().Plural(plural); // regular plural in English
     }
   }
 }
