@@ -130,7 +130,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly Verb VERB_ACTIVATE = new Verb("activate");
     private readonly Verb VERB_AVOID = new Verb("avoid");
     private readonly Verb VERB_BARRICADE = new Verb("barricade");
-    private readonly Verb VERB_BASH = new Verb("bash", "bashes");
+    public static readonly Verb VERB_BASH = new Verb("bash", "bashes");
     private readonly Verb VERB_BE = new Verb("are", "is");
     private readonly Verb VERB_BUILD = new Verb("build");
     private readonly Verb VERB_BREAK = new Verb("break");

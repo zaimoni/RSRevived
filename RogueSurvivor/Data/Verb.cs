@@ -9,16 +9,15 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal class Verb
+  sealed internal class Verb
   {
-    public string YouForm { get; protected set; }
-
-    public string HeForm { get; protected set; }
+    public readonly string YouForm;   // 2nd person singular
+    public readonly string HeForm;    // 3rd person singular
 
     public Verb(string youForm, string heForm)
     {
-            YouForm = youForm;
-            HeForm = heForm;
+      YouForm = youForm;
+      HeForm = heForm;
     }
 
     public Verb(string youForm)
