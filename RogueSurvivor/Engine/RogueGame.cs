@@ -774,11 +774,49 @@ namespace djack.RogueSurvivor.Engine
       else if (Rules.MELEE_WEAPON_BREAK_CHANCE > tmp2[6]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "melee weapons break on save-load");
     }
 
+    // this is a UI function so we can afford to be an inefficient monolithic function
+    // return values of handlers: null is continue, true/false are the return values
+    private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,bool?> failover_handler=null)
+    {
+      Contract.Requires(null != choice_handler);
+      Contract.Requires(null != setup_handler);
+      int currentChoice = 0;
+      do {
+        bool? ret = setup_handler(currentChoice);
+        if (null != ret) return ret.Value;
+        m_UI.UI_Repaint();
+
+        KeyEventArgs key = m_UI.UI_WaitKey();
+
+        switch(key.KeyCode) {
+          case Keys.Return:
+            ret = choice_handler(currentChoice);
+            if (null == ret) break;
+            return ret.Value;
+          case Keys.Escape: return false;
+          case Keys.Up:
+            if (currentChoice > 0) {
+              --currentChoice;
+              break;
+            }
+            currentChoice = choice_length - 1;
+            break;
+          case Keys.Down:
+            currentChoice = (currentChoice + 1) % choice_length;
+            break;
+          default:
+            if (null == failover_handler) break;
+            ret = failover_handler(key.KeyCode);
+            if (null == ret) break;
+            return ret.Value;
+        }
+      } while(true);
+    }
+
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void HandleMainMenu()
     {
-      bool flag1 = true;
-      bool flag2 = File.Exists(RogueGame.GetUserSave());
+      bool flag2 = File.Exists(GetUserSave());
       string[] entries = new string[9]
       {
         "New Game",
@@ -791,26 +829,26 @@ namespace djack.RogueSurvivor.Engine
         "Credits",
         "Quit Game"
       };
-      int currentChoice = 0;
-      do
-      {
+
+      int gy1 = 0;
+      int gx1 = 0;
+
+      Func<int,bool?> setup_handler = (c => {
         if (!m_MusicManager.IsPlaying(GameMusics.INTRO) && !m_PlayedIntro) {
           m_MusicManager.StopAll();
           m_MusicManager.Play(GameMusics.INTRO);
           m_PlayedIntro = true;
         }
-        int gy1;
-        int gx1 = gy1 = 0;
+        gx1 = gy1 = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
         gy1 += 14;
         m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
         gy1 += 28;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.White, (string[]) null, gx1, ref gy1, 256);
+        DrawMenuOrOptions(c, Color.White, entries, Color.White, (string[]) null, gx1, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
-        if (now.Month == 12 && now.Day >= 24 && now.Day <= 26)
-        {
+        if (now.Month == 12 && now.Day >= 24 && now.Day <= 26) {
           for (int index = 0; index < 10; ++index) {
             int gx2 = m_Rules.Roll(0, 1024);
             int gy2 = m_Rules.Roll(0, 768);
@@ -818,69 +856,43 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
         }
-        m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Return:
-            switch (currentChoice) {
-              case 0:
-                if (HandleNewCharacter()) {
-                  StartNewGame();
-                  LogSaveScumStats();
-                  flag1 = false;
-                  break;
-                }
-                break;
-              case 1:
-                if (flag2) {
-                  gy1 += 28;
-                  m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
-                  m_UI.UI_Repaint();
-                  LoadGame(RogueGame.GetUserSave());
-                  LogSaveScumStats();
-                  RestartSimThread();
-                  flag1 = false;
-                  break;
-                }
-                break;
-              case 2:
-                HandleRedefineKeys();
-                break;
-              case 3:
-                HandleOptions(false);
-                ApplyOptions(false);
-                break;
-              case 4:
-                HandleHelpMode();
-                break;
-              case 5:
-                HandleHintsScreen();
-                break;
-              case 6:
-                HandleHiScores(true);
-                break;
-              case 7:
-                HandleCredits();
-                break;
-              case 8:
-                m_IsGameRunning = false;
-                flag1 = false;
-                break;
+        return null;
+      });
+      Func<int, bool?> choice_handler = (c => {
+          switch (c) {
+          case 0:
+            if (HandleNewCharacter()) {
+              StartNewGame();
+              LogSaveScumStats();
+              return true;
             }
             break;
-          case Keys.Up:
-            if (currentChoice > 0)
-            {
-              --currentChoice;
-              break;
+          case 1:
+            if (flag2) {
+              gy1 += 28;
+              m_UI.UI_DrawStringBold(Color.Yellow, "Loading game, please wait...", gx1, gy1, new Color?());
+              m_UI.UI_Repaint();
+              LoadGame(GetUserSave());
+              LogSaveScumStats();
+              RestartSimThread();
+              return true;
             }
-            currentChoice = entries.Length - 1;
             break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
+          case 2: HandleRedefineKeys(); break;
+          case 3:
+            HandleOptions(false);
+            ApplyOptions(false);
             break;
+          case 4: HandleHelpMode(); break;
+          case 5: HandleHintsScreen(); break;
+          case 6: HandleHiScores(true); break;
+          case 7: HandleCredits(); break;
+          case 8: return false;
         }
-      }
-      while (flag1);
+        return null;
+      });
+
+      m_IsGameRunning = ChoiceMenu(choice_handler, setup_handler, entries.Length);
     }
 
     private bool HandleNewCharacter()
