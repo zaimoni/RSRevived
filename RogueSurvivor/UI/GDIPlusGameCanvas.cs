@@ -396,22 +396,19 @@ namespace djack.RogueSurvivor.UI
         m_Y = y;
         m_Alpha = alpha;
         disposed = false;
+        // relies on default-initialization to zero
         float[][] newColorMatrix = new float[5][];
-        float[] numArray3 = new float[5];
-        numArray3[0] = 1f;
-        newColorMatrix[0] = numArray3;
-        float[] numArray6 = new float[5];
-        numArray6[1] = 1f;
-        newColorMatrix[1] = numArray6;
-        float[] numArray9 = new float[5];
-        numArray9[2] = 1f;
-        newColorMatrix[2] = numArray9;
-        float[] numArray12 = new float[5];
-        numArray12[3] = alpha;
-        newColorMatrix[3] = numArray12;
-        float[] numArray15 = new float[5];
-        numArray15[4] = 1f;
-        newColorMatrix[4] = numArray15;
+        newColorMatrix[0] = new float[5];
+        newColorMatrix[0][0] = 1f;
+        newColorMatrix[1] = new float[5];
+        newColorMatrix[1][1] = 1f;
+        newColorMatrix[2] = new float[5];
+        newColorMatrix[2][2] = 1f;
+        newColorMatrix[3] = new float[5];
+        newColorMatrix[3][3] = alpha;
+        newColorMatrix[4] = new float[5];   // force homogenous coordinates
+        newColorMatrix[4][4] = 1f;
+
         m_ImgAttributes = new ImageAttributes();
         m_ImgAttributes.SetColorMatrix(new ColorMatrix(newColorMatrix), ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
       }
