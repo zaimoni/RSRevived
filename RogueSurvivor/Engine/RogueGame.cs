@@ -2634,7 +2634,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_UniqueActorArrive(Map map, UniqueActor unique)
     {
-      if (!SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER, true)) return;
+      if (!SpawnActorOnMapBorder(map, unique.TheActor, SPAWN_DISTANCE_TO_PLAYER)) return;
       unique.IsSpawned = true;
       if (map != m_Player.Location.Map || m_Player.IsSleeping || m_Player.Model.Abilities.IsUndead) return;
       if (unique.EventMessage != null) {
@@ -2878,7 +2878,7 @@ namespace djack.RogueSurvivor.Engine
       return DistanceToPlayer(map, pos.X, pos.Y);
     }
 
-    private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer, bool mustBeOutside)
+    private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer)
     {
       int num1 = 4 * (map.Width + map.Height);
       int num2 = 0;
@@ -2891,7 +2891,6 @@ namespace djack.RogueSurvivor.Engine
           point.X = m_Rules.RollChance(50) ? 0 : map.Width - 1;
           point.Y = m_Rules.RollY(map);
         }
-        if (mustBeOutside && map.IsInsideAt(point)) continue;
         if (!map.IsWalkableFor(point, actorToSpawn)) continue;
         if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
         if (actorToSpawn.WouldBeAdjacentToEnemy(map, point)) continue;
@@ -2940,14 +2939,14 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 //    SpawnActorOnMapBorder(map, newUndead, SPAWN_DISTANCE_TO_PLAYER, true);    // allows cheesy metagaming
-      SpawnActorOnMapBorder(map, newUndead, 1, true); 
+      SpawnActorOnMapBorder(map, newUndead, 1); 
     }
 
     private void SpawnNewSewersUndead(Map map)
     {
       Actor newSewersUndead = m_TownGenerator.CreateNewSewersUndead(map.LocalTime.TurnCounter);
 //    SpawnActorOnMapBorder(map, newSewersUndead, SPAWN_DISTANCE_TO_PLAYER, false); // allows cheesy metagaming
-      SpawnActorOnMapBorder(map, newSewersUndead, 1, false);
+      SpawnActorOnMapBorder(map, newSewersUndead, 1);
     }
 
     // Balance issue is problematic here (cop spawning at distance 2 can severely damage most undead PCs)
@@ -2958,14 +2957,14 @@ namespace djack.RogueSurvivor.Engine
     {
       Actor newRefugee = m_TownGenerator.CreateNewRefugee(map.LocalTime.TurnCounter, REFUGEES_WAVE_ITEMS);
 //    SpawnActorOnMapBorder(map, newRefugee, SPAWN_DISTANCE_TO_PLAYER, true); // allows cheesy metagaming
-      SpawnActorOnMapBorder(map, newRefugee, 1, true);
+      SpawnActorOnMapBorder(map, newRefugee, 1);
     }
 
     // The bands remain PC spawn radius shielded, for now.
     private Actor SpawnNewSurvivor(Map map)
     {
       Actor newSurvivor = m_TownGenerator.CreateNewSurvivor(map.LocalTime.TurnCounter);
-      return (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER, true) ? newSurvivor : null);
+      return (SpawnActorOnMapBorder(map, newSurvivor, SPAWN_DISTANCE_TO_PLAYER) ? newSurvivor : null);
     }
 
     private Actor SpawnNewSurvivor(Map map, Point bandPos)
@@ -2980,7 +2979,7 @@ namespace djack.RogueSurvivor.Engine
       armyNationalGuard.StartingSkill(Skills.IDs.LEADERSHIP);
       if (map.LocalTime.Day > NATGUARD_ZTRACKER_DAY)
         armyNationalGuard.Inventory.AddAll(BaseMapGenerator.MakeItemZTracker());
-      return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, true) ? armyNationalGuard : null);
+      return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER) ? armyNationalGuard : null);
     }
 
     private Actor SpawnNewNatGuardTrooper(Map map, Point leaderPos)
@@ -2999,7 +2998,7 @@ namespace djack.RogueSurvivor.Engine
       newBikerMan.StartingSkill(Skills.IDs.LEADERSHIP);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH,3);
       newBikerMan.StartingSkill(Skills.IDs.STRONG,3);
-      return (SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, true) ? newBikerMan : null);
+      return (SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER) ? newBikerMan : null);
     }
 
     private Actor SpawnNewBiker(Map map, GameGangs.IDs gangId, Point leaderPos)
@@ -3016,7 +3015,7 @@ namespace djack.RogueSurvivor.Engine
       newGangstaMan.StartingSkill(Skills.IDs.LEADERSHIP);
       newGangstaMan.StartingSkill(Skills.IDs._FIRST,3);
       newGangstaMan.StartingSkill(Skills.IDs.FIREARMS);
-      return (SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, true) ? newGangstaMan : null);
+      return (SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER) ? newGangstaMan : null);
     }
 
     private Actor SpawnNewGangsta(Map map, GameGangs.IDs gangId, Point leaderPos)
@@ -3033,7 +3032,7 @@ namespace djack.RogueSurvivor.Engine
       newBlackOps.StartingSkill(Skills.IDs._FIRST,3);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS,3);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
-      return (SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, true) ? newBlackOps : null);
+      return (SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER) ? newBlackOps : null);
     }
 
     private Actor SpawnNewBlackOpsTrooper(Map map, Point leaderPos)
