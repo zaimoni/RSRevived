@@ -410,6 +410,23 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
     }
 
+    private string ReasonCantShout()
+    {
+      if (!Model.Abilities.CanTalk) return "can't talk";
+      return "";
+    }
+
+    public bool CanShout(out string reason)
+    {
+	  reason = ReasonCantShout();
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanShout()
+    {
+	  return string.IsNullOrEmpty(ReasonCantShout());
+    }
+
 	private string ReasonCantChatWith(Actor target)
 	{
 	  Contract.Requires(null != target);

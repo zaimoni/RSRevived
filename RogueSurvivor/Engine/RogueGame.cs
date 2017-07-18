@@ -4330,7 +4330,7 @@ namespace djack.RogueSurvivor.Engine
     private bool HandlePlayerShout(Actor player, string text)
     {
       string reason;
-      if (!m_Rules.CanActorShout(player, out reason)) {
+      if (!player.CanShout(out reason)) {
         AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", (object) reason)));
         return false;
       }

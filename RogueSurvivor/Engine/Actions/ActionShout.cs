@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorShout(m_Actor, out m_FailReason);
+      return m_Actor.CanShout(out m_FailReason);
     }
 
     public override void Perform()

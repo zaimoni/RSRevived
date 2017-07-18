@@ -514,30 +514,6 @@ namespace djack.RogueSurvivor.Engine
       return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public bool CanActorShout(Actor speaker)
-    {
-      string reason;
-      return CanActorShout(speaker, out reason);
-    }
-
-    public bool CanActorShout(Actor speaker, out string reason)
-    {
-      if (speaker == null)
-        throw new ArgumentNullException("speaker");
-      if (speaker.IsSleeping)
-      {
-        reason = "sleeping";
-        return false;
-      }
-      if (!speaker.Model.Abilities.CanTalk)
-      {
-        reason = "can't talk";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF)
     {
       string reason;
