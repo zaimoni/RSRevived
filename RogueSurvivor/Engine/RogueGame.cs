@@ -38,6 +38,8 @@ namespace djack.RogueSurvivor.Engine
   internal class RogueGame
   {
     private readonly Color POPUP_FILLCOLOR = Color.FromArgb(192, Color.CornflowerBlue);
+    // these are used by OverlayPopup, so are used as arrays of strings anyway
+    // string.Format requires a string, but otherwise these should remain arrays of strings
     private readonly string[] CLOSE_DOOR_MODE_TEXT = new string[1]
     {
       "CLOSE MODE - directions to close, ESC cancels"
@@ -108,6 +110,8 @@ namespace djack.RogueSurvivor.Engine
     {
       "MARK ENEMIES MODE - E to make enemy, T next actor, ESC cancels"
     };
+    // end string arrays used by OverlayPopup
+
     private readonly Color MODE_TEXTCOLOR = Color.Yellow;
     private readonly Color MODE_BORDERCOLOR = Color.Yellow;
     private readonly Color MODE_FILLCOLOR = Color.FromArgb(192, Color.Gray);
@@ -12949,16 +12953,15 @@ namespace djack.RogueSurvivor.Engine
       Skills.LoadSkillsFromCSV(m_UI, "Resources\\Data\\Skills.csv");
     }
 
-    public abstract class Overlay
+    public abstract class Overlay   // could be an interface instead
     {
       public abstract void Draw(IRogueUI ui);
     }
 
-    private class OverlayImage : RogueGame.Overlay
+    private class OverlayImage : Overlay
     {
-      public Point ScreenPosition { get; set; }
-
-      public string ImageID { get; set; }
+      public readonly Point ScreenPosition;
+      public readonly string ImageID;
 
       public OverlayImage(Point screenPosition, string imageID)
       {
@@ -12972,13 +12975,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private class OverlayTransparentImage : RogueGame.Overlay
+    private class OverlayTransparentImage : Overlay
     {
-      public float Alpha { get; set; }
-
-      public Point ScreenPosition { get; set; }
-
-      public string ImageID { get; set; }
+      public readonly float Alpha;
+      public readonly Point ScreenPosition;
+      public readonly string ImageID;
 
       public OverlayTransparentImage(float alpha, Point screenPosition, string imageID)
       {
@@ -12993,27 +12994,19 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private class OverlayText : RogueGame.Overlay
+    private class OverlayText : Overlay
     {
-      public Point ScreenPosition { get; set; }
+      public readonly Point ScreenPosition;
+      public readonly string Text;
+      public readonly Color Color;
+      public readonly Color? ShadowColor;
 
-      public string Text { get; set; }
-
-      public Color Color { get; set; }
-
-      public Color? ShadowColor { get; set; }
-
-      public OverlayText(Point screenPosition, Color color, string text)
-        : this(screenPosition, color, text, new Color?())
+      public OverlayText(Point screenPosition, Color color, string text, Color? shadowColor = null)
       {
-      }
-
-      public OverlayText(Point screenPosition, Color color, string text, Color? shadowColor)
-      {
-                ScreenPosition = screenPosition;
-                Color = color;
-                ShadowColor = shadowColor;
-                Text = text;
+        ScreenPosition = screenPosition;
+        Color = color;
+        ShadowColor = shadowColor;
+        Text = text;
       }
 
       public override void Draw(IRogueUI ui)
@@ -13024,7 +13017,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private class OverlayLine : RogueGame.Overlay
+    private class OverlayLine : RogueGame.Overlay   // dead class
     {
       public Point ScreenFrom { get; set; }
 
@@ -13045,11 +13038,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public class OverlayRect : RogueGame.Overlay
+    // cf competing implementation : GameImages::MonochromeBorderTile class and image caching
+    public class OverlayRect : Overlay
     {
-      public Rectangle Rectangle { get; set; }
-
-      public Color Color { get; set; }
+      public readonly Rectangle Rectangle;
+      public readonly Color Color;
 
       public OverlayRect(Color color, Rectangle rect)
       {
@@ -13063,25 +13056,21 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private class OverlayPopup : RogueGame.Overlay
+    private class OverlayPopup : Overlay
     {
-      public Point ScreenPosition { get; set; }
-
-      public Color TextColor { get; set; }
-
-      public Color BoxBorderColor { get; set; }
-
-      public Color BoxFillColor { get; set; }
-
-      public string[] Lines { get; set; }
+      public readonly Point ScreenPosition;
+      public readonly Color TextColor;
+      public readonly Color BoxBorderColor;
+      public readonly Color BoxFillColor;
+      public readonly string[] Lines;
 
       public OverlayPopup(string[] lines, Color textColor, Color boxBorderColor, Color boxFillColor, Point screenPos)
       {
-                ScreenPosition = screenPos;
-                TextColor = textColor;
-                BoxBorderColor = boxBorderColor;
-                BoxFillColor = boxFillColor;
-                Lines = lines;
+        ScreenPosition = screenPos;
+        TextColor = textColor;
+        BoxBorderColor = boxBorderColor;
+        BoxFillColor = boxFillColor;
+        Lines = lines;
       }
 
       public override void Draw(IRogueUI ui)
