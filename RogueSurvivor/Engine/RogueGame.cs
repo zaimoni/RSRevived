@@ -916,19 +916,23 @@ namespace djack.RogueSurvivor.Engine
     private bool HandleNewCharacter()
     {
       DiceRoller roller = new DiceRoller();
-      bool isUndead;
-      if (!HandleNewGameMode() || !HandleNewCharacterRace(roller, out isUndead)) return false;
-      m_CharGen.IsUndead = isUndead;
-      if (isUndead) {
-        if (!HandleNewCharacterUndeadType(roller, out m_CharGen.UndeadModel)) return false;
+      if (!HandleNewGameMode()) return false;
+      bool? isUndead = HandleNewCharacterRace(roller);
+      if (null == isUndead) return false;
+      m_CharGen.IsUndead = isUndead.Value;
+      if (isUndead.Value) {
+        GameActors.IDs? undeadModel = HandleNewCharacterUndeadType(roller);
+        if (null == undeadModel) return false;
+        m_CharGen.UndeadModel = undeadModel.Value;
       } else {
-        if (!HandleNewCharacterGender(roller, out m_CharGen.IsMale)) return false;
-      }
-      if (!isUndead) {
-        Skills.IDs skID;
-        if (!HandleNewCharacterSkill(roller, out skID)) return false;
-        m_CharGen.StartingSkill = skID;
-        Session.Get.Scoring.StartingSkill = skID;
+        bool? isMale = HandleNewCharacterGender(roller);
+        if (null == isMale) return false;
+        m_CharGen.IsMale = isMale.Value;
+
+        Skills.IDs? skID = HandleNewCharacterSkill(roller);
+        if (null == skID) return false;
+        m_CharGen.StartingSkill = skID.Value;
+        Session.Get.Scoring.StartingSkill = skID.Value;
       }
       return true;
     }
@@ -1010,7 +1014,7 @@ namespace djack.RogueSurvivor.Engine
       return ChoiceMenu(choice_handler, setup_handler, entries.Length);
     }
 
-    private bool HandleNewCharacterRace(DiceRoller roller, out bool isUndead)
+    private bool? HandleNewCharacterRace(DiceRoller roller)
     {
       string[] entries = new string[3]
       {
@@ -1024,7 +1028,6 @@ namespace djack.RogueSurvivor.Engine
         "Try to survive.",
         "Eat brains and die again."
       };
-      isUndead = false;
       const int gx = 0;
 
       int currentChoice = 0;
@@ -1041,24 +1044,19 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Return:
             switch (currentChoice) {
               case 0:
-                isUndead = roller.RollChance(50);
+                bool isUndead = roller.RollChance(50);
                 int gy3 = num + 14;
                 m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? (object) "Undead" : (object) "Living"), gx, gy3, new Color?());
                 int gy4 = gy3 + 14;
                 m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
                 m_UI.UI_Repaint();
-                if (WaitYesOrNo()) return true;
+                if (WaitYesOrNo()) return isUndead;
                 break;
-              case 1:
-                isUndead = false;
-                return true;
-              case 2:
-                isUndead = true;
-                return true;
+              case 1: return false;
+              case 2: return true;
             }
             break;
-          case Keys.Escape:
-            return false;
+          case Keys.Escape: return null;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1075,7 +1073,7 @@ namespace djack.RogueSurvivor.Engine
       while(true);
     }
 
-    private bool HandleNewCharacterGender(DiceRoller roller, out bool isMale)
+    private bool? HandleNewCharacterGender(DiceRoller roller)
     {
       ActorModel maleCivilian = GameActors.MaleCivilian;
       ActorModel femaleCivilian = GameActors.FemaleCivilian;
@@ -1091,7 +1089,6 @@ namespace djack.RogueSurvivor.Engine
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", (object) maleCivilian.StartingSheet.BaseHitPoints, (object) maleCivilian.StartingSheet.BaseDefence.Value, (object) maleCivilian.StartingSheet.UnarmedAttack.DamageValue),
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", (object) femaleCivilian.StartingSheet.BaseHitPoints, (object) femaleCivilian.StartingSheet.BaseDefence.Value, (object) femaleCivilian.StartingSheet.UnarmedAttack.DamageValue)
       };
-      isMale = true;
       const int gx = 0;
 
       int currentChoice = 0;
@@ -1107,24 +1104,19 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Return:
             switch (currentChoice) {
               case 0:
-                isMale = roller.RollChance(50);
+                bool isMale = roller.RollChance(50);
                 gy += 14;
                 m_UI.UI_DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? (object) "Male" : (object) "Female"), gx, gy, new Color?());
                 gy += 14;
                 m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
                 m_UI.UI_Repaint();
-                if (WaitYesOrNo()) return true;
+                if (WaitYesOrNo()) return isMale;
                 break;
-              case 1:
-                isMale = true;
-                return true;
-              case 2:
-                isMale = false;
-                return true;
+              case 1: return true;
+              case 2: return false;
             }
             break;
-          case Keys.Escape:
-            return false;
+          case Keys.Escape: return null;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1146,7 +1138,7 @@ namespace djack.RogueSurvivor.Engine
       return string.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}", (object) m.StartingSheet.BaseHitPoints, (object) (float) ((double) m.DollBody.Speed / 100.0), (object) m.StartingSheet.UnarmedAttack.HitValue, (object) m.StartingSheet.BaseDefence.Value, (object) m.StartingSheet.UnarmedAttack.DamageValue, (object) m.StartingSheet.BaseViewRange, (object) m.StartingSheet.BaseSmellRating);
     }
 
-    private bool HandleNewCharacterUndeadType(DiceRoller roller, out GameActors.IDs modelID)
+    private GameActors.IDs? HandleNewCharacterUndeadType(DiceRoller roller)
     {
       ActorModel[] undead = {
         GameActors.Skeleton,
@@ -1159,7 +1151,6 @@ namespace djack.RogueSurvivor.Engine
       string[] entries = (new string[] { "*Random*" }).Concat(undead.Select(x => x.Name)).ToArray();
       string[] values = (new string[] { "(picks a type at random for you)" }).Concat(undead.Select(x => DescribeUndeadModelStatLine(x))).ToArray();
 
-      modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
       const int gx = 0;
 
       int currentChoice = 0;
@@ -1175,21 +1166,19 @@ namespace djack.RogueSurvivor.Engine
           case Keys.Return:
             switch (currentChoice) {
               case 0:
-                modelID = undead[roller.Roll(0, 5)].ID;
+                GameActors.IDs modelID = undead[roller.Roll(0, 5)].ID;
                 int gy3 = gy2 + 14;
                 m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3);
                 int gy4 = gy3 + 14;
                 m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
                 m_UI.UI_Repaint();
-                if (WaitYesOrNo()) return true;
+                if (WaitYesOrNo()) return modelID;
                 break;
               default:
-                modelID = undead[currentChoice-1].ID;
-                return true;
+                return undead[currentChoice-1].ID;
             }
             break;
-          case Keys.Escape:
-            return false;
+          case Keys.Escape: return null;
           case Keys.Up:
             if (currentChoice > 0)
             {
@@ -1206,13 +1195,11 @@ namespace djack.RogueSurvivor.Engine
       while (true);
     }
 
-    private bool HandleNewCharacterSkill(DiceRoller roller, out Skills.IDs skID)
+    private Skills.IDs? HandleNewCharacterSkill(DiceRoller roller)
     {
       Skills.IDs[] idsArray = Enumerable.Range(0, 1 + (int)Skills.IDs._LAST_LIVING).Select(id => (Skills.IDs)id).ToArray();
       string[] entries = (new string[] { "*Random*" }).Concat(idsArray.Select(id => Skills.Name(id))).ToArray();
       string[] values = (new string[] { "(picks a skill at random for you)" }).Concat(idsArray.Select(id => string.Format("{0} max - {1}", Skills.MaxSkillLevel(id), DescribeSkillShort(id)))).ToArray();
-
-      skID = Skills.IDs._FIRST;
 
       const int gx = 0;
       int gy1 = 0;
@@ -1228,16 +1215,15 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
         switch (m_UI.UI_WaitKey().KeyCode) {
           case Keys.Return:
-            skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
+            Skills.IDs skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
             int gy3 = gy1 + 14;
             m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", (object) Skills.Name(skID)), gx, gy3, new Color?());
             int gy4 = gy3 + 14;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
             m_UI.UI_Repaint();
-            if (WaitYesOrNo()) return true;
+            if (WaitYesOrNo()) return skID;
             break;
-          case Keys.Escape:
-            return false;
+          case Keys.Escape: return null;
           case Keys.Up:
             if (currentChoice > 0) {
               --currentChoice;
