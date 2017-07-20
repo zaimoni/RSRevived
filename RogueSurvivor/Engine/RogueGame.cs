@@ -1433,8 +1433,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleOptions(bool ingame)
     {
       GameOptions gameOptions = s_Options;
-      GameOptions.IDs[] idsArray = new GameOptions.IDs[33]
-      {
+      GameOptions.IDs[] idsArray =  {
         GameOptions.IDs.UI_MUSIC,
         GameOptions.IDs.UI_MUSIC_VOLUME,
         GameOptions.IDs.UI_ANIM_DELAY,
@@ -1477,6 +1476,24 @@ namespace djack.RogueSurvivor.Engine
       bool flag = true;
       int currentChoice = 0;
       do {
+        string[] values = idsArray.Select(x => s_Options.DescribeValue(Session.Get.GameMode, x)).ToArray();
+        int gy;
+        int gx = gy = 0;
+        m_UI.UI_Clear(Color.Black);
+        DrawHeader();
+        gy += 14;
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", (object) Session.DescGameMode(Session.Get.GameMode)), 0, gy, new Color?());
+        gy += 28;
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 400);
+        gy += 14;
+        m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
+        gy += 14;
+        gy += 14;
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_SURVIVOR, 0)), (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
+        gy += 14;
+        m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
+        gy += 28;
+        DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
         m_UI.UI_Repaint();
         switch (m_UI.UI_WaitKey().KeyCode) {
           case Keys.Escape:
