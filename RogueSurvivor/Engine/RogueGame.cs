@@ -1403,31 +1403,31 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawString(Color.White, "- GuitarPro 6, Audacity", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Sound samples", 0, gy1, new Color?());
-            m_UI.UI_DrawString(Color.White, "- http://www.sound-fishing.net  http://www.soundsnap.com/", 256, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- http://www.sound-fishing.net  http://www.soundsnap.com/", 256, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Installer", 0, gy1, new Color?());
-            m_UI.UI_DrawString(Color.White, "- NSIS", 256, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Installer", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "- NSIS", 256, gy1, new Color?());
       gy1 += 2*BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Contact", 0, gy1, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Contact", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "Email      : roguedjack@yahoo.fr", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "Email      : roguedjack@yahoo.fr", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "Blog       : http://roguesurvivor.blogspot.com/", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "Blog       : http://roguesurvivor.blogspot.com/", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "Fans Forum : http://roguesurvivor.proboards.com/", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "Fans Forum : http://roguesurvivor.proboards.com/", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "(zaimoni)", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "(zaimoni)", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "forum post : http://www.bay12forums.com/smf/index.php?topic=157701.0", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "forum post : http://www.bay12forums.com/smf/index.php?topic=157701.0", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "forum post : http://smf.cataclysmdda.com/index.php?topic=12463.0", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "forum post : http://smf.cataclysmdda.com/index.php?topic=12463.0", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawString(Color.White, "source code: https://bitbucket.org/zaimoni/roguesurvivor-revived", 0, gy1, new Color?());
+      m_UI.UI_DrawString(Color.White, "source code: https://bitbucket.org/zaimoni/roguesurvivor-revived", 0, gy1, new Color?());
       gy1 += BOLD_LINE_SPACING;
-            m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
-            DrawFootnote(Color.White, "ESC to leave");
-            m_UI.UI_Repaint();
-            WaitEscape();
+      m_UI.UI_DrawStringBold(Color.White, "Thanks to the players for their feedback and eagerness to die!", 0, gy1, new Color?());
+      DrawFootnote(Color.White, "ESC to leave");
+      m_UI.UI_Repaint();
+      WaitEscape();
     }
 
     private void HandleOptions(bool ingame)
