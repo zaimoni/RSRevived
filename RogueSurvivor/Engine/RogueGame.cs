@@ -1238,33 +1238,30 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadManual()
     {
-            m_UI.UI_Clear(Color.Black);
+      m_UI.UI_Clear(Color.Black);
       int num1 = 0;
-            m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "Loading game manual...", 0, 0, new Color?());
       int gy1 = num1 + 14;
-            m_UI.UI_Repaint();
-            m_Manual = new TextFile();
-            m_ManualLine = 0;
-      if (!m_Manual.Load(GetUserManualFilePath()))
-      {
-                m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
+      m_UI.UI_Repaint();
+      m_Manual = new TextFile();
+      m_ManualLine = 0;
+      if (!m_Manual.Load(GetUserManualFilePath())) {
+        m_UI.UI_DrawStringBold(Color.Red, "Error while loading the manual.", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
-                m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy2, new Color?());
+        m_UI.UI_DrawStringBold(Color.Red, "The manual won't be available ingame.", 0, gy2, new Color?());
         int num2 = gy2 + 14;
-                m_UI.UI_Repaint();
-                DrawFootnote(Color.White, "press ENTER");
-                WaitEnter();
-                m_Manual = (TextFile) null;
-      }
-      else
-      {
-                m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
+        m_UI.UI_Repaint();
+        DrawFootnote(Color.White, "press ENTER");
+        WaitEnter();
+        m_Manual = null;
+      } else {
+        m_UI.UI_DrawStringBold(Color.White, "Parsing game manual...", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
-                m_UI.UI_Repaint();
+        m_UI.UI_Repaint();
         m_Manual.FormatLines(TEXTFILE_CHARS_PER_LINE);
-                m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy2, new Color?());
-                m_UI.UI_Repaint();
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.White, "Game manual... done!", 0, gy2, new Color?());
+        m_UI.UI_Repaint();
       }
     }
 
