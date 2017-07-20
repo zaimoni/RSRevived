@@ -786,7 +786,7 @@ namespace djack.RogueSurvivor.Engine
       Func<int, bool?> choice_handler = (currentChoice => {
         return null;
       });
-      Func<Keys,bool?> failover_handler = (k -> {
+      Func<Keys,int,bool?> failover_handler = ((k,currentChoice) => {
         return null;
       });
       m_IsGameRunning = ChoiceMenu(choice_handler, setup_handler, entries.Length);
@@ -794,7 +794,7 @@ namespace djack.RogueSurvivor.Engine
     // this is a UI function so we can afford to be an inefficient monolithic function
     // return values of handlers: null is continue, true/false are the return values
     // Compiler error to mix this with out/ref parameters
-    private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,bool?> failover_handler=null)
+    private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,int,bool?> failover_handler=null)
     {
       Contract.Requires(null != choice_handler);
       Contract.Requires(null != setup_handler);
@@ -824,7 +824,7 @@ namespace djack.RogueSurvivor.Engine
             break;
           default:
             if (null == failover_handler) break;
-            ret = failover_handler(key.KeyCode);
+            ret = failover_handler(key.KeyCode,currentChoice);
             if (null == ret) break;
             return ret.Value;
         }
@@ -832,7 +832,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // boxed value type return value version of ChoiceMenu
-    private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,T?> failover_handler=null) where T:struct
+    private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,int,T?> failover_handler=null) where T:struct
     {
       Contract.Requires(null != choice_handler);
       Contract.Requires(null != setup_handler);
@@ -862,7 +862,7 @@ namespace djack.RogueSurvivor.Engine
             break;
           default:
             if (null == failover_handler) break;
-            ret = failover_handler(key.KeyCode);
+            ret = failover_handler(key.KeyCode,currentChoice);
             if (null == ret) break;
             return ret.Value;
         }
@@ -1473,9 +1473,8 @@ namespace djack.RogueSurvivor.Engine
       };
       string[] entries = idsArray.Select(x => GameOptions.Name(x)).ToArray();
 
-      bool flag = true;
-      int currentChoice = 0;
-      do {
+      Func<int,bool?> setup_handler = (currentChoice => {
+        ApplyOptions(false);
         string[] values = idsArray.Select(x => s_Options.DescribeValue(Session.Get.GameMode, x)).ToArray();
         int gy;
         int gx = gy = 0;
@@ -1494,11 +1493,13 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
         gy += 28;
         DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
-        m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Escape:
-            flag = false;
-            break;
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        return null;
+      });
+      Func<Keys,int,bool?> failover_handler = ((k,currentChoice) => {
+        switch (k) {
           case Keys.Left:
             switch (idsArray[currentChoice])
             {
@@ -1614,13 +1615,6 @@ namespace djack.RogueSurvivor.Engine
                 if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.ShamblersUpgrade = !RogueGame.s_Options.ShamblersUpgrade;
                 break;
             }
-            break;
-          case Keys.Up:
-            if (currentChoice > 0) {
-              --currentChoice;
-              break;
-            }
-            currentChoice = entries.Length - 1;
             break;
           case Keys.Right:
             switch (idsArray[currentChoice]) {
@@ -1738,16 +1732,14 @@ namespace djack.RogueSurvivor.Engine
                 break;
             }
             break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
-            break;
           case Keys.R:
             RogueGame.s_Options = gameOptions;
             break;
         }
-        ApplyOptions(false);
-      }
-      while (flag);
+        return null;
+      });
+      ChoiceMenu(choice_handler, setup_handler, entries.Length, failover_handler);
+      ApplyOptions(false);
       SaveOptions();
     }
 
