@@ -46,11 +46,6 @@ namespace djack.RogueSurvivor.Gameplay
       return id == Skills.IDs.HAULER ? 3 : 5;
     }
 
-    public static int MaxSkillLevel(int id)
-    {
-      return Skills.MaxSkillLevel((Skills.IDs) id);
-    }
-
     public static Skills.IDs RollLiving(DiceRoller roller)
     {
       return (Skills.IDs) roller.Roll(0, (int)Skills.IDs._LAST_LIVING+1);

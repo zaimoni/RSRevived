@@ -1144,33 +1144,17 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewCharacterUndeadType(DiceRoller roller, out GameActors.IDs modelID)
     {
-      const int undead_count = 5;
-
-      ActorModel[] undead = new ActorModel[undead_count] {
+      ActorModel[] undead = {
         GameActors.Skeleton,
         GameActors.Zombie,
         GameActors.MaleZombified,
         GameActors.FemaleZombified,
         GameActors.ZombieMaster
       };
-      string[] entries = new string[undead_count+1]
-      {
-        "*Random*",
-        undead[0].Name,
-        undead[1].Name,
-        undead[2].Name,
-        undead[3].Name,
-        undead[4].Name
-      };
-      string[] values = new string[undead_count+1]
-      {
-        "(picks a type at random for you)",
-        DescribeUndeadModelStatLine(undead[0]),
-        DescribeUndeadModelStatLine(undead[1]),
-        DescribeUndeadModelStatLine(undead[2]),
-        DescribeUndeadModelStatLine(undead[3]),
-        DescribeUndeadModelStatLine(undead[4])
-      };
+      
+      string[] entries = (new string[] { "*Random*" }).Concat(undead.Select(x => x.Name)).ToArray();
+      string[] values = (new string[] { "(picks a type at random for you)" }).Concat(undead.Select(x => DescribeUndeadModelStatLine(x))).ToArray();
+
       modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
       const int gx = 0;
 
@@ -1220,16 +1204,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewCharacterSkill(DiceRoller roller, out Skills.IDs skID)
     {
-      Skills.IDs[] idsArray = new Skills.IDs[20];
-      string[] entries = new string[idsArray.Length + 1];
-      string[] values = new string[idsArray.Length + 1];
-      entries[0] = "*Random*";
-      values[0] = "(picks a skill at random for you)";
-      for (int id = 0; id < 1+(int)Skills.IDs._LAST_LIVING; ++id) {
-        idsArray[id] = (Skills.IDs) id;
-        entries[id + 1] = Skills.Name(idsArray[id]);
-        values[id + 1] = string.Format("{0} max - {1}", (object) Skills.MaxSkillLevel(id), (object)DescribeSkillShort(idsArray[id]));
-      }
+      Skills.IDs[] idsArray = Enumerable.Range(0, 1 + (int)Skills.IDs._LAST_LIVING).Select(id => (Skills.IDs)id).ToArray();
+      string[] entries = (new string[] { "*Random*" }).Concat(idsArray.Select(id => Skills.Name(id))).ToArray();
+      string[] values = (new string[] { "(picks a skill at random for you)" }).Concat(idsArray.Select(id => string.Format("{0} max - {1}", Skills.MaxSkillLevel(id), DescribeSkillShort(id)))).ToArray();
+
       skID = Skills.IDs._FIRST;
 
       const int gx = 0;
