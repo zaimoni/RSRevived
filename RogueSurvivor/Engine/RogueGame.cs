@@ -112,6 +112,10 @@ namespace djack.RogueSurvivor.Engine
     };
     // end string arrays used by OverlayPopup
 
+    // report formatting; design width 120 characters, design height 51-ish lines (depends on bold/normal)
+    private readonly string hr = "".PadLeft(120,'-');
+    private readonly string hr_plus = string.Join("",Enumerable.Range(0,11).Select(x => "---------+").ToArray());
+
     private readonly Color MODE_TEXTCOLOR = Color.Yellow;
     private readonly Color MODE_BORDERCOLOR = Color.Yellow;
     private readonly Color MODE_FILLCOLOR = Color.FromArgb(192, Color.Gray);
@@ -1292,7 +1296,7 @@ namespace djack.RogueSurvivor.Engine
       int gy1 = num1 + 14;
             m_UI.UI_DrawStringBold(Color.Yellow, "Hi Scores", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-            m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
       int gy3 = gy2 + 14;
             m_UI.UI_DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy3, new Color?());
       int gy4 = gy3 + 14;
@@ -1305,19 +1309,19 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < m_HiScoreTable.Count; ++index)
       {
         Color color = index == 0 ? Color.LightYellow : (index == 1 ? Color.LightCyan : (index == 2 ? Color.LightGreen : Color.DimGray));
-                m_UI.UI_DrawStringBold(color, "------------------------------------------------------------------------------------------------------------------------", 0, gy4, new Color?());
+        m_UI.UI_DrawStringBold(color, hr, 0, gy4, new Color?());
         int gy5 = gy4 + 14;
         HiScore hiScore = m_HiScoreTable[index];
         string str = string.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}", (object) (index + 1), (object)TruncateString(hiScore.Name, 25), (object) hiScore.TotalPoints, (object) hiScore.DifficultyPercent, (object) hiScore.SurvivalPoints, (object) hiScore.KillPoints, (object) hiScore.AchievementPoints, (object) new WorldTime(hiScore.TurnSurvived).ToString(), (object)TimeSpanToString(hiScore.PlayingTime));
-                m_UI.UI_DrawStringBold(color, str, 0, gy5, new Color?());
+        m_UI.UI_DrawStringBold(color, str, 0, gy5, new Color?());
         int gy6 = gy5 + 14;
-                m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.SkillsDescription), 0, gy6, new Color?());
+        m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.SkillsDescription), 0, gy6, new Color?());
         int gy7 = gy6 + 14;
-                m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.Death), 0, gy7, new Color?());
+        m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", (object) hiScore.Death), 0, gy7, new Color?());
         gy4 = gy7 + 14;
         if (saveToTextfile)
         {
-          textFile.Append("------------------------------------------------------------------------------------------------------------------------");
+          textFile.Append(hr);
           textFile.Append(str);
           textFile.Append(string.Format("     | {0}", (object) hiScore.SkillsDescription));
           textFile.Append(string.Format("     | {0}", (object) hiScore.Death));
@@ -1326,22 +1330,21 @@ namespace djack.RogueSurvivor.Engine
       string scoreTextFilePath = GetUserHiScoreTextFilePath();
       if (saveToTextfile)
         textFile.Save(scoreTextFilePath);
-            m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy4, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy4, new Color?());
       int gy8 = gy4 + 14;
-      if (saveToTextfile)
-      {
-                m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy8, new Color?());
+      if (saveToTextfile) {
+        m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy8, new Color?());
         int num2 = gy8 + 14;
       }
-            DrawFootnote(Color.White, "press ESC to leave");
-            m_UI.UI_Repaint();
-            WaitEscape();
+      DrawFootnote(Color.White, "press ESC to leave");
+      m_UI.UI_Repaint();
+      WaitEscape();
     }
 
     private void LoadHiScoreTable()
     {
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Loading hiscores table...", 0, 0, new Color?());
       m_UI.UI_Repaint();
       m_HiScoreTable = HiScoreTable.Load(GetUserHiScoreFilePath());
       if (m_HiScoreTable == null) {
@@ -3424,7 +3427,7 @@ namespace djack.RogueSurvivor.Engine
           int gy1 = num1 + 14;
                     m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1, new Color?());
           int gy2 = gy1 + 14;
-                    m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
           int gy3 = gy2 + 14;
           int index = m_ManualLine;
           do
@@ -3437,7 +3440,7 @@ namespace djack.RogueSurvivor.Engine
             ++index;
           }
           while (index < formatedLines.Count && gy3 < 740);
-                    m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy3, new Color?());
+                    m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3, new Color?());
           int num2 = gy3 + 14;
                     DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
                     m_UI.UI_Repaint();
@@ -3504,7 +3507,7 @@ namespace djack.RogueSurvivor.Engine
       int num2 = gy2 + 14;
             m_UI.UI_Repaint();
       List<string> stringList = new List<string>();
-      for (int index = 0; index < 46; ++index)
+      for (int index = 0; index < (int)AdvisorHint._COUNT; ++index)
       {
         string title;
         string[] body;
@@ -3524,7 +3527,7 @@ namespace djack.RogueSurvivor.Engine
         int gy3 = num4 + 14;
                 m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3, new Color?());
         int gy4 = gy3 + 14;
-                m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy4, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy4, new Color?());
         int gy5 = gy4 + 14;
         int index = num3;
         do
@@ -3534,7 +3537,7 @@ namespace djack.RogueSurvivor.Engine
           ++index;
         }
         while (index < stringList.Count && gy5 < 740);
-                m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy5, new Color?());
+                m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy5, new Color?());
         num2 = gy5 + 14;
                 DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
                 m_UI.UI_Repaint();
@@ -3577,17 +3580,15 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleMessageLog()
     {
-            m_UI.UI_Clear(Color.Black);
-      int num = 0;
-            DrawHeader();
-      int gy1 = num + 14;
-            m_UI.UI_DrawStringBold(Color.Yellow, "Message Log", 0, gy1, new Color?());
+      m_UI.UI_Clear(Color.Black);
+      DrawHeader();
+      int gy1 = 14;
+      m_UI.UI_DrawStringBold(Color.Yellow, "Message Log", 0, gy1, new Color?());
       int gy2 = gy1 + 14;
-            m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
       int gy3 = gy2 + 14;
-      foreach (Data.Message message in m_MessageManager.History)
-      {
-                m_UI.UI_DrawString(message.Color, message.Text, 0, gy3, new Color?());
+      foreach (Data.Message message in m_MessageManager.History) {
+        m_UI.UI_DrawString(message.Color, message.Text, 0, gy3, new Color?());
         gy3 += 12;
       }
       DrawFootnote(Color.White, "press ESC to leave");
@@ -5734,9 +5735,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleAdvisor(Actor player)
     {
-      if (RogueGame.s_Hints.HasAdvisorGivenAllHints())
-      {
-                ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]
+      if (s_Hints.HasAdvisorGivenAllHints()) {
+        ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]
         {
           "The Advisor has given you all the hints.",
           "You can disable the advisor in the options.",
@@ -5746,18 +5746,14 @@ namespace djack.RogueSurvivor.Engine
           string.Format("To CHANGE OPTIONS    : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()),
           string.Format("To READ THE MANUAL   : <{0}>.", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.HELP_MODE).ToString())
         });
-      }
-      else
-      {
-        for (int index = 0; index < 46; ++index)
-        {
-          if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
-          {
-                        AdvisorGiveHint((AdvisorHint) index);
+      } else {
+        for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
+          if (!s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index)) {
+            AdvisorGiveHint((AdvisorHint) index);
             return;
           }
         }
-                ShowAdvisorMessage("No hint available.", new string[5]
+        ShowAdvisorMessage("No hint available.", new string[5]
         {
           "The Advisor has now new hint for you in this situation.",
           "You will see a popup when he has something to say.",
@@ -5772,7 +5768,7 @@ namespace djack.RogueSurvivor.Engine
     {
       for (int index = 0; index < (int) AdvisorHint._COUNT; ++index)
       {
-        if (!RogueGame.s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
+        if (!s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
           return true;
       }
       return false;
@@ -5780,7 +5776,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void AdvisorGiveHint(AdvisorHint hint)
     {
-      RogueGame.s_Hints.SetAdvisorHintAsGiven(hint);
+      s_Hints.SetAdvisorHintAsGiven(hint);
       SaveHints();
       ShowAdvisorHint(hint);
     }
@@ -6461,7 +6457,7 @@ namespace djack.RogueSurvivor.Engine
       string[] lines1 = new string[lines.Length + 2];
       lines1[0] = "HINT : " + title;
       Array.Copy((Array) lines, 0, (Array) lines1, 1, lines.Length);
-      lines1[lines.Length + 1] = string.Format("(hint {0}/{1})", (object) RogueGame.s_Hints.CountAdvisorHintsGiven(), (object) 46);
+      lines1[lines.Length + 1] = string.Format("(hint {0}/{1})", s_Hints.CountAdvisorHintsGiven(), (int)AdvisorHint._COUNT);
       AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(lines1, Color.White, Color.White, Color.Black, new Point(0, 0)));
       ClearMessages();
       AddMessage(new Data.Message("You can disable the advisor in the options screen.", Session.Get.WorldTime.TurnCounter, Color.White));
@@ -9583,44 +9579,36 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append("The End.");
       int num1;
       int num2 = num1 = 0;
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
       int gy1 = num1 + 14;
-            m_UI.UI_Repaint();
+      m_UI.UI_Repaint();
       string str4 = RogueGame.GraveFilePath(GetUserNewGraveyardName());
-      int num3;
-      if (!textFile.Save(str4))
-      {
-                m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy1, new Color?());
-        num3 = gy1 + 14;
-      }
-      else
-      {
-                m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy1, new Color?());
+      if (!textFile.Save(str4)) {
+        m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy1, new Color?());
+      } else {
+        m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy1, new Color?());
         int gy2 = gy1 + 14;
-                m_UI.UI_DrawString(Color.White, str4, 0, gy2, new Color?());
-        num3 = gy2 + 14;
+        m_UI.UI_DrawString(Color.White, str4, 0, gy2, new Color?());
       }
-            DrawFootnote(Color.White, "press ENTER");
-            m_UI.UI_Repaint();
-            WaitEnter();
+      DrawFootnote(Color.White, "press ENTER");
+      m_UI.UI_Repaint();
+      WaitEnter();
       textFile.FormatLines(TEXTFILE_CHARS_PER_LINE);
       int index = 0;
       do {
         m_UI.UI_Clear(Color.Black);
-        int num4;
-        int gx = num4 = 0;
         DrawHeader();
-        int gy2 = num4 + 14;
+        int gy2 = 14;
         int num5 = 0;
-        m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, gy2, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
         int gy3 = gy2 + 14;
         for (; num5 < 50 && index < textFile.FormatedLines.Count; ++num5) {
-          m_UI.UI_DrawStringBold(Color.White, textFile.FormatedLines[index], gx, gy3, new Color?());
+          m_UI.UI_DrawStringBold(Color.White, textFile.FormatedLines[index], 0, gy3, new Color?());
           gy3 += 14;
           ++index;
         }
-        m_UI.UI_DrawStringBold(Color.White, "---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+", 0, 740, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, 740, new Color?());
         if (index < textFile.FormatedLines.Count)
           DrawFootnote(Color.White, "press ENTER for more");
         else
