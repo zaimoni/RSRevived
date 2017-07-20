@@ -1201,39 +1201,26 @@ namespace djack.RogueSurvivor.Engine
       const int gx = 0;
       int gy1 = 0;
 
-      int currentChoice = 0;
-      do {
+      Func<int,Skills.IDs?> setup_handler = (currentChoice => {
         gy1 = 0;
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", (object) Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? (object) "Male" : (object) "Female"), gx, gy1, new Color?());
         gy1 += 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
+        return null;
+      });
+      Func<int, Skills.IDs?> choice_handler = (currentChoice => {
+        Skills.IDs skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
+        int gy3 = gy1 + 14;
+        m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", (object) Skills.Name(skID)), gx, gy3, new Color?());
+        int gy4 = gy3 + 14;
+        m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
         m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Return:
-            Skills.IDs skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
-            int gy3 = gy1 + 14;
-            m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", (object) Skills.Name(skID)), gx, gy3, new Color?());
-            int gy4 = gy3 + 14;
-            m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
-            m_UI.UI_Repaint();
-            if (WaitYesOrNo()) return skID;
-            break;
-          case Keys.Escape: return null;
-          case Keys.Up:
-            if (currentChoice > 0) {
-              --currentChoice;
-              break;
-            }
-            currentChoice = entries.Length - 1;
-            break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
-            break;
-        }
-      }
-      while(true);
+        if (WaitYesOrNo()) return skID;
+        return null;
+      });
+      return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
     }
 
     private void LoadManual()
@@ -1811,62 +1798,43 @@ namespace djack.RogueSurvivor.Engine
 
       string[] entries = command_labels.Select(x => x.Key).ToArray();
       const int gx = 0;
+      int gy = 0;
 
-      bool flag1 = true;
-      int currentChoice = 0;
-      do {
-        bool flag2 = RogueGame.s_KeyBindings.CheckForConflict();
+      Func<int,bool?> setup_handler = (currentChoice => {
         string[] values = command_labels.Select(x => RogueGame.s_KeyBindings.Get(x.Value).ToString()).ToArray();
 
-        int gy = 0;
+        gy = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
         gy += 14;
         m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
         gy += 14;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
-        if (flag2) {
+        if (s_KeyBindings.CheckForConflict()) {
           m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
           gy += 14;
         }
         DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", (object)command_labels[currentChoice].Key), gx, gy, new Color?());
         m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode)
-        {
-          case Keys.Return:
-            m_UI.UI_DrawStringBold(Color.Yellow, string.Format("rebinding {0}, press the new key.", (object)command_labels[currentChoice].Key), gx, gy, new Color?());
-            m_UI.UI_Repaint();
-            Keys key = Keys.None;
-            while(true) {
-              KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
-              if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt) {
-                key = keyEventArgs.KeyData;
-                break;
-              }
-            };
-            if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
-            PlayerCommand command = command_labels[currentChoice].Value;
-            RogueGame.s_KeyBindings.Set(command, key);
+        Keys key = Keys.None;
+        while(true) {
+          KeyEventArgs keyEventArgs = m_UI.UI_WaitKey();
+          if (keyEventArgs.KeyCode != Keys.ShiftKey && keyEventArgs.KeyCode != Keys.ControlKey && !keyEventArgs.Alt) {
+            key = keyEventArgs.KeyData;
             break;
-          case Keys.Escape:
-            if (!flag2) {
-              flag1 = false;
-              break;
-            }
-            break;
-          case Keys.Up:
-            if (currentChoice > 0) {
-              --currentChoice;
-              break;
-            }
-            currentChoice = command_labels.Length - 1;
-            break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % command_labels.Length;
-            break;
-        }
-      }
-      while (flag1);
+          }
+        };
+        if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
+        PlayerCommand command = command_labels[currentChoice].Value;
+        RogueGame.s_KeyBindings.Set(command, key);
+        return null;
+      });
+      do ChoiceMenu(choice_handler, setup_handler, entries.Length);
+      while(s_KeyBindings.CheckForConflict());
       SaveKeybindings();
     }
 
