@@ -774,8 +774,22 @@ namespace djack.RogueSurvivor.Engine
       else if (Rules.MELEE_WEAPON_BREAK_CHANCE > tmp2[6]) Logger.WriteLine(Logger.Stage.RUN_MAIN, "melee weapons break on save-load");
     }
 
+#if FAIL
+// minimum demo code fragment
+      Func<int,bool?> setup_handler = (currentChoice => {
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        return null;
+      });
+      Func<Keys,bool?> failover_handler = (k -> {
+        return null;
+      });
+      m_IsGameRunning = ChoiceMenu(choice_handler, setup_handler, entries.Length);
+#endif
     // this is a UI function so we can afford to be an inefficient monolithic function
     // return values of handlers: null is continue, true/false are the return values
+    // Compiler error to mix this with out/ref parameters
     private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,bool?> failover_handler=null)
     {
       Contract.Requires(null != choice_handler);
@@ -831,7 +845,7 @@ namespace djack.RogueSurvivor.Engine
       };
 
       int gy1 = 0;
-      int gx1 = 0;
+      const int gx1 = 0;
 
       Func<int,bool?> setup_handler = (c => {
         if (!m_MusicManager.IsPlaying(GameMusics.INTRO) && !m_PlayedIntro) {
@@ -839,7 +853,7 @@ namespace djack.RogueSurvivor.Engine
           m_MusicManager.Play(GameMusics.INTRO);
           m_PlayedIntro = true;
         }
-        gx1 = gy1 = 0;
+        gy1 = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
         gy1 += 14;
@@ -958,12 +972,11 @@ namespace djack.RogueSurvivor.Engine
           "Remember to set them back ON again when you play other modes!"
         }
       };
+      const int gx = 0;
 
-      int currentChoice = 0;
-      do {
+      Func<int,bool?> setup_handler = (currentChoice => {
         m_UI.UI_Clear(Color.Black);
-        int gy1;
-        int gx = gy1 = 0;
+        int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
         int gy2 = gy1 + 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
@@ -973,37 +986,24 @@ namespace djack.RogueSurvivor.Engine
           gy3 += 14;
         }
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Return:
-            switch (currentChoice) {
-              case 0:
-                Session.Get.GameMode = GameMode.GM_STANDARD;
-                return true;
-              case 1:
-                Session.Get.GameMode = GameMode.GM_CORPSES_INFECTION;
-                return true;
-              case 2:
-                Session.Get.GameMode = GameMode.GM_VINTAGE;
-                ApplyOptions(false);
-                return true;
-            }
-            break;
-          case Keys.Escape:
-            return false;
-          case Keys.Up:
-            if (currentChoice > 0) {
-              --currentChoice;
-              break;
-            }
-            currentChoice = entries.Length - 1;
-            break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
-            break;
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        switch (currentChoice) {
+          case 0:
+            Session.Get.GameMode = GameMode.GM_STANDARD;
+            return true;
+          case 1:
+            Session.Get.GameMode = GameMode.GM_CORPSES_INFECTION;
+            return true;
+          case 2:
+            Session.Get.GameMode = GameMode.GM_VINTAGE;
+            ApplyOptions(false);
+            return true;
         }
-      }
-      while(true);
+        return null;
+      });
+      return ChoiceMenu(choice_handler, setup_handler, entries.Length);
     }
 
     private bool HandleNewCharacterRace(DiceRoller roller, out bool isUndead)
@@ -1021,11 +1021,12 @@ namespace djack.RogueSurvivor.Engine
         "Eat brains and die again."
       };
       isUndead = false;
+      const int gx = 0;
+
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
-        int gy1;
-        int gx = gy1 = 0;
+        int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", (object) Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         int gy2 = gy1 + 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
@@ -1087,11 +1088,12 @@ namespace djack.RogueSurvivor.Engine
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", (object) femaleCivilian.StartingSheet.BaseHitPoints, (object) femaleCivilian.StartingSheet.BaseDefence.Value, (object) femaleCivilian.StartingSheet.UnarmedAttack.DamageValue)
       };
       isMale = true;
+      const int gx = 0;
+
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
-        int gy;
-        int gx = gy = 0;
+        int gy = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", (object) Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
         gy += 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy, 256);
@@ -1170,11 +1172,12 @@ namespace djack.RogueSurvivor.Engine
         DescribeUndeadModelStatLine(undead[4])
       };
       modelID = GameActors.IDs.UNDEAD_MALE_ZOMBIFIED;
+      const int gx = 0;
+
       int currentChoice = 0;
       do {
         m_UI.UI_Clear(Color.Black);
-        int gy1;
-        int gx = gy1 = 0;
+        int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", (object) Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
         int gy2 = gy1 + 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
@@ -1228,20 +1231,23 @@ namespace djack.RogueSurvivor.Engine
         values[id + 1] = string.Format("{0} max - {1}", (object) Skills.MaxSkillLevel(id), (object)DescribeSkillShort(idsArray[id]));
       }
       skID = Skills.IDs._FIRST;
+
+      const int gx = 0;
+      int gy1 = 0;
+
       int currentChoice = 0;
       do {
+        gy1 = 0;
         m_UI.UI_Clear(Color.Black);
-        int gy1;
-        int gx = gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", (object) Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? (object) "Male" : (object) "Female"), gx, gy1, new Color?());
-        int gy2 = gy1 + 28;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
+        gy1 += 28;
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         m_UI.UI_Repaint();
         switch (m_UI.UI_WaitKey().KeyCode) {
           case Keys.Return:
             skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
-            int gy3 = gy2 + 14;
+            int gy3 = gy1 + 14;
             m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", (object) Skills.Name(skID)), gx, gy3, new Color?());
             int gy4 = gy3 + 14;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
@@ -1484,7 +1490,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleOptions(bool ingame)
     {
-      GameOptions gameOptions = RogueGame.s_Options;
+      GameOptions gameOptions = s_Options;
       GameOptions.IDs[] idsArray = new GameOptions.IDs[33]
       {
         GameOptions.IDs.UI_MUSIC,
@@ -1524,32 +1530,11 @@ namespace djack.RogueSurvivor.Engine
         GameOptions.IDs.GAME_REINCARNATE_AS_RAT,
         GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS
       };
-      string[] entries = new string[idsArray.Length];
-      string[] values = new string[idsArray.Length];
-      for (int index = 0; index < idsArray.Length; ++index)
-        entries[index] = GameOptions.Name(idsArray[index]);
+      string[] entries = idsArray.Select(x => GameOptions.Name(x)).ToArray();
+
       bool flag = true;
       int currentChoice = 0;
       do {
-        for (int index = 0; index < idsArray.Length; ++index)
-          values[index] = RogueGame.s_Options.DescribeValue(Session.Get.GameMode, idsArray[index]);
-        int gy;
-        int gx = gy = 0;
-        m_UI.UI_Clear(Color.Black);
-        DrawHeader();
-        gy += 14;
-        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", (object) Session.DescGameMode(Session.Get.GameMode)), 0, gy, new Color?());
-        gy += 28;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 400);
-        gy += 14;
-        m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
-        gy += 14;
-        gy += 14;
-        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_SURVIVOR, 0)), (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
-        gy += 14;
-        m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
-        gy += 28;
-        DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
         m_UI.UI_Repaint();
         switch (m_UI.UI_WaitKey().KeyCode) {
           case Keys.Escape:
@@ -1809,16 +1794,11 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleRedefineKeys()
     {
-      bool flag1 = true;
-      int currentChoice = 0;
-      do
-      {
-        bool flag2 = RogueGame.s_KeyBindings.CheckForConflict();
-        // need to maintain: label to command mapping
-        // then generate current keybindings
-        // then read off position from reference array
-        // screen layout may fail with more than 51 entries
-        KeyValuePair< string,PlayerCommand >[] command_labels = new KeyValuePair<string, PlayerCommand>[] {
+      // need to maintain: label to command mapping
+      // then generate current keybindings
+      // then read off position from reference array
+      // screen layout may fail with more than 51 entries
+      KeyValuePair<string, PlayerCommand>[] command_labels = new KeyValuePair<string, PlayerCommand>[] {
           new KeyValuePair< string,PlayerCommand >("Move N", PlayerCommand.MOVE_N),
           new KeyValuePair< string,PlayerCommand >("Move NE", PlayerCommand.MOVE_NE),
           new KeyValuePair< string,PlayerCommand >("Move E", PlayerCommand.MOVE_E),
@@ -1874,11 +1854,16 @@ namespace djack.RogueSurvivor.Engine
           new KeyValuePair< string,PlayerCommand >("Use Spray", PlayerCommand.USE_SPRAY),
         };
 
-        string[] entries = command_labels.Select(x => x.Key).ToArray();
+      string[] entries = command_labels.Select(x => x.Key).ToArray();
+      const int gx = 0;
+
+      bool flag1 = true;
+      int currentChoice = 0;
+      do {
+        bool flag2 = RogueGame.s_KeyBindings.CheckForConflict();
         string[] values = command_labels.Select(x => RogueGame.s_KeyBindings.Get(x.Value).ToString()).ToArray();
 
-        int gy;
-        int gx = gy = 0;
+        int gy = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
         gy += 14;
@@ -12335,134 +12320,95 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleReincarnation()
     {
-      m_MusicManager.Play(GameMusics.LIMBO);
-      if (RogueGame.s_Options.MaxReincarnations <= 0 || !AskForReincarnation()) {
+      if (s_Options.MaxReincarnations <= 0 || !AskForReincarnation()) {
         m_MusicManager.StopAll();
-      } else {
-        m_UI.UI_Clear(Color.Black);
-        m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
-        m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
-        m_UI.UI_Repaint();
-        int matchingActors1;
-        Actor reincarnationAvatar1 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out matchingActors1);
-        int matchingActors2;
-        Actor reincarnationAvatar2 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out matchingActors2);
-        int matchingActors3;
-        Actor reincarnationAvatar3 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out matchingActors3);
-        int matchingActors4;
-        Actor reincarnationAvatar4 = FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_FOLLOWER, out matchingActors4);
-        Actor reincarnationAvatar5 = FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out matchingActors1);
-        Actor reincarnationAvatar6 = FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out matchingActors1);
-        string[] strArray = CompileDistrictFunFacts(m_Player.Location.Map.District);
-        bool flag = false;
-        string[] entries = new string[(int)GameOptions.ReincMode._COUNT]
-        {
-          GameOptions.Name(GameOptions.ReincMode.RANDOM_ACTOR),
-          GameOptions.Name(GameOptions.ReincMode.RANDOM_LIVING),
-          GameOptions.Name(GameOptions.ReincMode.RANDOM_UNDEAD),
-          GameOptions.Name(GameOptions.ReincMode.RANDOM_FOLLOWER),
-          GameOptions.Name(GameOptions.ReincMode.KILLER),
-          GameOptions.Name(GameOptions.ReincMode.ZOMBIFIED)
-        };
-        string[] values = new string[(int)GameOptions.ReincMode._COUNT]
-        {
-          DescribeAvatar(reincarnationAvatar1),
-          string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar2), (object) matchingActors2),
-          string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar3), (object) matchingActors3),
-          string.Format("{0}   (out of {1} possibilities)", (object) DescribeAvatar(reincarnationAvatar4), (object) matchingActors4),
-          DescribeAvatar(reincarnationAvatar5),
-          DescribeAvatar(reincarnationAvatar6)
-        };
-        int currentChoice = 0;
-        Actor newPlayerAvatar = null;
-        do {
-          int gy1;
-          int gx = gy1 = 0;
-          m_UI.UI_Clear(Color.Black);
-          m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
-          int gy2 = gy1 + 28;
-          DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy2, 256);
-          gy2 += 28;
-          m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy2, new Color?());
-          int gy3 = gy2 + 14;
-          m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", (object) new WorldTime(Session.Get.WorldTime.TurnCounter).ToString()), gx, gy3, new Color?());
-          int gy4 = gy3 + 28;
-          for (int index = 0; index < strArray.Length; ++index) {
-            m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
-            gy4 += 14;
-          }
-          DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
-          m_UI.UI_Repaint();
-          switch (m_UI.UI_WaitKey().KeyCode) {
-            case Keys.Return:
-              switch (currentChoice)
-              {
-                case 0:
-                  newPlayerAvatar = reincarnationAvatar1;
-                  break;
-                case 1:
-                  newPlayerAvatar = reincarnationAvatar2;
-                  break;
-                case 2:
-                  newPlayerAvatar = reincarnationAvatar3;
-                  break;
-                case 3:
-                  newPlayerAvatar = reincarnationAvatar4;
-                  break;
-                case 4:
-                  newPlayerAvatar = reincarnationAvatar5;
-                  break;
-                case 5:
-                  newPlayerAvatar = reincarnationAvatar6;
-                  break;
-              }
-              flag = newPlayerAvatar != null;
-              break;
-            case Keys.Escape:
-              flag = true;
-              newPlayerAvatar = null;
-              break;
-            case Keys.Up:
-              if (currentChoice > 0) {
-                --currentChoice;
-                break;
-              }
-              currentChoice = entries.Length - 1;
-              break;
-            case Keys.Down:
-              currentChoice = (currentChoice + 1) % entries.Length;
-              break;
-          }
-        }
-        while (!flag);
-        if (newPlayerAvatar == null) {
-          m_MusicManager.StopAll();
-        } else {
-          newPlayerAvatar.Controller = new PlayerController();
-          if (newPlayerAvatar.Activity != Activity.SLEEPING)
-            newPlayerAvatar.Activity = Activity.IDLE;
-          newPlayerAvatar.PrepareForPlayerControl();
-          m_Player = newPlayerAvatar;
-          Session.Get.CurrentMap = newPlayerAvatar.Location.Map;
-          Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
-          Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", (object)Session.Get.Scoring.ReincarnationNumber));
-          Session.Get.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-          Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
-          // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
-          // This may not be a useful idea, however.
-          m_MusicManager.StopAll();
-          m_Player.Controller.UpdateSensors();
-          ComputeViewRect(m_Player.Location.Position);
-          ClearMessages();
-          AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", (object)m_Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
-          RedrawPlayScreen();
-          string musicname = GameMusics.REINCARNATE;
-          if (m_Player == Session.Get.UniqueActors.JasonMyers.TheActor)
-            musicname = GameMusics.INSANE;
-          m_MusicManager.Play(musicname);
-          RestartSimThread();
-        }
+        return;
       }
+
+      m_MusicManager.Play(GameMusics.LIMBO);
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
+      m_UI.UI_Repaint();
+      int matchingActors1;
+      int matchingActors2;
+      int matchingActors3;
+      int matchingActors4;
+      Actor[] reincarnationAvatars = {
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out matchingActors1),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out matchingActors2),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out matchingActors3),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_FOLLOWER, out matchingActors4),
+        FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out matchingActors1),
+        FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out matchingActors1)
+      };
+      string[] strArray = CompileDistrictFunFacts(m_Player.Location.Map.District);
+      string[] entries = new string[(int)GameOptions.ReincMode._COUNT] {
+        GameOptions.Name(GameOptions.ReincMode.RANDOM_ACTOR),
+        GameOptions.Name(GameOptions.ReincMode.RANDOM_LIVING),
+        GameOptions.Name(GameOptions.ReincMode.RANDOM_UNDEAD),
+        GameOptions.Name(GameOptions.ReincMode.RANDOM_FOLLOWER),
+        GameOptions.Name(GameOptions.ReincMode.KILLER),
+        GameOptions.Name(GameOptions.ReincMode.ZOMBIFIED)
+      };
+      string[] values = reincarnationAvatars.Select(a => DescribeAvatar(a)).ToArray();
+      values[1] = string.Format("{0}   (out of {1} possibilities)", values[1], matchingActors2);
+      values[2] = string.Format("{0}   (out of {1} possibilities)", values[2], matchingActors3);
+      values[3] = string.Format("{0}   (out of {1} possibilities)", values[3], matchingActors4);
+      const int gx = 0;
+
+      Actor newPlayerAvatar = null;
+      Func<int,bool?> setup_handler = (currentChoice => {
+        int gy1 = 0;
+        m_UI.UI_Clear(Color.Black);
+        m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Choose Avatar", gx, gy1, new Color?());
+        int gy2 = gy1 + 28;
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy2, 256);
+        gy2 += 28;
+        m_UI.UI_DrawStringBold(Color.Pink, ".-* District Fun Facts! *-.", gx, gy2, new Color?());
+        int gy3 = gy2 + 14;
+        m_UI.UI_DrawStringBold(Color.Pink, string.Format("at current date : {0}.", (object) new WorldTime(Session.Get.WorldTime.TurnCounter).ToString()), gx, gy3, new Color?());
+        int gy4 = gy3 + 28;
+        for (int index = 0; index < strArray.Length; ++index) {
+          m_UI.UI_DrawStringBold(Color.Pink, strArray[index], gx, gy4, new Color?());
+          gy4 += 14;
+        }
+        DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel and end game");
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        newPlayerAvatar = reincarnationAvatars[currentChoice];
+        if (null != newPlayerAvatar) return true;
+        return null;
+      });
+      if (!ChoiceMenu(choice_handler, setup_handler, entries.Length)) newPlayerAvatar = null;
+      if (newPlayerAvatar == null) {
+        m_MusicManager.StopAll();
+        return;
+      }
+
+      newPlayerAvatar.Controller = new PlayerController();
+      if (newPlayerAvatar.Activity != Activity.SLEEPING) newPlayerAvatar.Activity = Activity.IDLE;
+      newPlayerAvatar.PrepareForPlayerControl();
+      m_Player = newPlayerAvatar;
+      Session.Get.CurrentMap = newPlayerAvatar.Location.Map;
+      Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
+      Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", (object)Session.Get.Scoring.ReincarnationNumber));
+      Session.Get.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
+      // This may not be a useful idea, however.
+      m_MusicManager.StopAll();
+      m_Player.Controller.UpdateSensors();
+      ComputeViewRect(m_Player.Location.Position);
+      ClearMessages();
+      AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", (object)m_Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      RedrawPlayScreen();
+      string musicname = GameMusics.REINCARNATE;
+      // XXX feels gappy ... there are other uniques with music
+      if (m_Player == Session.Get.UniqueActors.JasonMyers.TheActor) musicname = GameMusics.INSANE;
+      m_MusicManager.Play(musicname);
+      RestartSimThread();
     }
 
     private string DescribeAvatar(Actor a)
