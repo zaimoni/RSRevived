@@ -831,6 +831,44 @@ namespace djack.RogueSurvivor.Engine
       } while(true);
     }
 
+    // boxed value type return value version of ChoiceMenu
+    private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,T?> failover_handler=null) where T:struct
+    {
+      Contract.Requires(null != choice_handler);
+      Contract.Requires(null != setup_handler);
+      int currentChoice = 0;
+      do {
+        T? ret = setup_handler(currentChoice);
+        if (null != ret) return ret.Value;
+        m_UI.UI_Repaint();
+
+        KeyEventArgs key = m_UI.UI_WaitKey();
+
+        switch(key.KeyCode) {
+          case Keys.Return:
+            ret = choice_handler(currentChoice);
+            if (null == ret) break;
+            return ret.Value;
+          case Keys.Escape: return null;
+          case Keys.Up:
+            if (currentChoice > 0) {
+              --currentChoice;
+              break;
+            }
+            currentChoice = choice_length - 1;
+            break;
+          case Keys.Down:
+            currentChoice = (currentChoice + 1) % choice_length;
+            break;
+          default:
+            if (null == failover_handler) break;
+            ret = failover_handler(key.KeyCode);
+            if (null == ret) break;
+            return ret.Value;
+        }
+      } while(true);
+    }
+
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void HandleMainMenu()
     {
@@ -1029,48 +1067,34 @@ namespace djack.RogueSurvivor.Engine
         "Eat brains and die again."
       };
       const int gx = 0;
+      int gy1 = 0;
 
-      int currentChoice = 0;
-      do {
+      Func<int,bool?> setup_handler = (currentChoice => {
         m_UI.UI_Clear(Color.Black);
-        int gy1 = 0;
+        gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", (object) Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
-        int gy2 = gy1 + 28;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
-        int num = gy2 + 28;
+        gy1 += 28;
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Return:
-            switch (currentChoice) {
-              case 0:
-                bool isUndead = roller.RollChance(50);
-                int gy3 = num + 14;
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? (object) "Undead" : (object) "Living"), gx, gy3, new Color?());
-                int gy4 = gy3 + 14;
-                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
-                m_UI.UI_Repaint();
-                if (WaitYesOrNo()) return isUndead;
-                break;
-              case 1: return false;
-              case 2: return true;
-            }
-            break;
-          case Keys.Escape: return null;
-          case Keys.Up:
-            if (currentChoice > 0)
-            {
-              --currentChoice;
-              break;
-            }
-            currentChoice = entries.Length - 1;
-            break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
-            break;
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        switch (currentChoice) {
+        case 0:
+          bool isUndead = roller.RollChance(50);
+          int gy3 = gy1 + 42;
+          m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? (object) "Undead" : (object) "Living"), gx, gy3, new Color?());
+          int gy4 = gy3 + 14;
+          m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
+          m_UI.UI_Repaint();
+          if (WaitYesOrNo()) return isUndead;
+          break;
+        case 1: return false;
+        case 2: return true;
         }
-      }
-      while(true);
+        return null;
+      });
+      return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
     }
 
     private bool? HandleNewCharacterGender(DiceRoller roller)
@@ -1090,47 +1114,34 @@ namespace djack.RogueSurvivor.Engine
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}", (object) femaleCivilian.StartingSheet.BaseHitPoints, (object) femaleCivilian.StartingSheet.BaseDefence.Value, (object) femaleCivilian.StartingSheet.UnarmedAttack.DamageValue)
       };
       const int gx = 0;
+      int gy = 0;
 
-      int currentChoice = 0;
-      do {
+      Func<int,bool?> setup_handler = (currentChoice => {
         m_UI.UI_Clear(Color.Black);
-        int gy = 0;
+        gy = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", (object) Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
         gy += 28;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Return:
-            switch (currentChoice) {
-              case 0:
-                bool isMale = roller.RollChance(50);
-                gy += 14;
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? (object) "Male" : (object) "Female"), gx, gy, new Color?());
-                gy += 14;
-                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
-                m_UI.UI_Repaint();
-                if (WaitYesOrNo()) return isMale;
-                break;
-              case 1: return true;
-              case 2: return false;
-            }
+        return null;
+      });
+      Func<int, bool?> choice_handler = (currentChoice => {
+        switch (currentChoice) {
+          case 0:
+            bool isMale = roller.RollChance(50);
+            gy += 14;
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? (object) "Male" : (object) "Female"), gx, gy, new Color?());
+            gy += 14;
+            m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
+            m_UI.UI_Repaint();
+            if (WaitYesOrNo()) return isMale;
             break;
-          case Keys.Escape: return null;
-          case Keys.Up:
-            if (currentChoice > 0)
-            {
-              --currentChoice;
-              break;
-            }
-            currentChoice = entries.Length - 1;
-            break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
-            break;
+          case 1: return true;
+          case 2: return false;
         }
-      }
-      while(true);
+        return null;
+      });
+      return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
     }
 
     private string DescribeUndeadModelStatLine(ActorModel m)
@@ -1152,47 +1163,33 @@ namespace djack.RogueSurvivor.Engine
       string[] values = (new string[] { "(picks a type at random for you)" }).Concat(undead.Select(x => DescribeUndeadModelStatLine(x))).ToArray();
 
       const int gx = 0;
+      int gy1 = 0;
 
-      int currentChoice = 0;
-      do {
+      Func<int,GameActors.IDs?> setup_handler = (currentChoice => {
         m_UI.UI_Clear(Color.Black);
-        int gy1 = 0;
+        gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", (object) Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
-        int gy2 = gy1 + 28;
-        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy2, 256);
+        gy1 += 28;
+        DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
-        m_UI.UI_Repaint();
-        switch (m_UI.UI_WaitKey().KeyCode) {
-          case Keys.Return:
-            switch (currentChoice) {
-              case 0:
-                GameActors.IDs modelID = undead[roller.Roll(0, 5)].ID;
-                int gy3 = gy2 + 14;
-                m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3);
-                int gy4 = gy3 + 14;
-                m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
-                m_UI.UI_Repaint();
-                if (WaitYesOrNo()) return modelID;
-                break;
-              default:
-                return undead[currentChoice-1].ID;
-            }
+        return null;
+      });
+      Func<int, GameActors.IDs?> choice_handler = (currentChoice => {
+        switch (currentChoice) {
+          case 0:
+            GameActors.IDs modelID = undead[roller.Roll(0, 5)].ID;
+            int gy3 = gy1 + 14;
+            m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", (object)GameActors[modelID].Name), gx, gy3);
+            int gy4 = gy3 + 14;
+            m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
+            m_UI.UI_Repaint();
+            if (WaitYesOrNo()) return modelID;
             break;
-          case Keys.Escape: return null;
-          case Keys.Up:
-            if (currentChoice > 0)
-            {
-              --currentChoice;
-              break;
-            }
-            currentChoice = entries.Length - 1;
-            break;
-          case Keys.Down:
-            currentChoice = (currentChoice + 1) % entries.Length;
-            break;
+          default: return undead[currentChoice-1].ID;
         }
-      }
-      while (true);
+        return null;
+      });
+      return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
     }
 
     private Skills.IDs? HandleNewCharacterSkill(DiceRoller roller)
