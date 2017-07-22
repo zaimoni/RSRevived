@@ -208,7 +208,7 @@ namespace djack.RogueSurvivor.Engine
         float num2 = 0.0f;
         switch (options.ZombifiedsUpgradeDays)
         {
-          case GameOptions.ZupDays._FIRST:
+          case GameOptions.ZupDays.ONE:
             num2 = 0.5f;
             break;
           case GameOptions.ZupDays.TWO:

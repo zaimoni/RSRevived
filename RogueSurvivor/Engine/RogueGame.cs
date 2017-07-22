@@ -1600,7 +1600,7 @@ namespace djack.RogueSurvivor.Engine
                 RogueGame.s_Options.SuppliesDropFactor -= 10;
                 break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (RogueGame.s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays._FIRST) {
+                if (RogueGame.s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) {
                   RogueGame.s_Options.ZombifiedsUpgradeDays = RogueGame.s_Options.ZombifiedsUpgradeDays - 1;
                   break;
                 }
@@ -11933,12 +11933,7 @@ namespace djack.RogueSurvivor.Engine
 
     private RogueGame.SimFlags ComputeSimFlagsForTurn(int turn)
     {
-#if STABLE_SIM_OPTIONAL
-      bool flag = RogueGame.s_Options.SimulateDistricts.HighDetail(turn);
-      return !flag ? RogueGame.SimFlags.HIDETAIL_TURN : RogueGame.SimFlags.LODETAIL_TURN;
-#else
       return RogueGame.SimFlags.HIDETAIL_TURN;
-#endif
     }
 
     private void SimulateDistrict(District d)

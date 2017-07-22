@@ -55,12 +55,6 @@ namespace djack.RogueSurvivor.Engine
     private bool m_ShowMinimap;
     private bool m_EnabledAdvisor;
     private bool m_CombatAssistant;
-#if STABLE_SIM_OPTIONAL
-    private GameOptions.SimRatio m_SimulateDistricts;
-    private float m_cachedSimRatioFloat;
-    private bool m_SimulateWhenSleeping;
-    private bool m_SimThread;
-#endif
     private bool m_ShowPlayerTagsOnMinimap;
     private int m_SpawnSkeletonChance;
     private int m_SpawnZombieChance;
@@ -288,15 +282,6 @@ namespace djack.RogueSurvivor.Engine
                 m_SpawnZombieMasterChance = value;
       }
     }
-
-#if STABLE_SIM_OPTIONAL
-    public GameOptions.SimRatio SimulateDistricts
-    {
-      get{
-        return GameOptions.SimRatio.FULL;
-      }
-    }
-#endif
 
     public int DistrictSize
     {
@@ -621,12 +606,6 @@ namespace djack.RogueSurvivor.Engine
             m_ShowPlayerTagsOnMinimap = true;
             m_EnabledAdvisor = true;
             m_CombatAssistant = false;
-#if STABLE_SIM_OPTIONAL
-            m_SimulateDistricts = SimRatio.FULL;
-            m_cachedSimRatioFloat = SimRatioToFloat(SimRatio.FULL);
-            m_SimulateWhenSleeping = false;
-            m_SimThread = true;
-#endif
             m_SpawnSkeletonChance = DEFAULT_SPAWN_SKELETON_CHANCE;
             m_SpawnZombieChance = DEFAULT_SPAWN_ZOMBIE_CHANCE;
             m_SpawnZombieMasterChance = DEFAULT_SPAWN_ZOMBIE_MASTER_CHANCE;
@@ -769,7 +748,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (ratio)
       {
-        case GameOptions.SimRatio._FIRST:
+        case GameOptions.SimRatio.OFF:
           return "OFF";
         case GameOptions.SimRatio.ONE_QUARTER:
           return "25%";
@@ -792,7 +771,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (ratio)
       {
-        case GameOptions.SimRatio._FIRST:
+        case GameOptions.SimRatio.OFF:
           return 0.0f;
         case GameOptions.SimRatio.ONE_QUARTER:
           return 0.25f;
@@ -815,7 +794,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (d)
       {
-        case GameOptions.ZupDays._FIRST:
+        case GameOptions.ZupDays.ONE:
           return "1 d";
         case GameOptions.ZupDays.TWO:
           return "2 d";
@@ -840,7 +819,7 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (d)
       {
-        case GameOptions.ZupDays._FIRST:
+        case GameOptions.ZupDays.ONE:
           return true;
         case GameOptions.ZupDays.TWO:
           return day % 2 == 0;
@@ -1019,7 +998,6 @@ namespace djack.RogueSurvivor.Engine
     public enum ZupDays
     {
       ONE = 0,
-      _FIRST = 0,
       TWO = 1,
       THREE = 2,
       FOUR = 3,
@@ -1033,7 +1011,6 @@ namespace djack.RogueSurvivor.Engine
     public enum SimRatio
     {
       OFF = 0,
-      _FIRST = 0,
       ONE_QUARTER = 1,
       ONE_THIRD = 2,
       HALF = 3,
@@ -1060,7 +1037,7 @@ namespace djack.RogueSurvivor.Engine
     public static bool HighDetail(this GameOptions.SimRatio x, int turn)
     {
       switch(x) {
-        case GameOptions.SimRatio._FIRST: return true;
+        case GameOptions.SimRatio.OFF: return true;
         case GameOptions.SimRatio.ONE_QUARTER: return turn % 4 != 0;
         case GameOptions.SimRatio.ONE_THIRD: return turn % 3 != 0;
         case GameOptions.SimRatio.HALF: return turn % 2 == 1;
