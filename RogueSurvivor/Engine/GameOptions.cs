@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Engine
     public const int DEFAULT_SPAWN_ZOMBIE_CHANCE = 30;
     public const int DEFAULT_SPAWN_ZOMBIE_MASTER_CHANCE = 10;
     public const int DEFAULT_CITY_SIZE = 5;
-    public const GameOptions.SimRatio DEFAULT_SIM_DISTRICTS = GameOptions.SimRatio.FULL;
+    public const SimRatio DEFAULT_SIM_DISTRICTS = SimRatio.FULL;
     public const int DEFAULT_ZOMBIFICATION_CHANCE = 100;
     public const int DEFAULT_DAY_ZERO_UNDEADS_PERCENT = 30;
     public const int DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE = 5;
@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Engine
     public const int DEFAULT_MAX_REINCARNATIONS = 1;
     public const int DEFAULT_NATGUARD_FACTOR = 100;
     public const int DEFAULT_SUPPLIESDROP_FACTOR = 100;
-    public const GameOptions.ZupDays DEFAULT_ZOMBIFIEDS_UPGRADE_DAYS = GameOptions.ZupDays.THREE;
+    public const ZupDays DEFAULT_ZOMBIFIEDS_UPGRADE_DAYS = ZupDays.THREE;
     private int m_DistrictSize;
     private int m_MaxCivilians;
     private int m_MaxDogs;
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Engine
     private int m_SuppliesDropFactor;
     private bool m_ShowTargets;
     private bool m_ShowPlayerTargets;
-    private GameOptions.ZupDays m_ZupDays;
+    private ZupDays m_ZupDays;
     private bool m_RatsUpgrade;
     private bool m_SkeletonsUpgrade;
     private bool m_ShamblersUpgrade;
@@ -543,7 +543,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public GameOptions.ZupDays ZombifiedsUpgradeDays
+    public ZupDays ZombifiedsUpgradeDays
     {
       get
       {
@@ -628,296 +628,296 @@ namespace djack.RogueSurvivor.Engine
             m_SuppliesDropFactor = DEFAULT_SUPPLIESDROP_FACTOR;
             m_ShowTargets = true;
             m_ShowPlayerTargets = true;
-            m_ZupDays = GameOptions.ZupDays.THREE;
+            m_ZupDays = ZupDays.THREE;
             m_RatsUpgrade = false;
             m_SkeletonsUpgrade = false;
             m_ShamblersUpgrade = false;
     }
 
-    public static string Name(GameOptions.IDs option)
+    public static string Name(IDs option)
     {
       switch (option)
       {
-        case GameOptions.IDs.UI_MUSIC:
+        case IDs.UI_MUSIC:
           return "   (Sfx) Music";
-        case GameOptions.IDs.UI_MUSIC_VOLUME:
+        case IDs.UI_MUSIC_VOLUME:
           return "   (Sfx) Music Volume";
-        case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
+        case IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
           return "   (Gfx) Show Tags on Minimap";
-        case GameOptions.IDs.UI_ANIM_DELAY:
+        case IDs.UI_ANIM_DELAY:
           return "   (Gfx) Animations Delay";
-        case GameOptions.IDs.UI_SHOW_MINIMAP:
+        case IDs.UI_SHOW_MINIMAP:
           return "   (Gfx) Show Minimap";
-        case GameOptions.IDs.UI_ADVISOR:
+        case IDs.UI_ADVISOR:
           return "  (Help) Enable Advisor";
-        case GameOptions.IDs.UI_COMBAT_ASSISTANT:
+        case IDs.UI_COMBAT_ASSISTANT:
           return "  (Help) Combat Assistant";
-        case GameOptions.IDs.UI_SHOW_TARGETS:
+        case IDs.UI_SHOW_TARGETS:
           return "  (Help) Show Actor Targets";
-        case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
+        case IDs.UI_SHOW_PLAYER_TARGETS:
           return "  (Help) Always Show Player Targets";
-        case GameOptions.IDs.GAME_DISTRICT_SIZE:
+        case IDs.GAME_DISTRICT_SIZE:
           return "   (Map) District Map Size";
-        case GameOptions.IDs.GAME_MAX_CIVILIANS:
+        case IDs.GAME_MAX_CIVILIANS:
           return "(Living) Max Civilians";
-        case GameOptions.IDs.GAME_MAX_DOGS:
+        case IDs.GAME_MAX_DOGS:
           return "(Living) Max Dogs";
-        case GameOptions.IDs.GAME_MAX_UNDEADS:
+        case IDs.GAME_MAX_UNDEADS:
           return "(Undead) Max Undeads";
-        case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
+        case IDs.GAME_SIMULATE_DISTRICTS:
           return "   (Sim) Districts Simulation";
-        case GameOptions.IDs.GAME_SIMULATE_SLEEP:
+        case IDs.GAME_SIMULATE_SLEEP:
           return "   (Sim) Simulate when Sleeping";
-        case GameOptions.IDs.GAME_SIM_THREAD:
+        case IDs.GAME_SIM_THREAD:
           return "   (Sim) Synchronous Simulation";
-        case GameOptions.IDs.GAME_SPAWN_SKELETON_CHANCE:
+        case IDs.GAME_SPAWN_SKELETON_CHANCE:
           return "(Undead) Spawn Skeleton chance";
-        case GameOptions.IDs.GAME_SPAWN_ZOMBIE_CHANCE:
+        case IDs.GAME_SPAWN_ZOMBIE_CHANCE:
           return "(Undead) Spawn Zombie chance";
-        case GameOptions.IDs.GAME_SPAWN_ZOMBIE_MASTER_CHANCE:
+        case IDs.GAME_SPAWN_ZOMBIE_MASTER_CHANCE:
           return "(Undead) Spawn Zombie Master chance";
-        case GameOptions.IDs.GAME_CITY_SIZE:
+        case IDs.GAME_CITY_SIZE:
           return "   (Map) City Size";
-        case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
+        case IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
           return "(Living) NPCs can starve to death";
-        case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
+        case IDs.GAME_ZOMBIFICATION_CHANCE:
           return "(Living) Zombification Chance";
-        case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
+        case IDs.GAME_REVEAL_STARTING_DISTRICT:
           return "   (Map) Reveal Starting District";
-        case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
+        case IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
           return "(Undead) Allow Undeads Evolution";
-        case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
+        case IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
           return "(Undead) Day 0 Undeads";
-        case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
+        case IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
           return "(Undead) Invasion Daily Increase";
-        case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
+        case IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
           return "(Living) Starved Zombification";
-        case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
+        case IDs.GAME_MAX_REINCARNATIONS:
           return " (Reinc) Max Reincarnations";
-        case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
+        case IDs.GAME_REINCARNATE_AS_RAT:
           return " (Reinc) Can Reincarnate as Rat";
-        case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
+        case IDs.GAME_REINCARNATE_TO_SEWERS:
           return " (Reinc) Can Reincarnate to Sewers";
-        case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
+        case IDs.GAME_REINC_LIVING_RESTRICTED:
           return " (Reinc) Civilians only Reinc.";
-        case GameOptions.IDs.GAME_PERMADEATH:
+        case IDs.GAME_PERMADEATH:
           return " (Death) Permadeath";
-        case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
+        case IDs.GAME_DEATH_SCREENSHOT:
           return " (Death) Death Screenshot";
-        case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
+        case IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
           return "(Living) Aggressive Hungry Civs.";
-        case GameOptions.IDs.GAME_NATGUARD_FACTOR:
+        case IDs.GAME_NATGUARD_FACTOR:
           return " (Event) National Guard";
-        case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
+        case IDs.GAME_SUPPLIESDROP_FACTOR:
           return " (Event) Supplies Drop";
-        case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
+        case IDs.GAME_UNDEADS_UPGRADE_DAYS:
           return "(Undead) Undeads Skills Upgrade Days";
-        case GameOptions.IDs.GAME_RATS_UPGRADE:
+        case IDs.GAME_RATS_UPGRADE:
           return "(Undead) Rats Skill Upgrade";
-        case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
+        case IDs.GAME_SKELETONS_UPGRADE:
           return "(Undead) Skeletons Skill Upgrade";
-        case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
+        case IDs.GAME_SHAMBLERS_UPGRADE:
           return "(Undead) Shamblers Skill Upgrade";
         default:
           throw new ArgumentOutOfRangeException("unhandled option");
       }
     }
 
-    public static string Name(GameOptions.ReincMode mode)
+    public static string Name(ReincMode mode)
     {
       switch (mode)
       {
-        case GameOptions.ReincMode.RANDOM_FOLLOWER:
+        case ReincMode.RANDOM_FOLLOWER:
           return "Random Follower";
-        case GameOptions.ReincMode.KILLER:
+        case ReincMode.KILLER:
           return "Your Killer";
-        case GameOptions.ReincMode.ZOMBIFIED:
+        case ReincMode.ZOMBIFIED:
           return "Your Zombie Self";
-        case GameOptions.ReincMode.RANDOM_LIVING:
+        case ReincMode.RANDOM_LIVING:
           return "Random Living";
-        case GameOptions.ReincMode.RANDOM_UNDEAD:
+        case ReincMode.RANDOM_UNDEAD:
           return "Random Undead";
-        case GameOptions.ReincMode.RANDOM_ACTOR:
+        case ReincMode.RANDOM_ACTOR:
           return "Random Actor";
         default:
           throw new ArgumentOutOfRangeException("unhandled ReincMode");
       }
     }
 
-    public static string Name(GameOptions.SimRatio ratio)
+    public static string Name(SimRatio ratio)
     {
       switch (ratio)
       {
-        case GameOptions.SimRatio.OFF:
+        case SimRatio.OFF:
           return "OFF";
-        case GameOptions.SimRatio.ONE_QUARTER:
+        case SimRatio.ONE_QUARTER:
           return "25%";
-        case GameOptions.SimRatio.ONE_THIRD:
+        case SimRatio.ONE_THIRD:
           return "33%";
-        case GameOptions.SimRatio.HALF:
+        case SimRatio.HALF:
           return "50%";
-        case GameOptions.SimRatio.TWO_THIRDS:
+        case SimRatio.TWO_THIRDS:
           return "66%";
-        case GameOptions.SimRatio.THREE_QUARTER:
+        case SimRatio.THREE_QUARTER:
           return "75%";
-        case GameOptions.SimRatio.FULL:
+        case SimRatio.FULL:
           return "FULL";
         default:
           throw new ArgumentOutOfRangeException("unhandled simRatio");
       }
     }
 
-    public static float SimRatioToFloat(GameOptions.SimRatio ratio)
+    public static float SimRatioToFloat(SimRatio ratio)
     {
       switch (ratio)
       {
-        case GameOptions.SimRatio.OFF:
+        case SimRatio.OFF:
           return 0.0f;
-        case GameOptions.SimRatio.ONE_QUARTER:
+        case SimRatio.ONE_QUARTER:
           return 0.25f;
-        case GameOptions.SimRatio.ONE_THIRD:
+        case SimRatio.ONE_THIRD:
           return 0.3333333f;
-        case GameOptions.SimRatio.HALF:
+        case SimRatio.HALF:
           return 0.5f;
-        case GameOptions.SimRatio.TWO_THIRDS:
+        case SimRatio.TWO_THIRDS:
           return 0.6666667f;
-        case GameOptions.SimRatio.THREE_QUARTER:
+        case SimRatio.THREE_QUARTER:
           return 0.75f;
-        case GameOptions.SimRatio.FULL:
+        case SimRatio.FULL:
           return 1f;
         default:
           throw new ArgumentOutOfRangeException("unhandled simRatio");
       }
     }
 
-    public static string Name(GameOptions.ZupDays d)
+    public static string Name(ZupDays d)
     {
       switch (d)
       {
-        case GameOptions.ZupDays.ONE:
+        case ZupDays.ONE:
           return "1 d";
-        case GameOptions.ZupDays.TWO:
+        case ZupDays.TWO:
           return "2 d";
-        case GameOptions.ZupDays.THREE:
+        case ZupDays.THREE:
           return "3 d";
-        case GameOptions.ZupDays.FOUR:
+        case ZupDays.FOUR:
           return "4 d";
-        case GameOptions.ZupDays.FIVE:
+        case ZupDays.FIVE:
           return "5 d";
-        case GameOptions.ZupDays.SIX:
+        case ZupDays.SIX:
           return "6 d";
-        case GameOptions.ZupDays.SEVEN:
+        case ZupDays.SEVEN:
           return "7 d";
-        case GameOptions.ZupDays.OFF:
+        case ZupDays.OFF:
           return "OFF";
         default:
           throw new ArgumentOutOfRangeException("unhandled zupDays");
       }
     }
 
-    public static bool IsZupDay(GameOptions.ZupDays d, int day)
+    public static bool IsZupDay(ZupDays d, int day)
     {
       switch (d)
       {
-        case GameOptions.ZupDays.ONE:
+        case ZupDays.ONE:
           return true;
-        case GameOptions.ZupDays.TWO:
+        case ZupDays.TWO:
           return day % 2 == 0;
-        case GameOptions.ZupDays.THREE:
+        case ZupDays.THREE:
           return day % 3 == 0;
-        case GameOptions.ZupDays.FOUR:
+        case ZupDays.FOUR:
           return day % 4 == 0;
-        case GameOptions.ZupDays.FIVE:
+        case ZupDays.FIVE:
           return day % 5 == 0;
-        case GameOptions.ZupDays.SIX:
+        case ZupDays.SIX:
           return day % 6 == 0;
-        case GameOptions.ZupDays.SEVEN:
+        case ZupDays.SEVEN:
           return day % 7 == 0;
         default:
           return false;
       }
     }
 
-    public string DescribeValue(GameMode mode, GameOptions.IDs option)
+    public string DescribeValue(GameMode mode, IDs option)
     {
       switch (option)
       {
-        case GameOptions.IDs.UI_MUSIC:
+        case IDs.UI_MUSIC:
           return !PlayMusic ? "OFF" : "ON ";
-        case GameOptions.IDs.UI_MUSIC_VOLUME:
+        case IDs.UI_MUSIC_VOLUME:
           return MusicVolume.ToString() + "%";
-        case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
+        case IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
           return !ShowPlayerTagsOnMinimap ? "NO " : "YES";
-        case GameOptions.IDs.UI_ANIM_DELAY:
+        case IDs.UI_ANIM_DELAY:
           return !IsAnimDelayOn ? "OFF" : "ON ";
-        case GameOptions.IDs.UI_SHOW_MINIMAP:
+        case IDs.UI_SHOW_MINIMAP:
           return !IsMinimapOn ? "OFF" : "ON ";
-        case GameOptions.IDs.UI_ADVISOR:
+        case IDs.UI_ADVISOR:
           return !IsAdvisorEnabled ? "NO " : "YES";
-        case GameOptions.IDs.UI_COMBAT_ASSISTANT:
+        case IDs.UI_COMBAT_ASSISTANT:
           return !IsCombatAssistantOn ? "OFF   (default OFF)" : "ON    (default OFF)";
-        case GameOptions.IDs.UI_SHOW_TARGETS:
+        case IDs.UI_SHOW_TARGETS:
           return !ShowTargets ? "OFF   (default ON)" : "ON    (default ON)";
-        case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
+        case IDs.UI_SHOW_PLAYER_TARGETS:
           return !ShowPlayerTargets ? "OFF   (default ON)" : "ON    (default ON)";
-        case GameOptions.IDs.GAME_DISTRICT_SIZE:
+        case IDs.GAME_DISTRICT_SIZE:
           return string.Format("{0:D2}*   (default {1:D2})", (object)DistrictSize, (object) DEFAULT_DISTRICT_SIZE);
-        case GameOptions.IDs.GAME_MAX_CIVILIANS:
+        case IDs.GAME_MAX_CIVILIANS:
           return string.Format("{0:D3}*  (default {1:D3})", (object)MaxCivilians, (object) DEFAULT_MAX_CIVILIANS);
-        case GameOptions.IDs.GAME_MAX_DOGS:
+        case IDs.GAME_MAX_DOGS:
           return string.Format("{0:D3}*  (default {1:D3})", (object)MaxDogs, (object) DEFAULT_MAX_DOGS);
-        case GameOptions.IDs.GAME_MAX_UNDEADS:
+        case IDs.GAME_MAX_UNDEADS:
           return string.Format("{0:D3}*  (default {1:D3})", (object)MaxUndeads, (object) DEFAULT_MAX_UNDEADS);
-        case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
-          return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(GameOptions.SimRatio.FULL), (object) GameOptions.Name(GameOptions.SimRatio.FULL));
-        case GameOptions.IDs.GAME_SIMULATE_SLEEP:
+        case IDs.GAME_SIMULATE_DISTRICTS:
+          return string.Format("{0,-4}* (default {1})", (object) GameOptions.Name(SimRatio.FULL), (object) GameOptions.Name(SimRatio.FULL));
+        case IDs.GAME_SIMULATE_SLEEP:
           return "NO [hardcoded]";
-        case GameOptions.IDs.GAME_SIM_THREAD:
+        case IDs.GAME_SIM_THREAD:
           return "YES [hardcoded]";
-        case GameOptions.IDs.GAME_CITY_SIZE:
+        case IDs.GAME_CITY_SIZE:
           return string.Format("{0:D2}*   (default {1:D2})", (object)CitySize, (object) DEFAULT_CITY_SIZE);
-        case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
+        case IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
           return !NPCCanStarveToDeath ? "NO    (default YES)" : "YES   (default YES)";
-        case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
+        case IDs.GAME_ZOMBIFICATION_CHANCE:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)ZombificationChance, (object) 100);
-        case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
+        case IDs.GAME_REVEAL_STARTING_DISTRICT:
           return !RevealStartingDistrict ? "NO    (default YES)" : "YES   (default YES)";
-        case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
+        case IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
           if (mode == GameMode.GM_VINTAGE) return "---";
           return !AllowUndeadsEvolution ? "NO    (default YES)" : "YES   (default YES)";
-        case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
+        case IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)DayZeroUndeadsPercent, (object) DEFAULT_DAY_ZERO_UNDEADS_PERCENT);
-        case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
+        case IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)ZombieInvasionDailyIncrease, (object) DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE);
-        case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
+        case IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)StarvedZombificationChance, (object) DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
-        case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
+        case IDs.GAME_MAX_REINCARNATIONS:
           return string.Format("{0:D3}   (default {1:D3})", (object)MaxReincarnations, (object) DEFAULT_MAX_REINCARNATIONS);
-        case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
+        case IDs.GAME_REINCARNATE_AS_RAT:
           return !CanReincarnateAsRat ? "NO    (default NO)" : "YES   (default NO)";
-        case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
+        case IDs.GAME_REINCARNATE_TO_SEWERS:
           return !CanReincarnateToSewers ? "NO    (default NO)" : "YES   (default NO)";
-        case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
+        case IDs.GAME_REINC_LIVING_RESTRICTED:
           return !IsLivingReincRestricted ? "NO    (default NO)" : "YES   (default NO)";
-        case GameOptions.IDs.GAME_PERMADEATH:
+        case IDs.GAME_PERMADEATH:
           return !IsPermadeathOn ? "NO    (default NO)" : "YES   (default NO)";
-        case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
+        case IDs.GAME_DEATH_SCREENSHOT:
           return !IsDeathScreenshotOn ? "NO    (default YES)" : "YES   (default YES)";
-        case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
+        case IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
           return !IsAggressiveHungryCiviliansOn ? "OFF   (default ON)" : "ON    (default ON)";
-        case GameOptions.IDs.GAME_NATGUARD_FACTOR:
+        case IDs.GAME_NATGUARD_FACTOR:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)NatGuardFactor, (object) DEFAULT_NATGUARD_FACTOR);
-        case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
+        case IDs.GAME_SUPPLIESDROP_FACTOR:
           return string.Format("{0:D3}%  (default {1:D3}%)", (object)SuppliesDropFactor, (object) DEFAULT_SUPPLIESDROP_FACTOR);
-        case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-          return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(ZombifiedsUpgradeDays), (object) GameOptions.Name(GameOptions.ZupDays.THREE));
-        case GameOptions.IDs.GAME_RATS_UPGRADE:
+        case IDs.GAME_UNDEADS_UPGRADE_DAYS:
+          return string.Format("{0:D3}   (default {1:D3})", (object) GameOptions.Name(ZombifiedsUpgradeDays), (object) GameOptions.Name(ZupDays.THREE));
+        case IDs.GAME_RATS_UPGRADE:
           if (mode == GameMode.GM_VINTAGE) return "---";
           return !RatsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
-        case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
+        case IDs.GAME_SKELETONS_UPGRADE:
           if (mode == GameMode.GM_VINTAGE) return "---";
           return !SkeletonsUpgrade ? "NO    (default NO)" : "YES   (default NO)";
-        case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
+        case IDs.GAME_SHAMBLERS_UPGRADE:
           if (mode == GameMode.GM_VINTAGE) return "---";
           return !ShamblersUpgrade ? "NO    (default NO)" : "YES   (default NO)";
         default:
