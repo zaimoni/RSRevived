@@ -1250,7 +1250,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }));
       }
       Actor newCivilian = CreateNewCivilian(0, RogueGame.REFUGEES_WAVE_ITEMS, 1);
-      ActorPlace(m_DiceRoller, map, newCivilian, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+      ActorPlace(m_DiceRoller, map, newCivilian, b.InsideRect);
       map.AddZone(MakeUniqueZone("Sewers Maintenance", b.BuildingRect));
     }
 
@@ -1406,7 +1406,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           int home_district_xy = Session.Get.World.Size/2;
           if (map.District.WorldPosition == new Point(home_district_xy, home_district_xy)) newPoliceman.Controller = new PlayerController();
         }
-        ActorPlace(m_DiceRoller, map, newPoliceman, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+        ActorPlace(m_DiceRoller, map, newPoliceman, b.InsideRect);
       }
       map.AddZone(MakeUniqueZone("Subway Station", b.BuildingRect));
     }
@@ -1886,7 +1886,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
         Actor newCharGuard = CreateNewCHARGuard(0);
-        ActorPlace(m_DiceRoller, map, newCharGuard, b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height);
+        ActorPlace(m_DiceRoller, map, newCharGuard, b.InsideRect);
       }
     }
 

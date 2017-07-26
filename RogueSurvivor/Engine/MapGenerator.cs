@@ -151,23 +151,16 @@ namespace djack.RogueSurvivor.Engine
 #region Placing actors
     public bool ActorPlace(DiceRoller roller, Map map, Actor actor, Predicate<Point> goodPositionFn=null)
     {
-      return ActorPlace(roller, map, actor, 0, 0, map.Width, map.Height, goodPositionFn);
+      return ActorPlace(roller, map, actor, map.Rect, goodPositionFn);
     }
 
     // Formerly Las Vegas algorithm.
-    public bool ActorPlace(DiceRoller roller, Map map, Actor actor, int left, int top, int width, int height, Predicate<Point> goodPositionFn=null)
+    public bool ActorPlace(DiceRoller roller, Map map, Actor actor, Rectangle rect, Predicate<Point> goodPositionFn=null)
     {
       Contract.Requires(null != map);
       Contract.Requires(null != actor);
       Point position = new Point();
-      List<Point> valid_spawn = new List<Point>();
-      for (position.X = left; position.X < left+width; ++position.X) {
-	    for (position.Y = top; position.Y < top+height; ++position.Y) {
-          if (map.IsWalkableFor(position, actor) && (goodPositionFn == null || goodPositionFn(position))) {
-		    valid_spawn.Add(position);
-	      }
-		}
-	  }
+      List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
       if (0>=valid_spawn.Count) return false;
       position = valid_spawn[roller.Roll(0,valid_spawn.Count)];
       map.PlaceActorAt(actor, position);
