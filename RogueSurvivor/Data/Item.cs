@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics.Contracts;
 using Zaimoni.Data;
+using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -95,6 +96,9 @@ namespace djack.RogueSurvivor.Data
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;
     }
+
+    // thin wrappers
+    public void DropAt(Map m, Point pos) {m.DropItemAt(this,pos);} // this guaranteed non-null so non-null precondition ok
 
     public override string ToString()
     {

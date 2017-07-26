@@ -224,10 +224,7 @@ namespace djack.RogueSurvivor.Engine
         position.X = left;
         for (int top = rect.Top; top < rect.Top + rect.Height; ++top) {
           position.Y = top;
-          if (isGoodPositionFn(position)) {
-            Item it = createFn(position);
-            if (it != null) map.DropItemAt(it, position);
-          }
+          if (isGoodPositionFn(position)) createFn(position)?.DropAt(map,position);
         }
       }
     }

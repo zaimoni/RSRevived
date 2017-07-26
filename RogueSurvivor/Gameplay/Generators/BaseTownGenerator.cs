@@ -815,8 +815,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             shopBasement.PlaceMapObjectAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
               Session.Get.PoliceInvestigate.Record(map, pt);
-              Item it = MakeRandomShopItem(shopType);
-              if (it != null) shopBasement.DropItemAt(it, pt);
+              MakeRandomShopItem(shopType)?.DropAt(shopBasement,pt);
             }
           }
           if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
