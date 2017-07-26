@@ -46,6 +46,15 @@ namespace Zaimoni.Data
       }
     }
 
+    // imitate Enumerable interface here
+    public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
+    {
+      Contract.Requires(null != testFn);
+      List<Point> ret = new List<Point>();
+      rect.DoForEach(pt => ret.Add(pt),testFn);
+      return ret;
+    }
+
     // unpacking delta codes for < = >
     public static Point sgn_from_delta_code(ref int delta_code)
     {

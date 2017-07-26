@@ -788,7 +788,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       if (shopType == BaseTownGenerator.ShopType.GUNSHOP)
         BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
-      ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
+      ItemsDrop(map, b.InsideRect, (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || !(mapObjectAt.ImageID == "MapObjects\\shop_shelf")) return false;    // XXX leave unconverted as a red flag for ImageID abuse
@@ -1064,7 +1064,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
       foreach (Rectangle rect4 in rectangleList)
-        ItemsDrop(map, rect4, (Func<Point, bool>) (pt => map.GetTileModelAt(pt) == GameTiles.FLOOR_OFFICE && !map.HasMapObjectAt(pt)), pt => MakeRandomCHAROfficeItem());
+        ItemsDrop(map, rect4, (pt => map.GetTileModelAt(pt) == GameTiles.FLOOR_OFFICE && !map.HasMapObjectAt(pt)), pt => MakeRandomCHAROfficeItem());
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
       zone.SetGameAttribute<bool>("CHAR Office", true);
       map.AddZone(zone);
@@ -1113,7 +1113,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       map.RemoveMapObjectAt(x, y);
       map.SetTileModelAt(x, y, GameTiles.FLOOR_WALKWAY);
-      ItemsDrop(map, b.InsideRect, (Func<Point, bool>) (pt =>
+      ItemsDrop(map, b.InsideRect, (pt =>
       {
         if (!map.HasMapObjectAt(pt)) return m_DiceRoller.RollChance(PARK_ITEM_CHANCE);
         return false;

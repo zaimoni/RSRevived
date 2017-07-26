@@ -11154,13 +11154,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadHints()
     {
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
-            m_UI.UI_Repaint();
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Loading hints...", 0, 0, new Color?());
+      m_UI.UI_Repaint();
       RogueGame.s_Hints = GameHintsStatus.Load(RogueGame.GetUserConfigPath() + "hints.dat");
-            m_UI.UI_Clear(Color.Black);
-            m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
-            m_UI.UI_Repaint();
+      m_UI.UI_Clear(Color.Black);
+      m_UI.UI_DrawStringBold(Color.White, "Loading hints... done!", 0, 0, new Color?());
+      m_UI.UI_Repaint();
     }
 
     private void SaveHints()
@@ -11170,18 +11170,16 @@ namespace djack.RogueSurvivor.Engine
 
     private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, int rightPadding = 256)
     {
+      Contract.Requires(null != entries);
+      Contract.Requires(null == values || entries.Length == values.Length);
       int gx1 = gx + rightPadding;
-      if (values != null && entries.Length != values.Length)
-        throw new ArgumentException("values length!= choices length");
       Color color = Color.FromArgb((int) entriesColor.A, (int) entriesColor.R / 2, (int) entriesColor.G / 2, (int) entriesColor.B / 2);
-      for (int index = 0; index < entries.Length; ++index)
-      {
+      for (int index = 0; index < entries.Length; ++index) {
         string text1 = index != currentChoice ? string.Format("     {0}", (object) entries[index]) : string.Format("---> {0}", (object) entries[index]);
-                m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
-        if (values != null)
-        {
+        m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
+        if (values != null) {
           string text2 = index != currentChoice ? values[index] : string.Format("{0} <---", (object) values[index]);
-                    m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
+          m_UI.UI_DrawStringBold(valuesColor, text2, gx1, gy, new Color?());
         }
         gy += 14;
       }
@@ -11189,13 +11187,13 @@ namespace djack.RogueSurvivor.Engine
 
     private void DrawHeader()
     {
-            m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
+      m_UI.UI_DrawStringBold(Color.Red, SetupConfig.GAME_NAME_CAPS+" - " + SetupConfig.GAME_VERSION, 0, 0, new Color?(Color.DarkRed));
     }
 
     private void DrawFootnote(Color color, string text)
     {
       Color color1 = Color.FromArgb((int) color.A, (int) color.R / 2, (int) color.G / 2, (int) color.B / 2);
-            m_UI.UI_DrawStringBold(color, string.Format("<{0}>", (object) text), 0, 754, new Color?(color1));
+      m_UI.UI_DrawStringBold(color, string.Format("<{0}>", (object) text), 0, 754, new Color?(color1));
     }
 
     public static string GetUserBasePath()

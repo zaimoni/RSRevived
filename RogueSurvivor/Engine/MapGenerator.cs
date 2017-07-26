@@ -193,40 +193,18 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
     {
-      MapObjectPlaceInGoodPosition(map, rect.Left, rect.Top, rect.Width, rect.Height, isGoodPosFn, roller, createFn);
-    }
-
-    public void MapObjectPlaceInGoodPosition(Map map, int left, int top, int width, int height, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
-    {
-      List<Point> pointList = (List<Point>) null;
-      Point point = new Point();
-      for (int x = left; x < left + width; ++x) {
-        point.X = x;
-        for (int y = top; y < top + height; ++y) {
-          point.Y = y;
-          if (isGoodPosFn(point) && !map.HasMapObjectAt(x, y)) {
-            (pointList ?? (pointList = new List<Point>())).Add(point);
-          }
-        }
-      }
-      if (pointList == null) return;
-      int index = roller.Roll(0, pointList.Count);
-      MapObject mapObj = createFn(pointList[index]);
+      List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && !map.HasMapObjectAt(pt));
+      if (0 >= pointList.Count) return;
+      Point pt2 = pointList[roller.Roll(0, pointList.Count)];
+      MapObject mapObj = createFn(pt2);
       if (mapObj == null) return;
-      map.PlaceMapObjectAt(mapObj, pointList[index]);
+      map.PlaceMapObjectAt(mapObj, pt2);
     }
 #endregion
 
-    public void ItemsDrop(Map map, Rectangle rect, Func<Point, bool> isGoodPositionFn, Func<Point, Item> createFn)
+    public void ItemsDrop(Map map, Rectangle rect, Predicate<Point> isGoodPositionFn, Func<Point, Item> createFn)
     {
-      Point position = new Point();
-      for (int left = rect.Left; left < rect.Left + rect.Width; ++left) {
-        position.X = left;
-        for (int top = rect.Top; top < rect.Top + rect.Height; ++top) {
-          position.Y = top;
-          if (isGoodPositionFn(position)) createFn(position)?.DropAt(map,position);
-        }
-      }
+      rect.DoForEach(pt => createFn(pt)?.DropAt(map, pt), isGoodPositionFn);
     }
 
     protected void ClearRectangle(Map map, Rectangle rect)
