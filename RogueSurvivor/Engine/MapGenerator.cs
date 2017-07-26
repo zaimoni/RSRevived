@@ -186,8 +186,7 @@ namespace djack.RogueSurvivor.Engine
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
       rect.DoForEach(pt => { 
-        MapObject mapObj = createFn(pt);   // XXX RNG potentially involved
-        if (null != mapObj) map.PlaceMapObjectAt(mapObj, pt);
+        createFn(pt)?.PlaceAt(map,pt);   // XXX RNG potentially involved
       }, pt => !map.HasMapObjectAt(pt));
     }
 
@@ -196,9 +195,7 @@ namespace djack.RogueSurvivor.Engine
       List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && !map.HasMapObjectAt(pt));
       if (0 >= pointList.Count) return;
       Point pt2 = pointList[roller.Roll(0, pointList.Count)];
-      MapObject mapObj = createFn(pt2);
-      if (mapObj == null) return;
-      map.PlaceMapObjectAt(mapObj, pt2);
+      createFn(pt2)?.PlaceAt(map,pt2);
     }
 #endregion
 
