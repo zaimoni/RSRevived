@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -184,24 +185,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
-      MapObjectFill(map, rect.Left, rect.Top, rect.Width, rect.Height, createFn);
-    }
-
-    // V0.10.0
-    // While createFn is likely to be an expensive function, it is also likely to use the RNG
-    // that is, rearranging this function for efficiency will change level generation
-    public void MapObjectFill(Map map, int left, int top, int width, int height, Func<Point, MapObject> createFn)
-    {
-      Point point = new Point();
-      for (int x = left; x < left + width; ++x) {
-        point.X = x;
-        for (int y = top; y < top + height; ++y) {
-          point.Y = y;
-          MapObject mapObj = createFn(point);   // XXX RNG potentially involved
-          if (mapObj != null && !map.HasMapObjectAt(x, y))
-            map.PlaceMapObjectAt(mapObj, point);
-        }
-      }
+      rect.DoForEach(pt => { 
+        MapObject mapObj = createFn(pt);   // XXX RNG potentially involved
+        if (null != mapObj) map.PlaceMapObjectAt(mapObj, pt);
+      }, pt => !map.HasMapObjectAt(pt));
     }
 
     public void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)

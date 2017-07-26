@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
 {
@@ -364,32 +365,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endregion
 
 #region 8. Items.
-      for (int x = 0; x < sewers.Width; ++x) {
-        for (int y = 0; y < sewers.Height; ++y) {
-          if (m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE) && sewers.IsWalkable(x, y)) {
-            Item it;
-            switch (m_DiceRoller.Roll(0, 3)) {
-              case 0:
-                it = MakeItemBigFlashlight();
-                break;
-              case 1:
-                it = MakeItemCrowbar();
-                break;
+      Func<Item> sewers_stock = () => {
+        switch (m_DiceRoller.Roll(0, 3)) {
+          case 0: return MakeItemBigFlashlight();
+          case 1: return  MakeItemCrowbar();
 #if DEBUG
-              case 2:
+          case 2:
 #else
-              default:
+          default:
 #endif
-                it = MakeItemSprayPaint();
-                break;
+            return MakeItemSprayPaint();
 #if DEBUG
-              default: throw new ArgumentOutOfRangeException("unhandled roll");
+          default: throw new ArgumentOutOfRangeException("unhandled roll");
 #endif
-            }
-            sewers.DropItemAt(it, x, y);
-          }
         }
-      }
+      };
+      sewers.Rect.DoForEach(pt => {
+        sewers.DropItemAt(sewers_stock(), pt);
+      },pt => { 
+        return sewers.IsWalkable(pt) && m_DiceRoller.RollChance(SEWERS_ITEM_CHANCE);
+      });
 #endregion
 
 #region 9. Tags.
