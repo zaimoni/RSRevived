@@ -33,6 +33,19 @@ namespace Zaimoni.Data
       /* if (8*radius>i) */ return new Point(-radius + origin.X, (i-7* radius) + origin.Y);
     }
 
+    // null testFn is a different signature for efficiency reasons
+    public static void DoForEach(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
+    {
+      Contract.Requires(null != doFn);
+      Contract.Requires(null != testFn);
+      Point point = new Point();
+      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
+        for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
+          if (testFn(point)) doFn(point);
+        }
+      }
+    }
+
     // unpacking delta codes for < = >
     public static Point sgn_from_delta_code(ref int delta_code)
     {

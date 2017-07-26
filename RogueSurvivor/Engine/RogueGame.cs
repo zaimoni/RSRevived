@@ -11496,40 +11496,36 @@ namespace djack.RogueSurvivor.Engine
       Map sewersMap = world[0, 0].SewersMap;
       sewersMap.RemoveMapObjectAt(1, 1);
       sewersMap.GetTileAt(1, 1).RemoveAllDecorations();
-      sewersMap.GetTileAt(1, 1).AddDecoration("Tiles\\Decoration\\roguedjack");
+      sewersMap.GetTileAt(1, 1).AddDecoration(GameImages.DECO_ROGUEDJACK_TAG);
       if (isVerbose) {
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.White, "Spawning player...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
-      int index = world.Size / 2;
-      Map entryMap = world[index, index].EntryMap;
-      GeneratePlayerOnMap(entryMap, m_TownGenerator);
-      SetCurrentMap(entryMap);
-      RefreshPlayer();
-      foreach(Actor player in entryMap.Players) {
-        player.Controller.UpdateSensors();
-      }
-      if (RogueGame.s_Options.RevealStartingDistrict) {
-        Map map = entryMap;
-        foreach(Actor player in map.Players) {
-          Point pos = player.Location.Position;
-          List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
-          if (null == zonesAt1) continue;
-          Zone zone = zonesAt1[0];
-          Point point = new Point();
-          for (point.X = 0; point.X < entryMap.Width; ++point.X) {
-            for (point.Y = 0; point.Y < entryMap.Height; ++point.Y) {
-              bool flag = false;
-              if (!entryMap.IsInsideAt(point)) flag = true;
-              else { 
-                List<Zone> zonesAt2 = entryMap.GetZonesAt(point.X, point.Y);
-                if (zonesAt2 != null && zonesAt2[0] == zone) flag = true;
-              }
-              if (flag) { 
-                player.Controller.ForceKnown(point);
-              }
-            }
+
+      if (!Session.Get.CMDoptionExists("no-spawn")) {
+        int index = world.Size / 2;
+        Map entryMap = world[index, index].EntryMap;
+        GeneratePlayerOnMap(entryMap, m_TownGenerator);
+        SetCurrentMap(entryMap);
+        RefreshPlayer();
+        foreach(Actor player in entryMap.Players) {
+          player.Controller.UpdateSensors();
+        }
+        if (RogueGame.s_Options.RevealStartingDistrict) {
+          Map map = entryMap;
+          foreach(Actor player in map.Players) {
+            Point pos = player.Location.Position;
+            List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
+            if (null == zonesAt1) continue;
+            Zone zone = zonesAt1[0];
+            entryMap.Rect.DoForEach((pt => {
+              player.Controller.ForceKnown(pt);
+            }), (pt => {
+              if (!entryMap.IsInsideAt(pt)) return true;
+              List<Zone> zonesAt2 = entryMap.GetZonesAt(pt.X, pt.Y);
+              return zonesAt2 != null && zonesAt2[0] == zone;
+            }));
           }
         }
       }

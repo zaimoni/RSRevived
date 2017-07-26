@@ -21,21 +21,40 @@ namespace djack.RogueSurvivor
       if (null!=args) {
         // help option is impractical: C stdout is inaccessible in a GUI C# program
         bool reading_PC = false;
-        foreach(string tmp in args) {
+        foreach (string tmp in args) {
           if (reading_PC) {
             if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
               Engine.Session.CommandLineOptions["PC"] += "\0"+tmp;
             } else {
               Engine.Session.CommandLineOptions["PC"] = tmp;
             }
+            reading_PC = false;
           }
           if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) { 
             int tmp2;
             if (int.TryParse(tmp.Substring(7), out tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
           }
+          if (tmp.StartsWith("--spawn=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn")) { 
+            Engine.Session.CommandLineOptions["spawn"] = tmp.Substring(8);
+          }
+          if (tmp.StartsWith("--spawn-district=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn-district")) { 
+            Engine.Session.CommandLineOptions["spawn-district"] = tmp.Substring(17);
+          }
           if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist
           if ("--socrates-daimon"==tmp) Engine.Session.CommandLineOptions["socrates-daimon"] = "";    // key just has to exist
+          if ("--no-spawn"==tmp) Engine.Session.CommandLineOptions["no-spawn"] = "";    // key just has to exist
           if ("--PC"==tmp) reading_PC=true;
+          // XXX more command-line options
+          // --spawn : choice sequence for the new game dialog set; do not allow random at any stage.
+          // --spawn-district : override district and optionally position.  C2 is default.
+          //    district-only override would be e.g. C1.  C1@5,6 would override both district and position (useful for starting in the police station)
+          // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
+        }
+        if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
+          if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")
+              ||  Engine.Session.CommandLineOptions.ContainsKey("spawn")
+              ||  Engine.Session.CommandLineOptions.ContainsKey("spawn-district"))
+            Engine.Session.CommandLineOptions.Remove("no-spawn");
         }
       }
 
