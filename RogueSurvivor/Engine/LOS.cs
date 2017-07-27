@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line)
+    public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;

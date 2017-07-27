@@ -1292,32 +1292,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int maxRange = Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
       Point? nullable = null;
       int num1 = 0;
+      int my_dist = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
-        if (Rules.GridDistance(m_Actor.Location.Position, point) > itemGrenadeModel.BlastAttack.Radius && (Rules.GridDistance(m_Actor.Location.Position, point) <= maxRange && LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange, (List<Point>) null))) {
+        if (   (my_dist = Rules.GridDistance(m_Actor.Location.Position, point)) > itemGrenadeModel.BlastAttack.Radius
+            && my_dist <= maxRange 
+            && LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) {
           int num2 = 0;
-          for (int x = point.X - itemGrenadeModel.BlastAttack.Radius; x <= point.X + itemGrenadeModel.BlastAttack.Radius; ++x) {
-            for (int y = point.Y - itemGrenadeModel.BlastAttack.Radius; y <= point.Y + itemGrenadeModel.BlastAttack.Radius; ++y) {
-              if (!m_Actor.Location.Map.IsValid(x, y)) continue;
-              Actor actorAt = m_Actor.Location.Map.GetActorAt(x, y);
-              if (null == actorAt) continue;
-              if (actorAt == m_Actor) throw new ArgumentOutOfRangeException("actorAt == m_Actor"); // probably an invariant failure
-              int distance = Rules.GridDistance(point, actorAt.Location.Position);
-              if (distance > itemGrenadeModel.BlastAttack.Radius) throw new ArgumentOutOfRangeException("distance > itemGrenadeModel.BlastAttack.Radius"); // again, probably an invariant failure
-              if (m_Actor.IsEnemyOf(actorAt)) {
-                num2 += (game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs);
-              } else {
-                num2 = -1;
-                break;
-              }
-            }
-          }
-          if (num2 > num1) {
+          Rectangle blast_zone = new Rectangle(point.X-itemGrenadeModel.BlastAttack.Radius, point.Y-itemGrenadeModel.BlastAttack.Radius, 2*itemGrenadeModel.BlastAttack.Radius+1, 2*itemGrenadeModel.BlastAttack.Radius+1);
+          // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
+          if (   !blast_zone.Any(pt => {
+                    if (!m_Actor.Location.Map.IsValid(pt)) return false;
+                    Actor actorAt = m_Actor.Location.Map.GetActorAt(pt);
+                    if (null == actorAt) return false;
+//                  if (actorAt == m_Actor) throw new ArgumentOutOfRangeException("actorAt == m_Actor"); // probably an invariant failure
+                    int distance = Rules.GridDistance(point, actorAt.Location.Position);
+//                  if (distance > itemGrenadeModel.BlastAttack.Radius) throw new ArgumentOutOfRangeException("distance > itemGrenadeModel.BlastAttack.Radius"); // again, probably an invariant failure
+                    if (m_Actor.IsEnemyOf(actorAt)) {
+                      num2 += (game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs);
+                      return false;
+                    }
+//                  num2 = -1;
+                    return true;
+                 })
+              &&  num2>num1) {
             nullable = point;
             num1 = num2;
           }
         }
       }
-      if (null == nullable || !nullable.HasValue) return null;  // 2nd test probably redundant
+      if (null == nullable /* || !nullable.HasValue */) return null;  // 2nd test probably redundant
       if (!firstGrenade.IsEquipped) game.DoEquipItem(m_Actor, firstGrenade);
       ActorAction actorAction = new ActionThrowGrenade(m_Actor, nullable.Value);
       if (!actorAction.IsLegal()) throw new ArgumentOutOfRangeException("created illegal ActionThrowGrenade");  // invariant failure
