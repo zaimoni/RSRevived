@@ -261,28 +261,6 @@ namespace djack.RogueSurvivor.Engine
     {
       return map.GetTileAt(x, y).IsInside;
     }
-
-    public bool HasInRange(Map map, Point from, int maxDistance, Predicate<Point> predFn)
-    {
-      int x1 = from.X - maxDistance;
-      int y1 = from.Y - maxDistance;
-      int x2 = from.X + maxDistance;
-      int y2 = from.Y + maxDistance;
-      map.TrimToBounds(ref x1, ref y1);
-      map.TrimToBounds(ref x2, ref y2);
-      Point point = new Point();
-      for (int index1 = x1; index1 <= x2; ++index1)
-      {
-        point.X = index1;
-        for (int index2 = y1; index2 <= y2; ++index2)
-        {
-          point.Y = index2;
-          if ((index1 != from.X || index2 != from.Y) && predFn(point))
-            return true;
-        }
-      }
-      return false;
-    }
 #endregion
   }
 }

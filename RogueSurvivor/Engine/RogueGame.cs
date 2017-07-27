@@ -2619,20 +2619,11 @@ namespace djack.RogueSurvivor.Engine
     {
       Point dropPoint;
       if (!FindDropSuppliesPoint(map, out dropPoint)) return;
-      int x1 = dropPoint.X - ARMY_SUPPLIES_SCATTER;
-      int x2 = dropPoint.X + ARMY_SUPPLIES_SCATTER;
-      int y1 = dropPoint.Y - ARMY_SUPPLIES_SCATTER;
-      int y2 = dropPoint.Y + ARMY_SUPPLIES_SCATTER;
-      map.TrimToBounds(ref x1, ref y1);
-      map.TrimToBounds(ref x2, ref y2);
-      for (int x3 = x1; x3 <= x2; ++x3) {
-        for (int y3 = y1; y3 <= y2; ++y3) {
-          if (IsSuitableDropSuppliesPoint(map, x3, y3)) {
-            Item it = m_Rules.RollChance(80) ? (Item)BaseMapGenerator.MakeItemArmyRation() : (Item)BaseMapGenerator.MakeItemMedikit();
-            map.DropItemAt(it, x3, y3);
-          }
-        }
-      }
+      Rectangle survey = new Rectangle(dropPoint.X-ARMY_SUPPLIES_SCATTER, dropPoint.Y-ARMY_SUPPLIES_SCATTER, 2*ARMY_SUPPLIES_SCATTER+1, 2*ARMY_SUPPLIES_SCATTER+1);
+      map.TrimToBounds(ref survey);
+      survey.DoForEach(pt => map.DropItemAt((m_Rules.RollChance(80) ? BaseMapGenerator.MakeItemArmyRation() : (Item)BaseMapGenerator.MakeItemMedikit()), pt),
+        pt => IsSuitableDropSuppliesPoint(map, pt));
+
       NotifyOrderablesAI(map, RaidType.ARMY_SUPLLIES, dropPoint);
       if (map != m_Player.Location.Map) return;
       if (!m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead) {
@@ -2647,11 +2638,11 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
 
-    private bool IsSuitableDropSuppliesPoint(Map map, int x, int y)
+    private bool IsSuitableDropSuppliesPoint(Map map, Point pt)
     {
-      if (!map.IsValid(x, y)) return false;
-      Tile tileAt = map.GetTileAtExt(x, y);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(x, y) && !map.HasMapObjectAt(x, y) && DistanceToPlayer(map, x, y) >= SPAWN_DISTANCE_TO_PLAYER;
+      if (!map.IsValid(pt)) return false;
+      Tile tileAt = map.GetTileAtExt(pt);
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && DistanceToPlayer(map, pt) >= SPAWN_DISTANCE_TO_PLAYER;
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
@@ -2661,7 +2652,7 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < num; ++index) {
         dropPoint.X = m_Rules.RollX(map);
         dropPoint.Y = m_Rules.RollY(map);
-        if (IsSuitableDropSuppliesPoint(map, dropPoint.X, dropPoint.Y)) return true;
+        if (IsSuitableDropSuppliesPoint(map, dropPoint)) return true;
       }
       return false;
     }
@@ -9006,27 +8997,22 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
     {
-      int x1 = noisePosition.X - Rules.LOUD_NOISE_RADIUS;
-      int x2 = noisePosition.X + Rules.LOUD_NOISE_RADIUS;
-      int y1 = noisePosition.Y - Rules.LOUD_NOISE_RADIUS;
-      int y2 = noisePosition.Y + Rules.LOUD_NOISE_RADIUS;
-      map.TrimToBounds(ref x1, ref y1);
-      map.TrimToBounds(ref x2, ref y2);
-      for (int index1 = x1; index1 <= x2; ++index1) {
-        for (int index2 = y1; index2 <= y2; ++index2) {
-          Actor actorAt = map.GetActorAt(index1, index2);
-          if (actorAt != null && actorAt.IsSleeping) {
-            int noiseDistance = Rules.GridDistance(noisePosition, index1, index2);
-            if (noiseDistance <= Rules.LOUD_NOISE_RADIUS && m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance))) {
-              DoWakeUp(actorAt);
-              if (ForceVisibleToPlayer(actorAt)) {
-                AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", (object) noiseName, (object) actorAt.TheName), map.LocalTime.TurnCounter, actorAt == m_Player ? Color.Red : Color.White));
-                RedrawPlayScreen();
-              }
-            }
-          }
+      Rectangle survey = new Rectangle(noisePosition.X - Rules.LOUD_NOISE_RADIUS, noisePosition.Y - Rules.LOUD_NOISE_RADIUS, 2* Rules.LOUD_NOISE_RADIUS + 1, 2 * Rules.LOUD_NOISE_RADIUS + 1);
+      map.TrimToBounds(ref survey);
+
+      Actor actorAt = null;
+      survey.DoForEach(pt => {
+        DoWakeUp(actorAt);
+        if (ForceVisibleToPlayer(actorAt)) {
+          AddMessage(new Data.Message(string.Format("{0} wakes {1} up!", (object)noiseName, (object)actorAt.TheName), map.LocalTime.TurnCounter, actorAt == m_Player ? Color.Red : Color.White));
+          RedrawPlayScreen();
         }
-      }
+      }, pt => {
+        actorAt = map.GetActorAt(pt);
+        if (actorAt?.IsSleeping ?? false) return false;
+        int noiseDistance = Rules.GridDistance(noisePosition, pt);
+        return /* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance));  // would need to test for other kinds of distance
+      });
 #if SUICIDE_BY_LONG_WAIT
       if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !ForceVisibleToPlayer(map, noisePosition))) return;
       m_IsPlayerLongWaitForcedStop = true;

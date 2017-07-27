@@ -220,6 +220,26 @@ namespace djack.RogueSurvivor.Data
       else if (p.Y > Height - 1) p.Y = Height - 1;
     }
 
+    public void TrimToBounds(ref Rectangle r)
+    {
+      Contract.Requires(r.X < Width);   // require that the rectangle not be completely outside of the map
+      Contract.Requires(r.Y < Height);
+      Contract.Requires(0 <= r.Right);
+      Contract.Requires(0 <= r.Bottom);
+      if (r.X < 0) {
+        r.Width += r.X;
+        r.X = 0;
+      }
+
+      if (r.Y < 0) {
+        r.Width += r.Y;
+        r.Y = 0;
+      }
+
+      if (r.Right > Width-1)  r.Width -= (r.Right - Width + 1);
+      if (r.Bottom > Height-1) r.Height -= (r.Bottom - Height +1);
+    }
+
     // placeholder for define-controlled redefinitions
     public bool IsValid(int x, int y)
     {
@@ -359,6 +379,21 @@ namespace djack.RogueSurvivor.Data
       int i = p.Y*Width+p.X;
       return new Tile(m_TileIDs[p.X,p.Y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,p));
     }
+
+    // for when coordinates may be denormalized
+    public Tile GetTileAtExt(Point p)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(p)) return GetTileAt(p);
+      Location? loc = Normalize(p);
+//    if (null == loc) throw ...;
+      return loc.Value.Map.GetTileAt(loc.Value.Position);
+#else
+      int i = p.Y*Width+p.X;
+      return new Tile(m_TileIDs[p.X,p.Y],(0!=(m_IsInside[i/8] & (1<<(i%8)))),new Location(this,p));
+#endif
+    }
+
 
     public void SetIsInsideAt(int x, int y, bool inside=true)
     {

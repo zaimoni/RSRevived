@@ -10,6 +10,8 @@ using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -19,55 +21,44 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   internal class SmellSensor : Sensor
   {
     private readonly Odor m_OdorToSmell;
-    private readonly List<Percept> m_List;
+    private readonly List<Percept> m_List = new List<Percept>(9);
 
-    public List<Percept> Scents {
-      get {
-        return m_List;
-      }
-    }
+    public List<Percept> Scents { get { return m_List; } }
 
     public SmellSensor(Odor odorToSmell)
     {
       m_OdorToSmell = odorToSmell;
-      m_List = new List<Percept>(9);
     }
 
     public List<Percept> Sense(Actor actor)
     {
+      Contract.Requires(1 <= actor.SmellThreshold);
       m_List.Clear();
-      int num = actor.SmellThreshold;
-      int x1 = actor.Location.Position.X - 1;
-      int x2 = actor.Location.Position.X + 1;
-      int y1 = actor.Location.Position.Y - 1;
-      int y2 = actor.Location.Position.Y + 1;
-      actor.Location.Map.TrimToBounds(ref x1, ref y1);
-      actor.Location.Map.TrimToBounds(ref x2, ref y2);
+      int num = actor.SmellThreshold;  // floors at 1
+      Rectangle survey = new Rectangle(actor.Location.Position.X - 1, actor.Location.Position.Y - 1, 3, 3);
+      Map map = actor.Location.Map;
+      map.TrimToBounds(ref survey);
       int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
-      Point position = new Point();
-      for (int index1 = x1; index1 <= x2; ++index1) {
-        position.X = index1;
-        for (int index2 = y1; index2 <= y2; ++index2) {
-          position.Y = index2;
-          int scentByOdorAt = actor.Location.Map.GetScentByOdorAt(m_OdorToSmell, position);
-          if (scentByOdorAt >= 0 && scentByOdorAt >= num)
-            m_List.Add(new Percept((object) new SmellSensor.AIScent(m_OdorToSmell, scentByOdorAt), turnCounter, new Location(actor.Location.Map, position)));
-        }
-      }
+      int scentByOdorAt = 0;
+      survey.DoForEach(pt => { 
+        m_List.Add(new Percept(new AIScent(m_OdorToSmell, scentByOdorAt), turnCounter, new Location(map, pt)));
+      },pt => { 
+        scentByOdorAt = map.GetScentByOdorAt(m_OdorToSmell, pt); // XXX 0 is the no-scent value
+        return scentByOdorAt >= num;
+      });
       return m_List;
     }
 
     [Serializable]
     public class AIScent
     {
-      public Odor Odor { get; private set; }
-
-      public int Strength { get; private set; }
+      public readonly Odor Odor;
+      public readonly int Strength;
 
       public AIScent(Odor odor, int strength)
       {
-                Odor = odor;
-                Strength = strength;
+        Odor = odor;
+        Strength = strength;
       }
     }
   }
