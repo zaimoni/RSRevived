@@ -119,37 +119,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected Percept FilterStrongestScent(List<Percept> scents)
     {
-      if (scents == null || scents.Count == 0)
-        return (Percept) null;
-      Percept percept = (Percept) null;
-      SmellSensor.AIScent aiScent1 = (SmellSensor.AIScent) null;
-      foreach (Percept scent in scents)
-      {
+      if (scents == null || scents.Count == 0) return null;
+      Percept percept = null;
+      int scent_strength = 0;   // minimum valid scent strength is 1
+      foreach (Percept scent in scents) {
         SmellSensor.AIScent aiScent2 = scent.Percepted as SmellSensor.AIScent;
         if (aiScent2 == null)
           throw new InvalidOperationException("percept not an aiScent");
-        if (percept == null || aiScent2.Strength > aiScent1.Strength)
-        {
-          aiScent1 = aiScent2;
+        if (aiScent2.Strength > scent_strength) {
+          scent_strength = aiScent2.Strength;
           percept = scent;
         }
       }
       return percept;
-    }
-
-    // dead function?
-    protected List<Percept> FilterActorsModel(List<Percept> percepts, ActorModel model)
-    {
-      if (null == percepts || 0 == percepts.Count) return null;
-      List<Percept> perceptList = null;
-      foreach (Percept percept in percepts) {
-        Actor actor = percept.Percepted as Actor;
-        if (null != actor && actor.Model == model) {
-          if (null == perceptList) perceptList = new List<Percept>(percepts.Count);
-          perceptList.Add(percept);
-        }
-      }
-      return perceptList;
     }
 
     protected List<Percept> FilterFireTargets(List<Percept> percepts)

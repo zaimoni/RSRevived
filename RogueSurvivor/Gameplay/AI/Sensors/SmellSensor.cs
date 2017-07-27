@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   internal class SmellSensor : Sensor
   {
     private readonly Odor m_OdorToSmell;
-    private readonly List<Percept> m_List = new List<Percept>(9);
+    private readonly List<Percept> m_List = new List<Percept>(9);   // XXX it would be nice if we could afford to correctly type this, but savefile would bloat for ZM's
 
     public List<Percept> Scents { get { return m_List; } }
 
