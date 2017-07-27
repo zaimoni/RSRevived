@@ -298,22 +298,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endregion
 
 #region 5. Sewers Maintenance Room & Building(surface).
-      List<BaseTownGenerator.Block> blockList = (List<BaseTownGenerator.Block>) null;
-      foreach (BaseTownGenerator.Block mSurfaceBlock in m_SurfaceBlocks)
-      {
-        if (mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2 && (mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 && !IsThereASpecialBuilding(surface, mSurfaceBlock.InsideRect)))
-        {
-          bool flag = true;
-          for (int left = mSurfaceBlock.Rectangle.Left; left < mSurfaceBlock.Rectangle.Right && flag; ++left) {
-            for (int top = mSurfaceBlock.Rectangle.Top; top < mSurfaceBlock.Rectangle.Bottom && flag; ++top) {
-              if (sewers.GetTileModelAt(left, top).IsWalkable)
-                flag = false;
-            }
-          }
-          if (flag) {
-            (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
-            break;
-          }
+      List<Block> blockList = null;
+      foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
+        if (    mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2
+            &&  mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 
+            && !IsThereASpecialBuilding(surface, mSurfaceBlock.InsideRect)
+            && !mSurfaceBlock.Rectangle.Any(pt => sewers.GetTileModelAt(pt).IsWalkable)) {
+          (blockList ?? (blockList = new List<Block>(m_SurfaceBlocks.Count))).Add(mSurfaceBlock);
         }
       }
       Rectangle buildingRect;
@@ -1135,16 +1126,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MakeHousingRoom(map, roomRect, GameTiles.FLOOR_PLANKS, m_Game.GameTiles.WALL_BRICK);
         FillHousingRoomContents(map, roomRect);
       }
-      bool flag = false;
-      for (int left = b.BuildingRect.Left; left < b.BuildingRect.Right && !flag; ++left) {
-        for (int top = b.BuildingRect.Top; top < b.BuildingRect.Bottom && !flag; ++top) {
-          if (!map.IsInsideAt(left, top)) {
-            DoorWindow doorWindow = map.GetMapObjectAt(left, top) as DoorWindow;
-            if (doorWindow != null && !doorWindow.IsWindow)
-              flag = true;
-          }
-        }
-      }
+      bool flag = b.BuildingRect.Any(pt => !map.IsInsideAt(pt) && (!(map.GetMapObjectAt(pt) as DoorWindow)?.IsWindow ?? false));
       while(!flag) {
           int x = m_DiceRoller.Roll(b.BuildingRect.Left, b.BuildingRect.Right);
           int y = m_DiceRoller.Roll(b.BuildingRect.Top, b.BuildingRect.Bottom);

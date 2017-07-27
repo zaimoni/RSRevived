@@ -674,28 +674,27 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    public Fortification MakeObjSmallFortification(string imageID)
+    public Fortification MakeObjSmallFortification()
     {
-      Fortification fortification = new Fortification("small fortification", imageID, Fortification.SMALL_BASE_HITPOINTS);
-      fortification.IsMaterialTransparent = true;
-      fortification.GivesWood = true;
-      fortification.IsMovable = true;
-      fortification.Weight = 4;
-      fortification.JumpLevel = 1;
-      return fortification;
+      return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){ 
+        IsMaterialTransparent = true,
+        GivesWood = true,
+        IsMovable = true,
+        Weight = 4,
+        JumpLevel = 1
+      };
     }
 
-    public Fortification MakeObjLargeFortification(string imageID)
+    public Fortification MakeObjLargeFortification()
     {
-      Fortification fortification = new Fortification("large fortification", imageID, Fortification.LARGE_BASE_HITPOINTS);
-      fortification.GivesWood = true;
-      return fortification;
+      return new Fortification("large fortification", GameImages.OBJ_LARGE_WOODEN_FORTIFICATION, Fortification.LARGE_BASE_HITPOINTS) {
+          GivesWood = true
+      };
     }
 
     protected MapObject MakeObjTree()
     {
-      return new MapObject("tree", GameImages.OBJ_TREE, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, 400)
-      {
+      return new MapObject("tree", GameImages.OBJ_TREE, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, 400) {
         GivesWood = true
       };
     }
@@ -858,7 +857,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public MapObject MakeObjBoard(string imageID, string[] text)
     {
-      return (MapObject) new Board("board", imageID, text);
+      return new Board("board", imageID, text);
     }
 
     public void DecorateOutsideWalls(Map map, Rectangle rect, Func<int, int, string> decoFn)
@@ -1234,12 +1233,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {
-      for (int left = rect.Left; left < rect.Right; ++left) {
-        for (int top = rect.Top; top < rect.Bottom; ++top) {
-          DoorWindow doorWindow = map.GetMapObjectAt(left, top) as DoorWindow;
-          if (doorWindow != null) doorWindow.Barricade(barricadeLevel);
-        }
-      }
+      DoForEachTile(rect, pt => (map.GetMapObjectAt(pt) as DoorWindow)?.Barricade(barricadeLevel));
     }
 
     protected Zone MakeUniqueZone(string basename, Rectangle rect)

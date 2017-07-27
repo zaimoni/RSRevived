@@ -2483,16 +2483,6 @@ namespace djack.RogueSurvivor.Engine
       return num1;
     }
 
-	// XXX dead function?
-    private bool HasActorOfModelID(Map map, GameActors.IDs actorModelID)
-    {
-	  Contract.Requires(null != map);
-      foreach (Actor actor in map.Actors) {
-        if (actor.Model.ID == actorModelID) return true;
-      }
-      return false;
-    }
-
     private bool CheckForEvent_ZombieInvasion(Map map)
     {
       return map.LocalTime.IsStrikeOfMidnight && CountUndeads(map) < RogueGame.s_Options.MaxUndeads;
@@ -8780,10 +8770,10 @@ namespace djack.RogueSurvivor.Engine
         ItemBarricadeMaterial firstByType = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
         actor.Inventory.Consume(firstByType);
       }
-      Fortification fortification = isLarge ? m_TownGenerator.MakeObjLargeFortification("MapObjects\\wooden_large_fortification") : m_TownGenerator.MakeObjSmallFortification("MapObjects\\wooden_small_fortification");
+      Fortification fortification = isLarge ? m_TownGenerator.MakeObjLargeFortification() : m_TownGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceMapObjectAt(fortification, buildPos);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
-        AddMessage(MakeMessage(actor, string.Format("{0} a {1} fortification.", (object) Conjugate(actor, VERB_BUILD), isLarge ? (object) "large" : (object) "small")));
+        AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
       CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
     }
 

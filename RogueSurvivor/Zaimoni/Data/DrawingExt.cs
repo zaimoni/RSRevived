@@ -55,6 +55,24 @@ namespace Zaimoni.Data
       return ret;
     }
 
+    public static Point? FirstOrDefault(this Rectangle rect, Predicate<Point> testFn)
+    {
+      Contract.Requires(null != testFn);
+      Point point = new Point();
+      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
+        for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
+          if (testFn(point)) return point;
+        }
+      }
+      return null;
+    }
+
+    public static bool Any(this Rectangle rect, Predicate<Point> testFn)
+    {
+      Contract.Requires(null != testFn);
+      return  null != rect.FirstOrDefault(testFn);
+    }
+
     // unpacking delta codes for < = >
     public static Point sgn_from_delta_code(ref int delta_code)
     {

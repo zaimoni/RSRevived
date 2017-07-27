@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Runtime.Serialization;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
@@ -516,12 +517,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAnExitIn(Rectangle rect)
     {
-      for (int left = rect.Left; left < rect.Right; ++left) {
-        for (int top = rect.Top; top < rect.Bottom; ++top) {
-          if (HasExitAt(left, top)) return true;
-        }
-      }
-      return false;
+      return rect.Any(pt => HasExitAt(pt));
     }
 
 	public List<Point> ExitLocations(HashSet<Exit> src)
