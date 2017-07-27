@@ -12023,24 +12023,23 @@ namespace djack.RogueSurvivor.Engine
           ShowNewAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY);
           Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
           Session.Get.CHARUndergroundFacility_Activated = true;
-          Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Expose();
+          Map CHARmap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
+
+          CHARmap.Expose();
           Map surfaceMap = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap;
 		  // XXX reduced to integrity checking by Exit constructor adjustment
-          Point? local_0 = surfaceMap.FindFirstInMap((Predicate<Point>) (pt =>
-          {
-            Exit exitAt = surfaceMap.GetExitAt(pt);
-            if (exitAt == null) return false;
-            return exitAt.ToMap == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
-          }));
-          if (!local_0.HasValue)
+          if (!surfaceMap.Rect.Any(pt => {
+              Exit exitAt = surfaceMap.GetExitAt(pt);
+              if (exitAt == null) return false;
+              return exitAt.ToMap == CHARmap;
+            }))
             throw new InvalidOperationException("could not find exit to CUF in surface map");
-          Point? local_2 = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.FindFirstInMap((Predicate<Point>) (pt =>
-          {
-            Exit exitAt = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.GetExitAt(pt);
-            if (exitAt == null) return false;
-            return exitAt.ToMap == surfaceMap;
-          }));
-          if (!local_2.HasValue)
+          if (!Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Rect.Any(pt =>
+            {
+              Exit exitAt = CHARmap.GetExitAt(pt);
+              if (exitAt == null) return false;
+              return exitAt.ToMap == surfaceMap;
+            }))
             throw new InvalidOperationException("could not find exit to surface in CUF map");
         }
       }
@@ -12058,6 +12057,7 @@ namespace djack.RogueSurvivor.Engine
       // The Prisoner Who Should Not Be should only respond to civilian players; other factions should either be hostile, or colluding on
       // the fake charges used to frame him (CHAR, possibly police), or conned (possibly police)
       // Acceptable factions are civilians and survivors.
+      // XXX but...if the player opens the gates even unasked, should the Prisoner Who Should Not Be try to thank the player anyway?
       if (player.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && !Session.Get.UniqueActors.PoliceStationPrisonner.TheActor.IsDead 
           && ((int) GameFactions.IDs.TheCivilians == player.Faction.ID || (int) GameFactions.IDs.TheSurvivors == player.Faction.ID))
       {
@@ -12157,7 +12157,7 @@ namespace djack.RogueSurvivor.Engine
         {
           MapObject mapObjectAt = map.GetMapObjectAt(pt);
           if (mapObjectAt == null) return false;
-          return mapObjectAt.ImageID == "MapObjects\\gate_closed";
+          return mapObjectAt.ImageID == GameImages.OBJ_GATE_CLOSED;
         })))
         {
           DoTurnAllGeneratorsOn(map);

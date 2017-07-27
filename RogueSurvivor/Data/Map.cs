@@ -1327,18 +1327,6 @@ namespace djack.RogueSurvivor.Data
       ForEachAdjacent(new Point(x,y),fn);
     }
 
-    public Point? FindFirstInMap(Predicate<Point> predicateFn)
-    {
-      Contract.Requires(null != predicateFn);
-      Point point = new Point();
-      for (point.X = 0; point.X < Width; ++point.X) {
-        for (point.Y = 0; point.Y < Height; ++point.Y) {
-          if (predicateFn(point)) return point;
-        }
-      }
-      return null;
-    }
-
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
