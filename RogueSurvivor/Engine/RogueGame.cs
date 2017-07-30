@@ -306,7 +306,7 @@ namespace djack.RogueSurvivor.Engine
     private const int BLOOD_WALL_SPLAT_CHANCE = 20;
     public const int MESSAGE_NPC_SLEEP_SNORE_CHANCE = 10;
     private const int WEATHER_CHANGE_CHANCE = 33;
-    private const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;
+    private const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;   // XXX dead now that exit generation is on NO_PEACE_WALLS
     private readonly IRogueUI m_UI; // this cannot be static.
     private Rules m_Rules;
     private HiScoreTable m_HiScoreTable;
@@ -10073,16 +10073,11 @@ namespace djack.RogueSurvivor.Engine
             } else if (tourism.Contains(point)) {
               m_UI.UI_DrawImage(GameImages.TOURISM_OVERLAY, screen.X, screen.Y, tint);
             }
-#if NO_PEACE_WALLS
           } else if (map.IsMapBoundary(x, y)) {
             Exit tmp = map.GetExitAt(point);
             if (null!=tmp && string.IsNullOrEmpty(tmp.ReasonIsBlocked(m_Player)))
               DrawExit(screen);
           }
-#else
-          } else if (map.IsMapBoundary(x, y) && map.HasExitAt(point))
-            DrawExit(screen);
-#endif
           if (player) {
             List<Corpse> corpsesAt = map.GetCorpsesAt(x, y);
             if (corpsesAt != null) {
@@ -11386,11 +11381,7 @@ namespace djack.RogueSurvivor.Engine
           if (y1 > 0) {
             Map entryMap2 = world[x1, y1 - 1].EntryMap;
             for (int x2 = 0; x2 < entryMap1.Width; ++x2) {
-#if NO_PEACE_WALLS
               if (x2 < entryMap2.Width) {
-#else
-              if (x2 < entryMap2.Width && m_Rules.RollChance(DISTRICT_EXIT_CHANCE_PER_TILE)) {
-#endif
                 Point from1 = new Point(x2, -1);
                 Point to1 = new Point(x2, entryMap2.Height - 1);
                 Point from2 = new Point(x2, entryMap2.Height);
@@ -11405,11 +11396,7 @@ namespace djack.RogueSurvivor.Engine
           if (x1 > 0) {
             Map entryMap2 = world[x1 - 1, y1].EntryMap;
             for (int y2 = 0; y2 < entryMap1.Height; ++y2) {
-#if NO_PEACE_WALLS
               if (y2 < entryMap2.Height) {
-#else
-              if (y2 < entryMap2.Height && m_Rules.RollChance(DISTRICT_EXIT_CHANCE_PER_TILE)) {
-#endif
                 Point from1 = new Point(-1, y2);
                 Point to1 = new Point(entryMap2.Width - 1, y2);
                 Point from2 = new Point(entryMap2.Width, y2);
@@ -11510,11 +11497,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckIfExitIsGood(Map toMap, Point to)
     {
-#if NO_PEACE_WALLS
       return toMap.GetTileModelAt(to).IsWalkable;
-#else
-      return toMap.GetTileModelAt(to).IsWalkable && !toMap.HasMapObjectAt(to);
-#endif
     }
 
     private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)
