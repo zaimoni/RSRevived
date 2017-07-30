@@ -9969,9 +9969,9 @@ namespace djack.RogueSurvivor.Engine
                     m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", (object)m_Player.MurdersCounter), 808, 752);
                   DrawActorStatus(m_Player, 680, 4);
                   if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
-                    DrawInventory(m_Player.Inventory, "Inventory", true, 10, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
-                  DrawInventory(m_Player.Location.Items, "Items on ground", true, 10, 10, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
-                  DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", 10, INVENTORYPANEL_X, CORPSESPANEL_Y);
+                    DrawInventory(m_Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
+                  DrawInventory(m_Player.Location.Items, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
+                  DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
                     DrawActorSkillTable(m_Player, 680, 352);
                 }
@@ -10025,10 +10025,17 @@ namespace djack.RogueSurvivor.Engine
     public void DrawMap(Map map)    // XXX not at all clear why this and the functions it controls are public
     {
       Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
+#if NO_PEACE_WALLS
+      int num1 = m_MapViewRect.Left;
+      int num2 = m_MapViewRect.Right;
+      int num3 = m_MapViewRect.Top;
+      int num4 = m_MapViewRect.Bottom;
+#else
       int num1 = Math.Max(-1, m_MapViewRect.Left);
       int num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
       int num3 = Math.Max(-1, m_MapViewRect.Top);
       int num4 = Math.Min(map.Height + 1, m_MapViewRect.Bottom);
+#endif
       string imageID;
       switch (Session.Get.World.Weather) {
         case Weather.RAIN:
@@ -10099,24 +10106,24 @@ namespace djack.RogueSurvivor.Engine
                 int scentByOdorAt1 = map.GetScentByOdorAt(Odor.LIVING, point);
                 if (scentByOdorAt1 >= num5) {
                   float num6 = (float) (0.9 * (double) scentByOdorAt1 / (double)(OdorScent.MAX_STRENGTH));
-                  m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_living", screen.X, screen.Y);
+                  m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_LIVING, screen.X, screen.Y);
                 }
                 int scentByOdorAt2 = map.GetScentByOdorAt(Odor.UNDEAD_MASTER, point);
                 if (scentByOdorAt2 >= num5) {
                   float num6 = (float) (0.9 * (double) scentByOdorAt2 / (double)(OdorScent.MAX_STRENGTH));
-                  m_UI.UI_DrawTransparentImage(num6 * num6, "Icons\\scent_zm", screen.X, screen.Y);
+                  m_UI.UI_DrawTransparentImage(num6 * num6, GameImages.ICON_SCENT_ZOMBIEMASTER, screen.X, screen.Y);
                 }
               }
             } else {
               int scentByOdorAt = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, point);
               if (scentByOdorAt > 0)
-                m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / (double)(OdorScent.MAX_STRENGTH)), "Icons\\scent_living_supressor", screen.X, screen.Y);
+                m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / (double)(OdorScent.MAX_STRENGTH)), GameImages.ICON_SCENT_LIVING_SUPRESSOR, screen.X, screen.Y);
             }
           }
           if (player) {
             Inventory itemsAt = map.GetItemsAt(x, y);
             if (itemsAt != null) {
-              DrawItemsStack(itemsAt, screen.X, screen.Y, tint);
+              DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
             Actor actorAt = map.GetActorAt(x, y);
@@ -10443,11 +10450,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DrawItemsStack(Inventory inventory, int gx, int gy, Color tint)
+    public void DrawItemsStack(Inventory inventory, Point screen, Color tint)
     {
       if (inventory == null) return;
       foreach (Item it in inventory.Items)
-        DrawItem(it, gx, gy, tint);
+        DrawItem(it, screen.X, screen.Y, tint);
     }
 
     public void DrawMapIcon(Point position, string imageID)
@@ -10667,6 +10674,15 @@ namespace djack.RogueSurvivor.Engine
       return new ColorString(Color.White, string.Format("{0}h", actor.HoursUntilUnstable));
     }
 
+    private string ActorStatString(Actor actor)
+    {
+      Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
+      if (actor.Model.Abilities.IsUndead)
+        return string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, ((double) actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount);
+      else
+        return string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double) actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.CountFollowers, actor.MaxFollowers);
+    }
+
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", (object) actor.Name, (object) actor.Faction.MemberName), gx, gy, new Color?());
@@ -10734,11 +10750,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}", (object) attack2.HitValue, (object) attack2.DamageValue, (object) (attack2.DamageValue + num1), (object) attack2.Range, (object) attack2.EfficientRange, (object) ammo, (object) maxAmmo), gx, gy, new Color?());
       }
       gy += 14;
-      Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
-      if (actor.Model.Abilities.IsUndead)
-        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", (object) defence.Value, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object) actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, (object) actor.KillsCount), gx, gy, new Color?());
-      else
-        m_UI.UI_DrawStringBold(Color.White, string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", (object) defence.Value, (object) defence.Protection_Hit, (object) defence.Protection_Shot, (object) ((double) actor.Speed / Rules.BASE_SPEED), (object)actor.ActionPoints, (object)actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), (object) actor.CountFollowers, (object)actor.MaxFollowers), gx, gy, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, ActorStatString(actor), gx, gy, new Color?());
     }
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
@@ -10826,10 +10838,8 @@ namespace djack.RogueSurvivor.Engine
       {
         string text = string.Format("{0}", (object) it.Quantity);
         int gx1 = gx + TILE_SIZE - 10;
-        if (it.Quantity > 100)
-          gx1 -= 10;
-        else if (it.Quantity > 10)
-          gx1 -= 4;
+        if (it.Quantity > 100) gx1 -= 10;
+        else if (it.Quantity > 10) gx1 -= 4;
         m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
         m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
       }
@@ -10837,8 +10847,7 @@ namespace djack.RogueSurvivor.Engine
       ItemTrap itemTrap = it as ItemTrap;
       if (itemTrap.IsTriggered) {
         m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED, gx, gy);
-      } else {
-        if (!itemTrap.IsActivated) return;
+      } else if (itemTrap.IsActivated) {
         m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED, gx, gy);
       }
     }
@@ -10862,9 +10871,7 @@ namespace djack.RogueSurvivor.Engine
           num = 0;
           gy1 = gy;
           gx1 += TEXTFILE_CHARS_PER_LINE;
-        }
-        else
-          gy1 += 12;
+        } else gy1 += 12;
       }
     }
 
