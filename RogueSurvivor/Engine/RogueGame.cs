@@ -8954,10 +8954,9 @@ namespace djack.RogueSurvivor.Engine
       actor.Activity = Activity.IDLE;
       actor.IsSleeping = false;
       if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_WAKE_UP))));
-      if (!actor.IsPlayer)
-        return;
-            m_MusicManager.StopAll();
+      AddMessage(MakeMessage(actor, string.Format("{0}.", (object)Conjugate(actor, VERB_WAKE_UP))));
+      if (!actor.IsPlayer) return;
+      m_MusicManager.StopAll();
     }
 
     private void DoTag(Actor actor, ItemSprayPaint spray, Point pos)
@@ -9009,7 +9008,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }, pt => {
         actorAt = map.GetActorAt(pt);
-        if (actorAt?.IsSleeping ?? false) return false;
+        if (!actorAt?.IsSleeping ?? true) return false;
         int noiseDistance = Rules.GridDistance(noisePosition, pt);
         return /* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance));  // would need to test for other kinds of distance
       });
