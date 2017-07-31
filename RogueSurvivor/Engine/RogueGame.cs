@@ -8995,7 +8995,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     private void OnLoudNoise(Map map, Point noisePosition, string noiseName)
-    {
+    {   // Note: Loud noise radius is hard-coded as 5 grid distance; empirically audio range is 0/16 Euclidean distance
       Rectangle survey = new Rectangle(noisePosition.X - Rules.LOUD_NOISE_RADIUS, noisePosition.Y - Rules.LOUD_NOISE_RADIUS, 2* Rules.LOUD_NOISE_RADIUS + 1, 2 * Rules.LOUD_NOISE_RADIUS + 1);
       map.TrimToBounds(ref survey);
 
