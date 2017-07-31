@@ -1561,7 +1561,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         bool could_barricade = m_Actor.CouldBarricade();
         Dictionary<Point,DoorWindow> close_doors = new Dictionary<Point,DoorWindow>();
         Dictionary<Point,DoorWindow> barricade_doors = new Dictionary<Point,DoorWindow>();
-        foreach(Point pt in Direction.COMPASS_LIST.Select(dir => m_Actor.Location.Position + dir)) {
+        foreach(Point pt in Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir)) {
           DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(pt) as DoorWindow;
           if (null == door) continue;
           if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
