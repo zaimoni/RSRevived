@@ -1019,23 +1019,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    protected BaseAI.ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    protected ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
       float num = float.NaN;
-      List<BaseAI.ChoiceEval<_T_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_T_>>(listOfChoices.Count);
+      List<ChoiceEval<_T_>> choiceEvalList1 = new List<ChoiceEval<_T_>>(listOfChoices.Count);
       foreach(_T_ tmp in listOfChoices) {
         if (isChoiceValidFn(tmp)) {
           float f = evalChoiceFn(tmp);
           if (float.IsNaN(f)) continue;
-          choiceEvalList1.Add(new BaseAI.ChoiceEval<_T_>(tmp, f));
+          choiceEvalList1.Add(new ChoiceEval<_T_>(tmp, f));
           if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) num = f;
         }
       }
       if (choiceEvalList1.Count == 0) return null;
       if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
-      List<BaseAI.ChoiceEval<_T_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_T_>>(choiceEvalList1.Count);
-      foreach(BaseAI.ChoiceEval<_T_> tmp in choiceEvalList1) {
+      List<ChoiceEval<_T_>> choiceEvalList2 = new List<ChoiceEval<_T_>>(choiceEvalList1.Count);
+      foreach(ChoiceEval<_T_> tmp in choiceEvalList1) {
         if (tmp.Value == num) choiceEvalList2.Add(tmp);
       }
       if (choiceEvalList2.Count == 0) throw new InvalidOperationException("best-seen rating not recorded");
@@ -1043,23 +1043,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    protected BaseAI.ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
       float num = float.NaN;
-      List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList1 = new List<BaseAI.ChoiceEval<_DATA_>>(listOfChoices.Count);
+      List<ChoiceEval<_DATA_>> choiceEvalList1 = new List<ChoiceEval<_DATA_>>(listOfChoices.Count);
       foreach(_T_ tmp in listOfChoices) {
         _DATA_ choice = isChoiceValidFn(tmp);
         if (null == choice) continue;
         float f = evalChoiceFn(tmp);
         if (float.IsNaN(f)) continue;
-        choiceEvalList1.Add(new BaseAI.ChoiceEval<_DATA_>(choice, f));
+        choiceEvalList1.Add(new ChoiceEval<_DATA_>(choice, f));
         if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) num = f;
       }
       if (choiceEvalList1.Count == 0) return null;
       if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
-      List<BaseAI.ChoiceEval<_DATA_>> choiceEvalList2 = new List<BaseAI.ChoiceEval<_DATA_>>(choiceEvalList1.Count);
-      foreach(BaseAI.ChoiceEval<_DATA_> tmp in choiceEvalList1) {
+      List<ChoiceEval<_DATA_>> choiceEvalList2 = new List<ChoiceEval<_DATA_>>(choiceEvalList1.Count);
+      foreach(ChoiceEval<_DATA_> tmp in choiceEvalList1) {
         if (tmp.Value == num) choiceEvalList2.Add(tmp);
       }
       if (choiceEvalList2.Count == 0) throw new InvalidOperationException("best-seen rating not recorded");
