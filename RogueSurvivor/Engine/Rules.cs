@@ -831,12 +831,6 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
-    public static bool WillOtherActTwiceBefore(Actor actor, Actor other)
-    {
-      if (actor.IsBefore(other)) return other.ActionPoints > BASE_ACTION_COST;
-      return other.ActionPoints + other.Speed > BASE_ACTION_COST;
-    }
-
     public static bool IsMurder(Actor killer, Actor victim)
     {
       if (null == killer) return false;

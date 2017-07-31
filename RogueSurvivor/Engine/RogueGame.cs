@@ -10229,8 +10229,9 @@ namespace djack.RogueSurvivor.Engine
 
     private string ThreatIcon(Actor actor)
     {
-      if (m_Player.WillActAgainBefore(actor)) return GameImages.ICON_THREAT_SAFE;
-      if (Rules.WillOtherActTwiceBefore(m_Player, actor)) return GameImages.ICON_THREAT_HIGH_DANGER;
+      int threat_actions = m_Player.HowManyTimesOtherActs(1, actor);
+      if (1 > threat_actions) return GameImages.ICON_THREAT_SAFE;
+      if (1 < threat_actions) return GameImages.ICON_THREAT_HIGH_DANGER;
       return GameImages.ICON_THREAT_DANGER;
     }
 
