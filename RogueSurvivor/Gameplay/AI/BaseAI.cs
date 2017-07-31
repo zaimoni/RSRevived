@@ -1022,48 +1022,67 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
+
+      Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
+
       float num = float.NaN;
-      List<ChoiceEval<_T_>> choiceEvalList1 = new List<ChoiceEval<_T_>>(listOfChoices.Count);
       foreach(_T_ tmp in listOfChoices) {
-        if (isChoiceValidFn(tmp)) {
-          float f = evalChoiceFn(tmp);
-          if (float.IsNaN(f)) continue;
-          choiceEvalList1.Add(new ChoiceEval<_T_>(tmp, f));
-          if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) num = f;
+        if (!isChoiceValidFn(tmp)) continue;
+        float f = evalChoiceFn(tmp);
+        if (float.IsNaN(f)) continue;
+        if (float.IsNaN(num)) {
+          num = f;
+        } else if (isBetterEvalThanFn(f, num)) {
+          num = f;
+          // XXX at our scale we shouldn't need to early-enable garbage collection here
+        } else if (num != f) continue;
+
+        ChoiceEval< _T_ > tmp2 = new ChoiceEval<_T_>(tmp, f);
+        if (choiceEvalDict.ContainsKey(f)) {
+          choiceEvalDict[f].Add(tmp2);
+        } else {
+          choiceEvalDict[f] = new List<ChoiceEval<_T_>>() { tmp2 };
         }
       }
-      if (choiceEvalList1.Count == 0) return null;
-      if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
-      List<ChoiceEval<_T_>> choiceEvalList2 = new List<ChoiceEval<_T_>>(choiceEvalList1.Count);
-      foreach(ChoiceEval<_T_> tmp in choiceEvalList1) {
-        if (tmp.Value == num) choiceEvalList2.Add(tmp);
-      }
-      if (choiceEvalList2.Count == 0) throw new InvalidOperationException("best-seen rating not recorded");
-      return choiceEvalList2[RogueForm.Game.Rules.Roll(0, choiceEvalList2.Count)];
+
+      List<ChoiceEval<_T_>> ret_from = null;
+      if (!choiceEvalDict.TryGetValue(num, out ret_from)) return null;
+      if (1 == ret_from.Count) return ret_from[0];
+      return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
     }
 
     // isBetterThanEvalFn will never see NaN
     protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (listOfChoices.Count == 0) return null;
+
+      Dictionary<float, List<ChoiceEval<_DATA_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_DATA_>>>();
+
       float num = float.NaN;
-      List<ChoiceEval<_DATA_>> choiceEvalList1 = new List<ChoiceEval<_DATA_>>(listOfChoices.Count);
       foreach(_T_ tmp in listOfChoices) {
         _DATA_ choice = isChoiceValidFn(tmp);
         if (null == choice) continue;
         float f = evalChoiceFn(tmp);
         if (float.IsNaN(f)) continue;
-        choiceEvalList1.Add(new ChoiceEval<_DATA_>(choice, f));
-        if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) num = f;
+        if (float.IsNaN(num)) {
+          num = f;
+        } else if (isBetterEvalThanFn(f, num)) {
+          num = f;
+          // XXX at our scale we shouldn't need to early-enable garbage collection here
+        } else if (num != f) continue;
+
+        ChoiceEval< _DATA_ > tmp2 = new ChoiceEval<_DATA_>(choice, f);
+        if (choiceEvalDict.ContainsKey(f)) {
+          choiceEvalDict[f].Add(tmp2);
+        } else {
+          choiceEvalDict[f] = new List<ChoiceEval<_DATA_>>() { tmp2 };
+        }
       }
-      if (choiceEvalList1.Count == 0) return null;
-      if (choiceEvalList1.Count == 1) return choiceEvalList1[0];
-      List<ChoiceEval<_DATA_>> choiceEvalList2 = new List<ChoiceEval<_DATA_>>(choiceEvalList1.Count);
-      foreach(ChoiceEval<_DATA_> tmp in choiceEvalList1) {
-        if (tmp.Value == num) choiceEvalList2.Add(tmp);
-      }
-      if (choiceEvalList2.Count == 0) throw new InvalidOperationException("best-seen rating not recorded");
-      return choiceEvalList2[RogueForm.Game.Rules.Roll(0, choiceEvalList2.Count)];
+
+      List<ChoiceEval<_DATA_>> ret_from = null;
+      if (!choiceEvalDict.TryGetValue(num, out ret_from)) return null;
+      if (1 == ret_from.Count) return ret_from[0];
+      return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
     }
 
     protected bool IsValidFleeingAction(ActorAction a)
