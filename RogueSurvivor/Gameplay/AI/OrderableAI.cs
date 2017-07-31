@@ -1476,9 +1476,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool needCure = m_Actor.Infection > 0;
       bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
-      List<ItemMedicine> itemsByType = inventory.GetItemsByType<ItemMedicine>();
-      if (itemsByType == null) return null;
-      BaseAI.ChoiceEval<ItemMedicine> choiceEval = Choose(itemsByType, (Func<ItemMedicine, bool>) (it => true), (Func<ItemMedicine, float>) (it =>
+      ChoiceEval<ItemMedicine> choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it => true, it =>
       {
         int num = 0;
         if (needHP) num += factorHealing * it.Healing;
@@ -1487,7 +1485,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (needCure) num += factorCure * it.InfectionCure;
         if (needSan) num += factorSan * it.SanityCure;
         return (float) num;
-      }), (a, b) => a > b);
+      }, (a, b) => a > b);
       if (choiceEval == null || (double) choiceEval.Value <= 0.0) return null;
       return new ActionUseItem(m_Actor, choiceEval.Choice); // legal only for OrderableAI
     }
@@ -1739,19 +1737,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
       Map map = m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
-        int num1 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable)); // allows IsInBounds above
-        int num2 = map.CountAdjacentTo(point, (Predicate<Point>) (ptAdj =>
-        {
+        int num1 = map.CountAdjacentTo(point, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
+        int num2 = map.CountAdjacentTo(point, ptAdj => {
           Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
           return fortification != null && !fortification.IsTransparent;
-        }));
+        });
         return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
-      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (a, b) => a > b);
+      }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, true)) return null;
@@ -1788,13 +1785,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
       if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
       Map map = m_Actor.Location.Map;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
+      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
         Point point = m_Actor.Location.Position + dir;
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || map.HasExitAt(point))
           return false;
         return IsDoorwayOrCorridor(map, point); // this allows using IsInBounds rather than IsValid
-      }), (Func<Direction, float>) (dir => (float) game.Rules.Roll(0, 666)), (a, b) => a > b);
+      }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
       if (!game.Rules.CanActorBuildFortification(m_Actor, point1, false)) return null;

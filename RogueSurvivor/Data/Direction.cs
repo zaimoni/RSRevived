@@ -36,17 +36,6 @@ namespace djack.RogueSurvivor.Data
       Direction.W,
       Direction.NW
     };
-    public static readonly List<Direction> COMPASS_LIST = new List<Direction>()
-    {
-      Direction.N,
-      Direction.NE,
-      Direction.E,
-      Direction.SE,
-      Direction.S,
-      Direction.SW,
-      Direction.W,
-      Direction.NW
-    };
     public static readonly Direction[] COMPASS_4 = new Direction[4]
     {
       Direction.N,

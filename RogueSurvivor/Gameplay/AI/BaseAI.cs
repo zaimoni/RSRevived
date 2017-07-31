@@ -197,24 +197,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorWander(Predicate<Location> goodWanderLocFn=null)
     {
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-      {
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (goodWanderLocFn != null && !goodWanderLocFn(location)) return false;
         return isValidWanderAction(Rules.IsBumpableFor(m_Actor, location));
-      }), (Func<Direction, float>) (dir =>
-      {
+      }, dir => {
         int num = RogueForm.Game.Rules.Roll(0, 666);
         if (m_Actor.Model.Abilities.IsIntelligent && null != m_Actor.Location.Map.GetActivatedTrapAt((m_Actor.Location + dir).Position))
           num -= 1000;
         return (float) num;
-      }), (a, b) => a > b);
+      }, (a, b) => a > b);
       return (choiceEval != null ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
     protected ActorAction BehaviorBumpToward(Point goal, Func<Point, Point, float> distanceFn)
     {
-      BaseAI.ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS_LIST, (Func<Direction, ActorAction>) (dir =>
+      ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS, dir =>
       {
         Location location = m_Actor.Location + dir;
         ActorAction a = Rules.IsBumpableFor(m_Actor, location);
@@ -231,7 +229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (location.Position == goal || IsValidMoveTowardGoalAction(a)) return a;
         return null;
-      }), dir => distanceFn(m_Actor.Location.Position + dir, goal), (a, b) => a < b);
+      }, dir => distanceFn(m_Actor.Location.Position + dir, goal), (a, b) => a < b);
       if (choiceEval != null) return choiceEval.Choice;
       return null;
     }
@@ -302,8 +300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         leaderLoF = new List<Point>(1);
         LOS.CanTraceFireLine(leader.Location, actor.Location.Position, leader_rw.Model.Attack.Range, leaderLoF);
       }
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir))), (Func<Direction, float>) (dir =>
-      {
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir)), dir => {
         Location location = m_Actor.Location + dir;
         float num = SafetyFrom(location.Position, goals);
         if (m_Actor.HasLeader) {
@@ -311,7 +308,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
         }
         return num;
-      }), (a, b) => a > b);
+      }, (a, b) => a > b);
       return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
     }
 
@@ -857,13 +854,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
-      BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS_LIST, (Func<Direction, bool>) (dir =>
-      {
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (exploration.HasExplored(location)) return false;
         return IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, location));
-      }), (Func<Direction, float>) (dir =>
-      {
+      }, dir => {
         Location loc = m_Actor.Location + dir;
         Map map = loc.Map;
         Point position = loc.Position;
@@ -881,7 +876,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (!map.LocalTime.IsNight) num += 50;
         if (dir == prevDirection) num += 25;
         return (float) (num + game.Rules.Roll(0, 10));
-      }), (a, b) => a > b);
+      }, (a, b) => a > b);
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
     }
@@ -1019,9 +1014,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    protected ChoiceEval<_T_> Choose<_T_>(List<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (listOfChoices.Count == 0) return null;
+      if (null == listOfChoices ||  0 >= listOfChoices.Count()) return null;
 
       Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
 
@@ -1052,9 +1047,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(List<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
-      if (listOfChoices.Count == 0) return null;
+      if (null == listOfChoices || 0 >= listOfChoices.Count()) return null;
 
       Dictionary<float, List<ChoiceEval<_DATA_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_DATA_>>>();
 
