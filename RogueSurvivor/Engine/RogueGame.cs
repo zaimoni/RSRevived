@@ -7331,7 +7331,7 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       }
       bool flag = false;
-      MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position.X, newLocation.Position.Y);
+      MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position);
       if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable)
         flag = true;
       if (flag) {

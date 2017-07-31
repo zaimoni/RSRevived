@@ -280,7 +280,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           for (int y = 0; y < sewers.Height; ++y) {
             if (m_DiceRoller.RollChance(3) && sewers.GetTileModelAt(x, y).IsWalkable) {
               Tile tileAt = surface.GetTileAt(x, y);
-              if (tileAt.Model.IsWalkable && !sewers.HasMapObjectAt(x, y) && !tileAt.IsInside && ((tileAt.Model == GameTiles.FLOOR_WALKWAY || tileAt.Model == GameTiles.FLOOR_GRASS) && surface.GetMapObjectAt(x, y) == null))
+              if (tileAt.Model.IsWalkable && !sewers.HasMapObjectAt(x, y) && !tileAt.IsInside && ((tileAt.Model == GameTiles.FLOOR_WALKWAY || tileAt.Model == GameTiles.FLOOR_GRASS) && !surface.HasMapObjectAt(x, y)))
               {
                 Point point = new Point(x, y);
                 if (!sewers.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => sewers.HasExitAt(p))) && !surface.HasAnyAdjacentInMap(point, (Predicate<Point>) (p => surface.HasExitAt(p))))
@@ -1427,57 +1427,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected virtual void MakeHousingRoom(Map map, Rectangle roomRect, TileModel floor, TileModel wall)
     {
       TileFill(map, floor, roomRect);
-      TileRectangle(map, wall, roomRect.Left, roomRect.Top, roomRect.Width, roomRect.Height, (Action<Tile, TileModel, int, int>) ((tile, prevmodel, x, y) =>
+      TileRectangle(map, wall, roomRect.Left, roomRect.Top, roomRect.Width, roomRect.Height, (tile, prevmodel, x, y) =>
       {
         if (!map.HasMapObjectAt(x, y)) return;
         map.SetTileModelAt(x, y, floor);
-      }));
+      });
       int x1 = roomRect.Left + roomRect.Width / 2;
       int y1 = roomRect.Top + roomRect.Height / 2;
-      PlaceIf(map, x1, roomRect.Top, floor, (Func<int, int, bool>) ((x, y) =>
-      {
-        if (HasNoObjectAt(map, x, y) && IsAccessible(map, x, y))
-          return CountAdjDoors(map, x, y) == 0;
-        return false;
-      }), (Func<int, int, MapObject>) ((x, y) =>
-      {
-        if (!IsInside(map, x, y) && !m_DiceRoller.RollChance(25))
-          return MakeObjWindow();
-        return MakeObjWoodenDoor();
-      }));
-      PlaceIf(map, x1, roomRect.Bottom - 1, floor, (Func<int, int, bool>) ((x, y) =>
-      {
-        if (HasNoObjectAt(map, x, y) && IsAccessible(map, x, y))
-          return CountAdjDoors(map, x, y) == 0;
-        return false;
-      }), (Func<int, int, MapObject>) ((x, y) =>
-      {
-        if (!IsInside(map, x, y) && !m_DiceRoller.RollChance(25))
-          return MakeObjWindow();
-        return MakeObjWoodenDoor();
-      }));
-      PlaceIf(map, roomRect.Left, y1, floor, (Func<int, int, bool>) ((x, y) =>
-      {
-        if (HasNoObjectAt(map, x, y) && IsAccessible(map, x, y))
-          return CountAdjDoors(map, x, y) == 0;
-        return false;
-      }), (Func<int, int, MapObject>) ((x, y) =>
-      {
-        if (!IsInside(map, x, y) && !m_DiceRoller.RollChance(25))
-          return (MapObject)MakeObjWindow();
-        return (MapObject)MakeObjWoodenDoor();
-      }));
-            PlaceIf(map, roomRect.Right - 1, y1, floor, (Func<int, int, bool>) ((x, y) =>
-      {
-        if (HasNoObjectAt(map, x, y) && IsAccessible(map, x, y))
-          return CountAdjDoors(map, x, y) == 0;
-        return false;
-      }), (Func<int, int, MapObject>) ((x, y) =>
-      {
-        if (!IsInside(map, x, y) && !m_DiceRoller.RollChance(25))
-          return (MapObject)MakeObjWindow();
-        return (MapObject)MakeObjWoodenDoor();
-      }));
+      Func<int,int,bool> door_window_ok = (x, y) => !map.HasMapObjectAt(x, y) && IsAccessible(map, x, y) && 0 == CountAdjDoors(map, x, y);
+      Func<int, int, MapObject> make_door_window = (x, y) => ((!IsInside(map, x, y) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor());
+
+      PlaceIf(map, x1, roomRect.Top, floor, door_window_ok, make_door_window);
+      PlaceIf(map, x1, roomRect.Bottom - 1, floor, door_window_ok, make_door_window);
+      PlaceIf(map, roomRect.Left, y1, floor, door_window_ok, make_door_window);
+      PlaceIf(map, roomRect.Right - 1, y1, floor, door_window_ok, make_door_window);
     }
 
     protected virtual void FillHousingRoomContents(Map map, Rectangle roomRect)
