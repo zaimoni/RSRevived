@@ -298,7 +298,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       const Abilities.Flags STD_HUMAN = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_USE_ITEMS | Abilities.Flags.CAN_TALK | Abilities.Flags.CAN_PUSH | Abilities.Flags.CAN_BARRICADE;
       const Abilities.Flags STD_SANE = Abilities.Flags.HAS_SANITY | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT;
 
-      Func<CSVLine, GameActors.ActorData> parse_fn = new Func<CSVLine, GameActors.ActorData>(GameActors.ActorData.FromCSVLine);
+      Func<CSVLine, ActorData> parse_fn = CSV => new ActorData(CSV);
       ActorData DATA_SKELETON = toTable.GetDataFor(parse_fn, IDs._FIRST);
       ActorData DATA_RED_EYED_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_RED_EYED_SKELETON);
       ActorData DATA_RED_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_RED_SKELETON);
@@ -336,7 +336,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       // so as long as Jason myers is interpolated correctly for SPD from the male civilian, we can decommission all other human stat columsn and just leave the text configuration
       // NOTE: AudioRange space-time scales.  Currently, zero or 3*LOUD_NOISE_RADIUS+1
 
-      this[IDs._FIRST] = new ActorModel(GameImages.ACTOR_SKELETON, DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, DATA_SKELETON.FLAVOR, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
+      this[IDs.UNDEAD_SKELETON] = new ActorModel(GameImages.ACTOR_SKELETON, DATA_SKELETON.NAME, DATA_SKELETON.PLURAL, DATA_SKELETON.SCORE, DATA_SKELETON.FLAVOR, new DollBody(true, DATA_SKELETON.SPD), new Abilities(
           Abilities.Flags.UNDEAD),
           new ActorSheet(DATA_SKELETON.HP, NO_STA, NO_FOOD, NO_SLEEP, NO_SANITY, new Attack(AttackKind.PHYSICAL, CLAW, DATA_SKELETON.ATK, DATA_SKELETON.DMG), new Defence(DATA_SKELETON.DEF, DATA_SKELETON.PRO_HIT, DATA_SKELETON.PRO_SHOT), DATA_SKELETON.FOV, NO_AUDIO, NO_SMELL, NO_INVENTORY), typeof (SkeletonAI));
       this[IDs.UNDEAD_RED_EYED_SKELETON] = new ActorModel(GameImages.ACTOR_RED_EYED_SKELETON, DATA_RED_EYED_SKELETON.NAME, DATA_RED_EYED_SKELETON.PLURAL, DATA_RED_EYED_SKELETON.SCORE, DATA_RED_EYED_SKELETON.FLAVOR, new DollBody(true, DATA_RED_EYED_SKELETON.SPD), new Abilities(
@@ -548,26 +548,23 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       public int SMELL;
       public int SCORE;
       public string FLAVOR;
-      public static ActorData FromCSVLine(CSVLine line)
+      public ActorData(CSVLine line)
       {
-        return new ActorData()
-        {
-          NAME = line[1].ParseText(),
-          PLURAL = line[2].ParseText(),
-          SPD = line[3].ParseInt(),
-          HP = line[4].ParseInt(),
-          STA = line[5].ParseInt()*WorldTime.TURNS_PER_HOUR/30, // spacetime scales; disconnected
-          ATK = line[6].ParseInt(),
-          DMG = line[7].ParseInt(),
-          DEF = line[8].ParseInt(),
-          PRO_HIT = line[9].ParseInt(),
-          PRO_SHOT = line[10].ParseInt(),
-          FOV = line[11].ParseInt() * WorldTime.TURNS_PER_HOUR / 30, // spacetime scales
-          AUDIO = line[12].ParseInt() * WorldTime.TURNS_PER_HOUR / 30, // spacetime scales; disconnected
-          SMELL = line[13].ParseInt(),
-          SCORE = line[14].ParseInt(),
-          FLAVOR = line[15].ParseText()
-        };
+        NAME = line[1].ParseText();
+        PLURAL = line[2].ParseText();
+        SPD = line[3].ParseInt();
+        HP = line[4].ParseInt();
+        STA = line[5].ParseInt()*WorldTime.TURNS_PER_HOUR/30; // spacetime scales; disconnected
+        ATK = line[6].ParseInt();
+        DMG = line[7].ParseInt();
+        DEF = line[8].ParseInt();
+        PRO_HIT = line[9].ParseInt();
+        PRO_SHOT = line[10].ParseInt();
+        FOV = line[11].ParseInt() * WorldTime.TURNS_PER_HOUR / 30; // spacetime scales
+        AUDIO = line[12].ParseInt() * WorldTime.TURNS_PER_HOUR / 30; // spacetime scales; disconnected
+        SMELL = line[13].ParseInt();
+        SCORE = line[14].ParseInt();
+        FLAVOR = line[15].ParseText();
       }
     }
   }
