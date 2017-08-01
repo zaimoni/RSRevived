@@ -556,14 +556,14 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           PLURAL = line[2].ParseText(),
           SPD = line[3].ParseInt(),
           HP = line[4].ParseInt(),
-          STA = line[5].ParseInt(),
+          STA = line[5].ParseInt()*WorldTime.TURNS_PER_HOUR/30, // spacetime scales; disconnected
           ATK = line[6].ParseInt(),
           DMG = line[7].ParseInt(),
           DEF = line[8].ParseInt(),
           PRO_HIT = line[9].ParseInt(),
           PRO_SHOT = line[10].ParseInt(),
-          FOV = line[11].ParseInt(),
-          AUDIO = line[12].ParseInt(),
+          FOV = line[11].ParseInt() * WorldTime.TURNS_PER_HOUR / 30, // spacetime scales
+          AUDIO = line[12].ParseInt() * WorldTime.TURNS_PER_HOUR / 30, // spacetime scales; disconnected
           SMELL = line[13].ParseInt(),
           SCORE = line[14].ParseInt(),
           FLAVOR = line[15].ParseText()
