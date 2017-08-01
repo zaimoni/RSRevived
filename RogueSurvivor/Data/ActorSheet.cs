@@ -49,6 +49,21 @@ namespace djack.RogueSurvivor.Data
       BaseInventoryCapacity = inventoryCapacity;
     }
 
+    public ActorSheet(Gameplay.GameActors.ActorData src, int baseFoodPoints, int baseSleepPoints, int baseSanity, Verb unarmedAttack, int inventoryCapacity)
+    {
+      BaseHitPoints = src.HP;
+      BaseStaminaPoints = src.STA;
+      BaseFoodPoints = baseFoodPoints;
+      BaseSleepPoints = baseSleepPoints;
+      BaseSanity = baseSanity;
+      UnarmedAttack = new Attack(AttackKind.PHYSICAL, unarmedAttack, src.ATK, src.DMG);
+      BaseDefence = new Defence(src.DEF, src.PRO_HIT, src.PRO_SHOT);
+      BaseViewRange = src.FOV;
+      BaseAudioRange = src.AUDIO;
+      BaseSmellRating = (float) src.SMELL / 100f;
+      BaseInventoryCapacity = inventoryCapacity;
+    }
+
     public ActorSheet(ActorSheet copyFrom)
     {
       Contract.Requires(null!=copyFrom);
