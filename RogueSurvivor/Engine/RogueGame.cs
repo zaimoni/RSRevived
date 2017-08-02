@@ -10080,7 +10080,7 @@ namespace djack.RogueSurvivor.Engine
               DrawExit(screen);
           }
           if (player) {
-            List<Corpse> corpsesAt = map.GetCorpsesAt(x, y);
+            List<Corpse> corpsesAt = map.GetCorpsesAt(x, y);    // XXX needs cross-map viewing
             if (corpsesAt != null) {
               foreach (Corpse c in corpsesAt)
                 DrawCorpse(c, screen.X, screen.Y, tint);
@@ -10088,12 +10088,12 @@ namespace djack.RogueSurvivor.Engine
           }
           if (RogueGame.s_Options.ShowPlayerTargets && !m_Player.IsSleeping && m_Player.Location.Position == point)
             DrawPlayerActorTargets(m_Player);
-          MapObject mapObjectAt = map.GetMapObjectAt(x, y);
+          MapObject mapObjectAt = map.GetMapObjectAt(x, y); // XXX needs cross-map viewing
           if (mapObjectAt != null) {
             DrawMapObject(mapObjectAt, screen, tint);
             flag2 = true;
           }
-          if (!m_Player.IsSleeping && map.IsValid(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {
+          if (!m_Player.IsSleeping && map.IsValid(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {    // XXX optimize when no peace walls
             if (isUndead) {
               if (flag1) {
                 int num5 = m_Player.SmellThreshold;
@@ -10115,12 +10115,12 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           if (player) {
-            Inventory itemsAt = map.GetItemsAt(x, y);
+            Inventory itemsAt = map.GetItemsAt(x, y);   // XXX need cross-map viewing
             if (itemsAt != null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
-            Actor actorAt = map.GetActorAt(x, y);
+            Actor actorAt = map.GetActorAt(x, y);   // XXX need cross-map viewing
             if (actorAt != null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;

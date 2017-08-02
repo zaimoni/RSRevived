@@ -352,7 +352,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       // XXX pro hit and pro shot columns are currently constant zero but that's fine for now
       // male to female delta: -2 HP -2 DAM +2 DEF
       // * the z-human chain doesn't use HP, does use DAM/DEF
-      // * test is: .IsFemale()
+      // * dynamic test is: .IsFemale() [implied above]
       // so as long as Jason myers is interpolated correctly for SPD from the male civilian, we can decommission all other human stat columsn and just leave the text configuration
       // NOTE: AudioRange space-time scales.  Currently, zero or 16==3*LOUD_NOISE_RADIUS+1
 

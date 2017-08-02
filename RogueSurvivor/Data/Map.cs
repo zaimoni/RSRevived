@@ -189,17 +189,16 @@ namespace djack.RogueSurvivor.Data
     {
       int ret = 0;
 
+      // XXX these thresholds chop off hearing ranges, etc.
       if (-Engine.RogueGame.HALF_VIEW_WIDTH>pt.X) return 0;
+      else if (Width + Engine.RogueGame.HALF_VIEW_WIDTH <= pt.X) return 0;
       else if (0>pt.X) ret -= 1;
-      else if (Width>pt.X) return 0;
-      else if (Width+Engine.RogueGame.HALF_VIEW_WIDTH > pt.X) ret += 1;
-      else return 0;
+      else if (Width<=pt.X) ret += 1;
 
       if (-Engine.RogueGame.HALF_VIEW_HEIGHT>pt.Y) return 0;
+      else if (Width + Engine.RogueGame.HALF_VIEW_HEIGHT <= pt.Y) return 0;
       else if (0>pt.Y) ret -= 3;
-      else if (Height > pt.Y) return 0;
-      else if (Height+Engine.RogueGame.HALF_VIEW_HEIGHT > pt.Y) ret += 3;
-      else return 0;
+      else if (Width<=pt.Y) ret += 3;
 
       return ret;
     }
@@ -243,24 +242,40 @@ namespace djack.RogueSurvivor.Data
     // placeholder for define-controlled redefinitions
     public bool IsValid(int x, int y)
     {
+#if NO_PEACE_WALLS
+      return IsInBounds(x,y) || IsStrictlyValid(x,y);
+#else
       return 0 <= x && x < Width && 0 <= y && y < Height;
+#endif
     }
 
     public bool IsValid(Point p)
     {
+#if NO_PEACE_WALLS
+      return IsInBounds(p) || IsStrictlyValid(p);
+#else
       return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
+#endif
     }
 
     public bool IsStrictlyValid(int x, int y)
     {
+#if NO_PEACE_WALLS
+      return null != Normalize(new Point(x,y));
+#else
       return false;
+#endif
     }
 
     public bool IsStrictlyValid(Point p)
     {
+#if NO_PEACE_WALLS
+      return null != Normalize(p);
+#else
       return false;
+#endif
     }
-        // end placeholder for define-controlled redefinitions
+    // end placeholder for define-controlled redefinitions
 
     public Location? Normalize(Point pt)
     {
