@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -289,6 +290,24 @@ to transform from MALE_CIVILIAN to POLICEMAN:
 * flavor text becomes To protect and to die
 * add  | Abilities.Flags.IS_LAW_ENFORCER
 */
+    private static ActorData ZFeminize(ActorData src) {
+      ActorData ret = src;
+      ret.DMG -= 2;
+      ret.DEF += 2;
+      ret.NAME = src.NAME.Feminine();
+      ret.PLURAL = ret.NAME.Plural(true);
+      return ret;
+    }
+
+    private static ActorData LFeminize(ActorData src) { // only for formal verifiability
+      ActorData ret = src;
+      ret.HP -= 2;
+      ret.DMG -= 2;
+      ret.DEF += 2;
+      ret.NAME = src.NAME.Feminine();
+      ret.PLURAL = ret.NAME.Plural(true);
+      return ret;
+    }
 
     public void CreateModels(CSVTable toTable)
     {
@@ -306,20 +325,21 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       ActorData DATA_DARK_EYED_ZOMBIE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_DARK_EYED_ZOMBIE);
       ActorData DATA_DARK_ZOMBIE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_DARK_ZOMBIE);
       ActorData DATA_MALE_ZOMBIFIED = toTable.GetDataFor(parse_fn, IDs.UNDEAD_MALE_ZOMBIFIED);
-      ActorData DATA_FEMALE_ZOMBIFIED = toTable.GetDataFor(parse_fn, IDs.UNDEAD_FEMALE_ZOMBIFIED);  // XXX to be synthesized
+      ActorData DATA_FEMALE_ZOMBIFIED = ZFeminize(DATA_MALE_ZOMBIFIED);
       ActorData DATA_MALE_NEOPHYTE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_MALE_NEOPHYTE);
-      ActorData DATA_FEMALE_NEOPHYTE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_FEMALE_NEOPHYTE);  // XXX to be synthesized
+      ActorData DATA_FEMALE_NEOPHYTE = ZFeminize(DATA_MALE_NEOPHYTE);
       ActorData DATA_MALE_DISCIPLE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_MALE_DISCIPLE);
-      ActorData DATA_FEMALE_DISCIPLE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_FEMALE_DISCIPLE);  // XXX to be synthesized
+      ActorData DATA_FEMALE_DISCIPLE = ZFeminize(DATA_MALE_DISCIPLE);
       ActorData DATA_ZM = toTable.GetDataFor(parse_fn, IDs.UNDEAD_ZOMBIE_MASTER);
       ActorData DATA_ZL = toTable.GetDataFor(parse_fn, IDs.UNDEAD_ZOMBIE_LORD);
       ActorData DATA_ZP = toTable.GetDataFor(parse_fn, IDs.UNDEAD_ZOMBIE_PRINCE);
       ActorData DATA_RAT_ZOMBIE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_RAT_ZOMBIE);
       ActorData DATA_SEWERS_THING = toTable.GetDataFor(parse_fn, IDs.SEWERS_THING);
       ActorData DATA_MALE_CIVILIAN = toTable.GetDataFor(parse_fn, IDs.MALE_CIVILIAN);
-      ActorData DATA_FEMALE_CIVILIAN = toTable.GetDataFor(parse_fn, IDs.FEMALE_CIVILIAN);  // XXX to be synthesized
+      ActorData DATA_FEMALE_CIVILIAN = LFeminize(DATA_MALE_CIVILIAN);
       ActorData DATA_FERAL_DOG = toTable.GetDataFor(parse_fn, IDs.FERAL_DOG);
       ActorData DATA_POLICEMAN = toTable.GetDataFor(parse_fn, IDs.POLICEMAN);  // XXX to be synthesized
+      ActorData DATA_POLICEWOMAN = LFeminize(DATA_POLICEMAN);
       ActorData DATA_CHAR_GUARD = toTable.GetDataFor(parse_fn, IDs.CHAR_GUARD);  // XXX to be synthesized
       ActorData DATA_NATGUARD = toTable.GetDataFor(parse_fn, IDs.ARMY_NATIONAL_GUARD);  // XXX to be synthesized
       ActorData DATA_BIKER_MAN = toTable.GetDataFor(parse_fn, IDs.BIKER_MAN);  // XXX to be synthesized
@@ -328,7 +348,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       ActorData DATA_JASON_MYERS = toTable.GetDataFor(parse_fn, IDs.JASON_MYERS);  // XXX to be synthesized
 
       // XXX postprocessing stage should go here
-      // XXX stamina column has already been disconnected
+      // XXX stamina column was reconnected with the constructor changes
       // XXX pro hit and pro shot columns are currently constant zero but that's fine for now
       // male to female delta: -2 HP -2 DAM +2 DEF
       // * the z-human chain doesn't use HP, does use DAM/DEF
@@ -427,10 +447,10 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           STD_LIVING | STD_HUMAN |
           Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_JASON_MYERS, NO_FOOD, NO_SLEEP, NO_SANITY, PUNCH, HUMAN_INVENTORY), typeof (InsaneHumanAI));
-      this[IDs.POLICEWOMAN] = new ActorModel(null, "policewoman", "policewomen", DATA_POLICEMAN.SCORE, DATA_POLICEMAN.FLAVOR, new DollBody(true, DATA_POLICEMAN.SPD), new Abilities(
+      this[IDs.POLICEWOMAN] = new ActorModel(null, DATA_POLICEWOMAN.NAME, DATA_POLICEWOMAN.PLURAL, DATA_POLICEWOMAN.SCORE, DATA_POLICEWOMAN.FLAVOR, new DollBody(true, DATA_POLICEWOMAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
-          new ActorSheet(DATA_FEMALE_CIVILIAN.HP, HUMAN_STA, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, new Attack(AttackKind.PHYSICAL, PUNCH, DATA_FEMALE_CIVILIAN.ATK, DATA_FEMALE_CIVILIAN.DMG), new Defence(DATA_POLICEMAN.DEF, DATA_POLICEMAN.PRO_HIT, DATA_POLICEMAN.PRO_SHOT), DATA_POLICEMAN.FOV, HUMAN_AUDIO, NO_SMELL, HUMAN_INVENTORY), typeof (CivilianAI));
+          new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI));
     }
 
     public bool LoadFromCSV(IRogueUI ui, string path)

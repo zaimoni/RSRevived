@@ -1,12 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Zaimoni.Data
 {
     // Grammar support.  Note that English has very simple agreement rules compared to most natural languages.
+    class Noun
+    {
+        private static readonly Dictionary<string,string> irregular_plural = new Dictionary<string,string>();
+        private static readonly Dictionary<string, string> irregular_feminine = new Dictionary<string, string>();
+        private static readonly Dictionary<string, KeyValuePair<string, string>> elided_adj_nouns = new Dictionary<string, KeyValuePair<string, string>>();
+//      private static readonly HashSet<string> registered = new HashSet<string>();
+        private readonly string _singular;
+
+        static Noun()
+        {
+            irregular_plural["man"] = "men";
+            irregular_plural["woman"] = "women";
+            irregular_feminine["man"] = "woman";
+            elided_adj_nouns["policeman"] = new KeyValuePair<string, string>("police", "man");
+            elided_adj_nouns["policewoman"] = new KeyValuePair<string, string>("police", "woman");
+        }
+
+        private Noun(string x)
+        {
+          _singular = x;
+        }
+
+        public static string Plural(string x) {
+          string ret;
+          if (irregular_plural.TryGetValue(x, out ret)) return ret;
+
+          KeyValuePair < string, string> test;
+          if (elided_adj_nouns.TryGetValue(x,out test)) return test.Key+Noun.Plural(test.Value);
+
+          return x+"s";
+        }
+
+        public static string Feminine(string x) {
+          string ret;
+          if (irregular_feminine.TryGetValue(x, out ret)) return ret;
+
+          KeyValuePair < string, string> test;
+          if (elided_adj_nouns.TryGetValue(x,out test)) return test.Key+Noun.Feminine(test.Value);
+
+          return x;
+        }
+    }
+
     public static class LangExt
     {
         public enum Gender
@@ -48,18 +87,33 @@ namespace Zaimoni.Data
             return "some "+name;
         }
 
+        public static KeyValuePair<string, string>? SplitLastWord(this string name)
+        {
+            int n = name.LastIndexOf(' ');
+            if (0 <= n) return new KeyValuePair<string, string>(name.Substring(0, n), name.Substring(n + 1));
+            return null;
+        }
+
+        public static string Feminine(this string name)
+        {
+            KeyValuePair<string, string>? test = name.SplitLastWord();
+            if (null != test) {
+                if ("male" == test.Value.Key.ToLowerInvariant()) return "female " + test.Value.Value;
+                return test.Value.Key+" "+Noun.Feminine(test.Value.Value);
+            }
+            return Noun.Feminine(name);
+        }
+
         // XXX incomplete implementation; have a grammar text available but past a certain point you need a Noun or Verb class.
         public static string Plural(this string name, bool plural)
         {
           if (!plural) return name;
-          return name+"s";
+          KeyValuePair<string, string>? test = name.SplitLastWord();
+          if (null != test) return test.Value.Key+" "+Noun.Plural(test.Value.Value);
+          return Noun.Plural(name);
         }
 
-        public static string Plural(this string name, int qty)
-        {
-            if (1 == qty) return name;
-            return name + "s";
-        }
+        public static string Plural(this string name, int qty) { return name.Plural(1 == qty); }
 
         // numeric.  The verbal version would be FormalQtyDesc or QtyDescFormal
         public static string QtyDesc(this string name, int qty)
