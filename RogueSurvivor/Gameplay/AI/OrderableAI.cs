@@ -2491,7 +2491,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
 #endif
       ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (null != test) {
+        ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
+        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        ReserveSTA(0,0,0,0);
+      }
       return ret;
     }
 
