@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define NO_PEACE_WALLS
+#define NO_PEACE_WALLS
 
 using System;
 using System.Collections.Generic;
@@ -766,6 +766,18 @@ namespace djack.RogueSurvivor.Data
       return GetActorAt(new Point(x, y));
     }
 
+    public Actor GetActorAtExt(int x, int y)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(x,y)) return GetActorAt(new Point(x, y));
+      Location? test = Normalize(new Point(x,y));
+      if (null==test) return null;
+      return test.Value.Map.GetActorAt(test.Value.Position);
+#else
+      return GetActorAt(new Point(x, y));
+#endif
+    }
+
     public bool HasActorAt(Point position)
     {
 #if NO_PEACE_WALLS
@@ -938,6 +950,18 @@ namespace djack.RogueSurvivor.Data
       return GetMapObjectAt(new Point(x, y));
     }
 
+    public MapObject GetMapObjectAtExt(int x, int y)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(x,y)) return GetMapObjectAt(new Point(x, y));
+      Location? test = Normalize(new Point(x,y));
+      if (null==test) return null;
+      return test.Value.Map.GetMapObjectAt(test.Value.Position);
+#else
+      return GetMapObjectAt(new Point(x, y));
+#endif
+    }
+
     public bool HasMapObjectAt(Point position)
     {
       return m_aux_MapObjectsByPosition.ContainsKey(position);
@@ -1052,6 +1076,18 @@ namespace djack.RogueSurvivor.Data
       return GetItemsAt(new Point(x, y));
     }
 
+    public Inventory GetItemsAtExt(int x, int y)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(x,y)) return GetItemsAt(new Point(x, y));
+      Location? test = Normalize(new Point(x,y));
+      if (null==test) return null;
+      return test.Value.Map.GetItemsAt(test.Value.Position);
+#else
+      return GetItemsAt(new Point(x, y));
+#endif
+    }
+
     public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
     {
       Inventory itemsAt = GetItemsAt(pos);
@@ -1123,9 +1159,16 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    public List<Corpse> GetCorpsesAt(int x, int y)
+    public List<Corpse> GetCorpsesAtExt(int x, int y)
     {
+#if NO_PEACE_WALLS
+      if (IsInBounds(x,y)) return GetCorpsesAt(new Point(x, y));
+      Location? test = Normalize(new Point(x,y));
+      if (null==test) return null;
+      return test.Value.Map.GetCorpsesAt(test.Value.Position);
+#else
       return GetCorpsesAt(new Point(x, y));
+#endif
     }
 
     public bool HasCorpse(Corpse c)

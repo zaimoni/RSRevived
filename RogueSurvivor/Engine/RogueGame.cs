@@ -9,7 +9,7 @@
 // #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
 // #define SUICIDE_BY_LONG_WAIT
-// #define NO_PEACE_WALLS
+#define NO_PEACE_WALLS
 // #define SPEEDY_GONZALES
 
 using djack.RogueSurvivor.Data;
@@ -10080,7 +10080,7 @@ namespace djack.RogueSurvivor.Engine
               DrawExit(screen);
           }
           if (player) {
-            List<Corpse> corpsesAt = map.GetCorpsesAt(x, y);    // XXX needs cross-map viewing
+            List<Corpse> corpsesAt = map.GetCorpsesAtExt(x, y);
             if (corpsesAt != null) {
               foreach (Corpse c in corpsesAt)
                 DrawCorpse(c, screen.X, screen.Y, tint);
@@ -10088,7 +10088,7 @@ namespace djack.RogueSurvivor.Engine
           }
           if (RogueGame.s_Options.ShowPlayerTargets && !m_Player.IsSleeping && m_Player.Location.Position == point)
             DrawPlayerActorTargets(m_Player);
-          MapObject mapObjectAt = map.GetMapObjectAt(x, y); // XXX needs cross-map viewing
+          MapObject mapObjectAt = map.GetMapObjectAtExt(x, y);
           if (mapObjectAt != null) {
             DrawMapObject(mapObjectAt, screen, tint);
             flag2 = true;
@@ -10111,16 +10111,16 @@ namespace djack.RogueSurvivor.Engine
             } else {
               int scentByOdorAt = map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, point);
               if (scentByOdorAt > 0)
-                m_UI.UI_DrawTransparentImage((float) (0.899999976158142 * (double) scentByOdorAt / (double)(OdorScent.MAX_STRENGTH)), GameImages.ICON_SCENT_LIVING_SUPRESSOR, screen.X, screen.Y);
+                m_UI.UI_DrawTransparentImage((float) (0.9 * (double) scentByOdorAt / (double)(OdorScent.MAX_STRENGTH)), GameImages.ICON_SCENT_LIVING_SUPRESSOR, screen.X, screen.Y);
             }
           }
           if (player) {
-            Inventory itemsAt = map.GetItemsAt(x, y);   // XXX need cross-map viewing
+            Inventory itemsAt = map.GetItemsAtExt(x, y);
             if (itemsAt != null) {
               DrawItemsStack(itemsAt, screen, tint);
               flag2 = true;
             }
-            Actor actorAt = map.GetActorAt(x, y);   // XXX need cross-map viewing
+            Actor actorAt = map.GetActorAtExt(x, y);
             if (actorAt != null) {
               DrawActorSprite(actorAt, screen, tint);
               flag2 = true;
