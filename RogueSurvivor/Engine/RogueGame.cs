@@ -906,8 +906,8 @@ namespace djack.RogueSurvivor.Engine
         DateTime now = DateTime.Now;
         if (now.Month == 12 && now.Day >= 24 && now.Day <= 26) {
           for (int index = 0; index < 10; ++index) {
-            int gx2 = m_Rules.Roll(0, 1024);
-            int gy2 = m_Rules.Roll(0, 768);
+            int gx2 = m_Rules.Roll(0, CANVAS_WIDTH-ACTOR_SIZE+ACTOR_OFFSET);
+            int gy2 = m_Rules.Roll(0, CANVAS_HEIGHT-ACTOR_SIZE+ACTOR_OFFSET);
             m_UI.UI_DrawImage(GameImages.ACTOR_SANTAMAN, gx2, gy2);
             m_UI.UI_DrawStringBold(Color.Snow, "* Merry Christmas *", gx2 - 60, gy2 - 10, new Color?());
           }
@@ -9944,9 +9944,9 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_Clear(Color.Black);
                 m_UI.UI_DrawLine(Color.DarkGray, 676, 0, 676, 676);
                 DrawMap(Session.Get.CurrentMap);
-                m_UI.UI_DrawLine(Color.DarkGray, 676, 471, 1024, 471);
+                m_UI.UI_DrawLine(Color.DarkGray, 676, 471, CANVAS_WIDTH, 471);
                 DrawMiniMap(Session.Get.CurrentMap);
-                m_UI.UI_DrawLine(Color.DarkGray, 4, 675, 1024, 675);
+                m_UI.UI_DrawLine(Color.DarkGray, 4, 675, CANVAS_WIDTH, 675);
                 DrawMessages();
                 m_UI.UI_DrawLine(Color.DarkGray, 676, 676, 676, 768);
                 m_UI.UI_DrawString(Color.White, Session.Get.CurrentMap.Name, 680, 680, new Color?());

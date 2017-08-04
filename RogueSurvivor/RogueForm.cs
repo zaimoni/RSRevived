@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor
         break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetClientSizeCore...");
-      SetClientSizeCore(1024, 768);
+      SetClientSizeCore(RogueGame.CANVAS_WIDTH, RogueGame.CANVAS_HEIGHT);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "Form::SetStyle...");
       SetStyle(ControlStyles.Opaque | ControlStyles.AllPaintingInWmPaint, true);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "create font 1...");

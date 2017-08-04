@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.UI
   public class GDIPlusGameCanvas : UserControl, IGameCanvas
   {
     private Color m_ClearColor = Color.CornflowerBlue;
-    private readonly List<GDIPlusGameCanvas.IGfx> m_Gfxs = new List<GDIPlusGameCanvas.IGfx>(100);
+    private readonly List<IGfx> m_Gfxs = new List<IGfx>(100);
     private readonly Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
     private readonly Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
     private RogueForm m_RogueForm;
@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.UI
     private readonly Graphics m_RenderGraphics;
 #endif
 #if WINDOWS_SYSTEM_MEDIA
-    private readonly System.Windows.Controls.Canvas m_Canvas;   // requires PresentationFramework assembly
+    private readonly System.Windows.Controls.Canvas m_Canvas = new System.Windows.Controls.Canvas();   // requires PresentationFramework assembly
 #endif
     private Bitmap m_MinimapBitmap;
     private readonly byte[] m_MinimapBytes;
@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.UI
     {
       get {
         if (m_RogueForm == null) return 1f;
-        return (float)m_RogueForm.ClientRectangle.Width / 1024f;
+        return (float)m_RogueForm.ClientRectangle.Width / (float)(Engine.RogueGame.CANVAS_WIDTH);
       }
     }
 
@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.UI
     {
       get {
         if (m_RogueForm == null) return 1f;
-        return (float)m_RogueForm.ClientRectangle.Height / 768f;
+        return (float)m_RogueForm.ClientRectangle.Height / (float)(Engine.RogueGame.CANVAS_HEIGHT);
       }
     }
 
@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.UI
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas::InitializeComponent");
       InitializeComponent();
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create render image");
-      m_RenderImage = new Bitmap(1024, 768);
+      m_RenderImage = new Bitmap(Engine.RogueGame.CANVAS_WIDTH, Engine.RogueGame.CANVAS_HEIGHT);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get render graphics");
 #if GDI_PLUS
       m_RenderGraphics = Graphics.FromImage((Image)m_RenderImage);
@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.UI
 
     public void AddImage(Image img, int x, int y)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImage(img, x, y));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxImage(img, x, y));
       NeedRedraw = true;
     }
 
@@ -177,37 +177,37 @@ namespace djack.RogueSurvivor.UI
 
     public void AddImageTransform(Image img, int x, int y, float rotation, float scale)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImageTransform(img, rotation, scale, x, y));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxImageTransform(img, rotation, scale, x, y));
       NeedRedraw = true;
     }
 
     public void AddTransparentImage(float alpha, Image img, int x, int y)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxTransparentImage(alpha, img, x, y));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxTransparentImage(alpha, img, x, y));
       NeedRedraw = true;
     }
 
     public void AddPoint(Color color, int x, int y)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxRect(GetPen(color), new Rectangle(x, y, 1, 1)));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxRect(GetPen(color), new Rectangle(x, y, 1, 1)));
       NeedRedraw = true;
     }
 
     public void AddLine(Color color, int xFrom, int yFrom, int xTo, int yTo)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxLine(GetPen(color), xFrom, yFrom, xTo, yTo));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxLine(GetPen(color), xFrom, yFrom, xTo, yTo));
       NeedRedraw = true;
     }
 
     public void AddString(Font font, Color color, string text, int gx, int gy)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxString(color, font, text, gx, gy));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxString(color, font, text, gx, gy));
       NeedRedraw = true;
     }
 
     public void AddRect(Color color, Rectangle rect)
     {
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxRect(GetPen(color), rect));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxRect(GetPen(color), rect));
       NeedRedraw = true;
     }
 
@@ -229,7 +229,7 @@ namespace djack.RogueSurvivor.UI
         brush = (Brush) new SolidBrush(color);
         m_BrushesCache.Add(color, brush);
       }
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxFilledRect(brush, rect));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxFilledRect(brush, rect));
       NeedRedraw = true;
     }
 
@@ -262,7 +262,7 @@ namespace djack.RogueSurvivor.UI
       BitmapData bitmapdata = m_MinimapBitmap.LockBits(new Rectangle(0, 0, m_MinimapBitmap.Width, m_MinimapBitmap.Height), ImageLockMode.ReadWrite, m_MinimapBitmap.PixelFormat);
       Marshal.Copy(m_MinimapBytes, 0, bitmapdata.Scan0, m_MinimapBytes.Length);
       m_MinimapBitmap.UnlockBits(bitmapdata);
-      m_Gfxs.Add((GDIPlusGameCanvas.IGfx) new GDIPlusGameCanvas.GfxImage((Image)m_MinimapBitmap, gx, gy));
+      m_Gfxs.Add((IGfx) new GDIPlusGameCanvas.GfxImage((Image)m_MinimapBitmap, gx, gy));
       NeedRedraw = true;
     }
 
@@ -326,8 +326,8 @@ namespace djack.RogueSurvivor.UI
       void Draw(Graphics g);
     }
 
-    private class GfxImage : GDIPlusGameCanvas.IGfx
-    {
+    private class GfxImage : IGfx
+        {
       private readonly Image m_Img;
       private readonly int m_X;
       private readonly int m_Y;
@@ -345,7 +345,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxImageTransform : GDIPlusGameCanvas.IGfx, IDisposable
+    private class GfxImageTransform : IGfx, IDisposable
     {
       private readonly Image m_Img;
       private readonly Matrix m_Matrix;
@@ -390,7 +390,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxTransparentImage : GDIPlusGameCanvas.IGfx, IDisposable
+    private class GfxTransparentImage : IGfx, IDisposable
     {
       private readonly Image m_Img;
       private readonly int m_X;
@@ -444,7 +444,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxLine : GDIPlusGameCanvas.IGfx
+    private class GfxLine : IGfx
     {
       private readonly Pen m_Pen;
       private readonly int m_xFrom;
@@ -467,7 +467,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxString : GDIPlusGameCanvas.IGfx, IDisposable
+    private class GfxString : IGfx, IDisposable
     {
       private readonly Color m_Color;
       private readonly Font m_Font;
@@ -509,7 +509,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxFilledRect : GDIPlusGameCanvas.IGfx
+    private class GfxFilledRect : IGfx
     {
       private readonly Brush m_Brush;
       private readonly Rectangle m_Rect;
@@ -526,7 +526,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxRect : GDIPlusGameCanvas.IGfx
+    private class GfxRect : IGfx
     {
       private readonly Pen m_Pen;
       private readonly Rectangle m_Rect;
