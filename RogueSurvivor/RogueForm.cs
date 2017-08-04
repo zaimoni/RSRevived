@@ -87,25 +87,25 @@ namespace djack.RogueSurvivor
             m_GameCanvas = (IGameCanvas) new GDIPlusGameCanvas();
 //      }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "SuspendLayout...");
-            SuspendLayout();
+      SuspendLayout();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup GameCanvas...");
-            m_GameCanvas.NeedRedraw = true;
+      m_GameCanvas.NeedRedraw = true;
       UserControl userControl = m_GameCanvas as UserControl;
       userControl.Location = new Point(279, 83);
       userControl.Name = "canvasCtrl";
       userControl.Size = new Size(150, 150);
       userControl.TabIndex = 0;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "setup RogueForm");
-            AutoScaleMode = AutoScaleMode.None;
-            ClientSize = new Size(800, 600);
-            Controls.Add((Control) userControl);
-            Icon = (Icon) componentResourceManager.GetObject("$this.Icon");
-            Name = "RogueForm";
-            StartPosition = FormStartPosition.CenterScreen;
+      AutoScaleMode = AutoScaleMode.None;
+      ClientSize = new Size(800, 600);
+      Controls.Add(userControl);
+      Icon = (Icon) componentResourceManager.GetObject("$this.Icon");
+      Name = "RogueForm";
+      StartPosition = FormStartPosition.CenterScreen;
       Text = SetupConfig.GAME_NAME;
-            WindowState = FormWindowState.Maximized;
+      WindowState = FormWindowState.Maximized;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "ResumeLayout");
-            ResumeLayout(false);
+      ResumeLayout(false);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "InitializeComponent() done.");
     }
 #endregion
@@ -193,71 +193,69 @@ namespace djack.RogueSurvivor
 
     public void UI_PostMouseButtons(MouseButtons buttons)
     {
-            m_HasMouseButtons = true;
-            m_MouseButtons = buttons;
+      m_HasMouseButtons = true;
+      m_MouseButtons = buttons;
     }
 
     public MouseButtons? UI_PeekMouseButtons()
     {
-      if (!m_HasMouseButtons)
-        return new MouseButtons?();
-            m_HasMouseButtons = false;
-      return new MouseButtons?(m_MouseButtons);
+      if (!m_HasMouseButtons) return null;
+      m_HasMouseButtons = false;
+      return m_MouseButtons;
     }
 
     public void UI_SetCursor(Cursor cursor)
     {
-      if (cursor == Cursor)
-        return;
-            Cursor = cursor;
+      if (cursor == Cursor) return;
+      Cursor = cursor;
       Application.DoEvents();
     }
 
     public void UI_Wait(int msecs)
     {
-            UI_Repaint();
+      UI_Repaint();
       Thread.Sleep(msecs);
     }
 
     public void UI_Repaint()
     {
-            Refresh();
+      Refresh();
       Application.DoEvents();
     }
 
     public void UI_Clear(Color clearColor)
     {
-            m_GameCanvas.Clear(clearColor);
+      m_GameCanvas.Clear(clearColor);
     }
 
     public void UI_DrawImage(string imageID, int gx, int gy)
     {
-            m_GameCanvas.AddImage(GameImages.Get(imageID), gx, gy);
+      m_GameCanvas.AddImage(GameImages.Get(imageID), gx, gy);
     }
 
     public void UI_DrawImage(string imageID, int gx, int gy, Color tint)
     {
-            m_GameCanvas.AddImage(GameImages.Get(imageID), gx, gy, tint);
+      m_GameCanvas.AddImage(GameImages.Get(imageID), gx, gy, tint);
     }
 
     public void UI_DrawImageTransform(string imageID, int gx, int gy, float rotation, float scale)
     {
-            m_GameCanvas.AddImageTransform(GameImages.Get(imageID), gx, gy, rotation, scale);
+      m_GameCanvas.AddImageTransform(GameImages.Get(imageID), gx, gy, rotation, scale);
     }
 
     public void UI_DrawGrayLevelImage(string imageID, int gx, int gy)
     {
-            m_GameCanvas.AddImage(GameImages.GetGrayLevel(imageID), gx, gy);
+      m_GameCanvas.AddImage(GameImages.GetGrayLevel(imageID), gx, gy);
     }
 
     public void UI_DrawTransparentImage(float alpha, string imageID, int gx, int gy)
     {
-            m_GameCanvas.AddTransparentImage(alpha, GameImages.Get(imageID), gx, gy);
+      m_GameCanvas.AddTransparentImage(alpha, GameImages.Get(imageID), gx, gy);
     }
 
     public void UI_DrawPoint(Color color, int gx, int gy)
     {
-            m_GameCanvas.AddPoint(color, gx, gy);
+      m_GameCanvas.AddPoint(color, gx, gy);
     }
 
     public void UI_DrawLine(Color color, int gxFrom, int gyFrom, int gxTo, int gyTo)
@@ -337,13 +335,13 @@ namespace djack.RogueSurvivor
 
     public void UI_SetMinimapColor(int x, int y, Color color)
     {
-            m_GameCanvas.SetMinimapColor(x, y, color);
+      m_GameCanvas.SetMinimapColor(x, y, color);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void UI_DrawMinimap(int gx, int gy)
     {
-            m_GameCanvas.DrawMinimap(gx, gy);
+      m_GameCanvas.DrawMinimap(gx, gy);
     }
 
     public float UI_GetCanvasScaleX()
@@ -368,7 +366,7 @@ namespace djack.RogueSurvivor
 
     public void UI_DoQuit()
     {
-            Close();
+      Close();
     }
 #endregion
 
@@ -393,7 +391,7 @@ namespace djack.RogueSurvivor
                 }
            }
       if (disposing && m_GameCanvas != null)
-                m_GameCanvas.DisposeUnmanagedResources();
+        m_GameCanvas.DisposeUnmanagedResources();
       base.Dispose(disposing);
     }
   }
