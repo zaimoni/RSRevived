@@ -4,6 +4,9 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define GDI_PLUS
+// #define WINDOWS_SYSTEM_MEDIA
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,7 +27,12 @@ namespace djack.RogueSurvivor.UI
     private readonly Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
     private RogueForm m_RogueForm;
     private Bitmap m_RenderImage;
+#if GDI_PLUS
     private readonly Graphics m_RenderGraphics;
+#endif
+#if WINDOWS_SYSTEM_MEDIA
+    private readonly System.Windows.Controls.Canvas m_Canvas;   // requires PresentationFramework assembly
+#endif
     private Bitmap m_MinimapBitmap;
     private readonly byte[] m_MinimapBytes;
     private readonly int m_MinimapStride;
@@ -59,7 +67,9 @@ namespace djack.RogueSurvivor.UI
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create render image");
       m_RenderImage = new Bitmap(1024, 768);
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get render graphics");
+#if GDI_PLUS
       m_RenderGraphics = Graphics.FromImage((Image)m_RenderImage);
+#endif
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create minimap bitmap");
       m_MinimapBitmap = new Bitmap(2*Engine.RogueGame.MAP_MAX_WIDTH, 2*Engine.RogueGame.MAP_MAX_HEIGHT);   // each minimap coordinate is 2x2 pixels
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get minimap stride");
@@ -111,7 +121,7 @@ namespace djack.RogueSurvivor.UI
     {
       double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
       if (NeedRedraw) {
-        DoDraw(m_RenderGraphics);
+        DoDraw();
         NeedRedraw = false;
       }
       if ((double) ScaleX == 1.0 && (double) ScaleY == 1.0)
@@ -126,12 +136,12 @@ namespace djack.RogueSurvivor.UI
       e.Graphics.DrawString(string.Format("Frame time={0:F} FPS={1:F}", (object) num, (object) (1000.0 / num)), Font, Brushes.Yellow, (float) (ClientRectangle.Right - 200), (float) (ClientRectangle.Bottom - 64));
     }
 
-    private void DoDraw(Graphics g)
+    private void DoDraw()
     {
       if (m_RogueForm == null) return;
-      g.Clear(m_ClearColor);
-      foreach (GDIPlusGameCanvas.IGfx gfx in new List<GDIPlusGameCanvas.IGfx>(m_Gfxs))  // Bay12/jorgene0: this collection can change at reincarnation
-        gfx.Draw(g);
+      m_RenderGraphics.Clear(m_ClearColor);
+      foreach (IGfx gfx in new List<IGfx>(m_Gfxs))  // Bay12/jorgene0: this collection can change at reincarnation
+        gfx.Draw(m_RenderGraphics);
     }
 
     public void BindForm(RogueForm form)

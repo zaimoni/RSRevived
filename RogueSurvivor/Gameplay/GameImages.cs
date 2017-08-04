@@ -12,6 +12,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using Zaimoni.Data;
 
+// when converting to System.Windows.Media, would need two classes:
+// * BitmapImage loads from a file
+// * WriteableBitmap is the CGI version.
+// Both of these are subclasses of BitmapSource which in turn is a subclass of ImageSource.
+
 namespace djack.RogueSurvivor.Gameplay
 {
   internal static class GameImages
