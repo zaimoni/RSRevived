@@ -979,6 +979,14 @@ namespace djack.RogueSurvivor.Data
       return m_aux_MapObjectsByPosition.ContainsKey(new Point(x, y));
     }
 
+    public bool HasMapObjectAtExt(Point position)
+    {
+      if (m_aux_MapObjectsByPosition.ContainsKey(position)) return true;
+      Location? test = Normalize(position);
+      if (null == test) return false;
+      return test.Value.Map.HasMapObjectAt(test.Value.Position);
+    }
+
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
       Contract.Requires(null != mapObj);
@@ -1322,7 +1330,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsTransparent)
         return false;
-      MapObject mapObjectAt = GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
       return null == mapObjectAt || mapObjectAt.IsTransparent;
     }
 
@@ -1330,7 +1338,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsWalkable)
         return false;
-      MapObject mapObjectAt = GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
       return null == mapObjectAt || mapObjectAt.IsWalkable;
     }
 
@@ -1343,14 +1351,14 @@ namespace djack.RogueSurvivor.Data
     {
       if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsTransparent || HasActorAt(x, y))
         return true;
-      return !GetMapObjectAt(x, y)?.IsTransparent ?? false;
+      return !GetMapObjectAtExt(x, y)?.IsTransparent ?? false;
     }
 
     public bool IsBlockingThrow(int x, int y)
     {
       if (!IsValid(x, y) || !GetTileModelAtExt(x, y).IsWalkable)
         return true;
-      MapObject mapObjectAt = GetMapObjectAt(x, y);
+      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
     }
 

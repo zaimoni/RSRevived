@@ -351,7 +351,7 @@ namespace djack.RogueSurvivor.Engine
             bool flag = false;
             TileModel tileModel = map.GetTileModelAtExt(point1);
             if (!tileModel.IsTransparent && !tileModel.IsWalkable) flag = true;
-            else if (map.HasMapObjectAt(point1)) flag = true;
+            else if (map.HasMapObjectAtExt(point1)) flag = true;
             if (flag) pointList1.Add(point1);
           } else visibleSet.Add(point1);
       }
