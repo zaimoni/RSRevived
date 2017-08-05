@@ -10051,6 +10051,7 @@ namespace djack.RogueSurvivor.Engine
       LocationSet sights_to_see = m_Player.InterestingLocs;
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
+      // XXX these two aren't cross-district
       HashSet<Point> tainted = threats?.ThreatWhere(map) ?? new HashSet<Point>();
       HashSet<Point> tourism = sights_to_see?.In(map) ?? new HashSet<Point>();
 
@@ -10084,6 +10085,7 @@ namespace djack.RogueSurvivor.Engine
               DrawExit(screen);
           }
           if (player) {
+            // XXX should be visible only if underlying AI sees corpses
             List<Corpse> corpsesAt = map.GetCorpsesAtExt(x, y);
             if (corpsesAt != null) {
               foreach (Corpse c in corpsesAt)
@@ -10119,6 +10121,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           if (player) {
+            // XXX the two AIs that don't see items but do have inventory, are feral dogs and the insane human ai.
             Inventory itemsAt = map.GetItemsAtExt(x, y);
             if (itemsAt != null) {
               DrawItemsStack(itemsAt, screen, tint);
@@ -10198,7 +10201,7 @@ namespace djack.RogueSurvivor.Engine
         screen.Y -= num;
       }
       if (IsVisibleToPlayer(mapObj)) {
-        DrawMapObject(mapObj, screen, mapObj.ImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint)));
+        DrawMapObject(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
         if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
           DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
         DoorWindow doorWindow = mapObj as DoorWindow;
@@ -10207,15 +10210,14 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
       } else {
         if (!m_Player.Controller.IsKnown(mapObj.Location) || IsPlayerSleeping()) return;
-        DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (Action<string, int, int>) ((imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy)));
+        DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
       }
     }
 
     private void DrawMapObject(MapObject mapObj, Point screen, string imageID, Action<string, int, int> drawFn)
     {
       drawFn(imageID, screen.X, screen.Y);
-      if (!mapObj.IsOnFire) return;
-      drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
+      if (mapObj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
     }
 
     private string FollowerIcon(Actor actor)
