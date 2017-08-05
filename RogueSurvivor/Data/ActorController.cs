@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Data
   {
     protected Actor m_Actor;
 
-#if CONTRACTS_FULL
+#if DEBUG
 	public Actor Actor { get { return m_Actor; } }
 #endif
 

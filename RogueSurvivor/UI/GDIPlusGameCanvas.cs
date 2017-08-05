@@ -23,12 +23,14 @@ namespace djack.RogueSurvivor.UI
   {
     private Color m_ClearColor = Color.CornflowerBlue;
     private readonly List<IGfx> m_Gfxs = new List<IGfx>(100);
-    private readonly Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
+    private static readonly Dictionary<Color, Brush> m_BrushesCache = new Dictionary<Color, Brush>(32);
     private readonly Dictionary<Color, Pen> m_PensCache = new Dictionary<Color, Pen>(32);
     private RogueForm m_RogueForm;
-    private Bitmap m_RenderImage;   // image *source* for PaintEventArgs object's Graphics member; image *destination* for m_RenderGraphics
+    private Bitmap m_TileImage = new Bitmap(Engine.RogueGame.TILE_SIZE, Engine.RogueGame.TILE_SIZE);    // working space for pre-compositing tiles
+    private Bitmap m_RenderImage = new Bitmap(Engine.RogueGame.CANVAS_WIDTH, Engine.RogueGame.CANVAS_HEIGHT);   // image *source* for PaintEventArgs object's Graphics member; image *destination* for m_RenderGraphics
 #if GDI_PLUS
     private readonly Graphics m_RenderGraphics;
+    private readonly Graphics m_RenderTile;
 #endif
 #if WINDOWS_SYSTEM_MEDIA
     private readonly System.Windows.Controls.Canvas m_Canvas = new System.Windows.Controls.Canvas();   // requires PresentationFramework assembly
@@ -66,10 +68,9 @@ namespace djack.RogueSurvivor.UI
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas::InitializeComponent");
       InitializeComponent();
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create render image");
-      m_RenderImage = new Bitmap(Engine.RogueGame.CANVAS_WIDTH, Engine.RogueGame.CANVAS_HEIGHT);
-      Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get render graphics");
 #if GDI_PLUS
       m_RenderGraphics = Graphics.FromImage(m_RenderImage);
+      m_RenderTile = Graphics.FromImage(m_TileImage);
 #endif
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create minimap bitmap");
       m_MinimapBitmap = new Bitmap(2*Engine.RogueGame.MAP_MAX_WIDTH, 2*Engine.RogueGame.MAP_MAX_HEIGHT);   // each minimap coordinate is 2x2 pixels
@@ -222,15 +223,20 @@ namespace djack.RogueSurvivor.UI
       return pen;
     }
 
-    public void AddFilledRect(Color color, Rectangle rect)
+    public static Brush GetColorBrush(Color color)
     {
       Brush brush;
-      if (!m_BrushesCache.TryGetValue(color, out brush))
-      {
+      if (!m_BrushesCache.TryGetValue(color, out brush)) {
         brush = new SolidBrush(color);
         m_BrushesCache.Add(color, brush);
       }
-      m_Gfxs.Add(new GDIPlusGameCanvas.GfxFilledRect(brush, rect));
+      return brush;
+    }
+
+    public void AddFilledRect(Color color, Rectangle rect)
+    {
+      Brush brush = GetColorBrush(color);
+      m_Gfxs.Add(new GfxFilledRect(brush, rect));
       NeedRedraw = true;
     }
 
@@ -301,6 +307,11 @@ namespace djack.RogueSurvivor.UI
                 components.Dispose();
                 components = null;
                 }
+            if (null != m_TileImage)
+                {
+                m_TileImage.Dispose();
+                m_TileImage = null;
+                }    
             if (null != m_RenderImage)
                 {
                 m_RenderImage.Dispose();
@@ -328,7 +339,7 @@ namespace djack.RogueSurvivor.UI
     }
 
     private class GfxImage : IGfx
-        {
+    {
       private readonly Image m_Img;
       private readonly int m_X;
       private readonly int m_Y;
@@ -468,7 +479,7 @@ namespace djack.RogueSurvivor.UI
       }
     }
 
-    private class GfxString : IGfx, IDisposable
+    private class GfxString : IGfx
     {
       private readonly Color m_Color;
       private readonly Font m_Font;
@@ -476,7 +487,6 @@ namespace djack.RogueSurvivor.UI
       private readonly int m_X;
       private readonly int m_Y;
       private readonly Brush m_Brush;
-      private bool disposed;
 
       public GfxString(Color color, Font font, string text, int x, int y)
       {
@@ -485,28 +495,12 @@ namespace djack.RogueSurvivor.UI
         m_Text = text;
         m_X = x;
         m_Y = y;
-        m_Brush = new SolidBrush(color);
-        disposed = false;
+        m_Brush = GetColorBrush(color);
       }
 
       public void Draw(Graphics g)
       {
         g.DrawString(m_Text, m_Font, m_Brush, m_X, m_Y);
-      }
-
-      public void Dispose()
-      {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-      }
-
-      protected virtual void Dispose(bool disposing)
-      {
-        if (disposing && !disposed)
-          {
-          m_Brush.Dispose();
-          disposed = true;
-          }
       }
     }
 
