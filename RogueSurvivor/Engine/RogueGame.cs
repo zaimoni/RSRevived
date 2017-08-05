@@ -10063,11 +10063,18 @@ namespace djack.RogueSurvivor.Engine
         point.X = x;
         for (int y = num3; y < num4; ++y) {
           point.Y = y;
+#if NO_PEACE_WALLS
+          if (!map.IsValid(x, y)) continue;
+#endif
           Point screen = MapToScreen(x, y);
           bool player = IsVisibleToPlayer(map, point);
           bool flag2 = false;
+#if NO_PEACE_WALLS
+          Tile tile = map.GetTileAtExt(x, y);   // non-null for valid coordinates by construction
+#else
           Tile tile = map.IsValid(x, y) ? map.GetTileAtExt(x, y) : null;
           if (null != tile) {
+#endif
             tile.IsInView = player;
             tile.IsVisited = m_Player.Controller.IsKnown(new Location(map,point));
             DrawTile(tile, screen, tint);
@@ -10080,11 +10087,14 @@ namespace djack.RogueSurvivor.Engine
             } else if (tourism.Contains(point)) {
               m_UI.UI_DrawImage(GameImages.TOURISM_OVERLAY, screen.X, screen.Y, tint);
             }
+#if NO_PEACE_WALLS
+#else
           } else if (map.IsMapBoundary(x, y)) {
             Exit tmp = map.GetExitAt(point);
             if (null!=tmp && string.IsNullOrEmpty(tmp.ReasonIsBlocked(m_Player)))
               DrawExit(screen);
           }
+#endif
           if (player) {
             // XXX should be visible only if underlying AI sees corpses
             List<Corpse> corpsesAt = map.GetCorpsesAtExt(x, y);
@@ -10100,7 +10110,11 @@ namespace djack.RogueSurvivor.Engine
             DrawMapObject(mapObjectAt, screen, tint);
             flag2 = true;
           }
+#if NO_PEACE_WALLS
+          if (!m_Player.IsSleeping && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {    // grid distance 1 is always valid with cross-district visibility
+#else
           if (!m_Player.IsSleeping && map.IsValid(x, y) && Rules.GridDistance(m_Player.Location.Position, point) <= 1) {    // XXX optimize when no peace walls
+#endif
             if (isUndead) {
               if (flag1) {
                 int num5 = m_Player.SmellThreshold;
@@ -10134,10 +10148,17 @@ namespace djack.RogueSurvivor.Engine
               flag2 = true;
             }
           }
+#if NO_PEACE_WALLS
+          if (tile.HasDecorations) flag2 = true;
+#else
           if (tile != null && tile.HasDecorations) flag2 = true;
-          if (flag2 && tile.Model.IsWater)
-            DrawTileWaterCover(tile, screen, tint);
+#endif
+          if (flag2 && tile.Model.IsWater) DrawTileWaterCover(tile, screen, tint);
+#if NO_PEACE_WALLS
+          if (player && imageID != null && !tile.IsInside)
+#else
           if (player && imageID != null && (tile != null && !tile.IsInside))
+#endif
             m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
         }
       }
