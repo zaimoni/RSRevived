@@ -13,7 +13,7 @@ namespace djack.RogueSurvivor.Data
   internal class Doll
   {
     public readonly DollBody Body;
-    private readonly List<string>[] m_Decorations;
+    private readonly List<string>[] m_Decorations;  // XXX only valid if the Model imageID is null
 
     public Doll(DollBody body)
     {

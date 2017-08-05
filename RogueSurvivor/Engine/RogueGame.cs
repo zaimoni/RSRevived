@@ -10748,6 +10748,14 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, ActorStatString(actor), gx, gy, new Color?());
     }
 
+    private string TrapStatusIcon(ItemTrap it)
+    {
+      if (null == it) return "";
+      if (it.IsTriggered) return GameImages.ICON_TRAP_TRIGGERED;
+      if (it.IsActivated) return GameImages.ICON_TRAP_ACTIVATED;
+      return "";
+    }
+
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
     {
       gy -= 14;
@@ -10796,11 +10804,8 @@ namespace djack.RogueSurvivor.Engine
           else if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_SPOILED_FOOD, gx2, gy2);
         } else if (it is ItemTrap) {
-          ItemTrap itemTrap = it as ItemTrap;
-          if (itemTrap.IsTriggered)
-            m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED, gx2, gy2);
-          else if (itemTrap.IsActivated)
-            m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED, gx2, gy2);
+          string trap_status = TrapStatusIcon(it as ItemTrap);
+          if (!string.IsNullOrEmpty(trap_status)) m_UI.UI_DrawImage(trap_status, gx2, gy2);
         }
         else if (it is ItemEntertainment && m_Player != null && m_Player.IsBoredOf(it))
           m_UI.UI_DrawImage(GameImages.ICON_BORING_ITEM, gx2, gy2);
@@ -10829,8 +10834,7 @@ namespace djack.RogueSurvivor.Engine
     public void DrawItem(Item it, int gx, int gy, Color tint)
     {
       m_UI.UI_DrawImage(it.ImageID, gx, gy, tint);
-      if (it.Model.IsStackable)
-      {
+      if (it.Model.IsStackable) {
         string text = string.Format("{0}", (object) it.Quantity);
         int gx1 = gx + TILE_SIZE - 10;
         if (it.Quantity > 100) gx1 -= 10;
@@ -10838,13 +10842,8 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
         m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
       }
-      if (!(it is ItemTrap)) return;
-      ItemTrap itemTrap = it as ItemTrap;
-      if (itemTrap.IsTriggered) {
-        m_UI.UI_DrawImage(GameImages.ICON_TRAP_TRIGGERED, gx, gy);
-      } else if (itemTrap.IsActivated) {
-        m_UI.UI_DrawImage(GameImages.ICON_TRAP_ACTIVATED, gx, gy);
-      }
+      string trap_status = TrapStatusIcon(it as ItemTrap);
+      if (!string.IsNullOrEmpty(trap_status)) m_UI.UI_DrawImage(trap_status, gx, gy);
     }
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)

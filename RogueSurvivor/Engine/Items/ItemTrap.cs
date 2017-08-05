@@ -18,6 +18,8 @@ namespace djack.RogueSurvivor.Engine.Items
     private bool m_IsActivated;
     private bool m_IsTriggered;
 
+    // unclear whether current game logic allows a trap to be both activated and triggered at once.
+    // leave getter/setter overhead in place in case these should be mutually exclusive.
     public bool IsActivated {
       get {
         return m_IsActivated;
