@@ -12,6 +12,7 @@
 #define NO_PEACE_WALLS
 // #define SPEEDY_GONZALES
 #define ACTOR_SPRITE_CACHE
+#define FRAGILE_RENDERING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -10107,7 +10108,7 @@ namespace djack.RogueSurvivor.Engine
             DrawPlayerActorTargets(m_Player);
           MapObject mapObjectAt = map.GetMapObjectAtExt(x, y);
           if (mapObjectAt != null) {
-            DrawMapObject(mapObjectAt, screen, tint);
+            DrawMapObject(mapObjectAt, screen, tile, tint);
             flag2 = true;
           }
 #if NO_PEACE_WALLS
@@ -10216,13 +10217,13 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawRect(color, new Rectangle(MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
     }
 
-    public void DrawMapObject(MapObject mapObj, Point screen, Color tint)
+    public void DrawMapObject(MapObject mapObj, Point screen, Tile tile, Color tint)    // tile is the one that the map object is on.
     {
-      if (mapObj.IsMovable && mapObj.Location.Map.GetTileModelAt(mapObj.Location.Position).IsWater) {
+      if (mapObj.IsMovable && tile.Model.IsWater) {
         int num = (mapObj.Location.Position.X + Session.Get.WorldTime.TurnCounter) % 2 == 0 ? -2 : 0;
         screen.Y -= num;
       }
-      if (IsVisibleToPlayer(mapObj)) {
+      if (tile.IsInView) {
         DrawMapObject(mapObj, screen, mapObj.ImageID, (imageID, gx, gy) => m_UI.UI_DrawImage(imageID, gx, gy, tint));
         if (mapObj.HitPoints < mapObj.MaxHitPoints && mapObj.HitPoints > 0)
           DrawMapHealthBar(mapObj.HitPoints, mapObj.MaxHitPoints, screen.X, screen.Y);
@@ -10230,8 +10231,7 @@ namespace djack.RogueSurvivor.Engine
         if (doorWindow == null || doorWindow.BarricadePoints <= 0) return;
         DrawMapHealthBar(doorWindow.BarricadePoints, Rules.BARRICADING_MAX, screen.X, screen.Y, Color.Green);
         m_UI.UI_DrawImage(GameImages.EFFECT_BARRICADED, screen.X, screen.Y, tint);
-      } else {
-        if (!m_Player.Controller.IsKnown(mapObj.Location) || IsPlayerSleeping()) return;
+      } else if (tile.IsVisited && !IsPlayerSleeping()) {
         DrawMapObject(mapObj, screen, mapObj.HiddenImageID, (imageID, gx, gy) => m_UI.UI_DrawGrayLevelImage(imageID, gx, gy));
       }
     }
@@ -11947,16 +11947,11 @@ namespace djack.RogueSurvivor.Engine
       return RogueGame.SimFlags.HIDETAIL_TURN;
     }
 
-    private void SimulateDistrict(District d)
-    {
-      AdvancePlay(d, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));
-    }
-
     private bool SimulateNearbyDistricts(District d)
     {
       District d1 = Session.Get.World.CurrentSimulationDistrict();
       if (null == d1) return false; 
-      SimulateDistrict(d1);
+      AdvancePlay(d1, ComputeSimFlagsForTurn(d.EntryMap.LocalTime.TurnCounter));    // void SimulateDistrict(d1) if becomes complicated again
       Session.Get.World.ScheduleAdjacentForAdvancePlay(d1);
       return true;
     }
