@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Data
 	public readonly Rectangle Rect;
     private readonly byte[,] m_TileIDs;
     private readonly byte[] m_IsInside;
-    private readonly Dictionary<Point,List<string>> m_Decorations = new Dictionary<Point,List<string>>();
+    private readonly Dictionary<Point,HashSet<string>> m_Decorations = new Dictionary<Point,HashSet<string>>();
     private readonly Dictionary<Point, Exit> m_Exits = new Dictionary<Point, Exit>();
     private readonly List<Zone> m_Zones = new List<Zone>(5);
     private readonly List<Actor> m_ActorsList = new List<Actor>(5);
@@ -140,7 +140,7 @@ namespace djack.RogueSurvivor.Data
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
-      m_Decorations = (Dictionary<Point, List<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, List<string>>));
+      m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
       ReconstructAuxiliaryFields();
     }
 
@@ -511,28 +511,35 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<string> DecorationsAt(Point pt)
     {
-      return (m_Decorations.ContainsKey(pt) ? m_Decorations[pt] : null);
+      HashSet<string> ret;
+      m_Decorations.TryGetValue(pt, out ret);
+      return ret;
     }
 
     public void AddDecorationAt(string imageID, Point pt)
     {
-      if (!m_Decorations.ContainsKey(pt)) m_Decorations[pt] = new List<string>() { imageID };
-      else if (m_Decorations[pt].Contains(imageID)) return;
-      m_Decorations[pt].Add(imageID);
+      HashSet<string> ret;
+      if (m_Decorations.TryGetValue(pt, out ret)) {
+        ret.Add(imageID);
+      } else {
+        m_Decorations[pt] = new HashSet<string>() { imageID };
+      }
     }
 
     public bool HasDecorationAt(string imageID, Point pt)
     {
-      return m_Decorations.ContainsKey(pt) && m_Decorations[pt].Contains(imageID);
+      HashSet<string> ret;
+      return m_Decorations.TryGetValue(pt, out ret) && ret.Contains(imageID);
     }
 
     public void RemoveAllDecorationsAt(Point pt) { m_Decorations.Remove(pt); }
 
     public void RemoveDecorationAt(string imageID, Point pt)
     {
-      if (!m_Decorations.ContainsKey(pt)) return;
-      if (!m_Decorations[pt].Remove(imageID)) return;
-      if (0 < m_Decorations.Count) return;
+      HashSet<string> ret;
+      if (!m_Decorations.TryGetValue(pt, out ret)) return;
+      if (!ret.Remove(imageID)) return;
+      if (0 < ret.Count) return;
       m_Decorations.Remove(pt);
     }
 

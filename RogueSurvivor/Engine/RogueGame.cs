@@ -10494,8 +10494,9 @@ namespace djack.RogueSurvivor.Engine
       }
       else if (width2 > 0)
         m_UI.UI_FillRect(fillColor, new Rectangle(gx, gy, width2, height));
+
       int num = (int) ((double) maxWidth * (double) refValue / (double) maxValue);
-        m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
+      m_UI.UI_DrawLine(Color.White, gx + num, gy, gx + num, gy + height);
     }
 
     private void DrawDetected(Actor actor, string minimap_img, string map_img)
