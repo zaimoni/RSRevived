@@ -48,7 +48,14 @@ namespace djack.RogueSurvivor.Data
        }
     }
 
-    public bool LastSeen(Location x, out int turn) { turn = 0; return (null != ItemMemory ? ItemMemory.HaveEverSeen(x, out turn) : false); }
+    public bool LastSeen(Location x, out int turn) {
+      turn = 0;
+      if (null == ItemMemory) return false;
+      if (ItemMemory.HaveEverSeen(x, out turn)) return true;
+      Location? test = x.Map.Normalize(x.Position)
+;     if (null == test) return false;
+      return ItemMemory.HaveEverSeen(test.Value, out turn);
+    }
 
     public bool IsKnown(Location x) {
       int discard;
