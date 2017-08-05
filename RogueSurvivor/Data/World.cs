@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 #define NOSKEW_SCHEDULER
+#define SCHEDULER_IS_RACY
 
 using System;
 using System.Collections.Generic;
@@ -210,10 +211,19 @@ retry:
       int y = d.WorldPosition.Y;
       District tmp = null;
 
-      lock (d) { 
+#if SCHEDULER_IS_RACY
+#else
+      lock (d) {
+#endif
         int district_turn = d.EntryMap.LocalTime.TurnCounter;
         // district 1 northwest must be at a strictly later gametime to not be lagged relative to us
         tmp = ((0 < x && 0 < y) ? m_DistrictsGrid[x - 1, y - 1] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -222,8 +232,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 north must be at a strictly later gametime to not be lagged relative to us
         tmp = (0 < y ? m_DistrictsGrid[x, y - 1] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -232,8 +249,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 northeast must be at a strictly later gametime to not be lagged relative to us
         tmp = ((0 < y && m_Size > x + 1) ? m_DistrictsGrid[x + 1, y - 1] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -242,8 +266,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 west must be at a strictly later gametime to not be lagged relative to us
         tmp = (0 < x ? m_DistrictsGrid[x - 1, y] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter <= district_turn) {
@@ -252,8 +283,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 east must not be too far behind us
         tmp = (m_Size > x + 1 ? m_DistrictsGrid[x + 1,y] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
@@ -262,8 +300,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 southwest must not be too far behind us
         tmp = ((m_Size > y + 1 && 0 < x) ? m_DistrictsGrid[x - 1, y + 1] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
@@ -272,8 +317,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 south must not be too far behind us
         tmp = (m_Size > y + 1 ? m_DistrictsGrid[x, y + 1] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
@@ -282,8 +334,15 @@ retry:
             }
           }
         }
+#endif
         // district 1 southeast must not be too far behind us
         tmp = ((m_Size > x + 1 && m_Size > y + 1) ? m_DistrictsGrid[x + 1,y + 1] : null);
+#if SCHEDULER_IS_RACY
+        if (null != tmp && tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
+          irrational_caution = tmp;
+          goto retry;
+        }
+#else
         if (null != tmp) {
           lock(tmp) {
             if (tmp.EntryMap.LocalTime.TurnCounter < district_turn) {
@@ -292,11 +351,15 @@ retry:
             }
           }
         }
- 
+#endif
+
         // we're clear.
         if (0 < d.PlayerCount) m_PCready.Enqueue(d);
         else m_NPCready.Enqueue(d);
+#if SCHEDULER_IS_RACY
+#else
       }
+#endif
     }
 
     public void ScheduleAdjacentForAdvancePlay(District d)
