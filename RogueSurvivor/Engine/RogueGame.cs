@@ -358,7 +358,7 @@ namespace djack.RogueSurvivor.Engine
     {
       get
       {
-        return RogueGame.s_Options;
+        return s_Options;
       }
     }
 
@@ -437,8 +437,8 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
       m_TownGenerator = new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
-      RogueGame.s_Options = new GameOptions();
-      RogueGame.s_Options.ResetToDefaultValues();
+            s_Options = new GameOptions();
+            s_Options.ResetToDefaultValues();
       s_KeyBindings = new Keybindings();
       RogueGame.s_Hints = new GameHintsStatus();
       RogueGame.s_Hints.ResetAllHints();
@@ -1334,11 +1334,11 @@ namespace djack.RogueSurvivor.Engine
     private void StartNewGame()
     {
       bool isUndead = m_CharGen.IsUndead;
-      GenerateWorld(true, RogueGame.s_Options.CitySize);
+      GenerateWorld(true, s_Options.CitySize);
       Session.Get.Scoring.AddVisit(Session.Get.WorldTime.TurnCounter, m_Player.Location.Map);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", (object)m_Player.Location.Map.Name));
       Session.Get.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-      if (RogueGame.s_Options.IsAdvisorEnabled) {
+      if (s_Options.IsAdvisorEnabled) {
         ClearMessages();
         ClearMessagesHistory();
         AddMessage(new Data.Message("The Advisor is enabled and will give you hints during the game.", 0, Color.LightGreen));
@@ -1490,7 +1490,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
         gy += 14;
         gy += 14;
-        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_SURVIVOR, 0)), (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(RogueGame.s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_SURVIVOR, 0)), (object) (int) (100.0 * (double) Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
         gy += 14;
         m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
         gy += 28;
@@ -1506,43 +1506,43 @@ namespace djack.RogueSurvivor.Engine
             switch (idsArray[currentChoice])
             {
               case GameOptions.IDs.UI_MUSIC:
-                RogueGame.s_Options.PlayMusic = !RogueGame.s_Options.PlayMusic;
+                          s_Options.PlayMusic = !s_Options.PlayMusic;
                 break;
               case GameOptions.IDs.UI_MUSIC_VOLUME:
-                RogueGame.s_Options.MusicVolume -= 5;
+                          s_Options.MusicVolume -= 5;
                 break;
               case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
-                RogueGame.s_Options.ShowPlayerTagsOnMinimap = !RogueGame.s_Options.ShowPlayerTagsOnMinimap;
+                          s_Options.ShowPlayerTagsOnMinimap = !s_Options.ShowPlayerTagsOnMinimap;
                 break;
               case GameOptions.IDs.UI_ANIM_DELAY:
-                RogueGame.s_Options.IsAnimDelayOn = !RogueGame.s_Options.IsAnimDelayOn;
+                          s_Options.IsAnimDelayOn = !s_Options.IsAnimDelayOn;
                 break;
               case GameOptions.IDs.UI_SHOW_MINIMAP:
-                RogueGame.s_Options.IsMinimapOn = !RogueGame.s_Options.IsMinimapOn;
+                          s_Options.IsMinimapOn = !s_Options.IsMinimapOn;
                 break;
               case GameOptions.IDs.UI_ADVISOR:
-                RogueGame.s_Options.IsAdvisorEnabled = !RogueGame.s_Options.IsAdvisorEnabled;
+                          s_Options.IsAdvisorEnabled = !s_Options.IsAdvisorEnabled;
                 break;
               case GameOptions.IDs.UI_COMBAT_ASSISTANT:
-                RogueGame.s_Options.IsCombatAssistantOn = !RogueGame.s_Options.IsCombatAssistantOn;
+                          s_Options.IsCombatAssistantOn = !s_Options.IsCombatAssistantOn;
                 break;
               case GameOptions.IDs.UI_SHOW_TARGETS:
-                RogueGame.s_Options.ShowTargets = !RogueGame.s_Options.ShowTargets;
+                          s_Options.ShowTargets = !s_Options.ShowTargets;
                 break;
               case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
-                RogueGame.s_Options.ShowPlayerTargets = !RogueGame.s_Options.ShowPlayerTargets;
+                          s_Options.ShowPlayerTargets = !s_Options.ShowPlayerTargets;
                 break;
               case GameOptions.IDs.GAME_DISTRICT_SIZE:
-                RogueGame.s_Options.DistrictSize -= 5;
+                          s_Options.DistrictSize -= 5;
                 break;
               case GameOptions.IDs.GAME_MAX_CIVILIANS:
-                RogueGame.s_Options.MaxCivilians -= 5;
+                          s_Options.MaxCivilians -= 5;
                 break;
               case GameOptions.IDs.GAME_MAX_DOGS:
-                --RogueGame.s_Options.MaxDogs;
+                --s_Options.MaxDogs;
                 break;
               case GameOptions.IDs.GAME_MAX_UNDEADS:
-                RogueGame.s_Options.MaxUndeads -= 10;
+                          s_Options.MaxUndeads -= 10;
                 break;
               case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
                 break;
@@ -1551,113 +1551,113 @@ namespace djack.RogueSurvivor.Engine
               case GameOptions.IDs.GAME_SIM_THREAD:
                 break;
               case GameOptions.IDs.GAME_CITY_SIZE:
-                --RogueGame.s_Options.CitySize;
+                --s_Options.CitySize;
                 break;
               case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
-                RogueGame.s_Options.NPCCanStarveToDeath = !RogueGame.s_Options.NPCCanStarveToDeath;
+                          s_Options.NPCCanStarveToDeath = !s_Options.NPCCanStarveToDeath;
                 break;
               case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
-                RogueGame.s_Options.ZombificationChance -= 5;
+                          s_Options.ZombificationChance -= 5;
                 break;
               case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
-                RogueGame.s_Options.RevealStartingDistrict = !RogueGame.s_Options.RevealStartingDistrict;
+                          s_Options.RevealStartingDistrict = !s_Options.RevealStartingDistrict;
                 break;
               case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.AllowUndeadsEvolution = !RogueGame.s_Options.AllowUndeadsEvolution;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.AllowUndeadsEvolution = !s_Options.AllowUndeadsEvolution;
                 break;
               case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-                RogueGame.s_Options.DayZeroUndeadsPercent -= 5;
+                          s_Options.DayZeroUndeadsPercent -= 5;
                 break;
               case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-                --RogueGame.s_Options.ZombieInvasionDailyIncrease;
+                --s_Options.ZombieInvasionDailyIncrease;
                 break;
               case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-                RogueGame.s_Options.StarvedZombificationChance -= 5;
+                          s_Options.StarvedZombificationChance -= 5;
                 break;
               case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
-                --RogueGame.s_Options.MaxReincarnations;
+                --s_Options.MaxReincarnations;
                 break;
               case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
-                RogueGame.s_Options.CanReincarnateAsRat = !RogueGame.s_Options.CanReincarnateAsRat;
+                          s_Options.CanReincarnateAsRat = !s_Options.CanReincarnateAsRat;
                 break;
               case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
-                RogueGame.s_Options.CanReincarnateToSewers = !RogueGame.s_Options.CanReincarnateToSewers;
+                          s_Options.CanReincarnateToSewers = !s_Options.CanReincarnateToSewers;
                 break;
               case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
-                RogueGame.s_Options.IsLivingReincRestricted = !RogueGame.s_Options.IsLivingReincRestricted;
+                          s_Options.IsLivingReincRestricted = !s_Options.IsLivingReincRestricted;
                 break;
               case GameOptions.IDs.GAME_PERMADEATH:
-                RogueGame.s_Options.IsPermadeathOn = !RogueGame.s_Options.IsPermadeathOn;
+                          s_Options.IsPermadeathOn = !s_Options.IsPermadeathOn;
                 break;
               case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
-                RogueGame.s_Options.IsDeathScreenshotOn = !RogueGame.s_Options.IsDeathScreenshotOn;
+                          s_Options.IsDeathScreenshotOn = !s_Options.IsDeathScreenshotOn;
                 break;
               case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
-                RogueGame.s_Options.IsAggressiveHungryCiviliansOn = !RogueGame.s_Options.IsAggressiveHungryCiviliansOn;
+                          s_Options.IsAggressiveHungryCiviliansOn = !s_Options.IsAggressiveHungryCiviliansOn;
                 break;
               case GameOptions.IDs.GAME_NATGUARD_FACTOR:
-                RogueGame.s_Options.NatGuardFactor -= 10;
+                          s_Options.NatGuardFactor -= 10;
                 break;
               case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
-                RogueGame.s_Options.SuppliesDropFactor -= 10;
+                          s_Options.SuppliesDropFactor -= 10;
                 break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (RogueGame.s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) {
-                  RogueGame.s_Options.ZombifiedsUpgradeDays = RogueGame.s_Options.ZombifiedsUpgradeDays - 1;
+                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.ONE) {
+                              s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays - 1;
                   break;
                 }
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.RatsUpgrade = !RogueGame.s_Options.RatsUpgrade;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.RatsUpgrade = !s_Options.RatsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.SkeletonsUpgrade = !RogueGame.s_Options.SkeletonsUpgrade;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.ShamblersUpgrade = !RogueGame.s_Options.ShamblersUpgrade;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.ShamblersUpgrade = !s_Options.ShamblersUpgrade;
                 break;
             }
             break;
           case Keys.Right:
             switch (idsArray[currentChoice]) {
               case GameOptions.IDs.UI_MUSIC:
-                RogueGame.s_Options.PlayMusic = !RogueGame.s_Options.PlayMusic;
+                          s_Options.PlayMusic = !s_Options.PlayMusic;
                 break;
               case GameOptions.IDs.UI_MUSIC_VOLUME:
-                RogueGame.s_Options.MusicVolume += 5;
+                          s_Options.MusicVolume += 5;
                 break;
               case GameOptions.IDs.UI_SHOW_PLAYER_TAG_ON_MINIMAP:
-                RogueGame.s_Options.ShowPlayerTagsOnMinimap = !RogueGame.s_Options.ShowPlayerTagsOnMinimap;
+                          s_Options.ShowPlayerTagsOnMinimap = !s_Options.ShowPlayerTagsOnMinimap;
                 break;
               case GameOptions.IDs.UI_ANIM_DELAY:
-                RogueGame.s_Options.IsAnimDelayOn = !RogueGame.s_Options.IsAnimDelayOn;
+                          s_Options.IsAnimDelayOn = !s_Options.IsAnimDelayOn;
                 break;
               case GameOptions.IDs.UI_SHOW_MINIMAP:
-                RogueGame.s_Options.IsMinimapOn = !RogueGame.s_Options.IsMinimapOn;
+                          s_Options.IsMinimapOn = !s_Options.IsMinimapOn;
                 break;
               case GameOptions.IDs.UI_ADVISOR:
-                RogueGame.s_Options.IsAdvisorEnabled = !RogueGame.s_Options.IsAdvisorEnabled;
+                          s_Options.IsAdvisorEnabled = !s_Options.IsAdvisorEnabled;
                 break;
               case GameOptions.IDs.UI_COMBAT_ASSISTANT:
-                RogueGame.s_Options.IsCombatAssistantOn = !RogueGame.s_Options.IsCombatAssistantOn;
+                          s_Options.IsCombatAssistantOn = !s_Options.IsCombatAssistantOn;
                 break;
               case GameOptions.IDs.UI_SHOW_TARGETS:
-                RogueGame.s_Options.ShowTargets = !RogueGame.s_Options.ShowTargets;
+                          s_Options.ShowTargets = !s_Options.ShowTargets;
                 break;
               case GameOptions.IDs.UI_SHOW_PLAYER_TARGETS:
-                RogueGame.s_Options.ShowPlayerTargets = !RogueGame.s_Options.ShowPlayerTargets;
+                          s_Options.ShowPlayerTargets = !s_Options.ShowPlayerTargets;
                 break;
               case GameOptions.IDs.GAME_DISTRICT_SIZE:
-                RogueGame.s_Options.DistrictSize += 5;
+                          s_Options.DistrictSize += 5;
                 break;
               case GameOptions.IDs.GAME_MAX_CIVILIANS:
-                RogueGame.s_Options.MaxCivilians += 5;
+                          s_Options.MaxCivilians += 5;
                 break;
               case GameOptions.IDs.GAME_MAX_DOGS:
-                ++RogueGame.s_Options.MaxDogs;
+                ++s_Options.MaxDogs;
                 break;
               case GameOptions.IDs.GAME_MAX_UNDEADS:
-                RogueGame.s_Options.MaxUndeads += 10;
+                          s_Options.MaxUndeads += 10;
                 break;
               case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
                 break;
@@ -1666,76 +1666,76 @@ namespace djack.RogueSurvivor.Engine
               case GameOptions.IDs.GAME_SIM_THREAD:
                 break;
               case GameOptions.IDs.GAME_CITY_SIZE:
-                ++RogueGame.s_Options.CitySize;
+                ++s_Options.CitySize;
                 break;
               case GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH:
-                RogueGame.s_Options.NPCCanStarveToDeath = !RogueGame.s_Options.NPCCanStarveToDeath;
+                          s_Options.NPCCanStarveToDeath = !s_Options.NPCCanStarveToDeath;
                 break;
               case GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE:
-                RogueGame.s_Options.ZombificationChance += 5;
+                          s_Options.ZombificationChance += 5;
                 break;
               case GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT:
-                RogueGame.s_Options.RevealStartingDistrict = !RogueGame.s_Options.RevealStartingDistrict;
+                          s_Options.RevealStartingDistrict = !s_Options.RevealStartingDistrict;
                 break;
               case GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION:
-                if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.AllowUndeadsEvolution = !RogueGame.s_Options.AllowUndeadsEvolution;
+                if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.AllowUndeadsEvolution = !s_Options.AllowUndeadsEvolution;
                 break;
               case GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT:
-                RogueGame.s_Options.DayZeroUndeadsPercent += 5;
+                          s_Options.DayZeroUndeadsPercent += 5;
                 break;
               case GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE:
-                ++RogueGame.s_Options.ZombieInvasionDailyIncrease;
+                ++s_Options.ZombieInvasionDailyIncrease;
                 break;
               case GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE:
-                RogueGame.s_Options.StarvedZombificationChance += 5;
+                          s_Options.StarvedZombificationChance += 5;
                 break;
               case GameOptions.IDs.GAME_MAX_REINCARNATIONS:
-                ++RogueGame.s_Options.MaxReincarnations;
+                ++s_Options.MaxReincarnations;
                 break;
               case GameOptions.IDs.GAME_REINCARNATE_AS_RAT:
-                RogueGame.s_Options.CanReincarnateAsRat = !RogueGame.s_Options.CanReincarnateAsRat;
+                          s_Options.CanReincarnateAsRat = !s_Options.CanReincarnateAsRat;
                 break;
               case GameOptions.IDs.GAME_REINCARNATE_TO_SEWERS:
-                RogueGame.s_Options.CanReincarnateToSewers = !RogueGame.s_Options.CanReincarnateToSewers;
+                          s_Options.CanReincarnateToSewers = !s_Options.CanReincarnateToSewers;
                 break;
               case GameOptions.IDs.GAME_REINC_LIVING_RESTRICTED:
-                RogueGame.s_Options.IsLivingReincRestricted = !RogueGame.s_Options.IsLivingReincRestricted;
+                          s_Options.IsLivingReincRestricted = !s_Options.IsLivingReincRestricted;
                 break;
               case GameOptions.IDs.GAME_PERMADEATH:
-                RogueGame.s_Options.IsPermadeathOn = !RogueGame.s_Options.IsPermadeathOn;
+                          s_Options.IsPermadeathOn = !s_Options.IsPermadeathOn;
                 break;
               case GameOptions.IDs.GAME_DEATH_SCREENSHOT:
-                RogueGame.s_Options.IsDeathScreenshotOn = !RogueGame.s_Options.IsDeathScreenshotOn;
+                          s_Options.IsDeathScreenshotOn = !s_Options.IsDeathScreenshotOn;
                 break;
               case GameOptions.IDs.GAME_AGGRESSIVE_HUNGRY_CIVILIANS:
-                RogueGame.s_Options.IsAggressiveHungryCiviliansOn = !RogueGame.s_Options.IsAggressiveHungryCiviliansOn;
+                          s_Options.IsAggressiveHungryCiviliansOn = !s_Options.IsAggressiveHungryCiviliansOn;
                 break;
               case GameOptions.IDs.GAME_NATGUARD_FACTOR:
-                RogueGame.s_Options.NatGuardFactor += 10;
+                          s_Options.NatGuardFactor += 10;
                 break;
               case GameOptions.IDs.GAME_SUPPLIESDROP_FACTOR:
-                RogueGame.s_Options.SuppliesDropFactor += 10;
+                          s_Options.SuppliesDropFactor += 10;
                 break;
               case GameOptions.IDs.GAME_UNDEADS_UPGRADE_DAYS:
-                if (RogueGame.s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF)
+                if (s_Options.ZombifiedsUpgradeDays != GameOptions.ZupDays.OFF)
                 {
-                  RogueGame.s_Options.ZombifiedsUpgradeDays = RogueGame.s_Options.ZombifiedsUpgradeDays + 1;
+                              s_Options.ZombifiedsUpgradeDays = s_Options.ZombifiedsUpgradeDays + 1;
                   break;
                 }
                 break;
               case GameOptions.IDs.GAME_RATS_UPGRADE:
-				if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.RatsUpgrade = !RogueGame.s_Options.RatsUpgrade;
+				if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.RatsUpgrade = !s_Options.RatsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SKELETONS_UPGRADE:
-			    if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.SkeletonsUpgrade = !RogueGame.s_Options.SkeletonsUpgrade;
+			    if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.SkeletonsUpgrade = !s_Options.SkeletonsUpgrade;
                 break;
               case GameOptions.IDs.GAME_SHAMBLERS_UPGRADE:
-				if (Session.Get.GameMode != GameMode.GM_VINTAGE) RogueGame.s_Options.ShamblersUpgrade = !RogueGame.s_Options.ShamblersUpgrade;
+				if (Session.Get.GameMode != GameMode.GM_VINTAGE) s_Options.ShamblersUpgrade = !s_Options.ShamblersUpgrade;
                 break;
             }
             break;
           case Keys.R:
-            RogueGame.s_Options = gameOptions;
+                  s_Options = gameOptions;
             break;
         }
         return null;
@@ -2197,7 +2197,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.Model.Abilities.HasToEat)
           {
             actor.Appetite(1);
-            if (actor.IsStarving && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || RogueGame.s_Options.NPCCanStarveToDeath))
+            if (actor.IsStarving && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || s_Options.NPCCanStarveToDeath))
             {
               if (actorList1 == null)
                 actorList1 = new List<Actor>();
@@ -2298,7 +2298,7 @@ namespace djack.RogueSurvivor.Engine
               RedrawPlayScreen();
             }
             KillActor(null, actor, "starvation");
-            if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && m_Rules.RollChance(RogueGame.s_Options.StarvedZombificationChance)) {
+            if (!actor.Model.Abilities.IsUndead && Session.Get.HasImmediateZombification && m_Rules.RollChance(s_Options.StarvedZombificationChance)) {
               map.TryRemoveCorpseOf(actor);
               Zombify(null, actor, false);
               if (ForceVisibleToPlayer(actor)) {
@@ -2433,7 +2433,7 @@ namespace djack.RogueSurvivor.Engine
       if (isDay) {
         HandleLivingNPCsUpgrade(map);
       } else {
-        if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day))
+        if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, map.LocalTime.Day))
           return;
         HandleUndeadNPCsUpgrade(map);
       }
@@ -2487,7 +2487,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_ZombieInvasion(Map map)
     {
-      return map.LocalTime.IsStrikeOfMidnight && CountUndeads(map) < RogueGame.s_Options.MaxUndeads;
+      return map.LocalTime.IsStrikeOfMidnight && CountUndeads(map) < s_Options.MaxUndeads;
     }
 
     private void FireEvent_ZombieInvasion(Map map)
@@ -2497,20 +2497,20 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       int num1 = CountUndeads(map);
-      int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double) RogueGame.s_Options.MaxUndeads) - num1;
+      int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)s_Options.MaxUndeads) - num1;
       for (int index = 0; index < num2; ++index)
         SpawnNewUndead(map, map.LocalTime.Day);
     }
 
     private bool CheckForEvent_SewersInvasion(Map map)
     {
-      return Session.Get.HasZombiesInSewers && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && CountUndeads(map) < RogueGame.s_Options.MaxUndeads/2;
+      return Session.Get.HasZombiesInSewers && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && CountUndeads(map) < s_Options.MaxUndeads/2;
     }
 
     private void FireEvent_SewersInvasion(Map map)
     {
       int num1 = CountUndeads(map);
-      int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * RogueGame.s_Options.ZombieInvasionDailyIncrease + RogueGame.s_Options.DayZeroUndeadsPercent) / 100f) * (double)(RogueGame.s_Options.MaxUndeads/2)) - num1;
+      int num2 = 1 + (int) ((double) Math.Min(1f, (float) (map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)(s_Options.MaxUndeads/2)) - num1;
       for (int index = 0; index < num2; ++index)
         SpawnNewSewersUndead(map);
     }
@@ -2537,7 +2537,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
       }
       int num1 = district.EntryMap.Actors.Count(a => a.Faction == GameFactions.TheCivilians || a.Faction == GameFactions.ThePolice);
-      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)RogueGame.s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), RogueGame.s_Options.MaxCivilians - num1);
+      int num2 = Math.Min(1 + (int)( (RefugeesEventDistrictFactor(district) * (float)s_Options.MaxCivilians) * REFUGEES_WAVE_SIZE), s_Options.MaxCivilians - num1);
       for (int index = 0; index < num2; ++index)
         SpawnNewRefugee(!m_Rules.RollChance(REFUGEE_SURFACE_SPAWN_CHANCE) ? (!district.HasSubway ? district.SewersMap : (m_Rules.RollChance(50) ? district.SubwayMap : district.SewersMap)) : district.EntryMap);
       if (!m_Rules.RollChance(UNIQUE_REFUGEE_CHECK_CHANCE)) return;
@@ -2574,10 +2574,10 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
-      if (RogueGame.s_Options.NatGuardFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
+      if (s_Options.NatGuardFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
         return false;
       int num = CountLivings(map) + CountFaction(map, GameFactions.TheArmy);
-      return (double) ((float)CountUndeads(map) / (float) num) * ((double) RogueGame.s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
+      return (double) ((float)CountUndeads(map) / (float) num) * ((double)s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
     }
 
     private void FireEvent_NationalGuard(Map map)
@@ -2606,7 +2606,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_ArmySupplies(Map map)
     {
-      if (RogueGame.s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
+      if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
         return false;
       int num = 1 + map.Actors.Count(a =>
       {
@@ -2614,7 +2614,7 @@ namespace djack.RogueSurvivor.Engine
           return a.Faction == GameFactions.TheCivilians;
         return false;
       });
-      return (double) ((float) (1 + CountFoodItemsNutrition(map)) / (float) num) < (double) RogueGame.s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
+      return (double) ((float) (1 + CountFoodItemsNutrition(map)) / (float) num) < (double)s_Options.SuppliesDropFactor / 100.0 * ARMY_SUPPLIES_FACTOR;
     }
 
     private void FireEvent_ArmySupplies(Map map)
@@ -2838,7 +2838,7 @@ namespace djack.RogueSurvivor.Engine
     private void SpawnNewUndead(Map map, int day)
     {
       Actor newUndead = m_TownGenerator.CreateNewUndead(map.LocalTime.TurnCounter);
-      if (RogueGame.s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution) {
+      if (s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution) {
         GameActors.IDs fromModelID = newUndead.Model.ID;
         if (fromModelID != GameActors.IDs.UNDEAD_ZOMBIE_LORD || ZOMBIE_LORD_EVOLUTION_MIN_DAY <= day) { 
           int chance = Math.Min(75, day * 2);
@@ -2992,7 +2992,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       do {
         m_UI.UI_SetCursor(null);
-        if (RogueGame.s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
+        if (s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
           AddOverlay((RogueGame.Overlay) new RogueGame.OverlayPopup(new string[1]
           {
             string.Format("HINT AVAILABLE PRESS <{0}>", (object) RogueGame.s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString())
@@ -3803,7 +3803,7 @@ namespace djack.RogueSurvivor.Engine
         if (lines != null) {
           Point screenPos = new Point(screen.X + 32, screen.Y);
           AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
-          if (RogueGame.s_Options.ShowTargets) {
+          if (s_Options.ShowTargets) {
             Actor actorAt = Session.Get.CurrentMap.GetActorAt(pt);
             if (actorAt != null)
               DrawActorTargets(actorAt);
@@ -9206,7 +9206,7 @@ namespace djack.RogueSurvivor.Engine
 
     private ActorModel CheckUndeadEvolution(Actor undead)
     {
-      if (!RogueGame.s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
+      if (!s_Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) return null;
 	  // anything not whitelisted to evolve, doesn't
       switch (undead.Model.ID)
       {
@@ -9309,9 +9309,9 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("You die one last time... Game over!", Session.Get.WorldTime.TurnCounter, Color.Red));
       else
         AddMessage(new Data.Message("You join the realm of the undeads... Game over!", Session.Get.WorldTime.TurnCounter, Color.Red));
-      if (RogueGame.s_Options.IsPermadeathOn)
+      if (s_Options.IsPermadeathOn)
         DeleteSavedGame(RogueGame.GetUserSave());
-      if (RogueGame.s_Options.IsDeathScreenshotOn) {
+      if (s_Options.IsDeathScreenshotOn) {
         RedrawPlayScreen();
         string screenshot = DoTakeScreenshot();
         if (screenshot == null)
@@ -9337,7 +9337,7 @@ namespace djack.RogueSurvivor.Engine
       string name = m_Player.TheName.Replace("(YOU) ", "");
       string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
       Session.Get.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
       TextFile textFile = new TextFile();
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
@@ -9452,33 +9452,33 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(" ");
       textFile.Append("> CUSTOM OPTIONS");
       textFile.Append(string.Format("- difficulty rating of {0}%.", (object) (int) (100.0 * (double)Session.Get.Scoring.DifficultyRating)));
-      if (RogueGame.s_Options.IsPermadeathOn)
+      if (s_Options.IsPermadeathOn)
         textFile.Append(string.Format("- {0} : yes.", (object) GameOptions.Name(GameOptions.IDs.GAME_PERMADEATH)));
-      if (!RogueGame.s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), RogueGame.s_Options.AllowUndeadsEvolution ? (object) "yes" : (object) "no"));
-      if (RogueGame.s_Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), (object) RogueGame.s_Options.CitySize));
-      if (RogueGame.s_Options.DayZeroUndeadsPercent != GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT)
-        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT), (object) RogueGame.s_Options.DayZeroUndeadsPercent));
-      if (RogueGame.s_Options.DistrictSize != GameOptions.DEFAULT_DISTRICT_SIZE)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_DISTRICT_SIZE), (object) RogueGame.s_Options.DistrictSize));
-      if (RogueGame.s_Options.MaxCivilians != GameOptions.DEFAULT_MAX_CIVILIANS)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_CIVILIANS), (object) RogueGame.s_Options.MaxCivilians));
-      if (RogueGame.s_Options.MaxUndeads != GameOptions.DEFAULT_MAX_UNDEADS)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_UNDEADS), (object) RogueGame.s_Options.MaxUndeads));
-      if (!RogueGame.s_Options.NPCCanStarveToDeath)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH), RogueGame.s_Options.NPCCanStarveToDeath ? (object) "yes" : (object) "no"));
-      if (RogueGame.s_Options.StarvedZombificationChance != GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE)
-        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), (object) RogueGame.s_Options.StarvedZombificationChance));
-      if (!RogueGame.s_Options.RevealStartingDistrict)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), RogueGame.s_Options.RevealStartingDistrict ? (object) "yes" : (object) "no"));
+      if (!s_Options.AllowUndeadsEvolution && Session.Get.HasEvolution)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_ALLOW_UNDEADS_EVOLUTION), s_Options.AllowUndeadsEvolution ? (object) "yes" : (object) "no"));
+      if (s_Options.CitySize != GameOptions.DEFAULT_CITY_SIZE)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_CITY_SIZE), (object)s_Options.CitySize));
+      if (s_Options.DayZeroUndeadsPercent != GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT)
+        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_DAY_ZERO_UNDEADS_PERCENT), (object)s_Options.DayZeroUndeadsPercent));
+      if (s_Options.DistrictSize != GameOptions.DEFAULT_DISTRICT_SIZE)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_DISTRICT_SIZE), (object)s_Options.DistrictSize));
+      if (s_Options.MaxCivilians != GameOptions.DEFAULT_MAX_CIVILIANS)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_CIVILIANS), (object)s_Options.MaxCivilians));
+      if (s_Options.MaxUndeads != GameOptions.DEFAULT_MAX_UNDEADS)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_UNDEADS), (object)s_Options.MaxUndeads));
+      if (!s_Options.NPCCanStarveToDeath)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_NPC_CAN_STARVE_TO_DEATH), s_Options.NPCCanStarveToDeath ? (object) "yes" : (object) "no"));
+      if (s_Options.StarvedZombificationChance != GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE)
+        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_STARVED_ZOMBIFICATION_CHANCE), (object)s_Options.StarvedZombificationChance));
+      if (!s_Options.RevealStartingDistrict)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_REVEAL_STARTING_DISTRICT), s_Options.RevealStartingDistrict ? (object) "yes" : (object) "no"));
       textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_SIMULATE_SLEEP), (object) "no [hardcoded]"));
-      if (RogueGame.s_Options.ZombieInvasionDailyIncrease != GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE)
-        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), (object) RogueGame.s_Options.ZombieInvasionDailyIncrease));
-      if (RogueGame.s_Options.ZombificationChance != GameOptions.DEFAULT_ZOMBIFICATION_CHANCE)
-        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE), (object) RogueGame.s_Options.ZombificationChance));
-      if (RogueGame.s_Options.MaxReincarnations != GameOptions.DEFAULT_MAX_REINCARNATIONS)
-        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), (object) RogueGame.s_Options.MaxReincarnations));
+      if (s_Options.ZombieInvasionDailyIncrease != GameOptions.DEFAULT_ZOMBIE_INVASION_DAILY_INCREASE)
+        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIE_INVASION_DAILY_INCREASE), (object)s_Options.ZombieInvasionDailyIncrease));
+      if (s_Options.ZombificationChance != GameOptions.DEFAULT_ZOMBIFICATION_CHANCE)
+        textFile.Append(string.Format("- {0} : {1}%.", (object) GameOptions.Name(GameOptions.IDs.GAME_ZOMBIFICATION_CHANCE), (object)s_Options.ZombificationChance));
+      if (s_Options.MaxReincarnations != GameOptions.DEFAULT_MAX_REINCARNATIONS)
+        textFile.Append(string.Format("- {0} : {1}.", (object) GameOptions.Name(GameOptions.IDs.GAME_MAX_REINCARNATIONS), (object)s_Options.MaxReincarnations));
       textFile.Append(" ");
       textFile.Append("> R.I.P");
       textFile.Append(string.Format("May {0} soul rest in peace.", (object)HisOrHer(m_Player)));
@@ -9539,10 +9539,10 @@ namespace djack.RogueSurvivor.Engine
       m_Player.Controller.UpdateSensors();
       if (!m_Player.Model.Abilities.IsUndead) return;
 	  // Proboards leonelhenry: PC should be on the same options as undead
-	  if (RogueGame.s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(RogueGame.s_Options.ZombifiedsUpgradeDays, m_Player.Location.Map.LocalTime.Day)) return;
-      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(m_Player.Model)) return;
-      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.RatsUpgrade) && GameActors.IsRatBranch(m_Player.Model)) return;
-      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(m_Player.Model)) return;
+	  if (s_Options.ZombifiedsUpgradeDays == GameOptions.ZupDays.OFF || !GameOptions.IsZupDay(s_Options.ZombifiedsUpgradeDays, m_Player.Location.Map.LocalTime.Day)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(m_Player.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(m_Player.Model)) return;
+      if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(m_Player.Model)) return;
       ClearOverlays();
       AddOverlay(new RogueGame.OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
       m_MusicManager.StopAll();
@@ -9686,9 +9686,9 @@ namespace djack.RogueSurvivor.Engine
     {
       foreach (Actor actor in map.Actors) {
         if (!actor.Model.Abilities.IsUndead) continue;
-        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) continue;
-        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) continue;
-        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !RogueGame.s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) continue;
+        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.SkeletonsUpgrade) && GameActors.IsSkeletonBranch(actor.Model)) continue;
+        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(actor.Model)) continue;
+        if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(actor.Model)) continue;
         if (actor.HasLeader && actor.Leader.IsPlayer) continue; // leader triggers upgrade
         if (actor.IsPlayer) {
           HandlePlayerDecideUpgrade(actor);
@@ -9962,8 +9962,8 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), 808, 704, new Color?());
                 m_UI.UI_DrawString(WeatherStatusText(), 808, 716);
                 m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", (object)Session.Get.WorldTime.TurnCounter), 680, 728);
-                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object)Session.Get.Scoring.TotalPoints, (object)(int)(100.0 * (double)Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), (object)Session.DescShortGameMode(Session.Get.GameMode)), 808, 728);
-                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object)(1 + Session.Get.Scoring.ReincarnationNumber), (object)(1 + RogueGame.s_Options.MaxReincarnations)), 808, 740);
+                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", (object)Session.Get.Scoring.TotalPoints, (object)(int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), (object)Session.DescShortGameMode(Session.Get.GameMode)), 808, 728);
+                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", (object)(1 + Session.Get.Scoring.ReincarnationNumber), (object)(1 + s_Options.MaxReincarnations)), 808, 740);
                 if (null != m_Player) {
                   if (m_Player.MurdersCounter > 0)
                     m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", (object)m_Player.MurdersCounter), 808, 752);
@@ -10104,7 +10104,7 @@ namespace djack.RogueSurvivor.Engine
                 DrawCorpse(c, screen.X, screen.Y, tint);
             }
           }
-          if (RogueGame.s_Options.ShowPlayerTargets && !m_Player.IsSleeping && m_Player.Location.Position == point)
+          if (s_Options.ShowPlayerTargets && !m_Player.IsSleeping && m_Player.Location.Position == point)
             DrawPlayerActorTargets(m_Player);
           MapObject mapObjectAt = map.GetMapObjectAtExt(x, y);
           if (mapObjectAt != null) {
@@ -10201,8 +10201,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (tile.IsInView) {
         m_UI.UI_DrawImage(tile.Model.WaterCoverImageID, screen.X, screen.Y, tint);
-      } else {
-        if (!tile.IsVisited || IsPlayerSleeping()) return;
+      } else if (tile.IsVisited && !IsPlayerSleeping()) {
         m_UI.UI_DrawGrayLevelImage(tile.Model.WaterCoverImageID, screen.X, screen.Y);
       }
     }
@@ -10320,7 +10319,7 @@ namespace djack.RogueSurvivor.Engine
           if (m_Player != null && m_Player.CanTradeWith(actor)) m_UI.UI_DrawImage(GameImages.ICON_CAN_TRADE, gx2, gy2, tint);
           if (actor.IsSleeping && (actor.IsOnCouch || Rules.ActorHealChanceBonus(actor) > 0)) m_UI.UI_DrawImage(GameImages.ICON_HEALING, gx2, gy2, tint);
           if (actor.CountFollowers > 0) m_UI.UI_DrawImage(GameImages.ICON_LEADER, gx2, gy2, tint);
-          if (!RogueGame.s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !actor.IsEnemyOf(m_Player))) break;
+          if (!s_Options.IsCombatAssistantOn || actor == m_Player || (m_Player == null || !actor.IsEnemyOf(m_Player))) break;
           m_UI.UI_DrawImage(ThreatIcon(actor), gx2, gy2, tint);
           break;
         case Activity.CHASING:
@@ -10579,7 +10578,7 @@ namespace djack.RogueSurvivor.Engine
 	  ThreatTracking threats = m_Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = m_Player.InterestingLocs;
 	  
-	  if (RogueGame.s_Options.IsMinimapOn) {
+	  if (s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
         Point pos = new Point();
@@ -10612,7 +10611,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
       }
       m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * MINITILE_SIZE, MINIMAP_Y + m_MapViewRect.Top * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
-      if (RogueGame.s_Options.ShowPlayerTagsOnMinimap) {
+      if (s_Options.ShowPlayerTagsOnMinimap) {
         Point pos = new Point();
         for (pos.X = 0; pos.X < map.Width; ++pos.X) {
           for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
@@ -11141,12 +11140,12 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadOptions()
     {
-      RogueGame.s_Options = GameOptions.Load(RogueGame.GetUserOptionsFilePath());
+      s_Options = GameOptions.Load(RogueGame.GetUserOptionsFilePath());
     }
 
     private void SaveOptions()
     {
-      GameOptions.Save(RogueGame.s_Options, RogueGame.GetUserOptionsFilePath());
+      GameOptions.Save(s_Options, RogueGame.GetUserOptionsFilePath());
     }
 
     private void ApplyOptions(bool ingame)
@@ -11154,7 +11153,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
       m_MusicManager.Volume = RogueGame.Options.MusicVolume;
       Session.Get.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
-      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
       if (m_MusicManager.IsMusicEnabled) return;
       m_MusicManager.StopAll();
     }
@@ -11404,7 +11403,7 @@ namespace djack.RogueSurvivor.Engine
           District district = new District(new Point(index1, index2), GenerateDistrictKind(world, index1, index2));
           world[index1, index2] = district;
           // All map generation types should have an entry map so that is sort-of-ok to have as a member function of District
-          district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, RogueGame.s_Options.DistrictSize, m_TownGenerator);
+          district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, s_Options.DistrictSize, m_TownGenerator);
           // other (hypothetical) map generation types are not guaranteed to have sewers or subways so leave those where they are
           GenerateDistrictSewersMap(district);
           if (index2 == world.Size / 2) GenerateDistrictSubwayMap(district);
@@ -11531,7 +11530,7 @@ namespace djack.RogueSurvivor.Engine
         foreach(Actor player in entryMap.Players) {
           player.Controller.UpdateSensors();
         }
-        if (RogueGame.s_Options.RevealStartingDistrict) {
+        if (s_Options.RevealStartingDistrict) {
           Map map = entryMap;
           foreach(Actor player in map.Players) {
             Point pos = player.Location.Position;
@@ -12288,7 +12287,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", (object)Session.Get.Scoring.ReincarnationNumber));
       Session.Get.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
-      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(RogueGame.s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
+      Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
       // Historically, reincarnation completely wiped the is-visited memory.  We get that for free by constructing a new PlayerController.
       // This may not be a useful idea, however.
       m_MusicManager.StopAll();
@@ -12319,7 +12318,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Limbo", gx, gy1, new Color?());
       int gy2 = gy1 + 28;
-      m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", (object) (1 + Session.Get.Scoring.ReincarnationNumber), (object) (1 + RogueGame.s_Options.MaxReincarnations)), gx, gy2, new Color?());
+      m_UI.UI_DrawStringBold(Color.White, string.Format("Leave body {0}/{1}.", (object) (1 + Session.Get.Scoring.ReincarnationNumber), (object) (1 + s_Options.MaxReincarnations)), gx, gy2, new Color?());
       int gy3 = gy2 + 14;
       m_UI.UI_DrawStringBold(Color.White, "Remember lives.", gx, gy3, new Color?());
       int gy4 = gy3 + 14;
@@ -12327,7 +12326,7 @@ namespace djack.RogueSurvivor.Engine
       int gy5 = gy4 + 14;
       m_UI.UI_DrawStringBold(Color.White, "Clear again.", gx, gy5, new Color?());
       int gy6 = gy5 + 14;
-      if (Session.Get.Scoring.ReincarnationNumber >= RogueGame.s_Options.MaxReincarnations) {
+      if (Session.Get.Scoring.ReincarnationNumber >= s_Options.MaxReincarnations) {
         m_UI.UI_DrawStringBold(Color.LightGreen, "Humans interesting.", gx, gy6, new Color?());
         int gy7 = gy6 + 14;
         m_UI.UI_DrawStringBold(Color.LightGreen, "Time to leave.", gx, gy7, new Color?());
@@ -12352,8 +12351,8 @@ namespace djack.RogueSurvivor.Engine
       if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != Session.Get.CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
         return false;
       if (asLiving)
-        return !a.Model.Abilities.IsUndead && (!RogueGame.s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);
-      return a.Model.Abilities.IsUndead && (RogueGame.s_Options.CanReincarnateAsRat || a.Model != GameActors.RatZombie);
+        return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);
+      return a.Model.Abilities.IsUndead && (s_Options.CanReincarnateAsRat || a.Model != GameActors.RatZombie);
     }
 
     private Actor FindReincarnationAvatar(GameOptions.ReincMode reincMode, out int matchingActors)
@@ -12765,37 +12764,37 @@ namespace djack.RogueSurvivor.Engine
 
     public void DEV_ToggleShowActorsStats()
     {
-      RogueGame.s_Options.DEV_ShowActorsStats = !RogueGame.s_Options.DEV_ShowActorsStats;
+      s_Options.DEV_ShowActorsStats = !s_Options.DEV_ShowActorsStats;
     }
 
     private void LoadData()
     {
-            LoadDataSkills();
-            LoadDataItems();
-            LoadDataActors();
+      LoadDataSkills();
+      LoadDataItems();
+      LoadDataActors();
     }
 
     private void LoadDataActors()
     {
-            m_GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
+      m_GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
     }
 
     private void LoadDataItems()
     {
-            m_GameItems.LoadMedicineFromCSV(m_UI, "Resources\\Data\\Items_Medicine.csv");
-            m_GameItems.LoadFoodFromCSV(m_UI, "Resources\\Data\\Items_Food.csv");
-            m_GameItems.LoadMeleeWeaponsFromCSV(m_UI, "Resources\\Data\\Items_MeleeWeapons.csv");
-            m_GameItems.LoadRangedWeaponsFromCSV(m_UI, "Resources\\Data\\Items_RangedWeapons.csv");
-            m_GameItems.LoadExplosivesFromCSV(m_UI, "Resources\\Data\\Items_Explosives.csv");
-            m_GameItems.LoadBarricadingMaterialFromCSV(m_UI, "Resources\\Data\\Items_Barricading.csv");
-            m_GameItems.LoadArmorsFromCSV(m_UI, "Resources\\Data\\Items_Armors.csv");
-            m_GameItems.LoadTrackersFromCSV(m_UI, "Resources\\Data\\Items_Trackers.csv");
-            m_GameItems.LoadSpraypaintsFromCSV(m_UI, "Resources\\Data\\Items_Spraypaints.csv");
-            m_GameItems.LoadLightsFromCSV(m_UI, "Resources\\Data\\Items_Lights.csv");
-            m_GameItems.LoadScentspraysFromCSV(m_UI, "Resources\\Data\\Items_Scentsprays.csv");
-            m_GameItems.LoadTrapsFromCSV(m_UI, "Resources\\Data\\Items_Traps.csv");
-            m_GameItems.LoadEntertainmentFromCSV(m_UI, "Resources\\Data\\Items_Entertainment.csv");
-            m_GameItems.CreateModels();
+      m_GameItems.LoadMedicineFromCSV(m_UI, "Resources\\Data\\Items_Medicine.csv");
+      m_GameItems.LoadFoodFromCSV(m_UI, "Resources\\Data\\Items_Food.csv");
+      m_GameItems.LoadMeleeWeaponsFromCSV(m_UI, "Resources\\Data\\Items_MeleeWeapons.csv");
+      m_GameItems.LoadRangedWeaponsFromCSV(m_UI, "Resources\\Data\\Items_RangedWeapons.csv");
+      m_GameItems.LoadExplosivesFromCSV(m_UI, "Resources\\Data\\Items_Explosives.csv");
+      m_GameItems.LoadBarricadingMaterialFromCSV(m_UI, "Resources\\Data\\Items_Barricading.csv");
+      m_GameItems.LoadArmorsFromCSV(m_UI, "Resources\\Data\\Items_Armors.csv");
+      m_GameItems.LoadTrackersFromCSV(m_UI, "Resources\\Data\\Items_Trackers.csv");
+      m_GameItems.LoadSpraypaintsFromCSV(m_UI, "Resources\\Data\\Items_Spraypaints.csv");
+      m_GameItems.LoadLightsFromCSV(m_UI, "Resources\\Data\\Items_Lights.csv");
+      m_GameItems.LoadScentspraysFromCSV(m_UI, "Resources\\Data\\Items_Scentsprays.csv");
+      m_GameItems.LoadTrapsFromCSV(m_UI, "Resources\\Data\\Items_Traps.csv");
+      m_GameItems.LoadEntertainmentFromCSV(m_UI, "Resources\\Data\\Items_Entertainment.csv");
+      m_GameItems.CreateModels();
     }
 
     private void LoadDataSkills()
