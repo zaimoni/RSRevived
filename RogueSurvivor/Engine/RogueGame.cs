@@ -3787,18 +3787,22 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleMouseLook(Point mousePos)
     {
-      Point map = MouseToMap(mousePos);
-      if (!IsInViewRect(map)) return false;
-      if (!Session.Get.CurrentMap.IsValid(map)) return true;
+      Point pt = MouseToMap(mousePos);
+      if (!IsInViewRect(pt)) return false;
+      if (!Session.Get.CurrentMap.IsValid(pt)) return true;
       ClearOverlays();
-      if (IsVisibleToPlayer(Session.Get.CurrentMap, map)) {
-        Point screen = MapToScreen(map);
-        string[] lines = DescribeStuffAt(Session.Get.CurrentMap, map);
+      if (IsVisibleToPlayer(Session.Get.CurrentMap, pt)) {
+        Point screen = MapToScreen(pt);
+        string[] lines = DescribeStuffAt(Session.Get.CurrentMap, pt);
+        if (null == lines) { 
+          Location? test = Session.Get.CurrentMap.Normalize(pt);
+          if (null != test) lines = DescribeStuffAt(test.Value.Map, test.Value.Position);
+        }
         if (lines != null) {
           Point screenPos = new Point(screen.X + 32, screen.Y);
           AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
           if (RogueGame.s_Options.ShowTargets) {
-            Actor actorAt = Session.Get.CurrentMap.GetActorAt(map);
+            Actor actorAt = Session.Get.CurrentMap.GetActorAt(pt);
             if (actorAt != null)
               DrawActorTargets(actorAt);
           }
