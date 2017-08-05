@@ -344,6 +344,11 @@ namespace djack.RogueSurvivor
       m_GameCanvas.AppendTile(GameImages.Get(imageID));
     }
 
+    public void AppendTile(string imageID, Color color)
+    {
+      AppendTile(imageID);
+    }
+
     public void AppendTile(Color color, string text, Font font, int x, int y)
     {
       m_GameCanvas.AppendTile(color, text, font, x, y);

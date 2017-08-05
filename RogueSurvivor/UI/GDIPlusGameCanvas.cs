@@ -191,7 +191,7 @@ namespace djack.RogueSurvivor.UI
 
     public void AddTile(Image img)
     {
-      m_RenderTile.Clear(m_ClearColor);
+      m_RenderTile.Clear(Color.Transparent);
       m_RenderTile.DrawImageUnscaled(img, 0, 0);
     }
 
@@ -203,6 +203,11 @@ namespace djack.RogueSurvivor.UI
     public void AppendTile(Image img)
     {
       m_RenderTile.DrawImageUnscaled(img, 0, 0);
+    }
+
+    public void AppendTile(Image img, Color color)
+    {
+      AppendTile(img);
     }
 
     public void AppendTile(Color color, string text, Font font, int x, int y)

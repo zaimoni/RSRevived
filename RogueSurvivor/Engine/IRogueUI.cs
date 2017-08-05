@@ -56,6 +56,15 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #endregion
 
+#region pre-rendered tiles
+    void AddTile(string imageID);
+    void AddTile(string imageID, Color color);
+    void AppendTile(string imageID);
+    void AppendTile(string imageID, Color color);
+    void AppendTile(Color color, string text, Font font, int x, int y);
+    void DrawTile(int x, int y);
+#endregion
+
 #region Canvas scaling - to convert mouse coordinates to canvas coordinates.
     float UI_GetCanvasScaleX();
     float UI_GetCanvasScaleY();

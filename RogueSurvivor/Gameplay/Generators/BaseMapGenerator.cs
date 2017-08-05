@@ -474,7 +474,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void DressCivilian(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-        DressCivilian(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
+        DressCivilian(roller, actor, MALE_EYES, MALE_SKINS, MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
       else
         DressCivilian(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS, BaseMapGenerator.FEMALE_TORSOS, BaseMapGenerator.FEMALE_LEGS, BaseMapGenerator.FEMALE_SHOES);
     }
@@ -482,7 +482,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void SkinNakedHuman(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-                SkinNakedHuman(roller, actor, BaseMapGenerator.MALE_EYES, BaseMapGenerator.MALE_SKINS, BaseMapGenerator.MALE_HEADS);
+                SkinNakedHuman(roller, actor, MALE_EYES, MALE_SKINS, MALE_HEADS);
       else
                 SkinNakedHuman(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS);
     }
@@ -515,30 +515,30 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void DressArmy(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
-      actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.MALE_SKINS[roller.Roll(0, BaseMapGenerator.MALE_SKINS.Length)]);
-      actor.Doll.AddDecoration(DollPart.HEAD, "Actors\\Decoration\\army_helmet");
-      actor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\army_shirt");
-      actor.Doll.AddDecoration(DollPart.LEGS, "Actors\\Decoration\\army_pants");
-      actor.Doll.AddDecoration(DollPart.FEET, "Actors\\Decoration\\army_shoes");
+      actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
+      actor.Doll.AddDecoration(DollPart.HEAD, GameImages.ARMY_HELMET);
+      actor.Doll.AddDecoration(DollPart.TORSO, GameImages.ARMY_SHIRT);
+      actor.Doll.AddDecoration(DollPart.LEGS, GameImages.ARMY_PANTS);
+      actor.Doll.AddDecoration(DollPart.FEET, GameImages.ARMY_SHOES);
     }
 
     public void DressPolice(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
-      actor.Doll.AddDecoration(DollPart.EYES, BaseMapGenerator.MALE_EYES[roller.Roll(0, BaseMapGenerator.MALE_EYES.Length)]);
-      actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.MALE_SKINS[roller.Roll(0, BaseMapGenerator.MALE_SKINS.Length)]);
-      actor.Doll.AddDecoration(DollPart.HEAD, BaseMapGenerator.MALE_HEADS[roller.Roll(0, BaseMapGenerator.MALE_HEADS.Length)]);
-      actor.Doll.AddDecoration(DollPart.HEAD, "Actors\\Decoration\\police_hat");
-      actor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\police_uniform");
-      actor.Doll.AddDecoration(DollPart.LEGS, "Actors\\Decoration\\police_pants");
-      actor.Doll.AddDecoration(DollPart.FEET, "Actors\\Decoration\\police_shoes");
+      actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
+      actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
+      actor.Doll.AddDecoration(DollPart.HEAD, MALE_HEADS[roller.Roll(0, MALE_HEADS.Length)]);
+      actor.Doll.AddDecoration(DollPart.HEAD, GameImages.POLICE_HAT);
+      actor.Doll.AddDecoration(DollPart.TORSO, GameImages.POLICE_UNIFORM);
+      actor.Doll.AddDecoration(DollPart.LEGS, GameImages.POLICE_PANTS);
+      actor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
     }
 
     public void DressBiker(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
-      actor.Doll.AddDecoration(DollPart.EYES, BaseMapGenerator.MALE_EYES[roller.Roll(0, BaseMapGenerator.MALE_EYES.Length)]);
-      actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.MALE_SKINS[roller.Roll(0, BaseMapGenerator.MALE_SKINS.Length)]);
+      actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
+      actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
       actor.Doll.AddDecoration(DollPart.HEAD, BaseMapGenerator.BIKER_HEADS[roller.Roll(0, BaseMapGenerator.BIKER_HEADS.Length)]);
       actor.Doll.AddDecoration(DollPart.LEGS, BaseMapGenerator.BIKER_LEGS[roller.Roll(0, BaseMapGenerator.BIKER_LEGS.Length)]);
       actor.Doll.AddDecoration(DollPart.FEET, BaseMapGenerator.BIKER_SHOES[roller.Roll(0, BaseMapGenerator.BIKER_SHOES.Length)]);
@@ -547,10 +547,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void DressGangsta(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
-      actor.Doll.AddDecoration(DollPart.EYES, BaseMapGenerator.MALE_EYES[roller.Roll(0, BaseMapGenerator.MALE_EYES.Length)]);
-      actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.MALE_SKINS[roller.Roll(0, BaseMapGenerator.MALE_SKINS.Length)]);
+      actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
+      actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
       actor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\gangsta_shirt");
-      actor.Doll.AddDecoration(DollPart.HEAD, BaseMapGenerator.MALE_HEADS[roller.Roll(0, BaseMapGenerator.MALE_HEADS.Length)]);
+      actor.Doll.AddDecoration(DollPart.HEAD, MALE_HEADS[roller.Roll(0, MALE_HEADS.Length)]);
       actor.Doll.AddDecoration(DollPart.HEAD, "Actors\\Decoration\\gangsta_hat");
       actor.Doll.AddDecoration(DollPart.LEGS, "Actors\\Decoration\\gangsta_pants");
       actor.Doll.AddDecoration(DollPart.FEET, BaseMapGenerator.MALE_SHOES[roller.Roll(0, BaseMapGenerator.MALE_SHOES.Length)]);
@@ -559,8 +559,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void DressCHARGuard(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
-      actor.Doll.AddDecoration(DollPart.EYES, BaseMapGenerator.MALE_EYES[roller.Roll(0, BaseMapGenerator.MALE_EYES.Length)]);
-      actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.MALE_SKINS[roller.Roll(0, BaseMapGenerator.MALE_SKINS.Length)]);
+      actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
+      actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
       actor.Doll.AddDecoration(DollPart.HEAD, BaseMapGenerator.CHARGUARD_HEADS[roller.Roll(0, BaseMapGenerator.CHARGUARD_HEADS.Length)]);
       actor.Doll.AddDecoration(DollPart.LEGS, BaseMapGenerator.CHARGUARD_LEGS[roller.Roll(0, BaseMapGenerator.CHARGUARD_LEGS.Length)]);
     }
@@ -568,14 +568,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public void DressBlackOps(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
-      actor.Doll.AddDecoration(DollPart.EYES, BaseMapGenerator.MALE_EYES[roller.Roll(0, BaseMapGenerator.MALE_EYES.Length)]);
-      actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.MALE_SKINS[roller.Roll(0, BaseMapGenerator.MALE_SKINS.Length)]);
+      actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
+      actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
       actor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\blackop_suit");
     }
 
     public string RandomSkin(DiceRoller roller, bool isMale)
     {
-      string[] strArray = isMale ? BaseMapGenerator.MALE_SKINS : BaseMapGenerator.FEMALE_SKINS;
+      string[] strArray = isMale ? MALE_SKINS : BaseMapGenerator.FEMALE_SKINS;
       return strArray[roller.Roll(0, strArray.Length)];
     }
 
