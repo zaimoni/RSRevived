@@ -189,6 +189,33 @@ namespace djack.RogueSurvivor.UI
       NeedRedraw = true;
     }
 
+    public void AddTile(Image img)
+    {
+      m_RenderTile.Clear(m_ClearColor);
+      m_RenderTile.DrawImageUnscaled(img, 0, 0);
+    }
+
+    public void AddTile(Image img, Color color)
+    {
+      AddTile(img);
+    }
+
+    public void AppendTile(Image img)
+    {
+      m_RenderTile.DrawImageUnscaled(img, 0, 0);
+    }
+
+    public void AppendTile(Color color, string text, Font font, int x, int y)
+    {
+      m_RenderTile.DrawString(text, font, GetColorBrush(color), x, y);
+    }
+
+    public void DrawTile(int x, int y)
+    {
+      m_Gfxs.Add(new GfxImageCopy(m_TileImage, x, y));
+      NeedRedraw = true;
+    }
+
     public void AddPoint(Color color, int x, int y)
     {
       m_Gfxs.Add(new GfxRect(GetPen(color), new Rectangle(x, y, 1, 1)));
@@ -354,6 +381,41 @@ namespace djack.RogueSurvivor.UI
       public void Draw(Graphics g)
       {
         g.DrawImageUnscaled(m_Img, m_X, m_Y);
+      }
+    }
+
+    private class GfxImageCopy : IGfx, IDisposable
+    {
+      private readonly Image m_Img;
+      private readonly int m_X;
+      private readonly int m_Y;
+      private bool disposed = false;
+
+      public GfxImageCopy(Image img, int x, int y)
+      {
+        m_Img = new Bitmap(img);
+        m_X = x;
+        m_Y = y;
+      }
+
+      public void Draw(Graphics g)
+      {
+        g.DrawImageUnscaled(m_Img, m_X, m_Y);
+      }
+
+      public void Dispose()
+      {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+      }
+
+      protected virtual void Dispose(bool disposing)
+      {
+        if (disposing && !disposed)
+          {
+          m_Img.Dispose();
+          disposed = true;
+          }
       }
     }
 

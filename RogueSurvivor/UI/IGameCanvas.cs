@@ -28,32 +28,30 @@ namespace djack.RogueSurvivor.UI
     void Clear(Color clearColor);
 
     void AddImage(Image img, int x, int y);
-
     void AddImage(Image img, int x, int y, Color tint);
-
     void AddImageTransform(Image img, int x, int y, float rotation, float scale);
-
     void AddTransparentImage(float alpha, Image img, int x, int y);
-
     void AddPoint(Color color, int x, int y);
-
     void AddLine(Color color, int xFrom, int yFrom, int xTo, int yTo);
-
     void AddRect(Color color, Rectangle rect);
-
     void AddFilledRect(Color color, Rectangle rect);
-
     void AddString(Font font, Color color, string text, int gx, int gy);
 
+    // pre-rendering tiles
+    void AddTile(Image img);
+    void AddTile(Image img, Color color);
+    void AppendTile(Image img);
+    void AppendTile(Color color, string text, Font font, int x, int y);
+    void DrawTile(int x, int y);
+
+    // minimap support
     void ClearMinimap(Color color);
-
     void SetMinimapColor(int x, int y, Color color);
-
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     void DrawMinimap(int gx, int gy);
 
+    // screenshot
     string SaveScreenShot(string filePath);
-
     string ScreenshotExtension();
 
     void DisposeUnmanagedResources();

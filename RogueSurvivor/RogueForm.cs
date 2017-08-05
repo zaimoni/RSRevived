@@ -328,6 +328,32 @@ namespace djack.RogueSurvivor
       }
     }
 
+    // pre-rendering tiles
+    public void AddTile(string imageID)
+    {
+      m_GameCanvas.AddTile(GameImages.Get(imageID));
+    }
+
+    public void AddTile(string imageID, Color color)
+    {
+      m_GameCanvas.AddTile(GameImages.Get(imageID), color);
+    }
+
+    public void AppendTile(string imageID)
+    {
+      m_GameCanvas.AppendTile(GameImages.Get(imageID));
+    }
+
+    public void AppendTile(Color color, string text, Font font, int x, int y)
+    {
+      m_GameCanvas.AppendTile(color, text, font, x, y);
+    }
+
+    public void DrawTile(int x, int y)
+    {
+      m_GameCanvas.DrawTile(x, y);
+    }
+
     public void UI_ClearMinimap(Color color)
     {
       m_GameCanvas.ClearMinimap(color);
