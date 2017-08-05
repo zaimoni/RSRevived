@@ -543,7 +543,7 @@ namespace djack.RogueSurvivor.Data
     private void OnModelSet()
     {
       ActorModel model = Model;
-      m_Doll = new Doll(model.DollBody);
+      m_Doll = new Doll(model);
       m_Sheet = new ActorSheet(model.StartingSheet);
       m_ActionPoints = m_Doll.Body.Speed;
       m_HitPoints = m_previousHitPoints = m_Sheet.BaseHitPoints;

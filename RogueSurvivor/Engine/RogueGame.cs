@@ -10239,15 +10239,17 @@ namespace djack.RogueSurvivor.Engine
       int gx1 = x;
       int gy1 = y;
       if (actor.Model.ImageID != null) m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
-      DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
-      DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
-      DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
-      DrawActorEquipment(actor, gx1, gy1, DollPart.RIGHT_HAND, tint);
+      else {
+        DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
+        DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
+        DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
+        DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
+        DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
+        DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
+        DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
+        DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
+        DrawActorEquipment(actor, gx1, gy1, DollPart.RIGHT_HAND, tint);
+      }
       int gx2 = gx1;
       int gy2 = gy1;
       if (m_Player != null) {
@@ -10359,13 +10361,15 @@ namespace djack.RogueSurvivor.Engine
       gy += num1;
       if (deadGuy.Model.ImageID != null)
         m_UI.UI_DrawImageTransform(deadGuy.Model.ImageID, gx, gy, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
-      DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
+      else {
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.SKIN, rotation, scale);
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.FEET, rotation, scale);
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.LEGS, rotation, scale);
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.TORSO, rotation, scale);
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
+        DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
+      }
       gx -= num1;
       gy -= num1;
       int num2 = c.RotLevel;

@@ -15,10 +15,10 @@ namespace djack.RogueSurvivor.Data
     public readonly DollBody Body;
     private readonly List<string>[] m_Decorations;  // XXX only valid if the Model imageID is null
 
-    public Doll(DollBody body)
+    public Doll(ActorModel model)
     {
-      Body = body;
-      m_Decorations = new List<string>[(int) DollPart._COUNT];
+      Body = model.DollBody;
+      m_Decorations = (string.IsNullOrEmpty(model.ImageID) ? new List<string>[(int) DollPart._COUNT] : null);
     }
 
     public List<string> GetDecorations(DollPart part)
