@@ -169,11 +169,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#if FAIL
     [Serializable]
-    public Goal_PathTo : Objective
+    internal class Goal_PathTo : Objective
     {
-      private HashSet<Location> _locs;
+      private readonly HashSet<Location> _locs;
 
       public Goal_PathTo(int t0, Actor who, Location loc)
       : base(t0,who)
@@ -184,26 +183,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs)
       : base(t0,who)
       {
-        _locs = new HashSet<Location>(){loc};
+        _locs = new HashSet<Location>(locs);
       }
 
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
-
-        if (!valid_fn(this)) {
+        if (_locs.Contains(m_Actor.Location)) {
           _isExpired = true;
-          return false;
+          return true;
         }
 
-        if (nonpathing_action(this,ret)) return true;
-
-        FloodfillPathfinder<Point> tmp = m_Actor.Location.Map.PathfindSteps(m_Actor);
-        // ...        
-        return false;
+        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
+        if (null == ret) return false;
+        if (!ret.IsLegal()) return false;
+        return true;
       }
     }
-#endif
 
 #if FAIL
     [Serializable]
@@ -2773,7 +2769,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
+    public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
     {
       return BehaviorPathTo(PathfinderFor(targets_at));
     }

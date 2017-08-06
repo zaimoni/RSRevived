@@ -194,6 +194,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
             else if (!goal_action.IsLegal()) Objectives.Remove(o);
 #endif
+            else return goal_action;
           }
         }
       }
