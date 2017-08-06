@@ -32,18 +32,19 @@ namespace djack.RogueSurvivor.Engine
     private readonly ThreatTracking m_PoliceThreatTracking = new ThreatTracking();
     private readonly LocationSet m_PoliceInvestigate = new LocationSet();
 
-    public GameMode GameMode { get; set; }
     public int Seed { get; private set; }
-    public int LastTurnPlayerActed { get; set; }
     public World World { get; private set; }
-    public Map CurrentMap { get; set; }
     public UniqueActors UniqueActors { get; private set; }
     public UniqueItems UniqueItems { get; private set; }
     public UniqueMaps UniqueMaps { get; private set; }
-    public bool PlayerKnows_CHARUndergroundFacilityLocation { get; set; }
-    public bool PlayerKnows_TheSewersThingLocation { get; set; }
-    public bool CHARUndergroundFacility_Activated { get; set; }
-    public ScriptStage ScriptStage_PoliceStationPrisonner { get; set; }
+
+    public GameMode GameMode;
+    public int LastTurnPlayerActed;
+    public Map CurrentMap;
+    public bool PlayerKnows_CHARUndergroundFacilityLocation;
+    public bool PlayerKnows_TheSewersThingLocation;
+    public bool CHARUndergroundFacility_Activated;
+    public int ScriptStage_PoliceStationPrisoner;
 
     public static Session Get {
       get {
@@ -73,7 +74,7 @@ namespace djack.RogueSurvivor.Engine
       m_Scoring = (Scoring) info.GetValue("Scoring",typeof(Scoring));
       m_Event_Raids = (int[,,]) info.GetValue("Event_Raids",typeof(int[,,]));
       GameMode = (GameMode) info.GetSByte("GameMode");
-      ScriptStage_PoliceStationPrisonner = (ScriptStage) info.GetSByte("ScriptStage_PoliceStationPrisoner");
+      ScriptStage_PoliceStationPrisoner = (int) info.GetSByte("ScriptStage_PoliceStationPrisoner");
       Seed = info.GetInt32("Seed");
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
@@ -97,7 +98,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("Event_Raids",m_Event_Raids,typeof(int[,,]));
 
       info.AddValue("GameMode",(SByte)GameMode);
-      info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisonner);
+      info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisoner);
       info.AddValue("Seed",Seed);
       info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
       info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
@@ -133,7 +134,7 @@ namespace djack.RogueSurvivor.Engine
       CHARUndergroundFacility_Activated = false;
       PlayerKnows_CHARUndergroundFacilityLocation = false;
       PlayerKnows_TheSewersThingLocation = false;
-      ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_0;
+      ScriptStage_PoliceStationPrisoner = 0;
       UniqueActors = new UniqueActors();
       UniqueItems = new UniqueItems();
       UniqueMaps = new UniqueMaps();

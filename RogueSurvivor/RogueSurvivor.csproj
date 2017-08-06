@@ -248,7 +248,6 @@
     <Compile Include="Engine\MapGenerator.cs" />
     <Compile Include="Engine\ISoundManager.cs" />
     <Compile Include="Engine\GameMode.cs" />
-    <Compile Include="Engine\ScriptStage.cs" />
     <Compile Include="Engine\RaidType.cs" />
     <Compile Include="Engine\AdvisorHint.cs" />
     <Compile Include="Engine\UniqueActor.cs" />

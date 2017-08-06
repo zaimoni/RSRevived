@@ -12096,9 +12096,9 @@ namespace djack.RogueSurvivor.Engine
       {
         Actor theActor = Session.Get.UniqueActors.PoliceStationPrisonner.TheActor;
         Map map = player.Location.Map;
-        switch (Session.Get.ScriptStage_PoliceStationPrisonner)
+        switch (Session.Get.ScriptStage_PoliceStationPrisoner)
         {
-          case ScriptStage.STAGE_0:
+          case 0:
             if (map.HasAnyAdjacentInMap(player.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is PowerGenerator)) && !theActor.IsSleeping)
             {
               lock (Session.Get)
@@ -12131,13 +12131,13 @@ namespace djack.RogueSurvivor.Engine
                   ShowSpecialDialogue(theActor, local_6);
                   Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", (object) theActor.Name));
                 }
-                Session.Get.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_1;
+                Session.Get.ScriptStage_PoliceStationPrisoner = 1;
                 break;
               }
             }
             else
               break;
-          case ScriptStage.STAGE_1:
+          case 1:
             if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping && !theActor.IsEnemyOf(player)) {
               lock (Session.Get) {
                 string[] local_7 = new string[8]
@@ -12161,16 +12161,15 @@ namespace djack.RogueSurvivor.Engine
                 local_8.ActionPoints = 0;   // this was warned, player should get the first move
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", (object) theActor.Name, (object) local_8.Model.Name));
                 m_MusicManager.Play(GameMusics.FIGHT);
-                Session.Get.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_2;
+                Session.Get.ScriptStage_PoliceStationPrisoner = 2;
                 break;
               }
             }
             else
               break;
-          case ScriptStage.STAGE_2:
-            break;
+          case 2: break;
           default:
-            throw new ArgumentOutOfRangeException("unhandled script stage " + (object)Session.Get.ScriptStage_PoliceStationPrisonner);
+            throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());
         }
       }
       if (player != Session.Get.UniqueActors.JasonMyers.TheActor && !Session.Get.UniqueActors.JasonMyers.TheActor.IsDead && IsVisibleToPlayer(Session.Get.UniqueActors.JasonMyers.TheActor)) {
@@ -12532,7 +12531,7 @@ namespace djack.RogueSurvivor.Engine
             }
             map.OpenAllGates();
             // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
-            if (ScriptStage.STAGE_0 == Session.Get.ScriptStage_PoliceStationPrisonner) Session.Get.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_1;
+            if (0 == Session.Get.ScriptStage_PoliceStationPrisoner) Session.Get.ScriptStage_PoliceStationPrisoner = 0;
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
