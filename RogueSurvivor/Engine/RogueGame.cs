@@ -12092,9 +12092,8 @@ namespace djack.RogueSurvivor.Engine
       // The Prisoner Who Should Not Be should only respond to civilian players; other factions should either be hostile, or colluding on
       // the fake charges used to frame him (CHAR, possibly police), or conned (possibly police)
       // Acceptable factions are civilians and survivors.
-      // XXX but...if the player opens the gates even unasked, should the Prisoner Who Should Not Be try to thank the player anyway?
-      if (player.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && !Session.Get.UniqueActors.PoliceStationPrisonner.TheActor.IsDead 
-          && ((int) GameFactions.IDs.TheCivilians == player.Faction.ID || (int) GameFactions.IDs.TheSurvivors == player.Faction.ID))
+      // Even if the player is of an unacceptable faction, he will be thanked if not an enemy.
+      if (player.Location.Map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap && !Session.Get.UniqueActors.PoliceStationPrisonner.TheActor.IsDead)
       {
         Actor theActor = Session.Get.UniqueActors.PoliceStationPrisonner.TheActor;
         Map map = player.Location.Map;
@@ -12105,24 +12104,34 @@ namespace djack.RogueSurvivor.Engine
             {
               lock (Session.Get)
               {
-                string[] local_6 = new string[13]
-                {
-                  "\" Psssst! Hey! You over there! \"",
-                  string.Format("{0} is discretly calling you from {1} cell. You listen closely...", (object) theActor.Name, (object) HisOrHer(theActor)),
-                  "\" Listen! I shouldn't be here! Just drived a bit too fast!",
-                  "  Look, I know what's happening! I worked down there! At the CHAR facility!",
-                  "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
-                  "  Now listen! Let's make a deal...",
-                  "  Stupid cops won't listen to me. You look clever...",
-                  "  You just have to push this button to open my cell.",
-                  "  The cops are too busy to care about small fish like me!",
-                  "  Then I'll tell you where is the underground facility and just get the hell out of here.",
-                  "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
-                  "  Do it PLEASE! I REALLY shoudn't be there! \"",
-                  string.Format("Looks like {0} wants you to turn the generator on to open the cells...", (object) HeOrShe(theActor))
-                };
-                ShowSpecialDialogue(theActor, local_6);
-                Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", (object) theActor.Name));
+                string[] local_6 = null;
+                if (player.Faction == GameFactions.TheCivilians || player.Faction == GameFactions.TheSurvivors) { 
+                  local_6 = new string[13] {    // standard message
+                    "\" Psssst! Hey! You over there! \"",
+                    string.Format("{0} is discreetly calling you from {1} cell. You listen closely...", (object) theActor.Name, (object) HisOrHer(theActor)),
+                    "\" Listen! I shouldn't be here! Just drived a bit too fast!",
+                    "  Look, I know what's happening! I worked down there! At the CHAR facility!",
+                    "  They didn't want me to leave but I did! Like I'm stupid enough to stay down there uh?",
+                    "  Now listen! Let's make a deal...",
+                    "  Stupid cops won't listen to me. You look clever...",
+                    "  You just have to push this button to open my cell.",
+                    "  The cops are too busy to care about small fish like me!",
+                    "  Then I'll tell you where is the underground facility and just get the hell out of here.",
+                    "  I don't give a fuck about CHAR anymore, you can do what you want with that!",
+                    "  Do it PLEASE! I REALLY shoudn't be there! \"",
+                    string.Format("Looks like {0} wants you to turn the generator on to open the cells...", (object) HeOrShe(theActor))
+                  };
+                }
+#if FAIL
+                if (player.Faction == GameFactions.ThePolice) { 
+                }
+                if (player.Faction == GameFactions.TheCHARCorporation) { 
+                }
+#endif
+                if (null != local_6) {
+                  ShowSpecialDialogue(theActor, local_6);
+                  Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} offered a deal.", (object) theActor.Name));
+                }
                 Session.Get.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_1;
                 break;
               }
@@ -12130,7 +12139,7 @@ namespace djack.RogueSurvivor.Engine
             else
               break;
           case ScriptStage.STAGE_1:
-            if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && (Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping)) {
+            if (!map.HasZonePartiallyNamedAt(theActor.Location.Position, "jail") && Rules.IsAdjacent(player.Location.Position, theActor.Location.Position) && !theActor.IsSleeping && !theActor.IsEnemyOf(player)) {
               lock (Session.Get) {
                 string[] local_7 = new string[8]
                 {
@@ -12523,6 +12532,8 @@ namespace djack.RogueSurvivor.Engine
               RedrawPlayScreen();
             }
             map.OpenAllGates();
+            // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
+            if (ScriptStage.STAGE_0 == Session.Get.ScriptStage_PoliceStationPrisonner) Session.Get.ScriptStage_PoliceStationPrisonner = ScriptStage.STAGE_1;
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
