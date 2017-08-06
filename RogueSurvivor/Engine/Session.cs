@@ -24,18 +24,18 @@ namespace djack.RogueSurvivor.Engine
     public static Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession = null;
 
-    private readonly WorldTime m_WorldTime;
+    private readonly WorldTime m_WorldTime = new WorldTime();
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
-    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_PoliceItemMemory;
-    private readonly ThreatTracking m_PoliceThreatTracking;
-    private readonly LocationSet m_PoliceInvestigate;
+    private readonly Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
+    private readonly ThreatTracking m_PoliceThreatTracking = new ThreatTracking();
+    private readonly LocationSet m_PoliceInvestigate = new LocationSet();
 
     public GameMode GameMode { get; set; }
     public int Seed { get; private set; }
     public int LastTurnPlayerActed { get; set; }
-    public World World { get; set; }
+    public World World { get; private set; }
     public Map CurrentMap { get; set; }
     public UniqueActors UniqueActors { get; private set; }
     public UniqueItems UniqueItems { get; private set; }
@@ -48,48 +48,20 @@ namespace djack.RogueSurvivor.Engine
     public static Session Get {
       get {
         Contract.Ensures(null!=Contract.Result<Session>());
-        if (Session.s_TheSession == null) Session.s_TheSession = new Session();
-        return Session.s_TheSession;
+        if (s_TheSession == null) s_TheSession = new Session();
+        return s_TheSession;
       }
     }
 
-    public WorldTime WorldTime {
-      get {
-        return m_WorldTime;
-      }
-    }
-
-    public Scoring Scoring {
-      get {
-        return m_Scoring;
-      }
-    }
-
-    public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> PoliceItemMemory {
-      get {
-        return m_PoliceItemMemory;
-      }
-    }
-
-    public ThreatTracking PoliceThreatTracking {
-      get {
-        return m_PoliceThreatTracking;
-      }
-    }
-
-    public LocationSet PoliceInvestigate {
-      get {
-        return m_PoliceInvestigate;
-      }
-    }
+    public WorldTime WorldTime { get { return m_WorldTime; } }
+    public Scoring Scoring { get { return m_Scoring; } }
+    public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> PoliceItemMemory { get { return m_PoliceItemMemory; } }
+    public ThreatTracking PoliceThreatTracking { get { return m_PoliceThreatTracking; } }
+    public LocationSet PoliceInvestigate { get { return m_PoliceInvestigate; } }
 
     private Session()
     {
-      m_WorldTime = new WorldTime();
       m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
-      m_PoliceItemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
-      m_PoliceThreatTracking = new ThreatTracking();
-      m_PoliceInvestigate = new LocationSet();
       Reset();
     }
 
@@ -148,7 +120,7 @@ namespace djack.RogueSurvivor.Engine
       Seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
       CurrentMap = null;
       m_Scoring = new Scoring();
-      World = null;
+      World = new World(RogueGame.Options.CitySize);
       m_WorldTime.TurnCounter = 0;
       LastTurnPlayerActed = 0;
       m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
@@ -256,7 +228,7 @@ namespace djack.RogueSurvivor.Engine
 #else
       try {
 #endif
-	    Session.s_TheSession = filepath.BinaryDeserialize<Session>();
+        s_TheSession = filepath.BinaryDeserialize<Session>();
 #if DEBUG
 #else
       } catch (Exception ex) {
@@ -284,7 +256,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
       try {
         using (Stream stream = filepath.CreateStream(false)) {
-          Session.s_TheSession = (Session) Session.CreateSoapFormatter().Deserialize(stream);
+          s_TheSession = (Session) Session.CreateSoapFormatter().Deserialize(stream);
         }
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load session (no save game?).");
@@ -313,7 +285,7 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
       try {
         using (Stream stream = filepath.CreateStream(false)) {
-          Session.s_TheSession = (Session) new XmlSerializer(typeof (Session)).Deserialize(stream);
+          s_TheSession = (Session) new XmlSerializer(typeof (Session)).Deserialize(stream);
           stream.Flush();
         }
       } catch (Exception ex) {

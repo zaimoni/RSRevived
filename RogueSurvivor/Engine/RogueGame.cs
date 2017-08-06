@@ -11382,7 +11382,6 @@ namespace djack.RogueSurvivor.Engine
       }
       Session.Get.Reset();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
-      Session.Get.World = new World(size);
       World world = Session.Get.World;
       List<Point> pointList = new List<Point>();
       for (int x = 0; x < world.Size; ++x) {
