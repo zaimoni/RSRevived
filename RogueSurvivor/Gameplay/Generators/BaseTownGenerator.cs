@@ -1901,8 +1901,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       while (!map.GetTileModelAt(point).IsWalkable || map.HasMapObjectAt(point));
       Point basementStairs = new Point(point.X - buildingRect.Left, point.Y - buildingRect.Top);
-      AddExit(map, point, basement, basementStairs, "Tiles\\Decoration\\stairs_down", true);
-      AddExit(basement, basementStairs, map, point, "Tiles\\Decoration\\stairs_up", true);
+      AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP, true);
       DoForEachTile(basement.Rect, (Action<Point>) (pt =>
       {
         Session.Get.PoliceInvestigate.Record(basement,pt);
@@ -2203,10 +2203,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GeneratePoliceStation(map, policeBlock, out stairsToLevel1);
       Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map, policeBlock, stairsToLevel1);
       Map stationJailsLevel = GeneratePoliceStation_JailsLevel(stationOfficesLevel);
-      AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), "Tiles\\Decoration\\stairs_down", true);
-      AddExit(stationOfficesLevel, new Point(1, 1), map, stairsToLevel1, "Tiles\\Decoration\\stairs_up", true);
-      AddExit(stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), stationJailsLevel, new Point(1, 1), "Tiles\\Decoration\\stairs_down", true);
-      AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), "Tiles\\Decoration\\stairs_up", true);
+      AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(stationOfficesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP, true);
+      AddExit(stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), stationJailsLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
+      AddExit(stationJailsLevel, new Point(1, 1), stationOfficesLevel, new Point(1, stationOfficesLevel.Height - 2), GameImages.DECO_STAIRS_UP, true);
       m_Params.District.AddUniqueMap(stationOfficesLevel);
       m_Params.District.AddUniqueMap(stationJailsLevel);
       Session.Get.UniqueMaps.PoliceStation_OfficesLevel = new UniqueMap(stationOfficesLevel);
@@ -2247,76 +2247,62 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       Rectangle rect1 = Rectangle.FromLTRB(3, 0, map.Width, map.Height);
       List<Rectangle> list = new List<Rectangle>();
+      // XXX to maximize supplies: need to roll 9-right-wdith on the first horizonal split
+      // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
       MakeRoomsPlan(map, ref list, rect1, 5);
+
+      Func<Item> stock_armory = () => {
+        switch (m_DiceRoller.Roll(0, 10)) {
+          case 0:
+          case 1: return m_DiceRoller.RollChance(50) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor();
+          case 2:
+          case 3: return  m_DiceRoller.RollChance(50) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : (Item)MakeItemPoliceRadio();
+          case 4:
+          case 5: return MakeItemTruncheon();
+          case 6:
+          case 7: return m_DiceRoller.RollChance(30) ? (Item)MakeItemPistol() : (Item)MakeItemLightPistolAmmo();
+          case 8:
+          case 9: return m_DiceRoller.RollChance(30) ? (Item)MakeItemShotgun() : (Item)MakeItemShotgunAmmo();
+          default: throw new ArgumentOutOfRangeException("unhandled roll");
+        }
+      };
+
       foreach (Rectangle rect2 in list) {
         Rectangle rect3 = Rectangle.FromLTRB(rect2.Left + 1, rect2.Top + 1, rect2.Right - 1, rect2.Bottom - 1);
         if (rect2.Right == map.Width) {
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
           PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
-          DoForEachTile(rect3, (Action<Point>) (pt =>
-          {
+          DoForEachTile(rect3, pt => {
             if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || CountAdjDoors(map, pt.X, pt.Y) > 0) return;
             map.PlaceMapObjectAt(MakeObjShelf(), pt);
-            Item it;
-            switch (m_DiceRoller.Roll(0, 10)) {
-              case 0:
-              case 1:
-                it = m_DiceRoller.RollChance(50) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor();
-                break;
-              case 2:
-              case 3:
-                it = m_DiceRoller.RollChance(50) ? (Item)(m_DiceRoller.RollChance(50) ? MakeItemFlashlight() : MakeItemBigFlashlight()) : (Item)MakeItemPoliceRadio();
-                break;
-              case 4:
-              case 5:
-                it = MakeItemTruncheon();
-                break;
-              case 6:
-              case 7:
-                it = m_DiceRoller.RollChance(30) ? (Item)MakeItemPistol() : (Item)MakeItemLightPistolAmmo();
-                break;
-              case 8:
-              case 9:
-                it = m_DiceRoller.RollChance(30) ? (Item)MakeItemShotgun() : (Item)MakeItemShotgunAmmo();
-                break;
-              default:
-                throw new ArgumentOutOfRangeException("unhandled roll");
-            }
-            map.DropItemAt(it, pt);
-          }));
+            map.DropItemAt(stock_armory(), pt);
+          });
           map.AddZone(MakeUniqueZone("security", rect3));
-        } else {
+        } else {    // \todo override top-left one to have a generator rather than furniture
+                    // \todo try to leave a non-jumping path to the doors
           TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
-          PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());
-          MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
-          {
+          PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
+          MapObjectPlaceInGoodPosition(map, rect3, pt => {
             return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
-          }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjTable(GameImages.OBJ_TABLE)));
-          MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
-          {
+          }, m_DiceRoller, pt => MakeObjTable(GameImages.OBJ_TABLE));
+          MapObjectPlaceInGoodPosition(map, rect3, pt => {
             return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
-          }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjChair(GameImages.OBJ_CHAIR)));
-          MapObjectPlaceInGoodPosition(map, rect3, (Func<Point, bool>) (pt =>
-          {
+          }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
+          MapObjectPlaceInGoodPosition(map, rect3, pt => {
             return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
-          }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjChair(GameImages.OBJ_CHAIR)));
+          }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
           map.AddZone(MakeUniqueZone("office", rect3));
         }
       }
-      DoForEachTile(new Rectangle(1, 1, 1, map.Height - 2), (Action<Point>) (pt =>
-      {
-        if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3)
-          return;
+      DoForEachTile(new Rectangle(1, 1, 1, map.Height - 2), pt => {
+        if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3) return;
         map.PlaceMapObjectAt(MakeObjIronBench(), pt);
-      }));
+      });
       for (int index = 0; index < 5; ++index) {
-        Actor newPoliceman = CreateNewPoliceman(0);
-        ActorPlace(m_DiceRoller, map, newPoliceman);
+        ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0));
       }
-      DoForEachTile(map.Rect, (Action<Point>)(pt => {
-        Session.Get.ForcePoliceKnown(new Location(map, pt));
-      }));
+      DoForEachTile(map.Rect, pt => { Session.Get.ForcePoliceKnown(new Location(map, pt)); });
       return map;
     }
 
@@ -2342,12 +2328,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle rect1 = Rectangle.FromLTRB(1, 1, map.Width, 3);
       map.AddZone(MakeUniqueZone("cells corridor", rect1));
       map.PlaceMapObjectAt(MakeObjPowerGenerator(), new Point(map.Width - 2, 1));
-      for (int index = 0; index < rectangleList.Count - 1; ++index) {
+      for (int index = 0; index < rectangleList.Count - 1; ++index) {   // this loop stops before The Prisoner Who Should Not Be (map::PlaceActorAt would hard-error otherwise)
         Rectangle rectangle = rectangleList[index];
         Actor newCivilian = CreateNewCivilian(0, 0, 1);
         while (!newCivilian.Inventory.IsEmpty)
           newCivilian.Inventory.RemoveAllQuantity(newCivilian.Inventory[0]);
         newCivilian.Inventory.AddAll(MakeItemGroceries());
+        // XXX \todo give these civilians the PathTo (outside the police station) objective
         map.PlaceActorAt(newCivilian, new Point(rectangle.Left + 1, rectangle.Top + 1));
       }
       Rectangle rectangle1 = rectangleList[rectangleList.Count - 1];
@@ -2745,16 +2732,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewRefugee(int spawnTime, int itemsToCarry)
     {
       Actor actor;
-      if (m_DiceRoller.RollChance(Params.PolicemanChance))
-      {
+      if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
         actor = CreateNewPoliceman(spawnTime);
         for (int index = 0; index < itemsToCarry && actor.Inventory.CountItems < actor.Inventory.MaxCapacity; ++index)
-                    GiveRandomItemToActor(m_DiceRoller, actor, spawnTime);
-      }
-      else
+          GiveRandomItemToActor(m_DiceRoller, actor, spawnTime);
+      } else
         actor = CreateNewCivilian(spawnTime, itemsToCarry, 1);
       int count = 1 + new WorldTime(spawnTime).Day;
-            GiveRandomSkillsToActor(m_DiceRoller, actor, count);
+      GiveRandomSkillsToActor(m_DiceRoller, actor, count);
       return actor;
     }
 

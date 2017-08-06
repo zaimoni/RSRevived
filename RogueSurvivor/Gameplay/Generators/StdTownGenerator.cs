@@ -23,10 +23,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map map = base.Generate(seed, name);
       Predicate<Point> outside_test = pt => !map.IsInsideAt(pt);
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
-        if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
-          Actor newPoliceman = CreateNewPoliceman(0);
-          ActorPlace(m_DiceRoller, map, newPoliceman, outside_test);
-        } else {
+        if (m_DiceRoller.RollChance(Params.PolicemanChance))
+          ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0), outside_test);
+        else {
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
           ActorPlace(m_DiceRoller, map, newCivilian, pt => map.IsInsideAt(pt));
         }
