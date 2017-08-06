@@ -849,6 +849,14 @@ namespace djack.RogueSurvivor.Data
       Location.Map.District.MessagePlayerOnce(Location.Map,fn,pred);
     }
 
+    public Actor Sees(Actor a)
+    {
+      if (null == a) return null;
+      if (this == a) return null;
+      if (a.IsDead) return null;
+      return (Controller.IsVisibleTo(a) ? a : null);  // inline IsVisibleToPlayer here, for generality
+    }
+
     // leadership/follower handling
     public void AddFollower(Actor other)
     {

@@ -10473,9 +10473,8 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorTargets(Actor actor)
     {
-      Point point = new Point(16, 16);
       if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
-      AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
+        AddOverlay((RogueGame.Overlay) new RogueGame.OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
       foreach (Actor actor1 in actor.Location.Map.Actors) {
         if (actor1 != actor && !actor1.IsDead && (IsVisibleToPlayer(actor1) && actor1.TargetActor == actor) && (actor1.Activity == Activity.CHASING || actor1.Activity == Activity.FIGHTING))
         {
@@ -10487,13 +10486,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawPlayerActorTargets(Actor player)
     {
-      Point point = new Point(16, 16);
-      if (player.TargetActor != null && !player.TargetActor.IsDead && IsVisibleToPlayer(player.TargetActor)) {
+      if (null != player.Sees(player.TargetActor)) {
         Point screen = MapToScreen(player.TargetActor.Location.Position);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
       foreach (Actor actor in player.Location.Map.Actors) {
-        if (actor != player && !actor.IsDead && (IsVisibleToPlayer(actor) && actor.TargetActor == player) && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
+        if (null != player.Sees(actor) && actor.TargetActor == player && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
           Point screen = MapToScreen(player.Location.Position);
           m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
           break;
@@ -12049,7 +12047,7 @@ namespace djack.RogueSurvivor.Engine
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void CheckSpecialPlayerEventsAfterAction(Actor player)
-    {
+    { // XXX player is always m_Player here.
       if (!player.Model.Abilities.IsUndead && player.Faction != GameFactions.TheCHARCorporation && (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE) && RogueGame.IsInCHAROffice(player.Location)))
         ShowNewAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE);
       if (!Session.Get.Scoring.HasCompletedAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY) && player.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
@@ -12077,8 +12075,8 @@ namespace djack.RogueSurvivor.Engine
             throw new InvalidOperationException("could not find exit to surface in CUF map");
         }
       }
-      if (player != Session.Get.UniqueActors.TheSewersThing.TheActor && !Session.Get.PlayerKnows_TheSewersThingLocation && (player.Location.Map == Session.Get.UniqueActors.TheSewersThing.TheActor.Location.Map && !Session.Get.UniqueActors.TheSewersThing.TheActor.IsDead && IsVisibleToPlayer(Session.Get.UniqueActors.TheSewersThing.TheActor)))
-      {
+      Actor vip = player.Sees(Session.Get.UniqueActors.TheSewersThing.TheActor);
+      if (null != vip && !Session.Get.PlayerKnows_TheSewersThingLocation) {
         lock (Session.Get) {
           Session.Get.PlayerKnows_TheSewersThingLocation = true;
           m_MusicManager.StopAll();
@@ -12172,12 +12170,13 @@ namespace djack.RogueSurvivor.Engine
             throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());
         }
       }
-      if (player != Session.Get.UniqueActors.JasonMyers.TheActor && !Session.Get.UniqueActors.JasonMyers.TheActor.IsDead && IsVisibleToPlayer(Session.Get.UniqueActors.JasonMyers.TheActor)) {
+      vip = player.Sees(Session.Get.UniqueActors.JasonMyers.TheActor);
+      if (null != vip) {
+        if (!m_MusicManager.IsPlaying(GameMusics.INSANE)) {
+          m_MusicManager.StopAll();
+          m_MusicManager.Play(GameMusics.INSANE);
+        }
         lock (Session.Get) {
-          if (!m_MusicManager.IsPlaying(GameMusics.INSANE)) {
-            m_MusicManager.StopAll();
-            m_MusicManager.Play(GameMusics.INSANE);
-          }
           if (!Session.Get.Scoring.HasSighted(Session.Get.UniqueActors.JasonMyers.TheActor.Model.ID)) {
             ClearMessages();
             AddMessage(new Data.Message("Nice axe you have there!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
