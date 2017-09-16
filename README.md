@@ -9,3 +9,12 @@ http://www.bay12forums.com/smf/index.php?topic=157701.0
 http://smf.cataclysmdda.com/index.php?topic=12463.0
 
 The main licence is GPLv3 ( https://opensource.org/licenses/GPL-3.0 ), with specific additional requests from Roguedjack to be non-commercial and to maintain the original brand identity: http://roguesurvivor.proboards.com/post/2604 .
+
+Our siblings:
+
+UNIX build of RS Alpha 9
+http://roguesurvivor.proboards.com/thread/378/rogue-survivor-linux
+github.com/Stenodyon/Rogue-Survivor-Linux
+
+RS Still Alive
+http://roguesurvivor.proboards.com/thread/377/rs-alive
