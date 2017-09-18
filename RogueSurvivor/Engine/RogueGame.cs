@@ -6872,7 +6872,7 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add(string.Format("Blast radius  : {0}", itemExplosiveModel.BlastAttack.Radius));
       StringBuilder stringBuilder = new StringBuilder();
       for (int distance = 0; distance <= itemExplosiveModel.BlastAttack.Radius; ++distance)
-        stringBuilder.Append(string.Format("{0};", m_Rules.BlastDamage(distance, itemExplosiveModel.BlastAttack)));
+        stringBuilder.Append(string.Format("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance)));
       stringList.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
       ItemGrenade itemGrenade = ex as ItemGrenade;
       if (itemGrenade != null) {
@@ -8143,7 +8143,7 @@ namespace djack.RogueSurvivor.Engine
     private int ApplyExplosionDamage(Location location, int distanceFromBlast, BlastAttack blast)
     {
       Contract.Requires(!blast.CanDestroyWalls);    // not implemented
-      int num1 = m_Rules.BlastDamage(distanceFromBlast, blast);
+      int num1 = blast.DamageAt(distanceFromBlast);
       if (num1 <= 0) return 0;
       Map map = location.Map;
       Actor actorAt = location.Actor;

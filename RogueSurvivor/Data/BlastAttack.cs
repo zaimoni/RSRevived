@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -15,16 +14,26 @@ namespace djack.RogueSurvivor.Data
     public readonly int Radius;
     public readonly int[] Damage;
     public readonly bool CanDamageObjects;
-    public readonly bool CanDestroyWalls;
+    public readonly bool CanDestroyWalls;   // XXX not implemented, so hard-errors if true
 
     public BlastAttack(int radius, int[] damage, bool canDamageObjects, bool canDestroyWalls)
     {
-      Contract.Requires(damage.Length == radius + 1);
-      Contract.Requires(0<=radius);
+#if DEBUG
+      if (0>radius) throw new ArgumentOutOfRangeException("radius", radius, "0>radius");
+      if (damage.Length != radius+1) throw new ArgumentOutOfRangeException("damage", damage.Length, "damage.Length != radius+1");
+#endif
       Radius = radius;
       Damage = damage;
       CanDamageObjects = canDamageObjects;
       CanDestroyWalls = canDestroyWalls;
     }
+
+    public int DamageAt(int distance)
+    {
+#if DEBUG
+      if (distance < 0 || distance > Radius) throw new ArgumentOutOfRangeException("distance", distance, "out of range");
+#endif
+      return Damage[distance];
+    }  
   }
 }

@@ -1304,7 +1304,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                     int distance = Rules.GridDistance(point, actorAt.Location.Position);
 //                  if (distance > itemGrenadeModel.BlastAttack.Radius) throw new ArgumentOutOfRangeException("distance > itemGrenadeModel.BlastAttack.Radius"); // again, probably an invariant failure
                     if (m_Actor.IsEnemyOf(actorAt)) {
-                      num2 += (game.Rules.BlastDamage(distance, itemGrenadeModel.BlastAttack) * actorAt.MaxHPs);
+                      num2 += (itemGrenadeModel.BlastAttack.DamageAt(distance) * actorAt.MaxHPs);
                       return false;
                     }
 //                  num2 = -1;

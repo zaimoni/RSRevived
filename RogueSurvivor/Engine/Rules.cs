@@ -957,13 +957,6 @@ namespace djack.RogueSurvivor.Engine
       return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location.Position, murderer.Location.Position);
     }
 
-    public int BlastDamage(int distance, BlastAttack attack)
-    {
-      if (distance < 0 || distance > attack.Radius)
-        throw new ArgumentOutOfRangeException(string.Format("blast distance {0} out of range", (object) distance));
-      return attack.Damage[distance];
-    }
-
     public static int ActorBiteHpRegen(Actor a, int dmg)
     {
       int num = (int) ((double) Rules.SKILL_ZEATER_REGEN_BONUS * (double) a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_EATER) * (double) dmg);
