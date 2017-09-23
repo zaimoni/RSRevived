@@ -11,7 +11,6 @@
 // #define SUICIDE_BY_LONG_WAIT
 #define NO_PEACE_WALLS
 // #define SPEEDY_GONZALES
-#define ACTOR_SPRITE_CACHE
 #define FRAGILE_RENDERING
 
 using djack.RogueSurvivor.Data;
@@ -6631,7 +6630,7 @@ namespace djack.RogueSurvivor.Engine
       return (baseAi.Order != null ? baseAi.Order.ToString() : "(no orders)") + string.Format("(trust:{0})", follower.TrustInLeader);
     }
 
-    private string[] DescribeMapObject(MapObject obj, Map map, Point mapPos)
+    static private string[] DescribeMapObject(MapObject obj, Map map, Point mapPos)
     {
       List<string> stringList = new List<string>(4);
       stringList.Add(string.Format("{0}.", obj.AName));
@@ -10235,18 +10234,16 @@ namespace djack.RogueSurvivor.Engine
       if (actor.Model.ImageID != null) m_UI.UI_DrawImage(actor.Model.ImageID, gx1, gy1, tint);
       else {
         // XXX would check sprite cache here
-        DrawActorDecoration(actor, gx1, gy1, DollPart.SKIN, tint);
-        DrawActorDecoration(actor, gx1, gy1, DollPart.FEET, tint);
-        DrawActorDecoration(actor, gx1, gy1, DollPart.LEGS, tint);
-        DrawActorDecoration(actor, gx1, gy1, DollPart.TORSO, tint);
-        DrawActorEquipment(actor, gx1, gy1, DollPart.TORSO, tint);
-        DrawActorDecoration(actor, gx1, gy1, DollPart.EYES, tint);
-        DrawActorDecoration(actor, gx1, gy1, DollPart.HEAD, tint);
-        DrawActorEquipment(actor, gx1, gy1, DollPart.LEFT_HAND, tint);
-        DrawActorEquipment(actor, gx1, gy1, DollPart.RIGHT_HAND, tint);
-#if ACTOR_SPRITE_CACHE
+        DrawActorDecoration(actor, DollPart.SKIN, tint);
+        DrawActorDecoration(actor, DollPart.FEET, tint);
+        DrawActorDecoration(actor, DollPart.LEGS, tint);
+        DrawActorDecoration(actor, DollPart.TORSO, tint);
+        DrawActorEquipment(actor, DollPart.TORSO, tint);
+        DrawActorDecoration(actor, DollPart.EYES, tint);
+        DrawActorDecoration(actor, DollPart.HEAD, tint);
+        DrawActorEquipment(actor, DollPart.LEFT_HAND, tint);
+        DrawActorEquipment(actor, DollPart.RIGHT_HAND, tint);
         m_UI.DrawTile(gx1, gy1);    // would hand off to sprite cache here
-#endif
       }
       int gx2 = gx1;
       int gy2 = gy1;
@@ -10326,19 +10323,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, Color tint)
+    public void DrawActorDecoration(Actor actor, DollPart part, Color tint)
     {
       List<string> decorations = actor.Doll.GetDecorations(part);
       if (decorations == null) return;
-#if FAIL
-    void AddTile(Image img);
-    void AddTile(Image img, Color color);
-    void AppendTile(Image img);
-    void AppendTile(Color color, string text, Font font, int x, int y);
-    void DrawTile(int x, int y);
-#endif
       foreach (string imageID in decorations)
-#if ACTOR_SPRITE_CACHE
       {// the skin is both guaranteed to be present when any decorations are present, and be unique
         if (DollPart.SKIN==part) {
           m_UI.AddTile(imageID, tint);
@@ -10346,9 +10335,6 @@ namespace djack.RogueSurvivor.Engine
           m_UI.AppendTile(imageID, tint);
         }
       }      
-#else
-        m_UI.UI_DrawImage(imageID, gx, gy, tint);
-#endif
     }
 
     public void DrawActorDecoration(Actor actor, int gx, int gy, DollPart part, float rotation, float scale)
@@ -10359,15 +10345,11 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawImageTransform(imageID, gx, gy, rotation, scale);
     }
 
-    public void DrawActorEquipment(Actor actor, int gx, int gy, DollPart part, Color tint)
+    public void DrawActorEquipment(Actor actor, DollPart part, Color tint)
     {
       Item equippedItem = actor.GetEquippedItem(part);
       if (equippedItem == null) return;
-#if ACTOR_SPRITE_CACHE
       m_UI.AppendTile(equippedItem.ImageID, tint);
-#else
-      m_UI.UI_DrawImage(equippedItem.ImageID, gx, gy, tint);
-#endif
     }
 
     public void DrawCorpse(Corpse c, int gx, int gy, Color tint)
