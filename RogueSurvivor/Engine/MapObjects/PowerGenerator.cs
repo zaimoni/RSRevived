@@ -28,19 +28,14 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       m_OnImageID = onImageID;
     }
 
-    public override void SetState(int newState)
+    override protected string StateToID(int x)
     {
-      switch (newState) {
-        case STATE_OFF:
-          ImageID = m_OffImageID;
-          break;
-        case STATE_ON:
-          ImageID = m_OnImageID;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled state");
+      switch(x)
+      {
+      case STATE_OFF: return m_OffImageID;
+      case STATE_ON: return m_OnImageID;
+      default: throw new ArgumentOutOfRangeException("newState unhandled");
       }
-      base.SetState(newState);
     }
 
     public void TogglePower()

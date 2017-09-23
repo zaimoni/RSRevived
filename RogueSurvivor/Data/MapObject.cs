@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_ImageID;
       }
-      set {
+      set { // only used by subclasses of StateMapObject
         m_ImageID = value;
       }
     }
