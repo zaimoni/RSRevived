@@ -13,14 +13,45 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   internal class DoorWindow : StateMapObject
   {
     public const int BASE_HITPOINTS = 40;
-    public const int STATE_CLOSED = 1;
-    public const int STATE_OPEN = 2;
-    public const int STATE_BROKEN = 3;
-    private readonly string m_ClosedImageID;
-    private readonly string m_OpenImageID;
-    private readonly string m_BrokenImageID;
-    private readonly bool m_IsWindow;
-    private int m_BarricadePoints;
+    public const int STATE_CLOSED = 0;
+    public const int STATE_OPEN = 1;
+    public const int STATE_BROKEN = 2;
+    private const int MAX_STATE = 3;
+
+    public enum DW_type : byte {
+      WOODEN = 0,
+      HOSPITAL,
+      CHAR,
+      GLASS,
+      IRON,
+      WINDOW,
+      MAX
+    };
+
+    // don't fold maxhp into here just yet.
+    // if we end up allowing constructing wooden doors w/carpentry, perhaps 
+    // post-apocalypse doors shouldn't be as durable as pre-apocalypse
+    // or maybe other choices available in this regard
+    static string[] names = new string[(int)DW_type.MAX]{
+      "wooden door",
+      "door",
+      "CHAR door",
+      "glass door",
+      "iron door",
+      "window"
+    };
+
+    static string[][] images = new string[(int)DW_type.MAX][]{
+       new string[MAX_STATE]{ Gameplay.GameImages.OBJ_WOODEN_DOOR_CLOSED, Gameplay.GameImages.OBJ_WOODEN_DOOR_OPEN, Gameplay.GameImages.OBJ_WOODEN_DOOR_BROKEN},
+       new string[MAX_STATE]{ Gameplay.GameImages.OBJ_HOSPITAL_DOOR_CLOSED, Gameplay.GameImages.OBJ_HOSPITAL_DOOR_OPEN, Gameplay.GameImages.OBJ_HOSPITAL_DOOR_BROKEN},
+       new string[MAX_STATE]{ Gameplay.GameImages.OBJ_CHAR_DOOR_CLOSED, Gameplay.GameImages.OBJ_CHAR_DOOR_OPEN, Gameplay.GameImages.OBJ_CHAR_DOOR_BROKEN},
+       new string[MAX_STATE]{ Gameplay.GameImages.OBJ_GLASS_DOOR_CLOSED, Gameplay.GameImages.OBJ_GLASS_DOOR_OPEN, Gameplay.GameImages.OBJ_GLASS_DOOR_BROKEN},
+       new string[MAX_STATE]{ Gameplay.GameImages.OBJ_IRON_DOOR_CLOSED, Gameplay.GameImages.OBJ_IRON_DOOR_OPEN, Gameplay.GameImages.OBJ_IRON_DOOR_BROKEN},
+       new string[MAX_STATE]{ Gameplay.GameImages.OBJ_WINDOW_CLOSED, Gameplay.GameImages.OBJ_WINDOW_OPEN, Gameplay.GameImages.OBJ_WINDOW_BROKEN }
+    };
+
+    private readonly byte m_type;
+    private int m_BarricadePoints = 0;
 
     public bool IsOpen { get { return State == STATE_OPEN; } }
     public bool IsClosed { get { return State == STATE_CLOSED; } }
@@ -31,11 +62,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       get {
         if (m_BarricadePoints > 0) return false;
         if (State != STATE_OPEN) return base.IsTransparent;
-        return FireState != MapObject.Fire.ONFIRE;
+        return FireState != Fire.ONFIRE;
       }
     }
 
-    public bool IsWindow { get { return m_IsWindow; } }
+    public bool IsWindow { get { return m_type==(byte)DW_type.WINDOW; } }
 
     public int BarricadePoints {
       get {
@@ -56,15 +87,30 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
 
-    public DoorWindow(string name, string closedImageID, string openImageID, string brokenImageID, int hitPoints)
-      : base(name, closedImageID, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)
+    public DoorWindow(DW_type _type, int hitPoints)
+      : base(names[(int)(_type)], images[(int)(_type)][STATE_CLOSED], MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)
     {
-      m_ClosedImageID = closedImageID;
-      m_OpenImageID = openImageID;
-      m_BrokenImageID = brokenImageID;
-      m_BarricadePoints = 0;
+      m_type = (byte)_type;
       _SetState(STATE_CLOSED);
-      if ("window" == name) m_IsWindow = true;  // XXX arguably should be a constructor parameter
+      switch(m_type)
+      {
+      case (byte)DW_type.WOODEN:
+      case (byte)DW_type.HOSPITAL:
+        GivesWood = true;
+        break;
+      case (byte)DW_type.CHAR:
+      case (byte)DW_type.IRON:
+        break;
+      case (byte)DW_type.GLASS:
+        IsMaterialTransparent = true;
+        BreaksWhenFiredThrough = true;
+        break;
+      case (byte)DW_type.WINDOW:
+        IsMaterialTransparent = true;
+        GivesWood = true;
+        BreaksWhenFiredThrough = true;
+        break;
+      }
     }
 
     public void Barricade(int delta)
@@ -95,34 +141,21 @@ namespace djack.RogueSurvivor.Engine.MapObjects
 
     override protected string StateToID(int x)
     {
-      switch(x)
-      {
-      case STATE_CLOSED: return m_ClosedImageID;
-      case STATE_OPEN: return m_OpenImageID;
-      case STATE_BROKEN: return m_BrokenImageID;
-      default: throw new ArgumentOutOfRangeException("newState unhandled");
-      }
+#if DEBUG
+      if (0>x || MAX_STATE<= x) throw new ArgumentOutOfRangeException("newState unhandled");
+#endif
+      return images[m_type][x];
     }
 
     private void _SetState(int newState)
     { // cf IsTransparent
       if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
       base.SetState(newState);
-      switch(State) {
-        case STATE_CLOSED:
-          IsWalkable = false;
-          break;
-        case STATE_OPEN:
-          IsWalkable = true;
-          break;
-        case STATE_BROKEN:
+      IsWalkable = (State!= STATE_CLOSED);
+      if (STATE_BROKEN == State) { 
           BreakState = Break.BROKEN;
           HitPoints = 0;
           m_BarricadePoints = 0;
-          IsWalkable = true;
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("newState unhandled");
       }
     }
 

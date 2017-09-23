@@ -606,46 +606,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.StartingSkill(skillID);
     }
 
-    protected DoorWindow MakeObjWoodenDoor()
-    {
-      return new DoorWindow("wooden door", GameImages.OBJ_WOODEN_DOOR_CLOSED, GameImages.OBJ_WOODEN_DOOR_OPEN, GameImages.OBJ_WOODEN_DOOR_BROKEN, DoorWindow.BASE_HITPOINTS) {
-        GivesWood = true
-      };
-    }
-
-    protected DoorWindow MakeObjHospitalDoor()
-    {
-      return new DoorWindow("door", GameImages.OBJ_HOSPITAL_DOOR_CLOSED, GameImages.OBJ_HOSPITAL_DOOR_OPEN, GameImages.OBJ_HOSPITAL_DOOR_BROKEN, DoorWindow.BASE_HITPOINTS) {
-        GivesWood = true
-      };
-    }
-
-    protected DoorWindow MakeObjCharDoor()
-    {
-      return new DoorWindow("CHAR door", GameImages.OBJ_CHAR_DOOR_CLOSED, GameImages.OBJ_CHAR_DOOR_OPEN, GameImages.OBJ_CHAR_DOOR_BROKEN, 4*DoorWindow.BASE_HITPOINTS);
-    }
-
-    protected DoorWindow MakeObjGlassDoor()
-    {
-      return new DoorWindow("glass door", GameImages.OBJ_GLASS_DOOR_CLOSED, GameImages.OBJ_GLASS_DOOR_OPEN, GameImages.OBJ_GLASS_DOOR_BROKEN, DoorWindow.BASE_HITPOINTS/4) {
-        IsMaterialTransparent = true,
-        BreaksWhenFiredThrough = true
-      };
-    }
-
-    protected DoorWindow MakeObjIronDoor()
-    {
-      return new DoorWindow("iron door", GameImages.OBJ_IRON_DOOR_CLOSED, GameImages.OBJ_IRON_DOOR_OPEN, GameImages.OBJ_IRON_DOOR_BROKEN, 8*DoorWindow.BASE_HITPOINTS);
-    }
-
-    protected DoorWindow MakeObjWindow()
-    {
-      return new DoorWindow("window", GameImages.OBJ_WINDOW_CLOSED, GameImages.OBJ_WINDOW_OPEN, GameImages.OBJ_WINDOW_BROKEN, DoorWindow.BASE_HITPOINTS/4) {
-        IsMaterialTransparent = true,
-        GivesWood = true,
-        BreaksWhenFiredThrough = true
-      };
-    }
+    static protected DoorWindow MakeObjWoodenDoor() { return new DoorWindow(DoorWindow.DW_type.WOODEN, DoorWindow.BASE_HITPOINTS); }
+    static protected DoorWindow MakeObjHospitalDoor() { return new DoorWindow(DoorWindow.DW_type.HOSPITAL, DoorWindow.BASE_HITPOINTS); }
+    static protected DoorWindow MakeObjCharDoor() { return new DoorWindow(DoorWindow.DW_type.CHAR, 4*DoorWindow.BASE_HITPOINTS); }
+    static protected DoorWindow MakeObjGlassDoor() { return new DoorWindow(DoorWindow.DW_type.GLASS, DoorWindow.BASE_HITPOINTS/4); }
+    static protected DoorWindow MakeObjIronDoor() { return new DoorWindow(DoorWindow.DW_type.IRON, 8*DoorWindow.BASE_HITPOINTS); }
+    static protected DoorWindow MakeObjWindow() { return new DoorWindow(DoorWindow.DW_type.WINDOW, DoorWindow.BASE_HITPOINTS/4); }
 
     protected MapObject MakeObjFence()
     {
