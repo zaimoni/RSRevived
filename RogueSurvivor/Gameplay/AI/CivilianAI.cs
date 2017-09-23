@@ -497,7 +497,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "trading");
 #endif
                 MarkActorAsRecentTrade(actor);
-                game.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
+                RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
                 return tmpAction;
               }
             } else {
@@ -536,7 +536,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "starving, attacking for food");
 #endif
             if (game.Rules.RollChance(HUNGRY_CHARGE_EMOTE_CHANCE))
-              game.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
+              RogueGame.DoSay(m_Actor, target.Percepted as Actor, "HEY! YOU! SHARE SOME FOOD!", RogueGame.Sayflags.IS_FREE_ACTION);
             if (!m_Actor.TargetActor.IsSleeping) {
               if (m_Actor.TargetActor.Faction.ID.ExtortionIsAggression()) {
                 game.DoMakeAggression(m_Actor,m_Actor.TargetActor);
@@ -669,7 +669,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         Actor actor = p.Percepted as Actor;
         if (actor == null || actor == m_Actor) return false;
-        return IsSoldier(actor);
+        return actor.Controller is SoldierAI;
       });
       if (percept1 != null) m_LastSoldierSaw = percept1;
 

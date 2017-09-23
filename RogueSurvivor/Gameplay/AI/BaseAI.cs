@@ -117,7 +117,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Minimize(p=>Rules.StdDistance(a_pos, p.Location.Position));
     }
 
-    protected Percept FilterStrongestScent(List<Percept> scents)
+    static protected Percept FilterStrongestScent(List<Percept> scents)
     {
       if (scents == null || scents.Count == 0) return null;
       Percept percept = null;
@@ -184,6 +184,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return perceptList;
     }
 
+#if DEAD_FUNC
     protected List<Percept> SortByDate(List<Percept> percepts)
     {
       if (null == percepts || 0 == percepts.Count) return null;
@@ -191,6 +192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       perceptList.Sort((pA, pB) => pB.Turn.CompareTo(pA.Turn));
       return perceptList;
     }
+#endif
 
     // policy change for behaviors: unless the action from a behavior is being used to decide whether to commit to the behavior,
     // a behavior should handle all free actions itself and return only non-free actions.
@@ -348,7 +350,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected int ComputeTrapsMaxDamage(Map map, Point pos)
+    static protected int ComputeTrapsMaxDamage(Map map, Point pos)
     {
       Inventory itemsAt = map.GetItemsAt(pos);
       if (itemsAt == null) return 0;
@@ -493,7 +495,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? safe.ToList() : src);
     }
 
-    private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point> avoid)
+    static private List<Point> DecideMove_Avoid(List<Point> src, IEnumerable<Point> avoid)
     {
       if (null == avoid) return src;
       IEnumerable<Point> ok = src.Except(avoid);
@@ -511,7 +513,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
-    private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
+    static private List<Point> DecideMove_maximize_visibility(List<Point> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
         tainted.IntersectWith(new_los);
         if (0>=tainted.Count) return dests;
         Dictionary<Point,int> taint_exposed = new Dictionary<Point,int>();
@@ -1014,7 +1016,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (null == listOfChoices ||  0 >= listOfChoices.Count()) return null;
 
@@ -1047,7 +1049,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // isBetterThanEvalFn will never see NaN
-    protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    static protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
       if (null == listOfChoices || 0 >= listOfChoices.Count()) return null;
 
@@ -1080,7 +1082,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
     }
 
-    protected bool IsValidFleeingAction(ActorAction a)
+    static protected bool IsValidFleeingAction(ActorAction a)
     {
       if (null == a) return false;
       if (!(a is ActionMoveStep) && !(a is ActionOpenDoor))
@@ -1109,16 +1111,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected bool IsValidMoveTowardGoalAction(ActorAction a)
+    static protected bool IsValidMoveTowardGoalAction(ActorAction a)
     {
       if (a != null && !(a is ActionChat) && (!(a is ActionGetFromContainer) && !(a is ActionSwitchPowerGenerator)))
         return !(a is ActionRechargeItemBattery);
-      return false;
-    }
-
-    protected bool IsSoldier(Actor actor)
-    {
-      if (actor != null) return actor.Controller is SoldierAI;
       return false;
     }
 
@@ -1180,7 +1176,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor.WillTireAfter(Rules.STAMINA_COST_RUNNING);
     }
 
-    protected bool HasSpeedAdvantage(Actor actor, Actor target)
+    static protected bool HasSpeedAdvantage(Actor actor, Actor target)
     {
       int num1 = actor.Speed;
       int num2 = target.Speed;
@@ -1215,6 +1211,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actor1;
     }
 
+#if DEAD_FUNC
     protected static List<Exit> ListAdjacentExits(Location fromLocation)
     {
       IEnumerable<Exit> adj_exits = Direction.COMPASS.Select(dir=> fromLocation.Map.GetExitAt(fromLocation.Position + dir)).Where(exit=>null!=exit);
@@ -1226,6 +1223,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Exit> exitList = ListAdjacentExits(fromLocation);
       return null != exitList ? exitList[game.Rules.Roll(0, exitList.Count)] : null;
     }
+#endif
 
     public static bool IsZoneChange(Map map, Point pos)
     {

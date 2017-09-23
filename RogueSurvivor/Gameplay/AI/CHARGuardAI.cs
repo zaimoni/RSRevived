@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Actor actor = p.Percepted as Actor;
           if (actor.Faction == game.GameFactions.TheCHARCorporation)
             return false;
-          return game.IsInCHARProperty(actor.Location);
+          return RogueGame.IsInCHARProperty(actor.Location);
         });
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;

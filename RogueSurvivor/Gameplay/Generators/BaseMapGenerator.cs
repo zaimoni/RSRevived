@@ -471,7 +471,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       m_DiceRoller = new DiceRoller();
     }
 
-    public void DressCivilian(DiceRoller roller, Actor actor)
+    static public void DressCivilian(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
         DressCivilian(roller, actor, MALE_EYES, MALE_SKINS, MALE_HEADS, BaseMapGenerator.MALE_TORSOS, BaseMapGenerator.MALE_LEGS, BaseMapGenerator.MALE_SHOES);
@@ -479,15 +479,15 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         DressCivilian(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS, BaseMapGenerator.FEMALE_TORSOS, BaseMapGenerator.FEMALE_LEGS, BaseMapGenerator.FEMALE_SHOES);
     }
 
-    public void SkinNakedHuman(DiceRoller roller, Actor actor)
+    static protected void SkinNakedHuman(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-                SkinNakedHuman(roller, actor, MALE_EYES, MALE_SKINS, MALE_HEADS);
+        SkinNakedHuman(roller, actor, MALE_EYES, MALE_SKINS, MALE_HEADS);
       else
-                SkinNakedHuman(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS);
+        SkinNakedHuman(roller, actor, BaseMapGenerator.FEMALE_EYES, BaseMapGenerator.FEMALE_SKINS, BaseMapGenerator.FEMALE_HEADS);
     }
 
-    public void DressCivilian(DiceRoller roller, Actor actor, string[] eyes, string[] skins, string[] heads, string[] torsos, string[] legs, string[] shoes)
+    static protected void DressCivilian(DiceRoller roller, Actor actor, string[] eyes, string[] skins, string[] heads, string[] torsos, string[] legs, string[] shoes)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, eyes[roller.Roll(0, eyes.Length)]);
@@ -498,7 +498,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.FEET, shoes[roller.Roll(0, shoes.Length)]);
     }
 
-    public void SkinNakedHuman(DiceRoller roller, Actor actor, string[] eyes, string[] skins, string[] heads)
+    static protected void SkinNakedHuman(DiceRoller roller, Actor actor, string[] eyes, string[] skins, string[] heads)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, eyes[roller.Roll(0, eyes.Length)]);
@@ -506,13 +506,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.HEAD, heads[roller.Roll(0, heads.Length)]);
     }
 
-    public void SkinDog(DiceRoller roller, Actor actor)
+    static protected void SkinDog(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.SKIN, BaseMapGenerator.DOG_SKINS[roller.Roll(0, BaseMapGenerator.DOG_SKINS.Length)]);
     }
 
-    public void DressArmy(DiceRoller roller, Actor actor)
+    static protected void DressArmy(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.SKIN, MALE_SKINS[roller.Roll(0, MALE_SKINS.Length)]);
@@ -522,7 +522,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.FEET, GameImages.ARMY_SHOES);
     }
 
-    public void DressPolice(DiceRoller roller, Actor actor)
+    static protected void DressPolice(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
@@ -534,7 +534,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
     }
 
-    public void DressBiker(DiceRoller roller, Actor actor)
+    static protected void DressBiker(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
@@ -544,7 +544,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.FEET, BaseMapGenerator.BIKER_SHOES[roller.Roll(0, BaseMapGenerator.BIKER_SHOES.Length)]);
     }
 
-    public void DressGangsta(DiceRoller roller, Actor actor)
+    static protected void DressGangsta(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
@@ -556,7 +556,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.FEET, BaseMapGenerator.MALE_SHOES[roller.Roll(0, BaseMapGenerator.MALE_SHOES.Length)]);
     }
 
-    public void DressCHARGuard(DiceRoller roller, Actor actor)
+    static protected void DressCHARGuard(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
@@ -565,7 +565,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.LEGS, BaseMapGenerator.CHARGUARD_LEGS[roller.Roll(0, BaseMapGenerator.CHARGUARD_LEGS.Length)]);
     }
 
-    public void DressBlackOps(DiceRoller roller, Actor actor)
+    static protected void DressBlackOps(DiceRoller roller, Actor actor)
     {
       actor.Doll.RemoveAllDecorations();
       actor.Doll.AddDecoration(DollPart.EYES, MALE_EYES[roller.Roll(0, MALE_EYES.Length)]);
@@ -573,34 +573,34 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\blackop_suit");
     }
 
-    public string RandomSkin(DiceRoller roller, bool isMale)
+    static protected string RandomSkin(DiceRoller roller, bool isMale)
     {
       string[] strArray = isMale ? MALE_SKINS : BaseMapGenerator.FEMALE_SKINS;
       return strArray[roller.Roll(0, strArray.Length)];
     }
 
-    public void GiveNameToActor(DiceRoller roller, Actor actor)
+    static public void GiveNameToActor(DiceRoller roller, Actor actor)
     {
       if (actor.Model.DollBody.IsMale)
-                GiveNameToActor(roller, actor, BaseMapGenerator.MALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
+        GiveNameToActor(roller, actor, BaseMapGenerator.MALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
       else
-                GiveNameToActor(roller, actor, BaseMapGenerator.FEMALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
+        GiveNameToActor(roller, actor, BaseMapGenerator.FEMALE_FIRST_NAMES, BaseMapGenerator.LAST_NAMES);
     }
 
-    public void GiveNameToActor(DiceRoller roller, Actor actor, string[] firstNames, string[] lastNames)
+    static protected void GiveNameToActor(DiceRoller roller, Actor actor, string[] firstNames, string[] lastNames)
     {
       actor.IsProperName = true;
       string str = firstNames[roller.Roll(0, firstNames.Length)] + " " + lastNames[roller.Roll(0, lastNames.Length)];
       actor.Name = str;
     }
 
-    public void GiveRandomSkillsToActor(DiceRoller roller, Actor actor, int count)
+    static protected void GiveRandomSkillsToActor(DiceRoller roller, Actor actor, int count)
     {
       for (int index = 0; index < count; ++index)
         GiveRandomSkillToActor(roller, actor);
     }
 
-    public void GiveRandomSkillToActor(DiceRoller roller, Actor actor)
+    static protected void GiveRandomSkillToActor(DiceRoller roller, Actor actor)
     {
       Skills.IDs skillID = !actor.Model.Abilities.IsUndead ? Skills.RollLiving(roller) : Skills.RollUndead(roller);
       actor.StartingSkill(skillID);
@@ -613,7 +613,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected DoorWindow MakeObjIronDoor() { return new DoorWindow(DoorWindow.DW_type.IRON, 8*DoorWindow.BASE_HITPOINTS); }
     static protected DoorWindow MakeObjWindow() { return new DoorWindow(DoorWindow.DW_type.WINDOW, DoorWindow.BASE_HITPOINTS/4); }
 
-    protected MapObject MakeObjFence()
+    static protected MapObject MakeObjFence()
     {
       return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS)
       {
@@ -624,7 +624,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjIronFence()
+    static protected MapObject MakeObjIronFence()
     {
       return new MapObject("iron fence", GameImages.OBJ_IRON_FENCE)
       {
@@ -632,7 +632,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjIronGate()
+    static protected MapObject MakeObjIronGate()
     {
       return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, 20* DoorWindow.BASE_HITPOINTS)
       {
@@ -640,7 +640,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    public Fortification MakeObjSmallFortification()
+    static public Fortification MakeObjSmallFortification()
     {
       return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){ 
         IsMaterialTransparent = true,
@@ -651,26 +651,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    public Fortification MakeObjLargeFortification()
+    static public Fortification MakeObjLargeFortification()
     {
       return new Fortification("large fortification", GameImages.OBJ_LARGE_WOODEN_FORTIFICATION, Fortification.LARGE_BASE_HITPOINTS) {
           GivesWood = true
       };
     }
 
-    protected MapObject MakeObjTree()
+    static protected MapObject MakeObjTree()
     {
       return new MapObject("tree", GameImages.OBJ_TREE, 10* DoorWindow.BASE_HITPOINTS) {
         GivesWood = true
       };
     }
 
-    protected MapObject MakeObjWreckedCar(DiceRoller roller)
+    static protected MapObject MakeObjWreckedCar(DiceRoller roller)
     {
       return MakeObjWreckedCar(BaseMapGenerator.CARS[roller.Roll(0, BaseMapGenerator.CARS.Length)]);
     }
 
-    protected MapObject MakeObjWreckedCar(string carImageID)
+    static protected MapObject MakeObjWreckedCar(string carImageID)
     {
       return new MapObject("wrecked car", carImageID)
       {
@@ -683,7 +683,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjShelf()
+    static protected MapObject MakeObjShelf()
     {
       return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS) {
         IsContainer = true,
@@ -693,7 +693,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjBench()
+    static protected MapObject MakeObjBench()
     {
       return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
@@ -703,7 +703,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjIronBench()
+    static protected MapObject MakeObjIronBench()
     {
       return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH) {
         IsMaterialTransparent = true,
@@ -712,7 +712,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjBed(string bedImageID)
+    static protected MapObject MakeObjBed(string bedImageID)
     {
       return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS)
       {
@@ -725,7 +725,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjWardrobe(string wardrobeImageID)
+    static protected MapObject MakeObjWardrobe(string wardrobeImageID)
     {
       return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS)
       {
@@ -737,7 +737,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjDrawer()
+    static protected MapObject MakeObjDrawer()
     {
       return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
@@ -748,7 +748,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjTable(string tableImageID)
+    static protected MapObject MakeObjTable(string tableImageID)
     {
       return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS)
       {
@@ -760,7 +760,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjChair(string chairImageID)
+    static protected MapObject MakeObjChair(string chairImageID)
     {
       return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3)
       {
@@ -772,7 +772,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjNightTable(string nightTableImageID)
+    static protected MapObject MakeObjNightTable(string nightTableImageID)
     {
       return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3)
       {
@@ -784,7 +784,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjFridge()
+    static protected MapObject MakeObjFridge()
     {
       return new MapObject("fridge", GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS)
       {
@@ -794,7 +794,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjJunk()
+    static protected MapObject MakeObjJunk()
     {
       return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
@@ -805,7 +805,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected MapObject MakeObjBarrels()
+    static protected MapObject MakeObjBarrels()
     {
       return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
@@ -818,12 +818,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected static PowerGenerator MakeObjPowerGenerator() { return new PowerGenerator(); }
 
-    public MapObject MakeObjBoard(string imageID, string[] text)
+    static public MapObject MakeObjBoard(string imageID, string[] text)
     {
       return new Board("board", imageID, text);
     }
 
-    public void DecorateOutsideWalls(Map map, Rectangle rect, Func<int, int, string> decoFn)
+    static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<int, int, string> decoFn)
     {
       for (int left = rect.Left; left < rect.Right; ++left) {
         for (int top = rect.Top; top < rect.Bottom; ++top) {
@@ -1121,10 +1121,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemAmmo(GameItems.AMMO_HEAVY_PISTOL);
     }
 
-    public ItemBodyArmor MakeItemArmyBodyArmor()
-    {
-      return new ItemBodyArmor(GameItems.ARMY_BODYARMOR);
-    }
+    static public ItemBodyArmor MakeItemArmyBodyArmor() { return new ItemBodyArmor(GameItems.ARMY_BODYARMOR); }
 
     static public ItemFood MakeItemArmyRation()
     {
@@ -1199,7 +1196,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       DoForEachTile(rect, pt => (map.GetMapObjectAt(pt) as DoorWindow)?.Barricade(barricadeLevel));
     }
 
-    protected Zone MakeUniqueZone(string basename, Rectangle rect)
+    // this is not a legitimate Zone constructor (signature conflict), it's a preprocessing.
+    static protected Zone MakeUniqueZone(string basename, Rectangle rect)
     {
       return new Zone(string.Format("{0}@{1}-{2}", (object) basename, (object) (rect.Left + rect.Width / 2), (object) (rect.Top + rect.Height / 2)), rect);
     }

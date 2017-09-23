@@ -198,7 +198,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return AddExplosivesToDamageField(damage_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
 
-    protected void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+    static protected void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
     {
       List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
       if (null == goals) return;

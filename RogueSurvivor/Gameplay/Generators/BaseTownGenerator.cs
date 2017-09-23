@@ -629,7 +629,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
     }
 
-    protected bool IsThereASpecialBuilding(Map map, Rectangle rect)
+    static private bool IsThereASpecialBuilding(Map map, Rectangle rect)
     {
       List<Zone> zonesAt = map.GetZonesAt(rect.Left, rect.Top);
       if (null != zonesAt && zonesAt.Any(zone=> zone.Name.Contains("Sewers Maintenance") || zone.Name.Contains("Subway Station") || zone.Name.Contains("office") || zone.Name.Contains("shop")))
@@ -2969,13 +2969,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return numberedName;
     }
 
-    private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID, bool isAnAIExit)
+    static private void AddExit(Map from, Point fromPosition, Map to, Point toPosition, string exitImageID, bool isAnAIExit)
     {
       from.SetExitAt(fromPosition, new Exit(to, toPosition, isAnAIExit));
       from.AddDecorationAt(exitImageID, fromPosition);
     }
 
-    protected void MakeWalkwayZones(Map map, BaseTownGenerator.Block b)
+    static private void MakeWalkwayZones(Map map, Block b)
     {
       Rectangle rectangle = b.Rectangle;
       map.AddZone(MakeUniqueZone("walkway", new Rectangle(rectangle.Left, rectangle.Top, rectangle.Width - 1, 1)));

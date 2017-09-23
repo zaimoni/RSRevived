@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoSay(m_Actor, m_Target, m_Text, m_Flags);
+      RogueGame.DoSay(m_Actor, m_Target, m_Text, m_Flags);
     }
   }
 }

@@ -764,7 +764,7 @@ namespace djack.RogueSurvivor.Engine
       WaitEnter();
     }
 
-    private void LogSaveScumStats() {
+    static private void LogSaveScumStats() {
       DiceRoller tmp = new DiceRoller(Session.Get.Seed);
       string msg = "first seven RNG d100 values:";
       List<int> tmp2 = new List<int>(7);
@@ -1144,7 +1144,7 @@ namespace djack.RogueSurvivor.Engine
       return ChoiceMenuNN(choice_handler, setup_handler, entries.Length);
     }
 
-    private string DescribeUndeadModelStatLine(ActorModel m)
+    static private string DescribeUndeadModelStatLine(ActorModel m)
     {
       return string.Format("HP:{0:D3}  Spd:{1:F2}  Atk:{2:D2}  Def:{3:D2}  Dmg:{4:D2}  FoV:{5:D1}  Sml:{6:F2}", m.StartingSheet.BaseHitPoints, (float)((double)m.DollBody.Speed / 100.0), m.StartingSheet.UnarmedAttack.HitValue, m.StartingSheet.BaseDefence.Value, m.StartingSheet.UnarmedAttack.DamageValue, m.StartingSheet.BaseViewRange, m.StartingSheet.BaseSmellRating);
     }
@@ -1936,7 +1936,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
+    static private void NotifyOrderablesAI(Map map, RaidType raid, Point position)
     {
       foreach (Actor actor in map.Actors) {
         (actor.Controller as OrderableAI)?.OnRaid(raid, new Location(map, position), map.LocalTime.TurnCounter);
@@ -2451,25 +2451,25 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
-    private int CountLivings(Map map)
+    static private int CountLivings(Map map)
     {
       Contract.Requires(null != map);
       return map.Actors.Count(a => !a.Model.Abilities.IsUndead);
     }
 
-    private int CountFaction(Map map, Faction f)
+    static private int CountFaction(Map map, Faction f)
     {
       Contract.Requires(null != map);
       return map.Actors.Count(a => a.Faction == f);
     }
 
-    private int CountUndeads(Map map)
+    static private int CountUndeads(Map map)
     {
       Contract.Requires(null != map);
       return map.Actors.Count(a => a.Model.Abilities.IsUndead);
     }
 
-    private int CountFoodItemsNutrition(Map map)
+    static private int CountFoodItemsNutrition(Map map)
     {
       Contract.Requires(null != map);
       int num1 = 0;
@@ -2487,7 +2487,7 @@ namespace djack.RogueSurvivor.Engine
       return num1;
     }
 
-    private bool CheckForEvent_ZombieInvasion(Map map)
+    static private bool CheckForEvent_ZombieInvasion(Map map)
     {
       return map.LocalTime.IsStrikeOfMidnight && CountUndeads(map) < s_Options.MaxUndeads;
     }
@@ -2517,12 +2517,12 @@ namespace djack.RogueSurvivor.Engine
         SpawnNewSewersUndead(map);
     }
 
-    private bool CheckForEvent_RefugeesWave(Map map)
+    static private bool CheckForEvent_RefugeesWave(Map map)
     {
       return map.LocalTime.IsStrikeOfMidday;
     }
 
-    private float RefugeesEventDistrictFactor(District d)
+    static private float RefugeesEventDistrictFactor(District d)
     {
       int x = d.WorldPosition.X;
       int y = d.WorldPosition.Y;
@@ -2641,7 +2641,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
 
-    private bool IsSuitableDropSuppliesPoint(Map map, Point pt)
+    static private bool IsSuitableDropSuppliesPoint(Map map, Point pt)
     {
       if (!map.IsValid(pt)) return false;
       Tile tileAt = map.GetTileAtExt(pt);
@@ -2660,7 +2660,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
+    static private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
     {
       if (Session.Get.HasRaidHappened(raid, district))
         return mapTime.TurnCounter - Session.Get.LastRaidTime(raid, district) < sinceNTurns;
@@ -2779,14 +2779,14 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "A Band of Survivors entered the district.");
     }
 
-    private int DistanceToPlayer(Map map, int x, int y)
+    static private int DistanceToPlayer(Map map, int x, int y)
     {
 	  List<Actor> players = map.Players;
 	  if (0 >= players.Count) return int.MaxValue;
 	  return players.Select(p=> Rules.GridDistance(p.Location.Position, x, y)).Min();
     }
 
-    private int DistanceToPlayer(Map map, Point pos)
+    static private int DistanceToPlayer(Map map, Point pos)
     {
       return DistanceToPlayer(map, pos.X, pos.Y);
     }
@@ -3503,7 +3503,7 @@ namespace djack.RogueSurvivor.Engine
       WaitEscape();
     }
 
-	private string HandleCityInfo_DistrictToCode(DistrictKind d)
+	static private string HandleCityInfo_DistrictToCode(DistrictKind d)
 	{
        switch (d) {
          case DistrictKind.GENERAL: return "Gen";
@@ -3520,7 +3520,7 @@ namespace djack.RogueSurvivor.Engine
        }
 	}
 
-	private Color HandleCityInfo_DistrictToColor(DistrictKind d)
+	static private Color HandleCityInfo_DistrictToColor(DistrictKind d)
 	{
        switch (d) {
          case DistrictKind.GENERAL: return Color.Gray;
@@ -5893,7 +5893,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void GetAdvisorHintText(AdvisorHint hint, out string title, out string[] body)
+    static private void GetAdvisorHintText(AdvisorHint hint, out string title, out string[] body)
     {
       switch (hint)
       {
@@ -6419,7 +6419,7 @@ namespace djack.RogueSurvivor.Engine
       while (m_UI.UI_WaitKey().KeyCode != Keys.Escape);
     }
 
-    private int KeyToChoiceNumber(Keys key)
+    static private int KeyToChoiceNumber(Keys key)
     {
       switch (key)
       {
@@ -6592,7 +6592,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string DescribeActorActivity(Actor actor)
+    static private string DescribeActorActivity(Actor actor)
     {
       if (actor.IsPlayer) return null;
       switch (actor.Activity) {
@@ -6625,7 +6625,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private string DescribePlayerFollowerStatus(Actor follower)
+    static private string DescribePlayerFollowerStatus(Actor follower)
     {
       OrderableAI baseAi = follower.Controller as OrderableAI;
       return (baseAi.Order != null ? baseAi.Order.ToString() : "(no orders)") + string.Format("(trust:{0})", follower.TrustInLeader);
@@ -6694,7 +6694,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeCorpses(List<Corpse> corpses)
+    static private string[] DescribeCorpses(List<Corpse> corpses)
     {
       List<string> stringList = new List<string>(corpses.Count + 2);
       if (corpses.Count > 1)
@@ -6708,17 +6708,17 @@ namespace djack.RogueSurvivor.Engine
     }
 
 	// UI functions ... do not belong in Corpse class for now
-	private string DescribeCorpseLong_DescInfectionPercent(int num)
+	static private string DescribeCorpseLong_DescInfectionPercent(int num)
 	{
-			return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
+	  return num != 0 ? (num >= 5 ? (num >= 15 ? (num >= 30 ? (num >= 55 ? (num >= 70 ? (num >= 99 ? "7/7 - total" : "6/7 - great") : "5/7 - important") : "4/7 - average") : "3/7 - low") : "2/7 - minor") : "1/7 - traces") : "0/7 - none";
 	}
 
-	private string DescribeCorpseLong_DescRiseProbability(int num)
+	static private string DescribeCorpseLong_DescRiseProbability(int num)
 	{
-			return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
+	  return num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely";
 	}
 
-	private string DescribeCorpseLong_DescRotLevel(int num)
+	static private string DescribeCorpseLong_DescRotLevel(int num)
 	{
       switch (num)
       {
@@ -6737,7 +6737,7 @@ namespace djack.RogueSurvivor.Engine
       }
 	}
 
-	private string DescribeCorpseLong_DescReviveChance(int num)
+	static private string DescribeCorpseLong_DescReviveChance(int num)
 	{
 			return num != 0 ? (num >= 5 ? (num >= 20 ? (num >= 40 ? (num >= 60 ? (num >= 80 ? (num >= 99 ? "6/6 - certain" : "5/6 - most likely") : "4/6 - very likely") : "3/6 - likely") : "2/6 - possible") : "1/6 - unlikely") : "0/6 - extremely unlikely") : "impossible";
 	}
@@ -6767,7 +6767,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string DescribeItemShort(Item it)
+    static private string DescribeItemShort(Item it)
     {
       string str = it.Quantity > 1 ? it.Model.PluralName : it.AName;
       if (it is ItemFood) {
@@ -6892,7 +6892,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemWeapon(ItemWeapon w)
+    static private string[] DescribeItemWeapon(ItemWeapon w)
     {
       List<string> stringList = new List<string>();
       ItemWeaponModel itemWeaponModel = w.Model;
@@ -6925,7 +6925,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemAmmo(ItemAmmo am)
+    static private string[] DescribeItemAmmo(ItemAmmo am)
     {
       return new List<string>{
         "> ammo",
@@ -6998,7 +6998,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemBodyArmor(ItemBodyArmor b)
+    static private string[] DescribeItemBodyArmor(ItemBodyArmor b)
     {
       List<string> stringList1 = new List<string>();
       stringList1.Add("> body armor");
@@ -7033,7 +7033,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList1.ToArray();
     }
 
-    private string[] DescribeItemSprayPaint(ItemSprayPaint sp)
+    static private string[] DescribeItemSprayPaint(ItemSprayPaint sp)
     {
       List<string> stringList = new List<string>{ "> spray paint" };
       int max_paint = sp.Model.MaxPaintQuantity;
@@ -7044,7 +7044,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemSprayScent(ItemSprayScent sp)
+    static private string[] DescribeItemSprayScent(ItemSprayScent sp)
     {
       List<string> stringList = new List<string>{ "> spray scent" };
       int max_spray = sp.Model.MaxSprayQuantity;
@@ -7070,7 +7070,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemTrap(ItemTrap tr)
+    static private string[] DescribeItemTrap(ItemTrap tr)
     {
       List<string> stringList = new List<string>();
       ItemTrapModel itemTrapModel = tr.Model as ItemTrapModel;
@@ -7110,7 +7110,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string DescribeBatteries(BatteryPowered it)
+    static private string DescribeBatteries(BatteryPowered it)
     {
       int hours = BatteriesToHours(it.Batteries);
       if (it.Batteries < it.MaxBatteries)
@@ -7118,7 +7118,7 @@ namespace djack.RogueSurvivor.Engine
       return string.Format("Batteries : {0} MAX ({1}h)", it.Batteries, hours);
     }
 
-    private string DescribeSkillShort(Skills.IDs id)
+    static private string DescribeSkillShort(Skills.IDs id)
     {
       switch (id) {
         case Skills.IDs._FIRST:
@@ -7184,7 +7184,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private string DescribeDayPhase(DayPhase phase)
+    static private string DescribeDayPhase(DayPhase phase)
     {
       switch (phase)
       {
@@ -7209,7 +7209,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private string DescribeWeather(Weather weather)
+    static private string DescribeWeather(Weather weather)
     {
       switch (weather)
       {
@@ -7226,7 +7226,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private Color WeatherColor(Weather weather)
+    static private Color WeatherColor(Weather weather)
     {
       switch (weather)
       {
@@ -7243,12 +7243,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private int BatteriesToHours(int batteries)
+    static private int BatteriesToHours(int batteries)
     {
       return batteries / WorldTime.TURNS_PER_HOUR;
     }
 
-    private int FoodToHoursUntilHungry(int food)
+    static private int FoodToHoursUntilHungry(int food)
     {
       int num = food - Actor.FOOD_HUNGRY_LEVEL;
       if (num <= 0)
@@ -7256,7 +7256,7 @@ namespace djack.RogueSurvivor.Engine
       return num / WorldTime.TURNS_PER_HOUR;
     }
 
-    private int FoodToHoursUntilRotHungry(int food)
+    static private int FoodToHoursUntilRotHungry(int food)
     {
       int num = food - Actor.ROT_HUNGRY_LEVEL;
       if (num <= 0)
@@ -7460,7 +7460,7 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
-    private void UntriggerAllTrapsHere(Location loc)
+    static private void UntriggerAllTrapsHere(Location loc)
     {
       Inventory itemsAt = loc.Map.GetItemsAt(loc.Position);
       if (itemsAt == null) return;
@@ -8205,7 +8205,7 @@ namespace djack.RogueSurvivor.Engine
       return num1;
     }
 
-    private void ExplosionChainReaction(Inventory inv, Location location)
+    static private void ExplosionChainReaction(Inventory inv, Location location)
     {
       if (inv == null || inv.IsEmpty) return;
       List<ItemExplosive> itemExplosiveList = null;
@@ -8393,7 +8393,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
+    static public void DoSay(Actor speaker, Actor target, string text, RogueGame.Sayflags flags)
     {
       speaker.Say(target,text,flags);
     }
@@ -8550,20 +8550,20 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    private void DiscardItem(Actor actor, Item it)
+    static private void DiscardItem(Actor actor, Item it)
     {
       actor.Inventory.RemoveAllQuantity(it);
       it.Unequip();
     }
 
-    private void DropItem(Actor actor, Item it)
+    static private void DropItem(Actor actor, Item it)
     {
       actor.Inventory.RemoveAllQuantity(it);
       actor.Location.Map.DropItemAt(it, actor.Location.Position);
       it.Unequip();
     }
 
-    private void DropCloneItem(Actor actor, Item it, Item clone)
+    static private void DropCloneItem(Actor actor, Item it, Item clone)
     {
       if (--it.Quantity <= 0)
         actor.Inventory.RemoveAllQuantity(it);
@@ -8620,7 +8620,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DoVomit(Actor actor)
+    static private void DoVomit(Actor actor)
     {
       actor.StaminaPoints -= Rules.FOOD_VOMIT_STA_COST;
       actor.Drowse(WorldTime.TURNS_PER_HOUR);
@@ -8749,7 +8749,7 @@ namespace djack.RogueSurvivor.Engine
         ItemBarricadeMaterial firstByType = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
         actor.Inventory.Consume(firstByType);
       }
-      Fortification fortification = isLarge ? m_TownGenerator.MakeObjLargeFortification() : m_TownGenerator.MakeObjSmallFortification();
+      Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceMapObjectAt(fortification, buildPos);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
@@ -9241,6 +9241,7 @@ namespace djack.RogueSurvivor.Engine
       }));
     }
 
+#if DEAD_FUNC
     public void UndeadRemains(Map map, Point position)
     {
       Tile tileAt = map.GetTileAt(position);
@@ -9248,6 +9249,7 @@ namespace djack.RogueSurvivor.Engine
       tileAt.AddDecoration(GameImages.DECO_ZOMBIE_REMAINS);
       map.AddTimer(new TaskRemoveDecoration(WorldTime.TURNS_PER_DAY, position.X, position.Y, GameImages.DECO_ZOMBIE_REMAINS));
     }
+#endif
 
     public void DropCorpse(Actor deadGuy)
     {
@@ -9304,7 +9306,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.StopAll();
     }
 
-    private string TimeSpanToString(TimeSpan rt)
+    static private string TimeSpanToString(TimeSpan rt)
     {
       return string.Format("{0}{1}{2}{3}", rt.Days == 0 ? "" : string.Format("{0} days ", (object)rt.Days), rt.Hours == 0 ? "" : string.Format("{0:D2} hours ", (object)rt.Hours), rt.Minutes == 0 ? "" : string.Format("{0:D2} minutes ", (object)rt.Minutes), rt.Seconds == 0 ? "" : string.Format("{0:D2} seconds", (object)rt.Seconds));
     }
@@ -9724,7 +9726,7 @@ namespace djack.RogueSurvivor.Engine
       return new Skills.IDs?(idsList[m_Rules.Roll(0, idsList.Count)]);
     }
 
-    private int NPCSkillUtility(Actor actor, Skills.IDs skID)
+    static private int NPCSkillUtility(Actor actor, Skills.IDs skID)
     {
       if (actor.Model.Abilities.IsUndead)
       {
@@ -9912,7 +9914,7 @@ namespace djack.RogueSurvivor.Engine
       return m_MapViewRect.Contains(mapPosition);
     }
 
-    private ColorString WeatherStatusText()
+    static private ColorString WeatherStatusText()
     {
       switch(Session.Get.CurrentMap.Lighting)
       {
@@ -9963,7 +9965,7 @@ namespace djack.RogueSurvivor.Engine
             };  // lock(m_UI)
     }
 
-    private string LocationText(Map map, Actor actor)
+    static private string LocationText(Map map, Actor actor)
     {
       if (map == null || actor == null) return "";
       StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", actor.Location.Position.X, actor.Location.Position.Y));
@@ -10145,7 +10147,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private string MovingWaterImage(TileModel model, int turnCount)
+    static private string MovingWaterImage(TileModel model, int turnCount)
     {
       if (model != GameTiles.FLOOR_SEWER_WATER) return null;
       switch (turnCount % 3) {
@@ -10215,7 +10217,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DrawMapObject(MapObject mapObj, Point screen, string imageID, Action<string, int, int> drawFn)
+    static private void DrawMapObject(MapObject mapObj, Point screen, string imageID, Action<string, int, int> drawFn)
     {
       drawFn(imageID, screen.X, screen.Y);
       if (mapObj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
@@ -10668,21 +10670,21 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, x1 - 1, y1 - 1);
     }
 
-    private ColorString ActorHungerStatus(Actor actor)
+    static private ColorString ActorHungerStatus(Actor actor)
     {
       if (actor.IsStarving) return new ColorString(Color.Red,"STARVING!");
       if (actor.IsHungry) return new ColorString(Color.Yellow,"Hungry");
       return new ColorString(Color.White,string.Format("{0}h", FoodToHoursUntilHungry(actor.FoodPoints)));
     }
 
-    private ColorString ActorRotHungerStatus(Actor actor)
+    static private ColorString ActorRotHungerStatus(Actor actor)
     {
       if (actor.IsRotStarving) return new ColorString(Color.Red,"STARVING!");
       if (actor.IsRotHungry) return new ColorString(Color.Yellow,"Hungry");
       return new ColorString(Color.White,string.Format("{0}h", FoodToHoursUntilRotHungry(actor.FoodPoints)));
     }
 
-    private ColorString ActorRunningStatus(Actor actor)
+    static private ColorString ActorRunningStatus(Actor actor)
     {
       if (actor.IsRunning) return new ColorString(Color.LightGreen, "RUNNING!");
       if (actor.CanRun()) return new ColorString(Color.Green, "can run");
@@ -10690,21 +10692,21 @@ namespace djack.RogueSurvivor.Engine
       return new ColorString(Color.Red,string.Empty);
     }
 
-    private ColorString ActorSleepStatus(Actor actor)
+    static private ColorString ActorSleepStatus(Actor actor)
     {
       if (actor.IsExhausted) return new ColorString(Color.Red, "EXHAUSTED!");
       if (actor.IsSleepy) return new ColorString(Color.Yellow, "Sleepy");
       return new ColorString(Color.White, string.Format("{0}h", actor.HoursUntilSleepy));
     }
 
-    private ColorString ActorSanityStatus(Actor actor)
+    static private ColorString ActorSanityStatus(Actor actor)
     {
       if (actor.IsInsane) return new ColorString(Color.Red, "INSANE!");
       if (actor.IsDisturbed) return new ColorString(Color.Yellow, "Disturbed");
       return new ColorString(Color.White, string.Format("{0}h", actor.HoursUntilUnstable));
     }
 
-    private string ActorStatString(Actor actor)
+    static private string ActorStatString(Actor actor)
     {
       Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
       if (actor.Model.Abilities.IsUndead)
@@ -10783,7 +10785,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, ActorStatString(actor), gx, gy, new Color?());
     }
 
-    private string TrapStatusIcon(ItemTrap it)
+    static private string TrapStatusIcon(ItemTrap it)
     {
       if (null == it) return "";
       if (it.IsTriggered) return GameImages.ICON_TRAP_TRIGGERED;
@@ -10953,7 +10955,7 @@ namespace djack.RogueSurvivor.Engine
       return new Point((mouseX - invX) / TILE_SIZE, (mouseY - invY) / TILE_SIZE);
     }
 
-    private Point InventorySlotToScreen(int invX, int invY, int slotX, int slotY)
+    static private Point InventorySlotToScreen(int invX, int invY, int slotX, int slotY)
     {
       return new Point(invX + slotX * TILE_SIZE, invY + slotY * TILE_SIZE);
     }
@@ -11039,7 +11041,7 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private int FindLongestLine(string[] lines)
+    static private int FindLongestLine(string[] lines)
     {
       if (lines == null || lines.Length == 0) return 0;
       int num = int.MinValue;
@@ -11116,14 +11118,14 @@ namespace djack.RogueSurvivor.Engine
       return true;
     }
 
-    private void LoadOptions()
+    static private void LoadOptions()
     {
-      s_Options = GameOptions.Load(RogueGame.GetUserOptionsFilePath());
+      s_Options = GameOptions.Load(GetUserOptionsFilePath());
     }
 
-    private void SaveOptions()
+    static private void SaveOptions()
     {
-      GameOptions.Save(s_Options, RogueGame.GetUserOptionsFilePath());
+      GameOptions.Save(s_Options, GetUserOptionsFilePath());
     }
 
     private void ApplyOptions(bool ingame)
@@ -11169,7 +11171,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
     }
 
-    private void SaveHints()
+    static private void SaveHints()
     {
       GameHintsStatus.Save(RogueGame.s_Hints, RogueGame.GetUserConfigPath() + "hints.dat");
     }
@@ -11234,7 +11236,7 @@ namespace djack.RogueSurvivor.Engine
       return RogueGame.GetUserBasePath() + "Graveyard\\";
     }
 
-    public string GetUserNewGraveyardName()
+    static private string GetUserNewGraveyardName()
     {
       int num = 0;
       string graveName;
@@ -11309,7 +11311,7 @@ namespace djack.RogueSurvivor.Engine
       return directory;
     }
 
-    private bool CheckCopyOfManual()
+    static private bool CheckCopyOfManual()
     {
       string str1 = "Resources\\Manual\\";
       string userDocsPath = RogueGame.GetUserDocsPath();
@@ -11326,22 +11328,22 @@ namespace djack.RogueSurvivor.Engine
       return flag;
     }
 
-    private string GetUserManualFilePath()
+    static private string GetUserManualFilePath()
     {
-      return RogueGame.GetUserDocsPath() + "RS Manual.txt";
+      return GetUserDocsPath() + "RS Manual.txt";
     }
 
-    private string GetUserHiScorePath()
+    static private string GetUserHiScorePath()
     {
-      return RogueGame.GetUserSavesPath();
+      return GetUserSavesPath();
     }
 
-    private string GetUserHiScoreFilePath()
+    static private string GetUserHiScoreFilePath()
     {
       return GetUserHiScorePath() + "hiscores.dat";
     }
 
-    private string GetUserHiScoreTextFilePath()
+    static private string GetUserHiScoreTextFilePath()
     {
       return GetUserHiScorePath() + "hiscores.txt";
     }
@@ -11530,12 +11532,12 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
     }
 
-    private bool CheckIfExitIsGood(Map toMap, Point to)
+    static private bool CheckIfExitIsGood(Map toMap, Point to)
     {
       return toMap.GetTileModelAt(to).IsWalkable;
     }
 
-    private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)
+    static private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)
     {
       fromMap.SetExitAt(from, new Exit(toMap, to));
     }
@@ -11551,7 +11553,7 @@ namespace djack.RogueSurvivor.Engine
       if (zoneByPartialName != null)
         m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
            return map.IsWalkable(pt.X, pt.Y) && !map.HasActorAt(pt) && !map.HasItemsAt(pt);
-        }, roller, pt => m_TownGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[7] {
+        }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[7] {
           "TO SEWER WORKERS :",
           "- It lives here.",
           "- Do not disturb.",
@@ -11777,8 +11779,8 @@ namespace djack.RogueSurvivor.Engine
           case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
           case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
             Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? m_GameActors.FemaleCivilian : m_GameActors.MaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
-            townGen.DressCivilian(roller, anonymous);
-            townGen.GiveNameToActor(roller, anonymous);
+            BaseMapGenerator.DressCivilian(roller, anonymous);
+            BaseMapGenerator.GiveNameToActor(roller, anonymous);
             actor = Zombify(null, anonymous, true);
             break;
           default:
@@ -11787,8 +11789,8 @@ namespace djack.RogueSurvivor.Engine
         actor.PrepareForPlayerControl();
       } else {
         actor = (m_CharGen.IsMale ? m_GameActors.MaleCivilian : m_GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
-        townGen.DressCivilian(roller, actor);
-        townGen.GiveNameToActor(roller, actor);
+        BaseMapGenerator.DressCivilian(roller, actor);
+        BaseMapGenerator.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
         actor.RecomputeStartingStats();
         actor.CreateCivilianDeductFoodSleep(m_Rules);
@@ -11912,9 +11914,9 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.StopAll();
     }
 
-    private RogueGame.SimFlags ComputeSimFlagsForTurn(int turn)
+    private SimFlags ComputeSimFlagsForTurn(int turn)
     {
-      return RogueGame.SimFlags.HIDETAIL_TURN;
+      return SimFlags.HIDETAIL_TURN;
     }
 
     private bool SimulateNearbyDistricts(District d)
@@ -12282,7 +12284,7 @@ namespace djack.RogueSurvivor.Engine
       RestartSimThread();
     }
 
-    private string DescribeAvatar(Actor a)
+    static private string DescribeAvatar(Actor a)
     {
       if (a == null) return "(N/A)";
       bool flag = a.CountFollowers > 0;
@@ -12551,7 +12553,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DoHospitalPowerOn()
+    static private void DoHospitalPowerOn()
     {
       Session.Get.UniqueMaps.Hospital_Admissions.TheMap.Illuminate(true);
       Session.Get.UniqueMaps.Hospital_Offices.TheMap.Illuminate(true);
@@ -12594,10 +12596,10 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public bool IsInCHARProperty(Location location)
+    static public bool IsInCHARProperty(Location location)
     {
       if (location.Map != Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap)
-        return RogueGame.IsInCHAROffice(location);
+        return IsInCHAROffice(location);
       return true;
     }
 
@@ -12610,6 +12612,7 @@ namespace djack.RogueSurvivor.Engine
       return itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader;
     }
 
+#if DEAD_FUNC
     private List<Actor> ListWorldActors(Predicate<Actor> pred, RogueGame.MapListFlags flags)
     {
       List<Actor> actorList = new List<Actor>();
@@ -12619,8 +12622,9 @@ namespace djack.RogueSurvivor.Engine
       }
       return actorList;
     }
+#endif
 
-    private List<Actor> ListDistrictActors(District d, RogueGame.MapListFlags flags, Predicate<Actor> pred=null)
+    static private List<Actor> ListDistrictActors(District d, RogueGame.MapListFlags flags, Predicate<Actor> pred=null)
     {
       List<Actor> actorList = new List<Actor>();
       foreach (Map map in d.Maps) {
@@ -12634,7 +12638,7 @@ namespace djack.RogueSurvivor.Engine
       return actorList;
     }
 
-    private string FunFactActorResume(Actor a, string info)
+    static private string FunFactActorResume(Actor a, string info)
     {
       if (a == null) return "(N/A)";
       return string.Format("{0} - {1}, a {2} - {3}", info, a.TheName, a.Model.Name, a.Location.Map.Name);
@@ -12717,10 +12721,12 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
+#if DEAD_FUNC
     public void DEV_ToggleShowActorsStats()
     {
       s_Options.DEV_ShowActorsStats = !s_Options.DEV_ShowActorsStats;
     }
+#endif
 
     private void LoadData()
     {
