@@ -1186,47 +1186,56 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
-    public bool HasCorpse(Corpse c)
+    public bool Has(Corpse c)
     {
       return m_CorpsesList.Contains(c);
     }
 
-    public void AddCorpseAt(Corpse c, Point p)
+    public void AddAt(Corpse c, Point p)
     {
       if (m_CorpsesList.Contains(c)) throw new ArgumentException("corpse already in this map");
       c.Position = p;
       m_CorpsesList.Add(c);
-      InsertCorpseAtPos(c);
+      InsertAtPos(c);
       c.DeadGuy.Location = new Location(this, p);
     }
 
-    public void MoveCorpseTo(Corpse c, Point newPos)
+    public void MoveTo(Corpse c, Point newPos)
     {
       if (!m_CorpsesList.Contains(c)) throw new ArgumentException("corpse not in this map");
-      RemoveCorpseFromPos(c);
+      RemoveFromPos(c);
       c.Position = newPos;
-      InsertCorpseAtPos(c);
+      InsertAtPos(c);
       c.DeadGuy.Location = new Location(this, newPos);
     }
 
-    public void RemoveCorpse(Corpse c)
+    public void Remove(Corpse c)
     {
       if (!m_CorpsesList.Remove(c)) throw new ArgumentException("corpse not in this map");
-      RemoveCorpseFromPos(c);
+      RemoveFromPos(c);
+    }
+
+    public void Destroy(Corpse c)
+    {
+      if (c.DraggedBy != null) {
+        c.DraggedBy.DraggedCorpse = null;
+        c.DraggedBy = null;
+      }
+      Remove(c);
     }
 
     public bool TryRemoveCorpseOf(Actor a)
     {
       foreach (Corpse mCorpses in m_CorpsesList) {
         if (mCorpses.DeadGuy == a) {
-          RemoveCorpse(mCorpses);
+          Remove(mCorpses);
           return true;
         }
       }
       return false;
     }
 
-    private void RemoveCorpseFromPos(Corpse c)
+    private void RemoveFromPos(Corpse c)
     {
       List<Corpse> corpseList;
       if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList)) return;
@@ -1235,7 +1244,7 @@ namespace djack.RogueSurvivor.Data
       m_aux_CorpsesByPosition.Remove(c.Position);
     }
 
-    private void InsertCorpseAtPos(Corpse c)
+    private void InsertAtPos(Corpse c)
     {
       List<Corpse> corpseList;
       if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))

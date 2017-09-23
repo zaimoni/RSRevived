@@ -2042,11 +2042,11 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             }
-            foreach (Corpse c in corpseList3) DestroyCorpse(c, map);
+            foreach (Corpse c in corpseList3) map.Destroy(c);
           }
           if (m_Player != null && m_Player.Location.Map == map) {
             foreach (Corpse c in corpseList2) {
-              DestroyCorpse(c, map);
+              map.Destroy(c);
               if (ForceVisibleToPlayer(map, c.Position))
                 AddMessage(new Data.Message(string.Format("The corpse of {0} turns into dust.", c.DeadGuy.Name), map.LocalTime.TurnCounter, Color.Purple));
             }
@@ -4053,7 +4053,7 @@ namespace djack.RogueSurvivor.Engine
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, num)));
       if (!c.TakeDamage(num)) return;
-      DestroyCorpse(c, a.Location.Map);
+      a.Location.Map.Destroy(c);
       if (player) AddMessage(new Data.Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
     }
 
@@ -4067,7 +4067,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameSounds.UNDEAD_EAT);
       }
       if (c.TakeDamage(num)) {
-        DestroyCorpse(c, a.Location.Map);
+        a.Location.Map.Destroy(c);
         if (player)
           AddMessage(new Data.Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
       }
@@ -4101,7 +4101,7 @@ namespace djack.RogueSurvivor.Engine
           corpse.DeadGuy.Doll.RemoveDecoration("Actors\\Decoration\\bloodied");
           corpse.DeadGuy.Activity = Activity.IDLE;
           corpse.DeadGuy.TargetActor = null;
-          map.RemoveCorpse(corpse);
+          map.Remove(corpse);
           map.PlaceActorAt(corpse.DeadGuy, position);
           if (player)
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
@@ -4113,15 +4113,6 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
         }
       }
-    }
-
-    private void DestroyCorpse(Corpse c, Map m)
-    {
-      if (c.DraggedBy != null) {
-        c.DraggedBy.DraggedCorpse = null;
-        c.DraggedBy = null;
-      }
-      m.RemoveCorpse(c);
     }
 
     private bool DoPlayerItemSlot(Actor player, int slot, KeyEventArgs key)
@@ -7277,7 +7268,7 @@ namespace djack.RogueSurvivor.Engine
       newLocation.PlaceActor(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
-        location.Map.MoveCorpseTo(draggedCorpse, newLocation.Position);
+        location.Map.MoveTo(draggedCorpse, newLocation.Position);
         if (ForceVisibleToPlayer(newLocation) || ForceVisibleToPlayer(location))
           AddMessage(MakeMessage(actor, string.Format("{0} {1} corpse.", Conjugate(actor, VERB_DRAG), draggedCorpse.DeadGuy.TheName)));
       }
@@ -7530,11 +7521,11 @@ namespace djack.RogueSurvivor.Engine
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
       map.RemoveActor(actor);
-      if (actor.DraggedCorpse != null) map.RemoveCorpse(actor.DraggedCorpse);
+      if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
       exitAt.Location.PlaceActor(actor);
       exitAt.ToMap.MoveActorToFirstPosition(actor); // XXX change target for NO_PEACE_WALLS; when entering a district that executes before ours we should be *last* -- if we can see what we're getting into
-      if (actor.DraggedCorpse != null) exitAt.Location.AddCorpse(actor.DraggedCorpse);
+      if (actor.DraggedCorpse != null) exitAt.Location.Add(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer)
       AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
       if (isPlayer) {
@@ -9217,7 +9208,7 @@ namespace djack.RogueSurvivor.Engine
       deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
       float rotation = m_Rules.Roll(30, 60);
       if (m_Rules.RollChance(50)) rotation = -rotation;
-      deadGuy.Location.Map.AddCorpseAt(new Corpse(deadGuy, rotation), deadGuy.Location.Position);
+      deadGuy.Location.Map.AddAt(new Corpse(deadGuy, rotation), deadGuy.Location.Position);
     }
 
     private void PlayerDied(Actor killer, string reason)

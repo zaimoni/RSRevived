@@ -653,7 +653,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "tired";
         return false;
       }
-      if (corpse.Position != actor.Location.Position || !actor.Location.Map.HasCorpse(corpse)) {
+      if (corpse.Position != actor.Location.Position || !actor.Location.Map.Has(corpse)) {
         reason = "not in same location";
         return false;
       }
@@ -683,7 +683,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "tired";
         return false;
       }
-      if (corpse.Position != actor.Location.Position || !actor.Location.Map.HasCorpse(corpse))
+      if (corpse.Position != actor.Location.Position || !actor.Location.Map.Has(corpse))
       {
         reason = "not in same location";
         return false;
