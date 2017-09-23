@@ -4604,12 +4604,12 @@ namespace djack.RogueSurvivor.Engine
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
       Map map = player.Location.Map;
       Point point1 = player.Location.Position;
-      int num = Rules.ActorMaxThrowRange(player, itemGrenadeModel.MaxThrowDistance);
+      int num = player.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
       List<Point> LoF = new List<Point>();
       do {
         LoF.Clear();
         string reason;
-        bool flag3 = m_Rules.CanActorThrowTo(player, point1, LoF, out reason);
+        bool flag3 = player.CanThrowTo(point1, out reason, LoF);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         string imageID = flag3 ? "Icons\\line_clear" : "Icons\\line_blocked";
@@ -6864,7 +6864,7 @@ namespace djack.RogueSurvivor.Engine
       if (itemGrenade != null) {
         stringList.Add("> grenade");
         int max_throw_distance = itemGrenade.Model.MaxThrowDistance;
-        int num = Rules.ActorMaxThrowRange(m_Player, max_throw_distance);
+        int num = m_Player.MaxThrowRange(max_throw_distance);
         if (num != max_throw_distance)
           stringList.Add(string.Format("Throwing rng  : {0} ({1})", num, max_throw_distance));
         else
@@ -7136,7 +7136,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.NECROLOGY:
           return string.Format("+{0}/+{1} Dmg vs undeads/corpses, data on corpses", Actor.SKILL_NECROLOGY_UNDEAD_BONUS, Rules.SKILL_NECROLOGY_CORPSE_BONUS);
         case Skills.IDs.STRONG:
-          return string.Format("+{0} melee DMG, +{1} throw range", Actor.SKILL_STRONG_DMG_BONUS, Rules.SKILL_STRONG_THROW_BONUS);
+          return string.Format("+{0} melee DMG, +{1} throw range", Actor.SKILL_STRONG_DMG_BONUS, Actor.SKILL_STRONG_THROW_BONUS);
         case Skills.IDs.STRONG_PSYCHE:
           return string.Format("+{0}% SAN threshold, +{1}% regen", (int)(100.0 * (double)Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS), (int)(100.0 * (double)Rules.SKILL_STRONG_PSYCHE_ENT_BONUS));
         case Skills.IDs.TOUGH:

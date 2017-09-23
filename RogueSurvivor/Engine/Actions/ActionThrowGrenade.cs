@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorThrowTo(m_Actor, m_ThrowPos, null, out m_FailReason);
+      return m_Actor.CanThrowTo(m_ThrowPos, out m_FailReason);
     }
 
     public override void Perform()

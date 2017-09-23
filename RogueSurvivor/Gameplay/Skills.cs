@@ -169,7 +169,7 @@ namespace djack.RogueSurvivor.Gameplay
       Rules.SKILL_NECROLOGY_CORPSE_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[16];
       Actor.SKILL_STRONG_DMG_BONUS = (int) skillData2.VALUE1;
-      Rules.SKILL_STRONG_THROW_BONUS = (int) skillData2.VALUE2;
+      Actor.SKILL_STRONG_THROW_BONUS = (int) skillData2.VALUE2;
       skillData2 = data[17];
       Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS = skillData2.VALUE1;
       Rules.SKILL_STRONG_PSYCHE_ENT_BONUS = skillData2.VALUE2;

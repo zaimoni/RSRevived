@@ -48,7 +48,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static float SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15f;
     public static float SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15f;
-    public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_UNSUSPICIOUS_BONUS = 25;
     public static int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
     public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
@@ -512,41 +511,6 @@ namespace djack.RogueSurvivor.Engine
       return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF)
-    {
-      string reason;
-      return CanActorThrowTo(actor, pos, LoF, out reason);
-    }
-
-    public bool CanActorThrowTo(Actor actor, Point pos, List<Point> LoF, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (LoF != null)
-        LoF.Clear();
-      ItemGrenade itemGrenade = actor.GetEquippedWeapon() as ItemGrenade;
-      ItemGrenadePrimed itemGrenadePrimed = actor.GetEquippedWeapon() as ItemGrenadePrimed;
-      if (itemGrenade == null && itemGrenadePrimed == null)
-      {
-        reason = "no grenade equiped";
-        return false;
-      }
-      ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
-      int maxRange = ActorMaxThrowRange(actor, itemGrenadeModel.MaxThrowDistance);
-      if (Rules.GridDistance(actor.Location.Position, pos) > maxRange)
-      {
-        reason = "out of throwing range";
-        return false;
-      }
-      if (!LOS.CanTraceThrowLine(actor.Location, pos, maxRange, LoF))
-      {
-        reason = "no line of throwing";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorCancelLead(Actor actor, Actor target, out string reason)
     {
       if (actor == null)
@@ -843,12 +807,6 @@ namespace djack.RogueSurvivor.Engine
     public static int ActorDisturbedLevel(Actor actor)
     {
       return (int) ((double)SANITY_UNSTABLE_LEVEL * (1.0 - (double) Rules.SKILL_STRONG_PSYCHE_LEVEL_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE)));
-    }
-
-    public static int ActorMaxThrowRange(Actor actor, int baseRange)
-    {
-      int num = Rules.SKILL_STRONG_THROW_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG);
-      return baseRange + num;
     }
 
     public static Defence ActorDefence(Actor actor, Defence baseDefence)

@@ -53,6 +53,7 @@ namespace djack.RogueSurvivor.Data
     public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
+    public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
@@ -586,7 +587,37 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-	// strictly speaking, 1 step is allowed but we do not check LoF here
+    public int MaxThrowRange(int baseRange)
+    {
+      return baseRange + SKILL_STRONG_THROW_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG);
+    }
+
+    private string ReasonCouldntThrowTo(Point pos, List<Point> LoF)
+    {
+      if (LoF != null) LoF.Clear();
+      ItemGrenade itemGrenade = GetEquippedWeapon() as ItemGrenade;
+      ItemGrenadePrimed itemGrenadePrimed = GetEquippedWeapon() as ItemGrenadePrimed;
+      if (itemGrenade == null && itemGrenadePrimed == null) return "no grenade equipped";
+
+      ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
+      int maxRange = MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
+      if (Rules.GridDistance(Location.Position, pos) > maxRange) return "out of throwing range";
+      if (!LOS.CanTraceThrowLine(Location, pos, maxRange, LoF)) return "no line of throwing";
+      return "";
+    }
+
+    public bool CanThrowTo(Point pos, out string reason, List<Point> LoF=null)
+    {
+      reason = ReasonCouldntThrowTo(pos,LoF);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanThrowTo(Point pos, List<Point> LoF=null)
+    {
+      return string.IsNullOrEmpty(ReasonCouldntThrowTo(pos,LoF));
+    }
+
+    // strictly speaking, 1 step is allowed but we do not check LoF here
     private string ReasonCouldntFireAt(Actor target)
     {
       Contract.Requires(null != target);

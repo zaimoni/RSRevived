@@ -1285,7 +1285,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>((Predicate<ItemGrenade>) (it => !IsItemTaboo(it)));
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
-      int maxRange = Rules.ActorMaxThrowRange(m_Actor, itemGrenadeModel.MaxThrowDistance);
+      int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
       Point? nullable = null;
       int num1 = 0;
       int my_dist = 0;
