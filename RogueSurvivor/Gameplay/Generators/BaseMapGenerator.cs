@@ -615,7 +615,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjFence()
     {
-      return new MapObject("fence", GameImages.OBJ_FENCE, MapObject.Break.BREAKABLE, 10* DoorWindow.BASE_HITPOINTS)
+      return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
@@ -634,7 +634,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjIronGate()
     {
-      return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, MapObject.Break.BREAKABLE, 20* DoorWindow.BASE_HITPOINTS)
+      return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, 20* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
       };
@@ -660,7 +660,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjTree()
     {
-      return new MapObject("tree", GameImages.OBJ_TREE, MapObject.Break.BREAKABLE, 10* DoorWindow.BASE_HITPOINTS) {
+      return new MapObject("tree", GameImages.OBJ_TREE, 10* DoorWindow.BASE_HITPOINTS) {
         GivesWood = true
       };
     }
@@ -685,7 +685,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjShelf()
     {
-      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, MapObject.Break.BREAKABLE, DoorWindow.BASE_HITPOINTS) {
+      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS) {
         IsContainer = true,
         GivesWood = true,
         IsMovable = true,
@@ -695,7 +695,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjBench()
     {
-      return new MapObject("bench", GameImages.OBJ_BENCH, MapObject.Break.BREAKABLE, 2* DoorWindow.BASE_HITPOINTS) {
+      return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
         JumpLevel = 1,
         IsCouch = true,
@@ -714,7 +714,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjBed(string bedImageID)
     {
-      return new MapObject("bed", bedImageID, MapObject.Break.BREAKABLE, 2* DoorWindow.BASE_HITPOINTS)
+      return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
         IsWalkable = true,
@@ -727,7 +727,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjWardrobe(string wardrobeImageID)
     {
-      return new MapObject("wardrobe", wardrobeImageID, MapObject.Break.BREAKABLE, 6* DoorWindow.BASE_HITPOINTS)
+      return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = false,
         IsContainer = true,
@@ -739,7 +739,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjDrawer()
     {
-      return new MapObject("drawer", GameImages.OBJ_DRAWER, MapObject.Break.BREAKABLE, DoorWindow.BASE_HITPOINTS) {
+      return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
         IsContainer = true,
         GivesWood = true,
@@ -750,7 +750,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjTable(string tableImageID)
     {
-      return new MapObject("table", tableImageID, MapObject.Break.BREAKABLE, DoorWindow.BASE_HITPOINTS)
+      return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
@@ -762,7 +762,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjChair(string chairImageID)
     {
-      return new MapObject("chair", chairImageID, MapObject.Break.BREAKABLE, DoorWindow.BASE_HITPOINTS/3)
+      return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3)
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
@@ -774,7 +774,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjNightTable(string nightTableImageID)
     {
-      return new MapObject("night table", nightTableImageID, MapObject.Break.BREAKABLE, DoorWindow.BASE_HITPOINTS/3)
+      return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3)
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
@@ -786,7 +786,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjFridge()
     {
-      return new MapObject("fridge", GameImages.OBJ_FRIDGE, MapObject.Break.BREAKABLE, 6* DoorWindow.BASE_HITPOINTS)
+      return new MapObject("fridge", GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS)
       {
         IsContainer = true,
         IsMovable = true,
@@ -796,7 +796,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjJunk()
     {
-      return new MapObject("junk", GameImages.OBJ_JUNK, MapObject.Break.BREAKABLE, DoorWindow.BASE_HITPOINTS) {
+      return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
         IsMaterialTransparent = true,
         IsMovable = true,
@@ -807,7 +807,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected MapObject MakeObjBarrels()
     {
-      return new MapObject("barrels", GameImages.OBJ_BARRELS, MapObject.Break.BREAKABLE, 2* DoorWindow.BASE_HITPOINTS) {
+      return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
         IsMaterialTransparent = true,
         IsMovable = true,

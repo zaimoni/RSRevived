@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
 
     public DoorWindow(DW_type _type, int hitPoints)
-      : base(names[(int)(_type)], images[(int)(_type)][STATE_CLOSED], MapObject.Break.BREAKABLE, hitPoints, MapObject.Fire.BURNABLE)
+      : base(names[(int)(_type)], images[(int)(_type)][STATE_CLOSED], hitPoints, MapObject.Fire.BURNABLE)
     {
       m_type = (byte)_type;
       _SetState(STATE_CLOSED);

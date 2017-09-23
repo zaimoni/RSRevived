@@ -21,8 +21,8 @@ namespace djack.RogueSurvivor.Data
     {
     }
 
-    public StateMapObject(string name, string hiddenImageID, Break breakable, int hitPoints, Fire burnable)
-      : base(name, hiddenImageID, breakable, hitPoints, burnable)
+    public StateMapObject(string name, string hiddenImageID, int hitPoints, Fire burnable)
+      : base(name, hiddenImageID, hitPoints, burnable)
     {
     }
 

@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
 
     public Fortification(string name, string imageID, int hitPoints)
-      : base(name, imageID, Break.BREAKABLE, hitPoints, Fire.BURNABLE)
+      : base(name, imageID, hitPoints, Fire.BURNABLE)
     {
     }
   }
