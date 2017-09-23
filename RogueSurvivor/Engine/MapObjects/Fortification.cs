@@ -12,11 +12,11 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   [Serializable]
   internal class Fortification : MapObject
   {
-    public const int SMALL_BASE_HITPOINTS = 20;
-    public const int LARGE_BASE_HITPOINTS = 40;
+    public const int SMALL_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS/2;
+    public const int LARGE_BASE_HITPOINTS = DoorWindow.BASE_HITPOINTS;
 
     public Fortification(string name, string imageID, int hitPoints)
-      : base(name, imageID, MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)
+      : base(name, imageID, Break.BREAKABLE, hitPoints, Fire.BURNABLE)
     {
     }
   }

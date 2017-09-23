@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Data
     private MapObject.Break m_BreakState;
     private readonly int m_MaxHitPoints;
     private int m_HitPoints;
-    private MapObject.Fire m_FireState;
+    private Fire m_FireState;
     private Location m_Location;
 
     public string AName {
@@ -134,7 +134,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBreakable {
       get {
-        return m_BreakState == MapObject.Break.BREAKABLE;
+        return m_BreakState == Break.BREAKABLE;
       }
     }
 
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Data
     public bool GivesWood {
       get {
         if (GetFlag(MapObject.Flags.GIVES_WOOD))
-          return m_BreakState != MapObject.Break.BROKEN;
+          return m_BreakState != Break.BROKEN;
         return false;
       }
       set {
@@ -244,12 +244,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public MapObject(string aName, string hiddenImageID)
-      : this(aName, hiddenImageID, MapObject.Break.UNBREAKABLE, MapObject.Fire.UNINFLAMMABLE, 0)
-    {
-    }
-
-    public MapObject(string aName, string hiddenImageID, MapObject.Break breakable, MapObject.Fire burnable, int hitPoints)
+    public MapObject(string aName, string hiddenImageID, Break breakable=Break.UNBREAKABLE, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
       Contract.Requires(null!=aName);
       Contract.Requires(null!= hiddenImageID);
@@ -257,7 +252,7 @@ namespace djack.RogueSurvivor.Data
       m_ImageID = m_HiddenImageID = hiddenImageID;
       m_BreakState = breakable;
       m_FireState = burnable;
-      if (breakable == MapObject.Break.UNBREAKABLE && burnable == MapObject.Fire.UNINFLAMMABLE) return;
+      if (breakable == Break.UNBREAKABLE && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
@@ -316,14 +311,14 @@ namespace djack.RogueSurvivor.Data
     // fire
     public void Ignite()
     {
-      m_FireState = MapObject.Fire.ONFIRE;
+      m_FireState = Fire.ONFIRE;
       --m_JumpLevel;
     }
 
     public void Extinguish()
     {
       ++m_JumpLevel;
-      m_FireState = MapObject.Fire.BURNABLE;
+      m_FireState = Fire.BURNABLE;
     }
 
     [Serializable]

@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   [Serializable]
   internal class DoorWindow : StateMapObject
   {
-    public const int BASE_HITPOINTS = 40;
+    public const int BASE_HITPOINTS = 40;   // XXX spacetime scaling candidate
     public const int STATE_CLOSED = 0;
     public const int STATE_OPEN = 1;
     public const int STATE_BROKEN = 2;
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
 
     public DoorWindow(DW_type _type, int hitPoints)
-      : base(names[(int)(_type)], images[(int)(_type)][STATE_CLOSED], MapObject.Break.BREAKABLE, MapObject.Fire.BURNABLE, hitPoints)
+      : base(names[(int)(_type)], images[(int)(_type)][STATE_CLOSED], MapObject.Break.BREAKABLE, hitPoints, MapObject.Fire.BURNABLE)
     {
       m_type = (byte)_type;
       _SetState(STATE_CLOSED);
