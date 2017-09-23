@@ -9832,7 +9832,7 @@ namespace djack.RogueSurvivor.Engine
         int countSkills = skillTable.CountSkills;
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index) {
-          Skills.IDs? nullable = ZombifySkill((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]);
+          Skills.IDs? nullable = ((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]).Zombify();
           if (nullable.HasValue)
             actor.SkillUpgrade(nullable.Value);
         }
@@ -9841,26 +9841,6 @@ namespace djack.RogueSurvivor.Engine
       if (!isStartingGame)
         SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", deadVictim.Name));
       return actor;
-    }
-
-    public Skills.IDs? ZombifySkill(Skills.IDs skill)
-    {
-      switch (skill) {
-        case Skills.IDs._FIRST:
-          return Skills.IDs._FIRST_UNDEAD;
-        case Skills.IDs.LIGHT_EATER:
-          return Skills.IDs.Z_LIGHT_EATER;
-        case Skills.IDs.LIGHT_FEET:
-          return Skills.IDs.Z_LIGHT_FEET;
-        case Skills.IDs.MEDIC:
-          return Skills.IDs.Z_INFECTOR;
-        case Skills.IDs.STRONG:
-          return Skills.IDs.Z_STRONG;
-        case Skills.IDs.TOUGH:
-          return Skills.IDs.Z_TOUGH;
-        default:
-          return null;
-      }
     }
 
     public void ComputeViewRect(Point mapCenter)

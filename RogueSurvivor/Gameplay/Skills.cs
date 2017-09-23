@@ -240,6 +240,19 @@ namespace djack.RogueSurvivor.Gameplay
       _COUNT = 29,
     }
 
+    public static IDs? Zombify(this IDs skill)
+    { 
+      switch (skill) {
+        case IDs._FIRST: return IDs._FIRST_UNDEAD;
+        case IDs.LIGHT_EATER: return IDs.Z_LIGHT_EATER;
+        case IDs.LIGHT_FEET: return IDs.Z_LIGHT_FEET;
+        case IDs.MEDIC: return IDs.Z_INFECTOR;
+        case IDs.STRONG: return IDs.Z_STRONG;
+        case IDs.TOUGH: return IDs.Z_TOUGH;
+        default: return null;
+      }
+    }
+
     private struct SkillData
     {
       public const int COUNT_FIELDS = 6;
