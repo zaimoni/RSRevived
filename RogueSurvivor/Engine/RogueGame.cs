@@ -7247,13 +7247,6 @@ namespace djack.RogueSurvivor.Engine
       return batteries / WorldTime.TURNS_PER_HOUR;
     }
 
-    public bool IsAlmostRotHungry(Actor actor)
-    {
-      if (!actor.Model.Abilities.IsRotting)
-        return false;
-      return actor.HoursUntilRotHungry <= 3;
-    }
-
     public static Direction CommandToDirection(PlayerCommand cmd)
     {
       switch (cmd)
@@ -10266,7 +10259,7 @@ namespace djack.RogueSurvivor.Engine
           else if (actor.Model.Abilities.IsRotting) {
             if (actor.IsRotStarving) m_UI.UI_DrawImage(GameImages.ICON_ROT_STARVING, gx2, gy2, tint);
             else if (actor.IsRotHungry) m_UI.UI_DrawImage(GameImages.ICON_ROT_HUNGRY, gx2, gy2, tint);
-            else if (IsAlmostRotHungry(actor)) m_UI.UI_DrawImage(GameImages.ICON_ROT_ALMOST_HUNGRY, gx2, gy2, tint);
+            else if (actor.IsAlmostRotHungry) m_UI.UI_DrawImage(GameImages.ICON_ROT_ALMOST_HUNGRY, gx2, gy2, tint);
           }
           if (actor.Model.Abilities.HasSanity) {
             if (actor.IsInsane) m_UI.UI_DrawImage(GameImages.ICON_SANITY_INSANE, gx2, gy2, tint);
