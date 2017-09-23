@@ -5119,7 +5119,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerOrderFollower(Actor player, Actor follower)
     {
-      if (!m_Rules.IsActorTrustingLeader(follower)) {
+      if (!follower.IsTrustingLeader) {
         if (IsVisibleToPlayer(follower))
           DoSay(follower, player, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
         else if (AreLinkedByPhone(follower, player)) {
@@ -6506,7 +6506,7 @@ namespace djack.RogueSurvivor.Engine
           else if (actor.TrustInLeader >= Rules.TRUST_MAX)
             stringList.Add("Trust : MAX.");
           else
-            stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Rules.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
+            stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
           OrderableAI orderableAi = aiController as OrderableAI;
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
@@ -6520,7 +6520,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer) {
         stringList.Add("WANTED FOR MURDER!");
         stringList.Add(string.Format("{0}!", "murder".QtyDesc(actor.MurdersCounter)));
-      } else if (actor.HasLeader && actor.Leader.IsPlayer && m_Rules.IsActorTrustingLeader(actor)) {
+      } else if (actor.HasLeader && actor.Leader.IsPlayer && actor.IsTrustingLeader) {
         if (actor.MurdersCounter > 0)
           stringList.Add(string.Format("* Confess {0}! *", "murder".QtyDesc(actor.MurdersCounter)));
         else
@@ -8961,8 +8961,8 @@ namespace djack.RogueSurvivor.Engine
       master.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (master != slave.Leader)
         DoSay(slave, master, "Who are you to give me orders?", RogueGame.Sayflags.IS_FREE_ACTION);
-      else if (!m_Rules.IsActorTrustingLeader(slave)) {
-                DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
+      else if (!slave.IsTrustingLeader) {
+        DoSay(slave, master, "Sorry, I don't trust you enough yet.", RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION);
       } else {
         OrderableAI aiController = slave.Controller as OrderableAI;
         if (aiController == null) return;
@@ -10226,7 +10226,7 @@ namespace djack.RogueSurvivor.Engine
     private string FollowerIcon(Actor actor)
     {
       if (m_Rules.HasActorBondWith(actor, actor.Leader)) return GameImages.PLAYER_FOLLOWER_BOND;
-      if (m_Rules.IsActorTrustingLeader(actor)) return GameImages.PLAYER_FOLLOWER_TRUST;
+      if (actor.IsTrustingLeader) return GameImages.PLAYER_FOLLOWER_TRUST;
       return GameImages.PLAYER_FOLLOWER;
     }
 

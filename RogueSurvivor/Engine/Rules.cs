@@ -113,7 +113,6 @@ namespace djack.RogueSurvivor.Engine
     public const int FIRE_RAIN_TEST_CHANCE = 1;
     public const int FIRE_RAIN_PUT_OUT_CHANCE = 10;
     public const int TRUST_NEUTRAL = 0;
-    public const int TRUST_TRUSTING_THRESHOLD = 12*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_MIN = -12*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_MAX = 2*WorldTime.TURNS_PER_DAY;
     public const int TRUST_BOND_THRESHOLD = TRUST_MAX;
@@ -567,15 +566,6 @@ namespace djack.RogueSurvivor.Engine
       }
       reason = "";
       return true;
-    }
-
-    public bool IsActorTrustingLeader(Actor actor)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (!actor.HasLeader)
-        return false;
-      return actor.TrustInLeader >= TRUST_TRUSTING_THRESHOLD;
     }
 
     public bool HasActorBondWith(Actor actor, Actor target)
