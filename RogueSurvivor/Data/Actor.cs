@@ -1732,6 +1732,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public bool IsAlmostHungry {
+      get {
+        return Model.Abilities.HasToEat && HoursUntilHungry <= 3;
+      }
+    }
+
     public int MaxFood {
       get {
         int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));

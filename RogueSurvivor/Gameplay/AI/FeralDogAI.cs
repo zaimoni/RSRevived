@@ -80,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return actorAction;
         }
       }
-      if (game.IsAlmostHungry(m_Actor)) {
+      if (m_Actor.IsAlmostHungry) {
         ActorAction actorAction = BehaviorGoEatFoodOnGround(percepts1.FilterT<Inventory>());
         if (actorAction != null) {
           m_Actor.IsRunning = true;
