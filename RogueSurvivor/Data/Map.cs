@@ -1211,8 +1211,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveCorpse(Corpse c)
     {
-      if (!m_CorpsesList.Contains(c)) throw new ArgumentException("corpse not in this map");
-      m_CorpsesList.Remove(c);
+      if (!m_CorpsesList.Remove(c)) throw new ArgumentException("corpse not in this map");
       RemoveCorpseFromPos(c);
     }
 

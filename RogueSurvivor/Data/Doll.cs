@@ -41,8 +41,7 @@ namespace djack.RogueSurvivor.Data
     {
       for (int index = 0; index < (int)DollPart._COUNT; ++index) {
         List<string> stringList = m_Decorations[index];
-        if (stringList != null && stringList.Contains(imageID)) {
-          stringList.Remove(imageID);
+        if (stringList != null && stringList.Remove(imageID)) {
           if (stringList.Count == 0) m_Decorations[index] = null;
           break;
         }

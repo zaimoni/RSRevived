@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private const int SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF = 33;
     private const int SHOP_WINDOW_CHANCE = 30;
     private const int SHOP_BASEMENT_ZOMBIE_RAT_CHANCE = 5;
-    private List<BaseTownGenerator.Block> m_SurfaceBlocks;
+    private List<Block> m_SurfaceBlocks;
 
     public Parameters Params
     {
@@ -171,7 +171,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (m_DiceRoller.RollChance(m_Params.ShopBuildingChance) && MakeShopBuilding(map, b))
           blockList2.Add(b);
       }
-      foreach (BaseTownGenerator.Block block in blockList2)
+      foreach (Block block in blockList2)
         blockList1.Remove(block);
       blockList2.Clear();
       int num = 0;
@@ -229,13 +229,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map surface = district.EntryMap;
 
       // 1. Make blocks.
-      List<BaseTownGenerator.Block> list = new List<BaseTownGenerator.Block>(m_SurfaceBlocks.Count);
+      List<Block> list = new List<Block>(m_SurfaceBlocks.Count);
       MakeBlocks(sewers, false, ref list, new Rectangle(0, 0, sewers.Width, sewers.Height));
 
 #region 2. Make tunnels.
-      foreach (BaseTownGenerator.Block block in list)
+      foreach (Block block in list)
         TileRectangle(sewers, GameTiles.FLOOR_SEWER_WATER, block.Rectangle);
-      foreach (BaseTownGenerator.Block block in list) {
+      foreach (Block block in list) {
         if (!m_DiceRoller.RollChance(SEWERS_IRON_FENCE_PER_BLOCK_CHANCE)) continue;
         bool flag = false;
         int x1;
@@ -317,13 +317,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int y = buildingRect.Top + buildingRect.Height / 2;
         Point exitPosition = new Point(x, y);
         MakeSewersMaintenanceBuilding(surface, true, b1, sewers, exitPosition);
-        Block b2 = new BaseTownGenerator.Block(block.Rectangle);
+        Block b2 = new Block(block.Rectangle);
         MakeSewersMaintenanceBuilding(sewers, false, b2, surface, exitPosition);
       }
 #endregion
 
 #region 6. Some rooms.
-      foreach (BaseTownGenerator.Block block in list)
+      foreach (Block block in list)
       {
         if (m_DiceRoller.RollChance(SEWERS_ROOM_CHANCE) && CheckForEachTile(block.BuildingRect, (Predicate<Point>) (pt => !sewers.GetTileModelAt(pt).IsWalkable)))
         {
@@ -421,8 +421,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endregion
 
 #region 2. Make station linked to surface.
-      List<BaseTownGenerator.Block> blockList = (List<BaseTownGenerator.Block>) null;
-      foreach (BaseTownGenerator.Block mSurfaceBlock in m_SurfaceBlocks)
+      List<Block> blockList = (List<Block>) null;
+      foreach (Block mSurfaceBlock in m_SurfaceBlocks)
       {
         if (mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2 && (mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 && !IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)))
         {
@@ -438,7 +438,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (flag)
           {
             if (blockList == null)
-              blockList = new List<BaseTownGenerator.Block>(m_SurfaceBlocks.Count);
+              blockList = new List<Block>(m_SurfaceBlocks.Count);
             blockList.Add(mSurfaceBlock);
             break;
           }
@@ -446,14 +446,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       if (blockList != null)
       {
-        BaseTownGenerator.Block block = blockList[m_DiceRoller.Roll(0, blockList.Count)];
+        Block block = blockList[m_DiceRoller.Roll(0, blockList.Count)];
         ClearRectangle(entryMap, block.BuildingRect);
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         m_SurfaceBlocks.Remove(block);
-        BaseTownGenerator.Block b1 = new BaseTownGenerator.Block(block.Rectangle);
+        Block b1 = new Block(block.Rectangle);
         Point exitPosition = new Point(b1.BuildingRect.Left + b1.BuildingRect.Width / 2, b1.InsideRect.Top);
         MakeSubwayStationBuilding(entryMap, true, b1, subway, exitPosition);
-        BaseTownGenerator.Block b2 = new BaseTownGenerator.Block(block.Rectangle);
+        Block b2 = new Block(block.Rectangle);
         MakeSubwayStationBuilding(subway, false, b2, entryMap, exitPosition);
       }
 #endregion
@@ -540,7 +540,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         bottomRight = Rectangle.Empty;
     }
 
-    private void MakeBlocks(Map map, bool makeRoads, ref List<BaseTownGenerator.Block> list, Rectangle rect)
+    private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
     {
       int splitX;
       int splitY;
@@ -559,7 +559,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           topLeft.Height -= 2;
           topLeft.Offset(1, 1);
         }
-        list.Add(new BaseTownGenerator.Block(topLeft));
+        list.Add(new Block(topLeft));
       } else {
         MakeBlocks(map, makeRoads, ref list, topLeft);
         if (!topRight.IsEmpty) MakeBlocks(map, makeRoads, ref list, topRight);
@@ -637,7 +637,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return map.HasAnExitIn(rect); // relatively slow compared to above
     }
 
-    protected virtual bool MakeShopBuilding(Map map, BaseTownGenerator.Block b)
+    protected virtual bool MakeShopBuilding(Map map, Block b)
     {
       Contract.Requires(null!=map.District);
       if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5) return false;
@@ -821,14 +821,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual BaseTownGenerator.CHARBuildingType MakeCHARBuilding(Map map, BaseTownGenerator.Block b)
+    protected virtual BaseTownGenerator.CHARBuildingType MakeCHARBuilding(Map map, Block b)
     {
       if (b.InsideRect.Width < 8 || b.InsideRect.Height < 8)
         return MakeCHARAgency(map, b) ? BaseTownGenerator.CHARBuildingType.AGENCY : BaseTownGenerator.CHARBuildingType.NONE;
       return MakeCHAROffice(map, b) ? BaseTownGenerator.CHARBuildingType.OFFICE : BaseTownGenerator.CHARBuildingType.NONE;
     }
 
-    protected virtual bool MakeCHARAgency(Map map, BaseTownGenerator.Block b)
+    protected virtual bool MakeCHARAgency(Map map, Block b)
     {
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
@@ -894,7 +894,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual bool MakeCHAROffice(Map map, BaseTownGenerator.Block b)
+    protected virtual bool MakeCHAROffice(Map map, Block b)
     {
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
@@ -1061,7 +1061,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual bool MakeParkBuilding(Map map, BaseTownGenerator.Block b)
+    protected virtual bool MakeParkBuilding(Map map, Block b)
     {
       if (b.InsideRect.Width < 3 || b.InsideRect.Height < 3) return false;
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
@@ -1112,7 +1112,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual bool MakeHousingBuilding(Map map, BaseTownGenerator.Block b)
+    protected virtual bool MakeHousingBuilding(Map map, Block b)
     {
       if (b.InsideRect.Width < 4 || b.InsideRect.Height < 4) return false;
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
@@ -1144,7 +1144,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual void MakeSewersMaintenanceBuilding(Map map, bool isSurface, BaseTownGenerator.Block b, Map linkedMap, Point exitPosition)
+    protected virtual void MakeSewersMaintenanceBuilding(Map map, bool isSurface, Block b, Map linkedMap, Point exitPosition)
     {
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect);
       TileRectangle(map, GameTiles.WALL_SEWER, b.BuildingRect);
@@ -1234,7 +1234,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       map.AddZone(MakeUniqueZone("Sewers Maintenance", b.BuildingRect));
     }
 
-    protected virtual void MakeSubwayStationBuilding(Map map, bool isSurface, BaseTownGenerator.Block b, Map linkedMap, Point exitPosition)
+    protected virtual void MakeSubwayStationBuilding(Map map, bool isSurface, Block b, Map linkedMap, Point exitPosition)
     {
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect, true);
       TileRectangle(map, GameTiles.WALL_SUBWAY, b.BuildingRect);
@@ -1884,7 +1884,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    private Map GenerateHouseBasementMap(Map map, BaseTownGenerator.Block houseBlock)
+    private Map GenerateHouseBasementMap(Map map, Block houseBlock)
     {
       Contract.Requires(null!=map.District);
       Rectangle buildingRect = houseBlock.BuildingRect;
@@ -2194,7 +2194,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
     }
 
-    private void MakePoliceStation(Map map, List<BaseTownGenerator.Block> freeBlocks, out BaseTownGenerator.Block policeBlock)
+    private void MakePoliceStation(Map map, List<Block> freeBlocks, out Block policeBlock)
     {
       policeBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
       Point stairsToLevel1;
@@ -2211,7 +2211,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Session.Get.UniqueMaps.PoliceStation_JailsLevel = new UniqueMap(stationJailsLevel);
     }
 
-    private void GeneratePoliceStation(Map surfaceMap, BaseTownGenerator.Block policeBlock, out Point stairsToLevel1)
+    private void GeneratePoliceStation(Map surfaceMap, Block policeBlock, out Point stairsToLevel1)
     {
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, policeBlock.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
@@ -2237,7 +2237,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MakeWalkwayZones(surfaceMap, policeBlock);
     }
 
-    private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap, BaseTownGenerator.Block policeBlock, Point exitPos)
+    private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap, Block policeBlock, Point exitPos)
     {
       Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, 20, 20, Lighting.DARKNESS);
 
@@ -2348,7 +2348,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return map;
     }
 
-    private void MakeHospital(Map map, List<BaseTownGenerator.Block> freeBlocks, out BaseTownGenerator.Block hospitalBlock)
+    private void MakeHospital(Map map, List<Block> freeBlocks, out Block hospitalBlock)
     {
       Contract.Requires(null!=map.District);
       hospitalBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
@@ -2390,7 +2390,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Session.Get.UniqueMaps.Hospital_Power = new UniqueMap(hospitalPower);
     }
 
-    private void GenerateHospitalEntryHall(Map surfaceMap, BaseTownGenerator.Block block)
+    private void GenerateHospitalEntryHall(Map surfaceMap, Block block)
     {
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, block.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_HOSPITAL, block.BuildingRect);
@@ -3166,7 +3166,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 ResetRectangle(rect);
       }
 
-      public Block(BaseTownGenerator.Block copyFrom)
+      public Block(Block copyFrom)
       {
                 Rectangle = copyFrom.Rectangle;
                 BuildingRect = copyFrom.BuildingRect;
