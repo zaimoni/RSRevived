@@ -7247,19 +7247,11 @@ namespace djack.RogueSurvivor.Engine
       return batteries / WorldTime.TURNS_PER_HOUR;
     }
 
-    static private int FoodToHoursUntilRotHungry(int food)
-    {
-      int num = food - Actor.ROT_HUNGRY_LEVEL;
-      if (num <= 0)
-        return 0;
-      return num / WorldTime.TURNS_PER_HOUR;
-    }
-
     public bool IsAlmostRotHungry(Actor actor)
     {
       if (!actor.Model.Abilities.IsRotting)
         return false;
-      return FoodToHoursUntilRotHungry(actor.FoodPoints) <= 3;
+      return actor.HoursUntilRotHungry <= 3;
     }
 
     public static Direction CommandToDirection(PlayerCommand cmd)
@@ -10648,7 +10640,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsRotStarving) return new ColorString(Color.Red,"STARVING!");
       if (actor.IsRotHungry) return new ColorString(Color.Yellow,"Hungry");
-      return new ColorString(Color.White,string.Format("{0}h", FoodToHoursUntilRotHungry(actor.FoodPoints)));
+      return new ColorString(Color.White,string.Format("{0}h", actor.HoursUntilRotHungry));
     }
 
     static private ColorString ActorRunningStatus(Actor actor)

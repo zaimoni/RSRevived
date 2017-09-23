@@ -1738,6 +1738,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public int HoursUntilRotHungry {
+      get {
+        int num = FoodPoints - ROT_HUNGRY_LEVEL;
+        return (0 >= num ? 0 : num / WorldTime.TURNS_PER_HOUR);
+      }
+    }
+
     public int MaxFood {
       get {
         int num = (int) ((double) Sheet.BaseFoodPoints * (double) SKILL_LIGHT_EATER_MAXFOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
