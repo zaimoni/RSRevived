@@ -265,8 +265,7 @@ namespace djack.RogueSurvivor.Gameplay
 
       public static Skills.SkillData FromCSVLine(CSVLine line)
       {
-        return new Skills.SkillData()
-        {
+        return new Skills.SkillData{
           NAME = line[1].ParseText(),
           VALUE1 = line[2].ParseFloat(),
           VALUE2 = line[3].ParseFloat(),
