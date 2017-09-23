@@ -1904,6 +1904,12 @@ namespace djack.RogueSurvivor.Data
       return num;
     }    
 
+    public int CountItems<_T_>() where _T_ : Item
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
+      return m_Inventory.Items.Where(it=>it is _T_).Select(it => it.Quantity).Sum();
+    }
+
     public bool Has<_T_>() where _T_ : Item
     {
       if (Inventory == null || Inventory.IsEmpty) return false;

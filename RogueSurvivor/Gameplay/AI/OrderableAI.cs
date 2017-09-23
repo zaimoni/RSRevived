@@ -1730,7 +1730,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
+      if (m_Actor.CountItems<ItemBarricadeMaterial>() < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
@@ -1778,7 +1778,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (game.Rules.CountBarricadingMaterial(m_Actor) < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
+      if (m_Actor.CountItems<ItemBarricadeMaterial>() < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {

@@ -587,19 +587,6 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    public int CountBarricadingMaterial(Actor actor)
-    {
-      if (actor.Inventory == null || actor.Inventory.IsEmpty)
-        return 0;
-      int num = 0;
-      foreach (Item obj in actor.Inventory.Items)
-      {
-        if (obj is ItemBarricadeMaterial)
-          num += obj.Quantity;
-      }
-      return num;
-    }
-
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge)
     {
       string reason;
@@ -622,7 +609,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       int num = ActorBarricadingMaterialNeedForFortification(actor, isLarge);
-      if (CountBarricadingMaterial(actor) < num)
+      if (actor.CountItems<ItemBarricadeMaterial>() < num)
       {
         reason = string.Format("not enough barricading material, need {0}.", (object) num);
         return false;
@@ -645,7 +632,7 @@ namespace djack.RogueSurvivor.Engine
         reason = "cannot use map objects";
         return false;
       }
-      if (CountBarricadingMaterial(actor) <= 0)
+      if (actor.CountItems<ItemBarricadeMaterial>() <= 0)
       {
         reason = "no barricading material";
         return false;

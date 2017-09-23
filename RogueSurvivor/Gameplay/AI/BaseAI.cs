@@ -459,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);
     }
 
-	protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
+	static protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
 	{
 	  if (null == enemies) return null;
 	  if (null == friends) return null;

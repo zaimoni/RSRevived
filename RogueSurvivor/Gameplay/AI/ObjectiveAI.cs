@@ -245,7 +245,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (it is ItemRangedWeapon) {
         if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
-        if (1 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon))) return false;  // XXX rules out AI gun bunnies
+        if (1 <= m_Actor.CountItems< ItemRangedWeapon >()) return false;  // XXX rules out AI gun bunnies
         if (!m_Actor.Inventory.Contains(it) && m_Actor.HasItemOfModel(it.Model)) return false;
         ItemRangedWeapon rw = it as ItemRangedWeapon;
         return rw.Ammo > 0 || m_Actor.GetCompatibleAmmoItem(rw) != null;

@@ -4462,7 +4462,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       int num = Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
-      if (m_Rules.CountBarricadingMaterial(player) < num) {
+      if (player.CountItems<ItemBarricadeMaterial>() < num) {
         AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", num)));
         return false;
       }
