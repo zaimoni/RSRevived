@@ -1516,8 +1516,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted as Actor;
       bool decideToFlee;
-      if (HasEquipedRangedWeapon(enemy))
-        decideToFlee = false;
+      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
       else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
         decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))

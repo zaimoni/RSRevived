@@ -2053,6 +2053,11 @@ namespace djack.RogueSurvivor.Data
       return GetEquippedItem(DollPart.RIGHT_HAND);
     }
 
+    public bool HasEquipedRangedWeapon()
+    {
+      return GetEquippedWeapon() is ItemRangedWeapon;
+    }
+
     // maybe this should be over on the Inventory object
     public Item GetItem(Gameplay.GameItems.IDs id)
     {

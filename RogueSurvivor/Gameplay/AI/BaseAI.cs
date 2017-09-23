@@ -463,7 +463,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	{
 	  if (null == enemies) return null;
 	  if (null == friends) return null;
-	  IEnumerable<Actor> friends2 = friends.Select(p=>p.Percepted as Actor).Where(a=>HasEquipedRangedWeapon(a));
+	  IEnumerable<Actor> friends2 = friends.Select(p=>p.Percepted as Actor).Where(a=> a.HasEquipedRangedWeapon());
 	  if (!friends2.Any()) return null;
 	  HashSet<Point> tmp = new HashSet<Point>();
 	  foreach(Actor f in friends2) {
@@ -784,8 +784,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted as Actor;
       bool decideToFlee;
-      if (HasEquipedRangedWeapon(enemy))
-        decideToFlee = false;
+      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
       else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
         decideToFlee = true;
       else {
@@ -1123,11 +1122,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Actor actorAt = map.GetActorAt(position);
       if (actorAt != null) return actorAt != m_Actor;
       return false;
-    }
-
-    protected bool HasEquipedRangedWeapon(Actor actor)
-    {
-      return actor.GetEquippedWeapon() is ItemRangedWeapon;
     }
 
     protected bool WantToEvadeMelee(Actor actor, ActorCourage courage, Actor target)
