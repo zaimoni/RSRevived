@@ -6,7 +6,6 @@
 
 using System;
 using System.Runtime.Serialization;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -27,11 +26,15 @@ namespace djack.RogueSurvivor.Data
     public int TurnCounter
     {
       get {
-        Contract.Ensures(0<= m_TurnCounter);
+#if DEBUG
+        if (0 > m_TurnCounter) throw new InvalidOperationException("0 > TurnCounter");
+#endif
         return m_TurnCounter;
       }
       set {
-        Contract.Requires(0<=value);
+#if DEBUG
+        if (0 > value) throw new InvalidOperationException("0 > TurnCounter");
+#endif
         m_TurnCounter = value;
         m_Day = Math.DivRem(m_TurnCounter,TURNS_PER_DAY,out m_Hour);
         m_Hour = Math.DivRem(m_Hour,TURNS_PER_HOUR,out m_Tick);
@@ -110,12 +113,16 @@ namespace djack.RogueSurvivor.Data
     public WorldTime(WorldTime src)
       : this(src.TurnCounter)
     {
-      Contract.Requires(null!=src);
+#if DEBUG
+      if (null==src) throw new ArgumentNullException("src");
+#endif
     }
 
     public WorldTime(int turnCounter=0)
     {
-      Contract.Requires(0<=turnCounter);
+#if DEBUG
+      if (0 > turnCounter) throw new ArgumentOutOfRangeException("turnCounter",turnCounter, "0 > turnCounter");
+#endif
       TurnCounter = turnCounter;
     }
 
@@ -156,10 +163,12 @@ namespace djack.RogueSurvivor.Data
 
     public static int Turn(int day,int hour)
     {
-      Contract.Requires(0<=day);
-      Contract.Requires(0<=hour);
-      Contract.Requires(int.MaxValue/TURNS_PER_DAY>=day);
-      Contract.Requires((int.MaxValue-(TURNS_PER_DAY*day))/TURNS_PER_HOUR>=hour);
+#if DEBUG
+      if (0>day) throw new ArgumentOutOfRangeException("day",day, "0>day");
+      if (int.MaxValue / TURNS_PER_DAY < day) throw new ArgumentOutOfRangeException("day",day, "(int.MaxValue / TURNS_PER_DAY < day");
+      if (0>hour) throw new ArgumentOutOfRangeException("hour", hour, "0>hour");
+      if ((int.MaxValue - (TURNS_PER_DAY * day)) / TURNS_PER_HOUR < hour) throw new ArgumentOutOfRangeException("hour", hour, "(int.MaxValue - (TURNS_PER_DAY * day)) / TURNS_PER_HOUR < hour");
+#endif
       return TURNS_PER_DAY*day + TURNS_PER_HOUR*hour;
     }
 

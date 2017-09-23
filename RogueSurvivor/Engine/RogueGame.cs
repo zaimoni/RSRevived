@@ -1902,6 +1902,10 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
+      // XXX message generation wrappers do not have access to map time, only world time
+      // XXX this set of messages must execute only once
+      // XXX the displayed turn on the message must agree with the displayed turn on the screen
+      // XXX thus, displayed turn on screen for non-first PC districts is greater than the map time by one
       if (district == Session.Get.CurrentMap.District && Session.Get.CurrentMap.LocalTime.TurnCounter > Session.Get.WorldTime.TurnCounter) {
         ++Session.Get.WorldTime.TurnCounter;
         bool isNight2 = Session.Get.WorldTime.IsNight;

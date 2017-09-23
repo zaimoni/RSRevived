@@ -46,7 +46,7 @@ namespace djack.RogueSurvivor.Data
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
 //    Weather = Weather.CLEAR;
-      Weather = (Weather)RogueForm.Game.Rules.Roll(0, (int)Weather._COUNT);
+      Weather = (Weather)(RogueForm.Game?.Rules.Roll(0, (int)Weather._COUNT) ?? 0);
       m_PCready = new Queue<District>(size*size);
       m_NPCready = new Queue<District>(size*size);
     }
