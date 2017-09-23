@@ -148,7 +148,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_BreakLineOfSight(int t0, Actor who, Location loc)
       : base(t0,who)
       {
-        _locs = new HashSet<Location>(){loc};
+        _locs = new HashSet<Location>{loc};
       }
 
       public Goal_BreakLineOfSight(int t0, Actor who, IEnumerable<Location> locs)
@@ -177,7 +177,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_PathTo(int t0, Actor who, Location loc)
       : base(t0,who)
       {
-        _locs = new HashSet<Location>(){loc};
+        _locs = new HashSet<Location>{loc};
       }
 
       public Goal_PathTo(int t0, Actor who, IEnumerable<Location> locs)
@@ -296,7 +296,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool DontFollowLeader { get; set; }
 
-    public OrderableAI()
+    protected OrderableAI()
     {
     }
 
@@ -1178,7 +1178,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // This is more pro-active.  We might want to flag whether
     // an AI uses the behavior based on this
-    protected ItemFood GetBestPerishableItem(RogueGame game)
+    protected ItemFood GetBestPerishableItem()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       int turnCounter = m_Actor.Location.Map.LocalTime.TurnCounter;
@@ -1208,9 +1208,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
 
-    protected ActorAction BehaviorEatProactively(RogueGame game)
+    protected ActorAction BehaviorEatProactively()
     {
-      Item bestEdibleItem = GetBestPerishableItem(game);
+      Item bestEdibleItem = GetBestPerishableItem();
       if (null == bestEdibleItem) return null;
       return (m_Actor.CanUse(bestEdibleItem) ? new ActionUseItem(m_Actor, bestEdibleItem) : null);
     }
@@ -1379,7 +1379,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (Rules.IsAdjacent(position, m_Actor.Location.Position)) {
             // this can trigger close-open loop with someone who is merely traveling
             // check for duplicating last action
-            if (Objectives.Where(o => o is Goal_LastAction<ActionCloseDoor> && (o as Goal_LastAction<ActionCloseDoor>).LastAction.Door==door).Any()) {
+            if (Objectives.Any(o => o is Goal_LastAction<ActionCloseDoor> && (o as Goal_LastAction<ActionCloseDoor>).LastAction.Door == door)) {
               // break action loop; plausibly the conflicting actor will be in the doorway next time
               return new ActionWait(m_Actor);
             }
@@ -1510,7 +1510,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, bool hasVisibleLeader, bool isLeaderFighting, ActorCourage courage, string[] emotes)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes)
     {
       Percept target = FilterNearest(enemies);
       bool doRun = false;	// only matters when fleeing
@@ -1848,7 +1848,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
     {
       if (Items == null) return false;
-      return Items.Where(it => IsInterestingItem(it)).Any();
+      return Items.Any(it => IsInterestingItem(it));
     }
 
     public bool HasAnyInterestingItem(Inventory inv)
@@ -1936,7 +1936,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Inventory inv = m_Actor.Inventory;
       if (inv == null) return false;
-      return inv.Items.Where(it=> IsTradeableItem(it)).Any();
+      return inv.Items.Any(it => IsTradeableItem(it));
     }
 
     public List<Item> GetTradeableItems()

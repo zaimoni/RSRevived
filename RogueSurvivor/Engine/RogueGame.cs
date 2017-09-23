@@ -1332,7 +1332,7 @@ namespace djack.RogueSurvivor.Engine
     private void StartNewGame()
     {
       bool isUndead = m_CharGen.IsUndead;
-      GenerateWorld(true, s_Options.CitySize);
+      GenerateWorld(true);
       Session.Get.Scoring.AddVisit(Session.Get.WorldTime.TurnCounter, m_Player.Location.Map);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format(isUndead ? "Rose in {0}." : "Woke up in {0}.", m_Player.Location.Map.Name));
       Session.Get.Scoring.Side = isUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
@@ -3729,7 +3729,7 @@ namespace djack.RogueSurvivor.Engine
       Func<int,string> label = index => allies[index].Name+(allies[index].HasLeader ? "(leader "+allies[index].Leader.Name+")"  : "");
       Predicate<int> details = index => {
         Actor a = allies[index];
-        List<string> tmp = new List<string>(){a.Name};
+        List<string> tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
         List<ItemRangedWeapon> ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
@@ -6927,8 +6927,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemAmmo(ItemAmmo am)
     {
-      return new List<string>()
-      {
+      return new List<string>{
         "> ammo",
         string.Format("Type : {0}", am.AmmoType.Describe(true))
       }.ToArray();
@@ -6936,7 +6935,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemFood(ItemFood f)
     {
-      List<string> stringList = new List<string>() { "> food" };
+      List<string> stringList = new List<string>{ "> food" };
       if (f.IsPerishable) {
         if (f.IsStillFreshAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("Fresh.");
         else if (f.IsExpiredAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("*Expired*");
@@ -6955,7 +6954,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemMedicine(ItemMedicine med)
     {
-      List<string> stringList = new List<string>() { "> medicine" };
+      List<string> stringList = new List<string>{ "> medicine" };
       ItemMedicineModel itemMedicineModel = med.Model;
       int num1 = m_Player == null ? itemMedicineModel.Healing : Rules.ActorMedicineEffect(m_Player, itemMedicineModel.Healing);
       if (num1 == itemMedicineModel.Healing)
@@ -6989,7 +6988,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemBarricadeMaterial(ItemBarricadeMaterial bm)
     {
-      List<string> stringList = new List<string>() { "> barricade material" };
+      List<string> stringList = new List<string>{ "> barricade material" };
       int barricade_value = bm.Model.BarricadingValue;
       int num = m_Player == null ? barricade_value : Rules.ActorBarricadingPoints(m_Player, barricade_value);
       if (num == barricade_value)
@@ -7036,7 +7035,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemSprayPaint(ItemSprayPaint sp)
     {
-      List<string> stringList = new List<string>() { "> spray paint" };
+      List<string> stringList = new List<string>{ "> spray paint" };
       int max_paint = sp.Model.MaxPaintQuantity;
       if (sp.PaintQuantity < max_paint)
         stringList.Add(string.Format("Paint : {0}/{1}", sp.PaintQuantity, max_paint));
@@ -7047,7 +7046,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemSprayScent(ItemSprayScent sp)
     {
-      List<string> stringList = new List<string>() { "> spray scent" };
+      List<string> stringList = new List<string>{ "> spray scent" };
       int max_spray = sp.Model.MaxSprayQuantity;
       if (sp.SprayQuantity < max_spray)
         stringList.Add(string.Format("Spray : {0}/{1}", sp.SprayQuantity, max_spray));
@@ -7058,7 +7057,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemLight(ItemLight lt)
     {
-      List<string> stringList = new List<string>() { "> light" };
+      List<string> stringList = new List<string>{ "> light" };
       stringList.Add(DescribeBatteries(lt));
       stringList.Add(string.Format("FOV       : +{0}", lt.FovBonus));
       return stringList.ToArray();
@@ -7066,7 +7065,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemTracker(ItemTracker tr)
     {
-      List<string> stringList = new List<string>() { "> tracker" };
+      List<string> stringList = new List<string>{ "> tracker" };
       stringList.Add(DescribeBatteries(tr));
       return stringList.ToArray();
     }
@@ -8774,7 +8773,7 @@ namespace djack.RogueSurvivor.Engine
       powGen.TogglePower();
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(powGen))
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH), powGen, powGen.IsOn ? " on." : " off."));
-      OnMapPowerGeneratorSwitch(actor.Location, powGen);
+      OnMapPowerGeneratorSwitch(actor.Location);
     }
 
     private void DoDestroyObject(MapObject mapObj)
@@ -11347,7 +11346,7 @@ namespace djack.RogueSurvivor.Engine
       return GetUserHiScorePath() + "hiscores.txt";
     }
 
-    private void GenerateWorld(bool isVerbose, int size)
+    private void GenerateWorld(bool isVerbose)
     {
       if (isVerbose) {
         m_UI.UI_Clear(Color.Black);
@@ -11378,7 +11377,7 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawStringBold(Color.White, string.Format("Creating District@{0}...", World.CoordToString(index1, index2)), 0, 0, new Color?());
             m_UI.UI_Repaint();
           }
-          District district = new District(new Point(index1, index2), GenerateDistrictKind(world, index1, index2));
+          District district = new District(new Point(index1, index2), GenerateDistrictKind(index1, index2));
           world[index1, index2] = district;
           // All map generation types should have an entry map so that is sort-of-ok to have as a member function of District
           district.GenerateEntryMap(world, policeStationDistrictPos, hospitalDistrictPos, s_Options.DistrictSize, m_TownGenerator);
@@ -11399,12 +11398,12 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
       }
       Session.Get.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
-      Session.Get.UniqueActors.BigBear = CreateUniqueBigBear(world);
-      Session.Get.UniqueActors.FamuFataru = CreateUniqueFamuFataru(world);
-      Session.Get.UniqueActors.Santaman = CreateUniqueSantaman(world);
-      Session.Get.UniqueActors.Roguedjack = CreateUniqueRoguedjack(world);
-      Session.Get.UniqueActors.Duckman = CreateUniqueDuckman(world);
-      Session.Get.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz(world);
+      Session.Get.UniqueActors.BigBear = CreateUniqueBigBear();
+      Session.Get.UniqueActors.FamuFataru = CreateUniqueFamuFataru();
+      Session.Get.UniqueActors.Santaman = CreateUniqueSantaman();
+      Session.Get.UniqueActors.Roguedjack = CreateUniqueRoguedjack();
+      Session.Get.UniqueActors.Duckman = CreateUniqueDuckman();
+      Session.Get.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz();
       Session.Get.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
@@ -11564,7 +11563,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueActor(named,true);
     }
 
-    private UniqueActor CreateUniqueBigBear(World world)
+    private UniqueActor CreateUniqueBigBear()
     {
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", false, 0);
       named.IsUnique = true;
@@ -11582,7 +11581,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueActor(named,false,true, "You hear an angry man shouting 'FOOLS!'", GameMusics.BIGBEAR_THEME_SONG);
     }
 
-    private UniqueActor CreateUniqueFamuFataru(World world)
+    private UniqueActor CreateUniqueFamuFataru()
     {
       Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
       named.IsUnique = true;
@@ -11600,7 +11599,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueActor(named,false,true, "You hear a woman laughing.", GameMusics.FAMU_FATARU_THEME_SONG);
     }
 
-    private UniqueActor CreateUniqueSantaman(World world)
+    private UniqueActor CreateUniqueSantaman()
     {
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", false, 0);
       named.IsUnique = true;
@@ -11618,7 +11617,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueActor(named,false,true, "You hear christmas music and drunken vomiting.", GameMusics.SANTAMAN_THEME_SONG);
     }
 
-    private UniqueActor CreateUniqueRoguedjack(World world)
+    private UniqueActor CreateUniqueRoguedjack()
     {
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
       named.IsUnique = true;
@@ -11636,7 +11635,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueActor(named,false,true, "You hear a man shouting in French.", GameMusics.ROGUEDJACK_THEME_SONG);
     }
 
-    private UniqueActor CreateUniqueDuckman(World world)
+    private UniqueActor CreateUniqueDuckman()
     {
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", false, 0);
       named.IsUnique = true;
@@ -11655,7 +11654,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueActor(named,false,true, "You hear loud demented QUACKS.", GameMusics.DUCKMAN_THEME_SONG);
     }
 
-    private UniqueActor CreateUniqueHansVonHanz(World world)
+    private UniqueActor CreateUniqueHansVonHanz()
     {
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", false, 0);
       named.IsUnique = true;
@@ -11685,8 +11684,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (mapList.Count == 0)
-        return new UniqueItem()
-        {
+        return new UniqueItem{
           TheItem = it,
           IsSpawned = false
         };
@@ -11695,8 +11693,7 @@ namespace djack.RogueSurvivor.Engine
       Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, point);
       map.AddDecorationAt("Tiles\\Decoration\\bloodied_floor", point);
-      return new UniqueItem()
-      {
+      return new UniqueItem{
         TheItem = it,
         IsSpawned = true
       };
@@ -11744,7 +11741,7 @@ namespace djack.RogueSurvivor.Engine
       return new UniqueMap(mapCharUnderground);
     }
 
-    private DistrictKind GenerateDistrictKind(World world, int gridX, int gridY)
+    private DistrictKind GenerateDistrictKind(int gridX, int gridY)
     {
       if (gridX == 0 && gridY == 0) return DistrictKind.BUSINESS;
       return (DistrictKind) m_Rules.Roll(0, (int) DistrictKind._COUNT);
@@ -11938,8 +11935,9 @@ namespace djack.RogueSurvivor.Engine
     private void StartSimThread()
     {
       if (m_SimThread == null) {
-        m_SimThread = new Thread(new ThreadStart(SimThreadProc));
-        m_SimThread.Name = "Simulation Thread";
+        m_SimThread = new Thread(new ThreadStart(SimThreadProc)) {
+          Name = "Simulation Thread"
+        };
       }
       m_SimThread.Start();
     }
@@ -12448,7 +12446,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void OnMapPowerGeneratorSwitch(Location location, PowerGenerator powGen)
+    private void OnMapPowerGeneratorSwitch(Location location)
     {
       Map map = location.Map;
       if (map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap) {
@@ -12580,7 +12578,7 @@ namespace djack.RogueSurvivor.Engine
         PowerGenerator powGen = mapObject as PowerGenerator;
         if (powGen != null && !powGen.IsOn) {
           powGen.TogglePower();
-          OnMapPowerGeneratorSwitch(powGen.Location, powGen);
+          OnMapPowerGeneratorSwitch(powGen.Location);
         }
       }
     }

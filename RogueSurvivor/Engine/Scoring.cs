@@ -332,12 +332,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void SetKiller(Actor k)
     {
-            m_Killer = k;
+      m_Killer = k;
     }
 
     public void SetZombifiedPlayer(Actor z)
     {
-            m_ZombifiedPlayer = z;
+      m_ZombifiedPlayer = z;
     }
 
     public void AddFollowerWhenDied(Actor fo)

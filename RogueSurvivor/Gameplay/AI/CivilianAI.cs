@@ -316,7 +316,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
         }
         // \todo use damage_field to improve on BehaviorFightOrFlee
-        tmpAction = BehaviorFightOrFlee(game, enemies, damage_field, hasVisibleLeader, isLeaderFighting, Directives.Courage, m_Emotes);
+        tmpAction = BehaviorFightOrFlee(game, enemies, damage_field, Directives.Courage, m_Emotes);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
 #endif
@@ -347,7 +347,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // handle food after enemies check
-      tmpAction = BehaviorEatProactively(game);
+      tmpAction = BehaviorEatProactively();
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorEatProactively ok");
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "eating proactively");
@@ -555,7 +555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorCloseDoorBehindMe(game, PrevLocation);    // civilian-specific
+      tmpAction = BehaviorCloseDoorBehindMe(PrevLocation);    // civilian-specific
       if (null != tmpAction) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "closing door");

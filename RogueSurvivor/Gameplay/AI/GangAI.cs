@@ -155,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
           if (null != tmpAction) return tmpAction;
         }
-        tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, hasVisibleLeader, isLeaderFighting, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
+        tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, ActorCourage.COURAGEOUS, GangAI.FIGHT_EMOTES);
         if (null != tmpAction) return tmpAction;
       }
 
@@ -170,7 +170,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // handle food after enemies checks
-      tmpAction = BehaviorEatProactively(game);
+      tmpAction = BehaviorEatProactively();
       if (null != tmpAction) return tmpAction;
 
       if (m_Actor.IsHungry) {

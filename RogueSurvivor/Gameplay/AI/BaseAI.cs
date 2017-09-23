@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const float LEADER_LOF_PENALTY = 1f;
     private Location m_prevLocation;
 
-    public BaseAI()
+    protected BaseAI()
     {
     }
 
@@ -775,7 +775,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // Feral dogs use BehaviorFightOrFlee; simplified version of what OrderableAI uses
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, bool hasVisibleLeader, bool isLeaderFighting, string[] emotes)
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, string[] emotes)
     {
       ActorCourage courage = ActorCourage.CAUTIOUS;
       Percept target = FilterNearest(enemies);
@@ -881,7 +881,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActionCloseDoor BehaviorCloseDoorBehindMe(RogueGame game, Location previousLocation)
+    protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
     {
       DoorWindow door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
       if (door == null) return null;
@@ -1036,7 +1036,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (choiceEvalDict.ContainsKey(f)) {
           choiceEvalDict[f].Add(tmp2);
         } else {
-          choiceEvalDict[f] = new List<ChoiceEval<_T_>>() { tmp2 };
+          choiceEvalDict[f] = new List<ChoiceEval<_T_>>{ tmp2 };
         }
       }
 
@@ -1070,7 +1070,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (choiceEvalDict.ContainsKey(f)) {
           choiceEvalDict[f].Add(tmp2);
         } else {
-          choiceEvalDict[f] = new List<ChoiceEval<_DATA_>>() { tmp2 };
+          choiceEvalDict[f] = new List<ChoiceEval<_DATA_>>{ tmp2 };
         }
       }
 

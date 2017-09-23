@@ -522,7 +522,7 @@ namespace djack.RogueSurvivor.Data
       if (m_Decorations.TryGetValue(pt, out ret)) {
         ret.Add(imageID);
       } else {
-        m_Decorations[pt] = new HashSet<string>() { imageID };
+        m_Decorations[pt] = new HashSet<string>{ imageID };
       }
     }
 
@@ -1568,10 +1568,7 @@ namespace djack.RogueSurvivor.Data
         if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList)) {
           odorScentList.Add(mScent);
         } else {
-          odorScentList = new List<OdorScent>()
-          {
-            mScent
-          };
+          odorScentList = new List<OdorScent> { mScent };
           m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
         }
       }

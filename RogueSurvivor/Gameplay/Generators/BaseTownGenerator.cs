@@ -20,8 +20,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 {
   internal class BaseTownGenerator : BaseMapGenerator
   {
-    public static readonly BaseTownGenerator.Parameters DEFAULT_PARAMS = new BaseTownGenerator.Parameters()
-    {
+    public static readonly BaseTownGenerator.Parameters DEFAULT_PARAMS = new BaseTownGenerator.Parameters {
       MapWidth = RogueGame.MAP_MAX_WIDTH,
       MapHeight = RogueGame.MAP_MAX_HEIGHT,
       MinBlockSize = 11,
@@ -105,8 +104,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
       // hook for planned pre-apocalypse politics
       // following is RED STATE, RED CITY
-      List<GameItems.IDs> working_bedroom = new List<GameItems.IDs>()
-      { // XXX these three require firearms to be legal for civilians to generate in bedrooms
+      List<GameItems.IDs> working_bedroom = new List<GameItems.IDs> {
+        // XXX these three require firearms to be legal for civilians to generate in bedrooms
         GameItems.IDs.RANGED_HUNTING_CROSSBOW,
         GameItems.IDs.RANGED_HUNTING_RIFLE,
         GameItems.IDs.RANGED_SHOTGUN,
@@ -120,8 +119,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // holder [registered private army] under the 1934 automatic weapons ban.)
       // true military weapons not represented here, the ammo is assumed too hard to get pre-apocalypse
       // no duplication of ammo between primary and secondary ranged weapon
-      List<KeyValuePair<GameItems.IDs, GameItems.IDs>> working_survivalist = new List<KeyValuePair<GameItems.IDs, GameItems.IDs>>()
-      {
+      List<KeyValuePair<GameItems.IDs, GameItems.IDs>> working_survivalist = new List<KeyValuePair<GameItems.IDs, GameItems.IDs>> {
         new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_HUNTING_RIFLE),
         new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_SHOTGUN),
         new KeyValuePair<GameItems.IDs,GameItems.IDs>(GameItems.IDs.RANGED_HUNTING_CROSSBOW, GameItems.IDs.RANGED_PISTOL),
@@ -2785,7 +2783,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return numberedName;
     }
 
-    public Actor CreateNewNakedHuman(int spawnTime, int itemsToCarry, int skills)
+    public Actor CreateNewNakedHuman(int spawnTime)
     {
       return (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
     }
