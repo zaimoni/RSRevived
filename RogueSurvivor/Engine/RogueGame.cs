@@ -2025,9 +2025,8 @@ namespace djack.RogueSurvivor.Engine
           foreach (Corpse corpse in map.Corpses) {
             if (m_Rules.RollChance(Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
               corpseList1.Add(corpse);
-            } else {
-              InflictDamageToCorpse(corpse, Rules.CorpseDecayPerTurn(corpse));
-              if (corpse.HitPoints <= 0.0) corpseList2.Add(corpse);
+            } else if (corpse.TakeDamage(Rules.CorpseDecayPerTurn(corpse))) {
+              corpseList2.Add(corpse);
             }
           }
           if (corpseList1.Count > 0) {
@@ -4053,8 +4052,7 @@ namespace djack.RogueSurvivor.Engine
       SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, num)));
-      InflictDamageToCorpse(c, num);
-      if (c.HitPoints > 0.0) return;
+      if (!c.TakeDamage(num)) return;
       DestroyCorpse(c, a.Location.Map);
       if (player) AddMessage(new Data.Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
     }
@@ -4068,8 +4066,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(a, string.Format("{0} {1} corpse.", Conjugate(a, VERB_FEAST_ON), c.DeadGuy.Name)));
         m_MusicManager.Play(GameSounds.UNDEAD_EAT);
       }
-      InflictDamageToCorpse(c, num);
-      if (c.HitPoints <= 0.0f) {
+      if (c.TakeDamage(num)) {
         DestroyCorpse(c, a.Location.Map);
         if (player)
           AddMessage(new Data.Message(string.Format("{0} corpse is no more.", c.DeadGuy.Name), a.Location.Map.LocalTime.TurnCounter, Color.Purple));
@@ -4116,11 +4113,6 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeMessage(actor, string.Format("{0} to revive", Conjugate(actor, VERB_FAIL)), corpse.DeadGuy));
         }
       }
-    }
-
-    private void InflictDamageToCorpse(Corpse c, float dmg)
-    {
-      c.HitPoints -= dmg;
     }
 
     private void DestroyCorpse(Corpse c, Map m)
@@ -8168,7 +8160,7 @@ namespace djack.RogueSurvivor.Engine
       List<Corpse> corpsesAt = map.GetCorpsesAt(location.Position);
       if (corpsesAt != null) {
         foreach (Corpse c in corpsesAt)
-           InflictDamageToCorpse(c, num1);
+           c.TakeDamage(num1);
       }
       // XXX implementation of blast.CanDestroyWalls goes here
       return num1;
