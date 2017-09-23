@@ -6510,7 +6510,7 @@ namespace djack.RogueSurvivor.Engine
           OrderableAI orderableAi = aiController as OrderableAI;
           if (orderableAi != null && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
-          stringList.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, FoodToHoursUntilHungry(actor.FoodPoints)));
+          stringList.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
           stringList.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
           stringList.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
           stringList.Add(string.Format("Inf : {0} {1}%", actor.Infection, actor.InfectionPercent));
@@ -6682,7 +6682,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeInventory(Inventory inv)
+    static private string[] DescribeInventory(Inventory inv)
     {
       List<string> stringList = new List<string>(inv.CountItems);
       foreach (Item it in inv.Items) {
@@ -7055,7 +7055,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemLight(ItemLight lt)
+    static private string[] DescribeItemLight(ItemLight lt)
     {
       List<string> stringList = new List<string>{ "> light" };
       stringList.Add(DescribeBatteries(lt));
@@ -7063,7 +7063,7 @@ namespace djack.RogueSurvivor.Engine
       return stringList.ToArray();
     }
 
-    private string[] DescribeItemTracker(ItemTracker tr)
+    static private string[] DescribeItemTracker(ItemTracker tr)
     {
       List<string> stringList = new List<string>{ "> tracker" };
       stringList.Add(DescribeBatteries(tr));
@@ -7248,14 +7248,6 @@ namespace djack.RogueSurvivor.Engine
       return batteries / WorldTime.TURNS_PER_HOUR;
     }
 
-    static private int FoodToHoursUntilHungry(int food)
-    {
-      int num = food - Actor.FOOD_HUNGRY_LEVEL;
-      if (num <= 0)
-        return 0;
-      return num / WorldTime.TURNS_PER_HOUR;
-    }
-
     static private int FoodToHoursUntilRotHungry(int food)
     {
       int num = food - Actor.ROT_HUNGRY_LEVEL;
@@ -7266,9 +7258,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool IsAlmostHungry(Actor actor)
     {
-      if (!actor.Model.Abilities.HasToEat)
-        return false;
-      return FoodToHoursUntilHungry(actor.FoodPoints) <= 3;
+      return actor.Model.Abilities.HasToEat && actor.HoursUntilHungry <= 3;
     }
 
     public bool IsAlmostRotHungry(Actor actor)
@@ -10674,7 +10664,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor.IsStarving) return new ColorString(Color.Red,"STARVING!");
       if (actor.IsHungry) return new ColorString(Color.Yellow,"Hungry");
-      return new ColorString(Color.White,string.Format("{0}h", FoodToHoursUntilHungry(actor.FoodPoints)));
+      return new ColorString(Color.White,string.Format("{0}h", actor.HoursUntilHungry));
     }
 
     static private ColorString ActorRotHungerStatus(Actor actor)
