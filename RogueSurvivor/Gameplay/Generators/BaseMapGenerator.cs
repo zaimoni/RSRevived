@@ -850,10 +850,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected PowerGenerator MakeObjPowerGenerator()
-    {
-      return new PowerGenerator("power generator", GameImages.OBJ_POWERGEN_OFF, GameImages.OBJ_POWERGEN_ON);
-    }
+    protected static PowerGenerator MakeObjPowerGenerator() { return new PowerGenerator(); }
 
     public MapObject MakeObjBoard(string imageID, string[] text)
     {

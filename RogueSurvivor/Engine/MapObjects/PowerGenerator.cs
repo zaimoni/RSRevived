@@ -12,30 +12,39 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   [Serializable]
   internal class PowerGenerator : StateMapObject
   {
-    public const int STATE_OFF = 0;
-    public const int STATE_ON = 1;
-    private readonly string m_OffImageID;
-    private readonly string m_OnImageID;
+    private const int STATE_OFF = 0;
+    private const int STATE_ON = 1;
+
+    // XXX there is currently only one type of power generator: the CHAR power generator.
+    // The CHAR power generator is a Nikolai Tesla-esque magnetosphere power tap.
+    // Typically, it would have 12 terawatts of power available to "import" from the solar wind.
+
+    // It is unclear whether a solar storm (or solar minimum) has anything to do with the z apocalypse.
+
+    // Since the z apocalypse is "near now", CHAR power generators are unlikely to be available outside 
+    // of the military or the CHAR company town.
+
+    // As such, we do not specifically have to track power generator types at this time.  Other options
+    // would be gasoline or diesel.  There is little point modeling either of these without modeling the
+    // refineries needed to make gasoline and diesel.
+
+    static private readonly string[] m_imageIDs = new string[2] { Gameplay.GameImages.OBJ_POWERGEN_OFF, Gameplay.GameImages.OBJ_POWERGEN_ON };
 
     public bool IsOn { get { return State == STATE_ON; } }
 
     // While there is only one kind of power generator currently, the graphics
     // should be isolated from the constructor "just in case".
-    public PowerGenerator(string name, string offImageID, string onImageID)
-      : base(name, offImageID)
+    public PowerGenerator()
+      : base("power generator", m_imageIDs[0])
     {
-      m_OffImageID = offImageID;
-      m_OnImageID = onImageID;
     }
 
     override protected string StateToID(int x)
     {
-      switch(x)
-      {
-      case STATE_OFF: return m_OffImageID;
-      case STATE_ON: return m_OnImageID;
-      default: throw new ArgumentOutOfRangeException("newState unhandled");
-      }
+#if DEBUG
+      if (0>x || m_imageIDs.Length<=x) throw new ArgumentOutOfRangeException("newState unhandled");
+#endif
+      return m_imageIDs[x];
     }
 
     public void TogglePower()
