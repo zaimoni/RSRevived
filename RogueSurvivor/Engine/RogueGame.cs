@@ -2281,7 +2281,7 @@ namespace djack.RogueSurvivor.Engine
           if (actor.HasLeader) {
 #region leader trust & leader/follower bond.
             ModifyActorTrustInLeader(actor, Rules.ActorTrustIncrease(actor.Leader), false);
-            if (m_Rules.HasActorBondWith(actor, actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
+            if (actor.HasBondWith(actor.Leader) && m_Rules.RollChance(Rules.SANITY_RECOVER_BOND_CHANCE)) {
               actor.RegenSanity(Rules.ActorSanRegenValue(actor, Rules.SANITY_RECOVER_BOND));
               actor.Leader.RegenSanity(Rules.ActorSanRegenValue(actor.Leader, Rules.SANITY_RECOVER_BOND));
               if (ForceVisibleToPlayer(actor))
@@ -6501,7 +6501,7 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(string.Format("Order : {0}.", aiController.Order.ToString()));
       if (actor.HasLeader) {
         if (actor.Leader.IsPlayer) {
-          if (actor.TrustInLeader >= Rules.TRUST_BOND_THRESHOLD)
+          if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD)
             stringList.Add(string.Format("Trust : BOND."));
           else if (actor.TrustInLeader >= Rules.TRUST_MAX)
             stringList.Add("Trust : MAX.");
@@ -9039,7 +9039,7 @@ namespace djack.RogueSurvivor.Engine
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
         killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
       if (deadGuy.HasLeader) {
-        if (m_Rules.HasActorBondWith(deadGuy.Leader, deadGuy)) {
+        if (deadGuy.Leader.HasBondWith(deadGuy)) {
           deadGuy.Leader.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
           if (ForceVisibleToPlayer(deadGuy.Leader)) {
             if (deadGuy.Leader.IsPlayer) ClearMessages();
@@ -9049,7 +9049,7 @@ namespace djack.RogueSurvivor.Engine
         }
       } else if (deadGuy.CountFollowers > 0) {
         foreach (Actor follower in deadGuy.Followers) {
-          if (m_Rules.HasActorBondWith(follower, deadGuy)) {
+          if (follower.HasBondWith(deadGuy)) {
             follower.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
             if (ForceVisibleToPlayer(follower)) {
               if (follower.IsPlayer) ClearMessages();
@@ -10223,9 +10223,9 @@ namespace djack.RogueSurvivor.Engine
       if (mapObj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
     }
 
-    private string FollowerIcon(Actor actor)
+    static private string FollowerIcon(Actor actor)
     {
-      if (m_Rules.HasActorBondWith(actor, actor.Leader)) return GameImages.PLAYER_FOLLOWER_BOND;
+      if (actor.HasBondWith(actor.Leader)) return GameImages.PLAYER_FOLLOWER_BOND;
       if (actor.IsTrustingLeader) return GameImages.PLAYER_FOLLOWER_TRUST;
       return GameImages.PLAYER_FOLLOWER;
     }

@@ -30,6 +30,7 @@ namespace djack.RogueSurvivor.Data
     public const int STAMINA_MIN_FOR_ACTIVITY = 10; // would space-time scale if stamina itself space-time scaled
     private const int NIGHT_STA_PENALTY = 2;
     public const int STAMINA_REGEN_WAIT = 2;
+    public const int TRUST_BOND_THRESHOLD = Rules.TRUST_MAX;
     public const int TRUST_TRUSTING_THRESHOLD = 12*WorldTime.TURNS_PER_HOUR;
     private const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
     private const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
@@ -372,6 +373,13 @@ namespace djack.RogueSurvivor.Data
       get {
         return HasLeader && TRUST_TRUSTING_THRESHOLD <= TrustInLeader;
       }
+    }
+
+    public bool HasBondWith(Actor target)
+    {
+      if (Leader == target)      return TRUST_BOND_THRESHOLD <= TrustInLeader;
+      if (target.Leader == this) return TRUST_BOND_THRESHOLD <= target.TrustInLeader;
+      return false;
     }
 
     public IEnumerable<Actor> Followers { get { return m_Followers; } }

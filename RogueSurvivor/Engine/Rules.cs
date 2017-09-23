@@ -115,7 +115,6 @@ namespace djack.RogueSurvivor.Engine
     public const int TRUST_NEUTRAL = 0;
     public const int TRUST_MIN = -12*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_MAX = 2*WorldTime.TURNS_PER_DAY;
-    public const int TRUST_BOND_THRESHOLD = TRUST_MAX;
     public const int TRUST_BASE_INCREASE = 1;
     public const int TRUST_GOOD_GIFT_INCREASE = 3*WorldTime.TURNS_PER_HOUR;
     public const int TRUST_MISC_GIFT_INCREASE = WorldTime.TURNS_PER_HOUR/3;
@@ -566,15 +565,6 @@ namespace djack.RogueSurvivor.Engine
       }
       reason = "";
       return true;
-    }
-
-    public bool HasActorBondWith(Actor actor, Actor target)
-    {
-      if (actor.Leader == target)
-        return actor.TrustInLeader >= TRUST_BOND_THRESHOLD;
-      if (target.Leader == actor)
-        return target.TrustInLeader >= TRUST_BOND_THRESHOLD;
-      return false;
     }
 
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge)
