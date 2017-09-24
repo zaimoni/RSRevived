@@ -612,10 +612,12 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanThrowTo(Point pos, List<Point> LoF=null)
     {
       return string.IsNullOrEmpty(ReasonCouldntThrowTo(pos,LoF));
     }
+#endif
 
     // strictly speaking, 1 step is allowed but we do not check LoF here
     private string ReasonCouldntFireAt(Actor target)

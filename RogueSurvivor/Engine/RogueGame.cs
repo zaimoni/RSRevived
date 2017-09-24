@@ -7983,7 +7983,7 @@ namespace djack.RogueSurvivor.Engine
       if (itemGrenade == null) throw new InvalidOperationException("throwing grenade but no grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
-      actor.Location.Map.DropItemAt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
+      actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
@@ -8001,7 +8001,7 @@ namespace djack.RogueSurvivor.Engine
         throw new InvalidOperationException("throwing primed grenade but no primed grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
-      actor.Location.Map.DropItemAt(itemGrenadePrimed, targetPos);
+      actor.Location.Map.DropItemAtExt(itemGrenadePrimed, targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
@@ -8044,43 +8044,8 @@ namespace djack.RogueSurvivor.Engine
     private bool ApplyExplosionWave(Location center, int waveDistance, BlastAttack blast)
     {
       bool flag = false;
-      Map map = center.Map;
-      Point pt = new Point();
-      int num1 = center.Position.X - waveDistance;
-      int num2 = center.Position.X + waveDistance;
-      int num3 = center.Position.Y - waveDistance;
-      int num4 = center.Position.Y + waveDistance;
-      if (num3 >= 0) {
-        pt.Y = num3;
-        for (int index = num1; index <= num2; ++index) {
-          pt.X = index;
+      foreach(Point pt in Enumerable.Range(0, 8*waveDistance).Select(i => center.Position.RadarSweep(waveDistance,i))) {
           flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
-        }
-      }
-      if (num4 < map.Height)
-      {
-        pt.Y = num4;
-        for (int index = num1; index <= num2; ++index)
-        {
-          pt.X = index;
-          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
-        }
-      }
-      if (num1 >= 0)
-      {
-        pt.X = num1;
-        for (int index = num3 + 1; index < num4; ++index)
-        {
-          pt.Y = index;
-          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
-        }
-      }
-      if (num2 < map.Width) {
-        pt.X = num2;
-        for (int index = num3 + 1; index < num4; ++index) {
-          pt.Y = index;
-          flag |= ApplyExplosionWaveSub(center, pt, waveDistance, blast);
-        }
       }
       return flag;
     }
@@ -8101,7 +8066,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = blast.DamageAt(distanceFromBlast);
       if (num1 <= 0) return 0;
       Map map = location.Map;
-      Actor actorAt = location.Actor;
+      Actor actorAt =  location.Map.GetActorAtExt(location.Position.X,location.Position.Y);
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
@@ -8117,7 +8082,7 @@ namespace djack.RogueSurvivor.Engine
         } else
           AddMessage(new Data.Message(string.Format("{0} is hit for no damage.", actorAt.Name), map.LocalTime.TurnCounter, Color.White));
       }
-      Inventory itemsAt = location.Items;
+      Inventory itemsAt = location.Map.GetItemsAtExt(location.Position.X,location.Position.Y);
       if (itemsAt != null) {
         ExplosionChainReaction(itemsAt, location);
         int chance = num1;

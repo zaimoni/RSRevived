@@ -1159,6 +1159,21 @@ namespace djack.RogueSurvivor.Data
         itemsAt.AddAll(it);
     }
 
+    public void DropItemAtExt(Item it, Point position)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(position)) {
+        DropItemAt(it, position);
+        return;
+      }
+      Location? tmp = Normalize(position);
+      if (null == tmp) throw new ArgumentOutOfRangeException(nameof(position),position,"invalid position for Item "+nameof(it));
+      tmp.Value.Map.DropItemAt(it,tmp.Value.Position);
+#else
+      DropItemAt(it,position);
+#endif
+    }
+
     public void DropItemAt(Item it, int x, int y)
     {
       DropItemAt(it, new Point(x, y));
