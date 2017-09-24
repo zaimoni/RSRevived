@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.Serialization;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
@@ -61,7 +60,9 @@ namespace djack.RogueSurvivor.Data
 
     public Lighting Lighting { get { return m_Lighting; } }
     public bool Illuminate(bool on) {
-      Contract.Requires(Lighting.OUTSIDE!=Lighting);
+#if DEBUG
+      if (Lighting.OUTSIDE == Lighting) throw new InvalidOperationException(nameof(Lighting)+": not useful to artificially light outside ");
+#endif
       if (on) {
         if (Lighting.LIT==Lighting) return false;
         m_Lighting = Lighting.LIT;
@@ -103,9 +104,11 @@ namespace djack.RogueSurvivor.Data
 
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
-      Contract.Requires(null != name);
-      Contract.Requires(0 < width);
-      Contract.Requires(0 < height);
+#if DEBUG
+      if (null == name) throw new ArgumentNullException(nameof(name));
+      if (0 >= width) throw new ArgumentOutOfRangeException(nameof(width), width, "0 >= width");
+      if (0 >= height) throw new ArgumentOutOfRangeException(nameof(height), height, "0 >= height");
+#endif
       Seed = seed;
       Name = name;
       Width = width;
@@ -172,13 +175,11 @@ namespace djack.RogueSurvivor.Data
     // IsValid will allow "translating" coordinates to adjacent maps in order to fulfil the dereference
     // IsStrictlyValid will *require* "translating" coordinates to adjacent maps in order to fulfil the dereference
     // That is, IsValid := IsInBounds XOR IsStrictlyValid
-    [Pure]
     public bool IsInBounds(int x, int y)
     {
       return 0 <= x && x < Width && 0 <= y && y < Height;
     }
 
-    [Pure]
     public bool IsInBounds(Point p)
     {
       return 0 <= p.X && p.X < Width && 0 <= p.Y && p.Y < Height;
@@ -221,10 +222,12 @@ namespace djack.RogueSurvivor.Data
 
     public void TrimToBounds(ref Rectangle r)
     {
-      Contract.Requires(r.X < Width);   // require that the rectangle not be completely outside of the map
-      Contract.Requires(r.Y < Height);
-      Contract.Requires(0 <= r.Right);
-      Contract.Requires(0 <= r.Bottom);
+#if DEBUG
+      if (r.X >= Width) throw new ArgumentOutOfRangeException(nameof(r.X),r.X, "r.X >= Width");
+      if (r.Y >= Height) throw new ArgumentOutOfRangeException(nameof(r.Y),r.Y, "r.Y >= Height");
+      if (0 > r.Right) throw new ArgumentOutOfRangeException(nameof(r.Right),r.Right, "0 > r.Right");
+      if (0 > r.Bottom) throw new ArgumentOutOfRangeException(nameof(r.Bottom),r.Bottom, "0 > r.Bottom");
+#endif
       if (r.X < 0) {
         r.Width += r.X;
         r.X = 0;
@@ -439,8 +442,10 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTileModelAt(int x, int y, TileModel model)
     {
-      Contract.Requires(null != model);
-      Contract.Requires(IsInBounds(x, y));
+#if DEBUG
+      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException("("+nameof(x)+","+nameof(y)+")", "(" + x.ToString() + "," + y.ToString() + ")", "!IsInBounds(x,y)");
+#endif
       m_TileIDs[x, y] = (byte)(model.ID);
     }
 
@@ -449,7 +454,6 @@ namespace djack.RogueSurvivor.Data
       return Models.Tiles[m_TileIDs[x,y]];
     }
 
-    [Pure]
     public TileModel GetTileModelAt(Point pt)
     {
       return GetTileModelAt(pt.X,pt.Y);
@@ -557,10 +561,12 @@ namespace djack.RogueSurvivor.Data
     public Exit GetExitAt(int x, int y) { return GetExitAt(new Point(x, y)); }
 
     public Dictionary<Point,Exit> GetExits(Predicate<Exit> fn) {
-      Contract.Requires(null != fn);
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
       Dictionary<Point,Exit> ret = new Dictionary<Point, Exit>();
-      foreach(Point pt in m_Exits.Keys) {
-        if (fn(m_Exits[pt])) ret[pt] = m_Exits[pt];
+      foreach(var x in m_Exits) {
+        if (fn(x.Value)) ret[x.Key] = x.Value;
       }
       return ret;
     }
@@ -805,11 +811,14 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceActorAt(Actor actor, Point position)
     {
-      Contract.Requires(null != actor);
-      Contract.Requires(IsInBounds(position));
+#if DEBUG
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
       Actor actorAt = GetActorAt(position);
-      if (actorAt == actor) throw new InvalidOperationException("actor already at position");
-      if (actorAt != null) throw new InvalidOperationException("another actor already at position");
+#if DEBUG
+      if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
+#endif
       if (HasActor(actor))
         m_aux_ActorsByPosition.Remove(actor.Location.Position);
       else {
@@ -842,7 +851,6 @@ namespace djack.RogueSurvivor.Data
 
     public Actor NextActorToAct { 
       get {
-        Contract.Ensures(null==Contract.Result<Actor>() || (Contract.Result<Actor>().CanActThisTurn && !Contract.Result<Actor>().IsSleeping));
         int countActors = m_ActorsList.Count;
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
           Actor actor = m_ActorsList[checkNextActorIndex];
@@ -857,7 +865,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonNotWalkableFor(int x, int y, Actor actor)
     {
-      Contract.Requires(null != actor);
+#if DEBUG
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+#endif
       if (!IsInBounds(x, y)) return "out of map";
       if (!GetTileModelAt(x, y).IsWalkable) return "blocked";   // XXX change to GetTileModelAtExt when handling peace walls
       MapObject mapObjectAt = GetMapObjectAt(x, y);
@@ -921,16 +931,16 @@ namespace djack.RogueSurvivor.Data
 
     public bool MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
     {
-      Contract.Requires(null!=fn);
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
       IEnumerable<Actor> tmp = Players;
       if (null!=pred) tmp = tmp.Where(a => pred(a));
       Actor player = tmp.FirstOrDefault();
-      if (null != player) {
-        RogueForm.Game.PanViewportTo(player);
-        fn(player);
-        return true;
-      }
-      return false;
+      if (null == player) return false;
+      RogueForm.Game.PanViewportTo(player);
+      fn(player);
+      return true;
     }
 
     // police on map
@@ -998,13 +1008,16 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceMapObjectAt(MapObject mapObj, Point position)
     {
-      Contract.Requires(null != mapObj);
-      Contract.Requires(IsInBounds(position));
-      Contract.Requires(GetTileModelAt(position).IsWalkable);
+#if DEBUG
+      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+      if (!GetTileModelAt(position).IsWalkable) throw new ArgumentOutOfRangeException(nameof(position),position, "!GetTileModelAt(position).IsWalkable");
+#endif
       MapObject mapObjectAt = GetMapObjectAt(position);
       if (mapObjectAt == mapObj) return;
-      if (mapObjectAt != null)
-        throw new InvalidOperationException("another mapObject already at position");
+#if DEBUG
+      if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
+#endif
       if (HasMapObject(mapObj))
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
       else
@@ -1084,10 +1097,8 @@ namespace djack.RogueSurvivor.Data
       return HasItemsAt(new Point(x, y));
     }
 
-    [Pure]
     public Inventory GetItemsAt(Point position)
     {
-      Contract.Ensures(null == Contract.Result<Inventory>() || !Contract.Result<Inventory>().IsEmpty);
       if (!IsInBounds(position)) return null;
       Inventory inventory;
       if (m_GroundItemsByPosition.TryGetValue(position, out inventory))
@@ -1128,8 +1139,10 @@ namespace djack.RogueSurvivor.Data
 
     public void DropItemAt(Item it, Point position)
     {
-      Contract.Requires(null != it);
-      Contract.Requires(IsInBounds(position));
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
       Inventory itemsAt = GetItemsAt(position);
       if (itemsAt == null) {
         Inventory inventory = new Inventory(GROUND_INVENTORY_SLOTS);
@@ -1153,14 +1166,17 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveItemAt(Item it, Point position)
     {
-	  Contract.Requires(null != it);
-	  Contract.Requires(IsInBounds(position));
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
       Inventory itemsAt = GetItemsAt(position);
-      if (itemsAt == null) throw new ArgumentException("no items at this position");
-      if (!itemsAt.Contains(it)) throw new ArgumentException("item not at this position");
+#if DEBUG
+      if (null == itemsAt) throw new ArgumentNullException(nameof(itemsAt),":= GetItemsAt(position)");
+      if (!itemsAt.Contains(it)) throw new ArgumentOutOfRangeException(nameof(itemsAt),"item not at this position");
+#endif
       itemsAt.RemoveAllQuantity(it);
-      if (!itemsAt.IsEmpty) return;
-      m_GroundItemsByPosition.Remove(position);
+      if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
     }
 
     public void RemoveItemAt(Item it, int x, int y)
@@ -1314,7 +1330,9 @@ namespace djack.RogueSurvivor.Data
 
     public void ModifyScentAt(Odor odor, int strengthChange, Point position)
     {
-      Contract.Requires(IsInBounds(position));    // IsInBounds should be ok here
+#if DEBUG
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null)
         AddNewScent(new OdorScent(odor, strengthChange, position));
@@ -1324,12 +1342,13 @@ namespace djack.RogueSurvivor.Data
 
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
     {
-      Contract.Requires(IsInBounds(position));  // IsInBounds should be ok here
+#if DEBUG
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null) {
         AddNewScent(new OdorScent(odor, freshStrength, position));
-      } else {
-        if (scentByOdor.Strength >= freshStrength) return;
+      } else if (scentByOdor.Strength < freshStrength) {
         scentByOdor.Set(freshStrength);
       }
     }
@@ -1405,17 +1424,21 @@ namespace djack.RogueSurvivor.Data
 
     public void ForEachAdjacent(Point position, Action<Point> fn)
     {
-      Contract.Requires(null != fn);
-      if (!IsInBounds(position)) return;
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
+#endif
       foreach (Point p in Direction.COMPASS.Select(d => position+d)) {
         if (IsInBounds(p)) fn(p);
       }
     }
 
+#if DEAD_FUNC
     public void ForEachAdjacent(int x, int y, Action<Point> fn)
     {
       ForEachAdjacent(new Point(x,y),fn);
     }
+#endif
 
     // cheat map similar to savefile viewer
     public void DaimonMap(Zaimoni.Data.OutTextFile dest) {

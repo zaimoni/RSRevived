@@ -4512,7 +4512,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), "Icons\\target"));
-        string imageID = flag3 ? (num1 <= attack.EfficientRange ? "Icons\\line_clear" : "Icons\\line_bad") : "Icons\\line_blocked";
+        string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in LoF)
           AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
         RedrawPlayScreen();
@@ -4612,7 +4612,7 @@ namespace djack.RogueSurvivor.Engine
         bool flag3 = player.CanThrowTo(point1, out reason, LoF);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-        string imageID = flag3 ? "Icons\\line_clear" : "Icons\\line_blocked";
+        string imageID = flag3 ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in LoF)
           AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
         RedrawPlayScreen();
