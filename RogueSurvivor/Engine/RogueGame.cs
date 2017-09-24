@@ -3703,8 +3703,8 @@ namespace djack.RogueSurvivor.Engine
         Gameplay.GameItems.IDs item_type = item_classes[index];
         Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
         List<string> tmp = new List<string>();
-        foreach(Location tmp2 in catalog.Keys) {
-          tmp.Add(tmp2.ToString()+": "+catalog[tmp2].ToString());
+        foreach(var loc_qty in catalog) {
+          tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
           if (20<tmp.Count) break;
         }
         ShowSpecialDialogue(m_Player,tmp.ToArray());

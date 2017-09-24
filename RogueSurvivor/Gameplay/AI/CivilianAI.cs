@@ -380,7 +380,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == generators_off ? "no generators to turn on" : generators_off.Count().ToString()+" genberators to turn on"));
 #endif
       if (null != generators_off) {
-        foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {
+        foreach(Engine.MapObjects.PowerGenerator gen in generators_off) {   // these are never on map edges
           if (Rules.IsAdjacent(m_Actor.Location.Position,gen.Location.Position)) {
             return new ActionSwitchPowerGenerator(m_Actor, gen);
           }

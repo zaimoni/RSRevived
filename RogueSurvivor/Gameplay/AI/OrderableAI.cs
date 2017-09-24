@@ -129,11 +129,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ret = null;
         // expire if the offending item is not in LoS
-        foreach(Point pt in m_Actor.Controller.FOV) {
-          Inventory inv = m_Actor.Location.Map.GetItemsAt(pt);
-          if (null == inv) continue;
-          if (inv.Has(Avoid)) return false;
-        }
+        if (m_Actor.Controller.FOV.Select(pt => m_Actor.Location.Map.GetItemsAt(pt)).Any(inv => null!=inv && inv.Has(Avoid))) return false;
         if (m_Actor.Inventory.Has(Avoid)) return false;
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;
@@ -543,10 +539,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
         foreach(Point pt in legal_steps) {
           efficiency[pt] = 0;
-          foreach(Point pt2 in goals.Keys) {
+          foreach(var pt_delta in goals) {
             // relies on FOV not being "too large"
-            int delta = goals[pt2]-Rules.GridDistance(pt, pt2);
-            if (min_dist == goals[pt2]) {
+            int delta = pt_delta.Value-Rules.GridDistance(pt, pt_delta.Key);
+            if (min_dist == pt_delta.Value) {
               efficiency[pt] += near_scale*delta;
             } else {
               efficiency[pt] += delta;

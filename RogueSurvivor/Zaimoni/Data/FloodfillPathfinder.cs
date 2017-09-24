@@ -57,9 +57,7 @@ namespace Zaimoni.Data
         // blacklist manipulation
         public void Blacklist(IEnumerable<T> src)
         {
-            foreach(T tmp in src) {
-                if (_inDomain(tmp)) _blacklist.Add(tmp);
-            }
+            _blacklist.UnionWith(src);
         }
 
         public void Blacklist(T src)

@@ -108,9 +108,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // FOV doesn't matter without a ranged attack
         // XXX doesn't handle non-optimal ranged attacks
         if (0 >= a.CurrentRangedAttack.Range) {
-          foreach(Point pt in melee_damage_field.Keys) {
-            if (ret.ContainsKey(pt)) ret[pt] += melee_damage_field[pt];
-            else ret[pt] = melee_damage_field[pt];
+          foreach(var pt_dam in melee_damage_field) {
+            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += pt_dam.Value;
+            else ret[pt_dam.Key] = pt_dam.Value;
           }
           continue;
         }
@@ -156,13 +156,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           immediate_threat.Add(a);
         }
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
-        foreach(Point pt in ranged_damage_field.Keys) {
-          if (melee_damage_field.ContainsKey(pt)) {
-            if (ret.ContainsKey(pt)) ret[pt] += Math.Max(ranged_damage_field[pt], melee_damage_field[pt]);
-            else ret[pt] = Math.Max(ranged_damage_field[pt], melee_damage_field[pt]);
+        foreach(var pt_dam in ranged_damage_field) { 
+          if (melee_damage_field.ContainsKey(pt_dam.Key)) {
+            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += Math.Max(pt_dam.Value, melee_damage_field[pt_dam.Key]);
+            else ret[pt_dam.Key] = Math.Max(pt_dam.Value, melee_damage_field[pt_dam.Key]);
           } else {
-            if (ret.ContainsKey(pt)) ret[pt] += ranged_damage_field[pt];
-            else ret[pt] = ranged_damage_field[pt];
+            if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += pt_dam.Value;
+            else ret[pt_dam.Key] = pt_dam.Value;
           }
         }
       }
