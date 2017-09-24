@@ -259,19 +259,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
         if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;
 
-        if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
+        int melee_count = m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)); // XXX possibly obsolete
+        if (2<= melee_count) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
-        if (1<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
+        if (1<= melee_count && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
           ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
           if (null == weapon) return true;  // martial arts invalidates starting baton for police
           return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
         return true;
       }
-      if (it is ItemMedicine)
+      if (it is ItemMedicine) {
+        // XXX easy to action-loop if inventory full
+        // this plausibly should actually check inventory-clearing options
+        if (0 >= m_Actor.Inventory.MaxCapacity - m_Actor.Inventory.CountItems) return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+      }
       if (it is ItemBodyArmor) { 
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null == armor) return true;
