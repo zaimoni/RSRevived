@@ -969,7 +969,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // migrated from CivilianAI::SelectAction
       ActorAction tmpAction = null;
       if (null != enemies) {
-        if (1==Rules.GridDistance(enemies[0].Location.Position,m_Actor.Location.Position)) {
+        if (1==Rules.GridDistance(enemies[0].Location,m_Actor.Location)) {
           // something adjacent...check for one-shotting
           ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon(it => !IsItemTaboo(it));
           if (null!=tmp_melee) {
@@ -1070,13 +1070,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         foreach(ItemRangedWeapon rw in available_ranged_weapons) {
           foreach(Percept p in en_in_range) {
             Actor a = p.Percepted as Actor;
-            ETAToKill(a,Rules.GridDistance(m_Actor.Location.Position,p.Location.Position),rw,best_weapon_ETAs, best_weapons);
+            ETAToKill(a,Rules.GridDistance(m_Actor.Location,p.Location),rw,best_weapon_ETAs, best_weapons);
           }
         }
       } else {
         foreach(Percept p in en_in_range) {
           Actor a = p.Percepted as Actor;
-          ETAToKill(a,Rules.GridDistance(m_Actor.Location.Position,p.Location.Position), available_ranged_weapons[0], best_weapon_ETAs);
+          ETAToKill(a,Rules.GridDistance(m_Actor.Location,p.Location), available_ranged_weapons[0], best_weapon_ETAs);
         }
       }
 
@@ -1101,8 +1101,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int HP_min = ((2 >= ETA_min) ? immediate_threat_in_range.Select(a => a.HitPoints).Max() : immediate_threat_in_range.Select(a => a.HitPoints).Min());
           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => a.HitPoints == HP_min));
           if (2 <= immediate_threat_in_range.Count) {
-           int dist_min = immediate_threat_in_range.Select(a => Rules.GridDistance(m_Actor.Location.Position,a.Location.Position)).Min();
-           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.GridDistance(m_Actor.Location.Position, a.Location.Position) == dist_min));
+           int dist_min = immediate_threat_in_range.Select(a => Rules.GridDistance(m_Actor.Location,a.Location)).Min();
+           immediate_threat_in_range = new HashSet<Actor>(immediate_threat_in_range.Where(a => Rules.GridDistance(m_Actor.Location, a.Location) == dist_min));
           }
         }
         Actor actor = immediate_threat_in_range.First();
@@ -1122,8 +1122,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             int HP_max = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Max();
             en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_max));
             if (2<=en_in_range.Count) {
-             int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location.Position,p.Location.Position)).Min();
-             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location.Position, p.Location.Position) == dist_min));
+             int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location,p.Location)).Min();
+             en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location, p.Location) == dist_min));
             }
           }
           Actor actor = en_in_range.First().Percepted as Actor;
@@ -1137,8 +1137,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // just deal with something close
       {
-        int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location.Position,p.Location.Position)).Min();
-        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location.Position, p.Location.Position) == dist_min));
+        int dist_min = en_in_range.Select(p => Rules.GridDistance(m_Actor.Location,p.Location)).Min();
+        en_in_range = new List<Percept>(en_in_range.Where(p => Rules.GridDistance(m_Actor.Location, p.Location) == dist_min));
         if (2<=en_in_range.Count) {
           int HP_min = en_in_range.Select(p => (p.Percepted as Actor).HitPoints).Min();
           en_in_range = new List<Percept>(en_in_range.Where(p => (p.Percepted as Actor).HitPoints == HP_min));
@@ -1621,7 +1621,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed) {
-        int dist = Rules.GridDistance(m_Actor.Location.Position,target.Location.Position);
+        int dist = Rules.GridDistance(m_Actor.Location,target.Location);
         if (2==dist) {
           if (   !m_Actor.WillActAgainBefore(enemy)
               || !m_Actor.RunIsFreeMove)

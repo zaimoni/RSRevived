@@ -908,6 +908,15 @@ namespace djack.RogueSurvivor.Data
         if (0 == Players.Count) return null;
         return Players[0];
       }
+        }
+
+    public Actor FindPlayerWithFOV(Point pt)
+    {
+      if (0 >= PlayerCount) return null;
+      foreach(Actor tmp in Players) {
+        if (tmp.Controller.FOV.Contains(pt)) return tmp;
+      }
+      return null;
     }
 
     public bool MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)

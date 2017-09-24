@@ -280,6 +280,14 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
+    public static bool CanTraceFireLine(Location fromLocation, Location toLocation, int maxRange, List<Point> line=null)
+    {
+      if (fromLocation.Map==toLocation.Map) return CanTraceFireLine(fromLocation, toLocation.Position, maxRange, line);
+      Location? tmp = fromLocation.Map.Denormalize(toLocation);
+      if (null == tmp) return false;
+      return CanTraceFireLine(fromLocation, tmp.Value.Position, maxRange, line);
+    }
+
     public static bool CanTraceThrowLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
     {
       Map map = fromLocation.Map;

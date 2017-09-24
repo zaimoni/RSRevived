@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 
 namespace Zaimoni.Data
@@ -13,14 +14,14 @@ namespace Zaimoni.Data
     [Serializable]
     class Ary2Dictionary<Key1, Key2, Range>
     {
-        readonly private Dictionary<Key1, Range> _no_entries;
-        readonly private Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>> _first_second_dict;
-        readonly private Dictionary<Key2, Dictionary<Key1, Range>> _second_first_dict;
+        readonly private ConcurrentDictionary<Key1, Range> _no_entries;
+        readonly private ConcurrentDictionary<Key1, KeyValuePair<Range, HashSet<Key2>>> _first_second_dict;
+        readonly private ConcurrentDictionary<Key2, ConcurrentDictionary<Key1, Range>> _second_first_dict;
 
         public Ary2Dictionary() {
-            _no_entries = new Dictionary<Key1, Range>();
-            _first_second_dict = new Dictionary<Key1, KeyValuePair<Range, HashSet<Key2>>>();
-            _second_first_dict = new Dictionary<Key2, Dictionary<Key1, Range>>();
+            _no_entries = new ConcurrentDictionary<Key1, Range>();
+            _first_second_dict = new ConcurrentDictionary<Key1, KeyValuePair<Range, HashSet<Key2>>>();
+            _second_first_dict = new ConcurrentDictionary<Key2, ConcurrentDictionary<Key1, Range>>();
         }
 
         public void Clear() {
@@ -51,7 +52,7 @@ namespace Zaimoni.Data
         }
 
         public Dictionary<Key1, Range> WhereIs(Key2 key)
-        {
+        {   // copy constructor failed by race condition: need to use a multi-threaded dictionary
             if (_second_first_dict.ContainsKey(key)) return new Dictionary<Key1, Range>(_second_first_dict[key]);
             return null;
         }
@@ -62,8 +63,11 @@ namespace Zaimoni.Data
 
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
             List<Key2> expired = new List<Key2>();
+            Range val;
+            ConcurrentDictionary<Key1, Range> val2;
+            KeyValuePair<Range, HashSet<Key2>> val3;
             if (null == keys2 || 0==keys2.Count()) {
-                _first_second_dict.Remove(key);
+                _first_second_dict.TryRemove(key,out val3);
                 _no_entries[key] = value;
                 Remove(key);
                 return;
@@ -71,32 +75,34 @@ namespace Zaimoni.Data
 
             HashSet<Key2> incoming = new HashSet<Key2>(keys2);
             _first_second_dict[key] = new KeyValuePair<Range, HashSet<Key2>>(value, new HashSet<Key2>(incoming));
-            foreach (KeyValuePair<Key2, Dictionary<Key1, Range>> tmp in _second_first_dict) {
+            foreach (KeyValuePair<Key2, ConcurrentDictionary<Key1, Range>> tmp in _second_first_dict) {
                 if (incoming.Contains(tmp.Key)) {
                   tmp.Value[key] = value;
                   incoming.Remove(tmp.Key);
                   continue;
                 }
-                if (tmp.Value.Remove(key) && 0 >= tmp.Value.Count) expired.Add(tmp.Key);
+                if (tmp.Value.TryRemove(key,out val) && 0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
-            foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            foreach (Key2 tmp in expired) _second_first_dict.TryRemove(tmp,out val2);
             foreach(Key2 tmp in incoming) {
-              Dictionary<Key1,Range> tmp2 = new Dictionary<Key1, Range>();
+              ConcurrentDictionary<Key1,Range> tmp2 = new ConcurrentDictionary<Key1, Range>();
               tmp2[key] = value;
               _second_first_dict[tmp] = tmp2;
             }
 
-            _no_entries.Remove(key);
+            _no_entries.TryRemove(key,out val);
         }
 
         private void Remove(Key1 key)
         {
             List<Key2> expired = new List<Key2>();
-            foreach (KeyValuePair<Key2, Dictionary<Key1, Range>> tmp in _second_first_dict) {
-                tmp.Value.Remove(key);
+            Range val;
+            ConcurrentDictionary<Key1, Range> val2;
+            foreach (KeyValuePair<Key2, ConcurrentDictionary<Key1, Range>> tmp in _second_first_dict) {
+                tmp.Value.TryRemove(key, out val);
                 if (0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
-            foreach (Key2 tmp in expired) _second_first_dict.Remove(tmp);
+            foreach (Key2 tmp in expired) _second_first_dict.TryRemove(tmp, out val2);
         }
 
 #if FAIL

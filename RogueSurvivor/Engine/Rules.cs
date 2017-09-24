@@ -749,6 +749,16 @@ namespace djack.RogueSurvivor.Engine
       return Math.Max(Math.Abs(pA.X - pB.X), Math.Abs(pA.Y - pB.Y));
     }
 
+    public static int GridDistance(Location locA, Location locB)
+    {
+      if (null == locA.Map) return int.MaxValue;
+      if (null == locB.Map) return int.MaxValue;
+      if (locA.Map==locB.Map) return GridDistance(locA.Position,locB.Position);
+      Location? tmp = locA.Map.Denormalize(locB);
+      if (null == tmp) return int.MaxValue; 
+      return GridDistance(locA.Position,tmp.Value.Position);
+    }
+
     // Euclidean plane distance
     public static double StdDistance(Point from, Point to)
     {
@@ -879,7 +889,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static int ActorSpotMurdererChance(Actor spotter, Actor murderer)
     {
-      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location.Position, murderer.Location.Position);
+      return MURDERER_SPOTTING_BASE_CHANCE + MURDER_SPOTTING_MURDERCOUNTER_BONUS * murderer.MurdersCounter - MURDERER_SPOTTING_DISTANCE_PENALTY * Rules.GridDistance(spotter.Location, murderer.Location);
     }
 
     public static int ActorBiteHpRegen(Actor a, int dmg)

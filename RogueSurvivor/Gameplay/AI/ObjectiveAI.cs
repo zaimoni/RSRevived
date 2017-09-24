@@ -85,7 +85,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int a_turns = m_Actor.HowManyTimesOtherActs(1,a);
         int a_turns_bak = a_turns;
         if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
-        if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location.Position, a.Location.Position) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
+        if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location, a.Location) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;

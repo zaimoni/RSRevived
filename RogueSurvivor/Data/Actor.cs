@@ -623,7 +623,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null != target);
       ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
       if (target.IsDead) return "already dead!";
       return "";
@@ -644,7 +644,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCouldntFireAt(Actor target, int range)
     {
       Contract.Requires(null != target);
-      if (range+1 < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -666,9 +666,9 @@ namespace djack.RogueSurvivor.Data
       LoF?.Clear();
       ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
-      if (CurrentRangedAttack.Range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
+      if (CurrentRangedAttack.Range < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
-      if (!LOS.CanTraceFireLine(Location, target.Location.Position, CurrentRangedAttack.Range, LoF)) return "no line of fire";
+      if (!LOS.CanTraceFireLine(Location, target.Location, CurrentRangedAttack.Range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -689,8 +689,8 @@ namespace djack.RogueSurvivor.Data
     {
       Contract.Requires(null != target);
       LoF?.Clear();
-      if (range < Rules.GridDistance(Location.Position, target.Location.Position)) return "out of range";
-      if (!LOS.CanTraceFireLine(Location, target.Location.Position, range, LoF)) return "no line of fire";
+      if (range < Rules.GridDistance(Location, target.Location)) return "out of range";
+      if (!LOS.CanTraceFireLine(Location, target.Location, range, LoF)) return "no line of fire";
       if (target.IsDead) return "already dead!";
       return "";
     }
@@ -1069,7 +1069,7 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(null != fov);
       List<Actor> actorList = null;
       foreach (Point position in fov) {
-        Actor actorAt = Location.Map.GetActorAt(position);
+        Actor actorAt = Location.Map.GetActorAtExt(position.X,position.Y);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
           (actorList ?? (actorList = new List<Actor>(3))).Add(actorAt);
         }

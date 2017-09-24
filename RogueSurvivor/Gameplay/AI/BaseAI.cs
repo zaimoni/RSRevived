@@ -175,10 +175,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1==percepts.Count) return percepts;
 
       List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
-      Point from = m_Actor.Location.Position;
+      Location from = m_Actor.Location;
       Dictionary<Percept_<_T_>, int> dict = new Dictionary<Percept_<_T_>, int>(perceptList.Count);
       foreach(Percept_<_T_> p in perceptList) {
-        dict.Add(p,Rules.GridDistance(p.Location.Position, from));
+        dict.Add(p,Rules.GridDistance(p.Location, from));
       }
       perceptList.Sort((pA, pB) => dict[pA].CompareTo(dict[pB]));
       return perceptList;
@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> leaderLoF = null;
       if (checkLeaderLoF) {
         leaderLoF = new List<Point>(1);
-        LOS.CanTraceFireLine(leader.Location, actor.Location.Position, leader_rw.Model.Attack.Range, leaderLoF);
+        LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
       }
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir)), dir => {
         Location location = m_Actor.Location + dir;
@@ -469,9 +469,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  foreach(Actor f in friends2) {
 	    foreach(Actor e in enemies.Select(p => p.Percepted as Actor)) {
 		  if (!f.IsEnemyOf(e)) continue;
-		  if (f.CurrentRangedAttack.Range<Rules.GridDistance(f.Location.Position,e.Location.Position)) continue;
+		  if (f.CurrentRangedAttack.Range<Rules.GridDistance(f.Location,e.Location)) continue;
 		  List<Point> line = new List<Point>();
-	      LOS.CanTraceFireLine(f.Location, e.Location.Position, f.CurrentRangedAttack.Range, line);
+	      LOS.CanTraceFireLine(f.Location, e.Location, f.CurrentRangedAttack.Range, line);
 		  foreach(Point pt in line) {
 		    tmp.Add(pt);
 		  }
@@ -833,7 +833,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed) {
-        int dist = Rules.GridDistance(m_Actor.Location.Position,target.Location.Position);
+        int dist = Rules.GridDistance(m_Actor.Location,target.Location);
         if (2==dist) {
           if (!m_Actor.WillActAgainBefore(enemy)) return new ActionWait(m_Actor);
           // cannot close at normal speed safely; run-hit ok but requires situational analysis

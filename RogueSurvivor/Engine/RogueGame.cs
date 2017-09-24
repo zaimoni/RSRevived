@@ -4508,7 +4508,7 @@ namespace djack.RogueSurvivor.Engine
         LoF.Clear();
         string reason;
         bool flag3 = player.CanFireAt(actor, LoF, out reason);
-        int num1 = Rules.GridDistance(player.Location.Position, actor.Location.Position);
+        int num1 = Rules.GridDistance(player.Location, actor.Location);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), "Icons\\target"));
@@ -7892,7 +7892,7 @@ namespace djack.RogueSurvivor.Engine
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
-      int distance = Rules.GridDistance(attacker.Location.Position, defender.Location.Position);
+      int distance = Rules.GridDistance(attacker.Location, defender.Location);
       Attack attack = attacker.RangedAttack(distance, defender);
       Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
       attacker.SpendStaminaPoints(attack.StaminaPenalty);
@@ -10557,7 +10557,7 @@ namespace djack.RogueSurvivor.Engine
         }
         if (find_undead) { 
           foreach (Actor actor in map.Actors) {
-            if (actor != m_Player && actor.Model.Abilities.IsUndead && actor.Location.Map == m_Player.Location.Map && Rules.GridDistance(actor.Location.Position, m_Player.Location.Position) <= Rules.ZTRACKINGRADIUS)
+            if (actor != m_Player && actor.Model.Abilities.IsUndead && Rules.GridDistance(actor.Location, m_Player.Location) <= Rules.ZTRACKINGRADIUS)
             {
               DrawDetected(actor, GameImages.MINI_UNDEAD_POSITION, GameImages.TRACK_UNDEAD_POSITION);
             }
@@ -10906,26 +10906,19 @@ namespace djack.RogueSurvivor.Engine
     private bool ForceVisibleToPlayer(Map map, Point position)
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
-      if (!map.IsInBounds(position.X, position.Y)) return false;
-      if (null == m_Player || map != m_Player.Location.Map) {
-        if (0 >= map.PlayerCount) return false;
-        foreach (Actor tmp in map.Players) { 
-          if (tmp.Controller.FOV.Contains(position)) {
-            PanViewportTo(tmp);
-            return true;
-          }
-        }
-        return false;
+      if (!map.IsValid(position)) return false;
+      if (Session.Get.CurrentMap != map) {
+        Location? tmp = Session.Get.CurrentMap.Denormalize(new Location(map,position));
+        if (null == tmp) return false;
+        return ForceVisibleToPlayer(tmp.Value);
       }
-      if (m_Player.Controller.FOV.Contains(position)) return true;
-      foreach (Actor tmp in map.Players) {
-        if (tmp == m_Player) continue;
-        if (tmp.Controller.FOV.Contains(position)) {
-          PanViewportTo(tmp);
-          return true;
-        }
-      }
-      return false;
+
+      if (null != m_Player && map == m_Player.Location.Map && m_Player.Controller.FOV.Contains(position)) return true;
+
+      Actor who = map.FindPlayerWithFOV(position);
+      if (null == who) return false;
+      PanViewportTo(who);
+      return true;
     }
 
     private bool ForceVisibleToPlayer(Actor actor)
