@@ -40,6 +40,8 @@ namespace djack.RogueSurvivor.Engine
 
     public GameMode GameMode;
     public int LastTurnPlayerActed;
+    // CurrentMap is properly a private member of RogueGame (with public getter), but it historically must be in the savefile.
+    // A naive attempt to relocate crashes in RogueGame::RefreshPlayer.
     public Map CurrentMap;
     public bool PlayerKnows_CHARUndergroundFacilityLocation;
     public bool PlayerKnows_TheSewersThingLocation;
@@ -48,7 +50,6 @@ namespace djack.RogueSurvivor.Engine
 
     public static Session Get {
       get {
-        Contract.Ensures(null!=Contract.Result<Session>());
         if (s_TheSession == null) s_TheSession = new Session();
         return s_TheSession;
       }
