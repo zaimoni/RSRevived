@@ -314,7 +314,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly MessageManager m_MessageManager;
     private bool m_HasLoadedGame;
     private Actor m_Player;
-    private Rectangle m_MapViewRect;
+    private Rectangle m_MapViewRect;    // morally anchored to Session.Get.CurrentMap
     private static GameOptions s_Options;
     private static Keybindings s_KeyBindings;
     private static GameHintsStatus s_Hints;
@@ -4511,7 +4511,7 @@ namespace djack.RogueSurvivor.Engine
         int num1 = Rules.GridDistance(player.Location, actor.Location);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-        AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), "Icons\\target"));
+        AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_TARGET));
         string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in LoF)
           AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
@@ -4560,7 +4560,7 @@ namespace djack.RogueSurvivor.Engine
             Actor target = actorList[index];
             ClearOverlays();
             AddOverlay(new RogueGame.OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            AddOverlay(new OverlayImage(MapToScreen(target.Location.Position), GameImages.ICON_TARGET));
+            AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
             RedrawPlayScreen();
             KeyEventArgs key = m_UI.UI_WaitKey();
             int num = (int) InputTranslator.KeyToCommand(key);
@@ -4812,7 +4812,7 @@ namespace djack.RogueSurvivor.Engine
     {
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1] { string.Format(PUSH_OBJECT_MODE_TEXT,  mapObj.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location.Position), SIZE_OF_TILE)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
 
       bool flag2 = false;
       do {
@@ -4841,7 +4841,7 @@ namespace djack.RogueSurvivor.Engine
     {
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1] { string.Format(SHOVE_ACTOR_MODE_TEXT,  other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location.Position), SIZE_OF_ACTOR)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location), SIZE_OF_ACTOR)));
 
       bool flag2 = false;
       do {
@@ -5258,7 +5258,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
-          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), SIZE_OF_TILE)));
+          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -5312,7 +5312,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
-          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), SIZE_OF_TILE)));
+          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -5372,7 +5372,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue)
-          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), SIZE_OF_TILE)));
+          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -5426,7 +5426,7 @@ namespace djack.RogueSurvivor.Engine
         ClearOverlays();
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue) {
-          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value.X, nullable.Value.Y), SIZE_OF_TILE)));
+          AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
           List<Zone> zonesAt = map1.GetZonesAt(nullable.Value.X, nullable.Value.Y);
           if (zonesAt != null && zonesAt.Count > 0) {
             string[] lines = new string[zonesAt.Count + 1];
@@ -7454,8 +7454,8 @@ namespace djack.RogueSurvivor.Engine
         InflictDamage(victim, dmg);
         if (player) {
           AddMessage(MakeMessage(victim, string.Format("is hurt by {0} for {1} damage!", trap.AName, dmg)));
-          AddOverlay(new OverlayImage(MapToScreen(victim.Location.Position), "Icons\\melee_damage"));
-          AddOverlay(new RogueGame.OverlayText(MapToScreen(victim.Location.Position).Add(10, 10), Color.White, dmg.ToString(), new Color?(Color.Black)));
+          AddOverlay(new OverlayImage(MapToScreen(victim.Location), GameImages.ICON_MELEE_DAMAGE));
+          AddOverlay(new RogueGame.OverlayText(MapToScreen(victim.Location).Add(10, 10), Color.White, dmg.ToString(), Color.Black));
           RedrawPlayScreen();
           AnimDelay(victim.IsPlayer ? DELAY_NORMAL : DELAY_SHORT);
           ClearOverlays();
@@ -7783,9 +7783,9 @@ namespace djack.RogueSurvivor.Engine
       if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
         AddMessageIfAudibleForPlayer(attacker.Location, "You hear fighting");
       if (player2) {
-        AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), SIZE_OF_ACTOR)));
-        AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location.Position), SIZE_OF_ACTOR)));
-        AddOverlay(new OverlayImage(MapToScreen(attacker.Location.Position), GameImages.ICON_MELEE_ATTACK));
+        AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
+        AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
+        AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_MELEE_ATTACK));
       }
       if (num1 > num2) {
         if (num3 > 0) {
@@ -7800,7 +7800,7 @@ namespace djack.RogueSurvivor.Engine
           if (defender.HitPoints <= 0) {
             if (player2 || player1) {
               AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
-              AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_KILLED));
+              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
             }
@@ -7827,21 +7827,21 @@ namespace djack.RogueSurvivor.Engine
             }
           } else if (player2 || player1) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", num3)));
-            AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_damage"));
-            AddOverlay(new RogueGame.OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
+            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_DAMAGE));
+            AddOverlay(new RogueGame.OverlayText(MapToScreen(defender.Location).Add(10, 10), Color.White, num3.ToString(), new Color?(Color.Black)));
             RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (player2 || player1) {
           AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
-          AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+          AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
           RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (player2 || player1) {
         AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
-        AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), "Icons\\melee_miss"));
+        AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
         RedrawPlayScreen();
         AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
@@ -7915,9 +7915,9 @@ namespace djack.RogueSurvivor.Engine
         if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
           AddMessageIfAudibleForPlayer(attacker.Location, "You hear firing");
         if (player2) {
-          AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), SIZE_OF_ACTOR)));
-          AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location.Position), SIZE_OF_ACTOR)));
-          AddOverlay(new OverlayImage(MapToScreen(attacker.Location.Position), GameImages.ICON_RANGED_ATTACK));
+          AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
+          AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
+          AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
         }
         if (num1 > num2) {
           int dmg = m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Shot;
@@ -7926,27 +7926,27 @@ namespace djack.RogueSurvivor.Engine
             if (defender.HitPoints <= 0) {
               if (player1) {
                 AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
-                AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_KILLED));
+                AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
                 RedrawPlayScreen();
                 AnimDelay(DELAY_LONG);
               }
               KillActor(attacker, defender, "shot");
             } else if (player1) {
               AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
-              AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_RANGED_DAMAGE));
-              AddOverlay(new OverlayText(MapToScreen(defender.Location.Position).Add(10, 10), Color.White, dmg.ToString(), Color.Black));
+              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_DAMAGE));
+              AddOverlay(new OverlayText(MapToScreen(defender.Location).Add(10, 10), Color.White, dmg.ToString(), Color.Black));
               RedrawPlayScreen();
               AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
             }
           } else if (player1) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
-            AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_RANGED_MISS));
+            AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
             RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (player1) {
           AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
-          AddOverlay(new OverlayImage(MapToScreen(defender.Location.Position), GameImages.ICON_RANGED_MISS));
+          AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_RANGED_MISS));
           RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
@@ -7963,8 +7963,8 @@ namespace djack.RogueSurvivor.Engine
           bool player2 = player1 ? IsVisibleToPlayer(mapObjectAt) : ForceVisibleToPlayer(mapObjectAt);
           if (player1 || player2) {
             if (player1) {
-              AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location.Position), SIZE_OF_ACTOR)));
-              AddOverlay(new OverlayImage(MapToScreen(attacker.Location.Position), GameImages.ICON_RANGED_ATTACK));
+              AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
+              AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_RANGED_ATTACK));
             }
             if (player2)
               AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(point), SIZE_OF_TILE)));
@@ -7985,7 +7985,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.Consume(itemGrenade);
       actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
-      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), SIZE_OF_ACTOR)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       AddMessage(MakeMessage(actor, string.Format("{0} a {1}!", Conjugate(actor, VERB_THROW), itemGrenade.Model.SingleName)));
       RedrawPlayScreen();
@@ -8003,7 +8003,7 @@ namespace djack.RogueSurvivor.Engine
       actor.Inventory.RemoveAllQuantity(itemGrenadePrimed);
       actor.Location.Map.DropItemAtExt(itemGrenadePrimed, targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
-      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), SIZE_OF_ACTOR)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
       AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(targetPos), SIZE_OF_TILE)));
       AddMessage(MakeMessage(actor, string.Format("{0} back a {1}!", Conjugate(actor, VERB_THROW), itemGrenadePrimed.Model.SingleName)));
       RedrawPlayScreen();
@@ -8025,7 +8025,7 @@ namespace djack.RogueSurvivor.Engine
     {
       OnLoudNoise(location.Map, location.Position, "A loud EXPLOSION");
       if (ForceVisibleToPlayer(location)) {
-        ShowBlastImage(MapToScreen(location.Position), blastAttack, blastAttack.Damage[0]);
+        ShowBlastImage(MapToScreen(location), blastAttack, blastAttack.Damage[0]);
         RedrawPlayScreen();
         AnimDelay(DELAY_LONG);
         RedrawPlayScreen();
@@ -8322,7 +8322,7 @@ namespace djack.RogueSurvivor.Engine
       if (!AreLinkedByPhone(speaker, m_Player) && !ForceVisibleToPlayer(speaker)) return;
       if (speaker.Leader == m_Player) {
         ClearMessages();
-        AddOverlay((new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), SIZE_OF_ACTOR))));
+        AddOverlay((new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR))));
         AddMessage(MakeMessage(speaker, string.Format("{0}!!", Conjugate(speaker, VERB_RAISE_ALARM))));
         if (text != null) DoEmote(speaker, text);
         AddMessagePressEnter();
@@ -8758,20 +8758,20 @@ namespace djack.RogueSurvivor.Engine
         bool player2 = player1 ? IsVisibleToPlayer(mapObj) : ForceVisibleToPlayer(mapObj);
         bool isPlayer = actor.IsPlayer;
         if (player1 || player2) {
-          if (player1) AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location.Position), SIZE_OF_ACTOR)));
-          if (player2) AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(mapObj.Location.Position), SIZE_OF_TILE)));
+          if (player1) AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
+          if (player2) AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(mapObj.Location), SIZE_OF_TILE)));
           if (flag) {
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BREAK), mapObj));
-            if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
-            if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location.Position), GameImages.ICON_KILLED));
+            if (player1) AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
+            if (player2) AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_KILLED));
             RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
           } else {
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_BASH), mapObj));
             if (player1)
-              AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_MELEE_ATTACK));
+              AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_MELEE_ATTACK));
             if (player2)
-              AddOverlay(new OverlayImage(MapToScreen(mapObj.Location.Position), GameImages.ICON_MELEE_DAMAGE));
+              AddOverlay(new OverlayImage(MapToScreen(mapObj.Location), GameImages.ICON_MELEE_DAMAGE));
             RedrawPlayScreen();
             AnimDelay(isPlayer ? DELAY_NORMAL : DELAY_SHORT);
           }
@@ -9036,7 +9036,7 @@ namespace djack.RogueSurvivor.Engine
             killer.RecomputeStartingStats();
           }
           if (ForceVisibleToPlayer(killer)) {
-            AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location.Position), SIZE_OF_ACTOR)));
+            AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(killer.Location), SIZE_OF_ACTOR)));
             AddMessage(MakeMessage(killer, string.Format("{0} a {1} horror!", Conjugate(killer, VERB_TRANSFORM_INTO), actorModel.Name)));
             RedrawPlayScreen();
             AnimDelay(DELAY_LONG);
@@ -9799,16 +9799,25 @@ namespace djack.RogueSurvivor.Engine
       return actor;
     }
 
-    public void ComputeViewRect(Point mapCenter)
+    // These are closely coordinated with Session.Get.CurrentMap
+    private void ComputeViewRect(Point mapCenter)
     {
       int x = mapCenter.X - HALF_VIEW_WIDTH;
       int y = mapCenter.Y - HALF_VIEW_HEIGHT;
       m_MapViewRect = new Rectangle(x, y, 1+2* HALF_VIEW_WIDTH, 1 + 2 * HALF_VIEW_HEIGHT);
     }
 
-    public bool IsInViewRect(Point mapPosition)
+    private bool IsInViewRect(Point mapPosition)
     {
       return m_MapViewRect.Contains(mapPosition);
+    }
+
+    private bool IsInViewRect(Location loc)
+    {
+      if (loc.Map == Session.Get.CurrentMap) return m_MapViewRect.Contains(loc.Position);
+      Location? tmp = Session.Get.CurrentMap.Denormalize(loc);
+      if (null == tmp) return false;
+      return m_MapViewRect.Contains(tmp.Value.Position);
     }
 
     static private ColorString WeatherStatusText()
@@ -10336,11 +10345,11 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorTargets(Actor actor)
     {
       if (actor.TargetActor != null && !actor.TargetActor.IsDead && IsVisibleToPlayer(actor.TargetActor))
-        AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location.Position), GameImages.ICON_IS_TARGET));
+        AddOverlay(new OverlayImage(MapToScreen(actor.TargetActor.Location), GameImages.ICON_IS_TARGET));
       foreach (Actor actor1 in actor.Location.Map.Actors) {
         if (actor1 != actor && !actor1.IsDead && (IsVisibleToPlayer(actor1) && actor1.TargetActor == actor) && (actor1.Activity == Activity.CHASING || actor1.Activity == Activity.FIGHTING))
         {
-          AddOverlay(new OverlayImage(MapToScreen(actor.Location.Position), GameImages.ICON_IS_TARGETTED));
+          AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_IS_TARGETTED));
           break;
         }
       }
@@ -10349,12 +10358,12 @@ namespace djack.RogueSurvivor.Engine
     public void DrawPlayerActorTargets(Actor player)
     {
       if (null != player.Sees(player.TargetActor)) {
-        Point screen = MapToScreen(player.TargetActor.Location.Position);
+        Point screen = MapToScreen(player.TargetActor.Location);
         m_UI.UI_DrawImage(GameImages.ICON_IS_TARGET, screen.X, screen.Y);
       }
       foreach (Actor actor in player.Location.Map.Actors) {
         if (null != player.Sees(actor) && actor.TargetActor == player && (actor.Activity == Activity.CHASING || actor.Activity == Activity.FIGHTING)) {
-          Point screen = MapToScreen(player.Location.Position);
+          Point screen = MapToScreen(player.Location);
           m_UI.UI_DrawImage(GameImages.ICON_IS_TARGETTED, screen.X, screen.Y);
           break;
         }
@@ -10415,8 +10424,8 @@ namespace djack.RogueSurvivor.Engine
     {
       Point point = new Point(MINIMAP_X + actor.Location.Position.X * MINITILE_SIZE, MINIMAP_Y + actor.Location.Position.Y * MINITILE_SIZE);
       m_UI.UI_DrawImage(minimap_img, point.X - 1, point.Y - 1);
-      if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor)) {
-        Point screen = MapToScreen(actor.Location.Position);
+      if (IsInViewRect(actor.Location) && !IsVisibleToPlayer(actor)) {
+        Point screen = MapToScreen(actor.Location);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
     }
@@ -10424,8 +10433,8 @@ namespace djack.RogueSurvivor.Engine
     private void DrawDetected(Actor actor, Color minimap_color, string map_img)
     {
 	  m_UI.UI_SetMinimapColor(actor.Location.Position.X, actor.Location.Position.Y, minimap_color);
-      if (IsInViewRect(actor.Location.Position) && !IsVisibleToPlayer(actor)) {
-        Point screen = MapToScreen(actor.Location.Position);
+      if (IsInViewRect(actor.Location) && !IsVisibleToPlayer(actor)) {
+        Point screen = MapToScreen(actor.Location);
         m_UI.UI_DrawImage(map_img, screen.X, screen.Y);
       }
       m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
@@ -10796,14 +10805,24 @@ namespace djack.RogueSurvivor.Engine
       lock(m_Overlays) { m_Overlays.Clear(); }
     }
 
-    public Point MapToScreen(Point mapPosition)
+    private Point MapToScreen(int x, int y)
+    {
+      return new Point((x - m_MapViewRect.Left) * TILE_SIZE, (y - m_MapViewRect.Top) * TILE_SIZE);
+    }
+
+    private Point MapToScreen(Point mapPosition)
     {
       return MapToScreen(mapPosition.X, mapPosition.Y);
     }
 
-    private Point MapToScreen(int x, int y)
+    public Point MapToScreen(Location loc)
     {
-      return new Point((x - m_MapViewRect.Left) * TILE_SIZE, (y - m_MapViewRect.Top) * TILE_SIZE);
+      if (loc.Map == Session.Get.CurrentMap) return MapToScreen(loc.Position);
+      Location? tmp = Session.Get.CurrentMap.Denormalize(loc);
+#if DEBUG
+      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+#endif
+      return MapToScreen(tmp.Value.Position);
     }
 
     private Point ScreenToMap(Point screenPosition)
@@ -11889,7 +11908,7 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.StopAll();
       m_MusicManager.Play(GameMusics.INTERLUDE);
       AddOverlay(new OverlayPopup(text, Color.Gold, Color.Gold, Color.DimGray, new Point(0, 0)));
-      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location.Position), SIZE_OF_ACTOR)));
+      AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(speaker.Location), SIZE_OF_ACTOR)));
       ClearMessages();
       AddMessagePressEnter();
       m_MusicManager.StopAll();
