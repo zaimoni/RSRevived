@@ -24,7 +24,6 @@ namespace djack.RogueSurvivor.Engine
     public static Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession = null;
 
-    private readonly WorldTime m_WorldTime = new WorldTime();
     private Scoring m_Scoring;
     private int[,,] m_Event_Raids;
     private readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string> m_CommandLineOptions;    // needs .NET 4.6 or higher
@@ -55,7 +54,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public WorldTime WorldTime { get { return m_WorldTime; } }
+    // This has been historically problematic.  With the no-skew scheduler, it's simplest to say the world time is just the time
+    // of the last district to simulate in a turn -- the bottom-right one.  Note that the entry map is "last" so it will execute last.
+
+    // Groceries are highly demanding and will crash world generation without unusual measures here.
+    public WorldTime WorldTime { get { return new WorldTime(World[World.Size-1,World.Size-1]?.EntryMap?.LocalTime ?? new WorldTime(0)); } }
+
     public Scoring Scoring { get { return m_Scoring; } }
     public Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> PoliceItemMemory { get { return m_PoliceItemMemory; } }
     public ThreatTracking PoliceThreatTracking { get { return m_PoliceThreatTracking; } }
@@ -71,7 +75,6 @@ namespace djack.RogueSurvivor.Engine
     // general idea is Plain Old Data before objects.
     protected Session(SerializationInfo info, StreamingContext context)
     {
-      m_WorldTime = (WorldTime) info.GetValue("WorldTime",typeof(WorldTime));
       m_Scoring = (Scoring) info.GetValue("Scoring",typeof(Scoring));
       m_Event_Raids = (int[,,]) info.GetValue("Event_Raids",typeof(int[,,]));
       GameMode = (GameMode) info.GetSByte("GameMode");
@@ -94,7 +97,6 @@ namespace djack.RogueSurvivor.Engine
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
     {
-      info.AddValue("WorldTime",m_WorldTime,typeof(WorldTime));
       info.AddValue("Scoring",m_Scoring,typeof(Scoring));
       info.AddValue("Event_Raids",m_Event_Raids,typeof(int[,,]));
 
@@ -123,7 +125,6 @@ namespace djack.RogueSurvivor.Engine
       CurrentMap = null;
       m_Scoring = new Scoring();
       World = new World(RogueGame.Options.CitySize);
-      m_WorldTime.TurnCounter = 0;
       LastTurnPlayerActed = 0;
       m_Event_Raids = new int[(int) RaidType._COUNT, RogueGame.Options.CitySize, RogueGame.Options.CitySize];
       for (int index1 = 0; index1 < (int)RaidType._COUNT; ++index1) {
