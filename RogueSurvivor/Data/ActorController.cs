@@ -77,6 +77,7 @@ namespace djack.RogueSurvivor.Data
         if (0 >= tmp.Count) continue;
         ret.UnionWith(tmp.Keys.Select(loc => loc.Position));
       }
+      // XXX need to ask allies where hey are headed for (or are), to avoid traffic jams
       return ret;
     }
 

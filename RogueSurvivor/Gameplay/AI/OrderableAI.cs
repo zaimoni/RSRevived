@@ -2829,6 +2829,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_TabooItems.Add(it, expiresTurn);
     }
 
+#if DEAD_FUNC
     public void MarkItemAsTaboo(Item it, Item alt)
     {
       if (m_TabooItems == null) return;
@@ -2842,6 +2843,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_TabooItems.Remove(it);
       if (m_TabooItems.Count == 0) m_TabooItems = null;
     }
+#endif
 
     protected void MarkActorAsRecentTrade(Actor other)
     {

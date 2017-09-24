@@ -8448,10 +8448,12 @@ namespace djack.RogueSurvivor.Engine
         ItemTrap itemTrap1 = it as ItemTrap;
         ItemTrap itemTrap2 = itemTrap1.Clone();
         itemTrap2.IsActivated = itemTrap1.IsActivated;
-        (actor.Controller as OrderableAI)?.MarkItemAsTaboo(it, itemTrap2);
         obj = itemTrap2;
         if (itemTrap2.Model.ActivatesWhenDropped) itemTrap2.IsActivated = true;
         itemTrap1.IsActivated = false;
+#if DEBUG
+        if (!itemTrap2.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
+#endif
       };
       if (it.IsUseless) {
         DiscardItem(actor, it);
