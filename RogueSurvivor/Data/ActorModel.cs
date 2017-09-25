@@ -5,42 +5,42 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   internal class ActorModel
   {
     public Gameplay.GameActors.IDs ID { get; set; }
-    public string ImageID { get; private set; }
-    public DollBody DollBody { get; private set;  }
-    public string Name { get; private set; }
-    public string PluralName { get; private set; }
-    public ActorSheet StartingSheet { get; private set; }
-    public Abilities Abilities { get; private set; }
-    public Type DefaultController { get; private set; }
-    public int CreatedCount { get; private set; }   // XXX resets on restart
-    public int ScoreValue { get; private set; }
-    public string FlavorDescription { get; private set; }
+    public readonly string ImageID;
+    public readonly DollBody DollBody;
+    public readonly string Name;
+    public readonly string PluralName;
+    public readonly ActorSheet StartingSheet;
+    public readonly Abilities Abilities;
+    public readonly Type DefaultController;
+    public int CreatedCount { get; private set; }   // XXX resets on restart; needs to be where it can reach the savefile
+    public readonly int ScoreValue;
+    public readonly string FlavorDescription;
 
     public ActorModel(string imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
     {
-      Contract.Requires(!string.IsNullOrEmpty(name));
-      Contract.Requires(!string.IsNullOrEmpty(flavor));
-      Contract.Requires(null != body);
-      Contract.Requires(null != abilities);
-      Contract.Requires(null != startingSheet);
-      Contract.Requires(null != defaultController);
-      Contract.Requires(defaultController.IsSubclassOf(typeof(ActorController)));
-      // using logical XOR to restate IFF, logical OR to restate logical implication
-      Contract.Requires(abilities.HasInventory ^ (0 >= startingSheet.BaseInventoryCapacity));
-      Contract.Requires((abilities.HasToEat || abilities.IsRotting) ^ (0 >= startingSheet.BaseFoodPoints));
-      Contract.Requires(abilities.HasToSleep ^ (0 >= startingSheet.BaseSleepPoints));
-      Contract.Requires(abilities.HasSanity ^ (0 >= startingSheet.BaseSanity));
-      Contract.Requires(!abilities.CanTrade || defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)));
-      Contract.Requires(!defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)) || abilities.CanBarricade);
-      Contract.Requires(!defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI)) || abilities.HasInventory);
-
+#if DEBUG
+      // using logical XOR to restate IFF, logical AND to restate logical implication
+      if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+      if (string.IsNullOrEmpty(flavor)) throw new ArgumentNullException(nameof(flavor));
+      if (null == body) throw new ArgumentNullException(nameof(body));
+      if (null == abilities) throw new ArgumentNullException(nameof(abilities));
+      if (null == startingSheet) throw new ArgumentNullException(nameof(startingSheet));
+      if (null == defaultController) throw new ArgumentNullException(nameof(defaultController));
+      if (!defaultController.IsSubclassOf(typeof(ActorController))) throw new ArgumentOutOfRangeException(nameof(defaultController), "!defaultController.IsSubclassOf(typeof(ActorController))");
+      if (abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)) throw new ArgumentOutOfRangeException(nameof(abilities)+","+nameof(startingSheet), "abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)");
+      if ((abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(startingSheet), "(abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)");
+      if (abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(startingSheet), "abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)");
+      if (abilities.HasSanity ^ (0 < startingSheet.BaseSanity)) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(startingSheet), "abilities.HasSanity ^ (0 < startingSheet.BaseSanity)");
+      if (abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(defaultController), "abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(defaultController), "!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(defaultController), "!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+#endif
       ImageID = imageID;
       DollBody = body;
       Name = name;

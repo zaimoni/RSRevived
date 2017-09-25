@@ -46,8 +46,6 @@ namespace djack.RogueSurvivor.Gameplay
 
     public ActorModel this[int id] {
       get {
-        Contract.Ensures(null!=Contract.Result<ActorModel>().DollBody);
-        Contract.Ensures(null!=Contract.Result<ActorModel>().StartingSheet);
         return m_Models[id];
       }
     }
