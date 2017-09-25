@@ -1255,10 +1255,7 @@ namespace djack.RogueSurvivor.Data
 
     public void Destroy(Corpse c)
     {
-      if (c.DraggedBy != null) {
-        c.DraggedBy.DraggedCorpse = null;
-        c.DraggedBy = null;
-      }
+      c?.DraggedBy.StopDraggingCorpse();
       Remove(c);
     }
 

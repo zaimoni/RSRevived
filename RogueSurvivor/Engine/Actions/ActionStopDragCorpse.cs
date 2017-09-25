@@ -4,8 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using djack.RogueSurvivor.Data;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,7 +16,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionStopDragCorpse(Actor actor, Corpse target)
       : base(actor)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       m_Target = target;
     }
 
@@ -27,7 +29,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoStopDragCorpse(m_Actor, m_Target);
+      RogueForm.Game.DoStopDragCorpse(m_Actor);
     }
   }
 }

@@ -3950,7 +3950,7 @@ namespace djack.RogueSurvivor.Engine
       if (c.IsDragged) {
         string reason;
         if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason)) {
-          DoStopDragCorpse(m_Player, c);
+          DoStopDragCorpse(m_Player);
           return false;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
@@ -4021,24 +4021,17 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoStartDragCorpse(Actor a, Corpse c)
     {
-      c.DraggedBy = a;
-      a.DraggedCorpse = c;
+      a.Drag(c);
       if (!ForceVisibleToPlayer(a)) return;
       AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_START), c.DeadGuy.Name)));
     }
 
-    public void DoStopDragCorpse(Actor a, Corpse c)
+    public void DoStopDragCorpse(Actor a)   // also aliasing former DoStopDraggingCorpses
     {
-      c.DraggedBy = null;
-      a.DraggedCorpse = null;
+      Corpse c = a.StopDraggingCorpse();
+      if (null == c) return;
       if (!ForceVisibleToPlayer(a)) return;
       AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
-    }
-
-    public void DoStopDraggingCorpses(Actor a)
-    {
-      if (a.DraggedCorpse == null) return;
-            DoStopDragCorpse(a, a.DraggedCorpse);
     }
 
     public void DoButcherCorpse(Actor a, Corpse c)
@@ -8784,7 +8777,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (TryActorLeaveTile(target)) {
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
-        DoStopDraggingCorpses(target);
+        DoStopDragCorpse(target);
         Map map = target.Location.Map;
         Point position = target.Location.Position;
         map.PlaceActorAt(target, toPos);
@@ -8806,7 +8799,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoStartSleeping(Actor actor)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      DoStopDraggingCorpses(actor);
+      DoStopDragCorpse(actor);
       actor.Activity = Activity.SLEEPING;
       actor.IsSleeping = true;
     }
@@ -8908,7 +8901,7 @@ namespace djack.RogueSurvivor.Engine
 
       deadGuy.IsDead = true;
 	  deadGuy.Killed(reason);
-      DoStopDraggingCorpses(deadGuy);
+      DoStopDragCorpse(deadGuy);
       UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
         killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));

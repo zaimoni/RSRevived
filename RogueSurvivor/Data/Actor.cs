@@ -521,15 +521,20 @@ namespace djack.RogueSurvivor.Data
     }
 
     public int Infection { get { return m_Infection; } }
+    public Corpse DraggedCorpse { get { return m_DraggedCorpse; } }
 
-    public Corpse DraggedCorpse
+    public void Drag(Corpse c)
     {
-      get {
-        return m_DraggedCorpse;
-      }
-      set {
-        m_DraggedCorpse = value;
-      }
+      c.DraggedBy = this;
+      m_DraggedCorpse = c;
+    }
+
+    public Corpse StopDraggingCorpse()
+    {
+      Corpse ret = m_DraggedCorpse;
+      ret.DraggedBy = null;
+      m_DraggedCorpse = null;
+      return ret;
     }
 
     public bool IsDebuggingTarget {
