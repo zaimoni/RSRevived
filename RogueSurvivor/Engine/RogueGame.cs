@@ -6520,7 +6520,7 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add("You are enemies through relationships.");
       stringList.Add("");
       string str = DescribeActorActivity(actor);
-      stringList.Add(null != str ? str: " ");
+      stringList.Add(null != str ? str : " ");
       if (actor.Model.Abilities.HasToSleep)
       {
         if (actor.IsExhausted) stringList.Add("Exhausted!");
@@ -6615,47 +6615,33 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeMapObject(MapObject obj, Map map, Point mapPos)
     {
-      List<string> stringList = new List<string>(4);
-      stringList.Add(string.Format("{0}.", obj.AName));
-      if (obj.IsJumpable)
-        stringList.Add("Can be jumped on.");
-      if (obj.IsCouch)
-        stringList.Add("Is a couch.");
-      if (obj.GivesWood)
-        stringList.Add("Can be dismantled for wood.");
-      if (obj.IsMovable)
-        stringList.Add("Can be moved.");
-      if (obj.StandOnFovBonus)
-        stringList.Add("Increases view range.");
+      List<string> stringList = new List<string>(4) { string.Format("{0}.", obj.AName) };
+      if (obj.IsJumpable) stringList.Add("Can be jumped on.");
+      if (obj.IsCouch) stringList.Add("Is a couch.");
+      if (obj.GivesWood) stringList.Add("Can be dismantled for wood.");
+      if (obj.IsMovable) stringList.Add("Can be moved.");
+      if (obj.StandOnFovBonus) stringList.Add("Increases view range.");
       StringBuilder stringBuilder = new StringBuilder();
-      if (obj.BreakState == MapObject.Break.BROKEN)
-        stringBuilder.Append("Broken! ");
-      if (obj.FireState == MapObject.Fire.ONFIRE)
-        stringBuilder.Append("On fire! ");
-      else if (obj.FireState == MapObject.Fire.ASHES)
-        stringBuilder.Append("Burnt to ashes! ");
+      if (obj.BreakState == MapObject.Break.BROKEN) stringBuilder.Append("Broken! ");
+      if (obj.FireState == MapObject.Fire.ONFIRE) stringBuilder.Append("On fire! ");
+      else if (obj.FireState == MapObject.Fire.ASHES) stringBuilder.Append("Burnt to ashes! ");
       stringList.Add(stringBuilder.ToString());
       if (obj is PowerGenerator) {
-        if ((obj as PowerGenerator).IsOn)
-          stringList.Add("Currently ON.");
-        else
-          stringList.Add("Currently OFF.");
+        stringList.Add((obj as PowerGenerator).IsOn ? "Currently ON." : "Currently OFF.");
         stringList.Add(string.Format("The power gauge reads {0}%.", (int)(100.0 * obj.Location.Map.PowerRatio)));
       } else if (obj is Board) {
         stringList.Add("The text reads : ");
         stringList.AddRange((obj as Board).Text);
       }
       if (obj.MaxHitPoints > 0) {
-        if (obj.HitPoints < obj.MaxHitPoints)
-          stringList.Add(string.Format("HP        : {0}/{1}", obj.HitPoints, obj.MaxHitPoints));
-        else
-          stringList.Add(string.Format("HP        : {0} MAX", obj.HitPoints));
+        stringList.Add(obj.HitPoints < obj.MaxHitPoints 
+                     ? string.Format("HP        : {0}/{1}", obj.HitPoints, obj.MaxHitPoints) 
+                     : string.Format("HP        : {0} MAX", obj.HitPoints));
         DoorWindow doorWindow = obj as DoorWindow;
         if (doorWindow != null) {
-          if (doorWindow.BarricadePoints < Rules.BARRICADING_MAX)
-            stringList.Add(string.Format("Barricades: {0}/{1}", doorWindow.BarricadePoints, Rules.BARRICADING_MAX));
-          else
-            stringList.Add(string.Format("Barricades: {0} MAX", doorWindow.BarricadePoints));
+          stringList.Add(doorWindow.BarricadePoints < Rules.BARRICADING_MAX
+                       ? string.Format("Barricades: {0}/{1}", doorWindow.BarricadePoints, Rules.BARRICADING_MAX)
+                       : string.Format("Barricades: {0} MAX", doorWindow.BarricadePoints));
         }
       }
       if (obj.Weight > 0) stringList.Add(string.Format("Weight    : {0}", obj.Weight));
@@ -6726,16 +6712,17 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
     {
-      List<string> stringList = new List<string>(10);
-      stringList.Add(string.Format("Corpse of {0}.", c.DeadGuy.Name));
-      stringList.Add(" ");
       int skillLevel = m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
-      stringList.Add(string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")));
-      stringList.Add(string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")));
-      stringList.Add(string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")));
-      stringList.Add(" ");
-	  stringList.Add(DescribeCorpseLong_DescRotLevel(c.RotLevel));
-      stringList.Add(string.Format("Revive    : {0}.", (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(m_Rules.CorpseReviveChance(m_Player, c)) : "???")));
+      List<string> stringList = new List<string>(10){
+        string.Format("Corpse of {0}.", c.DeadGuy.Name),
+        " ",
+        string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")),
+        string.Format("Infection : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION ? DescribeCorpseLong_DescInfectionPercent(c.DeadGuy.InfectionPercent) : "???")),
+        string.Format("Rise      : {0}.", (skillLevel >= Rules.SKILL_NECROLOGY_LEVEL_FOR_RISE ? DescribeCorpseLong_DescRiseProbability(2 * Rules.CorpseZombifyChance(c, c.DeadGuy.Location.Map.LocalTime, false)) : "???")),
+        " ",
+	    DescribeCorpseLong_DescRotLevel(c.RotLevel),
+        string.Format("Revive    : {0}.", (m_Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) >= Rules.SKILL_MEDIC_LEVEL_FOR_REVIVE_EST ? DescribeCorpseLong_DescReviveChance(m_Rules.CorpseReviveChance(m_Player, c)) : "???"))
+      };
       if (isInPlayerTile) {
         stringList.Add(" ");
         stringList.Add("----");
@@ -6982,12 +6969,13 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemBodyArmor(ItemBodyArmor b)
     {
-      List<string> stringList1 = new List<string>();
-      stringList1.Add("> body armor");
-      stringList1.Add(string.Format("Protection vs Hits  : +{0}", b.Protection_Hit));
-      stringList1.Add(string.Format("Protection vs Shots : +{0}", b.Protection_Shot));
-      stringList1.Add(string.Format("Encumbrance         : -{0} DEF", b.Encumbrance));
-      stringList1.Add(string.Format("Weight              : -{0:F2} SPD", (float)(0.00999999977648258 * (double)b.Weight)));
+      List<string> stringList1 = new List<string>(){
+        "> body armor",
+        string.Format("Protection vs Hits  : +{0}", b.Protection_Hit),
+        string.Format("Protection vs Shots : +{0}", b.Protection_Shot),
+        string.Format("Encumbrance         : -{0} DEF", b.Encumbrance),
+        string.Format("Weight              : -{0:F2} SPD", b.Weight/100.0f)
+      };
       List<string> stringList2 = new List<string>();
       List<string> stringList3 = new List<string>();
       if (b.IsFriendlyForCops()) stringList2.Add("Cops");
@@ -11890,10 +11878,11 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.StopAll();
       m_MusicManager.Play(musicId);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
-      List<string> stringList = new List<string>(text.Length + 3 + 2);
-      stringList.Add(str);
-      stringList.Add(string.Format("ACHIEVEMENT : {0}", name));
-      stringList.Add("CONGRATULATIONS!");
+      List<string> stringList = new List<string>(text.Length + 3 + 2){
+        str,
+        string.Format("ACHIEVEMENT : {0}", name),
+        "CONGRATULATIONS!"
+      };
       for (int index = 0; index < text.Length; ++index)
         stringList.Add(text[index]);
       stringList.Add(string.Format("Achievements : {0}/{1}.", Session.Get.Scoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));

@@ -1337,8 +1337,7 @@ namespace djack.RogueSurvivor.Data
       if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList)) {
         odorScentList.Add(scent);
       } else {
-        odorScentList = new List<OdorScent>(2);
-        odorScentList.Add(scent);
+        odorScentList = new List<OdorScent>(2) { scent };
         m_aux_ScentsByPosition.Add(scent.Position, odorScentList);
       }
     }
