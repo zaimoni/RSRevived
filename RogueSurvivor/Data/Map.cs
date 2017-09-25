@@ -611,8 +611,7 @@ namespace djack.RogueSurvivor.Data
 	      ret[dest] = 1;
 	      continue;
 	    }
-		DoorWindow door = tmp as DoorWindow;
-		if (null != door) {
+        if (tmp is DoorWindow door) {
 		  // door should be closed as it isn't walkable.
 		  if (door.IsClosed) {
 		    int cost = 2;
@@ -876,8 +875,7 @@ namespace djack.RogueSurvivor.Data
           if (!actor.CanJump) return "cannot jump";
           if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP) return "not enough stamina to jump";
         } else if (actor.Model.Abilities.IsSmall) {
-          DoorWindow doorWindow = mapObjectAt as DoorWindow;
-          if (doorWindow != null && doorWindow.IsClosed) return "cannot slip through closed door";
+          if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
       if (HasActorAt(x, y)) return "someone is there";
@@ -1494,8 +1492,7 @@ namespace djack.RogueSurvivor.Data
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) { 
               ascii_map[y][x] = "|"; // gate; iron wall; car
             } else {
-              Engine.MapObjects.DoorWindow tmp_door = tmp_obj as Engine.MapObjects.DoorWindow;
-              if (null!=tmp_door) {
+              if (tmp_obj is Engine.MapObjects.DoorWindow tmp_door) {
                 if (tmp_door.IsBarricaded) {
                   ascii_map[y][x] = "+"; // no good icon...pretend it's a closed door
                 } else if (tmp_door.IsClosed) {

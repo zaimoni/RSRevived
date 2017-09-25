@@ -284,8 +284,7 @@ namespace djack.RogueSurvivor.Engine
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
-        DoorWindow door = mapObjectAt as DoorWindow;
-        if (door != null) {
+        if (mapObjectAt is DoorWindow door) {
           if (door.IsClosed) {
             if (actor.CanOpen(door, out reason)) return new ActionOpenDoor(actor, door);
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
@@ -305,8 +304,7 @@ namespace djack.RogueSurvivor.Engine
         // only Z want to break arbitrary objects; thus the guard clause
         if (actor.Model.Abilities.CanBashDoors && actor.CanBreak(mapObjectAt, out reason))
           return new ActionBreak(actor, mapObjectAt);
-        PowerGenerator powGen = mapObjectAt as PowerGenerator;
-        if (powGen != null) {
+        if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
             if (tmp != null && actor.CanRecharge(tmp, out reason))
@@ -481,8 +479,7 @@ namespace djack.RogueSurvivor.Engine
            }
         }
 
-        PowerGenerator powGen = mapObjectAt as PowerGenerator;
-        if (powGen != null) {
+        if (mapObjectAt is PowerGenerator powGen) {
           if (powGen.IsOn) {
             Item tmp = actor.GetEquippedItem(DollPart.LEFT_HAND);   // normal lights and trackers
             if (tmp != null && actor.CanRecharge(tmp, out reason))
@@ -868,20 +865,19 @@ namespace djack.RogueSurvivor.Engine
 
     public static int ActorUnsuspicousChance(Actor observer, Actor actor)
     {
-      int num1 = Rules.SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
+      int num1 = SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
       int num2 = 0;
-      ItemBodyArmor itemBodyArmor = actor.GetEquippedItem(DollPart.TORSO) as ItemBodyArmor;
-      if (itemBodyArmor != null) {
+      if (actor.GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor) {
         if (observer.Faction.ID == (int) GameFactions.IDs.ThePolice) {
-          if (itemBodyArmor.IsHostileForCops())
-            num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
-          else if (itemBodyArmor.IsFriendlyForCops())
-            num2 += Rules.UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+          if (armor.IsHostileForCops())
+            num2 -= UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
+          else if (armor.IsFriendlyForCops())
+            num2 += UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
         } else if (observer.Faction.ID == (int) GameFactions.IDs.TheBikers) {
-          if (itemBodyArmor.IsHostileForBiker(observer.GangID))
-            num2 -= Rules.UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
-          else if (itemBodyArmor.IsFriendlyForBiker(observer.GangID))
-            num2 += Rules.UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+          if (armor.IsHostileForBiker(observer.GangID))
+            num2 -= UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
+          else if (armor.IsFriendlyForBiker(observer.GangID))
+            num2 += UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
         }
       }
       return num1 + num2;

@@ -2315,24 +2315,20 @@ namespace djack.RogueSurvivor.Engine
         // lights and normal trackers
         foreach (Actor actor in map.Actors) {
           Item equippedItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
-          if (null == equippedItem) continue;
-          BatteryPowered tmp = equippedItem as BatteryPowered;
-          if (null == tmp) continue;
-          if (0 < tmp.Batteries) {
-            --tmp.Batteries;
-             if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
-               AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), equippedItem.TheName)));
+          if (null != equippedItem && equippedItem is BatteryPowered tmp) { 
+            if (0 < tmp.Batteries) {
+              --tmp.Batteries;
+               if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
+                 AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), equippedItem.TheName)));
+            }
           }
         }
         // police radios
         foreach (Actor actor in map.Actors) {
-          Item equippedItem = actor.GetEquippedItem(DollPart.HIP_HOLSTER);
-          if (null == equippedItem) continue;
-          ItemTracker itemTracker = equippedItem as ItemTracker;
-          if (itemTracker != null && itemTracker.Batteries > 0) {
-            --itemTracker.Batteries;
-            if (itemTracker.Batteries <= 0 && ForceVisibleToPlayer(actor))
-              AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", itemTracker.TheName)));
+          if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker && tracker.Batteries > 0) {
+            --tracker.Batteries;
+            if (tracker.Batteries <= 0 && ForceVisibleToPlayer(actor))
+              AddMessage(MakeMessage(actor, string.Format(": {0} goes off.", tracker.TheName)));
           }
         }
 #endregion
@@ -4874,10 +4870,8 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         return false;
       }
-      if (equippedItem is ItemSprayPaint)
-        return HandlePlayerTag(player);
-      ItemSprayScent spray = equippedItem as ItemSprayScent;
-      if (spray != null) {
+      if (equippedItem is ItemSprayPaint) return HandlePlayerTag(player);
+      if (equippedItem is ItemSprayScent spray) {
         string reason;
         if (!player.CanUse(spray, out reason)) {
           AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", reason)));
@@ -5326,12 +5320,11 @@ namespace djack.RogueSurvivor.Engine
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
+            nullable = map2;
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
-              DoorWindow door = map1.GetMapObjectAt(map2) as DoorWindow;
-              if (door != null) {
+              if (map1.GetMapObjectAt(map2) is DoorWindow door) {
                 string reason;
                 if (follower.CanBarricade(door, out reason)) {
-                  nullable = map2;
                   color = Color.LightGreen;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                     DoGiveOrderTo(player, follower, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
@@ -5339,21 +5332,14 @@ namespace djack.RogueSurvivor.Engine
                     flag2 = true;
                   }
                 } else {
-                  nullable = map2;
                   color = Color.Red;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                     AddMessage(MakeErrorMessage(string.Format("Can't barricade {0} : {1}.", door.TheName, reason)));
                     AddMessagePressEnter();
                   }
                 }
-              } else {
-                nullable = map2;
-                color = Color.Red;
-              }
-            } else {
-              nullable = map2;
-              color = Color.Red;
-            }
+              } else color = Color.Red;
+            } else color = Color.Red;
           }
         }
       }
@@ -6489,8 +6475,7 @@ namespace djack.RogueSurvivor.Engine
             stringList.Add("Trust : MAX.");
           else
             stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
-          OrderableAI orderableAi = aiController as OrderableAI;
-          if (orderableAi != null && orderableAi.DontFollowLeader)
+          if (aiController is OrderableAI orderableAi && orderableAi.DontFollowLeader)
             stringList.Add("Ordered to not follow you.");
           stringList.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
           stringList.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
@@ -6637,8 +6622,7 @@ namespace djack.RogueSurvivor.Engine
         stringList.Add(obj.HitPoints < obj.MaxHitPoints 
                      ? string.Format("HP        : {0}/{1}", obj.HitPoints, obj.MaxHitPoints) 
                      : string.Format("HP        : {0} MAX", obj.HitPoints));
-        DoorWindow doorWindow = obj as DoorWindow;
-        if (doorWindow != null) {
+        if (obj is DoorWindow doorWindow) {
           stringList.Add(doorWindow.BarricadePoints < Rules.BARRICADING_MAX
                        ? string.Format("Barricades: {0}/{1}", doorWindow.BarricadePoints, Rules.BARRICADING_MAX)
                        : string.Format("Barricades: {0} MAX", doorWindow.BarricadePoints));
@@ -6830,16 +6814,13 @@ namespace djack.RogueSurvivor.Engine
 
     private string[] DescribeItemExplosive(ItemExplosive ex)
     {
-      List<string> stringList = new List<string>();
       ItemExplosiveModel itemExplosiveModel = ex.Model;
-      ItemPrimedExplosive itemPrimedExplosive = ex as ItemPrimedExplosive;
-      stringList.Add("> explosive");
-      if (itemExplosiveModel.BlastAttack.CanDamageObjects)
-        stringList.Add("Can damage objects.");
-      if (itemExplosiveModel.BlastAttack.CanDestroyWalls)
-        stringList.Add("Can destroy walls.");
-      if (itemPrimedExplosive != null)
-        stringList.Add(string.Format("Fuse          : {0} turn(s) left!", itemPrimedExplosive.FuseTimeLeft));
+      List<string> stringList = new List<string>() { "> explosive" };
+      if (itemExplosiveModel.BlastAttack.CanDamageObjects) stringList.Add("Can damage objects.");
+      if (itemExplosiveModel.BlastAttack.CanDestroyWalls) stringList.Add("Can destroy walls.");
+      ItemPrimedExplosive primed = ex as ItemPrimedExplosive;
+      if (null == primed)
+        stringList.Add(string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft));
       else
         stringList.Add(string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
       stringList.Add(string.Format("Blast radius  : {0}", itemExplosiveModel.BlastAttack.Radius));
@@ -6847,49 +6828,44 @@ namespace djack.RogueSurvivor.Engine
       for (int distance = 0; distance <= itemExplosiveModel.BlastAttack.Radius; ++distance)
         stringBuilder.Append(string.Format("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance)));
       stringList.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
-      ItemGrenade itemGrenade = ex as ItemGrenade;
-      if (itemGrenade != null) {
+      if (ex is ItemGrenade grenade) {
         stringList.Add("> grenade");
-        int max_throw_distance = itemGrenade.Model.MaxThrowDistance;
+        int max_throw_distance = grenade.Model.MaxThrowDistance;
         int num = m_Player.MaxThrowRange(max_throw_distance);
         if (num != max_throw_distance)
           stringList.Add(string.Format("Throwing rng  : {0} ({1})", num, max_throw_distance));
         else
           stringList.Add(string.Format("Throwing rng  : {0}", num));
       }
-      if (itemPrimedExplosive != null) stringList.Add("PRIMED AND READY TO EXPLODE!");
+      if (null != primed) stringList.Add("PRIMED AND READY TO EXPLODE!");
       return stringList.ToArray();
     }
 
     static private string[] DescribeItemWeapon(ItemWeapon w)
     {
-      List<string> stringList = new List<string>();
       ItemWeaponModel itemWeaponModel = w.Model;
-      stringList.Add("> weapon");
-      stringList.Add(string.Format("Atk : +{0}", itemWeaponModel.Attack.HitValue));
-      stringList.Add(string.Format("Dmg : +{0}", itemWeaponModel.Attack.DamageValue));
-      stringList.Add(string.Format("Sta : -{0}", itemWeaponModel.Attack.StaminaPenalty));
-      ItemMeleeWeapon itemMeleeWeapon = w as ItemMeleeWeapon;
-      if (itemMeleeWeapon != null) {
-        if (itemMeleeWeapon.IsFragile)
-          stringList.Add("Breaks easily.");
-      } else {
-        ItemRangedWeapon itemRangedWeapon = w as ItemRangedWeapon;
-        if (itemRangedWeapon != null) {
-          ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
-          if (rangedWeaponModel.IsFireArm)
-            stringList.Add("> firearm");
-          else if (rangedWeaponModel.IsBow)
-            stringList.Add("> bow");
-          else
-            stringList.Add("> ranged weapon");
-          stringList.Add(string.Format("Rng  : {0}-{1}", rangedWeaponModel.Attack.Range, rangedWeaponModel.Attack.EfficientRange));
-          if (itemRangedWeapon.Ammo < rangedWeaponModel.MaxAmmo)
-            stringList.Add(string.Format("Amo  : {0}/{1}", itemRangedWeapon.Ammo, rangedWeaponModel.MaxAmmo));
-          else
-            stringList.Add(string.Format("Amo  : {0} MAX", itemRangedWeapon.Ammo));
-          stringList.Add(string.Format("Type : {0}", rangedWeaponModel.AmmoType.Describe(true)));
-        }
+      List<string> stringList = new List<string>(){
+        "> weapon",
+        string.Format("Atk : +{0}", itemWeaponModel.Attack.HitValue),
+        string.Format("Dmg : +{0}", itemWeaponModel.Attack.DamageValue),
+        string.Format("Sta : -{0}", itemWeaponModel.Attack.StaminaPenalty)
+      };
+      if (w is ItemMeleeWeapon melee) {
+        if (melee.IsFragile) stringList.Add("Breaks easily.");
+      } else if (w is ItemRangedWeapon rw) {
+        ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
+        if (rangedWeaponModel.IsFireArm)
+          stringList.Add("> firearm");
+        else if (rangedWeaponModel.IsBow)
+          stringList.Add("> bow");
+        else
+          stringList.Add("> ranged weapon");
+        stringList.Add(string.Format("Rng  : {0}-{1}", rangedWeaponModel.Attack.Range, rangedWeaponModel.Attack.EfficientRange));
+        if (rw.Ammo < rangedWeaponModel.MaxAmmo)
+          stringList.Add(string.Format("Amo  : {0}/{1}", rw.Ammo, rangedWeaponModel.MaxAmmo));
+        else
+          stringList.Add(string.Format("Amo  : {0} MAX", rw.Ammo));
+        stringList.Add(string.Format("Type : {0}", rangedWeaponModel.AmmoType.Describe(true)));
       }
       return stringList.ToArray();
     }
@@ -7287,8 +7263,7 @@ namespace djack.RogueSurvivor.Engine
 #if ENABLE_THREAT_TRACKING
 	  actor.Moved();
 #endif
-      ItemTracker itemTracker = actor.GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker;
-      if (itemTracker != null) itemTracker.Batteries += 2;  // police radio recharge
+      if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
             
       if (actor.ActionPoints >= Rules.BASE_ACTION_COST) actor.DropScent();
       if (!actor.IsPlayer && (actor.Activity == Activity.FLEEING || actor.Activity == Activity.FLEEING_FROM_EXPLOSIVE) && (!actor.Model.Abilities.IsUndead && actor.Model.Abilities.CanTalk))
@@ -7339,8 +7314,7 @@ namespace djack.RogueSurvivor.Engine
           List<Item> objList = null;
           bool flag = false;
           foreach (Item obj in itemsAt.Items) {
-            ItemTrap trap = obj as ItemTrap;
-            if (trap != null && trap.IsTriggered) {
+            if (obj is ItemTrap trap && trap.IsTriggered) {
               flag = true;
               bool isDestroyed = false;
               if (!TryEscapeTrap(trap, actor, out isDestroyed)) canLeave = false;
@@ -7405,9 +7379,7 @@ namespace djack.RogueSurvivor.Engine
       Inventory itemsAt = loc.Map.GetItemsAt(loc.Position);
       if (itemsAt == null) return;
       foreach (Item obj in itemsAt.Items) {
-        ItemTrap itemTrap = obj as ItemTrap;
-        if (itemTrap != null && itemTrap.IsTriggered)
-          itemTrap.IsTriggered = false;
+        if (obj is ItemTrap trap && trap.IsTriggered) trap.IsTriggered = false;
       }
     }
 
@@ -7419,8 +7391,7 @@ namespace djack.RogueSurvivor.Engine
       if (itemsAt == null) return;
       List<Item> objList = null;
       foreach (Item obj in itemsAt.Items) {
-        ItemTrap trap = obj as ItemTrap;
-        if (trap != null && trap.IsActivated) {
+        if (obj is ItemTrap trap && trap.IsActivated) {
           DoTriggerTrap(trap, map, pos, null, mapObjectAt);
           if (trap.Quantity <= 0) {
             (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
@@ -7645,8 +7616,7 @@ namespace djack.RogueSurvivor.Engine
         actionBump.Perform();
         return true;
       }
-      DoorWindow doorWindow = player.Location.Map.GetMapObjectAt(player.Location.Position + direction) as DoorWindow;
-      if (doorWindow != null && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead) {
+      if (player.Location.Map.GetMapObjectAt(player.Location.Position + direction) is DoorWindow doorWindow && doorWindow.IsBarricaded && !player.Model.Abilities.IsUndead) {
         if (!player.IsTired) {
           AddMessage(MakeYesNoMessage("Really tear down the barricade"));
           RedrawPlayScreen();
@@ -7833,8 +7803,7 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
-      ItemMeleeWeapon itemMeleeWeapon = attacker.GetEquippedWeapon() as ItemMeleeWeapon;
-      if (itemMeleeWeapon != null && !itemMeleeWeapon.Model.IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
+      if (attacker.GetEquippedWeapon() is ItemMeleeWeapon itemMeleeWeapon && !itemMeleeWeapon.Model.IsUnbreakable && m_Rules.RollChance(itemMeleeWeapon.IsFragile ? Rules.MELEE_WEAPON_FRAGILE_BREAK_CHANCE : Rules.MELEE_WEAPON_BREAK_CHANCE))
       {
         attacker.OnUnequipItem(itemMeleeWeapon);
         if (itemMeleeWeapon.Quantity > 1)
@@ -8118,9 +8087,8 @@ namespace djack.RogueSurvivor.Engine
       foreach (Item obj in inv.Items) {
         ItemExplosive itemExplosive = obj as ItemExplosive;
 		if (null == itemExplosive) continue;
-        ItemPrimedExplosive itemPrimedExplosive = itemExplosive as ItemPrimedExplosive;
-        if (itemPrimedExplosive != null) {
-          itemPrimedExplosive.FuseTimeLeft = 0;
+        if (itemExplosive is ItemPrimedExplosive primed) {
+          primed.FuseTimeLeft = 0;
         } else {
           if (itemExplosiveList == null) itemExplosiveList = new List<ItemExplosive>();
           if (itemPrimedExplosiveList == null) itemPrimedExplosiveList = new List<ItemPrimedExplosive>();
@@ -8722,8 +8690,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       Attack attack = actor.MeleeAttack();
-      DoorWindow doorWindow = mapObj as DoorWindow;
-      if (doorWindow != null && doorWindow.IsBarricaded) {
+      if (mapObj is DoorWindow doorWindow && doorWindow.IsBarricaded) {
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK);
         doorWindow.Barricade(-attack.DamageValue);
@@ -10512,8 +10479,7 @@ namespace djack.RogueSurvivor.Engine
         if (find_followers) { 
           foreach (Actor follower in m_Player.Followers) {
             if (follower.Location.Map == m_Player.Location.Map) {
-              ItemTracker itemTracker2 = follower.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-              if (itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader) {
+              if (follower.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker tracker && tracker.CanTrackFollowersOrLeader) {
                 DrawDetected(follower, GameImages.MINI_FOLLOWER_POSITION, GameImages.TRACK_FOLLOWER_POSITION);
               }
             }
@@ -10654,10 +10620,9 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", attack1.HitValue, attack1.DamageValue, attack1.DamageValue + num1), gx, gy, new Color?());
       gy += 14;
       Attack attack2 = actor.RangedAttack(actor.CurrentRangedAttack.EfficientRange);
-      ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
-      if (itemRangedWeapon != null) {
-        int ammo = itemRangedWeapon.Ammo;
-        int maxAmmo = itemRangedWeapon.Model.MaxAmmo;
+      if (actor.GetEquippedWeapon() is ItemRangedWeapon rw) {
+        int ammo = rw.Ammo;
+        int maxAmmo = rw.Model.MaxAmmo;
         m_UI.UI_DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}", attack2.HitValue, attack2.DamageValue, attack2.DamageValue + num1, attack2.Range, attack2.EfficientRange, ammo, maxAmmo), gx, gy, new Color?());
       }
       gy += 14;
@@ -12460,8 +12425,7 @@ namespace djack.RogueSurvivor.Engine
     private void DoTurnAllGeneratorsOn(Map map)
     {
       foreach (MapObject mapObject in map.MapObjects) {
-        PowerGenerator powGen = mapObject as PowerGenerator;
-        if (powGen != null && !powGen.IsOn) {
+        if (mapObject is PowerGenerator powGen && !powGen.IsOn) {
           powGen.TogglePower();
           OnMapPowerGeneratorSwitch(powGen.Location);
         }

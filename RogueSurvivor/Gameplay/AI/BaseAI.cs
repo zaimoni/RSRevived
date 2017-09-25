@@ -356,8 +356,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (itemsAt == null) return 0;
       int num = 0;
       foreach (Item obj in itemsAt.Items) {
-        ItemTrap itemTrap = obj as ItemTrap;
-        if (itemTrap != null) num += itemTrap.Model.Damage;
+        if (obj is ItemTrap trap) num += trap.Model.Damage;
       }
       return num;
     }
@@ -381,8 +380,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!isInside && map.GetCorpsesAt(pos) != null) reason = "that corpse will serve as a bait for";
       else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
-        DoorWindow door = map.GetMapObjectAt(pos) as DoorWindow;
-        if (door != null) reason = "protecting the doorway with";
+        if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";
         else if (map.HasExitAt(pos)) reason = "protecting the exit with";
       }
       if (string.IsNullOrEmpty(reason)) return false;

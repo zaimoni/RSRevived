@@ -559,8 +559,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
 	  ActorAction tmpAction = DecideMove(legal_steps);
       if (null != tmpAction) {
-		ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-        if (null != tmpAction2) m_Actor.IsRunning = RunIfAdvisable(tmpAction2.dest.Position);
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
       }
@@ -811,10 +810,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX we also want to be close enough to fire at all
         tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
         if (null != tmpAction) {
-          ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) {
+          if (tmpAction is ActionMoveStep test) {
             if (safe_run_retreat) RunIfPossible();
-            else m_Actor.IsRunning = RunIfAdvisable(tmpAction2.dest.Position);
+            else m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
           }
           m_Actor.Activity = Activity.FLEEING;
           return tmpAction;
@@ -1032,8 +1030,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	        tmpAction = DecideMove(tmp, enemies, friends);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.FIGHTING;
-			  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-			  if (null != tmpAction2) m_Actor.IsRunning = RunIfAdvisable(tmpAction2.dest.Position);
+              if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
               return tmpAction;
             }
 		  }
@@ -1670,8 +1667,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
       ActorAction tmp3 = DecideMove(PlanApproach(navigate));   // only called when no enemies in sight anyway
       if (null == tmp3) return null;
-      ActionMoveStep tmp2 = tmp3 as ActionMoveStep;
-      if (null != tmp2) {
+      if (tmp3 is ActionMoveStep tmp2) {
         Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
         Actor actorAt = exitAt?.Location.Actor;
         if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return null;
@@ -1690,8 +1686,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
 	  ActorAction actorAction = BehaviorPathTo(other.Location);
       if (actorAction == null || !actorAction.IsLegal()) return null;
-	  ActionMoveStep tmp = actorAction as ActionMoveStep;
-	  if (null != tmp) {
+      if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
            || other.Location.Map != m_Actor.Location.Map)
            m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position);
@@ -1947,13 +1942,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it == null) return null;
       // use stimulants before dropping them
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
-        ItemMedicine stim2 = m_Actor.Inventory.GetBestDestackable(it) as ItemMedicine;
-        if (null != stim2) {
+        if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
           int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
           int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
-          if (num4 <= need) {
-            if (m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
-          }
+          if (num4 <= need &&  m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
         }
       }
 
@@ -2121,52 +2113,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // another behavior is responsible for pre-emptively eating perishable food
       // canned food is normally eaten at the last minute
-      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Model.Abilities.HasToEat)
-        {
-        ItemFood food = inv.GetBestDestackable(it) as ItemFood;
-        if (null != food) {
-          // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
-          int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = m_Actor.CurrentNutritionOf(food);
-          if (num4 <= need) {
-            if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
-          }
-        }
+      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(it) is ItemFood food) {
+        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
+        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+        int num4 = m_Actor.CurrentNutritionOf(food);
+        if (num4 <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
       }
       // it should be ok to devour stimulants in a glut
-      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
-        ItemMedicine stim2 = inv.GetBestDestackable(it) as ItemMedicine;
-        if (null != stim2) {
-          int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
-          if (num4 <= need) {
-            if (m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
-          }
-        }
+      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID && inv.GetBestDestackable(it) is ItemMedicine stim) {
+        int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
+        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
+        if (num4 <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
 
       // see if we can eat our way to a free slot
-      if (m_Actor.Model.Abilities.HasToEat)
-        {
-        ItemFood food = inv.GetBestDestackable(game.GameItems[GameItems.IDs.FOOD_CANNED_FOOD]) as ItemFood;
-        if (null != food) {
-          // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
-          int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-          int num4 = m_Actor.CurrentNutritionOf(food);
-          if (num4*food.Quantity <= need) {
-            if (m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
-          }
-        }
+      if (m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(game.GameItems[GameItems.IDs.FOOD_CANNED_FOOD]) is ItemFood food2) {
+        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
+        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+        int num4 = m_Actor.CurrentNutritionOf(food2);
+        if (num4*food2.Quantity <= need && m_Actor.CanUse(food2)) return new ActionUseItem(m_Actor, food2);
       }
 
       // finisbing off stimulants to get a free slot is ok
-      ItemMedicine stim = inv.GetBestDestackable(game.GameItems[GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine;
-      if (null != stim) {
+      if (inv.GetBestDestackable(game.GameItems[GameItems.IDs.MEDICINE_PILLS_SLP]) is ItemMedicine stim2) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
-        if (num4*stim.Quantity <= need) {
-          if (m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
-        }
+        int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
+        if (num4*stim2.Quantity <= need && m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
       }
 
       // priority classes of incoming items are:
@@ -2264,11 +2236,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
         // Cf. Actor::CanOpen
-        DoorWindow doorWindow = mapObjectAt as DoorWindow;
-        if (doorWindow != null) {
-          if (doorWindow.IsBarricaded) return null;
+        if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
         // Cf. Actor::CanPush; closed door/window is not pushable but can be handled
-        } else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
+        else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
       }
 
       List<Item> interesting = InterestingItems(stack);
@@ -2301,11 +2271,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
         // Cf. Actor::CanOpen
-        DoorWindow doorWindow = mapObjectAt as DoorWindow;
-        if (doorWindow != null) {
-          if (doorWindow.IsBarricaded) return null;
+        if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
         // Cf. Actor::CanPush; closed door is not pushable but can be handled
-        } else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
+        else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
       }
 
       List<Item> interesting = InterestingItems(stack);
@@ -2481,8 +2449,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_NAVIGATE
       if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
 #endif
-      ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) {
+      if (ret is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
         m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
         ReserveSTA(0,0,0,0);
@@ -2499,8 +2466,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       ActorAction ret = DecideMove(PlanApproach(navigate));
       if (null == ret) return null;
-      ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }
 
@@ -2759,8 +2725,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ActorAction ret = DecideMove(PlanApproach(navigate));
       if (null == ret) return null;
-      ActionMoveStep test = ret as ActionMoveStep;
-      if (null != test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+      if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }
 

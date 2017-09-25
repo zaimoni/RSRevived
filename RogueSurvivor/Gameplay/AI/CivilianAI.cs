@@ -185,12 +185,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
 
-      if (!Directives.CanThrowGrenades) {
-        ItemGrenade itemGrenade = m_Actor.GetEquippedWeapon() as ItemGrenade;
-        if (itemGrenade != null) {
-          game.DoUnequipItem(m_Actor, itemGrenade);
-        }
-      }
+      if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) game.DoUnequipItem(m_Actor, grenade);
 
       ActorAction tmpAction = null;
 
@@ -244,8 +239,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
 #endif
-		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) RunIfPossible();
+          if (tmpAction is ActionMoveStep) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
           return tmpAction;
         }

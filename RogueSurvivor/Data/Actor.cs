@@ -1484,8 +1484,7 @@ namespace djack.RogueSurvivor.Data
         if (IsTired) { num *= 2f; num /= 3f; }
         if (IsExhausted) num /= 2f;
         else if (IsSleepy) { num *= 2f; num /= 3f; }
-        Engine.Items.ItemBodyArmor itemBodyArmor = GetEquippedItem(DollPart.TORSO) as Engine.Items.ItemBodyArmor;
-        if (itemBodyArmor != null) num -= (float) itemBodyArmor.Weight;
+        if (GetEquippedItem(DollPart.TORSO) is Engine.Items.ItemBodyArmor armor) num -= armor.Weight;
         if (DraggedCorpse != null) num /= 2f;
         return Math.Max((int) num, 0);
       }
@@ -2404,8 +2403,7 @@ namespace djack.RogueSurvivor.Data
 
     int LightBonus { 
       get {
-        ItemLight itemLight = GetEquippedItem(DollPart.LEFT_HAND) as ItemLight;
-        if (itemLight != null && itemLight.Batteries > 0) return itemLight.FovBonus;
+        if (GetEquippedItem(DollPart.LEFT_HAND) is ItemLight light && 0 < light.Batteries) return light.FovBonus;
         return 0;
       }
     }
