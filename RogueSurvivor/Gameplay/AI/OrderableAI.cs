@@ -44,7 +44,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       protected int turn;   // turn count of WorldTime .. will need a more complex representation at some point.
       protected readonly Actor m_Actor;   // owning actor is likely important
-      protected bool _isExpired = false;
+      protected bool _isExpired;
 
       public int TurnCounter { get { return turn; } }
       public bool IsExpired { get { return _isExpired; } }
@@ -277,18 +277,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LAW_ENFORCE_CHANCE = 30;
 
     // taboos really belong here
-    private Dictionary<Item, int> m_TabooItems = null;
-    private List<Actor> m_TabooTrades = null;
+    private Dictionary<Item, int> m_TabooItems;
+    private List<Actor> m_TabooTrades;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
-    private ActorDirective m_Directive = null;
-    private ActorOrder m_Order = null;
-    protected Percept m_LastEnemySaw = null;
-    protected Percept m_LastItemsSaw = null;
-    protected Percept m_LastSoldierSaw = null;
-    protected Percept m_LastRaidHeard = null;
-    protected bool m_ReachedPatrolPoint = false;
-    protected int m_ReportStage = 0;
+    private ActorDirective m_Directive;
+    private ActorOrder m_Order;
+    protected Percept m_LastEnemySaw;
+    protected Percept m_LastItemsSaw;
+    protected Percept m_LastSoldierSaw;
+    protected Percept m_LastRaidHeard;
+    protected bool m_ReachedPatrolPoint;
+    protected int m_ReportStage;
 
     public bool DontFollowLeader { get; set; }
 

@@ -454,7 +454,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       "Walters",
       "White"
     };
-    private static string[] CARS = new string[4]
+    private static readonly string[] CARS = new string[4]
     {
       GameImages.OBJ_CAR1,
       GameImages.OBJ_CAR2,
@@ -642,7 +642,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static public Fortification MakeObjSmallFortification()
     {
-      return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){ 
+      return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){
         IsMaterialTransparent = true,
         GivesWood = true,
         IsMovable = true,

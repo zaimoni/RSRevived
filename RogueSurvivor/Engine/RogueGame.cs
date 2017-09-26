@@ -10455,10 +10455,9 @@ namespace djack.RogueSurvivor.Engine
     static private string ActorStatString(Actor actor)
     {
       Defence defence = Rules.ActorDefence(actor, actor.CurrentDefence);
-      if (actor.Model.Abilities.IsUndead)
-        return string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, ((double) actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount);
-      else
-        return string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double) actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.CountFollowers, actor.MaxFollowers);
+      return (actor.Model.Abilities.IsUndead
+            ? string.Format("Def {0:D2} Spd {1:F2} En {2} FoV {3} Sml {4:F2} Kills {5}", defence.Value, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.Smell, actor.KillsCount)
+            : string.Format("Def {0:D2} Arm {1:D1}/{2:D1} Spd {3:F2} En {4} FoV {5} Fol {6}/{7}", defence.Value, defence.Protection_Hit, defence.Protection_Shot, ((double)actor.Speed / Rules.BASE_SPEED), actor.ActionPoints, actor.FOVrange(Session.Get.WorldTime, Session.Get.World.Weather), actor.CountFollowers, actor.MaxFollowers));
     }
 
     public void DrawActorStatus(Actor actor, int gx, int gy)

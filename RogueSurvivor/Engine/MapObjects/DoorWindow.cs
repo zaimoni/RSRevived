@@ -29,10 +29,10 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     };
 
     // don't fold maxhp into here just yet.
-    // if we end up allowing constructing wooden doors w/carpentry, perhaps 
+    // if we end up allowing constructing wooden doors w/carpentry, perhaps
     // post-apocalypse doors shouldn't be as durable as pre-apocalypse
     // or maybe other choices available in this regard
-    static string[] names = new string[(int)DW_type.MAX]{
+    static readonly string[] names = new string[(int)DW_type.MAX]{
       "wooden door",
       "door",
       "CHAR door",
@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       "window"
     };
 
-    static string[][] images = new string[(int)DW_type.MAX][]{
+    static readonly string[][] images = new string[(int)DW_type.MAX][]{
        new string[MAX_STATE]{ Gameplay.GameImages.OBJ_WOODEN_DOOR_CLOSED, Gameplay.GameImages.OBJ_WOODEN_DOOR_OPEN, Gameplay.GameImages.OBJ_WOODEN_DOOR_BROKEN},
        new string[MAX_STATE]{ Gameplay.GameImages.OBJ_HOSPITAL_DOOR_CLOSED, Gameplay.GameImages.OBJ_HOSPITAL_DOOR_OPEN, Gameplay.GameImages.OBJ_HOSPITAL_DOOR_BROKEN},
        new string[MAX_STATE]{ Gameplay.GameImages.OBJ_CHAR_DOOR_CLOSED, Gameplay.GameImages.OBJ_CHAR_DOOR_OPEN, Gameplay.GameImages.OBJ_CHAR_DOOR_BROKEN},
@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     };
 
     private readonly byte m_type;
-    private int m_BarricadePoints = 0;
+    private int m_BarricadePoints;
 
     public bool IsOpen { get { return State == STATE_OPEN; } }
     public bool IsClosed { get { return State == STATE_CLOSED; } }
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
       base.SetState(newState);
       IsWalkable = (State!= STATE_CLOSED);
-      if (STATE_BROKEN == State) { 
+      if (STATE_BROKEN == State) {
           BreakState = Break.BROKEN;
           HitPoints = 0;
           m_BarricadePoints = 0;

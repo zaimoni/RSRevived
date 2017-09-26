@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       ItemInShopShelfChance = 100,
       PolicemanChance = 15
     };
-    private static string[] CHAR_POSTERS = new string[3]
+    private static readonly string[] CHAR_POSTERS = new string[3]
     {
       GameImages.DECO_CHAR_POSTER1,
       GameImages.DECO_CHAR_POSTER2,
@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private readonly KeyValuePair<GameItems.IDs,GameItems.IDs>[] survivalist_ranged_candidates;
 
     private Parameters m_Params = BaseTownGenerator.DEFAULT_PARAMS;
-    private readonly string[] m_PC_names = null;
+    private readonly string[] m_PC_names;
     private const int PARK_TREE_CHANCE = 25;
     private const int PARK_BENCH_CHANCE = 5;
     private const int PARK_ITEM_CHANCE = 5;
@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
       bedroom_ranged_candidates = working_bedroom.ToArray();
 
-      // any not-so-legal ranged weapons were obtained the same way the grenades were.  (U.S.: could be obtained via connections with a grade C license 
+      // any not-so-legal ranged weapons were obtained the same way the grenades were.  (U.S.: could be obtained via connections with a grade C license
       // holder [registered private army] under the 1934 automatic weapons ban.)
       // true military weapons not represented here, the ammo is assumed too hard to get pre-apocalypse
       // no duplication of ammo between primary and secondary ranged weapon
@@ -157,13 +157,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       foreach (Block copyFrom in list)
         m_SurfaceBlocks.Add(new Block(copyFrom));
       if (m_Params.GeneratePoliceStation) {
-        Block policeBlock;
-        MakePoliceStation(map, list, out policeBlock);
+        MakePoliceStation(map, list, out Block policeBlock);
         blockList1.Remove(policeBlock);
       }
       if (m_Params.GenerateHospital) {
-        Block hospitalBlock;
-        MakeHospital(map, list, out hospitalBlock);
+        MakeHospital(map, list, out Block hospitalBlock);
         blockList1.Remove(hospitalBlock);
       }
       blockList2.Clear();
@@ -537,13 +535,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
     {
-      int splitX;
-      int splitY;
-      Rectangle topLeft;
-      Rectangle topRight;
-      Rectangle bottomLeft;
-      Rectangle bottomRight;
-      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out splitX, out splitY, out topLeft, out topRight, out bottomLeft, out bottomRight);
+      QuadSplit(rect, m_Params.MinBlockSize + 1, m_Params.MinBlockSize + 1, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         if (makeRoads) {
           MakeRoad(map, GameTiles.ROAD_ASPHALT_EW, new Rectangle(rect.Left, rect.Top, rect.Width, 1));
@@ -1389,13 +1381,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual void MakeRoomsPlan(Map map, ref List<Rectangle> list, Rectangle rect, int minRoomsSize)
     {
-      int splitX;
-      int splitY;
-      Rectangle topLeft;
-      Rectangle topRight;
-      Rectangle bottomLeft;
-      Rectangle bottomRight;
-      QuadSplit(rect, minRoomsSize, minRoomsSize, out splitX, out splitY, out topLeft, out topRight, out bottomLeft, out bottomRight);
+      QuadSplit(rect, minRoomsSize, minRoomsSize, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight);
       if (topRight.IsEmpty && bottomLeft.IsEmpty && bottomRight.IsEmpty) {
         list.Add(rect);
       } else {
@@ -2193,8 +2179,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private void MakePoliceStation(Map map, List<Block> freeBlocks, out Block policeBlock)
     {
       policeBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
-      Point stairsToLevel1;
-      GeneratePoliceStation(map, policeBlock, out stairsToLevel1);
+      GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
       Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map, policeBlock, stairsToLevel1);
       Map stationJailsLevel = GeneratePoliceStation_JailsLevel(stationOfficesLevel);
       AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
