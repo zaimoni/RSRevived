@@ -8,17 +8,17 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Diagnostics.Contracts;
+using System.Drawing;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal abstract class MapGenerator
+    internal abstract class MapGenerator
   {
     protected readonly Rules m_Rules;
 
-    public MapGenerator(Rules rules)
+    protected MapGenerator(Rules rules)
     {
 	  Contract.Requires(null != rules);
       m_Rules = rules;
@@ -119,21 +119,27 @@ namespace djack.RogueSurvivor.Engine
       TileVLine(map, model, left + width - 1, top, height, decoratorFn);
     }
 
+#if DEAD_FUNC
     // dead, but typical for a map generation utility
     public Point DigUntil(Map map, TileModel model, Point startPos, Direction digDirection, Predicate<Point> stopFn)
     {
+#if DEBUG
+      if (null == stopFn) throw new ArgumentNullException(nameof(stopFn));
+#endif
       Point p = startPos + digDirection;
-      while (map.IsInBounds(p) && !stopFn(p))
-      {
+      while (map.IsInBounds(p) && !stopFn(p)) {
         map.SetTileModelAt(p.X, p.Y, model);
         p += digDirection;
       }
       return p;
     }
+#endif
 
     public void DoForEachTile(Rectangle rect, Action<Point> doFn)
     {
-      Contract.Requires(null != doFn);
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+#endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
         for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
@@ -144,7 +150,9 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckForEachTile(Rectangle rect, Predicate<Point> predFn)
     {
-      Contract.Requires(null != predFn);
+#if DEBUG
+      if (null == predFn) throw new ArgumentNullException(nameof(predFn));
+#endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
         for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
@@ -185,6 +193,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
+#if DEBUG
+      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+#endif
       rect.DoForEach(pt => {
         createFn(pt)?.PlaceAt(map,pt);   // XXX RNG potentially involved
       }, pt => !map.HasMapObjectAt(pt));
@@ -192,6 +203,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectPlaceInGoodPosition(Map map, Rectangle rect, Func<Point, bool> isGoodPosFn, DiceRoller roller, Func<Point, MapObject> createFn)
     {
+#if DEBUG
+      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+      if (null == isGoodPosFn) throw new ArgumentNullException(nameof(isGoodPosFn));
+#endif
       List<Point> pointList = rect.Where(pt => isGoodPosFn(pt) && !map.HasMapObjectAt(pt));
       if (0 >= pointList.Count) return;
       Point pt2 = pointList[roller.Roll(0, pointList.Count)];
@@ -201,6 +216,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void ItemsDrop(Map map, Rectangle rect, Predicate<Point> isGoodPositionFn, Func<Point, Item> createFn)
     {
+#if DEBUG
+      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+#endif
       rect.DoForEach(pt => createFn(pt)?.DropAt(map, pt), isGoodPositionFn);
     }
 
@@ -241,8 +259,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void PlaceIf(Map map, int x, int y, TileModel floor, Func<int, int, bool> predicateFn, Func<int, int, MapObject> createFn)
     {
-      Contract.Requires(null != predicateFn);
-      Contract.Requires(null != createFn);
+#if DEBUG
+      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
+      if (null == createFn) throw new ArgumentNullException(nameof(createFn));
+#endif
       if (!predicateFn(x, y)) return;
       MapObject mapObj = createFn(x, y);
       if (mapObj == null) return;

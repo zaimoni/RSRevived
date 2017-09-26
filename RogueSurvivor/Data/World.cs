@@ -143,8 +143,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public void MakePC(string target) {
-      if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {
+    public void MakePC() {
+      if (Engine.Session.CommandLineOptions.ContainsKey("PC")) {    // could be call graph precondition, but this doesn't have to be fast
         string[] names = Engine.Session.CommandLineOptions["PC"].Split('\0');
         foreach(District d in m_DistrictsGrid) {
           foreach(Map m in d.Maps) {

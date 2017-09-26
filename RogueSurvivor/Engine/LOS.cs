@@ -135,6 +135,7 @@ namespace djack.RogueSurvivor.Engine
     private static bool AngbandlikeTrace(int maxSteps, int xFrom, int yFrom, int xTo, int yTo, Func<int, int, bool> fn, List<Point> line = null)
     {
 #if DEBUG
+        if (null == fn) throw new ArgumentNullException(nameof(fn));
         if (0 > maxSteps) throw new ArgumentOutOfRangeException("0 < maxSteps", maxSteps.ToString());
 #endif
         Point start = new Point(xFrom, yFrom);
@@ -345,7 +346,7 @@ namespace djack.RogueSurvivor.Engine
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
       if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
-      visibleSet = new HashSet<Point>() { a_loc.Position };
+      visibleSet = new HashSet<Point>{ a_loc.Position };
       if (0 >= maxRange) return visibleSet;
       Map map = a_loc.Map;
       Point position = a_loc.Position;

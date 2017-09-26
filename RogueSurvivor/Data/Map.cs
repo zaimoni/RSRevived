@@ -1401,6 +1401,9 @@ namespace djack.RogueSurvivor.Data
 
     public List<Point> FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
+#if DEBUG
+      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
+#endif
       if (!IsInBounds(position)) return null;
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
       return (0<tmp.Count() ? new List<Point>(tmp) : null);
@@ -1408,12 +1411,18 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
+#if DEBUG
+      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
+#endif
       if (!IsInBounds(position)) return false;
       return Direction.COMPASS.Select(dir => position + dir).Any(p=>IsInBounds(p) && predicateFn(p));
     }
 
     public int CountAdjacentTo(Point position, Predicate<Point> predicateFn)
     {
+#if DEBUG
+      if (null == predicateFn) throw new ArgumentNullException(nameof(predicateFn));
+#endif
       if (!IsInBounds(position)) return 0;
       return Direction.COMPASS.Select(dir => position + dir).Count(p=>IsInBounds(p) && predicateFn(p));
     }

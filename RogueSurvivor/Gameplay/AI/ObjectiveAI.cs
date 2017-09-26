@@ -131,7 +131,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         if (1<a_turns) {
           HashSet<Point> already = new HashSet<Point>();
-          HashSet<Point> now = new HashSet<Point>() { a.Location.Position };
+          HashSet<Point> now = new HashSet<Point>{ a.Location.Position };
           do {
             a_turns--;
             HashSet<Point> tmp2 = a.NextStepRange(a.Location.Map,already,now);

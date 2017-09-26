@@ -10852,7 +10852,7 @@ namespace djack.RogueSurvivor.Engine
 	  Contract.Requires(!string.IsNullOrEmpty(saveName));
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       // command line option --PC requests converting an NPC to a PC
-      if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC(Session.CommandLineOptions["PC"]);
+      if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       m_Player = null;
       RefreshPlayer();
