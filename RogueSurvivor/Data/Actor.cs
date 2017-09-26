@@ -515,7 +515,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_MurdersCounter;
       }
-      set {
+      set { // nominates chunk of RogueGame::KillActor as member function
         m_MurdersCounter = value;
       }
     }
@@ -572,10 +572,8 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = m_previousFoodPoints = m_Sheet.BaseFoodPoints;
       m_SleepPoints = m_previousSleepPoints = m_Sheet.BaseSleepPoints;
       m_Sanity = m_previousSanity = m_Sheet.BaseSanity;
-      if (model.Abilities.HasInventory)
-        m_Inventory = new Inventory(model.StartingSheet.BaseInventoryCapacity);
-      else
-        m_Inventory = null; // any previous inventory will be irrevocably destroyed
+      m_Inventory = (model.Abilities.HasInventory ? new Inventory(model.StartingSheet.BaseInventoryCapacity)
+                                                  : null); // any previous inventory will be irrevocably destroyed
       m_CurrentMeleeAttack = model.StartingSheet.UnarmedAttack;
       m_CurrentDefence = model.StartingSheet.BaseDefence;
       m_CurrentRangedAttack = Attack.BLANK;
@@ -1686,10 +1684,7 @@ namespace djack.RogueSurvivor.Data
 
     public void RegenStaminaPoints(int staminaRegen)
     {
-      if (Model.Abilities.CanTire)
-        m_StaminaPoints = Math.Min(MaxSTA, m_StaminaPoints + staminaRegen);
-      else
-        m_StaminaPoints = STAMINA_INFINITE;
+      m_StaminaPoints = Model.Abilities.CanTire ? Math.Min(MaxSTA, m_StaminaPoints + staminaRegen) : STAMINA_INFINITE;
     }
 
     // sanity
