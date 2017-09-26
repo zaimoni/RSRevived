@@ -1190,7 +1190,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       };
     }
 
-    protected void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
+    protected static void BarricadeDoors(Map map, Rectangle rect, int barricadeLevel)
     {
       DoForEachTile(rect, pt => (map.GetMapObjectAt(pt) as DoorWindow)?.Barricade(barricadeLevel));
     }

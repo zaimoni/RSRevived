@@ -2154,7 +2154,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
     }
 
-    private void MakeCHARPowerRoom(Map map, Rectangle wallsRect, Rectangle roomRect)
+    private static void MakeCHARPowerRoom(Map map, Rectangle wallsRect, Rectangle roomRect)
     {
       TileFill(map, GameTiles.FLOOR_CONCRETE, roomRect);
       DoForEachTile(wallsRect, (Action<Point>) (pt =>

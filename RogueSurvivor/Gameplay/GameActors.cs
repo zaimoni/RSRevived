@@ -475,7 +475,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       return true;
     }
 
-    private void Notify(IRogueUI ui, string stage)
+    private static void Notify(IRogueUI ui, string stage)
     {
       ui.UI_Clear(Color.Black);
       ui.UI_DrawStringBold(Color.White, "Loading actors data : " + stage, 0, 0, new Color?());

@@ -11292,11 +11292,10 @@ namespace djack.RogueSurvivor.Engine
       Map map = world[m_Rules.Roll(0, world.Size), m_Rules.Roll(0, world.Size)].SewersMap;
       Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", false, 0);
       DiceRoller roller = new DiceRoller(map.Seed);
-      if (!m_TownGenerator.ActorPlace(roller, map, named))
-        throw new InvalidOperationException("could not spawn unique The Sewers Thing");
+      if (!MapGenerator.ActorPlace(roller, map, named)) throw new InvalidOperationException("could not spawn unique The Sewers Thing");
       Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
       if (zoneByPartialName != null)
-        m_TownGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
+        MapGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
            return map.IsWalkable(pt.X, pt.Y) && !map.HasActorAt(pt) && !map.HasItemsAt(pt);
         }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[7] {
           "TO SEWER WORKERS :",
@@ -11541,7 +11540,7 @@ namespace djack.RogueSurvivor.Engine
         actor.CreateCivilianDeductFoodSleep(m_Rules);
       }
       actor.Controller = new PlayerController();
-      if (   townGen.ActorPlace(roller, map, actor, pt => {
+      if (   MapGenerator.ActorPlace(roller, map, actor, pt => {
                if (map.IsInsideAt(pt)) {
                  if (m_CharGen.IsUndead) return false;
                } else {
@@ -11553,13 +11552,13 @@ namespace djack.RogueSurvivor.Engine
                if (mapObjectAt != null) return mapObjectAt.IsCouch;
                return false;
              })
-          || townGen.ActorPlace(roller, map, actor, pt => {
+          || MapGenerator.ActorPlace(roller, map, actor, pt => {
               if (map.IsInsideAt(pt)) return !IsInCHAROffice(new Location(map, pt));
               return false;
              }))
         return;
       do;
-      while (!townGen.ActorPlace(roller, map, actor, pt => !RogueGame.IsInCHAROffice(new Location(map, pt))));
+      while (!MapGenerator.ActorPlace(roller, map, actor, pt => !RogueGame.IsInCHAROffice(new Location(map, pt))));
     }
 
     private void RefreshPlayer()
