@@ -365,8 +365,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       ItemTrap itemTrap = m_Actor.Inventory.GetFirst<ItemTrap>();
       if (itemTrap == null) return null;
-      string reason;
-      if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out reason)) return null;
+      if (!IsGoodTrapSpot(m_Actor.Location.Map, m_Actor.Location.Position, out string reason)) return null;
       if (!itemTrap.IsActivated && !itemTrap.Model.ActivatesWhenDropped)
         return new ActionUseItem(m_Actor, itemTrap);
       game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) reason, (object) itemTrap.AName));
@@ -1039,8 +1038,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<ChoiceEval<_T_>> ret_from = null;
-      if (!choiceEvalDict.TryGetValue(num, out ret_from)) return null;
+      if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
       if (1 == ret_from.Count) return ret_from[0];
       return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
     }
@@ -1073,8 +1071,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<ChoiceEval<_DATA_>> ret_from = null;
-      if (!choiceEvalDict.TryGetValue(num, out ret_from)) return null;
+      if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_DATA_>> ret_from)) return null;
       if (1 == ret_from.Count) return ret_from[0];
       return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
     }

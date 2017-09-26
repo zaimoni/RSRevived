@@ -498,8 +498,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor actor = FilterNearest(enemies).Percepted as Actor;
         return new ActionShout(m_Actor, string.Format("{0} sighted!!", (object) actor.Name));
       }
-      string reason;
-      if (m_Actor.CanSleep(out reason)) {
+      if (m_Actor.CanSleep(out string reason)) {
         return (m_Actor.Location.Map.LocalTime.TurnCounter % 2 == 0 ? (ActorAction)(new ActionSleep(m_Actor)) : new ActionWait(m_Actor));
       }
       SetOrder(null);
@@ -1652,8 +1651,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map a_map = m_Actor.Location.Map;
 	  if (dest.Map != a_map) {
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
-        HashSet<Exit> valid_exits;
-        HashSet<Map> exit_maps = a_map.PathTo(dest.Map, out valid_exits);
+        HashSet<Map> exit_maps = a_map.PathTo(dest.Map, out HashSet<Exit> valid_exits);
 
 	    Exit exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
@@ -2090,8 +2088,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Inventory inv = m_Actor.Inventory;
       if (it.Model.IsStackable && it.CanStackMore)
          {
-         int qty;
-         List<Item> tmp = inv.GetItemsStackableWith(it, out qty);
+         List<Item> tmp = inv.GetItemsStackableWith(it, out int qty);
          if (qty>=it.Quantity) return null;
          }
 

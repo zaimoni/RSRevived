@@ -953,8 +953,7 @@ namespace djack.RogueSurvivor.Data
     public int GetTrustIn(Actor other)
     {
       if (null == m_TrustDict) return 0;
-      int trust = 0;
-      if (m_TrustDict.TryGetValue(other,out trust)) return trust;
+      if (m_TrustDict.TryGetValue(other,out int trust)) return trust;
       return 0;
     }
 
@@ -1334,8 +1333,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantBarricade(DoorWindow door)
     {
       Contract.Requires(null != door);
-      string reason;
-      if (!door.CanBarricade(out reason)) return reason;
+      if (!door.CanBarricade(out string reason)) return reason;
       return ReasonCouldntBarricade();
     }
 

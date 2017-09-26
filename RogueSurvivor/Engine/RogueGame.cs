@@ -2609,8 +2609,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void FireEvent_ArmySupplies(Map map)
     {
-      Point dropPoint;
-      if (!FindDropSuppliesPoint(map, out dropPoint)) return;
+      if (!FindDropSuppliesPoint(map, out Point dropPoint)) return;
       Rectangle survey = new Rectangle(dropPoint.X-ARMY_SUPPLIES_SCATTER, dropPoint.Y-ARMY_SUPPLIES_SCATTER, 2*ARMY_SUPPLIES_SCATTER+1, 2*ARMY_SUPPLIES_SCATTER+1);
       map.TrimToBounds(ref survey);
       survey.DoForEach(pt => map.DropItemAt((m_Rules.RollChance(80) ? BaseMapGenerator.MakeItemArmyRation() : (Item)BaseMapGenerator.MakeItemMedikit()), pt),
@@ -3230,14 +3229,12 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         } else if (!HandleMouseLook(point)) {
-          bool hasDoneAction1;
-          if (HandleMouseInventory(point, mouseButtons, out hasDoneAction1)) {
-            if (!hasDoneAction1) continue;
+          if (HandleMouseInventory(point, mouseButtons, out bool hasDoneAction)) {
+            if (!hasDoneAction) continue;
             flag1 = false;
           }
-          bool hasDoneAction2;
-          if (HandleMouseOverCorpses(point, mouseButtons, out hasDoneAction2)) {
-            if (!hasDoneAction2) continue;
+          if (HandleMouseOverCorpses(point, mouseButtons, out hasDoneAction)) {
+            if (!hasDoneAction) continue;
             flag1 = false;
           }
           ClearOverlays();
@@ -3409,9 +3406,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_Repaint();
       List<string> stringList = new List<string>();
       for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
-        string title;
-        string[] body;
-        GetAdvisorHintText((AdvisorHint) index, out title, out body);
+        GetAdvisorHintText((AdvisorHint) index, out string title, out string[] body);
         stringList.Add(string.Format("HINT {0} : {1}", index, title));
         stringList.AddRange(body);
         stringList.Add("~~~~");
@@ -3799,9 +3794,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleMouseInventory(Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
-      Inventory inv;
-      Point itemPos;
-      Item inventoryItem = MouseToInventoryItem(mousePos, out inv, out itemPos);
+      Item inventoryItem = MouseToInventoryItem(mousePos, out Inventory inv, out Point itemPos);
       if (inv == null) {
         hasDoneAction = false;
         return false;
@@ -3809,14 +3802,14 @@ namespace djack.RogueSurvivor.Engine
       bool isPlayerInventory = inv == m_Player.Inventory;
       hasDoneAction = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, 32, 32)));
-      AddOverlay(new RogueGame.OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, 30, 30)));
+      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, 32, 32)));
+      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, 30, 30)));
       if (inventoryItem != null) {
         string[] lines = DescribeItemLong(inventoryItem, isPlayerInventory);
         int num = 1 + FindLongestLine(lines);
         int x = itemPos.X - 7 * num;
         int y = itemPos.Y + TILE_SIZE;
-        AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
+        AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
         if (mouseButtons.HasValue) {
           if (mouseButtons.GetValueOrDefault() == MouseButtons.Left) hasDoneAction = OnLMBItem(inv, inventoryItem);
           else if (mouseButtons.GetValueOrDefault() == MouseButtons.Right) hasDoneAction = OnRMBItem(inv, inventoryItem);
@@ -3853,8 +3846,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (inv == m_Player.Inventory) {
         if (it.IsEquipped) {
-          string reason;
-          if (m_Player.CanUnequip(it, out reason)) {
+          if (m_Player.CanUnequip(it, out string reason)) {
             DoUnequipItem(m_Player, it);
             return false;
           }
@@ -3862,24 +3854,21 @@ namespace djack.RogueSurvivor.Engine
           return false;
         }
         if (it.Model.IsEquipable) {
-          string reason;
-          if (m_Player.CanEquip(it, out reason)) {
+          if (m_Player.CanEquip(it, out string reason)) {
             DoEquipItem(m_Player, it);
             return false;
           }
           AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
           return false;
         }
-        string reason1;
-        if (m_Player.CanUse(it, out reason1)) {
+        if (m_Player.CanUse(it, out string reason1)) {
           DoUseItem(m_Player, it);
           return true;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
         return false;
       }
-      string reason2;
-      if (m_Player.CanGet(it, out reason2)) {
+      if (m_Player.CanGet(it, out string reason2)) {
         DoTakeItem(m_Player, m_Player.Location.Position, it);
         return true;
       }
@@ -3890,8 +3879,7 @@ namespace djack.RogueSurvivor.Engine
     private bool OnRMBItem(Inventory inv, Item it)
     {
       if (inv != m_Player.Inventory) return false;
-      string reason;
-      if (m_Player.CanDrop(it, out reason)) {
+      if (m_Player.CanDrop(it, out string reason)) {
         DoDropItem(m_Player, it);
         return true;
       }
@@ -3901,8 +3889,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleMouseOverCorpses(Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
-      Point corpsePos;
-      Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
       hasDoneAction = false;
       if (corpse == null)  return false;
       ClearOverlays();
@@ -3940,17 +3927,14 @@ namespace djack.RogueSurvivor.Engine
     private bool OnLMBCorpse(Corpse c)
     {
       if (c.IsDragged) {
-        string reason;
-        if (m_Rules.CanActorStopDragCorpse(m_Player, c, out reason)) {
+        if (m_Rules.CanActorStopDragCorpse(m_Player, c, out string reason)) {
           DoStopDragCorpse(m_Player);
           return false;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
         return false;
       }
-      string reason1;
-      if (m_Rules.CanActorStartDragCorpse(m_Player, c, out reason1))
-      {
+      if (m_Rules.CanActorStartDragCorpse(m_Player, c, out string reason1)) {
         DoStartDragCorpse(m_Player, c);
         return false;
       }
@@ -3960,20 +3944,15 @@ namespace djack.RogueSurvivor.Engine
 
     private bool OnRMBCorpse(Corpse c)
     {
-      if (m_Player.Model.Abilities.IsUndead)
-      {
-        string reason;
-        if (m_Rules.CanActorEatCorpse(m_Player, c, out reason)) // currently automatically succeeds, other than null checks
-        {
+      if (m_Player.Model.Abilities.IsUndead) {
+        if (m_Rules.CanActorEatCorpse(m_Player, c, out string reason)) { // currently automatically succeeds, other than null checks
           DoEatCorpse(m_Player, c);
           return true;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
         return false;
       }
-      string reason1;
-      if (m_Rules.CanActorButcherCorpse(m_Player, c, out reason1))
-      {
+      if (m_Rules.CanActorButcherCorpse(m_Player, c, out string reason1)) {
         DoButcherCorpse(m_Player, c);
         return true;
       }
@@ -3983,12 +3962,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerEatCorpse(Actor player, Point mousePos)
     {
-      Point corpsePos;
-      Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
       if (corpse == null) return false;
-      string reason;
-      if (!m_Rules.CanActorEatCorpse(player, corpse, out reason))
-      {
+      if (!m_Rules.CanActorEatCorpse(player, corpse, out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
         return false;
       }
@@ -3998,12 +3974,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerReviveCorpse(Actor player, Point mousePos)
     {
-      Point corpsePos;
-      Corpse corpse = MouseToCorpse(mousePos, out corpsePos);
+      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
       if (corpse == null) return false;
-      string reason;
-      if (!m_Rules.CanActorReviveCorpse(player, corpse, out reason))
-      {
+      if (!m_Rules.CanActorReviveCorpse(player, corpse, out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
         return false;
       }
@@ -4112,8 +4085,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       if (it.IsEquipped) {
-        string reason;
-        if (player.CanUnequip(it, out reason)) {
+        if (player.CanUnequip(it, out string reason)) {
           DoUnequipItem(player, it);
           return false;
         }
@@ -4121,16 +4093,14 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       if (it.Model.IsEquipable) {
-        string reason;
-        if (player.CanEquip(it, out reason)) {
+        if (player.CanEquip(it, out string reason)) {
           DoEquipItem(player, it);
           return false;
         }
         AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
         return false;
       }
-      string reason1;
-      if (player.CanUse(it, out reason1)) {
+      if (player.CanUse(it, out string reason1)) {
         DoUseItem(player, it);
         return true;
       }
@@ -4150,8 +4120,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage(string.Format("No item at ground slot {0}.", slot + 1)));
         return false;
       }
-      string reason;
-      if (player.CanGet(it, out reason)) {
+      if (player.CanGet(it, out string reason)) {
         DoTakeItem(player, player.Location.Position, it);
         return true;
       }
@@ -4166,8 +4135,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage(string.Format("No item at inventory slot {0}.", slot + 1)));
         return false;
       }
-      string reason;
-      if (player.CanDrop(it, out reason)) {
+      if (player.CanDrop(it, out string reason)) {
         DoDropItem(player, it);
         return true;
       }
@@ -4177,8 +4145,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerShout(Actor player, string text)
     {
-      string reason;
-      if (!player.CanShout(out reason)) {
+      if (!player.CanShout(out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Can't shout : {0}.", reason)));
         return false;
       }
@@ -4188,9 +4155,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerGiveItem(Actor player, Point screen)
     {
-      Inventory inv;
-      Point itemPos;
-      Item inventoryItem = MouseToInventoryItem(screen, out inv, out itemPos);
+      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv, out Point itemPos);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag2 = false;
       ClearOverlays();
@@ -4205,8 +4170,7 @@ namespace djack.RogueSurvivor.Engine
         if (!player.Location.Map.IsValid(point)) continue;
         Actor actorAt = player.Location.Map.GetActorAt(point);
         if (actorAt != null) {
-          string reason;
-          if (player.CanGiveTo(actorAt, inventoryItem, out reason)) {
+          if (player.CanGiveTo(actorAt, inventoryItem, out string reason)) {
             flag2 = true;
             DoGiveItemTo(player, actorAt, inventoryItem);
             break;
@@ -4227,9 +4191,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerInitiateTrade(Actor player, Point screen)
     {
-      Inventory inv;
-      Point itemPos;
-      Item inventoryItem = MouseToInventoryItem(screen, out inv, out itemPos);
+      Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv, out Point itemPos);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag1 = true;
       bool flag2 = false;
@@ -4245,8 +4207,7 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
-              string reason;
-              if (player.CanTradeWith(actorAt, out reason)) {
+              if (player.CanTradeWith(actorAt, out string reason)) {
                 flag2 = true;
                 flag1 = false;
                 ClearOverlays();
@@ -4266,8 +4227,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerRunToggle(Actor player)
     {
-      string reason;
-      if (!player.CanRun(out reason) && !player.IsRunning) {
+      if (!player.CanRun(out string reason) && !player.IsRunning) {
         AddMessage(MakeErrorMessage(string.Format("Cannot run now : {0}.", reason)));
       } else {
         player.IsRunning = !player.IsRunning;
@@ -4289,10 +4249,8 @@ namespace djack.RogueSurvivor.Engine
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsInBounds(point)) {  // doors never generate on map edges so IsInBounds ok
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
-            if (mapObjectAt != null && mapObjectAt is DoorWindow) {
-              DoorWindow door = mapObjectAt as DoorWindow;
-              string reason;
-              if (player.CanClose(door, out reason)) {
+            if (mapObjectAt is DoorWindow door) {
+              if (player.CanClose(door, out string reason)) {
                 DoCloseDoor(player, door);
                 RedrawPlayScreen();
                 flag1 = false;
@@ -4324,20 +4282,16 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsValid(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null) {
-              if (mapObjectAt is DoorWindow) {
-                DoorWindow door = mapObjectAt as DoorWindow;
-                string reason;
-                if (player.CanBarricade(door, out reason)) {
+              if (mapObjectAt is DoorWindow door) {
+                if (player.CanBarricade(door, out string reason)) {
                   DoBarricadeDoor(player, door);
                   RedrawPlayScreen();
                   flag1 = false;
                   flag2 = true;
                 } else
                   AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
-              } else if (mapObjectAt is Fortification) {
-                Fortification fort = mapObjectAt as Fortification;
-                string reason;
-                if (m_Rules.CanActorRepairFortification(player, fort, out reason)) {
+              } else if (mapObjectAt is Fortification fort) {
+                if (m_Rules.CanActorRepairFortification(player, fort, out string reason)) {
                   DoRepairFortification(player, fort);
                   RedrawPlayScreen();
                   flag1 = false;
@@ -4400,8 +4354,7 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsValid(point)) {
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt != null) {
-              string reason;
-              if (player.CanBreak(mapObjectAt, out reason)) {
+              if (player.CanBreak(mapObjectAt, out string reason)) {
                 DoBreak(player, mapObjectAt);
                 RedrawPlayScreen();
                 flag1 = false;
@@ -4440,8 +4393,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            string reason;
-            if (m_Rules.CanActorBuildFortification(player, point, isLarge, out reason)) {
+            if (m_Rules.CanActorBuildFortification(player, point, isLarge, out string reason)) {
               DoBuildFortification(player, point, isLarge);
               RedrawPlayScreen();
               flag1 = false;
@@ -4487,8 +4439,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         Actor actor = enemiesInFov[index];
         LoF.Clear();
-        string reason;
-        bool flag3 = player.CanFireAt(actor, LoF, out reason);
+        bool flag3 = player.CanFireAt(actor, LoF, out string reason);
         int num1 = Rules.GridDistance(player.Location, actor.Location);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
@@ -4589,8 +4540,7 @@ namespace djack.RogueSurvivor.Engine
       List<Point> LoF = new List<Point>();
       do {
         LoF.Clear();
-        string reason;
-        bool flag3 = player.CanThrowTo(point1, out reason, LoF);
+        bool flag3 = player.CanThrowTo(point1, out string reason, LoF);
         ClearOverlays();
         AddOverlay(new RogueGame.OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         string imageID = flag3 ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
@@ -4639,8 +4589,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerSleep(Actor player)
     {
-      string reason;
-      if (!player.CanSleep(out reason)) {
+      if (!player.CanSleep(out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot sleep now : {0}.", reason)));
         return false;
       }
@@ -4673,8 +4622,7 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
-              string reason;
-              if (player.CanSwitchPlaceWith(actorAt, out reason)) {
+              if (player.CanSwitchPlaceWith(actorAt, out string reason)) {
                 flag2 = true;
                 DoSwitchPlace(player, actorAt);
                 break;
@@ -4706,8 +4654,7 @@ namespace djack.RogueSurvivor.Engine
           if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
             if (actorAt != null) {
-              string reason;
-              if (player.CanTakeLeadOf(actorAt, out reason)) {
+              if (player.CanTakeLeadOf(actorAt, out string reason)) {
                 flag2 = true;
                 DoTakeLead(player, actorAt);
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Recruited {0}.", actorAt.TheName));
@@ -4803,8 +4750,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = mapObj.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            string reason;
-            if (mapObj.CanPushTo(point, out reason)) {
+            if (mapObj.CanPushTo(point, out string reason)) {
               DoPush(player, mapObj, point);
               flag2 = true;
               break;
@@ -4832,8 +4778,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = other.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            string reason;
-            if (other.CanBeShovedTo(point, out reason)) {
+            if (other.CanBeShovedTo(point, out string reason)) {
               DoShove(player, other, point);
               flag2 = true;
               break;
@@ -4857,8 +4802,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (equippedItem is ItemSprayPaint) return HandlePlayerTag(player);
       if (equippedItem is ItemSprayScent spray) {
-        string reason;
-        if (!player.CanUse(spray, out reason)) {
+        if (!player.CanUse(spray, out string reason)) {
           AddMessage(MakeErrorMessage(string.Format("Can't use the spray : {0}.", reason)));
           RedrawPlayScreen();
           return false;
@@ -4895,8 +4839,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsInBounds(point)) {
-            string reason;
-            if (CanTag(player.Location.Map, point, out reason)) {
+            if (CanTag(player.Location.Map, point, out string reason)) {
               DoTag(player, spray, point);
               flag2 = true;
               break;
@@ -5241,18 +5184,14 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Ordering {0} to build {1} fortification...", follower.Name, isLarge ? "large" : "small"), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
-        KeyEventArgs key;
-        Point mousePos;
-        MouseButtons? mouseButtons;
-        WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+        WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
-              string reason;
-              if (m_Rules.CanActorBuildFortification(follower, map2, isLarge, out reason)) {
+              if (m_Rules.CanActorBuildFortification(follower, map2, isLarge, out string reason)) {
                 nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
@@ -5295,10 +5234,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Ordering {0} to barricade...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map object.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
-        KeyEventArgs key;
-        Point mousePos;
-        MouseButtons? mouseButtons;
-        WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+        WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
@@ -5307,8 +5243,7 @@ namespace djack.RogueSurvivor.Engine
             nullable = map2;
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               if (map1.GetMapObjectAt(map2) is DoorWindow door) {
-                string reason;
-                if (follower.CanBarricade(door, out reason)) {
+                if (follower.CanBarricade(door, out string reason)) {
                   color = Color.LightGreen;
                   if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                     DoGiveOrderTo(player, follower, new ActorOrder(toTheMax ? ActorTasks.BARRICADE_MAX : ActorTasks.BARRICADE_ONE, door.Location));
@@ -5347,18 +5282,14 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Ordering {0} to guard...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
-        KeyEventArgs key;
-        Point mousePos;
-        MouseButtons? mouseButtons;
-        WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+        WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
-              string reason;
-              if (map2 == follower.Location.Position || map1.IsWalkableFor(map2, follower, out reason)) {
+              if (map2 == follower.Location.Position || map1.IsWalkableFor(map2, follower, out string reason)) {
                 nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
@@ -5410,10 +5341,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Ordering {0} to patrol...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message("Left-Click on a map position.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
         RedrawPlayScreen();
-        KeyEventArgs key;
-        Point mousePos;
-        MouseButtons? mouseButtons;
-        WaitKeyOrMouse(out key, out mousePos, out mouseButtons);
+        WaitKeyOrMouse(out KeyEventArgs key, out Point mousePos, out MouseButtons? mouseButtons);
         if (key != null) {
           if (key.KeyCode == Keys.Escape) flag1 = false;
         } else {
@@ -5528,8 +5456,7 @@ namespace djack.RogueSurvivor.Engine
         } else if (choiceNumber >= 1 && choiceNumber <= num2) {
           int index = num1 + choiceNumber - 1;
           Item obj = inventory[index];
-          string reason;
-          if (follower.CanGiveTo(player, obj, out reason)) {
+          if (follower.CanGiveTo(player, obj, out string reason)) {
             DoGiveItemTo(follower, player, obj);
             flag1 = false;
             flag2 = true;
@@ -5554,8 +5481,7 @@ namespace djack.RogueSurvivor.Engine
       Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index]));
       Predicate<int> details = index => {
         Item obj = inv[index];
-        string reason;
-        if (player.CanGet(obj, out reason)) {
+        if (player.CanGet(obj, out string reason)) {
           DoTakeItem(player, src, obj);
           return true;
         }
@@ -6299,9 +6225,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void ShowAdvisorHint(AdvisorHint hint)
     {
-      string title;
-      string[] body;
-      GetAdvisorHintText(hint, out title, out body);
+      GetAdvisorHintText(hint, out string title, out string[] body);
       ShowAdvisorMessage(title, body);
     }
 
@@ -7300,8 +7224,7 @@ namespace djack.RogueSurvivor.Engine
           foreach (Item obj in itemsAt.Items) {
             if (obj is ItemTrap trap && trap.IsTriggered) {
               flag = true;
-              bool isDestroyed = false;
-              if (!TryEscapeTrap(trap, actor, out isDestroyed)) canLeave = false;
+              if (!TryEscapeTrap(trap, actor, out bool isDestroyed)) canLeave = false;
               else if (isDestroyed) {
                 if (objList == null) objList = new List<Item>(itemsAt.CountItems);
                 objList.Add(obj);
@@ -8174,8 +8097,7 @@ namespace djack.RogueSurvivor.Engine
       Contract.Requires(!speaker.IsPlayer);
       Contract.Requires(!target.IsPlayer);  // strictly implied by Actor::CanTradeWith
 #if DEBUG
-      string reason;
-      if (!speaker.CanTradeWith(target, out reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
+      if (!speaker.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
       Item trade = PickItemToTrade(speaker, target);
       DoTrade(speaker, trade, target, false);
@@ -12030,15 +11952,11 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_DrawStringBold(Color.Yellow, "Reincarnation - Purgatory", 0, 0, new Color?());
       m_UI.UI_DrawStringBold(Color.White, "(preparing reincarnations, please wait...)", 0, 28, new Color?());
       m_UI.UI_Repaint();
-      int matchingActors1;
-      int matchingActors2;
-      int matchingActors3;
-      int matchingActors4;
       Actor[] reincarnationAvatars = {
-        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out matchingActors1),
-        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out matchingActors2),
-        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out matchingActors3),
-        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_FOLLOWER, out matchingActors4),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_ACTOR, out int matchingActors1),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_LIVING, out int matchingActors2),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_UNDEAD, out int matchingActors3),
+        FindReincarnationAvatar(GameOptions.ReincMode.RANDOM_FOLLOWER, out int matchingActors4),
         FindReincarnationAvatar(GameOptions.ReincMode.KILLER, out matchingActors1),
         FindReincarnationAvatar(GameOptions.ReincMode.ZOMBIFIED, out matchingActors1)
       };
