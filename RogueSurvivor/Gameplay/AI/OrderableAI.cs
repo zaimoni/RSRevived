@@ -36,7 +36,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // Be at Location at time t
     // Have Location in view at time t (probably best to delegate this)
     // get item type at time t
-    // sleep (on bed) at time t with food value >= and sanity value >= 
+    // sleep (on bed) at time t with food value >= and sanity value >=
     // * reversed-sense of these inequalities may also be of use
     // Engine.AI.Percept looks related, but reverse-engineering the required action is problematic
     [Serializable]
@@ -672,7 +672,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return true;
       if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return true;
       if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
-      return false; 
+      return false;
     }
 
     // XXX to implement
@@ -850,7 +850,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (a_kill_b_in > rw.Ammo) {  // account for reloading weapon
         int turns = a_kill_b_in-rw.Ammo;
         a_kill_b_in++;
-        a_kill_b_in += turns/rw.Model.MaxAmmo;        
+        a_kill_b_in += turns/rw.Model.MaxAmmo;
       }
       if (null == best_weapons) {
         best_weapon_ETAs[en] = a_kill_b_in;
@@ -1014,7 +1014,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       int best_range = available_ranged_weapons.Select(rw => rw.Model.Attack.Range).Max();
       List<Percept> en_in_range = FilterFireTargets(enemies,best_range);
-      
+
       // if no enemies in range, or just one available ranged weapon, use the best one
       if (null == en_in_range || 1==available_ranged_weapons.Count) {
         tmpAction = Equip(GetBestRangedWeaponWithAmmo());
@@ -1283,7 +1283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int my_dist = 0;
       foreach (Point point in m_Actor.Controller.FOV) {
         if (   (my_dist = Rules.GridDistance(m_Actor.Location.Position, point)) > itemGrenadeModel.BlastAttack.Radius
-            && my_dist <= maxRange 
+            && my_dist <= maxRange
             && LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) {
           int num2 = 0;
           Rectangle blast_zone = new Rectangle(point.X-itemGrenadeModel.BlastAttack.Radius, point.Y-itemGrenadeModel.BlastAttack.Radius, 2*itemGrenadeModel.BlastAttack.Radius+1, 2*itemGrenadeModel.BlastAttack.Radius+1);
@@ -1491,7 +1491,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
-      } catch(System.Exception e) {
+      } catch(System.Exception) {
         throw;
       } finally {
         if (null != tmpAction) {
@@ -1623,7 +1623,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // cannot close at normal speed safely; run-hit may be ok
             Dictionary<Point,ActorAction> dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
-            List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position) 
+            List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position)
               && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep
               && RunIfAdvisable(pt)).ToList();
             ReserveSTA(0,0,0,0);  // baseline
@@ -1865,7 +1865,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
           int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
           if (lhs_nutrition==rhs_nutrition) return false;
-          if (need < lhs_nutrition && need >= rhs_nutrition) return true; 
+          if (need < lhs_nutrition && need >= rhs_nutrition) return true;
           if (need < rhs_nutrition && need >= lhs_nutrition) return false;
           return lhs_nutrition < rhs_nutrition;
           }
@@ -1981,7 +1981,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (it.IsUseless) return BehaviorDropItem(it);
       }
       ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
-      if (null != armor) return BehaviorDropItem(armor); 
+      if (null != armor) return BehaviorDropItem(armor);
 
       ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
       if (null != weapon) {
@@ -2095,10 +2095,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // not-best body armor can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
         ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
-        if (null != armor) return BehaviorDropItem(armor);  
+        if (null != armor) return BehaviorDropItem(armor);
       }
 
-      
       { // not-best melee weapon can be dropped
         List<ItemMeleeWeapon> melee = inv.GetItemsByType<ItemMeleeWeapon>();
         if (null != melee) {
@@ -2184,7 +2183,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>(null);
       if (null != tmpMedicine) return BehaviorDropItem(tmpMedicine);
 
-      // least charged flashlight goes      
+      // least charged flashlight goes
       List<ItemLight> lights = inv.GetItemsByType<ItemLight>();
       if (null != lights && 2<=lights.Count) {
         int min_batteries = lights.Select(obj => obj.Batteries).Min();
@@ -2600,9 +2599,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0>=possible_destinations.Count) return null;
       valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
 
-      if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap)) 
+      if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
         return BehaviorHeadForExit(valid_exits);    // done
-        
+
       // try to pick something reasonable
       Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
       foreach(Map m in possible_destinations) {

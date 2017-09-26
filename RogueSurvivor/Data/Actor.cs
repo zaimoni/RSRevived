@@ -869,7 +869,7 @@ namespace djack.RogueSurvivor.Data
       return HypotheticalRangedAttack(CurrentRangedAttack, distance, target);
     }
 
-    public bool HasActivePoliceRadio { 
+    public bool HasActivePoliceRadio {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
         return (GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker)?.CanTrackPolice ?? false;
@@ -877,7 +877,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // For now, entirely implicit.  It's also CHAR technology so recharges like a police radio.
-    public bool HasActiveArmyRadio { 
+    public bool HasActiveArmyRadio {
       get {
         if ((int)Gameplay.GameFactions.IDs.TheArmy==m_FactionID) return true;
         return false;
@@ -957,14 +957,14 @@ namespace djack.RogueSurvivor.Data
       return 0;
     }
 
-    public ThreatTracking Threats { 
+    public ThreatTracking Threats {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceThreatTracking;
         return null;
       }
     }
 
-    public LocationSet InterestingLocs { 
+    public LocationSet InterestingLocs {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) return Engine.Session.Get.PoliceInvestigate;
         return null;
@@ -1121,7 +1121,7 @@ namespace djack.RogueSurvivor.Data
       {
           Actor actorAt = map.GetActorAt(pt);
           return null!= actorAt && IsEnemyOf(actorAt);
-      }));  
+      }));
     }
 
     public bool IsAdjacentToEnemy {
@@ -1218,8 +1218,10 @@ namespace djack.RogueSurvivor.Data
     }
 
     private string ReasonCantBreak(MapObject mapObj)
-    { 
-      Contract.Requires(null != mapObj);
+    {
+#if DEBUG
+      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
+#endif
       if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
       if (IsTired) return "tired";
       DoorWindow doorWindow = mapObj as DoorWindow;
@@ -1479,7 +1481,7 @@ namespace djack.RogueSurvivor.Data
       return other.ActionPoints <= 0 && (!other.CanActNextTurn || IsBefore(other));
     }
 
-    public int Speed { 
+    public int Speed {
       get {
         float num = Doll.Body.Speed;    // an exhausted, sleepy living dragging a corpse in heavy armor, below 36 here, will have a speed of zero
         if (IsTired) { num *= 2f; num /= 3f; }
@@ -1520,7 +1522,7 @@ namespace djack.RogueSurvivor.Data
         while(0 < other_ap) { // assuming this never gets very large
           other_ap -= Rules.BASE_ACTION_COST;
           other_actions++;
-        } 
+        }
       }
       return other_actions;
     }
@@ -1531,12 +1533,12 @@ namespace djack.RogueSurvivor.Data
         return MaxHPs + MaxSTA;
       }
     }
-    public void Infect(int i) { 
+    public void Infect(int i) {
       if (!Engine.Session.Get.HasInfection) return;    // no-op if mode doesn't have infection
       m_Infection = Math.Min(InfectionHPs, m_Infection + i);
     }
 
-    public void Cure(int i) { 
+    public void Cure(int i) {
       m_Infection = Math.Max(0, m_Infection - i);
     }
 
@@ -1561,7 +1563,7 @@ namespace djack.RogueSurvivor.Data
 
     // stamina
     public int NightSTApenalty {
-      get { 
+      get {
         if (!Location.Map.LocalTime.IsNight) return 0;
         if (Model.Abilities.IsUndead) return 0;
         return NIGHT_STA_PENALTY;
@@ -1799,11 +1801,11 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = Math.Max(0, m_FoodPoints - f);
     }
 
-    public void LivingEat(int f) { 
+    public void LivingEat(int f) {
       m_FoodPoints = Math.Min(m_FoodPoints + f, MaxFood);
     }
 
-    public void RottingEat(int f) { 
+    public void RottingEat(int f) {
       m_FoodPoints = Math.Min(m_FoodPoints + f, MaxRot);
     }
 
@@ -1814,7 +1816,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // sleep
-    public int TurnsUntilSleepy { 
+    public int TurnsUntilSleepy {
       get {
         int num = SleepPoints - SLEEP_SLEEPY_LEVEL;
         if (num <= 0) return 0;
@@ -1849,14 +1851,14 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsSleepy { 
+    public bool IsSleepy {
       get {
         if (Model.Abilities.HasToSleep) return SLEEP_SLEEPY_LEVEL >= SleepPoints;
         return false;
       }
     }
 
-    public bool IsExhausted { 
+    public bool IsExhausted {
       get {
         if (Model.Abilities.HasToSleep) return 0 >= SleepPoints;
         return false;
@@ -1901,7 +1903,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void Drowse(int s) {
-      m_SleepPoints = Math.Max(0, m_SleepPoints - s);      
+      m_SleepPoints = Math.Max(0, m_SleepPoints - s);
     }
 
     // boring items
@@ -1921,7 +1923,7 @@ namespace djack.RogueSurvivor.Data
     // inventory stats
 
     // This is the authoritative source for a living actor's maximum inventory.
-    // As C# has no analog to a C++ const method or const local variables, 
+    // As C# has no analog to a C++ const method or const local variables,
     // use this to prevent accidental overwriting of MaxCapacity by bugs.
     public int MaxInv {
       get {
@@ -1973,7 +1975,7 @@ namespace djack.RogueSurvivor.Data
         if (obj.GetType() == tt) ++num;
       }
       return num;
-    }    
+    }
 
     public int CountItems<_T_>() where _T_ : Item
     {
@@ -2212,7 +2214,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantGet(Item it)
     {
-      Contract.Requires(null != it); 
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       if (!Model.Abilities.HasInventory || !Model.Abilities.CanUseMapObjects || Inventory == null) return "no inventory";
       if (Inventory.IsFull && !Inventory.CanAddAtLeastOne(it)) return "inventory is full";
       if (it is ItemTrap && (it as ItemTrap).IsTriggered) return "triggered trap";
@@ -2356,6 +2360,7 @@ namespace djack.RogueSurvivor.Data
         m_Flags &= ~f;
     }
 
+#if DEAD_FUNC
     private void OneFlag(Actor.Flags f)
     {
       m_Flags |= f;
@@ -2365,9 +2370,10 @@ namespace djack.RogueSurvivor.Data
     {
       m_Flags &= ~f;
     }
+#endif
 
     // vision
-    public int DarknessFOV { 
+    public int DarknessFOV {
       get {
         if (Model.Abilities.IsUndead) return Sheet.BaseViewRange;
         return MINIMAL_FOV;
@@ -2399,7 +2405,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    int LightBonus { 
+    int LightBonus {
       get {
         if (GetEquippedItem(DollPart.LEFT_HAND) is ItemLight light && 0 < light.Batteries) return light.FovBonus;
         return 0;
@@ -2474,7 +2480,7 @@ namespace djack.RogueSurvivor.Data
         m_CurrentDefence += (it.Model as ItemBodyArmorModel).ToDefence();
         return;
       }
-      if (it is BatteryPowered) { 
+      if (it is BatteryPowered) {
         --(it as BatteryPowered).Batteries;
         if (it is ItemLight) Controller.UpdateSensors();
         return;
@@ -2568,7 +2574,7 @@ namespace djack.RogueSurvivor.Data
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)
     {
-      while(0< n--) { 
+      while(0< n--) {
         if (Sheet.SkillTable.GetSkillLevel(skillID) >= Skills.MaxSkillLevel(skillID)) return;
         Sheet.SkillTable.AddOrIncreaseSkill(skillID);
         RecomputeStartingStats();
@@ -2586,7 +2592,7 @@ namespace djack.RogueSurvivor.Data
       m_Inventory.MaxCapacity = MaxInv;
     }
 
-    public void CreateCivilianDeductFoodSleep(Rules r) { 
+    public void CreateCivilianDeductFoodSleep(Rules r) {
       m_FoodPoints -= r.Roll(0, m_FoodPoints / 4);
       m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
     }

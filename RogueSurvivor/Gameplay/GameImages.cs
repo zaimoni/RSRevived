@@ -836,9 +836,9 @@ namespace djack.RogueSurvivor.Gameplay
       string filename = "Resources\\Images\\" + id + ".png";
       try {
         Bitmap img = new Bitmap(filename);
-        GameImages.s_Images.Add(id, img);
-        GameImages.s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
-      } catch (Exception ex) {
+        s_Images.Add(id, img);
+        s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));
+      } catch (Exception) {
         throw new ArgumentException("coud not load image id=" + id + "; file=" + filename);
       }
     }

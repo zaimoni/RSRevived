@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected abstract ActorAction SelectAction(RogueGame game);
 
 /*
-    NOTE: List<Percept>, as a list data structure, takes O(n) time/RAM to reset its capacity down 
+    NOTE: List<Percept>, as a list data structure, takes O(n) time/RAM to reset its capacity down
     to its real size.  Since C# is a garbage collected language, this would actually worsen
     the RAM loading until the next explicit GC.Collect() call (typically within a fraction of a second).
     The only realistic mitigation is to pro-rate the capacity request.
@@ -106,7 +106,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Filter(p => p.Turn < turnCounter);
     }
 
-    // GangAI's mugging target selection triggered a race condition 
+    // GangAI's mugging target selection triggered a race condition
     // that allowed a non-null non-empty percepts
     // to be seen as returning null from FilterNearest anyway, from
     // the outside (Contracts saw a non-null return)
@@ -763,7 +763,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
-      } catch(System.Exception e) {
+      } catch(System.Exception) {
         throw;
       } finally {
         if (null != tmpAction) {
