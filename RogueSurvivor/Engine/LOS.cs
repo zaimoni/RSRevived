@@ -23,9 +23,9 @@ namespace djack.RogueSurvivor.Engine
     private static readonly Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>> FOVcache = new Dictionary<Map,Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>>();
 
     public static void Expire(Map m) { if (FOVcache.ContainsKey(m) && FOVcache[m].Expire(m.LocalTime.TurnCounter-2)) FOVcache.Remove(m); }
-    public static void Now(Map map) { 
+    public static void Now(Map map) {
       if (!FOVcache.ContainsKey(map)) FOVcache[map] = new Zaimoni.Data.TimeCache<KeyValuePair<Point,int>,HashSet<Point>>();
-      FOVcache[map].Now(map.LocalTime.TurnCounter); 
+      FOVcache[map].Now(map.LocalTime.TurnCounter);
     }
 
     public static void Validate(Map map, Predicate<HashSet<Point>> fn) {
@@ -150,8 +150,7 @@ namespace djack.RogueSurvivor.Engine
         int minAbsDelta = (xAbsDelta < yAbsDelta) ? xAbsDelta : yAbsDelta;
         int maxAbsDelta = (xAbsDelta < yAbsDelta) ? yAbsDelta : xAbsDelta;
 
-        Direction knightmove;
-        Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out knightmove);
+        Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out Direction knightmove);
         Point end = needRange * tmp;    // estimate here
         end.X += xFrom;
         end.Y += yFrom;
@@ -345,8 +344,7 @@ namespace djack.RogueSurvivor.Engine
     // the return of a cached value is assumed to be by value
     public static HashSet<Point> ComputeFOVFor(Location a_loc, int maxRange)
     {
-      HashSet<Point> visibleSet;
-      if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out visibleSet)) return new HashSet<Point>(visibleSet);
+      if (FOVcache[a_loc.Map].TryGetValue(new KeyValuePair<Point,int>(a_loc.Position,maxRange),out HashSet<Point> visibleSet)) return new HashSet<Point>(visibleSet);
       visibleSet = new HashSet<Point>() { a_loc.Position };
       if (0 >= maxRange) return visibleSet;
       Map map = a_loc.Map;

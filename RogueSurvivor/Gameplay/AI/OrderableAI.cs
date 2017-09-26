@@ -431,10 +431,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction actorAction4 = BehaviorUseMedecine(2, 1, 2, 4, 2);
       if (actorAction4 != null) return actorAction4;
 
-      List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position.X, Order.Location.Position.Y);
+      List<Zone> patrolZones = location.Map.GetZonesAt(Order.Location.Position);
       return BehaviorWander(loc =>
       {
-        List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position.X, loc.Position.Y);
+        List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
         if (zonesAt == null) return false;
         foreach (Zone zone1 in zonesAt) {
           foreach (Zone zone2 in patrolZones) {

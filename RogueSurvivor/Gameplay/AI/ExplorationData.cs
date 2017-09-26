@@ -6,6 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Gameplay.AI
@@ -50,14 +51,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool HasExplored(List<Zone> zones)
     {
-      if (zones == null || zones.Count == 0)
-        return true;
-      foreach (Zone zone in zones)
-      {
-        if (!m_ZonesQueue.Contains(zone))
-          return false;
-      }
-      return true;
+      return !zones?.Any(zone => !m_ZonesQueue.Contains(zone)) ?? true;
     }
 
     private void AddExplored(Zone zone)
@@ -70,7 +64,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public void Update(Location location)
     {
       AddExplored(location);
-      List<Zone> zonesAt = location.Map.GetZonesAt(location.Position.X, location.Position.Y);
+      List<Zone> zonesAt = location.Map.GetZonesAt(location.Position);
       if (zonesAt == null || zonesAt.Count <= 0) return;
       foreach (Zone zone in zonesAt) {
         if (!HasExplored(zone)) AddExplored(zone);

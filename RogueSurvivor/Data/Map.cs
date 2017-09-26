@@ -50,9 +50,9 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     [NonSerialized]
-    private List<Actor> m_aux_Players = null;
+    private List<Actor> m_aux_Players;
     [NonSerialized]
-    private List<Engine.MapObjects.PowerGenerator> cache_PowerGenerators = null;
+    private List<Engine.MapObjects.PowerGenerator> cache_PowerGenerators;
 
     public bool IsSecret { get; private set; }
 
@@ -365,7 +365,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <summary>
-    /// GetTileAt does not bounds-check for efficiency reasons; 
+    /// GetTileAt does not bounds-check for efficiency reasons;
     /// the typical use case is known to be in bounds by construction.
     /// </summary>
     public Tile GetTileAt(int x, int y)
@@ -389,7 +389,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     /// <summary>
-    /// GetTileAt does not bounds-check for efficiency reasons; 
+    /// GetTileAt does not bounds-check for efficiency reasons;
     /// the typical use case is known to be in bounds by construction.
     /// </summary>
     public Tile GetTileAt(Point p)
@@ -515,15 +515,13 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<string> DecorationsAt(Point pt)
     {
-      HashSet<string> ret;
-      m_Decorations.TryGetValue(pt, out ret);
+      m_Decorations.TryGetValue(pt, out HashSet<string> ret);
       return ret;
     }
 
     public void AddDecorationAt(string imageID, Point pt)
     {
-      HashSet<string> ret;
-      if (m_Decorations.TryGetValue(pt, out ret)) {
+      if (m_Decorations.TryGetValue(pt, out HashSet<string> ret)) {
         ret.Add(imageID);
       } else {
         m_Decorations[pt] = new HashSet<string>{ imageID };
@@ -532,16 +530,14 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasDecorationAt(string imageID, Point pt)
     {
-      HashSet<string> ret;
-      return m_Decorations.TryGetValue(pt, out ret) && ret.Contains(imageID);
+      return m_Decorations.TryGetValue(pt, out HashSet<string> ret) && ret.Contains(imageID);
     }
 
     public void RemoveAllDecorationsAt(Point pt) { m_Decorations.Remove(pt); }
 
     public void RemoveDecorationAt(string imageID, Point pt)
     {
-      HashSet<string> ret;
-      if (!m_Decorations.TryGetValue(pt, out ret)) return;
+      if (!m_Decorations.TryGetValue(pt, out HashSet<string> ret)) return;
       if (!ret.Remove(imageID)) return;
       if (0 < ret.Count) return;
       m_Decorations.Remove(pt);
@@ -552,9 +548,7 @@ namespace djack.RogueSurvivor.Data
 
     public Exit GetExitAt(Point pos)
     {
-      Exit exit;
-      if (m_Exits.TryGetValue(pos, out exit))
-        return exit;
+      if (m_Exits.TryGetValue(pos, out Exit exit)) return exit;
       return null;
     }
 
@@ -647,7 +641,7 @@ namespace djack.RogueSurvivor.Data
 	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
 	  }
       Zaimoni.Data.FloodfillPathfinder<Point> ret = new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
-      { 
+      {
 	    Point p = new Point();
 		for (p.X = 0; p.X < Width; ++p.X) {
 		  for (p.Y = 0; p.Y < Height; ++p.Y) {
@@ -684,12 +678,11 @@ namespace djack.RogueSurvivor.Data
 
     // for AI pathing, currently.
     public HashSet<Map> PathTo(Map dest, out HashSet<Exit> exits)
-    { 
+    {
       HashSet<Map> exit_maps = _PathTo(dest,out exits);
       if (1>=exit_maps.Count) return exit_maps;
 
-      HashSet<Exit> inv_exits;
-      HashSet<Map> inv_exit_maps = dest._PathTo(this,out inv_exits); 
+      HashSet<Map> inv_exit_maps = dest._PathTo(this,out HashSet<Exit> inv_exits);
 
       HashSet<Map> intersect = new HashSet<Map>(exit_maps);
       intersect.IntersectWith(inv_exit_maps);
@@ -731,17 +724,28 @@ namespace djack.RogueSurvivor.Data
         RemoveZone(zone);
     }
 
+    /// <remark>shallow copy needed to be safe for foreach loops</remark>
+    /// <returns>null, or a non-empty list of zones</returns>
     public List<Zone> GetZonesAt(int x, int y)
     {
       IEnumerable<Zone> zoneList = m_Zones.Where(z => z.Bounds.Contains(x, y));
       return zoneList.Any() ? zoneList.ToList() : null;
     }
 
-    // XXX dead function?
+    /// <remark>shallow copy needed to be safe for foreach loops</remark>
+    /// <returns>null, or a non-empty list of zones</returns>
+    public List<Zone> GetZonesAt(Point pt)
+    {
+      IEnumerable<Zone> zoneList = m_Zones.Where(z => z.Bounds.Contains(pt));
+      return zoneList.Any() ? zoneList.ToList() : null;
+    }
+
+#if DEAD_FUNC
     public Zone GetZoneByName(string name)
     {
       return m_Zones.FirstOrDefault(mZone => mZone.Name == name);
     }
+#endif
 
     public Zone GetZoneByPartialName(string partOfname)
     {
@@ -750,9 +754,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasZonePartiallyNamedAt(Point pos, string partOfName)
     {
-      List<Zone> zonesAt = GetZonesAt(pos.X, pos.Y);
-      if (zonesAt == null) return false;
-      return zonesAt.Any(zone=>zone.Name.Contains(partOfName));
+      return GetZonesAt(pos)?.Any(zone=>zone.Name.Contains(partOfName)) ?? false;
     }
 
     // Actor manipulation functions
@@ -768,8 +770,7 @@ namespace djack.RogueSurvivor.Data
 
     public Actor GetActorAt(Point position)
     {
-      Actor actor;
-      if (m_aux_ActorsByPosition.TryGetValue(position, out actor)) return actor;
+      if (m_aux_ActorsByPosition.TryGetValue(position, out Actor actor)) return actor;
       return null;
     }
 
@@ -848,7 +849,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Actor NextActorToAct { 
+    public Actor NextActorToAct {
       get {
         int countActors = m_ActorsList.Count;
         for (int checkNextActorIndex = m_iCheckNextActorIndex; checkNextActorIndex < countActors; ++checkNextActorIndex) {
@@ -895,7 +896,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // tracking players on map
-    public List<Actor> Players { 
+    public List<Actor> Players {
       get {
         if (null != m_aux_Players) return m_aux_Players;
         m_aux_Players = m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList();
@@ -905,13 +906,13 @@ namespace djack.RogueSurvivor.Data
 
     public void RecalcPlayers() { m_aux_Players = null; }
 
-    public int PlayerCount { 
+    public int PlayerCount {
       get {
         return Players.Count;
       }
     }
 
-    public Actor FindPlayer { 
+    public Actor FindPlayer {
       get {
         if (0 == Players.Count) return null;
         return Players[0];
@@ -942,7 +943,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // police on map
-    public List<Actor> Police { 
+    public List<Actor> Police {
       get {
         IEnumerable<Actor> police = m_ActorsList.Where(a=> (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead);
         return police.Any() ? police.ToList() : null;
@@ -957,8 +958,7 @@ namespace djack.RogueSurvivor.Data
 
     public MapObject GetMapObjectAt(Point position)
     {
-      MapObject mapObject;
-      if (m_aux_MapObjectsByPosition.TryGetValue(position, out mapObject)) {
+      if (m_aux_MapObjectsByPosition.TryGetValue(position, out MapObject mapObject)) {
 #if DEBUG
         // existence check for bugs relating to map object location
         if (this!=mapObject.Location.Map) throw new InvalidOperationException("map object and map disagree on map");
@@ -1098,8 +1098,7 @@ namespace djack.RogueSurvivor.Data
     public Inventory GetItemsAt(Point position)
     {
       if (!IsInBounds(position)) return null;
-      Inventory inventory;
-      if (m_GroundItemsByPosition.TryGetValue(position, out inventory))
+      if (m_GroundItemsByPosition.TryGetValue(position, out Inventory inventory))
         return inventory;
       return null;
     }
@@ -1197,17 +1196,15 @@ namespace djack.RogueSurvivor.Data
       RemoveItemAt(it, new Point(x, y));
     }
 
+    /// <remark>Map generation depends on this being no-fail</remark>
     public void RemoveAllItemsAt(Point position)
     {
-      Inventory itemsAt = GetItemsAt(position);
-      if (itemsAt == null) return;
       m_GroundItemsByPosition.Remove(position);
     }
 
     public List<Corpse> GetCorpsesAt(Point p)
     {
-      List<Corpse> corpseList;
-      if (m_aux_CorpsesByPosition.TryGetValue(p, out corpseList))
+      if (m_aux_CorpsesByPosition.TryGetValue(p, out List<Corpse> corpseList))
         return corpseList;
       return null;
     }
@@ -1272,8 +1269,7 @@ namespace djack.RogueSurvivor.Data
 
     private void RemoveFromPos(Corpse c)
     {
-      List<Corpse> corpseList;
-      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList)) return;
+      if (!m_aux_CorpsesByPosition.TryGetValue(c.Position, out List<Corpse> corpseList)) return;
       corpseList.Remove(c);
       if (corpseList.Count != 0) return;
       m_aux_CorpsesByPosition.Remove(c.Position);
@@ -1281,8 +1277,7 @@ namespace djack.RogueSurvivor.Data
 
     private void InsertAtPos(Corpse c)
     {
-      List<Corpse> corpseList;
-      if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out corpseList))
+      if (m_aux_CorpsesByPosition.TryGetValue(c.Position, out List<Corpse> corpseList))
         corpseList.Insert(0, c);
       else
         m_aux_CorpsesByPosition.Add(c.Position, new List<Corpse>(1) { c });
@@ -1317,8 +1312,7 @@ namespace djack.RogueSurvivor.Data
 
     private OdorScent GetScentByOdor(Odor odor, Point p)
     {
-      List<OdorScent> odorScentList;
-      if (!m_aux_ScentsByPosition.TryGetValue(p, out odorScentList)) return null;
+      if (!m_aux_ScentsByPosition.TryGetValue(p, out List<OdorScent> odorScentList)) return null;
       foreach (OdorScent odorScent in odorScentList) {
         if (odorScent.Odor == odor) return odorScent;
       }
@@ -1328,8 +1322,7 @@ namespace djack.RogueSurvivor.Data
     private void AddNewScent(OdorScent scent)
     {
       if (!m_Scents.Contains(scent)) m_Scents.Add(scent);
-      List<OdorScent> odorScentList;
-      if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList)) {
+      if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) {
         odorScentList.Add(scent);
       } else {
         odorScentList = new List<OdorScent>(2) { scent };
@@ -1365,8 +1358,7 @@ namespace djack.RogueSurvivor.Data
     public void RemoveScent(OdorScent scent)
     {
       m_Scents.Remove(scent);
-      List<OdorScent> odorScentList;
-      if (!m_aux_ScentsByPosition.TryGetValue(scent.Position, out odorScentList)) return;
+      if (!m_aux_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) return;
       odorScentList.Remove(scent);
       if (0 >= odorScentList.Count) m_aux_ScentsByPosition.Remove(scent.Position);
     }
@@ -1475,7 +1467,7 @@ namespace djack.RogueSurvivor.Data
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
             } else if (Gameplay.GameImages.OBJ_TREE == tmp_obj.ImageID) {
-              ascii_map[y][x] = tree_symbol; 
+              ascii_map[y][x] = tree_symbol;
 #if DEBUG
             } else if (Gameplay.GameImages.OBJ_CAR1 == tmp_obj.ImageID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
@@ -1486,7 +1478,7 @@ namespace djack.RogueSurvivor.Data
             } else if (Gameplay.GameImages.OBJ_CAR4 == tmp_obj.ImageID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
 #endif
-            } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) { 
+            } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
               ascii_map[y][x] = "|"; // gate; iron wall; car
             } else {
               if (tmp_obj is Engine.MapObjects.DoorWindow tmp_door) {
@@ -1496,7 +1488,7 @@ namespace djack.RogueSurvivor.Data
                   ascii_map[y][x] = "+"; // typical closed door
                 } else if (tmp_door.IsOpen) {
                   ascii_map[y][x] = "'"; // typical open door
-                } else /* if (tmp_door.IsBroken */ { 
+                } else /* if (tmp_door.IsBroken */ {
                   ascii_map[y][x] = "'"; // typical broken door
                 }
               }
@@ -1505,18 +1497,17 @@ namespace djack.RogueSurvivor.Data
 #endregion
 #region map inventory
           Inventory inv = GetItemsAt(x,y);
-          if (null!=inv && 0<inv.CountItems) { 
+          if (null!=inv && 0<inv.CountItems) {
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
-            string item_str = "&"; // Angband/Nethack pile.
             foreach (Item it in inv.Items) {
               inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
             }
-            ascii_map[y][x] = item_str;
-          }
+            ascii_map[y][x] = "&"; // Angband/Nethack pile.
+                    }
 #endregion
 #region actors
           Actor a = GetActorAt(x,y);
-          if (null!=a && !a.IsDead) { 
+          if (null!=a && !a.IsDead) {
             string p_txt = '('+a.Location.Position.X.ToString()+','+ a.Location.Position.Y.ToString()+')';
             string a_str = a.Faction.ID.ToString(); // default to the faction numeral
             string pos_css = "";
@@ -1574,7 +1565,7 @@ namespace djack.RogueSurvivor.Data
               case Gameplay.GameActors.IDs.SEWERS_THING:
               case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
-            }          
+            }
             actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
@@ -1612,8 +1603,7 @@ namespace djack.RogueSurvivor.Data
         m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
       m_aux_ScentsByPosition.Clear();
       foreach (OdorScent mScent in m_Scents) {
-        List<OdorScent> odorScentList;
-        if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out odorScentList)) {
+        if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out List<OdorScent> odorScentList)) {
           odorScentList.Add(mScent);
         } else {
           odorScentList = new List<OdorScent> { mScent };
@@ -1622,12 +1612,10 @@ namespace djack.RogueSurvivor.Data
       }
       m_aux_CorpsesByPosition.Clear();
       foreach (Corpse mCorpses in m_CorpsesList) {
-        List<Corpse> corpseList;
-        if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out corpseList))
+        if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out List<Corpse> corpseList))
           corpseList.Add(mCorpses);
         else
-          m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1)
-          {
+          m_aux_CorpsesByPosition.Add(mCorpses.Position, new List<Corpse>(1) {
             mCorpses
           });
       }
@@ -1666,7 +1654,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public override string ToString()
-    { 
+    {
       return Name+" ("+Width.ToString()+","+Height.ToString()+") in "+District.Name;
     }
   }

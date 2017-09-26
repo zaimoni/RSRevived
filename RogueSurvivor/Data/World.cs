@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Data
       m_NPCready = new Queue<District>(size*size);
     }
 
-    public void DaimonMap() 
+    public void DaimonMap()
     {
       if (!Engine.Session.Get.CMDoptionExists("socrates-daimon")) return;
       Zaimoni.Data.OutTextFile dest = new Zaimoni.Data.OutTextFile(SetupConfig.DirPath + "\\daimon_map.html");
@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // possible micro-optimization target
-    public int PlayerCount { 
+    public int PlayerCount {
       get {
         int ret = 0;
         for (int index1 = 0; index1 < m_Size; ++index1) {
@@ -131,11 +131,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public List<District> PlayerDistricts { 
+    public List<District> PlayerDistricts {
       get {
         List<District> ret = new List<District>(m_Size*m_Size);
         for (int index1 = 0; index1 < m_Size; ++index1) {
-          for (int index2 = 0; index2 < m_Size; ++index2) { 
+          for (int index2 = 0; index2 < m_Size; ++index2) {
             if (0 < m_DistrictsGrid[index1, index2].PlayerCount) ret.Add(m_DistrictsGrid[index1, index2]);
           }
         }
@@ -159,7 +159,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // Simulation support
-    // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in 
+    // the public functions all lock on m_PCready in order to ensure thread aborts don't leave us in
     // an inconsistent state
     public void ScheduleForAdvancePlay() {
       lock (m_PCready) {
@@ -174,7 +174,7 @@ namespace djack.RogueSurvivor.Data
  000
  000
  000
- 
+
  i.e. only A1 is legal to run.  After it has run, we are at
  100
  000

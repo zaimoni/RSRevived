@@ -31,6 +31,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected const int EMOTE_CHARGE_CHANCE = 30;
     private const float MOVE_DISTANCE_PENALTY = 0.42f;
     private const float LEADER_LOF_PENALTY = 1f;
+    public const int MAX_EMOTES = 3;    // 0: flee; 1: last stand; 2:charge
+
     private Location m_prevLocation;
 
     protected BaseAI()
@@ -866,7 +868,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && ComputeTrapsMaxDamage(map, position) >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;
-        if (!exploration.HasExplored(map.GetZonesAt(position.X, position.Y))) num += 1000;
+        if (!exploration.HasExplored(map.GetZonesAt(position))) num += 1000;
         if (!exploration.HasExplored(loc)) num += 500;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
@@ -1227,21 +1229,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
+#if DEAD_FUNC
     public static bool IsZoneChange(Map map, Point pos)
     {
-      List<Zone> zonesHere = map.GetZonesAt(pos.X, pos.Y);
+      List<Zone> zonesHere = map.GetZonesAt(pos);
       if (zonesHere == null) return false;
       return map.HasAnyAdjacentInMap(pos, (Predicate<Point>) (adj =>
       {
-        List<Zone> zonesAt = map.GetZonesAt(adj.X, adj.Y);
+        List<Zone> zonesAt = map.GetZonesAt(adj);
         if (zonesAt == null) return false;
-        if (zonesHere == null) return true;
         foreach (Zone zone in zonesAt) {
           if (!zonesHere.Contains(zone)) return true;
         }
         return false;
       }));
     }
+#endif
 
     protected static Point RandomPositionNear(Rules rules, Map map, Point goal, int range)
     {

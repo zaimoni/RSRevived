@@ -26,43 +26,43 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class CivilianAI : OrderableAI
   {
-    private static string[] FIGHT_EMOTES = new string[3]
+    private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES]
     {
       "Go away",
       "Damn it I'm trapped!",
       "I'm not afraid"
     };
-    private static string[] BIG_BEAR_EMOTES = new string[3]
+    private static readonly string[] BIG_BEAR_EMOTES = new string[MAX_EMOTES]
     {
       "You fool",
       "I'm fooled!",
       "Be a man"
     };
-    private static string[] FAMU_FATARU_EMOTES = new string[3]
+    private static readonly string[] FAMU_FATARU_EMOTES = new string[MAX_EMOTES]
     {
       "Bakemono",
       "Nani!?",
       "Kawaii"
     };
-    private static string[] SANTAMAN_EMOTES = new string[3]
+    private static readonly string[] SANTAMAN_EMOTES = new string[MAX_EMOTES]
     {
       "DEM BLOODY KIDS!",
       "LEAVE ME ALONE I AIN'T HAVE NO PRESENTS!",
       "MERRY FUCKIN' CHRISTMAS"
     };
-    private static string[] ROGUEDJACK_EMOTES = new string[3]
+    private static readonly string[] ROGUEDJACK_EMOTES = new string[MAX_EMOTES]
     {
       "Sorry butt I am le busy,",
       "I should have redone ze AI rootines!",
       "Let me test le something on you"
     };
-    private static string[] DUCKMAN_EMOTES = new string[3]
+    private static readonly string[] DUCKMAN_EMOTES = new string[MAX_EMOTES]
     {
       "I'LL QUACK YOU BACK",
       "THIS IS MY FINAL QUACK",
       "I'M GONNA QUACK YOU"
     };
-    private static string[] HANS_VON_HANZ_EMOTES = new string[3]
+    private static readonly string[] HANS_VON_HANZ_EMOTES = new string[MAX_EMOTES]
     {
       "RAUS",
       "MEIN FUHRER!",
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.ITEMS | LOSSensor.SensingFilter.CORPSES;
 
     private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
-    private int m_SafeTurns = 0;
+    private int m_SafeTurns;
     private readonly ExplorationData m_Exploration = new ExplorationData();
     private string[] m_Emotes;
 
@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
 #endif
-      
+
       // OrderableAI specific: respond to orders
       if (null != Order) {
 #if TRACE_SELECTACTION
@@ -214,7 +214,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           AvoidBeingCornered(retreat);
           safe_retreat = !damage_field.ContainsKey(retreat[0]);
         }
-        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) { 
+        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
           run_retreat = FindRunRetreat(damage_field, legal_steps);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
@@ -653,7 +653,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         return tmpAction;
       }
-      if (!HaveThreatsInCurrentMap() && !HaveTourismInCurrentMap()) { 
+      if (!HaveThreatsInCurrentMap() && !HaveTourismInCurrentMap()) {
         if (game.Rules.RollChance(USE_EXIT_CHANCE)) {
           tmpAction = BehaviorUseExit(BaseAI.UseExitFlags.DONT_BACKTRACK);
 #if TRACE_SELECTACTION
@@ -869,8 +869,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  }
 
       if (m_Actor.CountFollowers > 0) {
-        Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(2, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(2, out Actor target);
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "dont't leave followers");

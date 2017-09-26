@@ -2565,10 +2565,7 @@ namespace djack.RogueSurvivor.Data
 #endregion
 
     public static event EventHandler Moving;
-    public void Moved() {
-      EventHandler handler = Moving; // work around non-atomic test, etc.
-      if (null!=handler) handler(this,null);
-    }
+    public void Moved() { Moving?.Invoke(this, null); }
 
     // administrative functions whose presence here is not clearly advisable but they improve the access situation here
     public void StartingSkill(Skills.IDs skillID,int n=1)

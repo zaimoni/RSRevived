@@ -5336,8 +5336,8 @@ namespace djack.RogueSurvivor.Engine
         AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         if (nullable.HasValue) {
           AddOverlay(new OverlayRect(color, new Rectangle(MapToScreen(nullable.Value), SIZE_OF_TILE)));
-          List<Zone> zonesAt = map1.GetZonesAt(nullable.Value.X, nullable.Value.Y);
-          if (zonesAt != null && zonesAt.Count > 0) {
+          List<Zone> zonesAt = map1.GetZonesAt(nullable.Value);
+          if (null != zonesAt) {
             string[] lines = new string[zonesAt.Count + 1];
             lines[0] = "Zone(s) here :";
             for (int index = 0; index < zonesAt.Count; ++index)
@@ -5358,13 +5358,13 @@ namespace djack.RogueSurvivor.Engine
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
               bool flag3 = true;
               string reason = "";
-              if (map1.GetZonesAt(map2.X, map2.Y) == null) {
+              if (map1.GetZonesAt(map2) == null) {
                 flag3 = false;
                 reason = "no zone here";
               } else if (!(map2 == follower.Location.Position) && !map1.IsWalkableFor(map2, follower, out reason))
                 flag3 = false;
+              nullable = map2;
               if (flag3) {
-                nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   DoGiveOrderTo(player, follower, new ActorOrder(ActorTasks.PATROL, new Location(map1, map2)));
@@ -5372,7 +5372,6 @@ namespace djack.RogueSurvivor.Engine
                   flag2 = true;
                 }
               } else {
-                nullable = map2;
                 color = Color.Red;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
                   AddMessage(MakeErrorMessage(string.Format("Can't patrol here : {0}", reason)));
@@ -9048,12 +9047,12 @@ namespace djack.RogueSurvivor.Engine
         foreach (Actor follower in m_Player.Followers)
           Session.Get.Scoring.AddFollowerWhenDied(follower);
       }
-      List<Zone> zonesAt = m_Player.Location.Map.GetZonesAt(m_Player.Location.Position.X, m_Player.Location.Position.Y);
+      List<Zone> zonesAt = m_Player.Location.Map.GetZonesAt(m_Player.Location.Position);
       Session.Get.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", m_Player.Location.Map.Name, zonesAt[0].Name) : m_Player.Location.Map.Name;
       Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, m_Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
       int index = m_Rules.Roll(0, GameTips.TIPS.Length);
-      AddOverlay(new RogueGame.OverlayPopup(new string[3]
+      AddOverlay(new OverlayPopup(new string[3]
       {
         "TIP OF THE DEAD",
         "Did you know that...",
@@ -9735,8 +9734,8 @@ namespace djack.RogueSurvivor.Engine
     {
       if (map == null || actor == null) return "";
       StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", actor.Location.Position.X, actor.Location.Position.Y));
-      List<Zone> zonesAt = map.GetZonesAt(actor.Location.Position.X, actor.Location.Position.Y);
-      if (zonesAt == null || zonesAt.Count == 0) return stringBuilder.ToString();
+      List<Zone> zonesAt = map.GetZonesAt(actor.Location.Position);
+      if (null == zonesAt) return stringBuilder.ToString();
       foreach (Zone zone in zonesAt)
         stringBuilder.Append(string.Format("{0} ", zone.Name));
       return stringBuilder.ToString();
@@ -11257,17 +11256,16 @@ namespace djack.RogueSurvivor.Engine
           player.Controller.UpdateSensors();
         }
         if (s_Options.RevealStartingDistrict) {
-          Map map = entryMap;
-          foreach(Actor player in map.Players) {
+          foreach(Actor player in entryMap.Players) {
             Point pos = player.Location.Position;
-            List<Zone> zonesAt1 = map.GetZonesAt(pos.X, pos.Y);
+            List<Zone> zonesAt1 = entryMap.GetZonesAt(pos);
             if (null == zonesAt1) continue;
             Zone zone = zonesAt1[0];
             entryMap.Rect.DoForEach((pt => {
               player.Controller.ForceKnown(pt);
             }), (pt => {
               if (!entryMap.IsInsideAt(pt)) return true;
-              List<Zone> zonesAt2 = entryMap.GetZonesAt(pt.X, pt.Y);
+              List<Zone> zonesAt2 = entryMap.GetZonesAt(pt);
               return zonesAt2 != null && zonesAt2[0] == zone;
             }));
           }
@@ -12330,13 +12328,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool IsInCHAROffice(Location location)
     {
-      List<Zone> zonesAt = location.Map.GetZonesAt(location.Position.X, location.Position.Y);
-      if (zonesAt == null)
-        return false;
-      foreach (Zone zone in zonesAt) {
-        if (zone.HasGameAttribute("CHAR Office")) return true;
-      }
-      return false;
+      return location.Map.GetZonesAt(location.Position)?.Any(zone => zone.HasGameAttribute("CHAR Office")) ?? false;
     }
 
     static public bool IsInCHARProperty(Location location)

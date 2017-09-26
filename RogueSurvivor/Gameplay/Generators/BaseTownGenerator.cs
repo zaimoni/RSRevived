@@ -1029,10 +1029,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       foreach (Rectangle rectangle2 in rectangleList) {
         Point tablePos = new Point(rectangle2.Left + rectangle2.Width / 2, rectangle2.Top + rectangle2.Height / 2);
         map.PlaceMapObjectAt(MakeObjTable(GameImages.OBJ_CHAR_TABLE), tablePos);
-        int num = 2;
         Rectangle rect4 = new Rectangle(rectangle2.Left + 1, rectangle2.Top + 1, rectangle2.Width - 2, rectangle2.Height - 2);
         if (!rect4.IsEmpty) {
-          for (int index = 0; index < num; ++index) {
+          for (int index = 0; index < 2; ++index) {
             Rectangle rect5 = new Rectangle(tablePos.X - 1, tablePos.Y - 1, 3, 3);
             rect5.Intersect(rect4);
             MapObjectPlaceInGoodPosition(map, rect5, (Func<Point, bool>) (pt => pt != tablePos), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjChair(GameImages.OBJ_CHAR_CHAIR)));

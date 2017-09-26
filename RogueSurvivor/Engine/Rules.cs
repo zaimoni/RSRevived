@@ -207,8 +207,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorPutItemIntoContainer(Actor actor, Point position)
     {
-      string reason;
-      return CanActorPutItemIntoContainer(actor, position, out reason);
+      return CanActorPutItemIntoContainer(actor, position, out string reason);
     }
 
     public bool CanActorPutItemIntoContainer(Actor actor, Point position, out string reason)
@@ -227,7 +226,7 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
       Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
-      if (null != itemsAt && itemsAt.IsFull) 
+      if (null != itemsAt && itemsAt.IsFull)
       {
         reason = "container is full";
         return false;
@@ -324,8 +323,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsBumpableFor(Actor actor, Location location)
     {
-      string reason;
-      return IsBumpableFor(actor, location, out reason);
+      return IsBumpableFor(actor, location, out string reason);
     }
 
     public static ActorAction IsBumpableFor(Actor actor, Location location, out string reason)
@@ -475,7 +473,7 @@ namespace djack.RogueSurvivor.Engine
              }
              // placeholder
              List<Direction> candidate_dirs = push_dest.Values.ToList();
-             return new ActionPush(actor,mapObjectAt,candidate_dirs[RogueForm.Game.Rules.Roll(0,candidate_dirs.Count)]);             
+             return new ActionPush(actor,mapObjectAt,candidate_dirs[RogueForm.Game.Rules.Roll(0,candidate_dirs.Count)]);
            }
         }
 
@@ -499,8 +497,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static ActorAction IsPathableFor(Actor actor, Location location)
     {
-      string reason;
-      return IsPathableFor(actor, location, out reason);
+      return IsPathableFor(actor, location, out string reason);
     }
 
     public static ActorAction IsPathableFor(Actor actor, Location location, out string reason)
@@ -530,8 +527,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge)
     {
-      string reason;
-      return CanActorBuildFortification(actor, pos, isLarge, out reason);
+      return CanActorBuildFortification(actor, pos, isLarge, out string reason);
     }
 
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge, out string reason)
@@ -602,8 +598,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorButcherCorpse(Actor actor, Corpse corpse)
     {
-      string reason;
-      return CanActorButcherCorpse(actor, corpse, out reason);
+      return CanActorButcherCorpse(actor, corpse, out string reason);
     }
 
     public bool CanActorButcherCorpse(Actor actor, Corpse corpse, out string reason)
@@ -624,8 +619,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorStartDragCorpse(Actor actor, Corpse corpse)
     {
-      string reason;
-      return CanActorStartDragCorpse(actor, corpse, out reason);
+      return CanActorStartDragCorpse(actor, corpse, out string reason);
     }
 
     public bool CanActorStartDragCorpse(Actor actor, Corpse corpse, out string reason)
@@ -660,8 +654,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorStopDragCorpse(Actor actor, Corpse corpse)
     {
-      string reason;
-      return CanActorStopDragCorpse(actor, corpse, out reason);
+      return CanActorStopDragCorpse(actor, corpse, out string reason);
     }
 
     public bool CanActorStopDragCorpse(Actor actor, Corpse corpse, out string reason)
@@ -681,8 +674,7 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CanActorReviveCorpse(Actor actor, Corpse corpse)
     {
-      string reason;
-      return CanActorReviveCorpse(actor, corpse, out reason);
+      return CanActorReviveCorpse(actor, corpse, out string reason);
     }
 
     public bool CanActorReviveCorpse(Actor actor, Corpse corpse, out string reason)
@@ -752,7 +744,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == locB.Map) return int.MaxValue;
       if (locA.Map==locB.Map) return GridDistance(locA.Position,locB.Position);
       Location? tmp = locA.Map.Denormalize(locB);
-      if (null == tmp) return int.MaxValue; 
+      if (null == tmp) return int.MaxValue;
       return GridDistance(locA.Position,tmp.Value.Position);
     }
 

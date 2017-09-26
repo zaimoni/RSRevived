@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public virtual Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory {
-       get { 
+       get {
          if (null == m_Actor) return null;
          if ((int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return Session.Get.PoliceItemMemory;
          return null;
@@ -58,8 +58,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool IsKnown(Location x) {
-      int discard;
-      return LastSeen(x, out discard);
+      return LastSeen(x, out int discard);
     }
 
     public void ForceKnown(Point x) {   // for world creation
@@ -89,7 +88,7 @@ namespace djack.RogueSurvivor.Data
     public bool CanSee(Location x)
     {
       if (null == m_Actor) return false;
-      if (null == x.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+      if (null == x.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       if (x.Map != m_Actor.Location.Map) return false;  // revise these two when restricted district exits go away
       if (!x.Map.IsInBounds(x.Position)) return false;
       if (x.Position == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
@@ -124,14 +123,14 @@ namespace djack.RogueSurvivor.Data
     public bool IsVisibleTo(Map map, Point position)
     {
       if (null == m_Actor) return false;
-      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+      if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       return _IsVisibleTo(map,position);
     }
 
     public bool IsVisibleTo(Location loc)
     {
       if (null == m_Actor) return false;
-      if (null == loc.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0 
+      if (null == loc.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       return _IsVisibleTo(loc);
     }
 

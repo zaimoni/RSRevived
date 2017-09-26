@@ -49,22 +49,25 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileFill(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != model);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
       for (int x = left; x < left + width; ++x) {
         for (int y = top; y < top + height; ++y) {
           TileModel model1 = map.GetTileModelAt(x, y);
           map.SetTileModelAt(x, y, model);
-          if (decoratorFn != null)
-            decoratorFn(map.GetTileAt(x, y), model1, x, y);
+          decoratorFn?.Invoke(map.GetTileAt(x, y), model1, x, y);
         }
       }
     }
 
     public void TileFill(Map map, TileModel model, int left, int top, int width, int height, bool inside)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != model);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
       for (int x = left; x < left + width; ++x) {
         for (int y = top; y < top + height; ++y) {
           map.SetTileModelAt(x, y, model);
@@ -75,25 +78,27 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileHLine(Map map, TileModel model, int left, int top, int width, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != model);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
       for (int x = left; x < left + width; ++x) {
         TileModel model1 = map.GetTileModelAt(x, top);
         map.SetTileModelAt(x, top, model);
-        if (decoratorFn != null)
-          decoratorFn(map.GetTileAt(x, top), model1, x, top);
+        decoratorFn?.Invoke(map.GetTileAt(x, top), model1, x, top);
       }
     }
 
     public void TileVLine(Map map, TileModel model, int left, int top, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != model);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
       for (int y = top; y < top + height; ++y) {
         TileModel model1 = map.GetTileModelAt(left, y);
         map.SetTileModelAt(left, y, model);
-        if (decoratorFn != null)
-          decoratorFn(map.GetTileAt(left, y), model1, left, y);
+        decoratorFn?.Invoke(map.GetTileAt(left, y), model1, left, y);
       }
     }
 
@@ -104,8 +109,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void TileRectangle(Map map, TileModel model, int left, int top, int width, int height, Action<Tile, TileModel, int, int> decoratorFn=null)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != model);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
       TileHLine(map, model, left, top, width, decoratorFn);
       TileHLine(map, model, left, top + height - 1, width, decoratorFn);
       TileVLine(map, model, left, top, height, decoratorFn);
@@ -178,7 +185,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
     {
-      rect.DoForEach(pt => { 
+      rect.DoForEach(pt => {
         createFn(pt)?.PlaceAt(map,pt);   // XXX RNG potentially involved
       }, pt => !map.HasMapObjectAt(pt));
     }
@@ -202,11 +209,7 @@ namespace djack.RogueSurvivor.Engine
       for (int left = rect.Left; left < rect.Right; ++left) {
         for (int top = rect.Top; top < rect.Bottom; ++top) {
           map.RemoveMapObjectAt(left, top);
-          Inventory itemsAt = map.GetItemsAt(left, top);
-          if (itemsAt != null) {
-            while (!itemsAt.IsEmpty)
-              map.RemoveItemAt(itemsAt[0], left, top);
-          }
+          map.RemoveAllItemsAt(new Point(left,top));
           map.RemoveAllDecorationsAt(left, top);
           map.RemoveAllZonesAt(left, top);
           Actor actorAt = map.GetActorAt(left, top);

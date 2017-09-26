@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   [Serializable]
   internal class FeralDogAI : BaseAI
   {
-    private static string[] FIGHT_EMOTES = new string[3]
+    private static readonly string[] FIGHT_EMOTES = new string[MAX_EMOTES]
     {
       "waf",
       "waf!?",
@@ -32,7 +32,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS | LOSSensor.SensingFilter.CORPSES;
 
-    private LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
+    private readonly LOSSensor m_LOSSensor = new LOSSensor(VISION_SEES);
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
 
     public FeralDogAI()

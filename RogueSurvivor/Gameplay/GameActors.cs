@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Verb BITE = new Verb("bite");
     private static readonly Verb CLAW = new Verb("claw");
     private static readonly Verb PUNCH = new Verb("punch", "punches");
-      
+
     private static readonly ActorModel[] m_Models = new ActorModel[(int) IDs._COUNT];
     private const int UNDEAD_FOOD = 2*Actor.ROT_HUNGRY_LEVEL;
     private const int HUMAN_HUN = 2*Actor.FOOD_HUNGRY_LEVEL;
@@ -416,7 +416,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_MALE_CIVILIAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CivilianAI)));
       _setModel(IDs.FEMALE_CIVILIAN, new ActorModel(null, DATA_FEMALE_CIVILIAN.NAME, DATA_FEMALE_CIVILIAN.PLURAL, DATA_FEMALE_CIVILIAN.SCORE, DATA_FEMALE_CIVILIAN.FLAVOR, new DollBody(false, DATA_FEMALE_CIVILIAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
-          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS), 
+          Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_FEMALE_CIVILIAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof (CivilianAI)));
       _setModel(IDs.CHAR_GUARD, new ActorModel(null, DATA_CHAR_GUARD.NAME, DATA_CHAR_GUARD.PLURAL, DATA_CHAR_GUARD.SCORE, DATA_CHAR_GUARD.FLAVOR, new DollBody(true, DATA_CHAR_GUARD.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE),

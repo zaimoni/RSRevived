@@ -18,7 +18,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
-    private int _STA_reserve = 0;
+    private int _STA_reserve;
     int STA_reserve { get { return _STA_reserve; } }
 
     protected bool RunIfAdvisable(Point dest)
@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void ReserveSTA(int jump, int melee, int push, int push_weight)   // currently jump and break have the same cost
     {
       int tmp = push_weight;
-      tmp += jump*Rules.STAMINA_COST_JUMP;  
+      tmp += jump*Rules.STAMINA_COST_JUMP;
       tmp += melee*(Rules.STAMINA_COST_MELEE_ATTACK+m_Actor.BestMeleeAttack().StaminaPenalty);
 
       _STA_reserve = tmp+m_Actor.NightSTApenalty*(jump+melee+push);
@@ -144,7 +144,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
                 a_max_dam = a.RangedAttack(dist, m_Actor).DamageValue;
                 if (dist <= a.CurrentRangedAttack.Range) {
                   ranged_damage_field[pt] = a_turns*a_max_dam;
-                }                
+                }
               }
             }
             already.UnionWith(now);
@@ -155,7 +155,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           immediate_threat.Add(a);
         }
         // ranged damage field should be a strict superset of melee in typical cases (exception: basement without flashlight)
-        foreach(var pt_dam in ranged_damage_field) { 
+        foreach(var pt_dam in ranged_damage_field) {
           if (melee_damage_field.ContainsKey(pt_dam.Key)) {
             if (ret.ContainsKey(pt_dam.Key)) ret[pt_dam.Key] += Math.Max(pt_dam.Value, melee_damage_field[pt_dam.Key]);
             else ret[pt_dam.Key] = Math.Max(pt_dam.Value, melee_damage_field[pt_dam.Key]);
@@ -276,7 +276,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 >= m_Actor.Inventory.MaxCapacity - m_Actor.Inventory.CountItems) return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
         return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
-      if (it is ItemBodyArmor) { 
+      if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null == armor) return true;
         return armor.Rating < (it as ItemBodyArmor).Rating;
