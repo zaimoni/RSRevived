@@ -892,18 +892,14 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Image Get(string imageID)
     {
-      Image image;
-      if (GameImages.s_Images.TryGetValue(imageID, out image))
-        return image;
-      return GameImages.s_Images["undef"];
+      if (s_Images.TryGetValue(imageID, out Image image)) return image;
+      return s_Images["undef"];
     }
 
     public static Image GetGrayLevel(string imageID)
     {
-      Image image;
-      if (GameImages.s_GrayLevelImages.TryGetValue(imageID, out image))
-        return image;
-      return GameImages.s_GrayLevelImages["undef"];
+      if (s_GrayLevelImages.TryGetValue(imageID, out Image image)) return image;
+      return s_GrayLevelImages["undef"];
     }
   }
 }

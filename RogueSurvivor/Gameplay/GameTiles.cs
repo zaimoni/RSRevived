@@ -6,7 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -23,7 +22,6 @@ namespace djack.RogueSurvivor.Gameplay
 
     public TileModel this[int id] {
       get {
-        Contract.Requires(id< (int)IDs._COUNT);
         return m_Models[id];
       }
     }

@@ -62,221 +62,33 @@ namespace djack.RogueSurvivor.Gameplay
         m_Models[(int) id].ID = id;
     }
 
-    public ActorModel Skeleton
-    {
-      get
-      {
-        return this[IDs._FIRST];
-      }
-    }
-
-    public ActorModel Red_Eyed_Skeleton
-    {
-      get
-      {
-        return this[IDs.UNDEAD_RED_EYED_SKELETON];
-      }
-    }
-
-    public ActorModel Red_Skeleton
-    {
-      get
-      {
-        return this[IDs.UNDEAD_RED_SKELETON];
-      }
-    }
-
-    public ActorModel Zombie
-    {
-      get
-      {
-        return this[IDs.UNDEAD_ZOMBIE];
-      }
-    }
-
-    public ActorModel DarkEyedZombie
-    {
-      get
-      {
-        return this[IDs.UNDEAD_DARK_EYED_ZOMBIE];
-      }
-    }
-
-    public ActorModel DarkZombie
-    {
-      get
-      {
-        return this[IDs.UNDEAD_DARK_ZOMBIE];
-      }
-    }
-
-    public ActorModel ZombieMaster
-    {
-      get
-      {
-        return this[IDs.UNDEAD_ZOMBIE_MASTER];
-      }
-    }
-
-    public ActorModel ZombieLord
-    {
-      get
-      {
-        return this[IDs.UNDEAD_ZOMBIE_LORD];
-      }
-    }
-
-    public ActorModel ZombiePrince
-    {
-      get
-      {
-        return this[IDs.UNDEAD_ZOMBIE_PRINCE];
-      }
-    }
-
-    public ActorModel MaleZombified
-    {
-      get
-      {
-        return this[IDs.UNDEAD_MALE_ZOMBIFIED];
-      }
-    }
-
-    public ActorModel FemaleZombified
-    {
-      get
-      {
-        return this[IDs.UNDEAD_FEMALE_ZOMBIFIED];
-      }
-    }
-
-    public ActorModel MaleNeophyte
-    {
-      get
-      {
-        return this[IDs.UNDEAD_MALE_NEOPHYTE];
-      }
-    }
-
-    public ActorModel FemaleNeophyte
-    {
-      get
-      {
-        return this[IDs.UNDEAD_FEMALE_NEOPHYTE];
-      }
-    }
-
-    public ActorModel MaleDisciple
-    {
-      get
-      {
-        return this[IDs.UNDEAD_MALE_DISCIPLE];
-      }
-    }
-
-    public ActorModel FemaleDisciple
-    {
-      get
-      {
-        return this[IDs.UNDEAD_FEMALE_DISCIPLE];
-      }
-    }
-
-    public ActorModel RatZombie
-    {
-      get
-      {
-        return this[IDs.UNDEAD_RAT_ZOMBIE];
-      }
-    }
-
-    public ActorModel SewersThing
-    {
-      get
-      {
-        return this[IDs.SEWERS_THING];
-      }
-    }
-
-    public ActorModel MaleCivilian
-    {
-      get
-      {
-        return this[IDs.MALE_CIVILIAN];
-      }
-    }
-
-    public ActorModel FemaleCivilian
-    {
-      get
-      {
-        return this[IDs.FEMALE_CIVILIAN];
-      }
-    }
-
-    public ActorModel FeralDog
-    {
-      get
-      {
-        return this[IDs.FERAL_DOG];
-      }
-    }
-
-    public ActorModel CHARGuard
-    {
-      get
-      {
-        return this[IDs.CHAR_GUARD];
-      }
-    }
-
-    public ActorModel NationalGuard
-    {
-      get
-      {
-        return this[IDs.ARMY_NATIONAL_GUARD];
-      }
-    }
-
-    public ActorModel BikerMan
-    {
-      get
-      {
-        return this[IDs.BIKER_MAN];
-      }
-    }
-
-    public ActorModel GangstaMan
-    {
-      get
-      {
-        return this[IDs.GANGSTA_MAN];
-      }
-    }
-
-    public ActorModel Policeman
-    {
-      get
-      {
-        return this[IDs.POLICEMAN];
-      }
-    }
-
-    public ActorModel BlackOps
-    {
-      get
-      {
-        return this[IDs.BLACKOPS_MAN];
-      }
-    }
-
-    public ActorModel JasonMyers
-    {
-      get
-      {
-        return this[IDs.JASON_MYERS];
-      }
-    }
+    static public ActorModel Skeleton { get { return m_Models[(int) IDs.UNDEAD_SKELETON]; } }
+    static public ActorModel Red_Eyed_Skeleton { get { return m_Models[(int) IDs.UNDEAD_RED_EYED_SKELETON]; } }
+    static public ActorModel Red_Skeleton { get { return m_Models[(int) IDs.UNDEAD_RED_SKELETON]; } }
+    static public ActorModel Zombie { get { return m_Models[(int) IDs.UNDEAD_ZOMBIE]; } }
+    static public ActorModel DarkEyedZombie { get { return m_Models[(int) IDs.UNDEAD_DARK_EYED_ZOMBIE]; } }
+    static public ActorModel DarkZombie { get { return m_Models[(int) IDs.UNDEAD_DARK_ZOMBIE]; } }
+    static public ActorModel ZombieMaster { get { return m_Models[(int) IDs.UNDEAD_ZOMBIE_MASTER]; } }
+    static public ActorModel ZombieLord { get { return m_Models[(int) IDs.UNDEAD_ZOMBIE_LORD]; } }
+    static public ActorModel ZombiePrince { get { return m_Models[(int) IDs.UNDEAD_ZOMBIE_PRINCE]; } }
+    static public ActorModel MaleZombified { get { return m_Models[(int) IDs.UNDEAD_MALE_ZOMBIFIED]; } }
+    static public ActorModel FemaleZombified { get { return m_Models[(int) IDs.UNDEAD_FEMALE_ZOMBIFIED]; } }
+    static public ActorModel MaleNeophyte { get { return m_Models[(int) IDs.UNDEAD_MALE_NEOPHYTE]; } }
+    static public ActorModel FemaleNeophyte { get { return m_Models[(int) IDs.UNDEAD_FEMALE_NEOPHYTE]; } }
+    static public ActorModel MaleDisciple { get { return m_Models[(int) IDs.UNDEAD_MALE_DISCIPLE]; } }
+    static public ActorModel FemaleDisciple { get { return m_Models[(int) IDs.UNDEAD_FEMALE_DISCIPLE]; } }
+    static public ActorModel RatZombie { get { return m_Models[(int) IDs.UNDEAD_RAT_ZOMBIE]; } }
+    static public ActorModel SewersThing { get { return m_Models[(int) IDs.SEWERS_THING]; } }
+    static public ActorModel MaleCivilian { get { return m_Models[(int) IDs.MALE_CIVILIAN]; } }
+    static public ActorModel FemaleCivilian { get { return m_Models[(int) IDs.FEMALE_CIVILIAN]; } }
+    static public ActorModel FeralDog { get { return m_Models[(int) IDs.FERAL_DOG]; } }
+    static public ActorModel CHARGuard { get { return m_Models[(int) IDs.CHAR_GUARD]; } }
+    static public ActorModel NationalGuard { get { return m_Models[(int) IDs.ARMY_NATIONAL_GUARD]; } }
+    static public ActorModel BikerMan { get { return m_Models[(int) IDs.BIKER_MAN]; } }
+    static public ActorModel GangstaMan { get { return m_Models[(int) IDs.GANGSTA_MAN]; } }
+    static public ActorModel Policeman { get { return m_Models[(int) IDs.POLICEMAN]; } }
+    static public ActorModel BlackOps { get { return m_Models[(int) IDs.BLACKOPS_MAN]; } }
+    static public ActorModel JasonMyers { get { return m_Models[(int) IDs.JASON_MYERS]; } }
 
     public GameActors()
     {
@@ -453,10 +265,12 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
     }
 
-    public bool LoadFromCSV(IRogueUI ui, string path)
+    public static bool LoadFromCSV(IRogueUI ui, string path)
     {
-      Contract.Requires(null!=ui);
-      Contract.Requires(!string.IsNullOrEmpty(path));
+#if DEBUG
+      if (null == ui) throw new ArgumentNullException(nameof(ui));
+      if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path), path, "string.IsNullOrEmpty(path)");
+#endif
       Notify(ui, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
@@ -482,35 +296,31 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       ui.UI_Repaint();
     }
 
-    public bool IsZombifiedBranch(ActorModel m)
+#if DEAD_FUNC
+    static public bool IsZombifiedBranch(ActorModel m)
     {
-      if (m != MaleZombified && m != FemaleZombified && (m != MaleNeophyte && m != FemaleNeophyte) && m != MaleDisciple)
-        return m == FemaleDisciple;
-      return true;
+      return m == MaleZombified || m == FemaleZombified
+          || m == MaleNeophyte  || m == FemaleNeophyte
+          || m == MaleDisciple  || m == FemaleDisciple;
     }
 
-    public bool IsZMBranch(ActorModel m)
+    static public bool IsZMBranch(ActorModel m)
     {
-      if (m != ZombieMaster && m != ZombieLord)
-        return m == ZombiePrince;
-      return true;
+      return m == ZombieMaster || m == ZombieLord || m == ZombiePrince;
+    }
+#endif
+
+        static public bool IsSkeletonBranch(ActorModel m)
+    {
+      return m == Skeleton || m == Red_Eyed_Skeleton || m == Red_Skeleton;
     }
 
-    public bool IsSkeletonBranch(ActorModel m)
+    static public bool IsShamblerBranch(ActorModel m)
     {
-      if (m != Skeleton && m != Red_Eyed_Skeleton)
-        return m == Red_Skeleton;
-      return true;
+      return m == Zombie || m == DarkEyedZombie || m == DarkZombie;
     }
 
-    public bool IsShamblerBranch(ActorModel m)
-    {
-      if (m != Zombie && m != DarkEyedZombie)
-        return m == DarkZombie;
-      return true;
-    }
-
-    public bool IsRatBranch(ActorModel m)
+    static public bool IsRatBranch(ActorModel m)
     {
       return m == RatZombie;
     }

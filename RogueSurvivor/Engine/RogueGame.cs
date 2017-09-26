@@ -11038,7 +11038,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CreateDirectory(string path)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(path));
+#if DEBUG
+      if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
+#endif
       if (Directory.Exists(path)) return false;
       Directory.CreateDirectory(path);
       return true;
@@ -11046,7 +11048,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckDirectory(string path, string description, ref int gy)
     {
-      Contract.Requires(!string.IsNullOrEmpty(path));
+#if DEBUG
+      if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
+#endif
       m_UI.UI_DrawString(Color.White, string.Format("{0} : {1}...", description, path), 0, gy, new Color?());
       gy += 14;
       m_UI.UI_Repaint();
@@ -11511,18 +11515,18 @@ namespace djack.RogueSurvivor.Engine
       {
         switch (m_CharGen.UndeadModel)
         {
-          case GameActors.IDs._FIRST:
-            actor = m_GameActors.Skeleton.CreateNumberedName(m_GameFactions.TheUndeads, 0);
+          case GameActors.IDs.UNDEAD_SKELETON:
+            actor = GameActors.Skeleton.CreateNumberedName(m_GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_ZOMBIE:
-            actor = m_GameActors.Zombie.CreateNumberedName(m_GameFactions.TheUndeads, 0);
+            actor = GameActors.Zombie.CreateNumberedName(m_GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
-            actor = m_GameActors.ZombieMaster.CreateNumberedName(m_GameFactions.TheUndeads, 0);
+            actor = GameActors.ZombieMaster.CreateNumberedName(m_GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
           case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
-            Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? m_GameActors.FemaleCivilian : m_GameActors.MaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
+            Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? GameActors.FemaleCivilian : GameActors.MaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
             BaseMapGenerator.DressCivilian(roller, anonymous);
             BaseMapGenerator.GiveNameToActor(roller, anonymous);
             actor = Zombify(null, anonymous, true);
@@ -11532,7 +11536,7 @@ namespace djack.RogueSurvivor.Engine
         }
         actor.PrepareForPlayerControl();
       } else {
-        actor = (m_CharGen.IsMale ? m_GameActors.MaleCivilian : m_GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
+        actor = (m_CharGen.IsMale ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
         BaseMapGenerator.DressCivilian(roller, actor);
         BaseMapGenerator.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
@@ -11877,7 +11881,7 @@ namespace djack.RogueSurvivor.Engine
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
                 KillActor(null, theActor, "transformation");
                 Actor local_8 = Zombify(null, theActor, false);
-                local_8.Model = m_GameActors.ZombiePrince;
+                local_8.Model = GameActors.ZombiePrince;
                 local_8.ActionPoints = 0;   // this was warned, player should get the first move
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
                 m_MusicManager.Play(GameMusics.FIGHT);
@@ -12471,7 +12475,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void LoadDataActors()
     {
-      m_GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
+      GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
     }
 
     private void LoadDataItems()

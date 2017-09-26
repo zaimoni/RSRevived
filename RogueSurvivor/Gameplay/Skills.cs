@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class Skills
   {
-    private static string[] s_Names = new string[(int) Skills.IDs._COUNT];
+    private readonly static string[] s_Names = new string[(int) Skills.IDs._COUNT];
     public static Skills.IDs[] UNDEAD_SKILLS = new Skills.IDs[(int)Skills.IDs._COUNT - (int)Skills.IDs._LAST_LIVING-1]  // \todo adjust this naming when breaking savefile format?
     {
       Skills.IDs._FIRST_UNDEAD,
@@ -33,7 +33,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static string Name(Skills.IDs id)
     {
-      return Skills.s_Names[(int) id];
+      return s_Names[(int) id];
     }
 
     public static string Name(int id)
@@ -65,8 +65,10 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
-      Contract.Requires(null!=ui);
-      Contract.Requires(!string.IsNullOrEmpty(path));
+#if DEBUG
+      if (null == ui) throw new ArgumentNullException(nameof(ui));
+      if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path), path, "string.IsNullOrEmpty(path)");
+#endif
       Skills.Notify(ui, kind, "loading file...");
       List<string> stringList = new List<string>();
       bool flag = true;
@@ -89,9 +91,10 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static bool LoadSkillsFromCSV(IRogueUI ui, string path)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(path));
-      Skills.SkillData[] data;
-      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, new Func<CSVLine, Skills.SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
+#if DEBUG
+      if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
+#endif
+      Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, new Func<CSVLine, SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
       {
         Skills.IDs._FIRST,
         Skills.IDs.AWAKE,
@@ -122,10 +125,10 @@ namespace djack.RogueSurvivor.Gameplay
         Skills.IDs.Z_STRONG,
         Skills.IDs.Z_TOUGH,
         Skills.IDs.Z_TRACKER
-      }, out data);
+      }, out SkillData[] data);
       for (int index = 0; index < (int)Skills.IDs._COUNT; ++index)
-        Skills.s_Names[index] = data[index].NAME;
-      Skills.SkillData skillData1 = data[0];
+        s_Names[index] = data[index].NAME;
+      SkillData skillData1 = data[0];
       Actor.SKILL_AGILE_ATK_BONUS = (int) skillData1.VALUE1;
       Rules.SKILL_AGILE_DEF_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[1];
@@ -154,7 +157,7 @@ namespace djack.RogueSurvivor.Gameplay
       skillData1 = data[10];
       Actor.SKILL_LIGHT_EATER_FOOD_BONUS = skillData1.VALUE1;
       Actor.SKILL_LIGHT_EATER_MAXFOOD_BONUS = skillData1.VALUE2;
-      Skills.SkillData skillData2 = data[11];
+      SkillData skillData2 = data[11];
       Rules.SKILL_LIGHT_FEET_TRAP_BONUS = (int) skillData2.VALUE1;
       skillData2 = data[12];
       Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = (int) skillData2.VALUE1;
@@ -241,7 +244,7 @@ namespace djack.RogueSurvivor.Gameplay
     }
 
     public static IDs? Zombify(this IDs skill)
-    { 
+    {
       switch (skill) {
         case IDs._FIRST: return IDs._FIRST_UNDEAD;
         case IDs.LIGHT_EATER: return IDs.Z_LIGHT_EATER;
@@ -263,9 +266,10 @@ namespace djack.RogueSurvivor.Gameplay
       public float VALUE3;
       public float VALUE4;
 
-      public static Skills.SkillData FromCSVLine(CSVLine line)
+      public static SkillData FromCSVLine(CSVLine line)
       {
-        return new Skills.SkillData{
+        return new SkillData
+        {
           NAME = line[1].ParseText(),
           VALUE1 = line[2].ParseFloat(),
           VALUE2 = line[3].ParseFloat(),

@@ -2554,7 +2554,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (pt.X == room.Left || !map.IsWalkable(pt) || CountAdjWalls(map, pt) < 3) return;
         map.PlaceMapObjectAt(MakeObjPowerGenerator(), pt);
       }));
-      Actor named = m_Game.GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
+      Actor named = GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
       named.StartingSkill(Skills.IDs.TOUGH,3);
@@ -2569,7 +2569,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Patient");
@@ -2580,7 +2580,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalNurse(int spawnTime)
     {
-      Actor numberedName = m_Game.GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Nurse");
@@ -2593,7 +2593,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalDoctor(int spawnTime)
     {
-      Actor numberedName = m_Game.GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Doctor");
@@ -2724,7 +2724,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewSurvivor(int spawnTime)
     {
       bool flag = m_DiceRoller.Roll(0, 2) == 0;
-      Actor numberedName = (flag ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheSurvivors, spawnTime);
+      Actor numberedName = (flag ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheSurvivors, spawnTime);
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
       numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? "Actors\\Decoration\\survivor_male_bandana" : "Actors\\Decoration\\survivor_female_bandana");
@@ -2765,12 +2765,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewNakedHuman(int spawnTime)
     {
-      return (m_Rules.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+      return (m_Rules.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
     }
 
     public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? m_Game.GameActors.MaleCivilian : m_Game.GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
       DressCivilian(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       for (int index = 0; index < itemsToCarry; ++index)
@@ -2785,7 +2785,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewPoliceman(int spawnTime)
     {
-      Actor numberedName = m_Game.GameActors.Policeman.CreateNumberedName(m_Game.GameFactions.ThePolice, spawnTime);
+      Actor numberedName = GameActors.Policeman.CreateNumberedName(m_Game.GameFactions.ThePolice, spawnTime);
       DressPolice(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Cop");
@@ -2820,7 +2820,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor actor;
       if (Session.Get.HasAllZombies) {
         int num = m_DiceRoller.Roll(0, 100);
-        actor = (num < RogueGame.Options.SpawnSkeletonChance ? m_Game.GameActors.Skeleton : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? m_Game.GameActors.Zombie : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? m_Game.GameActors.ZombieMaster : m_Game.GameActors.Skeleton))).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+        actor = (num < RogueGame.Options.SpawnSkeletonChance ? GameActors.Skeleton 
+              : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? GameActors.Zombie
+              : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? GameActors.ZombieMaster
+              : GameActors.Skeleton))).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
       } else {
         actor = MakeZombified(null, CreateNewCivilian(spawnTime, 0, 0), spawnTime);
         int num = new WorldTime(spawnTime).Day / 2;
@@ -2838,7 +2841,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
-      Actor named = (deadVictim.Doll.Body.IsMale ? m_Game.GameActors.MaleZombified : m_Game.GameActors.FemaleZombified).CreateNamed(zombifier == null ? m_Game.GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
+      Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? m_Game.GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
       named.ActionPoints = 0;
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         List<string> decorations = deadVictim.Doll.GetDecorations(part);
@@ -2854,18 +2857,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewSewersUndead(int spawnTime)
     {
       if (!Session.Get.HasAllZombies) return CreateNewUndead(spawnTime);
-      return (m_DiceRoller.RollChance(80) ? m_Game.GameActors.RatZombie : m_Game.GameActors.Zombie).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+      return (m_DiceRoller.RollChance(80) ? GameActors.RatZombie : GameActors.Zombie).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewBasementRatZombie(int spawnTime)
     {
       if (!Session.Get.HasAllZombies) return CreateNewUndead(spawnTime);
-      return m_Game.GameActors.RatZombie.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+      return GameActors.RatZombie.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewCHARGuard(int spawnTime)
     {
-      Actor numberedName = m_Game.GameActors.CHARGuard.CreateNumberedName(m_Game.GameFactions.TheCHARCorporation, spawnTime);
+      Actor numberedName = GameActors.CHARGuard.CreateNumberedName(m_Game.GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Gd.");
@@ -2877,7 +2880,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
     {
-      Actor numberedName = m_Game.GameActors.NationalGuard.CreateNumberedName(m_Game.GameFactions.TheArmy, spawnTime);
+      Actor numberedName = GameActors.NationalGuard.CreateNumberedName(m_Game.GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName(rankName);
@@ -2903,7 +2906,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
     {
-      Actor numberedName = m_Game.GameActors.BikerMan.CreateNumberedName(m_Game.GameFactions.TheBikers, spawnTime);
+      Actor numberedName = GameActors.BikerMan.CreateNumberedName(m_Game.GameFactions.TheBikers, spawnTime);
       numberedName.GangID = gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
@@ -2917,7 +2920,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
     {
-      Actor numberedName = m_Game.GameActors.GangstaMan.CreateNumberedName(m_Game.GameFactions.TheGangstas, spawnTime);
+      Actor numberedName = GameActors.GangstaMan.CreateNumberedName(m_Game.GameFactions.TheGangstas, spawnTime);
       numberedName.GangID = gangId;
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
@@ -2930,7 +2933,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewBlackOps(int spawnTime, string rankName)
     {
-      Actor numberedName = m_Game.GameActors.BlackOps.CreateNumberedName(m_Game.GameFactions.TheBlackOps, spawnTime);
+      Actor numberedName = GameActors.BlackOps.CreateNumberedName(m_Game.GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName(rankName);
@@ -2944,7 +2947,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewFeralDog(int spawnTime)
     {
-      Actor numberedName = m_Game.GameActors.FeralDog.CreateNumberedName(m_Game.GameFactions.TheFerals, spawnTime);
+      Actor numberedName = GameActors.FeralDog.CreateNumberedName(m_Game.GameFactions.TheFerals, spawnTime);
       SkinDog(m_DiceRoller, numberedName);
       return numberedName;
     }

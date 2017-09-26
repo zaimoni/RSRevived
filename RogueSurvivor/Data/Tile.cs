@@ -17,7 +17,6 @@ namespace djack.RogueSurvivor.Data
 
     public TileModel Model {
       get {
-        Contract.Ensures(null!=Contract.Result<TileModel>());
         return Models.Tiles[m_ModelID];
       }
     }

@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay
       m_Factions[(int)GameFactions.IDs.ThePsychopaths] = new Faction("Psychopaths", "psychopath", (int)GameFactions.IDs.ThePsychopaths);
       m_Factions[(int)GameFactions.IDs.TheSurvivors] = new Faction("Survivors", "survivor", (int)GameFactions.IDs.TheSurvivors);
       m_Factions[(int)GameFactions.IDs.TheFerals] = new Faction("Ferals", "feral", (int)GameFactions.IDs.TheFerals, true);
-      
+
       // set up faction-level enemies
       // XXX now we have a working reflexive AddEnemy we can simplify this considerably
       this[GameFactions.IDs.TheArmy].AddEnemy(this[GameFactions.IDs.TheBikers]);
@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor.Gameplay
         }
       }
     }
-    
+
     public enum IDs
     {
       TheCHARCorporation = 0,
