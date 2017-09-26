@@ -872,15 +872,15 @@ namespace djack.RogueSurvivor.Gameplay
 
     private static Image MakeGrayLevel(Bitmap img)
     {
-      Bitmap bitmap = new Bitmap((Image) img);
+      Bitmap bitmap = new Bitmap(img);
       for (int x = 0; x < bitmap.Width; ++x) {
         for (int y = 0; y < bitmap.Height; ++y) {
           Color pixel = img.GetPixel(x, y);
-          int num = (int) (140.25 * (double) pixel.GetBrightness());
+          int num = (int) (140.25 * pixel.GetBrightness());
           bitmap.SetPixel(x, y, Color.FromArgb((int) pixel.A, num, num, num));
         }
       }
-      return (Image) bitmap;
+      return bitmap;
     }
 
     private static void Notify(IRogueUI ui, string stage)

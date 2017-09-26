@@ -798,8 +798,10 @@ namespace djack.RogueSurvivor.Engine
     // Compiler error to mix this with out/ref parameters
     private bool ChoiceMenu(Func<int, bool?> choice_handler, Func<int, bool?> setup_handler, int choice_length, Func<Keys,int,bool?> failover_handler=null)
     {
-      Contract.Requires(null != choice_handler);
-      Contract.Requires(null != setup_handler);
+#if DEBUG
+      if (null == choice_handler) throw new ArgumentNullException(nameof(choice_handler));
+      if (null == setup_handler) throw new ArgumentNullException(nameof(setup_handler));
+#endif
       int currentChoice = 0;
       do {
         bool? ret = setup_handler(currentChoice);
@@ -836,8 +838,10 @@ namespace djack.RogueSurvivor.Engine
     // boxed value type return value version of ChoiceMenu
     private T? ChoiceMenuNN<T>(Func<int, T?> choice_handler, Func<int, T?> setup_handler, int choice_length, Func<Keys,int,T?> failover_handler=null) where T:struct
     {
-      Contract.Requires(null != choice_handler);
-      Contract.Requires(null != setup_handler);
+#if DEBUG
+      if (null == choice_handler) throw new ArgumentNullException(nameof(choice_handler));
+      if (null == setup_handler) throw new ArgumentNullException(nameof(setup_handler));
+#endif
       int currentChoice = 0;
       do {
         T? ret = setup_handler(currentChoice);
@@ -3642,6 +3646,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void PagedMenu(string header,int strict_ub, Func<int,string> label, Predicate<int> details)    // breaks down if MAX_MESSAGES exceeds 10
     {
+#if DEBUG
+      if (null == label) throw new ArgumentNullException(nameof(label));
+      if (null == details) throw new ArgumentNullException(nameof(details));
+#endif
       bool flag1 = true;
       int num1 = 0;
       do {
@@ -9977,6 +9985,9 @@ namespace djack.RogueSurvivor.Engine
 
     static private void DrawMapObject(MapObject mapObj, Point screen, string imageID, Action<string, int, int> drawFn)
     {
+#if DEBUG
+      if (null == drawFn) throw new ArgumentNullException(nameof(drawFn));
+#endif
       drawFn(imageID, screen.X, screen.Y);
       if (mapObj.IsOnFire) drawFn(GameImages.EFFECT_ONFIRE, screen.X, screen.Y);
     }

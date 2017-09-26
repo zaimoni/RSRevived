@@ -2660,6 +2660,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)
     {
+#if DEBUG
+      if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
+#endif
       FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       HashSet<Point> where_to_go = targets_at(m_Actor.Location.Map);
       if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, m_Actor.Location.Position);

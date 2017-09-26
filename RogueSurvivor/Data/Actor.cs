@@ -891,6 +891,9 @@ namespace djack.RogueSurvivor.Data
 
     public void MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
     {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(choice_handler));
+#endif
       Contract.Requires(null!=fn);
       if (IsPlayer && !IsDead && (null == pred || pred(this))) {
         fn(this);

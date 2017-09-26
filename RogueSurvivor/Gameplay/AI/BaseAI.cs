@@ -214,6 +214,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorBumpToward(Point goal, Func<Point, Point, float> distanceFn)
     {
+#if DEBUG
+      if (null == distanceFn) throw new ArgumentNullException(nameof(distanceFn));
+#endif
       ChoiceEval<ActorAction> choiceEval = ChooseExtended(Direction.COMPASS, dir =>
       {
         Location location = m_Actor.Location + dir;
@@ -1014,6 +1017,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // isBetterThanEvalFn will never see NaN
     static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, bool> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
+#if DEBUG
+      if (null == isChoiceValidFn) throw new ArgumentNullException(nameof(isChoiceValidFn));
+      if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
+      if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
+#endif
       if (null == listOfChoices ||  0 >= listOfChoices.Count()) return null;
 
       Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
@@ -1046,6 +1054,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // isBetterThanEvalFn will never see NaN
     static protected ChoiceEval<_DATA_> ChooseExtended<_T_, _DATA_>(IEnumerable<_T_> listOfChoices, Func<_T_, _DATA_> isChoiceValidFn, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
     {
+#if DEBUG
+      if (null == isChoiceValidFn) throw new ArgumentNullException(nameof(isChoiceValidFn));
+      if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
+      if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
+#endif
       if (null == listOfChoices || 0 >= listOfChoices.Count()) return null;
 
       Dictionary<float, List<ChoiceEval<_DATA_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_DATA_>>>();
