@@ -515,16 +515,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (height1 < minHeight) height1 = minHeight;
       int width2 = rect.Width - width1;
       int height2 = rect.Height - height1;
-      bool flag1;
-      bool flag2 = flag1 = true;
-      if (width2 < minWidth)
-      {
+      bool flag1 = true;
+      bool flag2 = true;
+      if (width2 < minWidth) {
         width1 = rect.Width;
         width2 = 0;
         flag2 = false;
       }
-      if (height2 < minHeight)
-      {
+      if (height2 < minHeight) {
         height1 = rect.Height;
         height2 = 0;
         flag1 = false;
@@ -532,12 +530,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       splitX = rect.Left + width1;
       splitY = rect.Top + height1;
       topLeft = new Rectangle(rect.Left, rect.Top, width1, height1);
-      topRight = !flag2 ? Rectangle.Empty : new Rectangle(splitX, rect.Top, width2, height1);
-      bottomLeft = !flag1 ? Rectangle.Empty : new Rectangle(rect.Left, splitY, width1, height2);
-      if (flag2 && flag1)
-        bottomRight = new Rectangle(splitX, splitY, width2, height2);
-      else
-        bottomRight = Rectangle.Empty;
+      topRight = (flag2 ? new Rectangle(splitX, rect.Top, width2, height1) : Rectangle.Empty);
+      bottomLeft = (flag1 ? new Rectangle(rect.Left, splitY, width1, height2) : Rectangle.Empty);
+      bottomRight = ((flag2 && flag1) ? new Rectangle(splitX, splitY, width2, height2) : Rectangle.Empty);
     }
 
     private void MakeBlocks(Map map, bool makeRoads, ref List<Block> list, Rectangle rect)
@@ -1124,15 +1119,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MakeHousingRoom(map, roomRect, GameTiles.FLOOR_PLANKS, m_Game.GameTiles.WALL_BRICK);
         FillHousingRoomContents(map, roomRect);
       }
+      // XXX post-processing: converts inside windows to doors
+      // backstop for a post-condition of MakeHousingRoom
       bool flag = b.BuildingRect.Any(pt => !map.IsInsideAt(pt) && (!(map.GetMapObjectAt(pt) as DoorWindow)?.IsWindow ?? false));
       while(!flag) {
           int x = m_DiceRoller.Roll(b.BuildingRect.Left, b.BuildingRect.Right);
           int y = m_DiceRoller.Roll(b.BuildingRect.Top, b.BuildingRect.Bottom);
           if (!map.IsInsideAt(x, y)) {
-            DoorWindow doorWindow = map.GetMapObjectAt(x, y) as DoorWindow;
-            if (doorWindow != null && doorWindow.IsWindow) {
+            if (map.GetMapObjectAt(x, y) is DoorWindow window && window.IsWindow) {
               map.RemoveMapObjectAt(x, y);
-              map.PlaceMapObjectAt((MapObject)MakeObjWoodenDoor(), new Point(x, y));
+              map.PlaceMapObjectAt(MakeObjWoodenDoor(), new Point(x, y));
               flag = true;
             }
           }

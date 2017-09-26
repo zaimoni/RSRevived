@@ -317,14 +317,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Activity Activity {
-      get {
-        return m_Activity;
-      }
-      set {
-        m_Activity = value;
-      }
-    }
+    public Activity Activity;
 
     public Actor TargetActor {
       get {
@@ -545,8 +538,10 @@ namespace djack.RogueSurvivor.Data
 
     public Actor(ActorModel model, Faction faction, int spawnTime, string name="", bool isProperName=false, bool isPluralName=false)
     {
-      Contract.Requires(null != model);
-      Contract.Requires(null != faction);
+#if DEBUG
+      if (null == model) throw new ArgumentNullException(nameof(model));
+      if (null == faction) throw new ArgumentNullException(nameof(faction));
+#endif
       if (string.IsNullOrEmpty(name)) name = model.Name;
       m_ModelID = model.ID;
       m_FactionID = faction.ID;
@@ -892,7 +887,7 @@ namespace djack.RogueSurvivor.Data
     public void MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
     {
 #if DEBUG
-      if (null == fn) throw new ArgumentNullException(nameof(choice_handler));
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
       Contract.Requires(null!=fn);
       if (IsPlayer && !IsDead && (null == pred || pred(this))) {
