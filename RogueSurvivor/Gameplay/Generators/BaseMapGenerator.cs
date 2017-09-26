@@ -825,6 +825,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<int, int, string> decoFn)
     {
+#if DEBUG
+      if (null == decoFn) throw new ArgumentNullException(nameof(decoFn));
+#endif
       for (int left = rect.Left; left < rect.Right; ++left) {
         for (int top = rect.Top; top < rect.Bottom; ++top) {
           Tile tileAt = map.GetTileAt(left, top);

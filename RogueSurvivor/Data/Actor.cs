@@ -94,7 +94,6 @@ namespace djack.RogueSurvivor.Data
     private Location m_Location;
     private int m_ActionPoints;
     private int m_LastActionTurn;
-    private Activity m_Activity;
     private Actor m_TargetActor;
     private int m_AudioRangeMod;
     private Attack m_CurrentMeleeAttack;
@@ -525,8 +524,10 @@ namespace djack.RogueSurvivor.Data
     public Corpse StopDraggingCorpse()
     {
       Corpse ret = m_DraggedCorpse;
-      ret.DraggedBy = null;
-      m_DraggedCorpse = null;
+      if (null != ret) {
+        ret.DraggedBy = null;
+        m_DraggedCorpse = null;
+      }
       return ret;
     }
 

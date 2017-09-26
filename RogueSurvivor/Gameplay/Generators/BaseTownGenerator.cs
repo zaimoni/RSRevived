@@ -2979,19 +2979,19 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       private int m_ItemInShopShelfChance;
       private int m_PolicemanChance;
 
-      public District District { get; set; }
+      // these have operational reasons for being public-writable
+      public bool GeneratePoliceStation;
+      public bool GenerateHospital;
+      public District District;
 
-      public bool GeneratePoliceStation { get; set; }
-
-      public bool GenerateHospital { get; set; }
-
+      // map generation is naturally slow, so we can afford to hard-validate even in release mode
       public int MapWidth {
         get {
           return m_MapWidth;
         }
         set {
           if (value <= 0 || value > RogueGame.MAP_MAX_WIDTH)
-            throw new ArgumentOutOfRangeException("MapWidth");
+            throw new ArgumentOutOfRangeException(nameof(MapWidth),value,"must be in 1.."+ RogueGame.MAP_MAX_WIDTH.ToString());
           m_MapWidth = value;
         }
       }
@@ -3002,163 +3002,129 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
         set {
           if (value <= 0 || value > RogueGame.MAP_MAX_HEIGHT)
-            throw new ArgumentOutOfRangeException("MapHeight");
+            throw new ArgumentOutOfRangeException(nameof(MapHeight),value,"must be in 1.."+ RogueGame.MAP_MAX_HEIGHT.ToString());
           m_MapHeight = value;
         }
       }
 
-      public int MinBlockSize
-      {
-        get
-        {
+      public int MinBlockSize {
+        get {
           return m_MinBlockSize;
         }
-        set
-        {
+        set {
           if (value < 4 || value > 32)
-            throw new ArgumentOutOfRangeException("MinBlockSize must be [4..32]");
-                    m_MinBlockSize = value;
+            throw new ArgumentOutOfRangeException(nameof(MinBlockSize),value,"must be in 4..32");
+          m_MinBlockSize = value;
         }
       }
 
-      public int WreckedCarChance
-      {
-        get
-        {
+      public int WreckedCarChance {
+        get {
           return m_WreckedCarChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("WreckedCarChance must be [0..100]");
-                    m_WreckedCarChance = value;
+            throw new ArgumentOutOfRangeException(nameof(WreckedCarChance),value,"must be in 0..100");
+          m_WreckedCarChance = value;
         }
       }
 
-      public int ShopBuildingChance
-      {
-        get
-        {
+      public int ShopBuildingChance {
+        get {
           return m_ShopBuildingChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("ShopBuildingChance must be [0..100]");
-                    m_ShopBuildingChance = value;
+            throw new ArgumentOutOfRangeException(nameof(ShopBuildingChance),value,"must be in 0..100");
+          m_ShopBuildingChance = value;
         }
       }
 
-      public int ParkBuildingChance
-      {
-        get
-        {
+      public int ParkBuildingChance {
+        get {
           return m_ParkBuildingChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("ParkBuildingChance must be [0..100]");
-                    m_ParkBuildingChance = value;
+            throw new ArgumentOutOfRangeException(nameof(ParkBuildingChance),value,"must be in 0..100");
+          m_ParkBuildingChance = value;
         }
       }
 
-      public int CHARBuildingChance
-      {
-        get
-        {
+      public int CHARBuildingChance {
+        get {
           return m_CHARBuildingChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("CHARBuildingChance must be [0..100]");
-                    m_CHARBuildingChance = value;
+            throw new ArgumentOutOfRangeException(nameof(CHARBuildingChance),value,"must be in 0..100");
+          m_CHARBuildingChance = value;
         }
       }
 
-      public int PostersChance
-      {
-        get
-        {
+      public int PostersChance {
+        get {
           return m_PostersChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("PostersChance must be [0..100]");
-                    m_PostersChance = value;
+            throw new ArgumentOutOfRangeException(nameof(PostersChance),value,"must be in 0..100");
+          m_PostersChance = value;
         }
       }
 
-      public int TagsChance
-      {
-        get
-        {
+      public int TagsChance {
+        get {
           return m_TagsChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("TagsChance must be [0..100]");
-                    m_TagsChance = value;
+            throw new ArgumentOutOfRangeException(nameof(TagsChance),value,"must be in 0..100");
+          m_TagsChance = value;
         }
       }
 
-      public int ItemInShopShelfChance
-      {
-        get
-        {
+      public int ItemInShopShelfChance {
+        get {
           return m_ItemInShopShelfChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("ItemInShopShelfChance must be [0..100]");
-                    m_ItemInShopShelfChance = value;
+            throw new ArgumentOutOfRangeException(nameof(ItemInShopShelfChance),value,"must be in 0..100");
+          m_ItemInShopShelfChance = value;
         }
       }
 
-      public int PolicemanChance
-      {
-        get
-        {
+      public int PolicemanChance {
+        get {
           return m_PolicemanChance;
         }
-        set
-        {
+        set {
           if (value < 0 || value > 100)
-            throw new ArgumentOutOfRangeException("PolicemanChance must be [0..100]");
-                    m_PolicemanChance = value;
+            throw new ArgumentOutOfRangeException(nameof(PolicemanChance),value,"must be in 0..100");
+          m_PolicemanChance = value;
         }
       }
     }
 
     public class Block
     {
-      public Rectangle Rectangle { get; set; }
-
-      public Rectangle BuildingRect { get; set; }
-
-      public Rectangle InsideRect { get; set; }
+      public readonly Rectangle Rectangle;
+      public readonly Rectangle BuildingRect;
+      public readonly Rectangle InsideRect;
 
       public Block(Rectangle rect)
       {
-                ResetRectangle(rect);
+        Rectangle = rect;
+        BuildingRect = new Rectangle(rect.Left + 1, rect.Top + 1, rect.Width - 2, rect.Height - 2);
+        InsideRect = new Rectangle(BuildingRect.Left + 1, BuildingRect.Top + 1, BuildingRect.Width - 2, BuildingRect.Height - 2);
       }
 
       public Block(Block copyFrom)
       {
-                Rectangle = copyFrom.Rectangle;
-                BuildingRect = copyFrom.BuildingRect;
-                InsideRect = copyFrom.InsideRect;
-      }
-
-      public void ResetRectangle(Rectangle rect)
-      {
-                Rectangle = rect;
-                BuildingRect = new Rectangle(rect.Left + 1, rect.Top + 1, rect.Width - 2, rect.Height - 2);
-                InsideRect = new Rectangle(BuildingRect.Left + 1, BuildingRect.Top + 1, BuildingRect.Width - 2, BuildingRect.Height - 2);
+        Rectangle = copyFrom.Rectangle;
+        BuildingRect = copyFrom.BuildingRect;
+        InsideRect = copyFrom.InsideRect;
       }
     }
 

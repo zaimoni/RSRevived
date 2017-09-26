@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Data
 
     // return value is 0 for "no", otherwise something that should have been an enum
     public int UsesCrossDistrictView(Map m)
-    { 
+    {
       if (m==m_EntryMap) return 1;
       if (m==m_SewersMap) return 2;
       if (m==m_SubwayMap) return 3;
@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // possible micro-optimization target
-    public int PlayerCount { 
+    public int PlayerCount {
       get {
         int ret = 0;
         foreach(Map tmp in Maps) {
@@ -176,7 +176,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public Actor FindPlayer(Map already_failed) { 
+    public Actor FindPlayer(Map already_failed) {
        foreach(Map tmp in Maps) {
          if (tmp == already_failed) continue;
          Actor tmp2 = tmp.FindPlayer;
