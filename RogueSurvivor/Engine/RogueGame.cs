@@ -426,7 +426,7 @@ namespace djack.RogueSurvivor.Engine
       s_Hints = new GameHintsStatus();
       s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
-      m_GameActors = new GameActors();
+      m_GameActors = new GameActors(m_UI);
       m_GameItems = new GameItems(m_UI);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
@@ -12451,12 +12451,6 @@ namespace djack.RogueSurvivor.Engine
     private void LoadData()
     {
       LoadDataSkills();
-      LoadDataActors();
-    }
-
-    private void LoadDataActors()
-    {
-      GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
     }
 
     private void LoadDataSkills()

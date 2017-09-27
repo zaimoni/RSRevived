@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Gameplay
 {
@@ -567,6 +566,9 @@ namespace djack.RogueSurvivor.Gameplay
 
     public GameItems(IRogueUI ui)
     {
+#if DEBUG
+      if (null == ui) throw new ArgumentNullException(nameof(ui));
+#endif
       Models.Items = this;
 
       LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
@@ -810,7 +812,6 @@ namespace djack.RogueSurvivor.Gameplay
     private static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
 #if DEBUG
-      if (null == ui) throw new ArgumentNullException(nameof(ui));
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
       Notify(ui, kind, "loading file...");

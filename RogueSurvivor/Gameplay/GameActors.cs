@@ -89,9 +89,14 @@ namespace djack.RogueSurvivor.Gameplay
     static public ActorModel BlackOps { get { return m_Models[(int) IDs.BLACKOPS_MAN]; } }
     static public ActorModel JasonMyers { get { return m_Models[(int) IDs.JASON_MYERS]; } }
 
-    public GameActors()
+    public GameActors(IRogueUI ui)
     {
+#if DEBUG
+      if (null == ui) throw new ArgumentNullException(nameof(ui));
+#endif
       Models.Actors = this;
+
+      LoadFromCSV(ui, "Resources\\Data\\Actors.csv");
     }
 
 /*
@@ -120,7 +125,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       return ret;
     }
 
-    static public void CreateModels(CSVTable toTable)
+    static private void CreateModels(CSVTable toTable)
     {
       const Abilities.Flags STD_ZOMBIFYING = Abilities.Flags.IS_ROTTING | Abilities.Flags.CAN_ZOMBIFY_KILLED | Abilities.Flags.CAN_BASH_DOORS | Abilities.Flags.CAN_BREAK_OBJECTS | Abilities.Flags.ZOMBIEAI_EXPLORE | Abilities.Flags.AI_CAN_USE_AI_EXITS;
       const Abilities.Flags STD_ZM = Abilities.Flags.CAN_USE_MAP_OBJECTS | Abilities.Flags.CAN_JUMP | Abilities.Flags.CAN_JUMP_STUMBLE;
@@ -264,10 +269,9 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
     }
 
-    public static bool LoadFromCSV(IRogueUI ui, string path)
+    private static bool LoadFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
-      if (null == ui) throw new ArgumentNullException(nameof(ui));
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path), path, "string.IsNullOrEmpty(path)");
 #endif
       Notify(ui, "loading file...");
