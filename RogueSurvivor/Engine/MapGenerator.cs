@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Engine
       List<Point> valid_spawn = rect.Where(pt => map.IsWalkableFor(pt, actor) && (goodPositionFn == null || goodPositionFn(pt)));
       if (0>=valid_spawn.Count) return false;
       position = valid_spawn[roller.Roll(0,valid_spawn.Count)];
-      map.PlaceActorAt(actor, position);
+      map.PlaceAt(actor, position);
       if (actor.Faction.IsEnemyOf(Models.Factions[(int)Gameplay.GameFactions.IDs.ThePolice]))
         Session.Get.PoliceThreatTracking.RecordSpawn(actor, map, valid_spawn);
       return true;
@@ -190,7 +190,7 @@ namespace djack.RogueSurvivor.Engine
 #region Map Objects
     protected static void MapObjectPlace(Map map, int x, int y, MapObject mapObj)
     {
-      if (!map.HasMapObjectAt(x, y)) map.PlaceMapObjectAt(mapObj, new Point(x, y));
+      if (!map.HasMapObjectAt(x, y)) map.PlaceAt(mapObj, new Point(x, y));
     }
 
     protected static void MapObjectFill(Map map, Rectangle rect, Func<Point, MapObject> createFn)
@@ -233,7 +233,7 @@ namespace djack.RogueSurvivor.Engine
           map.RemoveAllDecorationsAt(left, top);
           map.RemoveAllZonesAt(left, top);
           Actor actorAt = map.GetActorAt(left, top);
-          if (actorAt != null) map.RemoveActor(actorAt);
+          if (actorAt != null) map.Remove(actorAt);
         }
       }
     }

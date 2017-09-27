@@ -823,7 +823,7 @@ namespace djack.RogueSurvivor.Data
       if (actor.Location.Map == this && HasActor(actor)) {
         if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
       } else {
-        if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.RemoveActor(actor);
+        if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.Remove(actor);
         m_ActorsList.Add(actor);
         Engine.LOS.Now(this);
         if (actor.IsPlayer) m_aux_Players = null;
@@ -842,7 +842,7 @@ namespace djack.RogueSurvivor.Data
       m_iCheckNextActorIndex = 0;
     }
 
-    public void RemoveActor(Actor actor)
+    public void Remove(Actor actor)
     {
       if (m_ActorsList.Remove(actor)) {
         m_aux_ActorsByPosition.Remove(actor.Location.Position);
@@ -1022,7 +1022,7 @@ namespace djack.RogueSurvivor.Data
       if (null != mapObj.Location.Map && HasMapObject(mapObj))
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
       else {
-        if (null != mapObj.Location.Map && this != mapObj.Location.Map) mapObj.Location.Map.RemoveMapObjectAt(mapObj.Location.Position.X,mapObj.Location.Position.Y);
+        if (null != mapObj.Location.Map && this != mapObj.Location.Map) mapObj.Remove();
         m_MapObjectsList.Add(mapObj);
       }
       m_aux_MapObjectsByPosition.Add(position, mapObj);

@@ -284,6 +284,12 @@ namespace djack.RogueSurvivor.Data
 
     public void PlaceAt(Map m, Point pos) {m.PlaceAt(this,pos);} // this guaranteed non-null so non-null precondition ok
 
+    public void Remove()
+    {
+      if (null == Location.Map) return;
+      Location.Map.RemoveMapObjectAt(Location.Position.X,Location.Position.Y);
+    }
+
     // flag handling
     private bool GetFlag(MapObject.Flags f)
     {

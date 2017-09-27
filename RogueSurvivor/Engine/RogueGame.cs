@@ -7364,7 +7364,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
-      map.RemoveActor(actor);
+      map.Remove(actor);
       if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
       exitAt.Location.Place(actor);
@@ -7449,7 +7449,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
       Location a_loc = actor.Location;
       Location o_loc = other.Location;
-      o_loc.Map.RemoveActor(other);
+      o_loc.Map.Remove(other);
       o_loc.Place(actor);
       a_loc.Place(other);
       if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
@@ -8556,7 +8556,7 @@ namespace djack.RogueSurvivor.Engine
       if (flag)
         doorWindow.SetState(DoorWindow.STATE_BROKEN);
       else
-        mapObj.Location.Map.RemoveMapObjectAt(mapObj.Location.Position.X, mapObj.Location.Position.Y);
+        mapObj.Remove();
       OnLoudNoise(mapObj.Location.Map, mapObj.Location.Position, "A loud *CRASH*");
     }
 
@@ -8644,7 +8644,6 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.SpendStaminaPoints(staminaCost);
       Location o_loc = mapObj.Location;
-      o_loc.Map.RemoveMapObjectAt(o_loc.Position.X, o_loc.Position.Y);
       o_loc.Map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
       if (!Rules.IsAdjacent(o_loc, actor.Location) && o_loc.IsWalkableFor(actor)) {
         o_loc.Place(actor);
@@ -8833,7 +8832,7 @@ namespace djack.RogueSurvivor.Engine
       }
       bool flag1 = killer != null && Rules.IsMurder(killer, deadGuy);
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
-      deadGuy.Location.Map.RemoveActor(deadGuy);
+      deadGuy.Location.Map.Remove(deadGuy);
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty) {
         // the implicit police radio goes explicit on death, as a generic item
         if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID && m_Rules.RollChance(Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE)) {
@@ -8925,7 +8924,7 @@ namespace djack.RogueSurvivor.Engine
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
       // this doesn't *look* safe, but it turns out we never have a foreach loop on the actors list when calling KillActor.
-      deadGuy.Location.Map.RemoveActor(deadGuy);
+      deadGuy.Location.Map.Remove(deadGuy);
 
       // achievement: killing the Sewers Thing
       if (killer == m_Player && killer.Leader == m_Player) {
