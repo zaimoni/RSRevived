@@ -26,113 +26,24 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    static public TileModel FLOOR_ASPHALT {
-      get {
-        return m_Models[(int)IDs.FLOOR_ASPHALT];
-      }
-    }
-
-    static public TileModel FLOOR_CONCRETE {
-      get {
-        return m_Models[(int)IDs.FLOOR_CONCRETE];
-      }
-    }
-
-    static public TileModel FLOOR_GRASS {
-      get {
-        return m_Models[(int)IDs.FLOOR_GRASS];
-      }
-    }
-
-    static public TileModel FLOOR_OFFICE {
-      get {
-        return m_Models[(int)IDs.FLOOR_OFFICE];
-      }
-    }
-
-    static public TileModel FLOOR_PLANKS {
-      get {
-        return m_Models[(int)IDs.FLOOR_PLANKS];
-      }
-    }
-
-    static public TileModel FLOOR_SEWER_WATER {
-      get {
-        return m_Models[(int)IDs.FLOOR_SEWER_WATER];
-      }
-    }
-
-    static public TileModel FLOOR_TILES {
-      get {
-        return m_Models[(int)IDs.FLOOR_TILES];
-      }
-    }
-
-    static public TileModel FLOOR_WALKWAY {
-      get {
-        return m_Models[(int)IDs.FLOOR_WALKWAY];
-      }
-    }
-
-    static public TileModel ROAD_ASPHALT_EW {
-      get {
-        return m_Models[(int)IDs.ROAD_ASPHALT_EW];
-      }
-    }
-
-    static public TileModel ROAD_ASPHALT_NS {
-      get {
-        return m_Models[(int)IDs.ROAD_ASPHALT_NS];
-      }
-    }
-
-    static public TileModel RAIL_EW {
-      get {
-        return m_Models[(int)IDs.RAIL_EW];
-      }
-    }
-
-    public TileModel WALL_BRICK {
-      get {
-        return m_Models[(int)IDs.WALL_BRICK];
-      }
-    }
-
-    static public TileModel WALL_CHAR_OFFICE {
-      get {
-        return m_Models[(int)IDs.WALL_CHAR_OFFICE];
-      }
-    }
-
-    static public TileModel WALL_POLICE_STATION {
-      get {
-        return m_Models[(int)IDs.WALL_POLICE_STATION];
-      }
-    }
-
-    static public TileModel WALL_HOSPITAL {
-      get {
-        return m_Models[(int)IDs.WALL_HOSPITAL];
-      }
-    }
-
-    static public TileModel WALL_SEWER {
-      get {
-        return m_Models[(int)IDs.WALL_SEWER];
-      }
-    }
-
-    static public TileModel WALL_STONE {
-      get {
-        return m_Models[(int)IDs.WALL_STONE];
-      }
-    }
-
-    static public TileModel WALL_SUBWAY {
-      get {
-        return m_Models[(int)IDs.WALL_SUBWAY];
-      }
-    }
+    static public TileModel FLOOR_ASPHALT { get { return m_Models[(int)IDs.FLOOR_ASPHALT]; } }
+    static public TileModel FLOOR_CONCRETE { get { return m_Models[(int)IDs.FLOOR_CONCRETE]; } }
+    static public TileModel FLOOR_GRASS { get { return m_Models[(int)IDs.FLOOR_GRASS]; } }
+    static public TileModel FLOOR_OFFICE { get { return m_Models[(int)IDs.FLOOR_OFFICE]; } }
+    static public TileModel FLOOR_PLANKS { get { return m_Models[(int)IDs.FLOOR_PLANKS]; } }
+    static public TileModel FLOOR_SEWER_WATER { get { return m_Models[(int)IDs.FLOOR_SEWER_WATER]; } }
+    static public TileModel FLOOR_TILES { get { return m_Models[(int)IDs.FLOOR_TILES]; } }
+    static public TileModel FLOOR_WALKWAY { get { return m_Models[(int)IDs.FLOOR_WALKWAY]; } }
+    static public TileModel ROAD_ASPHALT_EW { get { return m_Models[(int)IDs.ROAD_ASPHALT_EW]; } }
+    static public TileModel ROAD_ASPHALT_NS { get { return m_Models[(int)IDs.ROAD_ASPHALT_NS]; } }
+    static public TileModel RAIL_EW { get { return m_Models[(int)IDs.RAIL_EW]; } }
+    static public TileModel WALL_BRICK { get { return m_Models[(int)IDs.WALL_BRICK]; } }
+    static public TileModel WALL_CHAR_OFFICE { get { return m_Models[(int)IDs.WALL_CHAR_OFFICE]; } }
+    static public TileModel WALL_POLICE_STATION { get { return m_Models[(int)IDs.WALL_POLICE_STATION]; } }
+    static public TileModel WALL_HOSPITAL { get { return m_Models[(int)IDs.WALL_HOSPITAL]; } }
+    static public TileModel WALL_SEWER { get { return m_Models[(int)IDs.WALL_SEWER]; } }
+    static public TileModel WALL_STONE { get { return m_Models[(int)IDs.WALL_STONE]; } }
+    static public TileModel WALL_SUBWAY { get { return m_Models[(int)IDs.WALL_SUBWAY]; } }
 
     // There are no transparent walls at this time.
     // There are no opaque non-walls at this time.

@@ -394,7 +394,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       m_DiceRoller = new DiceRoller(seed);
       Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
-      TileFill(subway, m_Game.GameTiles.WALL_BRICK, true);
+      TileFill(subway, GameTiles.WALL_BRICK, true);
 
       district.SubwayMap = subway;
 
@@ -474,7 +474,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       while (num3 < subway.Width * subway.Height && !flag1);
       if (flag1) {
         TileFill(subway, GameTiles.FLOOR_CONCRETE, rect);
-        TileRectangle(subway, m_Game.GameTiles.WALL_BRICK, rect);
+        TileRectangle(subway, GameTiles.WALL_BRICK, rect);
         PlaceDoor(subway, rect.Left + 2, direction == Direction.N ? rect.Bottom - 1 : rect.Top, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
         subway.AddZone(MakeUniqueZone("tools room", rect));
         DoForEachTile(rect, (Action<Point>) (pt =>
@@ -781,7 +781,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         int height = rectangle.Height;
         Map shopBasement = new Map(seed, name, map.District, width, height, Lighting.DARKNESS);
         TileFill(shopBasement, GameTiles.FLOOR_CONCRETE, true);
-        TileRectangle(shopBasement, m_Game.GameTiles.WALL_BRICK, shopBasement.Rect);
+        TileRectangle(shopBasement, GameTiles.WALL_BRICK, shopBasement.Rect);
         shopBasement.AddZone(MakeUniqueZone("basement", shopBasement.Rect));
         DoForEachTile(shopBasement.Rect, (Action<Point>) (pt =>
         {
@@ -1102,12 +1102,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       if (b.InsideRect.Width < 4 || b.InsideRect.Height < 4) return false;
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
-      TileRectangle(map, m_Game.GameTiles.WALL_BRICK, b.BuildingRect);
+      TileRectangle(map, GameTiles.WALL_BRICK, b.BuildingRect);
       TileFill(map, GameTiles.FLOOR_PLANKS, b.InsideRect, true);
       List<Rectangle> list = new List<Rectangle>();
       MakeRoomsPlan(map, ref list, b.BuildingRect, 5);
       foreach (Rectangle roomRect in list) {
-        MakeHousingRoom(map, roomRect, GameTiles.FLOOR_PLANKS, m_Game.GameTiles.WALL_BRICK);
+        MakeHousingRoom(map, roomRect, GameTiles.FLOOR_PLANKS, GameTiles.WALL_BRICK);
         FillHousingRoomContents(map, roomRect);
       }
       // XXX post-processing: converts inside windows to doors
@@ -1819,17 +1819,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Point large = (basement.Rect.Bottom <= basement.Rect.Right ? new Point(corner.X,diag_step.Y) : new Point(diag_step.X,corner.Y));
       Point small = (basement.Rect.Bottom > basement.Rect.Right ? new Point(corner.X,diag_step.Y) : new Point(diag_step.X,corner.Y));
-      if (   m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(large)
-          && m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(small)) {
+      if (   GameTiles.WALL_BRICK == basement.GetTileModelAt(large)
+          && GameTiles.WALL_BRICK == basement.GetTileModelAt(small)) {
         if (corner==basementStairs) {
           // The Sokoban gate is required to work.
           basement.SetTileModelAt(diag_step.X, diag_step.Y, GameTiles.FLOOR_CONCRETE);
           Session.Get.PoliceInvestigate.Record(basement,diag_step);
           basement.SetTileModelAt(large.X, large.Y, GameTiles.FLOOR_CONCRETE);
           Session.Get.PoliceInvestigate.Record(basement,large);
-        } else if (   m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(diag_step)
+        } else if (   GameTiles.WALL_BRICK == basement.GetTileModelAt(diag_step)
                    && GameTiles.FLOOR_CONCRETE == basement.GetTileModelAt(corner)) {
-          basement.SetTileModelAt(corner.X, corner.Y, m_Game.GameTiles.WALL_BRICK);
+          basement.SetTileModelAt(corner.X, corner.Y, GameTiles.WALL_BRICK);
           basement.SetTileModelAt(diag_step.X, diag_step.Y, GameTiles.FLOOR_CONCRETE);
           Session.Get.PoliceInvestigate.Record(basement,diag_step);
           Session.Get.PoliceInvestigate.Seen(basement,corner);
@@ -1872,7 +1872,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), map.District, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
-      TileRectangle(basement, m_Game.GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
+      TileRectangle(basement, GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
       Point point = new Point();
       do {
         point.X = m_DiceRoller.Roll(buildingRect.Left, buildingRect.Right);
@@ -1886,13 +1886,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         Session.Get.PoliceInvestigate.Record(basement,pt);
         if (!m_DiceRoller.RollChance(HOUSE_BASEMENT_PILAR_CHANCE) || pt == basementStairs) return;
-        if (m_Game.GameTiles.WALL_BRICK == basement.GetTileModelAt(pt)) return; // already wall
+        if (GameTiles.WALL_BRICK == basement.GetTileModelAt(pt)) return; // already wall
         // We are iterating all rows Y in each column X
         // XXX so if we end up disconnecting we find out vertically
         // basement.Rect.Top and basement.Rect.Left are hardcoded 0
         // coordinates 0, width-1, height-1 are already brick walls
         Session.Get.PoliceInvestigate.Seen(basement,pt);    // not so freak coincidence for pillars to be completely screened
-        basement.SetTileModelAt(pt.X, pt.Y, m_Game.GameTiles.WALL_BRICK);
+        basement.SetTileModelAt(pt.X, pt.Y, GameTiles.WALL_BRICK);
       }));
       // Tourism will fail if not all targets are accessible from the exit.  Transposing should be safe here.
       while(!_ForceHouseBasementConnected(basement,basementStairs));
@@ -2542,7 +2542,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Map map = new Map(seed, "Hospital - Power", d, 10, 10, Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_CONCRETE, true);
-      TileRectangle(map, m_Game.GameTiles.WALL_BRICK, map.Rect);
+      TileRectangle(map, GameTiles.WALL_BRICK, map.Rect);
       Rectangle rect = Rectangle.FromLTRB(1, 1, 3, map.Height);
       map.AddZone(MakeUniqueZone("corridor", rect));
       for (int y = 1; y < map.Height - 2; ++y)
@@ -2554,7 +2554,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (pt.X == room.Left || !map.IsWalkable(pt) || CountAdjWalls(map, pt) < 3) return;
         map.PlaceMapObjectAt(MakeObjPowerGenerator(), pt);
       }));
-      Actor named = GameActors.JasonMyers.CreateNamed(m_Game.GameFactions.ThePsychopaths, "Jason Myers", false, 0);
+      Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
       named.StartingSkill(Skills.IDs.TOUGH,3);
@@ -2569,18 +2569,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Patient");
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
-      numberedName.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\hospital_patient_uniform");
+      numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_PATIENT_UNIFORM);
       return numberedName;
     }
 
     private Actor CreateNewHospitalNurse(int spawnTime)
     {
-      Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Nurse");
@@ -2593,7 +2593,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalDoctor(int spawnTime)
     {
-      Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(m_Game.GameFactions.TheCivilians, 0);
+      Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(GameFactions.TheCivilians, 0);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Doctor");
@@ -2724,10 +2724,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewSurvivor(int spawnTime)
     {
       bool flag = m_DiceRoller.Roll(0, 2) == 0;
-      Actor numberedName = (flag ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheSurvivors, spawnTime);
+      Actor numberedName = (flag ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheSurvivors, spawnTime);
       GiveNameToActor(m_DiceRoller, numberedName);
       DressCivilian(m_DiceRoller, numberedName);
-      numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? "Actors\\Decoration\\survivor_male_bandana" : "Actors\\Decoration\\survivor_female_bandana");
+      numberedName.Doll.AddDecoration(DollPart.HEAD, flag ? GameImages.SURVIVOR_MALE_BANDANA : GameImages.SURVIVOR_FEMALE_BANDANA);
       numberedName.Inventory.AddAll(MakeItemCannedFood());
       numberedName.Inventory.AddAll(MakeItemArmyRation());
       if (m_DiceRoller.RollChance(50)) {
@@ -2765,12 +2765,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewNakedHuman(int spawnTime)
     {
-      return (m_Rules.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+      return (m_Rules.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
     }
 
     public Actor CreateNewCivilian(int spawnTime, int itemsToCarry, int skills)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(m_Game.GameFactions.TheCivilians, spawnTime);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       DressCivilian(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       for (int index = 0; index < itemsToCarry; ++index)
@@ -2785,7 +2785,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewPoliceman(int spawnTime)
     {
-      Actor numberedName = GameActors.Policeman.CreateNumberedName(m_Game.GameFactions.ThePolice, spawnTime);
+      Actor numberedName = GameActors.Policeman.CreateNumberedName(GameFactions.ThePolice, spawnTime);
       DressPolice(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Cop");
@@ -2823,7 +2823,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         actor = (num < RogueGame.Options.SpawnSkeletonChance ? GameActors.Skeleton 
               : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance ? GameActors.Zombie
               : (num < RogueGame.Options.SpawnSkeletonChance + RogueGame.Options.SpawnZombieChance + RogueGame.Options.SpawnZombieMasterChance ? GameActors.ZombieMaster
-              : GameActors.Skeleton))).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+              : GameActors.Skeleton))).CreateNumberedName(GameFactions.TheUndeads, spawnTime);
       } else {
         actor = MakeZombified(null, CreateNewCivilian(spawnTime, 0, 0), spawnTime);
         int num = new WorldTime(spawnTime).Day / 2;
@@ -2841,7 +2841,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
-      Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? m_Game.GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
+      Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
       named.ActionPoints = 0;
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         List<string> decorations = deadVictim.Doll.GetDecorations(part);
@@ -2857,18 +2857,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public Actor CreateNewSewersUndead(int spawnTime)
     {
       if (!Session.Get.HasAllZombies) return CreateNewUndead(spawnTime);
-      return (m_DiceRoller.RollChance(80) ? GameActors.RatZombie : GameActors.Zombie).CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+      return (m_DiceRoller.RollChance(80) ? GameActors.RatZombie : GameActors.Zombie).CreateNumberedName(GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewBasementRatZombie(int spawnTime)
     {
       if (!Session.Get.HasAllZombies) return CreateNewUndead(spawnTime);
-      return GameActors.RatZombie.CreateNumberedName(m_Game.GameFactions.TheUndeads, spawnTime);
+      return GameActors.RatZombie.CreateNumberedName(GameFactions.TheUndeads, spawnTime);
     }
 
     public Actor CreateNewCHARGuard(int spawnTime)
     {
-      Actor numberedName = GameActors.CHARGuard.CreateNumberedName(m_Game.GameFactions.TheCHARCorporation, spawnTime);
+      Actor numberedName = GameActors.CHARGuard.CreateNumberedName(GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Gd.");
@@ -2880,7 +2880,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
     {
-      Actor numberedName = GameActors.NationalGuard.CreateNumberedName(m_Game.GameFactions.TheArmy, spawnTime);
+      Actor numberedName = GameActors.NationalGuard.CreateNumberedName(GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName(rankName);
@@ -2906,7 +2906,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
     {
-      Actor numberedName = GameActors.BikerMan.CreateNumberedName(m_Game.GameFactions.TheBikers, spawnTime);
+      Actor numberedName = GameActors.BikerMan.CreateNumberedName(GameFactions.TheBikers, spawnTime);
       numberedName.GangID = gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
@@ -2920,7 +2920,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
     {
-      Actor numberedName = GameActors.GangstaMan.CreateNumberedName(m_Game.GameFactions.TheGangstas, spawnTime);
+      Actor numberedName = GameActors.GangstaMan.CreateNumberedName(GameFactions.TheGangstas, spawnTime);
       numberedName.GangID = gangId;
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
@@ -2933,7 +2933,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewBlackOps(int spawnTime, string rankName)
     {
-      Actor numberedName = GameActors.BlackOps.CreateNumberedName(m_Game.GameFactions.TheBlackOps, spawnTime);
+      Actor numberedName = GameActors.BlackOps.CreateNumberedName(GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName(rankName);
@@ -2947,7 +2947,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Actor CreateNewFeralDog(int spawnTime)
     {
-      Actor numberedName = GameActors.FeralDog.CreateNumberedName(m_Game.GameFactions.TheFerals, spawnTime);
+      Actor numberedName = GameActors.FeralDog.CreateNumberedName(GameFactions.TheFerals, spawnTime);
       SkinDog(m_DiceRoller, numberedName);
       return numberedName;
     }

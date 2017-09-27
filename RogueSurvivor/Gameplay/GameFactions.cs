@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Gameplay
       GameItems.IDs.ARMOR_POLICE_JACKET,
       GameItems.IDs.ARMOR_POLICE_RIOT
     };
-    private readonly Faction[] m_Factions = new Faction[(int) IDs._COUNT];
+    private static readonly Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
     public Faction this[int id] {
       get {
@@ -35,71 +35,17 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public Faction TheArmy {
-      get {
-        return this[GameFactions.IDs.TheArmy];
-      }
-    }
-
-    public Faction TheBikers {
-      get {
-        return this[GameFactions.IDs.TheBikers];
-      }
-    }
-
-    public Faction TheBlackOps {
-      get {
-        return this[GameFactions.IDs.TheBlackOps];
-      }
-    }
-
-    public Faction TheCHARCorporation {
-      get {
-        return this[GameFactions.IDs.TheCHARCorporation];
-      }
-    }
-
-    public Faction TheCivilians {
-      get {
-        return this[GameFactions.IDs.TheCivilians];
-      }
-    }
-
-    public Faction TheGangstas {
-      get {
-        return this[GameFactions.IDs.TheGangstas];
-      }
-    }
-
-    public Faction ThePolice {
-      get {
-        return this[GameFactions.IDs.ThePolice];
-      }
-    }
-
-    public Faction TheUndeads {
-      get {
-        return this[GameFactions.IDs.TheUndeads];
-      }
-    }
-
-    public Faction ThePsychopaths {
-      get {
-        return this[GameFactions.IDs.ThePsychopaths];
-      }
-    }
-
-    public Faction TheSurvivors {
-      get {
-        return this[GameFactions.IDs.TheSurvivors];
-      }
-    }
-
-    public Faction TheFerals {
-      get {
-        return this[GameFactions.IDs.TheFerals];
-      }
-    }
+    static public Faction TheArmy { get { return m_Factions[(int) IDs.TheArmy]; } }
+    static public Faction TheBikers { get { return m_Factions[(int) IDs.TheBikers]; } }
+    static public Faction TheBlackOps { get { return m_Factions[(int) IDs.TheBlackOps]; } }
+    static public Faction TheCHARCorporation { get { return m_Factions[(int) IDs.TheCHARCorporation]; } }
+    static public Faction TheCivilians { get { return m_Factions[(int) IDs.TheCivilians]; } }
+    static public Faction TheGangstas { get { return m_Factions[(int) IDs.TheGangstas]; } }
+    static public Faction ThePolice { get { return m_Factions[(int) IDs.ThePolice]; } }
+    static public Faction TheUndeads { get { return m_Factions[(int) IDs.TheUndeads]; } }
+    static public Faction ThePsychopaths { get { return m_Factions[(int) IDs.ThePsychopaths]; } }
+    static public Faction TheSurvivors { get { return m_Factions[(int) IDs.TheSurvivors]; } }
+    static public Faction TheFerals { get { return m_Factions[(int) IDs.TheFerals]; } }
 
     public GameFactions()
     {

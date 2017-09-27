@@ -137,9 +137,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> percepts3 = friends.Filter(p =>
         {
           Actor actor = p.Percepted as Actor;
-          if (actor.Faction == game.GameFactions.TheCHARCorporation)
-            return false;
-          return RogueGame.IsInCHARProperty(actor.Location);
+          return actor.Faction != GameFactions.TheCHARCorporation &&  RogueGame.IsInCHARProperty(actor.Location);
         });
         if (percepts3 != null) {
           Actor target = FilterNearest(percepts3).Percepted as Actor;

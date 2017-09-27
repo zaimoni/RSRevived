@@ -11516,17 +11516,17 @@ namespace djack.RogueSurvivor.Engine
         switch (m_CharGen.UndeadModel)
         {
           case GameActors.IDs.UNDEAD_SKELETON:
-            actor = GameActors.Skeleton.CreateNumberedName(m_GameFactions.TheUndeads, 0);
+            actor = GameActors.Skeleton.CreateNumberedName(GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_ZOMBIE:
-            actor = GameActors.Zombie.CreateNumberedName(m_GameFactions.TheUndeads, 0);
+            actor = GameActors.Zombie.CreateNumberedName(GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_ZOMBIE_MASTER:
-            actor = GameActors.ZombieMaster.CreateNumberedName(m_GameFactions.TheUndeads, 0);
+            actor = GameActors.ZombieMaster.CreateNumberedName(GameFactions.TheUndeads, 0);
             break;
           case GameActors.IDs.UNDEAD_MALE_ZOMBIFIED:
           case GameActors.IDs.UNDEAD_FEMALE_ZOMBIFIED:
-            Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? GameActors.FemaleCivilian : GameActors.MaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
+            Actor anonymous = (m_CharGen.UndeadModel.IsFemale() ? GameActors.FemaleCivilian : GameActors.MaleCivilian).CreateAnonymous(GameFactions.TheCivilians, 0);
             BaseMapGenerator.DressCivilian(roller, anonymous);
             BaseMapGenerator.GiveNameToActor(roller, anonymous);
             actor = Zombify(null, anonymous, true);
@@ -11536,7 +11536,7 @@ namespace djack.RogueSurvivor.Engine
         }
         actor.PrepareForPlayerControl();
       } else {
-        actor = (m_CharGen.IsMale ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateAnonymous(m_GameFactions.TheCivilians, 0);
+        actor = (m_CharGen.IsMale ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateAnonymous(GameFactions.TheCivilians, 0);
         BaseMapGenerator.DressCivilian(roller, actor);
         BaseMapGenerator.GiveNameToActor(roller, actor);
         actor.SkillUpgrade(m_CharGen.StartingSkill);
