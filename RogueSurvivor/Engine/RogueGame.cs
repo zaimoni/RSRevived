@@ -2014,7 +2014,6 @@ namespace djack.RogueSurvivor.Engine
             List<Corpse> corpseList3 = new List<Corpse>(corpseList1.Count);
             foreach (Corpse corpse in corpseList1) {
               if (!map.HasActorAt(corpse.Position)) {
-                float num = corpse.HitPoints / corpse.MaxHitPoints;
                 corpseList3.Add(corpse);
                 Zombify(null, corpse.DeadGuy, false);
                 if (ForceVisibleToPlayer(map, corpse.Position)) {
@@ -8812,10 +8811,10 @@ namespace djack.RogueSurvivor.Engine
         }
       }
       if (deadGuy.IsUnique) {
-        if (killer != null)
-          Session.Get.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName));
-        else
-          Session.Get.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter, string.Format("* {0} died by {1}! *", deadGuy.TheName, reason));
+        Session.Get.Scoring.AddEvent(deadGuy.Location.Map.LocalTime.TurnCounter,
+            (killer != null
+           ? string.Format("* {0} was killed by {1} {2}! *", deadGuy.TheName, killer.Model.Name, killer.TheName)
+           : string.Format("* {0} died by {1}! *", deadGuy.TheName, reason)));
       }
       if (deadGuy == m_Player_bak) {
         m_Player = m_Player_bak;
@@ -8830,7 +8829,6 @@ namespace djack.RogueSurvivor.Engine
         }
         deadGuy.Leader.RemoveFollower(deadGuy);
       }
-      bool flag1 = killer != null && Rules.IsMurder(killer, deadGuy);
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.Location.Map.Remove(deadGuy);
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty) {
@@ -8887,7 +8885,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (flag1) {
+      if (killer != null && Rules.IsMurder(killer, deadGuy)) {
         ++killer.MurdersCounter;
         if (killer.IsPlayer)
           Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));
@@ -8903,13 +8901,15 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (killer != null && deadGuy.MurdersCounter > 0 && (killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction))) {
-        if (killer.IsPlayer)
-          AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
-        else
-          DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
-      }
+      // XXX also a model for army radio, etc. usage
       if (killer != null && killer.Model.Abilities.IsLawEnforcer && (killer.Faction.IsEnemyOf(deadGuy.Faction) || deadGuy.MurdersCounter > 0)) {
+        if (!killer.Faction.IsEnemyOf(deadGuy.Faction) /* &&  deadGuy.MurdersCounter > 0 */) {
+          if (killer.IsPlayer)
+            AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
+          else
+            DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
+        }
+
         if (!killer.IsPlayer)
           killer.MessagePlayerOnce(a => {
             int turnCounter = Session.Get.WorldTime.TurnCounter;
@@ -10285,12 +10285,7 @@ namespace djack.RogueSurvivor.Engine
 #region set visited tiles color.
         Point pos = new Point();
 		if (null == threats) {
-          for (pos.X = 0; pos.X < map.Width; ++pos.X) {
-            for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
-              if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
-            }
-          }
+          map.Rect.DoForEach(pt => m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pos)));
 		} else {
           HashSet<Point> tainted = threats.ThreatWhere(map);
           HashSet<Point> tourism = sights_to_see.In(map);
@@ -12048,7 +12043,7 @@ namespace djack.RogueSurvivor.Engine
       return WaitYesOrNo();
     }
 
-    private bool IsSuitableReincarnation(Actor a, bool asLiving)
+    static private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
       if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != Session.Get.CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
         return false;

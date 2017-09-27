@@ -183,7 +183,7 @@ namespace djack.RogueSurvivor.Data
       get {
         if (6>m_Hour) return Turn(m_Day,6)-TurnCounter;
         if (18<=m_Hour) return Turn(m_Day+1,6)-TurnCounter;
-        return 12*TURNS_PER_HOUR;      
+        return 12*TURNS_PER_HOUR;
       }
     }
   }

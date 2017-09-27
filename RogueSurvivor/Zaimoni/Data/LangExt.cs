@@ -26,21 +26,17 @@ namespace Zaimoni.Data
         }
 
         public static string Plural(string x) {
-          string ret;
-          if (irregular_plural.TryGetValue(x, out ret)) return ret;
+          if (irregular_plural.TryGetValue(x, out string ret)) return ret;
 
-          KeyValuePair < string, string> test;
-          if (elided_adj_nouns.TryGetValue(x,out test)) return test.Key+Noun.Plural(test.Value);
+          if (elided_adj_nouns.TryGetValue(x,out KeyValuePair<string, string> test)) return test.Key+Noun.Plural(test.Value);
 
           return x+"s";
         }
 
         public static string Feminine(string x) {
-          string ret;
-          if (irregular_feminine.TryGetValue(x, out ret)) return ret;
+          if (irregular_feminine.TryGetValue(x, out string ret)) return ret;
 
-          KeyValuePair < string, string> test;
-          if (elided_adj_nouns.TryGetValue(x,out test)) return test.Key+Noun.Feminine(test.Value);
+          if (elided_adj_nouns.TryGetValue(x,out KeyValuePair<string, string> test)) return test.Key+Noun.Feminine(test.Value);
 
           return x;
         }

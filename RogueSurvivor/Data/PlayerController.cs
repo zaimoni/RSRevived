@@ -20,14 +20,14 @@ namespace djack.RogueSurvivor.Data
     private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
 
-	public PlayerController() { 
+	public PlayerController() {
       // XXX filter should be by the normal filter type of the AI being substituted for
       m_LOSSensor = new Gameplay.AI.Sensors.LOSSensor(Gameplay.AI.Sensors.LOSSensor.SensingFilter.ACTORS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.ITEMS | Gameplay.AI.Sensors.LOSSensor.SensingFilter.CORPSES);
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
     public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory {
-       get { 
+       get {
          return m_itemMemory;
        }
     }
@@ -94,7 +94,7 @@ namespace djack.RogueSurvivor.Data
     private void HandleSay(object sender, Actor.SayArgs e)
     {
       Actor speaker = (sender as Actor);
-      if (null == speaker) throw new ArgumentNullException("speaker");
+      if (null == speaker) throw new ArgumentNullException(nameof(sender));
       if (null == e._target) throw new ArgumentNullException("e.target");
       lock (speaker) {
         if (e.shown) return;
