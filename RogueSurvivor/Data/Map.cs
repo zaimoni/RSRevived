@@ -1018,10 +1018,13 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
 #endif
-      if (HasMapObject(mapObj))
+      // cf Map::PlaceAt(Actor,Position)
+      if (null != mapObj.Location.Map && HasMapObject(mapObj))
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
-      else
+      else {
+        if (null != mapObj.Location.Map && this != mapObj.Location.Map) mapObj.Location.Map.RemoveMapObjectAt(mapObj.Location.Position.X,mapObj.Location.Position.Y);
         m_MapObjectsList.Add(mapObj);
+      }
       m_aux_MapObjectsByPosition.Add(position, mapObj);
       mapObj.Location = new Location(this, position);
     }

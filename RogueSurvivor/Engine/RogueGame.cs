@@ -8508,7 +8508,7 @@ namespace djack.RogueSurvivor.Engine
         actor.Inventory.Consume(firstByType);
       }
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
-      actor.Location.Map.PlaceAt(fortification, buildPos);
+      actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
       CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
@@ -8643,22 +8643,21 @@ namespace djack.RogueSurvivor.Engine
       }
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.SpendStaminaPoints(staminaCost);
-      Map map = mapObj.Location.Map;
-      Point position = mapObj.Location.Position;
-      map.RemoveMapObjectAt(position.X, position.Y);
-      map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
-      if (!Rules.IsAdjacent(toPos, actor.Location.Position) && map.IsWalkableFor(position, actor)) {
-        map.PlaceAt(actor, position);
+      Location o_loc = mapObj.Location;
+      o_loc.Map.RemoveMapObjectAt(o_loc.Position.X, o_loc.Position.Y);
+      o_loc.Map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
+      if (!Rules.IsAdjacent(o_loc, actor.Location) && o_loc.IsWalkableFor(actor)) {
+        o_loc.Place(actor);
       }
       if (flag) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PUSH), mapObj));
         RedrawPlayScreen();
       } else {
-        OnLoudNoise(map, toPos, "Something being pushed");
+        OnLoudNoise(o_loc.Map, toPos, "Something being pushed");
         if (m_Rules.RollChance(PLAYER_HEAR_PUSH_CHANCE))
           AddMessageIfAudibleForPlayer(mapObj.Location, "You hear something being pushed");
       }
-      CheckMapObjectTriggersTraps(map, toPos);
+      CheckMapObjectTriggersTraps(o_loc.Map, toPos);
     }
 
     public void DoShove(Actor actor, Actor target, Point toPos)
