@@ -427,7 +427,7 @@ namespace djack.RogueSurvivor.Engine
       s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
       m_GameActors = new GameActors();
-      m_GameItems = new GameItems();
+      m_GameItems = new GameItems(m_UI);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
@@ -12451,31 +12451,12 @@ namespace djack.RogueSurvivor.Engine
     private void LoadData()
     {
       LoadDataSkills();
-      LoadDataItems();
       LoadDataActors();
     }
 
     private void LoadDataActors()
     {
       GameActors.LoadFromCSV(m_UI, "Resources\\Data\\Actors.csv");
-    }
-
-    private void LoadDataItems()
-    {
-      m_GameItems.LoadMedicineFromCSV(m_UI, "Resources\\Data\\Items_Medicine.csv");
-      m_GameItems.LoadFoodFromCSV(m_UI, "Resources\\Data\\Items_Food.csv");
-      m_GameItems.LoadMeleeWeaponsFromCSV(m_UI, "Resources\\Data\\Items_MeleeWeapons.csv");
-      m_GameItems.LoadRangedWeaponsFromCSV(m_UI, "Resources\\Data\\Items_RangedWeapons.csv");
-      m_GameItems.LoadExplosivesFromCSV(m_UI, "Resources\\Data\\Items_Explosives.csv");
-      m_GameItems.LoadBarricadingMaterialFromCSV(m_UI, "Resources\\Data\\Items_Barricading.csv");
-      m_GameItems.LoadArmorsFromCSV(m_UI, "Resources\\Data\\Items_Armors.csv");
-      m_GameItems.LoadTrackersFromCSV(m_UI, "Resources\\Data\\Items_Trackers.csv");
-      m_GameItems.LoadSpraypaintsFromCSV(m_UI, "Resources\\Data\\Items_Spraypaints.csv");
-      m_GameItems.LoadLightsFromCSV(m_UI, "Resources\\Data\\Items_Lights.csv");
-      m_GameItems.LoadScentspraysFromCSV(m_UI, "Resources\\Data\\Items_Scentsprays.csv");
-      m_GameItems.LoadTrapsFromCSV(m_UI, "Resources\\Data\\Items_Traps.csv");
-      m_GameItems.LoadEntertainmentFromCSV(m_UI, "Resources\\Data\\Items_Entertainment.csv");
-      m_GameItems.CreateModels();
     }
 
     private void LoadDataSkills()

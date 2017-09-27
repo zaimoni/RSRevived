@@ -565,12 +565,27 @@ namespace djack.RogueSurvivor.Gameplay
             IDs.MELEE_IMPROVISED_SPEAR});
     }
 
-    public GameItems()
+    public GameItems(IRogueUI ui)
     {
       Models.Items = this;
+
+      LoadMedicineFromCSV(ui, "Resources\\Data\\Items_Medicine.csv");
+      LoadFoodFromCSV(ui, "Resources\\Data\\Items_Food.csv");
+      LoadMeleeWeaponsFromCSV(ui, "Resources\\Data\\Items_MeleeWeapons.csv");
+      LoadRangedWeaponsFromCSV(ui, "Resources\\Data\\Items_RangedWeapons.csv");
+      LoadExplosivesFromCSV(ui, "Resources\\Data\\Items_Explosives.csv");
+      LoadBarricadingMaterialFromCSV(ui, "Resources\\Data\\Items_Barricading.csv");
+      LoadArmorsFromCSV(ui, "Resources\\Data\\Items_Armors.csv");
+      LoadTrackersFromCSV(ui, "Resources\\Data\\Items_Trackers.csv");
+      LoadSpraypaintsFromCSV(ui, "Resources\\Data\\Items_Spraypaints.csv");
+      LoadLightsFromCSV(ui, "Resources\\Data\\Items_Lights.csv");
+      LoadScentspraysFromCSV(ui, "Resources\\Data\\Items_Scentsprays.csv");
+      LoadTrapsFromCSV(ui, "Resources\\Data\\Items_Traps.csv");
+      LoadEntertainmentFromCSV(ui, "Resources\\Data\\Items_Entertainment.csv");
+      CreateModels();
     }
 
-    public void CreateModels()
+    private void CreateModels()
     {
       // Medicine
       _setModel(IDs.MEDICINE_BANDAGES, new ItemMedicineModel(DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));
@@ -818,7 +833,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadMedicineFromCSV(IRogueUI ui, string path)
+    private bool LoadMedicineFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -841,7 +856,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadFoodFromCSV(IRogueUI ui, string path)
+    private bool LoadFoodFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -858,7 +873,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
+    private bool LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -901,7 +916,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
+    private bool LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -932,7 +947,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadExplosivesFromCSV(IRogueUI ui, string path)
+    private bool LoadExplosivesFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -945,7 +960,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
+    private bool LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -958,7 +973,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadArmorsFromCSV(IRogueUI ui, string path)
+    private bool LoadArmorsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -983,7 +998,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadTrackersFromCSV(IRogueUI ui, string path)
+    private bool LoadTrackersFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1002,7 +1017,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadSpraypaintsFromCSV(IRogueUI ui, string path)
+    private bool LoadSpraypaintsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1021,7 +1036,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadLightsFromCSV(IRogueUI ui, string path)
+    private bool LoadLightsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1036,7 +1051,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadScentspraysFromCSV(IRogueUI ui, string path)
+    private bool LoadScentspraysFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1049,7 +1064,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadTrapsFromCSV(IRogueUI ui, string path)
+    private bool LoadTrapsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -1068,7 +1083,7 @@ namespace djack.RogueSurvivor.Gameplay
       return true;
     }
 
-    public bool LoadEntertainmentFromCSV(IRogueUI ui, string path)
+    private bool LoadEntertainmentFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
