@@ -2261,7 +2261,7 @@ namespace djack.RogueSurvivor.Data
       Inventory itemsAt = Location.Map.GetItemsAt(position);
       if (itemsAt == null) return "nothing to take there";
 	  // XXX should be "can't get any of the items in the container"
-      if (!CanGet(itemsAt.TopItem)) return "cannot take an item";
+      if (!IsPlayer && !CanGet(itemsAt.TopItem)) return "cannot take an item";
       return "";
     }
 
