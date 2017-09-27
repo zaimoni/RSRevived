@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
 
 namespace Zaimoni.Data
 {
@@ -21,9 +20,11 @@ namespace Zaimoni.Data
 
         public FloodfillPathfinder(Func<T, Dictionary<T,int>> Forward, Func<T,Dictionary<T, int>> Inverse, Func<T, bool> InDomain)
         {
-			Contract.Requires(null != Forward);
-			Contract.Requires(null != Inverse);
-			Contract.Requires(null != InDomain);
+#if DEBUG
+            if (null == Forward) throw new ArgumentNullException(nameof(Forward));
+            if (null == Inverse) throw new ArgumentNullException(nameof(Inverse));
+            if (null == InDomain) throw new ArgumentNullException(nameof(InDomain));
+#endif
             _blacklist = new HashSet<T>();
             _inDomain = InDomain;   // required
             _map = new Dictionary<T, int>();
@@ -44,8 +45,10 @@ namespace Zaimoni.Data
         // retain domain and blacklist, change specification of forward and inverse which invalidates the map itself
         public FloodfillPathfinder(FloodfillPathfinder<T> src, Func<T, Dictionary<T, int>> Forward, Func<T, Dictionary<T, int>> Inverse)
         {
-			Contract.Requires(null != Forward);
-			Contract.Requires(null != Inverse);
+#if DEBUG
+            if (null == Forward) throw new ArgumentNullException(nameof(Forward));
+            if (null == Inverse) throw new ArgumentNullException(nameof(Inverse));
+#endif
             _blacklist = new HashSet<T>(src._blacklist);
             _inDomain = src._inDomain;
             _map = new Dictionary<T, int>();
@@ -92,9 +95,10 @@ namespace Zaimoni.Data
 
         public void GoalDistance(IEnumerable<T> goals, IEnumerable<T> start, int max_cost=int.MaxValue)
         {
-            Contract.Requires(null != start);
-            Contract.Requires(null != goals);
-//          Contract.Requires(!goals.Contains(start));
+#if DEBUG
+            if (null == start) throw new ArgumentNullException(nameof(start));
+            if (null == goals) throw new ArgumentNullException(nameof(goals));
+#endif
             if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException("start","illegal value");
             _map.Clear();
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
 
 namespace Zaimoni.Data
 {
@@ -61,7 +60,9 @@ namespace Zaimoni.Data
 
         public void Normalize(float target = 1f)
         {
-            Contract.Requires(0f < target && 1f >= target);
+#if DEBUG
+            if (0f >= target || 1f < target) throw new ArgumentOutOfRangeException(nameof(target), target, "must be in (0,1]");
+#endif
             if (0 >= _weights.Count) return;    // must have at least one entry to normalize
 retry:      if (1 == _weights.Count) {
               foreach(T x in _weights.Keys) {

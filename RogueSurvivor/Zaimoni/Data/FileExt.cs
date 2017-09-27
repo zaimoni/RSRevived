@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Diagnostics.Contracts;
 
 namespace Zaimoni.Data
 {
@@ -8,22 +8,28 @@ namespace Zaimoni.Data
 	{
 		public static Stream CreateStream(this string filepath, bool save)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(filepath));
-			return new FileStream(filepath, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, save ? FileShare.None : FileShare.Read);
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
+            return new FileStream(filepath, save ? FileMode.Create : FileMode.Open, save ? FileAccess.Write : FileAccess.Read, save ? FileShare.None : FileShare.Read);
 		}
 
 		public static void BinarySerialize<_T_>(this string filepath, _T_ src)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(filepath));
-			using (Stream stream = filepath.CreateStream(true)) {
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
+            using (Stream stream = filepath.CreateStream(true)) {
 				(new BinaryFormatter()).Serialize(stream, src);
 				stream.Flush();
 			}
 		}
 		public static _T_ BinaryDeserialize<_T_>(this string filepath)
 		{
-			Contract.Requires(!string.IsNullOrEmpty(filepath));
-			using (Stream stream = filepath.CreateStream(false)) {
+#if DEBUG
+            if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
+            using (Stream stream = filepath.CreateStream(false)) {
 				return (_T_)(new BinaryFormatter()).Deserialize(stream);
 			}
 		}

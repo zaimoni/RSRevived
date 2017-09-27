@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
 
 namespace Zaimoni.Data
 {
@@ -15,13 +14,11 @@ namespace Zaimoni.Data
     // 4r to 8r i.e. 0: x constant -r, y increment -r to r
     public static Point RadarSweep(this Point origin,int radius,int i)
     {
-      Contract.Requires(0 < radius);
-      Contract.Requires(int.MaxValue/8 >= radius);
-      Contract.Requires(int.MaxValue-radius>=origin.X);
-      Contract.Requires(int.MaxValue-radius>=origin.Y);
-      Contract.Requires(int.MinValue+radius<=origin.X);
-      Contract.Requires(int.MinValue+radius<=origin.Y);
-
+#if DEBUG
+      if (0 >= radius || int.MaxValue/8 < radius) throw new ArgumentOutOfRangeException(nameof(radius),radius,"must be in 1.."+(int.MaxValue / 8).ToString());
+      if (int.MaxValue - radius < origin.X || int.MinValue + radius > origin.X) throw new ArgumentOutOfRangeException(nameof(origin.X),origin.X.ToString(), "must be in "+(int.MinValue + radius).ToString()+".." +(int.MaxValue - radius).ToString());
+      if (int.MaxValue - radius < origin.Y || int.MinValue + radius > origin.Y) throw new ArgumentOutOfRangeException(nameof(origin.Y),origin.Y.ToString(), "must be in "+(int.MinValue + radius).ToString()+".." +(int.MaxValue - radius).ToString());
+#endif
       // normalize i
       i %= 8*radius;
       if (0>i) i+=8*radius;
@@ -36,8 +33,10 @@ namespace Zaimoni.Data
     // null testFn is a different signature for efficiency reasons
     public static void DoForEach(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
     {
-      Contract.Requires(null != doFn);
-      Contract.Requires(null != testFn);
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
         for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
@@ -49,7 +48,9 @@ namespace Zaimoni.Data
     // imitate Enumerable interface here
     public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
     {
-      Contract.Requires(null != testFn);
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
       List<Point> ret = new List<Point>();
       rect.DoForEach(pt => ret.Add(pt),testFn);
       return ret;
@@ -57,7 +58,9 @@ namespace Zaimoni.Data
 
     public static Point? FirstOrDefault(this Rectangle rect, Predicate<Point> testFn)
     {
-      Contract.Requires(null != testFn);
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
       Point point = new Point();
       for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
         for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
@@ -69,7 +72,9 @@ namespace Zaimoni.Data
 
     public static bool Any(this Rectangle rect, Predicate<Point> testFn)
     {
-      Contract.Requires(null != testFn);
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
       return  null != rect.FirstOrDefault(testFn);
     }
 
