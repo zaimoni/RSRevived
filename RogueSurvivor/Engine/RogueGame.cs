@@ -6565,7 +6565,7 @@ namespace djack.RogueSurvivor.Engine
         case 5: return "The corpse is about to crumble to dust.";
         default:
 #if DEBUG
-          throw new Exception("unhandled rot level");
+          throw new ArgumentOutOfRangeException(nameof(num),num,"must be in 0..5");
 #else
 		  return "The corpse is infested with software bugs.";
 #endif
@@ -10266,7 +10266,7 @@ namespace djack.RogueSurvivor.Engine
 #region set visited tiles color.
         Point pos = new Point();
 		if (null == threats) {
-          map.Rect.DoForEach(pt => m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pos)));
+          map.Rect.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X, pt.Y, (map.HasExitAt(pt) ? Color.HotPink : map.GetTileModelAt(pt).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pt)));
 		} else {
           HashSet<Point> tainted = threats.ThreatWhere(map);
           HashSet<Point> tourism = sights_to_see.In(map);
@@ -11557,7 +11557,6 @@ namespace djack.RogueSurvivor.Engine
     private void BeforePlayerEnterDistrict(District district)
     {
       if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
-      Map entryMap = district.EntryMap;
         m_MusicManager.StopAll();
         m_MusicManager.Play(GameMusics.INTERLUDE);
         StopSimThread();
@@ -11566,6 +11565,7 @@ namespace djack.RogueSurvivor.Engine
           // a district after the PC's will run in order.  It's ok for the turn counter to not increment.
           // a district before the PCs will already be "current"
 #if FAIL
+          Map entryMap = district.EntryMap;
           double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
           int turnCounter = entryMap.LocalTime.TurnCounter;
           double num1 = 0.0;

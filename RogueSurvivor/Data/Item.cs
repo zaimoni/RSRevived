@@ -53,6 +53,9 @@ namespace djack.RogueSurvivor.Data
         return m_Quantity;
       }
       set {
+#if DEBUG
+        if (Model.StackingLimit < value ) throw new ArgumentOutOfRangeException(nameof(value),value,"exceeds "+Model.StackingLimit.ToString());
+#endif
         m_Quantity = value;
         if (m_Quantity >= 0) return;
         m_Quantity = 0;
