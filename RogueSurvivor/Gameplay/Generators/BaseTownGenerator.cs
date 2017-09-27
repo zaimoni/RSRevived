@@ -1815,7 +1815,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 
     // CHAR building codes have accounted for the possibility of a Z apocalypse.
-    private void _HouseBasementCornerBuildingCode(Map basement, Point basementStairs,Point corner, Point diag_step)
+    private static void _HouseBasementCornerBuildingCode(Map basement, Point basementStairs,Point corner, Point diag_step)
     {
       Point large = (basement.Rect.Bottom <= basement.Rect.Right ? new Point(corner.X,diag_step.Y) : new Point(diag_step.X,corner.Y));
       Point small = (basement.Rect.Bottom > basement.Rect.Right ? new Point(corner.X,diag_step.Y) : new Point(diag_step.X,corner.Y));
@@ -1837,7 +1837,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
     }
 
-    private bool _ForceHouseBasementConnected(Map basement,Point basementStairs)
+    private static bool _ForceHouseBasementConnected(Map basement,Point basementStairs)
     {
       // basement.Rect.Top and basement.Rect.Left are hardcoded 0
       // coordinates 0, width-1, height-1 are already brick walls
@@ -2559,7 +2559,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return map;
     }
 
-    private Map GenerateHospital_Power(int seed, District d)
+    private static Map GenerateHospital_Power(int seed, District d)
     {
       Map map = new Map(seed, "Hospital - Power", d, 10, 10, Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_CONCRETE, true);
@@ -2859,7 +2859,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return actor;
     }
 
-    public Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
+    public static Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
       Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
