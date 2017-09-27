@@ -7401,7 +7401,6 @@ namespace djack.RogueSurvivor.Engine
           (actorList ?? (actorList = new List<Actor>())).Add(fo);
         } else if (TryActorLeaveTile(fo)) {
           Point position = pointList[m_Rules.Roll(0, pointList.Count)];
-          fromMap.RemoveActor(fo);
           to.Map.PlaceActorAt(fo, position);
           to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
@@ -7448,11 +7447,11 @@ namespace djack.RogueSurvivor.Engine
     public void DoSwitchPlace(Actor actor, Actor other)
     {
       actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
-      Map map = other.Location.Map;
-      Point position = actor.Location.Position;
-      map.RemoveActor(other);
-      map.PlaceActorAt(actor, other.Location.Position);
-      map.PlaceActorAt(other, position);
+      Location a_loc = actor.Location;
+      Location o_loc = other.Location;
+      o_loc.Map.RemoveActor(other);
+      o_loc.PlaceActor(actor);
+      a_loc.PlaceActor(other);
       if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
     }
@@ -8647,9 +8646,8 @@ namespace djack.RogueSurvivor.Engine
       Map map = mapObj.Location.Map;
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(position.X, position.Y);
-      map.PlaceMapObjectAt(mapObj, toPos);
+      map.PlaceMapObjectAt(mapObj, toPos);  // XXX cross-map push target
       if (!Rules.IsAdjacent(toPos, actor.Location.Position) && map.IsWalkableFor(position, actor)) {
-        map.RemoveActor(actor);
         map.PlaceActorAt(actor, position);
       }
       if (flag) {
@@ -8669,16 +8667,14 @@ namespace djack.RogueSurvivor.Engine
       if (TryActorLeaveTile(target)) {
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
         DoStopDragCorpse(target);
-        Map map = target.Location.Map;
-        Point position = target.Location.Position;
-        map.PlaceActorAt(target, toPos);
-        if (!Rules.IsAdjacent(toPos, actor.Location.Position) && map.IsWalkableFor(position, actor)) {
+        Location t_loc = target.Location;
+        t_loc.Map.PlaceActorAt(target, toPos);    // XXX cross-map shove change target
+        if (!Rules.IsAdjacent(t_loc, actor.Location) && t_loc.IsWalkableFor(actor)) {
           if (!TryActorLeaveTile(actor)) return;
-          map.RemoveActor(actor);
-          map.PlaceActorAt(actor, position);
+          t_loc.PlaceActor(actor);
           OnActorEnterTile(actor);
         }
-        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(map, toPos)) {
+        if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, toPos)) {
           AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SHOVE), target));
           RedrawPlayScreen();
         }

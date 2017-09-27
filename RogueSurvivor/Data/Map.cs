@@ -823,6 +823,7 @@ namespace djack.RogueSurvivor.Data
       if (actor.Location.Map == this && HasActor(actor)) {
         if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
       } else {
+        if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.RemoveActor(actor);
         m_ActorsList.Add(actor);
         Engine.LOS.Now(this);
         if (actor.IsPlayer) m_aux_Players = null;
