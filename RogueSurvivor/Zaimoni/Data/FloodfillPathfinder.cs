@@ -99,7 +99,7 @@ namespace Zaimoni.Data
             if (null == start) throw new ArgumentNullException(nameof(start));
             if (null == goals) throw new ArgumentNullException(nameof(goals));
 #endif
-            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException("start","illegal value");
+            if (start.Any(pos => !_inDomain(pos))) throw new ArgumentOutOfRangeException(nameof(start),"contains out-of-domain values");
             _map.Clear();
 
             // a proper Dijkstra search is in increasing cost order
@@ -130,8 +130,8 @@ namespace Zaimoni.Data
                   }
                   _map[tmp2.Key] = new_cost;
                   if (_now.ContainsKey(new_cost)) _now[new_cost].Add(tmp2.Key);
-                  else _now[new_cost] = new HashSet<T>(){tmp2.Key};
-                } 
+                  else _now[new_cost] = new HashSet<T>{tmp2.Key};
+                }
               }
               _now.Remove(cost);
             }
@@ -142,10 +142,10 @@ namespace Zaimoni.Data
             if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
             int max_cost = Cost(start);
             if (max_cost <= new_cost) return;   // we assume the _forward cost function is not pathological i.e. all costs positive
-          
-            HashSet<T> now = new HashSet<T>(){pos};
+
+            HashSet<T> now = new HashSet<T>{pos};
             _map[pos] = new_cost;
-          
+
             while(0<now.Count && !now.Contains(start)) {
               HashSet<T> next = new HashSet<T>();
               foreach(T tmp in now) {
@@ -159,7 +159,7 @@ namespace Zaimoni.Data
                   if (_map.ContainsKey(tmp2.Key) && _map[tmp2.Key] <= new_dist) continue;
                   _map[tmp2.Key] = new_dist;
                   next.Add(tmp2.Key);
-                } 
+                }
               }
               now = next;
             }
@@ -173,8 +173,7 @@ namespace Zaimoni.Data
         }
 
         public Dictionary<T, int> Approach(T current_pos) {
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos","not in the cost map");
-//          Contract.EndContractBlock();
+            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             int current_cost = _map[current_pos];
             if (0 == current_cost) return null;   // already at a goal
             Dictionary<T, int> tmp = _inverse(current_pos);
@@ -188,8 +187,7 @@ namespace Zaimoni.Data
         }
 
         public Dictionary<T, int> Flee(T current_pos) {
-            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException("current_pos", "not in the cost map");
-//          Contract.EndContractBlock();
+            if (!_map.ContainsKey(current_pos)) throw new ArgumentOutOfRangeException(nameof(current_pos), "not in the cost map");
             int current_cost = _map[current_pos];
             Dictionary<T, int> tmp = _forward(current_pos);
             Dictionary<T, int> ret = new Dictionary<T, int>(tmp.Count);

@@ -166,6 +166,9 @@ namespace Zaimoni.Data
     // Following might actually be redundant due to System.Linq, but a dictionary i.e. associative array really is two sequences (keys and values)
     public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Value> fn)
     {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
       foreach(Key k in src.Keys.ToList()) {
         if (!fn(src[k])) src.Remove(k);
       }
@@ -174,6 +177,9 @@ namespace Zaimoni.Data
 
     public static Dictionary<Key, Value> OnlyIf<Key,Value>(this Dictionary<Key,Value> src,Predicate<Key> fn)
     {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
       foreach(Key k in src.Keys.ToList()) {
         if (!fn(k)) src.Remove(k);
       }
@@ -182,6 +188,9 @@ namespace Zaimoni.Data
 
     public static T Minimize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
     {
+#if DEBUG
+      if (null == metric) throw new ArgumentNullException(nameof(metric));
+#endif
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
       T ret = default(T);
       foreach(T test in src) {
@@ -196,6 +205,9 @@ namespace Zaimoni.Data
 
     public static T Maximize<T,R>(this IEnumerable<T> src,Func<T,R> metric) where R:IComparable
     {
+#if DEBUG
+      if (null == metric) throw new ArgumentNullException(nameof(metric));
+#endif
       R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
       T ret = default(T);
       foreach(T test in src) {
