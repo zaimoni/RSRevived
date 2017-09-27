@@ -76,7 +76,7 @@ namespace djack.RogueSurvivor.Data
 
         public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
-          lock(_threats) {  
+          lock(_threats) {
 		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
 		    _threats[a][m] = new HashSet<Point>(pts); }
         }
@@ -111,16 +111,15 @@ namespace djack.RogueSurvivor.Data
 
         public void Sighted(Actor a, Location loc)
         {
-          lock(_threats) { 
+          lock(_threats) {
 		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
-            _threats[a][loc.Map] = new HashSet<Point>();
-            _threats[a][loc.Map].Add(loc.Position);
+            _threats[a][loc.Map] = new HashSet<Point> { loc.Position };
           }
         }
 
 		public void Cleared(Map m, HashSet<Point> pts)
         {
-          lock(_threats) { 
+          lock(_threats) {
             foreach (Actor a in _threats.Keys.ToList().Where(a=>_threats[a].ContainsKey(m))) {
 			  _threats[a][m] = new HashSet<Point>(_threats[a][m].Except(pts));
 			  if (0 >= _threats[a][m].Count) _threats[a].Remove(m);
@@ -197,7 +196,7 @@ namespace djack.RogueSurvivor.Data
       public void Record(Map m, Point pt)
       {
         lock(_locs) {
-          if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles  
+          if (!m.GetTileModelAt(pt).IsWalkable) return; // reject unwalkable tiles
 		  if (!_locs.ContainsKey(m)) _locs[m] = new HashSet<Point>();
           _locs[m].Add(pt);
         }
@@ -206,7 +205,7 @@ namespace djack.RogueSurvivor.Data
       public void Record(Location loc)
       {
 		lock(_locs) {
-          if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return; // reject unwalkable tiles  
+          if (!loc.Map.GetTileModelAt(loc.Position).IsWalkable) return; // reject unwalkable tiles
 		  if (!_locs.ContainsKey(loc.Map)) _locs[loc.Map] = new HashSet<Point>();
           _locs[loc.Map].Add(loc.Position);
 		}
@@ -214,7 +213,7 @@ namespace djack.RogueSurvivor.Data
 
       public void Seen(Map m, IEnumerable<Point> pts)
       {
-        lock(_locs) {  
+        lock(_locs) {
 		  if (!_locs.ContainsKey(m)) return;
           _locs[m].ExceptWith(pts);
           if (0 >= _locs[m].Count) _locs.Remove(m);
@@ -223,7 +222,7 @@ namespace djack.RogueSurvivor.Data
 
       public void Seen(Map m, Point pt)
       {
-        lock(_locs) {  
+        lock(_locs) {
 		  if (!_locs.ContainsKey(m)) return;
           if (_locs[m].Remove(pt) && 0>=_locs[m].Count) _locs.Remove(m);
         }

@@ -45,7 +45,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddLine(CSVLine line)
     {
-      Contract.Requires(null != line);
+#if DEBUG
+      if (null == line) throw new ArgumentNullException(nameof(line));
+#endif
       if (line.FieldsCount != m_nbFields)
         throw new ArgumentException(string.Format("line fields count {0} does not match with table fields count {1}", line.FieldsCount, m_nbFields));
       m_Lines.Add(line);
@@ -53,7 +55,6 @@ namespace djack.RogueSurvivor.Engine
 
     public CSVLine FindLineFor<_T_>(_T_ modelID)
     {
-      Contract.Ensures(null!=Contract.Result<CSVLine>());
       foreach (CSVLine line in m_Lines) {
         if (line[0].ParseText() == modelID.ToString()) return line;
       }
@@ -62,7 +63,9 @@ namespace djack.RogueSurvivor.Engine
 
     public _DATA_TYPE_ GetDataFor<_DATA_TYPE_,_T_>(Func<CSVLine, _DATA_TYPE_> fn, _T_ modelID)
     {
-      Contract.Requires(null != fn);
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
       CSVLine lineForModel = FindLineFor(modelID);
       try {
         return fn(lineForModel);

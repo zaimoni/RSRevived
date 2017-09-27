@@ -10122,26 +10122,13 @@ namespace djack.RogueSurvivor.Engine
         DrawActorDecoration(deadGuy, gx, gy, DollPart.EYES, rotation, scale);
         DrawActorDecoration(deadGuy, gx, gy, DollPart.HEAD, rotation, scale);
       }
-      int num2 = c.RotLevel;
-      string str = null;
-      switch (num2) {
-        case 0:
-          if (str == null) break;
-          string imageID = str + 1 + Session.Get.WorldTime.TurnCounter % 2;
-          int num3 = Session.Get.WorldTime.TurnCounter % 5 - 2;
-          int num4 = Session.Get.WorldTime.TurnCounter / 3 % 5 - 2;
-          m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
-          break;
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-          str = "rot" + num2 + "_";
-          goto case 0;
-        default:
-          throw new Exception("unhandled rot level");
-      }
+      int rot = c.RotLevel;
+      if (0 >= rot) return;
+      string str = "rot" + rot + "_";
+      string imageID = str + 1 + Session.Get.WorldTime.TurnCounter % 2;
+      int num3 = Session.Get.WorldTime.TurnCounter % 5 - 2;
+      int num4 = Session.Get.WorldTime.TurnCounter / 3 % 5 - 2;
+      m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
     }
 
     public void DrawCorpsesList(List<Corpse> list, string title, int slots, int gx, int gy)

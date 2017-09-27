@@ -74,7 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BehaviorEquipBodyArmor(game);
 
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
-      
+
       // OrderableAI specific: respond to orders
       if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
@@ -120,7 +120,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           AvoidBeingCornered(retreat);
           safe_retreat = !damage_field.ContainsKey(retreat[0]);
         }
-        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) { 
+        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
           run_retreat = FindRunRetreat(damage_field, legal_steps);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);
@@ -142,8 +142,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (in_blast_field) {
         tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, current_enemies, friends) : ((null != retreat) ? DecideMove(retreat, current_enemies, friends) : null));
         if (null != tmpAction) {
-		  ActionMoveStep tmpAction2 = tmpAction as ActionMoveStep;
-          if (null != tmpAction2) RunIfPossible();
+          if (tmpAction is ActionMoveStep) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
           return tmpAction;
         }
@@ -264,8 +263,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // critical item memory check goes here
 
       if (m_Actor.CountFollowers > 0) {
-        Actor target;
-        tmpAction = BehaviorDontLeaveFollowersBehind(4, out target);
+        tmpAction = BehaviorDontLeaveFollowersBehind(4, out Actor target);
         if (null != tmpAction) {
           if (game.Rules.RollChance(DONT_LEAVE_BEHIND_EMOTE_CHANCE))
             game.DoEmote(m_Actor, string.Format(LeaderText_NotLeavingBehind(target), target.Name));

@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BehaviorEquipBodyArmor(game);
 
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
-      
+
       // OrderableAI specific: respond to orders
       if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
@@ -102,7 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           AvoidBeingCornered(retreat);
           safe_retreat = !damage_field.ContainsKey(retreat[0]);
         }
-        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) { 
+        if (m_Actor.RunIsFreeMove && m_Actor.CanRun() && !safe_retreat) {
           run_retreat = FindRunRetreat(damage_field, legal_steps);
           if (null != run_retreat) {
             AvoidBeingRunCornered(run_retreat);

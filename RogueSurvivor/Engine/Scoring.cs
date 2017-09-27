@@ -295,8 +295,7 @@ namespace djack.RogueSurvivor.Engine
     public void AddKill(Actor player, Actor victim, int turn)
     {
       GameActors.IDs id = victim.Model.ID;
-      Scoring.KillData killData;
-      if (m_Kills.TryGetValue(id, out killData)) {
+      if (m_Kills.TryGetValue(id, out KillData killData)) {
         ++killData.Amount;
       } else {
         m_Kills.Add(id, new Scoring.KillData(id, turn));

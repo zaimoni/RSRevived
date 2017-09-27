@@ -247,8 +247,7 @@ namespace djack.RogueSurvivor.UI
 
     private Pen GetPen(Color color)
     {
-      Pen pen;
-      if (!m_PensCache.TryGetValue(color, out pen)) {
+      if (!m_PensCache.TryGetValue(color, out Pen pen)) {
         pen = new Pen(color);
         m_PensCache.Add(color, pen);
       }
@@ -257,8 +256,7 @@ namespace djack.RogueSurvivor.UI
 
     public static Brush GetColorBrush(Color color)
     {
-      Brush brush;
-      if (!m_BrushesCache.TryGetValue(color, out brush)) {
+      if (!m_BrushesCache.TryGetValue(color, out Brush brush)) {
         brush = new SolidBrush(color);
         m_BrushesCache.Add(color, brush);
       }
@@ -343,7 +341,7 @@ namespace djack.RogueSurvivor.UI
                 {
                 m_TileImage.Dispose();
                 m_TileImage = null;
-                }    
+                }
             if (null != m_RenderImage)
                 {
                 m_RenderImage.Dispose();
@@ -394,7 +392,7 @@ namespace djack.RogueSurvivor.UI
       private readonly Image m_Img;
       private readonly int m_X;
       private readonly int m_Y;
-      private bool disposed = false;
+      private bool disposed;
 
       public GfxImageCopy(Image img, int x, int y)
       {
