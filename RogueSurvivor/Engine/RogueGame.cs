@@ -2781,7 +2781,7 @@ namespace djack.RogueSurvivor.Engine
         if (!map.IsWalkableFor(point, actorToSpawn)) continue;
         if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
         if (actorToSpawn.WouldBeAdjacentToEnemy(map, point)) continue;
-        map.PlaceActorAt(actorToSpawn, point);
+        map.PlaceAt(actorToSpawn, point);
         OnActorEnterTile(actorToSpawn);
         return true;
       }
@@ -2802,7 +2802,7 @@ namespace djack.RogueSurvivor.Engine
         p.Y = num4;
         map.TrimToBounds(ref p);
         if (!map.IsInsideAt(p) && map.IsWalkableFor(p, actorToSpawn) && (DistanceToPlayer(map, p) >= minDistToPlayer && !actorToSpawn.WouldBeAdjacentToEnemy(map, p))) {
-          map.PlaceActorAt(actorToSpawn, p);
+          map.PlaceAt(actorToSpawn, p);
           return true;
         }
       }
@@ -4046,7 +4046,7 @@ namespace djack.RogueSurvivor.Engine
           corpse.DeadGuy.Activity = Activity.IDLE;
           corpse.DeadGuy.TargetActor = null;
           map.Remove(corpse);
-          map.PlaceActorAt(corpse.DeadGuy, position);
+          map.PlaceAt(corpse.DeadGuy, position);
           if (player)
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
           if (actor.IsEnemyOf(corpse.DeadGuy)) return;
@@ -7115,7 +7115,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
-      newLocation.PlaceActor(actor);
+      newLocation.Place(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
         location.Map.MoveTo(draggedCorpse, newLocation.Position);
@@ -7367,7 +7367,7 @@ namespace djack.RogueSurvivor.Engine
       map.RemoveActor(actor);
       if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
-      exitAt.Location.PlaceActor(actor);
+      exitAt.Location.Place(actor);
       exitAt.ToMap.MoveActorToFirstPosition(actor); // XXX change target for NO_PEACE_WALLS; when entering a district that executes before ours we should be *last* -- if we can see what we're getting into
       if (actor.DraggedCorpse != null) exitAt.Location.Add(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer)
@@ -7401,7 +7401,7 @@ namespace djack.RogueSurvivor.Engine
           (actorList ?? (actorList = new List<Actor>())).Add(fo);
         } else if (TryActorLeaveTile(fo)) {
           Point position = pointList[m_Rules.Roll(0, pointList.Count)];
-          to.Map.PlaceActorAt(fo, position);
+          to.Map.PlaceAt(fo, position);
           to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
 #if SPEEDY_GONZALES
@@ -7450,8 +7450,8 @@ namespace djack.RogueSurvivor.Engine
       Location a_loc = actor.Location;
       Location o_loc = other.Location;
       o_loc.Map.RemoveActor(other);
-      o_loc.PlaceActor(actor);
-      a_loc.PlaceActor(other);
+      o_loc.Place(actor);
+      a_loc.Place(other);
       if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_SWITCH_PLACE_WITH), other));
     }
@@ -8508,7 +8508,7 @@ namespace djack.RogueSurvivor.Engine
         actor.Inventory.Consume(firstByType);
       }
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
-      actor.Location.Map.PlaceMapObjectAt(fortification, buildPos);
+      actor.Location.Map.PlaceAt(fortification, buildPos);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(new Location(actor.Location.Map, buildPos)))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_BUILD), fortification.AName)));
       CheckMapObjectTriggersTraps(actor.Location.Map, buildPos);
@@ -8646,9 +8646,9 @@ namespace djack.RogueSurvivor.Engine
       Map map = mapObj.Location.Map;
       Point position = mapObj.Location.Position;
       map.RemoveMapObjectAt(position.X, position.Y);
-      map.PlaceMapObjectAt(mapObj, toPos);  // XXX cross-map push target
+      map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
       if (!Rules.IsAdjacent(toPos, actor.Location.Position) && map.IsWalkableFor(position, actor)) {
-        map.PlaceActorAt(actor, position);
+        map.PlaceAt(actor, position);
       }
       if (flag) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_PUSH), mapObj));
@@ -8668,10 +8668,10 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.DEFAULT_ACTOR_WEIGHT);
         DoStopDragCorpse(target);
         Location t_loc = target.Location;
-        t_loc.Map.PlaceActorAt(target, toPos);    // XXX cross-map shove change target
+        t_loc.Map.PlaceAt(target, toPos);    // XXX cross-map shove change target
         if (!Rules.IsAdjacent(t_loc, actor.Location) && t_loc.IsWalkableFor(actor)) {
           if (!TryActorLeaveTile(actor)) return;
-          t_loc.PlaceActor(actor);
+          t_loc.Place(actor);
           OnActorEnterTile(actor);
         }
         if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(target) || ForceVisibleToPlayer(t_loc.Map, toPos)) {
@@ -9618,7 +9618,7 @@ namespace djack.RogueSurvivor.Engine
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
       Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
-      if (!isStartingGame) deadVictim.Location.PlaceActor(actor);
+      if (!isStartingGame) deadVictim.Location.Place(actor);
       if (deadVictim == m_Player || deadVictim.IsPlayer) Session.Get.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
       if (skillTable != null && skillTable.CountSkills > 0) {

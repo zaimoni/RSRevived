@@ -282,7 +282,7 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantPushTo(toPos));
     }
 
-    public void PlaceAt(Map m, Point pos) {m.PlaceMapObjectAt(this,pos);} // this guaranteed non-null so non-null precondition ok
+    public void PlaceAt(Map m, Point pos) {m.PlaceAt(this,pos);} // this guaranteed non-null so non-null precondition ok
 
     // flag handling
     private bool GetFlag(MapObject.Flags f)

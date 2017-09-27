@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Data
     public MapObject MapObject { get { return m_Map.GetMapObjectAt(m_Position); } }
     public Actor Actor { get { return m_Map.GetActorAt(m_Position); } }
     public void Add(Corpse c) { m_Map.AddAt(c, m_Position); }
-    public void PlaceActor(Actor actor) { m_Map.PlaceActorAt(actor, m_Position); }
+    public void Place(Actor actor) { m_Map.PlaceAt(actor, m_Position); }
     public bool IsWalkableFor(Actor actor) { return m_Map.IsWalkableFor(m_Position, actor); }
     public bool IsWalkableFor(Actor actor, out string reason) { return m_Map.IsWalkableFor(m_Position, actor, out reason); }
     public Inventory Items { get { return m_Map.GetItemsAt(m_Position); } }

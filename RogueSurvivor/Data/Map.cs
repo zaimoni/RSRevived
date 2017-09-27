@@ -809,7 +809,7 @@ namespace djack.RogueSurvivor.Data
       return HasActorAt(new Point(x, y));
     }
 
-    public void PlaceActorAt(Actor actor, Point position)
+    public void PlaceAt(Actor actor, Point position)
     {
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
@@ -1006,7 +1006,7 @@ namespace djack.RogueSurvivor.Data
       return test.Value.Map.HasMapObjectAt(test.Value.Position);
     }
 
-    public void PlaceMapObjectAt(MapObject mapObj, Point position)
+    public void PlaceAt(MapObject mapObj, Point position)
     {
 #if DEBUG
       if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
