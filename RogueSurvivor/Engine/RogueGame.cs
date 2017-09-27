@@ -4438,7 +4438,6 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
-        int num2 = (int) InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape) flag1 = false;
         else if (key.KeyCode == Keys.T) index = (index + 1) % enemiesInFov.Count;
         else if (key.KeyCode == Keys.M) {
@@ -4484,7 +4483,6 @@ namespace djack.RogueSurvivor.Engine
             AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
             RedrawPlayScreen();
             KeyEventArgs key = m_UI.UI_WaitKey();
-            int num = (int) InputTranslator.KeyToCommand(key);
             if (key.KeyCode == Keys.Escape) flag1 = false;
             else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
             else if (key.KeyCode == Keys.E) {
@@ -6704,7 +6702,7 @@ namespace djack.RogueSurvivor.Engine
       if (itemExplosiveModel.BlastAttack.CanDamageObjects) stringList.Add("Can damage objects.");
       if (itemExplosiveModel.BlastAttack.CanDestroyWalls) stringList.Add("Can destroy walls.");
       ItemPrimedExplosive primed = ex as ItemPrimedExplosive;
-      if (null == primed)
+      if (null != primed)
         stringList.Add(string.Format("Fuse          : {0} turn(s) left!", primed.FuseTimeLeft));
       else
         stringList.Add(string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
@@ -7334,7 +7332,6 @@ namespace djack.RogueSurvivor.Engine
         return true;
       }
       Map map = actor.Location.Map;
-      Point position = actor.Location.Position;
       if (isPlayer && askForConfirmation) {
         ClearMessages();
         AddMessage(MakeYesNoMessage(string.Format("REALLY LEAVE {0}", map.Name)));
@@ -7387,7 +7384,6 @@ namespace djack.RogueSurvivor.Engine
     private void DoFollowersEnterMap(Actor leader, Location to)
     {
       Map fromMap = leader.Location.Map;
-      Point fromPos = leader.Location.Position;
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
@@ -9218,8 +9214,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("May {0} soul rest in peace.", HisOrHer(m_Player)));
       textFile.Append(string.Format("For {0} body is now a meal for evil.", HisOrHer(m_Player)));
       textFile.Append("The End.");
-      int num1;
-      int num2 = num1 = 0;
+      int num1 = 0; ;
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
       int gy1 = num1 + 14;
@@ -9339,7 +9334,6 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("ESC if you don't want to upgrade; SPACE to get wiser skills.", Session.Get.WorldTime.TurnCounter, Color.White));
         RedrawPlayScreen();
         KeyEventArgs key = m_UI.UI_WaitKey();
-        int num = (int) InputTranslator.KeyToCommand(key);
         if (key.KeyCode == Keys.Escape) break;
         if (key.KeyCode == Keys.Space) {
           upgrade = RollSkillsToUpgrade(upgradeActor, 300);
@@ -11224,7 +11218,7 @@ namespace djack.RogueSurvivor.Engine
       if (!Session.Get.CMDoptionExists("no-spawn")) {
         int index = world.Size / 2;
         Map entryMap = world[index, index].EntryMap;
-        GeneratePlayerOnMap(entryMap, m_TownGenerator);
+        GeneratePlayerOnMap(entryMap);
         SetCurrentMap(entryMap);
         RefreshPlayer();
         foreach(Actor player in entryMap.Players) {
@@ -11478,14 +11472,12 @@ namespace djack.RogueSurvivor.Engine
       m_TownGenerator.GenerateSubwayMap(district.EntryMap.Seed << 2 ^ district.EntryMap.Seed, district);
     }
 
-    private void GeneratePlayerOnMap(Map map, BaseTownGenerator townGen)
+    private void GeneratePlayerOnMap(Map map)
     {
       DiceRoller roller = new DiceRoller(map.Seed);
       Actor actor;
-      if (m_CharGen.IsUndead)
-      {
-        switch (m_CharGen.UndeadModel)
-        {
+      if (m_CharGen.IsUndead) {
+        switch (m_CharGen.UndeadModel) {
           case GameActors.IDs.UNDEAD_SKELETON:
             actor = GameActors.Skeleton.CreateNumberedName(GameFactions.TheUndeads, 0);
             break;
@@ -11579,16 +11571,16 @@ namespace djack.RogueSurvivor.Engine
     {
       if (Session.Get.World.PlayerDistricts.Contains(district)) return; // do not simulate districts with PCs
       Map entryMap = district.EntryMap;
-      int turnCounter = entryMap.LocalTime.TurnCounter;
         m_MusicManager.StopAll();
         m_MusicManager.Play(GameMusics.INTERLUDE);
         StopSimThread();
         lock (m_SimMutex) {
-          double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
           // The no-skew scheduling should mean the following is not necessary.
           // a district after the PC's will run in order.  It's ok for the turn counter to not increment.
           // a district before the PCs will already be "current"
 #if FAIL
+          double totalMilliseconds1 = DateTime.UtcNow.TimeOfDay.TotalMilliseconds;
+          int turnCounter = entryMap.LocalTime.TurnCounter;
           double num1 = 0.0;
           bool flag = false;
           while (entryMap.LocalTime.TurnCounter <= Session.Get.WorldTime.TurnCounter) {
@@ -12286,7 +12278,6 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueMaps.Hospital_Patients.TheMap.Illuminate(false);
       Session.Get.UniqueMaps.Hospital_Power.TheMap.Illuminate(false);
       Session.Get.UniqueMaps.Hospital_Storage.TheMap.Illuminate(false);
-      Map theMap = Session.Get.UniqueMaps.Hospital_Storage.TheMap;
       CloseAllGates(Session.Get.UniqueMaps.Hospital_Storage.TheMap,"gate");
     }
 

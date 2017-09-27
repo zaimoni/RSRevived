@@ -130,7 +130,7 @@ retry:      if (1 == _weights.Count) {
         {
             Dictionary<T, float> tmp = new Dictionary<T, float>();
 
-            foreach (KeyValuePair<T,float> x in _weights) tmp[x.Key] = 2f*x.Value;
+            foreach (KeyValuePair<T,float> x in _weights) tmp[x.Key] = n*x.Value;
 
             _weights = tmp;
         }

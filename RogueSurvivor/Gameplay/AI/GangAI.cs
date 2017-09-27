@@ -147,9 +147,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, current_enemies, friends, immediate_threat);
       if (null != tmpAction) return tmpAction;
 
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
-
       if (null != current_enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
@@ -235,7 +232,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (null == current_enemies) {
-        Map map = m_Actor.Location.Map;
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         Percept victimize = FilterNearest(FilterCurrent(percepts1).FilterT<Actor>(a =>
         {

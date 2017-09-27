@@ -151,7 +151,7 @@ namespace djack.RogueSurvivor.Data
             List<Point> tmp = moving.LegalSteps;
             if (null == tmp) return;
 			tmp.Add(moving.Location.Position);
-            foreach(Point pt in tmp) RecordTaint(moving,moving.Location.Map, tmp);
+            RecordTaint(moving,moving.Location.Map, tmp);
           }
         }
     }   // end ThreatTracking definition

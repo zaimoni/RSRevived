@@ -323,7 +323,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.GUARD:
           return ExecuteGuard(order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.PATROL:
-          return ExecutePatrol(game, order.Location, percepts);  // cancelled by enamies sighted
+          return ExecutePatrol(order.Location, percepts);  // cancelled by enamies sighted
         case ActorTasks.DROP_ALL_ITEMS:
           return ExecuteDropAllItems(game);
         case ActorTasks.BUILD_SMALL_FORTIFICATION:
@@ -405,7 +405,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
-    private ActorAction ExecutePatrol(RogueGame game, Location location, List<Percept> percepts)
+    private ActorAction ExecutePatrol(Location location, List<Percept> percepts)
     {
       List<Percept> enemies = FilterEnemies(percepts);
       if (enemies != null) {
@@ -979,7 +979,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              Attack tmp_attack = m_Actor.UnarmedMeleeAttack(en);
               tmpAction = BehaviorMeleeSnipe(en, m_Actor.UnarmedMeleeAttack(en), null == immediate_threat || (1 == immediate_threat.Count && immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (0 < m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) {
@@ -2079,18 +2078,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return InterestingItems(inv?.Items);
     }
 
-    protected ActorAction BehaviorMakeRoomFor(RogueGame game, Item it)
+    protected ActorAction BehaviorMakeRoomFor(Item it)
     {
       Contract.Requires(null != it);
       Contract.Requires(m_Actor.Inventory.IsFull);
       Contract.Requires(IsInterestingItem(it));
 
       Inventory inv = m_Actor.Inventory;
-      if (it.Model.IsStackable && it.CanStackMore)
-         {
-         List<Item> tmp = inv.GetItemsStackableWith(it, out int qty);
+      if (it.Model.IsStackable && it.CanStackMore) {
+         inv.GetItemsStackableWith(it, out int qty);
          if (qty>=it.Quantity) return null;
-         }
+      }
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
@@ -2247,7 +2245,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
-      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(game, obj) : null);
+      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(obj) : null);
       if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
 
       // the get item checks do not validate that inventory is not full
@@ -2282,7 +2280,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
-      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(game, obj) : null);
+      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(obj) : null);
       if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
 
       // the get item checks do not validate that inventory is not full

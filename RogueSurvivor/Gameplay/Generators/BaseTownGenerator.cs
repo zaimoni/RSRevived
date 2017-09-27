@@ -2590,7 +2590,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalPatient(int spawnTime)
     {
-      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, 0);
+      Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Patient");
@@ -2601,7 +2601,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalNurse(int spawnTime)
     {
-      Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(GameFactions.TheCivilians, 0);
+      Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Nurse");
@@ -2614,7 +2614,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Actor CreateNewHospitalDoctor(int spawnTime)
     {
-      Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(GameFactions.TheCivilians, 0);
+      Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.PrefixName("Doctor");

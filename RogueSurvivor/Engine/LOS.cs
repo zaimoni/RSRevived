@@ -148,8 +148,6 @@ namespace djack.RogueSurvivor.Engine
         int yAbsDelta = (0 <= yDelta ? yDelta : -yDelta);
         int needRange = (xAbsDelta < yAbsDelta ? yAbsDelta : xAbsDelta);
         int actualRange = (needRange < maxSteps ? needRange : maxSteps);
-        int minAbsDelta = (xAbsDelta < yAbsDelta) ? xAbsDelta : yAbsDelta;
-        int maxAbsDelta = (xAbsDelta < yAbsDelta) ? yAbsDelta : xAbsDelta;
 
         Direction tmp = Direction.To(xFrom,yFrom,xTo,yTo,out Direction knightmove);
         Point end = needRange * tmp;    // estimate here
@@ -292,7 +290,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
-      Point goal = toPosition;
 #if ANGBAND
       return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
             {
@@ -301,6 +298,7 @@ namespace djack.RogueSurvivor.Engine
                 return false;
             }), line);
 #else
+      Point goal = toPosition;
       bool throwLineClear = true;
                   LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, line, (Func<int, int, bool>) ((x, y) =>
                   {
@@ -313,9 +311,9 @@ namespace djack.RogueSurvivor.Engine
         throwLineClear = false;
       return throwLineClear;
 #endif
-    }
+        }
 
-    private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
+        private static bool FOVSub(Location fromLocation, Point toPosition, int maxRange, ref HashSet<Point> visibleSet)
     {
       Map map = fromLocation.Map;
       HashSet<Point> visibleSetRef = visibleSet;

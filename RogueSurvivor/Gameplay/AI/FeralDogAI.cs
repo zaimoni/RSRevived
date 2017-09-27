@@ -71,8 +71,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> enemies = FilterEnemies(percepts1);
       // dogs cannot order their followers to stay behind
-      bool hasVisibleLeader = m_Actor.HasLeader && m_LOSSensor.FOV.Contains(m_Actor.Leader.Location.Position);
-      bool isLeaderFighting = m_Actor.HasLeader && m_Actor.Leader.IsAdjacentToEnemy;
       if (enemies != null) {
         ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FeralDogAI.FIGHT_EMOTES);
         if (actorAction != null) {
