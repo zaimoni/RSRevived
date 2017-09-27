@@ -8,12 +8,10 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Engine.MapObjects;
-using djack.RogueSurvivor.Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Gameplay.Generators
@@ -626,7 +624,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual bool MakeShopBuilding(Map map, Block b)
     {
-      Contract.Requires(null!=map.District);
+#if DEBUG
+      if (null == map.District) throw new ArgumentNullException(nameof(map.District));
+#endif
       if (b.InsideRect.Width < 5 || b.InsideRect.Height < 5) return false;
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_STONE, b.BuildingRect);
@@ -1867,7 +1867,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GenerateHouseBasementMap(Map map, Block houseBlock)
     {
-      Contract.Requires(null!=map.District);
+#if DEBUG
+      if (null == map.District) throw new ArgumentNullException(nameof(map.District));
+#endif
       Rectangle buildingRect = houseBlock.BuildingRect;
       Map basement = new Map(map.Seed << 1 + buildingRect.Left * map.Height + buildingRect.Top, string.Format("basement{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object) (buildingRect.Left + buildingRect.Width / 2), (object) (buildingRect.Top + buildingRect.Height / 2)), map.District, buildingRect.Width, buildingRect.Height, Lighting.DARKNESS);
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
@@ -1951,7 +1953,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     public Map GenerateUniqueMap_CHARUnderground(Map surfaceMap, Zone officeZone)
     {
-      Contract.Requires(null != surfaceMap);
+#if DEBUG
+      if (null == surfaceMap) throw new ArgumentNullException(nameof(surfaceMap));
+#endif
       Map underground = new Map(surfaceMap.Seed << 3 ^ surfaceMap.Seed, string.Format("CHAR Underground Facility @{0}-{1}", surfaceMap.District.WorldPosition.X, surfaceMap.District.WorldPosition.Y), surfaceMap.District, 100, 100, Lighting.DARKNESS, true);
       TileFill(underground, GameTiles.FLOOR_OFFICE, true);
       TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
@@ -2286,12 +2290,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GeneratePoliceStation_JailsLevel(Map surfaceMap)
     {
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, 22, 6, Lighting.DARKNESS);
+      const int JAILS_WIDTH = 22;
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, JAILS_WIDTH, 6, Lighting.DARKNESS);
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       List<Rectangle> rectangleList = new List<Rectangle>();
       int x = 0;
-      while (x + 3 <= map.Width) {
+      while (x + 2 < map.Width) {
         Rectangle rect = new Rectangle(x, 3, 3, 3);
         rectangleList.Add(rect);
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect);
@@ -2306,11 +2311,26 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Rectangle rect1 = Rectangle.FromLTRB(1, 1, map.Width, 3);
       map.AddZone(MakeUniqueZone("cells corridor", rect1));
       map.PlaceMapObjectAt(MakeObjPowerGenerator(), new Point(map.Width - 2, 1));
+
+      foreach(Rectangle r in rectangleList) {
+        Point dest = new Point(r.Left + 1, r.Top + 1);
+        Actor newCivilian = CreateNewCivilian(0, 0, 1);
+        if (JAILS_WIDTH-3 == dest.X) {
+          // a political prisoner
+          newCivilian.Name = "The Prisoner Who Should Not Be";
+          for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
+            newCivilian.Inventory.AddAll(MakeItemArmyRation());
+          Session.Get.UniqueActors.PoliceStationPrisonner = new UniqueActor(newCivilian,true);
+        } else {
+          // being held with cause, at least as understood before the z-apocalypse
+          newCivilian.Inventory.AddAll(MakeItemGroceries());
+        }
+        map.PlaceActorAt(newCivilian, dest);
+      }
+#if FAIL
       for (int index = 0; index < rectangleList.Count - 1; ++index) {   // this loop stops before The Prisoner Who Should Not Be (map::PlaceActorAt would hard-error otherwise)
         Rectangle rectangle = rectangleList[index];
         Actor newCivilian = CreateNewCivilian(0, 0, 1);
-        while (!newCivilian.Inventory.IsEmpty)
-          newCivilian.Inventory.RemoveAllQuantity(newCivilian.Inventory[0]);
         newCivilian.Inventory.AddAll(MakeItemGroceries());
         // XXX \todo give these civilians the PathTo (outside the police station) objective
         map.PlaceActorAt(newCivilian, new Point(rectangle.Left + 1, rectangle.Top + 1));
@@ -2322,15 +2342,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         newCivilian1.Inventory.AddAll(MakeItemArmyRation());
       map.PlaceActorAt(newCivilian1, new Point(rectangle1.Left + 1, rectangle1.Top + 1));
       Session.Get.UniqueActors.PoliceStationPrisonner = new UniqueActor(newCivilian1,true);
-      DoForEachTile(map.Rect, (Action<Point>)(pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));
-      }));
+#endif
+      DoForEachTile(map.Rect, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
       return map;
     }
 
     private void MakeHospital(Map map, List<Block> freeBlocks, out Block hospitalBlock)
     {
-      Contract.Requires(null!=map.District);
+#if DEBUG
+      if (null == map.District) throw new ArgumentNullException(nameof(map.District));
+#endif
       hospitalBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
       GenerateHospitalEntryHall(map, hospitalBlock);
       Map hospitalAdmissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);

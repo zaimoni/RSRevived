@@ -819,9 +819,10 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
-      if (HasActor(actor))
-        m_aux_ActorsByPosition.Remove(actor.Location.Position);
-      else {
+      // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
+      if (actor.Location.Map == this && HasActor(actor)) {
+        if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
+      } else {
         m_ActorsList.Add(actor);
         Engine.LOS.Now(this);
         if (actor.IsPlayer) m_aux_Players = null;
