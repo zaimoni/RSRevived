@@ -119,7 +119,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     static public ItemMedicineModel BANDAGE {
       get {
-        return m_Models[(int)IDs._FIRST] as ItemMedicineModel;
+        return m_Models[(int)IDs.MEDICINE_BANDAGES] as ItemMedicineModel;
       }
     }
 

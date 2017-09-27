@@ -2123,7 +2123,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // see if we can eat our way to a free slot
-      if (m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(game.GameItems[GameItems.IDs.FOOD_CANNED_FOOD]) is ItemFood food2) {
+      if (m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(GameItems.CANNED_FOOD) is ItemFood food2) {
         // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
         int need = m_Actor.MaxFood - m_Actor.FoodPoints;
         int num4 = m_Actor.CurrentNutritionOf(food2);
@@ -2131,7 +2131,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // finisbing off stimulants to get a free slot is ok
-      if (inv.GetBestDestackable(game.GameItems[GameItems.IDs.MEDICINE_PILLS_SLP]) is ItemMedicine stim2) {
+      if (inv.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim2) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
         int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
         if (num4*stim2.Quantity <= need && m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);

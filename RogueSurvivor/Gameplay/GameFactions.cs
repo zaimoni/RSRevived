@@ -49,7 +49,6 @@ namespace djack.RogueSurvivor.Gameplay
 
     public GameFactions()
     {
-      Models.Factions = this;
       m_Factions[(int)GameFactions.IDs.TheArmy] = new Faction("Army", "soldier", (int)GameFactions.IDs.TheArmy, true);
       m_Factions[(int)GameFactions.IDs.TheBikers] = new Faction("Bikers", "biker", (int)GameFactions.IDs.TheBikers, true);
       m_Factions[(int)GameFactions.IDs.TheCHARCorporation] = new Faction("CHAR Corp.", "CHAR employee", (int)GameFactions.IDs.TheCHARCorporation, true);

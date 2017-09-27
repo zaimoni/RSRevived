@@ -76,7 +76,6 @@ namespace djack.RogueSurvivor.Gameplay
 
     public GameTiles()
     {
-      Models.Tiles = this;
     }
 
     static public bool IsRoadModel(TileModel model)

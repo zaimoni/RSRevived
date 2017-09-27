@@ -6,14 +6,20 @@
 
 namespace djack.RogueSurvivor.Data
 {
-  internal static class Models
+  internal class Models
   {
+    private static FactionDB m_Factions;
+    private static TileModelDB m_Tiles;
+
     public static ActorModelDB Actors { get; set; }
-
-    public static FactionDB Factions { get; set; }
-
+    public static FactionDB Factions { get { return m_Factions; } }
     public static ItemModelDB Items { get; set; }
+    public static TileModelDB Tiles { get { return m_Tiles; } }
 
-    public static TileModelDB Tiles { get; set; }
+    static Models()
+    {
+      m_Factions = new Gameplay.GameFactions();
+      m_Tiles = new Gameplay.GameTiles();
+    }
   }
 }

@@ -324,10 +324,8 @@ namespace djack.RogueSurvivor.Engine
     private RogueGame.CharGen m_CharGen;
     private TextFile m_Manual;
     private int m_ManualLine;
-    private readonly GameFactions m_GameFactions;
     private readonly GameActors m_GameActors;
     private readonly GameItems m_GameItems;
-    private readonly GameTiles m_GameTiles;
 #if SUICIDE_BY_LONG_WAIT
     private bool m_IsPlayerLongWait;
     private bool m_IsPlayerLongWaitForcedStop;
@@ -369,14 +367,6 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public GameFactions GameFactions
-    {
-      get
-      {
-        return m_GameFactions;
-      }
-    }
-
     public GameActors GameActors
     {
       get
@@ -390,14 +380,6 @@ namespace djack.RogueSurvivor.Engine
       get
       {
         return m_GameItems;
-      }
-    }
-
-    public GameTiles GameTiles
-    {
-      get
-      {
-        return m_GameTiles;
       }
     }
 
@@ -416,9 +398,11 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MusicManager");
       switch (SetupConfig.Sound)
       {
-//        case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
-//          this.m_MusicManager = (ISoundManager) new MDXSoundManager();
-//          break;
+#if FAIL
+        case SetupConfig.eSound.SOUND_MANAGED_DIRECTX:
+          this.m_MusicManager = (ISoundManager) new MDXSoundManager();
+          break;
+#endif
         case SetupConfig.eSound.SOUND_WAV:
           m_MusicManager = new WAVSoundManager();
           break;
@@ -436,16 +420,14 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
       m_TownGenerator = new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
-            s_Options = new GameOptions();
-            s_Options.ResetToDefaultValues();
+      s_Options = new GameOptions();
+      s_Options.ResetToDefaultValues();
       s_KeyBindings = new Keybindings();
-      RogueGame.s_Hints = new GameHintsStatus();
-      RogueGame.s_Hints.ResetAllHints();
+      s_Hints = new GameHintsStatus();
+      s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
-      m_GameFactions = new GameFactions();
       m_GameActors = new GameActors();
       m_GameItems = new GameItems();
-      m_GameTiles = new GameTiles();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
