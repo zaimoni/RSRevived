@@ -49,6 +49,7 @@ namespace djack.RogueSurvivor.Data
       Abilities = abilities;
       DefaultController = defaultController;
       ScoreValue = scoreValue;
+      FlavorDescription = flavor;
       CreatedCount = 0;
     }
 

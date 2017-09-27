@@ -13,7 +13,6 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.Security.Permissions;
-using System.Diagnostics.Contracts;
 using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor
@@ -133,9 +132,9 @@ namespace djack.RogueSurvivor
 #endregion
 
 #region IRogueUI implementation
+    // <returns>non-null</returns>
     public KeyEventArgs UI_WaitKey()
     {
-      Contract.Ensures(null!=Contract.Result<KeyEventArgs>());
       while (true) {    // XXX no clean way to do this loop
         Application.DoEvents();
         if (null!= m_InKey) break;
@@ -292,15 +291,19 @@ namespace djack.RogueSurvivor
 
     public void UI_DrawRect(Color color, Rectangle rect)
     {
-      Contract.Requires(0 < rect.Width);
-      Contract.Requires(0 < rect.Height);
+#if DEBUG
+      if (0 >= rect.Width) throw new ArgumentOutOfRangeException(nameof(rect.Width),rect.Width, "0 >= rect.Width");
+      if (0 >= rect.Height) throw new ArgumentOutOfRangeException(nameof(rect.Height),rect.Height, "0 >= rect.Height");
+#endif
       m_GameCanvas.AddRect(color, rect);
     }
 
     public void UI_FillRect(Color color, Rectangle rect)
     {
-      Contract.Requires(0 < rect.Width);
-      Contract.Requires(0 < rect.Height);
+#if DEBUG
+      if (0 >= rect.Width) throw new ArgumentOutOfRangeException(nameof(rect.Width),rect.Width, "0 >= rect.Width");
+      if (0 >= rect.Height) throw new ArgumentOutOfRangeException(nameof(rect.Height),rect.Height, "0 >= rect.Height");
+#endif
       m_GameCanvas.AddFilledRect(color, rect);
     }
 
