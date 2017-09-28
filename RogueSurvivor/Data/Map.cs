@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     [NonSerialized]
-    private List<Actor> m_aux_Players;
+    public Zaimoni.Data.NonSerializedCache<Actor,List<Actor>> Players;
     [NonSerialized]
     private List<Engine.MapObjects.PowerGenerator> cache_PowerGenerators;
 
@@ -120,6 +120,7 @@ namespace djack.RogueSurvivor.Data
       IsSecret = secret;
       m_TileIDs = new byte[width, height];
       m_IsInside = new byte[width*height-1/8+1];
+      Players = new Zaimoni.Data.NonSerializedCache<Actor, List<Actor>>(() => m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList());
     }
 
 #region Implement ISerializable
@@ -144,6 +145,7 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
       m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
+      Players = new Zaimoni.Data.NonSerializedCache<Actor, List<Actor>>(() => m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList());
       ReconstructAuxiliaryFields();
     }
 
@@ -826,7 +828,7 @@ namespace djack.RogueSurvivor.Data
         if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.Remove(actor);
         m_ActorsList.Add(actor);
         Engine.LOS.Now(this);
-        if (actor.IsPlayer) m_aux_Players = null;
+        if (actor.IsPlayer) Players.Recalc();
       }
       m_aux_ActorsByPosition.Add(position, actor);
       actor.Location = new Location(this, position);
@@ -847,7 +849,7 @@ namespace djack.RogueSurvivor.Data
       if (m_ActorsList.Remove(actor)) {
         m_aux_ActorsByPosition.Remove(actor.Location.Position);
         m_iCheckNextActorIndex = 0;
-        if (actor.IsPlayer) m_aux_Players = null;
+        if (actor.IsPlayer) Players.Recalc();
       }
     }
 
@@ -898,50 +900,34 @@ namespace djack.RogueSurvivor.Data
     }
 
     // tracking players on map
-    public List<Actor> Players {
-      get {
-        if (null != m_aux_Players) return m_aux_Players;
-        m_aux_Players = m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList();
-        return m_aux_Players;
-      }
-    }
-
-    public void RecalcPlayers() { m_aux_Players = null; }
-
     public int PlayerCount {
       get {
-        return Players.Count;
+        return Players.Get.Count();
       }
     }
 
     public Actor FindPlayer {
       get {
-        if (0 == Players.Count) return null;
-        return Players[0];
+        return Players.Get.FirstOrDefault();
       }
-        }
+    }
 
     public Actor FindPlayerWithFOV(Point pt)
     {
-      if (0 >= PlayerCount) return null;
-      foreach(Actor tmp in Players) {
-        if (tmp.Controller.FOV.Contains(pt)) return tmp;
-      }
-      return null;
+      return Players.Get.FirstOrDefault(a => a.Controller.FOV.Contains(pt));
     }
 
-    public bool MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
+    public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
-      IEnumerable<Actor> tmp = Players;
-      if (null!=pred) tmp = tmp.Where(a => pred(a));
-      Actor player = tmp.FirstOrDefault();
-      if (null == player) return false;
-      RogueForm.Game.PanViewportTo(player);
-      fn(player);
-      return true;
+      Action<Actor> pan_to = a => {
+          RogueForm.Game.PanViewportTo(a);
+          fn(a);
+      };
+      return (null == pred ? Players.ActOnce(pan_to)
+                           : Players.ActOnce(pan_to, pred));
     }
 
     // police on map

@@ -185,7 +185,7 @@ namespace djack.RogueSurvivor.Data
        return null;
     }
 
-    public void MessagePlayerOnce(Map already_failed, Action<Actor> fn, Predicate<Actor> pred=null)
+    public void MessagePlayerOnce(Map already_failed, Action<Actor> fn, Func<Actor, bool> pred =null)
     {
       Contract.Requires(null!=fn);
       foreach(Map map in Maps) {

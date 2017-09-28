@@ -448,7 +448,7 @@ namespace djack.RogueSurvivor.Engine
          || loc.Map != m_Player.Location.Map
          || Rules.StdDistance(m_Player.Location.Position, loc.Position) > m_Player.AudioRange)
       {
-        List<Actor> tmp = loc.Map.Players;
+        List<Actor> tmp = loc.Map.Players.Get;
         if (0 >= tmp.Count) return;
         tmp = tmp.Where(a => !a.IsSleeping && Rules.StdDistance(a.Location.Position, loc.Position) <= a.AudioRange).ToList();
         if (0 >= tmp.Count) return;
@@ -2754,7 +2754,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private int DistanceToPlayer(Map map, int x, int y)
     {
-	  List<Actor> players = map.Players;
+	  List<Actor> players = map.Players.Get;
 	  if (0 >= players.Count) return int.MaxValue;
 	  return players.Select(p=> Rules.GridDistance(p.Location.Position, x, y)).Min();
     }
@@ -7576,7 +7576,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // fn is the UI message
-    private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Predicate<Actor> pred)
+    private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Func<Actor, bool> pred)
     {
       if (null!=fn) {
         if (m_Player.Location.Map.District==target.Location.Map.District) {
@@ -8814,7 +8814,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (deadGuy == m_Player_bak) {
         m_Player = m_Player_bak;
-        m_Player.Location.Map.RecalcPlayers();
+        m_Player.Location.Map.Players.Recalc();
         if (0 >= Session.Get.World.PlayerCount) PlayerDied(killer, reason);
       }
       deadGuy.RemoveAllFollowers();
@@ -11208,11 +11208,11 @@ namespace djack.RogueSurvivor.Engine
         GeneratePlayerOnMap(entryMap);
         SetCurrentMap(entryMap);
         RefreshPlayer();
-        foreach(Actor player in entryMap.Players) {
+        foreach(Actor player in entryMap.Players.Get) {
           player.Controller.UpdateSensors();
         }
         if (s_Options.RevealStartingDistrict) {
-          foreach(Actor player in entryMap.Players) {
+          foreach(Actor player in entryMap.Players.Get) {
             Point pos = player.Location.Position;
             List<Zone> zonesAt1 = entryMap.GetZonesAt(pos);
             if (null == zonesAt1) continue;

@@ -19,12 +19,36 @@ namespace Zaimoni.Data
             m_bootstrap = bootstrap;
         }
 
-        U Get { get { return m_cache ?? (m_cache = m_bootstrap()); } }
-        void Recalc() { m_cache = null; }
+        public U Get { get { return m_cache ?? (m_cache = m_bootstrap()); } }
+        public void Recalc() { m_cache = null; }
 
         // use Get.FirstOrDefault, etc. for normal read-only uses
-        // following wrap destructive operations
+        public bool ActOnce(Action<T> fn)
+        {
+#if DEBUG
+            if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
+            if (0 >= Get.Count()) return false;
+            fn(Get.First());
+            return true;;
+        }
+
         public bool ActOnce(Action<T> fn, Func<T, bool> test)
+        {
+#if DEBUG
+            if (null == fn) throw new ArgumentNullException(nameof(fn));
+            if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+            foreach (T x in Get) {
+                if (test(x)) {
+                    fn(x);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool ActOnce_destructive(Action<T> fn, Func<T, bool> test)
         {
 #if DEBUG
             if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -45,13 +69,34 @@ namespace Zaimoni.Data
             if (null == fn) throw new ArgumentNullException(nameof(fn));
             if (null == test) throw new ArgumentNullException(nameof(test));
 #endif
-            foreach (T x in Get.ToList()) {
+            foreach (T x in Get)
+            {
                 if (test(x)) fn(x);
             }
         }
 
         // for efficiency
         public void ActAll(Action<T> fn)
+        {
+#if DEBUG
+            if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
+            foreach (T x in Get) fn(x);
+        }
+
+        public void ActAll_destructive(Action<T> fn, Func<T, bool> test)
+        {
+#if DEBUG
+            if (null == fn) throw new ArgumentNullException(nameof(fn));
+            if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+            foreach (T x in Get.ToList()) {
+                if (test(x)) fn(x);
+            }
+        }
+
+        // for efficiency
+        public void ActAll_destructive(Action<T> fn)
         {
 #if DEBUG
             if (null == fn) throw new ArgumentNullException(nameof(fn));

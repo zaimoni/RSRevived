@@ -197,7 +197,7 @@ namespace djack.RogueSurvivor.Data
         if (m_Controller != null) m_Controller.LeaveControl();
         m_Controller = value;
         if (m_Controller != null) m_Controller.TakeControl(this);
-        if (m_Location.Map != null) m_Location.Map.RecalcPlayers();
+        if (m_Location.Map != null) m_Location.Map.Players.Recalc();
       }
     }
 
@@ -885,12 +885,11 @@ namespace djack.RogueSurvivor.Data
       return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
 
-    public void MessagePlayerOnce(Action<Actor> fn, Predicate<Actor> pred=null)
+    public void MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
-      Contract.Requires(null!=fn);
       if (IsPlayer && !IsDead && (null == pred || pred(this))) {
         fn(this);
         return;
