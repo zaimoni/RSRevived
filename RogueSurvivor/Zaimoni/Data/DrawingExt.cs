@@ -219,5 +219,51 @@ namespace Zaimoni.Data
       }
       return ret;
     }
-  }
-}
+
+    // generic loop iteration ... probably inefficient compared to inlining
+    public static bool ActOnce<T>(this IEnumerable<T> src, Action<T> fn)
+    {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
+      if (0 >= src.Count()) return false;
+      fn(src.First());
+      return true;;
+    }
+
+    public static bool ActOnce<T>(this IEnumerable<T> src, Action<T> fn, Func<T, bool> test)
+    {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+      foreach (T x in src) {
+        if (test(x)) {
+          fn(x);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public static void DoForEach<T>(this IEnumerable<T> src, Action<T> fn, Func<T, bool> test)
+    {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+      foreach (T x in src) {
+        if (test(x)) fn(x);
+      }
+    }
+
+    // for efficiency
+    public static void DoForEach<T>(this IEnumerable<T> src, Action<T> fn)
+    {
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
+      foreach (T x in src) fn(x);
+    }
+  } // ext_Drawing
+}   // Zaimoni.Data

@@ -930,8 +930,8 @@ namespace djack.RogueSurvivor.Data
           RogueForm.Game.PanViewportTo(a);
           fn(a);
       };
-      return (null == pred ? Players.ActOnce(pan_to)
-                           : Players.ActOnce(pan_to, pred));
+      return (null == pred ? Players.Get.ActOnce(pan_to)
+                           : Players.Get.ActOnce(pan_to, pred));
     }
 
     // police on map
