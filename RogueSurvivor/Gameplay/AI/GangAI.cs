@@ -220,7 +220,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
-          return null == BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
+          return null == BehaviorWouldGrabFromStack(p.Location.Position, p.Percepted as Inventory);
         });
         if (percepts3 != null) {
           Percept percept = FilterNearest(percepts3);

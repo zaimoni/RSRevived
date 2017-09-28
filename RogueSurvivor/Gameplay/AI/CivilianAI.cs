@@ -450,7 +450,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (null == path) return true;
             if (!path[0].Any(pt=>null!=Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)))) return true;
           }
-          return null==BehaviorWouldGrabFromStack(game, p.Location.Position, p.Percepted as Inventory);
+          return null==BehaviorWouldGrabFromStack(p.Location.Position, p.Percepted as Inventory);
         });
         if (perceptList2 != null) {
           Percept percept = FilterNearest(perceptList2);

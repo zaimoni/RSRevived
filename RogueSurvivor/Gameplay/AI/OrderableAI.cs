@@ -2223,7 +2223,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorWouldGrabFromStack(RogueGame game, Point position, Inventory stack)
+    protected ActorAction BehaviorWouldGrabFromStack(Point position, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
 
