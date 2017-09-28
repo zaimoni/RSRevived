@@ -114,7 +114,6 @@ namespace djack.RogueSurvivor.Data
     public ActorModel Model
     {
       get {
-        Contract.Ensures(null!=Contract.Result<ActorModel>());
         return Models.Actors[(int)m_ModelID];
       }
       set { // this must be public due to undead evolution
@@ -194,22 +193,21 @@ namespace djack.RogueSurvivor.Data
         return m_Controller;
       }
       set {
-        if (m_Controller != null) m_Controller.LeaveControl();
+        int playerDelta = 0;
+        if (null != m_Controller) {
+          if (IsPlayer) playerDelta -= 1;
+          m_Controller.LeaveControl();
+        }
         m_Controller = value;
-        if (m_Controller != null) m_Controller.TakeControl(this);
-        if (m_Location.Map != null) m_Location.Map.Players.Recalc();
+        if (null != m_Controller) {
+          m_Controller.TakeControl(this);
+          if (IsPlayer) playerDelta += 1;
+        }
+        if (null != m_Location.Map && 0!=playerDelta) m_Location.Map.Players.Recalc();
       }
     }
 
-    public bool IsPlayer
-    {
-      get {
-        if (m_Controller != null)
-          return m_Controller is PlayerController;
-        return false;
-      }
-    }
-
+    public bool IsPlayer { get { return m_Controller is PlayerController; } }
     public int SpawnTime { get { return m_SpawnTime; } }
 
     public Gameplay.GameGangs.IDs GangID {
