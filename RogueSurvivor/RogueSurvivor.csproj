@@ -366,6 +366,7 @@
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Zaimoni\Data\Ary2Dictionary.cs" />
+    <Compile Include="Zaimoni\Data\NonSerializedCache.cs" />
     <Compile Include="Zaimoni\Data\LangExt.cs" />
     <Compile Include="Zaimoni\Data\TimeCache.cs" />
     <Compile Include="Zaimoni\Data\DrawingExt.cs" />
