@@ -41,6 +41,7 @@ namespace djack.RogueSurvivor.Data
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
     private readonly List<OdorScent> m_Scents = new List<OdorScent>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
+    // position inverting caches
     [NonSerialized]
     private readonly Dictionary<Point, Actor> m_aux_ActorsByPosition = new Dictionary<Point, Actor>(5);
     [NonSerialized]
@@ -49,10 +50,11 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     [NonSerialized]
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
+    // AI support caches, etc.
     [NonSerialized]
     public Zaimoni.Data.NonSerializedCache<Actor,List<Actor>> Players;
     [NonSerialized]
-    private List<Engine.MapObjects.PowerGenerator> cache_PowerGenerators;
+    public Zaimoni.Data.NonSerializedCache<Engine.MapObjects.PowerGenerator, Engine.MapObjects.PowerGenerator[]> PowerGenerators;
 
     public bool IsSecret { get; private set; }
 
@@ -121,6 +123,7 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs = new byte[width, height];
       m_IsInside = new byte[width*height-1/8+1];
       Players = new Zaimoni.Data.NonSerializedCache<Actor, List<Actor>>(() => m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList());
+      PowerGenerators = new Zaimoni.Data.NonSerializedCache<Engine.MapObjects.PowerGenerator, Engine.MapObjects.PowerGenerator[]>(() => m_MapObjectsList.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToArray());            
     }
 
 #region Implement ISerializable
@@ -146,6 +149,7 @@ namespace djack.RogueSurvivor.Data
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
       m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
       Players = new Zaimoni.Data.NonSerializedCache<Actor, List<Actor>>(() => m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList());
+      PowerGenerators = new Zaimoni.Data.NonSerializedCache<Engine.MapObjects.PowerGenerator, Engine.MapObjects.PowerGenerator[]>(() => m_MapObjectsList.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToArray());            
       ReconstructAuxiliaryFields();
     }
 
@@ -1050,28 +1054,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    private void regen_PowerGenerators()
-    {
-      cache_PowerGenerators = MapObjects.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList();
-    }
-
-    public IEnumerable<Engine.MapObjects.PowerGenerator> PowerGenerators {
-      get {
-        if (null == cache_PowerGenerators) regen_PowerGenerators();
-        return cache_PowerGenerators;
-      }
-    }
-
-    public int CountPowerGenerators {
-      get {
-        if (null == cache_PowerGenerators) regen_PowerGenerators();
-        return cache_PowerGenerators.Count;
-      }
-    }
-
     public double PowerRatio {
       get {
-        return (double)(PowerGenerators.Count(it => it.IsOn))/CountPowerGenerators;
+        return (double)(PowerGenerators.Get.Count(it => it.IsOn))/PowerGenerators.Get.Length;
       }
     }
 
