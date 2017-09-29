@@ -1124,8 +1124,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsBefore(Actor other)
     {
-      Map map = Location.Map;
-      foreach (Actor actor1 in map.Actors) {
+      foreach (Actor actor1 in Location.Map.Actors) {
         if (actor1 == this) return true;
         if (actor1 == other) return false;
       }

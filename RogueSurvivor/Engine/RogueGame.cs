@@ -8672,7 +8672,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendStaminaPoints(staminaCost);
       Location o_loc = mapObj.Location;
       o_loc.Map.PlaceAt(mapObj, toPos);  // XXX cross-map push target
-      if (!Rules.IsAdjacent(o_loc, actor.Location) && o_loc.IsWalkableFor(actor)) {
+      if (!Rules.IsAdjacent(mapObj.Location, actor.Location) && o_loc.IsWalkableFor(actor)) {
         o_loc.Place(actor);
       }
       if (flag) {
@@ -8694,7 +8694,7 @@ namespace djack.RogueSurvivor.Engine
         DoStopDragCorpse(target);
         Location t_loc = target.Location;
         t_loc.Map.PlaceAt(target, toPos);    // XXX cross-map shove change target
-        if (!Rules.IsAdjacent(t_loc, actor.Location) && t_loc.IsWalkableFor(actor)) {
+        if (!Rules.IsAdjacent(target.Location, actor.Location) && t_loc.IsWalkableFor(actor)) {
           if (!TryActorLeaveTile(actor)) return;
           t_loc.Place(actor);
           OnActorEnterTile(actor);
@@ -11549,13 +11549,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void RefreshPlayer()
     {
-      foreach (Actor actor in Session.Get.CurrentMap.Actors) {
-        if (actor.IsPlayer) {
-          m_Player = actor;
-          break;
-        }
-      }
-      if (m_Player == null) return;
+      Actor tmp = Session.Get.CurrentMap.Players.Get.FirstOrDefault();
+      if (null == tmp) return;
+      m_Player = tmp;
       ComputeViewRect(m_Player.Location.Position);
     }
 
