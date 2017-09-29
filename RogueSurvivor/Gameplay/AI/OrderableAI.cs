@@ -610,7 +610,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       get {
         Map map = m_Actor.Location.Map;
         if (Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap == map) return null; // plot consequences until Prisoner That Should Not Be is dead, does not light level.
-        if (0 >= map.PowerGenerators.Get.Length) return null;
+        if (0 >= map.PowerGenerators.Get.Count) return null;
         if (1.0 <= map.PowerRatio) return null;
         return m_Actor.Location.Map.PowerGenerators.Get.Where(obj => !obj.IsOn);
       }

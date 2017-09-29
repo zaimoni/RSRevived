@@ -448,11 +448,11 @@ namespace djack.RogueSurvivor.Engine
          || loc.Map != m_Player.Location.Map
          || Rules.StdDistance(m_Player.Location.Position, loc.Position) > m_Player.AudioRange)
       {
-        List<Actor> tmp = loc.Map.Players.Get;
+        var tmp = loc.Map.Players.Get;
         if (0 >= tmp.Count) return;
-        tmp = tmp.Where(a => !a.IsSleeping && Rules.StdDistance(a.Location.Position, loc.Position) <= a.AudioRange).ToList();
-        if (0 >= tmp.Count) return;
-        PanViewportTo(tmp[0]);
+        var tmp2 = tmp.Where(a => !a.IsSleeping && Rules.StdDistance(a.Location.Position, loc.Position) <= a.AudioRange).ToArray();
+        if (0 >= tmp2.Length) return;
+        PanViewportTo(tmp2[0]);
       }
       // Data.Message msg = MakePlayerCentricMessage(string eventText, location.Position);
       Data.Message msg = MakePlayerCentricMessage(text, loc.Position);
@@ -2754,7 +2754,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private int DistanceToPlayer(Map map, int x, int y)
     {
-	  List<Actor> players = map.Players.Get;
+	  var players = map.Players.Get;
 	  if (0 >= players.Count) return int.MaxValue;
 	  return players.Select(p=> Rules.GridDistance(p.Location.Position, x, y)).Min();
     }

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Runtime.Serialization;
 using System.Linq;
@@ -52,9 +53,9 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     // AI support caches, etc.
     [NonSerialized]
-    public Zaimoni.Data.NonSerializedCache<Actor,List<Actor>> Players;
+    public NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
     [NonSerialized]
-    public Zaimoni.Data.NonSerializedCache<Engine.MapObjects.PowerGenerator, Engine.MapObjects.PowerGenerator[]> PowerGenerators;
+    public NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
 
     public bool IsSecret { get; private set; }
 
@@ -104,6 +105,16 @@ namespace djack.RogueSurvivor.Data
 
     public IEnumerable<OdorScent> Scents { get { return m_Scents; } }
 
+    private static ReadOnlyCollection<Actor> _findPlayers(IEnumerable<Actor> src)
+    {
+      return new ReadOnlyCollection<Actor>(src.Where(a => a.IsPlayer && !a.IsDead).ToList());
+    }
+
+    private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(IEnumerable<MapObject> src)
+    {
+      return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList());
+    }
+
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
 #if DEBUG
@@ -122,8 +133,8 @@ namespace djack.RogueSurvivor.Data
       IsSecret = secret;
       m_TileIDs = new byte[width, height];
       m_IsInside = new byte[width*height-1/8+1];
-      Players = new Zaimoni.Data.NonSerializedCache<Actor, List<Actor>>(() => m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList());
-      PowerGenerators = new Zaimoni.Data.NonSerializedCache<Engine.MapObjects.PowerGenerator, Engine.MapObjects.PowerGenerator[]>(() => m_MapObjectsList.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToArray());            
+      Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
+      PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
     }
 
 #region Implement ISerializable
@@ -148,8 +159,8 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
       m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
-      Players = new Zaimoni.Data.NonSerializedCache<Actor, List<Actor>>(() => m_ActorsList.Where(a => a.IsPlayer && !a.IsDead).ToList());
-      PowerGenerators = new Zaimoni.Data.NonSerializedCache<Engine.MapObjects.PowerGenerator, Engine.MapObjects.PowerGenerator[]>(() => m_MapObjectsList.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToArray());            
+      Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
+      PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       ReconstructAuxiliaryFields();
     }
 
@@ -1056,7 +1067,7 @@ namespace djack.RogueSurvivor.Data
 
     public double PowerRatio {
       get {
-        return (double)(PowerGenerators.Get.Count(it => it.IsOn))/PowerGenerators.Get.Length;
+        return (double)(PowerGenerators.Get.Count(it => it.IsOn))/PowerGenerators.Get.Count;
       }
     }
 
