@@ -658,6 +658,7 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCouldntFireAt(target));
     }
 
+#if DEAD_FUNC
     // this one is very hypothetical -- note absence of ranged weapon validity checks
     private string ReasonCouldntFireAt(Actor target, int range)
     {
@@ -677,6 +678,7 @@ namespace djack.RogueSurvivor.Data
     {
       return string.IsNullOrEmpty(ReasonCouldntFireAt(target,range));
     }
+#endif
 
     private string ReasonCantFireAt(Actor target, List<Point> LoF)
     {

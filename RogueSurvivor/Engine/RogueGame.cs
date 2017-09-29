@@ -313,8 +313,10 @@ namespace djack.RogueSurvivor.Engine
     private HiScoreTable m_HiScoreTable;
     private readonly MessageManager m_MessageManager;
     private bool m_HasLoadedGame;
+
     private Actor m_Player;
     private Rectangle m_MapViewRect;    // morally anchored to Session.Get.CurrentMap
+
     private static GameOptions s_Options;
     private static Keybindings s_KeyBindings;
     private static GameHintsStatus s_Hints;
