@@ -180,6 +180,7 @@ namespace djack.RogueSurvivor.Data
         // * sound: a ranged weapon user at grid distance 16 dashes to distance 15, then fires
         // this is evaluated once per scheduling, so we are uncachable.
         // 2017-09-28: grenades are an immediate issue.  melee/ranged combat and noise sources may not be
+        // 2017-09-29: moving in PC line of sight is an immediate issue.
         return false;
       }
     }

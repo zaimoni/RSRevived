@@ -573,11 +573,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       actor.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\blackop_suit");
     }
 
+#if DEAD_FUNC
     static protected string RandomSkin(DiceRoller roller, bool isMale)
     {
       string[] strArray = isMale ? MALE_SKINS : BaseMapGenerator.FEMALE_SKINS;
       return strArray[roller.Roll(0, strArray.Length)];
     }
+#endif
 
     static public void GiveNameToActor(DiceRoller roller, Actor actor)
     {

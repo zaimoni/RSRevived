@@ -138,7 +138,7 @@ namespace djack.RogueSurvivor.Gameplay
       Actor.SKILL_BOWS_DMG_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[3];
       Rules.SKILL_CARPENTRY_BARRICADING_BONUS = skillData1.VALUE1;
-      Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = (int) skillData1.VALUE2;
+      Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[4];
       Rules.SKILL_CHARISMATIC_TRUST_BONUS = (int) skillData1.VALUE1;
       Rules.SKILL_CHARISMATIC_TRADE_BONUS = (int) skillData1.VALUE2;

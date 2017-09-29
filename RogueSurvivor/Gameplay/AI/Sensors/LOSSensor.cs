@@ -19,7 +19,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   [Serializable]
   internal class LOSSensor : Sensor
   {
-    private Actor m_Actor=null;
+    private Actor m_Actor;
     private readonly SensingFilter m_Filters;
 
     public HashSet<Point> FOV {

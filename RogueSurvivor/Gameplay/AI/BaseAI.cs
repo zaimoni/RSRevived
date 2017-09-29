@@ -74,6 +74,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Filter(p => p.Location.Map == map);
     }
 
+#if DEAD_FUNC
     // actually deploying this is time-intensive
     protected static List<Percept_<_dest_>> FilterTo<_dest_,_src_>(List<Percept_<_src_>> percepts) where _dest_: class,_src_ where _src_:class
     {
@@ -85,6 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return (0<tmp.Count ? tmp : null);
     }
+#endif
 
     protected List<Percept> FilterEnemies(List<Percept> percepts)
     {
@@ -136,10 +138,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percept;
     }
 
+#if DEAD_FUNC
     protected List<Percept> FilterFireTargets(List<Percept> percepts)
     {
       return percepts.FilterT<Actor>(target => m_Actor.CanFireAt(target));
     }
+#endif
 
     protected List<Percept> FilterFireTargets(List<Percept> percepts, int range)
     {
@@ -156,6 +160,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.FilterT<Actor>(target => m_Actor.CanContrafactualFireAt(target,p));
     }
 
+#if DEAD_FUNC
     protected List<Percept_<_T_>> SortByDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
@@ -169,6 +174,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
       return perceptList;
     }
+#endif
 
     // firearms use grid i.e. L-infinity distance
     protected List<Percept_<_T_>> SortByGridDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
@@ -410,6 +416,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
     }
 
+#if DEAD_FUNC
     // intentionally disabled in alpha 9; for ZM AI
     protected ActorAction BehaviorAssaultBreakables(HashSet<Point> fov)
     {
@@ -427,6 +434,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorIntelligentBumpToward(percept.Location.Position);
       return (m_Actor.CanBreak(percept.Percepted as MapObject) ? new ActionBreak(m_Actor, percept.Percepted as MapObject) : null);
     }
+#endif
 
     protected ActionPush BehaviorPushNonWalkableObject(RogueGame game)
     {

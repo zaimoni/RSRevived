@@ -21,8 +21,8 @@ namespace djack.RogueSurvivor.Data
     private int m_JumpLevel;
     private int m_Weight;
     private Break m_BreakState;
-    private readonly int m_MaxHitPoints = 0;
-    private int m_HitPoints = 0;
+    private readonly int m_MaxHitPoints;
+    private int m_HitPoints;
     private Fire m_FireState;
     private Location m_Location;
 
@@ -198,9 +198,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsFlammable {
       get {
-        if (m_FireState != Fire.ONFIRE)
-          return m_FireState == Fire.BURNABLE;
-        return true;
+        return m_FireState == Fire.ONFIRE || m_FireState == Fire.BURNABLE;
       }
     }
 
@@ -256,7 +254,7 @@ namespace djack.RogueSurvivor.Data
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
-    protected void InvalidateLOS() 
+    protected void InvalidateLOS()
     {
       if (null != m_Location.Map) Engine.LOS.Validate(m_Location.Map,los => !los.Contains(m_Location.Position));
     }
@@ -272,13 +270,13 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool CanPushTo(Point toPos, out string reason)
-    { 
+    {
       reason = ReasonCantPushTo(toPos);
       return string.IsNullOrEmpty(reason);
     }
 
     public bool CanPushTo(Point toPos)
-    { 
+    {
       return string.IsNullOrEmpty(ReasonCantPushTo(toPos));
     }
 

@@ -327,9 +327,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         case ActorTasks.DROP_ALL_ITEMS:
           return ExecuteDropAllItems(game);
         case ActorTasks.BUILD_SMALL_FORTIFICATION:
-          return ExecuteBuildFortification(game, order.Location, false);
+          return ExecuteBuildFortification(order.Location, false);
         case ActorTasks.BUILD_LARGE_FORTIFICATION:
-          return ExecuteBuildFortification(game, order.Location, true);
+          return ExecuteBuildFortification(order.Location, true);
         case ActorTasks.REPORT_EVENTS:
           return ExecuteReport(game, percepts);  // cancelled by enamies sighted
         case ActorTasks.SLEEP_NOW:
@@ -361,10 +361,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return tmpAction;
     }
 
-    private ActorAction ExecuteBuildFortification(RogueGame game, Location location, bool isLarge)
+    private ActorAction ExecuteBuildFortification(Location location, bool isLarge)
     {
       if (m_Actor.Location.Map != location.Map) return null;
-      if (!game.Rules.CanActorBuildFortification(m_Actor, location.Position, isLarge)) return null;
+      if (!m_Actor.CanBuildFortification(location.Position, isLarge)) return null;
       ActorAction tmpAction = null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, location.Position)) {
         tmpAction = new ActionBuildFortification(m_Actor, location.Position, isLarge);
@@ -567,10 +567,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsRationalTradeItem(Actor speaker, Item offeredItem)    // Cf. ActorControllerAI::IsInterestingTradeItem
     {
-      Contract.Requires(null!=speaker);
-      Contract.Requires(speaker.Model.Abilities.CanTrade);
 #if DEBUG
-      Contract.Requires(Actor.Model.Abilities.CanTrade);
+      if (null == speaker) throw new ArgumentNullException(nameof(speaker));
+      if (!speaker.Model.Abilities.CanTrade) throw new ArgumentOutOfRangeException(nameof(speaker),"both parties trading must be capable of it");
+      if (!m_Actor.Model.Abilities.CanTrade) throw new ArgumentOutOfRangeException(nameof(speaker),"both parties trading must be capable of it");
 #endif
       return IsInterestingItem(offeredItem);
     }
@@ -1718,7 +1718,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (m_Actor.CountItems<ItemBarricadeMaterial>() < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, true)) return null;
+      if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(true)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
@@ -1734,7 +1734,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!game.Rules.CanActorBuildFortification(m_Actor, point1, true)) return null;
+      if (!m_Actor.CanBuildFortification(point1, true)) return null;
       return new ActionBuildFortification(m_Actor, point1, true);
     }
 
@@ -1766,7 +1766,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorBuildSmallFortification(RogueGame game)
     {
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0) return null;
-      if (m_Actor.CountItems<ItemBarricadeMaterial>() < Rules.ActorBarricadingMaterialNeedForFortification(m_Actor, false)) return null;
+      if (m_Actor.CountItems<ItemBarricadeMaterial>() < m_Actor.BarricadingMaterialNeedForFortification(false)) return null;
       Map map = m_Actor.Location.Map;
       BaseAI.ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir =>
       {
@@ -1777,7 +1777,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
       Point point1 = m_Actor.Location.Position + choiceEval.Choice;
-      if (!game.Rules.CanActorBuildFortification(m_Actor, point1, false)) return null;
+      if (!m_Actor.CanBuildFortification(point1, false)) return null;
       return new ActionBuildFortification(m_Actor, point1, false);
     }
 

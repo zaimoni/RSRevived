@@ -47,6 +47,7 @@ namespace djack.RogueSurvivor.Data
     private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
 
     public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
+    public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
@@ -451,10 +452,12 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanShout()
     {
 	  return string.IsNullOrEmpty(ReasonCantShout());
     }
+#endif
 
 	private string ReasonCantChatWith(Actor target)
 	{
@@ -472,10 +475,12 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanChatWith(Actor target)
     {
 	  return string.IsNullOrEmpty(ReasonCantChatWith(target));
     }
+#endif
 
 	private string ReasonCantSwitchPlaceWith(Actor target)
 	{
@@ -506,23 +511,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#if DEAD_FUNC
     public IEnumerable<Actor> AggressorOf { get { return m_AggressorOf; } }
-
-    public int CountAggressorOf {
-      get {
-        if (m_AggressorOf == null) return 0;
-        return m_AggressorOf.Count;
-      }
-    }
-
+    public int CountAggressorOf { get { return m_AggressorOf?.Count ?? 0; } }
     public IEnumerable<Actor> SelfDefenceFrom { get { return m_SelfDefenceFrom; } }
-
-    public int CountSelfDefenceFrom {
-      get {
-        if (m_SelfDefenceFrom == null) return 0;
-        return m_SelfDefenceFrom.Count;
-      }
-    }
+    public int CountSelfDefenceFrom { get { return m_SelfDefenceFrom?.Count ?? 0; } }
+#endif
 
     public int MurdersCounter {
       get {
@@ -651,11 +645,13 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+#if DEAD_FUNC
     public bool CouldFireAt(Actor target, out string reason)
     {
       reason = ReasonCouldntFireAt(target);
       return string.IsNullOrEmpty(reason);
     }
+#endif
 
     public bool CouldFireAt(Actor target)
     {
@@ -717,11 +713,13 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+#if FAIL
     public bool CanFireAt(Actor target, int range, List<Point> LoF, out string reason)
     {
       reason = ReasonCantFireAt(target,range,LoF);
       return string.IsNullOrEmpty(reason);
     }
+#endif
 
     public bool CanFireAt(Actor target, int range)
     {
@@ -736,11 +734,13 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+#if DEAD_FUNC
 	public bool CanContrafactualFireAt(Actor target, Point p, out string reason)
 	{
 	  reason = ReasonCantContrafactualFireAt(target,p);
 	  return string.IsNullOrEmpty(reason);
 	}
+#endif
 
 	public bool CanContrafactualFireAt(Actor target, Point p)
 	{
@@ -1373,11 +1373,13 @@ namespace djack.RogueSurvivor.Data
       return "";
     }
 
+#if DEAD_FUNC
     public bool CouldBarricade(out string reason)
     {
       reason = ReasonCouldntBarricade();
       return string.IsNullOrEmpty(reason);
     }
+#endif
 
     public bool CouldBarricade()
     {
@@ -1399,10 +1401,12 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanBash(DoorWindow door)
     {
 	  return string.IsNullOrEmpty(ReasonCantBash(door));
     }
+#endif
 
 	private string ReasonCantOpen(DoorWindow door)
 	{
@@ -1424,9 +1428,38 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(ReasonCantOpen(door));
     }
 
-	// leave the dead parameter in there, for now.
-	// E.g., non-CHAR power generators might actually *need fuel*
-	private string ReasonCantSwitch(PowerGenerator powGen)
+    public int BarricadingMaterialNeedForFortification(bool isLarge)
+    {
+      return Math.Max(1, (isLarge ? 4 : 2) - (Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) >= 3 ? SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
+    }
+
+    private string ReasonCantBuildFortification(Point pos, bool isLarge)
+    {
+      if (0 >= Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY)) return "no skill in carpentry";
+
+      Map map = Location.Map;
+      if (!map.GetTileModelAtExt(pos).IsWalkable) return  "cannot build on walls";
+
+      int num = BarricadingMaterialNeedForFortification(isLarge);
+      if (CountItems<ItemBarricadeMaterial>() < num) return string.Format("not enough barricading material, need {0}.", (object) num);
+      if (map.HasMapObjectAt(pos) || map.HasActorAt(pos)) return "blocked";
+      return "";
+    }
+
+    public bool CanBuildFortification(Point pos, bool isLarge, out string reason)
+    {
+	  reason = ReasonCantBuildFortification(pos,isLarge);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanBuildFortification(Point pos, bool isLarge)
+    {
+	  return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
+    }
+
+    // leave the dead parameter in there, for now.
+    // E.g., non-CHAR power generators might actually *need fuel*
+    private string ReasonCantSwitch(PowerGenerator powGen)
 	{
 	  Contract.Requires(null != powGen);
       if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
@@ -1440,10 +1473,12 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanSwitch(PowerGenerator powGen)
     {
 	  return string.IsNullOrEmpty(ReasonCantSwitch(powGen));
     }
+#endif
 
 	private string ReasonCantRecharge(Item it)
 	{
@@ -1460,10 +1495,12 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanRecharge(Item it)
     {
 	  return string.IsNullOrEmpty(ReasonCantRecharge(it));
     }
+#endif
 
     // event timing
     public void SpendActionPoints(int actionCost)
@@ -1599,10 +1636,12 @@ namespace djack.RogueSurvivor.Data
       return Rules.STAMINA_COST_RUNNING;
     }
 
+#if DEAD_FUNC
     public bool WillTireAfterRunning(Point dest)
     {
       return WillTireAfter(RunningStaminaCost(dest));
     }
+#endif
 
     public int MaxSTA {
       get {
@@ -1678,10 +1717,12 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanLeaveMap()
     {
 	  return string.IsNullOrEmpty(ReasonCantLeaveMap());
     }
+#endif
 
     // we do not roll these into a setter as no change requires both sets of checks
     public void SpendStaminaPoints(int staminaCost)
@@ -2264,10 +2305,12 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanGiveTo(Actor target, Item gift)
     {
       return string.IsNullOrEmpty(ReasonCantGiveTo(target, gift));
     }
+#endif
 
     private string ReasonCantGetFromContainer(Point position)
     {
@@ -2606,12 +2649,6 @@ namespace djack.RogueSurvivor.Data
     public void CreateCivilianDeductFoodSleep(Rules r) {
       m_FoodPoints -= r.Roll(0, m_FoodPoints / 4);
       m_SleepPoints -= r.Roll(0, m_SleepPoints / 4);
-    }
-
-    public void AfterSpawn()
-    {
-      Controller.UpdateSensors();
-      Engine.Session.Get.PoliceTrackingThroughExitSpawn(this); // XXX overprecise
     }
 
     public void AfterAction()

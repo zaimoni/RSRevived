@@ -28,8 +28,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CountDecorations(DollPart part)
     {
-      List<string> decorations = GetDecorations(part);
-      return (null != decorations ? decorations.Count : 0);
+      return GetDecorations(part)?.Count ?? 0;
     }
 
     public void AddDecoration(DollPart part, string imageID)

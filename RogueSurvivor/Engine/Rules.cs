@@ -34,7 +34,6 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_AGILE_DEF_BONUS = 2;
     public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.2f;
     public static float SKILL_CARPENTRY_BARRICADING_BONUS = 0.2f;
-    public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
     public static int SKILL_HARDY_HEAL_CHANCE_BONUS = 1;
@@ -161,6 +160,7 @@ namespace djack.RogueSurvivor.Engine
       return m_DiceRoller.RollChance(chance);
     }
 
+#if DEAD_FUNC
     public float RollFloat()
     {
       return m_DiceRoller.RollFloat();
@@ -171,6 +171,7 @@ namespace djack.RogueSurvivor.Engine
       float num = deviation / 2f;
       return (float) ((double) value - (double) num * (double)m_DiceRoller.RollFloat() + (double) num * (double)m_DiceRoller.RollFloat());
     }
+#endif
 
     public int RollX(Map map)
     {
@@ -505,41 +506,6 @@ namespace djack.RogueSurvivor.Engine
       return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge)
-    {
-      return CanActorBuildFortification(actor, pos, isLarge, out string reason);
-    }
-
-    public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) == 0)
-      {
-        reason = "no skill in carpentry";
-        return false;
-      }
-      Map map = actor.Location.Map;
-      if (!map.GetTileModelAtExt(pos).IsWalkable)
-      {
-        reason = "cannot build on walls";
-        return false;
-      }
-      int num = ActorBarricadingMaterialNeedForFortification(actor, isLarge);
-      if (actor.CountItems<ItemBarricadeMaterial>() < num)
-      {
-        reason = string.Format("not enough barricading material, need {0}.", (object) num);
-        return false;
-      }
-      if (map.HasMapObjectAt(pos) || map.HasActorAt(pos))
-      {
-        reason = "blocked";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorRepairFortification(Actor actor, Fortification fort, out string reason)
     {
       if (actor == null)
@@ -816,11 +782,6 @@ namespace djack.RogueSurvivor.Engine
     public static int ActorLoudNoiseWakeupChance(Actor actor, int noiseDistance)
     {
       return 10 + Rules.SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_SLEEPER) + Math.Max(0, (LOUD_NOISE_RADIUS - noiseDistance) * 10);
-    }
-
-    public static int ActorBarricadingMaterialNeedForFortification(Actor builder, bool isLarge)
-    {
-      return Math.Max(1, (isLarge ? 4 : 2) - (builder.Sheet.SkillTable.GetSkillLevel(Skills.IDs.CARPENTRY) >= 3 ? Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS : 0));
     }
 
     public static int ActorTrustIncrease(Actor actor)

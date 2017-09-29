@@ -4366,7 +4366,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeErrorMessage("need carpentry skill."));
         return false;
       }
-      int num = Rules.ActorBarricadingMaterialNeedForFortification(player, isLarge);
+      int num = player.BarricadingMaterialNeedForFortification(isLarge);
       if (player.CountItems<ItemBarricadeMaterial>() < num) {
         AddMessage(MakeErrorMessage(string.Format("not enough barricading material, need {0}.", num)));
         return false;
@@ -4382,7 +4382,7 @@ namespace djack.RogueSurvivor.Engine
         else if (direction != Direction.NEUTRAL) {
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
-            if (m_Rules.CanActorBuildFortification(player, point, isLarge, out string reason)) {
+            if (player.CanBuildFortification(point, isLarge, out string reason)) {
               DoBuildFortification(player, point, isLarge);
               RedrawPlayScreen();
               flag1 = false;
@@ -5178,7 +5178,7 @@ namespace djack.RogueSurvivor.Engine
           Point map2 = MouseToMap(mousePos);
           if (map1.IsValid(map2) && IsInViewRect(map2)) {
             if (IsVisibleToPlayer(map1, map2) && followerFOV.Contains(map2)) {
-              if (m_Rules.CanActorBuildFortification(follower, map2, isLarge, out string reason)) {
+              if (follower.CanBuildFortification(map2, isLarge, out string reason)) {
                 nullable = map2;
                 color = Color.LightGreen;
                 if (mouseButtons.HasValue && mouseButtons.Value == MouseButtons.Left) {
@@ -5711,7 +5711,7 @@ namespace djack.RogueSurvivor.Engine
              return !m_Player.IsEnemyOf(actorAt);
          });
         case AdvisorHint.BUILD_FORTIFICATION:
-          return map.HasAnyAdjacentInMap(position, pt => m_Rules.CanActorBuildFortification(m_Player, pt, false));
+          return map.HasAnyAdjacentInMap(position, pt => m_Player.CanBuildFortification(pt, false));
         case AdvisorHint.LEADING_NEED_SKILL:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
@@ -6957,7 +6957,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs.BOWS:
           return string.Format("bows +{0} Atk, +{1} Dmg", Actor.SKILL_BOWS_ATK_BONUS, Actor.SKILL_BOWS_DMG_BONUS);
         case Skills.IDs.CARPENTRY:
-          return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Rules.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100.0 * (double)Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
+          return string.Format("build, -{0} mat. at lvl 3, +{1}% barricading", Actor.SKILL_CARPENTRY_LEVEL3_BUILD_BONUS, (int)(100.0 * (double)Rules.SKILL_CARPENTRY_BARRICADING_BONUS));
         case Skills.IDs.CHARISMATIC:
           return string.Format("+{0} trust per turn, +{1}% trade offers", Rules.SKILL_CHARISMATIC_TRUST_BONUS, Rules.SKILL_CHARISMATIC_TRADE_BONUS);
         case Skills.IDs.FIREARMS:
@@ -7156,11 +7156,6 @@ namespace djack.RogueSurvivor.Engine
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
       OnActorEnterTile(actor);
-    }
-
-    public void DoMoveActor(Actor actor, Direction direction)
-    {
-      DoMoveActor(actor, actor.Location + direction);
     }
 
     public void OnActorEnterTile(Actor actor)
@@ -8529,7 +8524,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoBuildFortification(Actor actor, Point buildPos, bool isLarge)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      int num = Rules.ActorBarricadingMaterialNeedForFortification(actor, isLarge);
+      int num = actor.BarricadingMaterialNeedForFortification(isLarge);
       for (int index = 0; index < num; ++index) {
         ItemBarricadeMaterial firstByType = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
         actor.Inventory.Consume(firstByType);
@@ -9956,15 +9951,20 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if NO_PEACE_WALLS
+#else
     public void DrawExit(Point screen)
     {
       m_UI.UI_DrawImage(GameImages.MAP_EXIT, screen.X, screen.Y);
     }
+#endif
 
+#if DEAD_FUNC
     public void DrawTileRectangle(Point mapPosition, Color color)
     {
       m_UI.UI_DrawRect(color, new Rectangle(MapToScreen(mapPosition), new Size(TILE_SIZE, TILE_SIZE)));
     }
+#endif
 
     public void DrawMapObject(MapObject mapObj, Point screen, Tile tile, Color tint)    // tile is the one that the map object is on.
     {

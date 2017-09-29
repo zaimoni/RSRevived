@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.UI
       NeedRedraw = true;
     }
 
-    public void AddImage(Image img, int x, int y, Color color)
+    public void AddImage(Image img, int x, int y, Color tint)
     {
       AddImage(img, x, y);
     }
