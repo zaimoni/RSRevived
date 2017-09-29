@@ -54,7 +54,7 @@ namespace djack.RogueSurvivor.Data
         AddMap(value);
         // successfully placing a cop means the police faction knows all outside squares (map revealing effect)
         Point pos = new Point(0);
-        if (null != m_EntryMap.Police) {
+        if (0 < m_EntryMap.Police.Get.Count) {
           for (pos.X = 0; pos.X < m_EntryMap.Width; ++pos.X) {
             for (pos.Y = 0; pos.Y < m_EntryMap.Height; ++pos.Y) {
               if (m_EntryMap.IsInsideAt(pos)) continue;

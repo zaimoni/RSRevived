@@ -1092,11 +1092,7 @@ namespace djack.RogueSurvivor.Data
         HashSet<Actor> ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
-          foreach(Map m in Location.Map.District.Maps) {
-            List<Actor> tmp = m.Police;
-            if (null == tmp) continue;
-            ret.UnionWith(tmp);
-          }
+          foreach(Map m in Location.Map.District.Maps) ret.UnionWith(m.Police.Get);
           ret.Remove(this);
         }
         // 2) leader/follower cliques are allies.

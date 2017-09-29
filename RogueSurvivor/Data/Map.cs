@@ -55,6 +55,8 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     public NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
     [NonSerialized]
+    public NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
+    [NonSerialized]
     public NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
 
     public bool IsSecret { get; private set; }
@@ -110,6 +112,11 @@ namespace djack.RogueSurvivor.Data
       return new ReadOnlyCollection<Actor>(src.Where(a => a.IsPlayer && !a.IsDead).ToList());
     }
 
+    private static ReadOnlyCollection<Actor> _findPolice(IEnumerable<Actor> src)
+    {
+      return new ReadOnlyCollection<Actor>(src.Where(a => (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead).ToList());
+    }
+
     private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(IEnumerable<MapObject> src)
     {
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList());
@@ -134,6 +141,7 @@ namespace djack.RogueSurvivor.Data
       m_TileIDs = new byte[width, height];
       m_IsInside = new byte[width*height-1/8+1];
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
+      Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
     }
 
@@ -160,6 +168,7 @@ namespace djack.RogueSurvivor.Data
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
       m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
+      Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       ReconstructAuxiliaryFields();
     }
@@ -945,14 +954,6 @@ namespace djack.RogueSurvivor.Data
                            : Players.Get.ActOnce(pan_to, pred));
     }
 
-    // police on map
-    public List<Actor> Police {
-      get {
-        IEnumerable<Actor> police = m_ActorsList.Where(a=> (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead);
-        return police.Any() ? police.ToList() : null;
-      }
-    }
-
     // map object manipulation functions
     public bool HasMapObject(MapObject mapObj)
     {
@@ -1626,12 +1627,9 @@ namespace djack.RogueSurvivor.Data
 
     public void OptimizeBeforeSaving()
     {
-      int i = 0;
-      if (null != m_ActorsList) {
-        i = m_ActorsList.Count;
-        while (0 < i--) {
-          if (m_ActorsList[i].IsDead) m_ActorsList.RemoveAt(i);
-        }
+      int i = m_ActorsList.Count;
+      while (0 < i--) {
+        if (m_ActorsList[i].IsDead) m_ActorsList.RemoveAt(i);
       }
 
       foreach (Actor mActors in m_ActorsList)
