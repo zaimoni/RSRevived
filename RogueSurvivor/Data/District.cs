@@ -165,6 +165,25 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // before cross district viewing, this was simply a PlayerCount check
+    public bool RequiresUI {
+      get {
+        if (0 < PlayerCount) return true;
+        // \todo Anything that initates UI from outside of the current district has to be PC to avoid a deadlock.
+        // once this is working fully, we will never have to reclassify districts.
+
+        // At the base space-time scale (30 turns/hour, 50x50 districts), we have
+        // * maximum hearing range 15
+        // * maximum viewing radius (8-1)[early evening]+2(big flashlight)+1(on car)=10.
+        // so the worst-cases are
+        // * LOS: grenade explosion at grid distance 12 spills into view at grid distance 10
+        // * sound: a ranged weapon user at grid distance 16 dashes to distance 15, then fires
+        // this is evaluated once per scheduling, so we are uncachable.
+        // 2017-09-28: grenades are an immediate issue.  melee/ranged combat and noise sources may not be
+        return false;
+      }
+    }
+
     // possible micro-optimization target
     public int PlayerCount {
       get {

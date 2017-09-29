@@ -354,7 +354,7 @@ retry:
 #endif
 
         // we're clear.
-        if (0 < d.PlayerCount) m_PCready.Enqueue(d);
+        if (d.RequiresUI) m_PCready.Enqueue(d);
         else m_NPCready.Enqueue(d);
 #if SCHEDULER_IS_RACY
 #else
@@ -411,7 +411,7 @@ retry:
       lock(m_PCready) {
         while(0 < m_PCready.Count) {
           District tmp = m_PCready.Peek();
-          if (0 < tmp.PlayerCount) return tmp;
+          if (tmp.RequiresUI) return tmp;
           m_NPCready.Enqueue(m_PCready.Dequeue());
         }
       }
@@ -423,7 +423,7 @@ retry:
       lock(m_PCready) {
         while(0 < m_NPCready.Count) {
           District tmp = m_NPCready.Peek();
-          if (0 == tmp.PlayerCount) return tmp;
+          if (!tmp.RequiresUI) return tmp;
           m_PCready.Enqueue(m_NPCready.Dequeue());
         }
       }
