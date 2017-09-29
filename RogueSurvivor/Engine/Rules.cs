@@ -770,8 +770,11 @@ namespace djack.RogueSurvivor.Engine
       if (killer.Faction.IsEnemyOf(victim.Faction)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.
-      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && killer.Leader.IsEnemyOf(victim)) return false;
-      if (killer.HasLeader && killer.Leader.Model.Abilities.IsLawEnforcer && victim.IsSelfDefenceFrom(killer.Leader)) return false;
+      Actor killer_leader = killer.LiveLeader;
+      if (null != killer_leader && killer_leader.Model.Abilities.IsLawEnforcer) {
+        if (killer_leader.IsEnemyOf(victim)) return false;
+        if (victim.IsSelfDefenceFrom(killer.Leader)) return false;
+      }
 
       // Framed for murder.  Since this is an apocalypse, self-defence doesn't count no matter what the law was pre-apocalypse
       if (victim.Model.Abilities.IsLawEnforcer) return true;
@@ -780,13 +783,8 @@ namespace djack.RogueSurvivor.Engine
       // resume old definition
       if (killer.IsSelfDefenceFrom(victim)) return false;
 
-      if (killer.HasLeader && killer.Leader.IsSelfDefenceFrom(victim)) return false;
-      if (killer.CountFollowers > 0) {
-        foreach (Actor follower in killer.Followers) {
-          if (follower.IsSelfDefenceFrom(victim))
-            return false;
-        }
-      }
+      if (killer_leader?.IsSelfDefenceFrom(victim) ?? false) return false;
+      if (killer.CountFollowers > 0 && !killer.Followers.Any(fo => fo.IsSelfDefenceFrom(victim))) return false;
       return true;
     }
 

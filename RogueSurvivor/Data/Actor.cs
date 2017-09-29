@@ -343,6 +343,7 @@ namespace djack.RogueSurvivor.Data
 
     // Leadership
     public Actor Leader { get { return m_Leader; } }
+    public Actor LiveLeader { get { return (null != m_Leader && !m_Leader.IsDead ? m_Leader : null); } }
 
     public bool HasLeader {
       get {
@@ -377,8 +378,7 @@ namespace djack.RogueSurvivor.Data
 
     public int CountFollowers {
       get {
-        if (m_Followers == null) return 0;
-        return m_Followers.Count;
+        return m_Followers?.Count ?? 0;
       }
     }
 

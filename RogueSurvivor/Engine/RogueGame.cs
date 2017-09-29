@@ -8817,13 +8817,14 @@ namespace djack.RogueSurvivor.Engine
       UntriggerAllTrapsHere(deadGuy.Location);
       if (killer != null && !killer.Model.Abilities.IsUndead && (killer.Model.Abilities.HasSanity && deadGuy.Model.Abilities.IsUndead))
         killer.RegenSanity(Rules.ActorSanRegenValue(killer, Rules.SANITY_RECOVER_KILL_UNDEAD));
-      if (deadGuy.HasLeader) {
-        if (deadGuy.Leader.HasBondWith(deadGuy)) {
-          deadGuy.Leader.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
-          if (ForceVisibleToPlayer(deadGuy.Leader)) {
-            if (deadGuy.Leader.IsPlayer) ClearMessages();
-            AddMessage(MakeMessage(deadGuy.Leader, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(deadGuy.Leader, VERB_BE), deadGuy.Name)));
-            if (deadGuy.Leader.IsPlayer) AddMessagePressEnter();
+      Actor deadGuy_leader = deadGuy.LiveLeader;
+      if (null != deadGuy_leader) {
+        if (deadGuy_leader.HasBondWith(deadGuy)) {
+          deadGuy_leader.SpendSanity(Rules.SANITY_HIT_BOND_DEATH);
+          if (ForceVisibleToPlayer(deadGuy_leader)) {
+            if (deadGuy_leader.IsPlayer) ClearMessages();
+            AddMessage(MakeMessage(deadGuy_leader, string.Format("{0} deeply disturbed by {1} sudden death!", Conjugate(deadGuy_leader, VERB_BE), deadGuy.Name)));
+            if (deadGuy_leader.IsPlayer) AddMessagePressEnter();
           }
         }
       } else if (deadGuy.CountFollowers > 0) {
@@ -9565,7 +9566,7 @@ namespace djack.RogueSurvivor.Engine
           case Skills.IDs.HIGH_STAMINA:
             return 2;
           case Skills.IDs.LEADERSHIP:
-            return !actor.HasLeader ? 1 : 0;
+            return !actor.HasLeader ? 1 : 0;    // only because of lack of chain of command
           case Skills.IDs.LIGHT_EATER:
             return !actor.Model.Abilities.HasToEat ? 0 : 3;
           case Skills.IDs.LIGHT_FEET:
@@ -12010,9 +12011,7 @@ namespace djack.RogueSurvivor.Engine
     static private string DescribeAvatar(Actor a)
     {
       if (a == null) return "(N/A)";
-      bool flag = a.CountFollowers > 0;
-      bool hasLeader = a.HasLeader;
-      return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, flag ? ", leader" : (hasLeader ? ", follower" : ""));
+      return string.Format("{0}, a {1}{2}", a.Name, a.Model.Name, (0 < a.CountFollowers ? ", leader" : (a.HasLeader ? ", follower" : "")));
     }
 
     private bool AskForReincarnation()
