@@ -505,26 +505,6 @@ namespace djack.RogueSurvivor.Engine
       return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public bool CanActorCancelLead(Actor actor, Actor target, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (target == null)
-        throw new ArgumentNullException("target");
-      if (target.Leader != actor)
-      {
-        reason = "not your follower";
-        return false;
-      }
-      if (target.IsSleeping)
-      {
-        reason = "sleeping";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorBuildFortification(Actor actor, Point pos, bool isLarge)
     {
       return CanActorBuildFortification(actor, pos, isLarge, out string reason);

@@ -416,6 +416,29 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantTakeLeadOf(target));
     }
 
+    private string ReasonCantCancelLead(Actor target)
+    {
+#if DEBUG
+      if (target == null) throw new ArgumentNullException(nameof(target));
+#endif
+      if (target.Leader != this) return "not your follower";
+      if (target.IsSleeping) return "sleeping";
+      return "";
+    }
+
+    public bool CanCancelLead(Actor target, out string reason)
+    {
+      reason = ReasonCantCancelLead(target);
+      return string.IsNullOrEmpty(reason);
+    }
+
+#if DEAD_FUNC
+    public bool CanCancelLead(Actor target)
+    {
+      return string.IsNullOrEmpty(ReasonCantCancelLead(target));
+    }
+#endif
+
     private string ReasonCantShout()
     {
       if (!Model.Abilities.CanTalk) return "can't talk";

@@ -4649,7 +4649,7 @@ namespace djack.RogueSurvivor.Engine
                 AddMessage(new Data.Message(string.Format("(to give order : press <{0}>).", RogueGame.s_KeyBindings.Get(PlayerCommand.ORDER_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
                 break;
               } else if (actorAt.Leader == player) {
-                if (m_Rules.CanActorCancelLead(player, actorAt, out reason)) {
+                if (player.CanCancelLead(actorAt, out reason)) {
                   AddMessage(MakeYesNoMessage(string.Format("Really ask {0} to leave", actorAt.TheName)));
                   RedrawPlayScreen();
                   if (WaitYesOrNo()) {
@@ -9247,7 +9247,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("May {0} soul rest in peace.", HisOrHer(m_Player)));
       textFile.Append(string.Format("For {0} body is now a meal for evil.", HisOrHer(m_Player)));
       textFile.Append("The End.");
-      int num1 = 0; ;
+      int num1 = 0;
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
       int gy1 = num1 + 14;
@@ -11049,7 +11049,7 @@ namespace djack.RogueSurvivor.Engine
     static private bool CheckCopyOfManual()
     {
       string str1 = "Resources\\Manual\\";
-      string userDocsPath = RogueGame.GetUserDocsPath();
+      string userDocsPath = GetUserDocsPath();
       const string str2 = "RS Manual.txt";
       bool flag = false;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "checking for manual...");
