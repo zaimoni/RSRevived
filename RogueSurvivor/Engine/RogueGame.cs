@@ -335,63 +335,19 @@ namespace djack.RogueSurvivor.Engine
 #endif
     private Thread m_SimThread;
 
-    public Rules Rules {
-      get {
-        return m_Rules;
-      }
-    }
+    public Rules Rules { get { return m_Rules; } }
+    public bool IsGameRunning { get { return m_IsGameRunning; } }
+    public static GameOptions Options { get { return s_Options; } }
+    public static Keybindings KeyBindings { get { return s_KeyBindings; } }
+    public GameActors GameActors { get { return m_GameActors; } }
 
-    public IRogueUI UI {
-      get {
-        return m_UI;
-      }
-    }
+    public bool IsSimulating { get { return "Simulation Thread" == Thread.CurrentThread.Name; } }
 
-    public bool IsGameRunning {
-      get {
-        return m_IsGameRunning;
-      }
-    }
-
-    public static GameOptions Options
-    {
-      get
-      {
-        return s_Options;
-      }
-    }
-
-    public static Keybindings KeyBindings
-    {
-      get
-      {
-        return RogueGame.s_KeyBindings;
-      }
-    }
-
-    public GameActors GameActors
-    {
-      get
-      {
-        return m_GameActors;
-      }
-    }
-
-    public GameItems GameItems
-    {
-      get
-      {
-        return m_GameItems;
-      }
-    }
-
-    public Actor Player
-    {
-      get
-      {
-        return m_Player;
-      }
-    }
+#if DEAD_FUNC
+    public IRogueUI UI { get { return m_UI; } }
+    public GameItems GameItems { get { return m_GameItems; } }
+    public Actor Player { get { return m_Player; } }
+#endif
 
     public RogueGame(IRogueUI UI)
     {
@@ -9693,6 +9649,7 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void RedrawPlayScreen()
     {
+            if (IsSimulating) return;   // deadlocks otherwise
             lock (m_UI) {
                 m_UI.UI_Clear(Color.Black);
                 m_UI.UI_DrawLine(Color.DarkGray, 676, 0, 676, 676);
@@ -10863,8 +10820,8 @@ namespace djack.RogueSurvivor.Engine
 
     private void ApplyOptions(bool ingame)
     {
-      m_MusicManager.IsMusicEnabled = RogueGame.Options.PlayMusic;
-      m_MusicManager.Volume = RogueGame.Options.MusicVolume;
+      m_MusicManager.IsMusicEnabled = s_Options.PlayMusic;
+      m_MusicManager.Volume = s_Options.MusicVolume;
       Session.Get.Scoring.Side = m_Player == null || !m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_SURVIVOR : DifficultySide.FOR_UNDEAD;
       Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
       if (m_MusicManager.IsMusicEnabled) return;
