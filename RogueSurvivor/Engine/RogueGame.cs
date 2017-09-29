@@ -4238,7 +4238,7 @@ namespace djack.RogueSurvivor.Engine
                 } else
                   AddMessage(MakeErrorMessage(string.Format("Cannot barricade {0} : {1}.", door.TheName, reason)));
               } else if (mapObjectAt is Fortification fort) {
-                if (m_Rules.CanActorRepairFortification(player, fort, out string reason)) {
+                if (player.CanRepairFortification(fort, out string reason)) {
                   DoRepairFortification(player, fort);
                   RedrawPlayScreen();
                   flag1 = false;

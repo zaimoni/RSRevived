@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System.Diagnostics.Contracts;
+using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,13 +17,15 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRepairFortification(Actor actor, Fortification fort)
       : base(actor)
     {
-      Contract.Requires(null != fort);
+#if DEBUG
+      if (null == fort) throw new ArgumentNullException(nameof(fort));
+#endif
       m_Fort = fort;
     }
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorRepairFortification(m_Actor, m_Fort, out m_FailReason);
+      return m_Actor.CanRepairFortification(m_Fort, out m_FailReason);
     }
 
     public override void Perform()

@@ -17,6 +17,7 @@ using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
 using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
+using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -1458,6 +1459,27 @@ namespace djack.RogueSurvivor.Data
     {
 	  return string.IsNullOrEmpty(ReasonCantBuildFortification(pos,isLarge));
     }
+
+    // keep the unused parameter -- would need it if alternate materials possible
+    private string ReasonCantRepairFortification(Fortification fort)
+    {
+      if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
+      if (0 >= CountItems<ItemBarricadeMaterial>()) return "no barricading material";
+      return "";
+    }
+
+    public bool CanRepairFortification(Fortification fort, out string reason)
+    {
+	  reason = ReasonCantRepairFortification(fort);
+	  return string.IsNullOrEmpty(reason);
+    }
+
+#if DEAD_FUNC
+    public bool CanRepairFortification(Fortification fort)
+    {
+	  return string.IsNullOrEmpty(ReasonCantRepairFortification(fort));
+    }
+#endif
 
     // leave the dead parameter in there, for now.
     // E.g., non-CHAR power generators might actually *need fuel*

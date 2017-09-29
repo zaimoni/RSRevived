@@ -506,24 +506,6 @@ namespace djack.RogueSurvivor.Engine
       return IsPathableFor(actor, location.Map, location.Position.X, location.Position.Y, out reason);
     }
 
-    public bool CanActorRepairFortification(Actor actor, Fortification fort, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (!actor.Model.Abilities.CanUseMapObjects)
-      {
-        reason = "cannot use map objects";
-        return false;
-      }
-      if (actor.CountItems<ItemBarricadeMaterial>() <= 0)
-      {
-        reason = "no barricading material";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public int ActorDamageVsCorpses(Actor a)
     {
       return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
