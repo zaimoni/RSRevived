@@ -197,6 +197,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+    [Serializable]
+    internal class Goal_HintPathToActor : Objective
+    {
+      private readonly Actor _dest;
+
+      public Goal_HintPathToActor(int t0, Actor who, Actor dest)
+      : base(t0,who)
+      {
+        _dest = dest;
+      }
+
+      public override bool UrgentAction(out ActorAction ret)
+      {
+        ret = null;
+        if (turn < Session.Get.WorldTime.TurnCounter) { // deadline up
+          _isExpired = true;
+          return true;
+        }
+        if (Rules.IsAdjacent(m_Actor.Location,_dest.Location)) {
+          ret = new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
+          return true;
+        }
+
+        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point> { _dest.Location.Position });
+        return ret?.IsLegal() ?? false;
+      }
+    }
+
 #if FAIL
     [Serializable]
     public Goal_Sleep : Objective
@@ -1450,6 +1478,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanTakeLeadOf(target1)) return null;
       if (Rules.IsAdjacent(m_Actor.Location.Position, target1.Location.Position))
         return new ActionTakeLead(m_Actor, target1);
+      // need an after-action "hint" to the target on where/who to go to
+      if (!m_Actor.WillActAgainBefore(target1)) {
+        int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
+        (target1.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
+      }
       return BehaviorIntelligentBumpToward(target1.Location.Position);
     }
 
