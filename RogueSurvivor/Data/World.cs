@@ -411,11 +411,13 @@ retry:
       lock(m_PCready) {
         while(0 < m_PCready.Count) {
           District tmp = m_PCready.Peek();
-          if (tmp.RequiresUI) return tmp;
+          if (1 == m_PCready.Count || tmp.RequiresUI) return tmp;
           m_NPCready.Enqueue(m_PCready.Dequeue());
         }
+        if (0 >= m_NPCready.Count) throw new InvalidOperationException("no districts to simulate");
+        m_PCready.Enqueue(m_NPCready.Dequeue());
+        return m_PCready.Peek();
       }
-      return null;
     }
 
     public District CurrentSimulationDistrict()
