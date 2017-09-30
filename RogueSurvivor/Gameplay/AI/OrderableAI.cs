@@ -2260,7 +2260,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (stack == null || stack.IsEmpty) return null;
 
-      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
+      MapObject mapObjectAt = (position != m_Actor.Location.Position ? m_Actor.Location.Map.GetMapObjectAt(position) : null);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
         // Cf. Actor::CanOpen
         if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
@@ -2295,7 +2295,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (stack == null || stack.IsEmpty) return null;
 
-      MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAt(position);    // XXX this check should affect BehaviorResupply
+      MapObject mapObjectAt = (position != m_Actor.Location.Position ? m_Actor.Location.Map.GetMapObjectAt(position) : null);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
         // Cf. Actor::CanOpen
         if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;

@@ -907,7 +907,7 @@ namespace djack.RogueSurvivor.Data
           if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsClosed) return "cannot slip through closed door";
         } else return "blocked by object";
       }
-      if (HasActorAt(x, y)) return "someone is there";
+      if (HasActorAt(x, y)) return "someone is there";  // XXX includes actor himself
       if (actor.DraggedCorpse != null && actor.IsTired) return "dragging a corpse when tired";
       return "";
     }
