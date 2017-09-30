@@ -43,15 +43,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game)
     {
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
-      Percept percept = FilterNearest(FilterEnemies(percepts1));
-      if (percept != null) {
-        ActorAction actorAction = BehaviorStupidBumpToward(percept.Location.Position);
-        if (actorAction != null) {
-          m_Actor.Activity = Activity.CHASING;
-          m_Actor.TargetActor = percept.Percepted as Actor;
-          return actorAction;
-        }
-      }
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
+
+      ActorAction tmpAction = TargetGridMelee(enemies);
+      if (null != tmpAction) return tmpAction;
+
       if (game.Rules.RollChance(IDLE_CHANCE)) return new ActionWait(m_Actor);
       m_Actor.Activity = Activity.IDLE;
       return BehaviorWander();
