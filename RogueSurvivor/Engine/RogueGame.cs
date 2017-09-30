@@ -10561,8 +10561,8 @@ namespace djack.RogueSurvivor.Engine
       if (it.Model.IsStackable) {
         string text = string.Format("{0}", it.Quantity);
         int gx1 = gx + TILE_SIZE - 10;
-        if (it.Quantity > 100) gx1 -= 10;
-        else if (it.Quantity > 10) gx1 -= 4;
+        if (it.Quantity >= 100) gx1 -= 10;
+        else if (it.Quantity >= 10) gx1 -= 4;
         m_UI.UI_DrawString(Color.DarkGray, text, gx1 + 1, gy + 1, new Color?());
         m_UI.UI_DrawString(Color.White, text, gx1, gy, new Color?());
       }
