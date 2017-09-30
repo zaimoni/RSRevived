@@ -42,7 +42,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
       Percept percept = FilterNearest(FilterEnemies(percepts1));
       if (percept != null) {

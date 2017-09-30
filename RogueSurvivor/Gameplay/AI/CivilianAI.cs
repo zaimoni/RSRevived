@@ -134,8 +134,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      Contract.Ensures(null == Contract.Result<ActorAction>() || Contract.Result<ActorAction>().IsLegal());
-
       ClearMovePlan();
       BehaviorEquipBodyArmor(game);
 

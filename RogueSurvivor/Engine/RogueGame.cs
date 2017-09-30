@@ -1906,7 +1906,9 @@ namespace djack.RogueSurvivor.Engine
           }
       }
 
+#if DEBUG
       if (nextActorToAct.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "Actor: "+ nextActorToAct.Name);
+#endif
       nextActorToAct.PreviousStaminaPoints = nextActorToAct.StaminaPoints;
       if (nextActorToAct.Controller == null)
 #if DEBUG
@@ -5440,8 +5442,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleAiActor(Actor aiActor)
     {
-      Contract.Requires(null != aiActor);
-      Contract.Requires(!aiActor.IsSleeping);
+#if DEBUG
+      if (null == aiActor) throw new ArgumentNullException(nameof(aiActor));
+      if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
+#endif
       ActorAction actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);
@@ -5450,11 +5454,11 @@ namespace djack.RogueSurvivor.Engine
       }
       // we need to know if this got past internal testing.
 #if DEBUG
+      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
 #else
       if (actorAction == null) throw new InvalidOperationException("AI returned null action.");
       if (!actorAction.IsLegal()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
 #endif
-      if (aiActor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "action: "+actorAction.ToString());
       actorAction.Perform();
     }
 

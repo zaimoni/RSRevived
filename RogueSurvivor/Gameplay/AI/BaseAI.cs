@@ -39,21 +39,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     }
 
-    protected Location PrevLocation
-    {
-      get
-      {
-        return m_prevLocation;
-      }
-    }
+    protected Location PrevLocation { get { return m_prevLocation; } }
 
     public override ActorAction GetAction(RogueGame game)
     {
-      Contract.Ensures(null != Contract.Result<ActorAction>());
-      Contract.Ensures(Contract.Result<ActorAction>().IsLegal());
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       ActorAction actorAction = SelectAction(game);
+#if DEBUG
+      if (!actorAction?.IsLegal() ?? false) throw new InvalidOperationException("illegal action returned from SelectAction");
+#endif
       m_prevLocation = m_Actor.Location;
       if (actorAction != null) return actorAction;
       return new ActionWait(m_Actor);
