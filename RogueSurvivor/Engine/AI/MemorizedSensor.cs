@@ -8,7 +8,6 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -25,7 +24,9 @@ namespace djack.RogueSurvivor.Engine.AI
 
     public MemorizedSensor(Sensor noMemorySensor, int persistance)
     {
-      Contract.Requires(null != noMemorySensor);
+#if DEBUG
+      if (null == noMemorySensor) throw new ArgumentNullException(nameof(noMemorySensor));
+#endif
       m_Sensor = noMemorySensor;
       m_Persistance = persistance;
     }
@@ -60,6 +61,11 @@ namespace djack.RogueSurvivor.Engine.AI
           }
         }
       }
+
+      // huge automatic multipler isn't a good idea here
+      int newSize = m_Percepts.Count + tmp.Count;
+      if (newSize > m_Percepts.Capacity) m_Percepts.Capacity = newSize;
+
       m_Percepts.AddRange(tmp);
       return m_Percepts;
     }
