@@ -1327,7 +1327,7 @@ namespace djack.RogueSurvivor.Data
       if (scentByOdor == null)
         AddNewScent(new OdorScent(odor, strengthChange, position));
       else
-        scentByOdor.Change(strengthChange);
+        scentByOdor.Strength += strengthChange;
     }
 
     public void RefreshScentAt(Odor odor, int freshStrength, Point position)
@@ -1339,7 +1339,7 @@ namespace djack.RogueSurvivor.Data
       if (scentByOdor == null) {
         AddNewScent(new OdorScent(odor, freshStrength, position));
       } else if (scentByOdor.Strength < freshStrength) {
-        scentByOdor.Set(freshStrength);
+        scentByOdor.Strength = freshStrength;
       }
     }
 

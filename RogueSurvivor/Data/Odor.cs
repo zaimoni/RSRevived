@@ -9,7 +9,7 @@ using System;
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
-  internal enum Odor
+  internal enum Odor : byte
   {
     LIVING,
     UNDEAD_MASTER,
