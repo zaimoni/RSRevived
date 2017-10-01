@@ -2074,27 +2074,10 @@ namespace djack.RogueSurvivor.Engine
         }
 
 #region 1. Update odors.
-        List<OdorScent> odorScentList1 = new List<OdorScent>();
-        foreach (OdorScent scent in map.Scents)
-        {
-          switch (scent.Odor)
-          {
-            case Odor.PERFUME_LIVING_SUPRESSOR:
-              odorScentList1.Add(new OdorScent(Odor.LIVING, -scent.Strength, scent.Position));
-              continue;
-            case Odor.PERFUME_LIVING_GENERATOR:
-              odorScentList1.Add(new OdorScent(Odor.LIVING, scent.Strength, scent.Position));
-              continue;
-            default:
-              continue;
-          }
-        }
-        foreach (OdorScent odorScent in odorScentList1)
-          map.ModifyScentAt(odorScent.Odor, odorScent.Strength, odorScent.Position);
+        map.ApplyArtificialStench();
 
         int odorDecayRate = 1;
-        if (map == map.District.SewersMap)
-          odorDecayRate += 2;
+        if (map == map.District.SewersMap) odorDecayRate += 2;
         else if (map.Lighting == Lighting.OUTSIDE) {
           switch (Session.Get.World.Weather)
           {
@@ -2110,10 +2093,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
 
-        foreach (OdorScent scent in new List<OdorScent>(map.Scents)) {
-          map.ModifyScentAt(scent.Odor, -odorDecayRate, scent.Position);
-          if (scent.Strength < 1) map.RemoveScent(scent);
-        }
+        map.DecayScents(odorDecayRate);
 #endregion
         // 2. Regen actors AP & STA
         foreach (Actor actor in map.Actors) actor.PreTurnStart();

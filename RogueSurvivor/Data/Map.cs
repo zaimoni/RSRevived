@@ -40,7 +40,7 @@ namespace djack.RogueSurvivor.Data
     private readonly List<MapObject> m_MapObjectsList = new List<MapObject>(5);
     private readonly Dictionary<Point, Inventory> m_GroundItemsByPosition = new Dictionary<Point, Inventory>(5);
     private readonly List<Corpse> m_CorpsesList = new List<Corpse>(5);
-    private readonly List<OdorScent> m_Scents = new List<OdorScent>(128);
+    private readonly Dictionary<Point, List<OdorScent>> m_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     private readonly List<TimedTask> m_Timers = new List<TimedTask>(5);
     // position inverting caches
     [NonSerialized]
@@ -49,8 +49,6 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, MapObject> m_aux_MapObjectsByPosition = new Dictionary<Point, MapObject>(5);
     [NonSerialized]
     private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
-    [NonSerialized]
-    private readonly Dictionary<Point, List<OdorScent>> m_aux_ScentsByPosition = new Dictionary<Point, List<OdorScent>>(128);
     // AI support caches, etc.
     [NonSerialized]
     public NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
@@ -104,8 +102,6 @@ namespace djack.RogueSurvivor.Data
         return (m_Timers != null ? m_Timers.Count : 0);
       }
     }
-
-    public IEnumerable<OdorScent> Scents { get { return m_Scents; } }
 
     private static ReadOnlyCollection<Actor> _findPlayers(IEnumerable<Actor> src)
     {
@@ -162,7 +158,7 @@ namespace djack.RogueSurvivor.Data
       m_GroundItemsByPosition = (Dictionary<Point, Inventory>) info.GetValue("m_GroundItemsByPosition", typeof (Dictionary<Point, Inventory>));
       m_CorpsesList = (List<Corpse>) info.GetValue("m_CorpsesList", typeof (List<Corpse>));
       m_Lighting = (Lighting) info.GetValue("m_Lighting", typeof (Lighting));
-      m_Scents = (List<OdorScent>) info.GetValue("m_Scents", typeof (List<OdorScent>));
+      m_ScentsByPosition = (Dictionary<Point, List<OdorScent>>) info.GetValue("m_ScentsByPosition", typeof (Dictionary<Point, List<OdorScent>>));
       m_Timers = (List<TimedTask>) info.GetValue("m_Timers", typeof (List<TimedTask>));
       m_TileIDs = (byte[,]) info.GetValue("m_TileIDs", typeof (byte[,]));
       m_IsInside = (byte[]) info.GetValue("m_IsInside", typeof (byte[]));
@@ -189,7 +185,7 @@ namespace djack.RogueSurvivor.Data
       info.AddValue("m_GroundItemsByPosition", (object)m_GroundItemsByPosition);
       info.AddValue("m_CorpsesList", (object)m_CorpsesList);
       info.AddValue("m_Lighting", (object)m_Lighting);
-      info.AddValue("m_Scents", (object)m_Scents);
+      info.AddValue("m_ScentsByPosition", (object)m_ScentsByPosition);
       info.AddValue("m_Timers", (object)m_Timers);
       info.AddValue("m_TileIDs", (object)m_TileIDs);
       info.AddValue("m_IsInside", (object)m_IsInside);
@@ -1300,7 +1296,7 @@ namespace djack.RogueSurvivor.Data
 
     private OdorScent GetScentByOdor(Odor odor, Point p)
     {
-      if (!m_aux_ScentsByPosition.TryGetValue(p, out List<OdorScent> odorScentList)) return null;
+      if (!m_ScentsByPosition.TryGetValue(p, out List<OdorScent> odorScentList)) return null;
       foreach (OdorScent odorScent in odorScentList) {
         if (odorScent.Odor == odor) return odorScent;
       }
@@ -1309,12 +1305,10 @@ namespace djack.RogueSurvivor.Data
 
     private void AddNewScent(OdorScent scent)
     {
-      if (!m_Scents.Contains(scent)) m_Scents.Add(scent);
-      if (m_aux_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) {
+      if (m_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) {
         odorScentList.Add(scent);
       } else {
-        odorScentList = new List<OdorScent>(2) { scent };
-        m_aux_ScentsByPosition.Add(scent.Position, odorScentList);
+        m_ScentsByPosition.Add(scent.Position, new List<OdorScent>(2) { scent });
       }
     }
 
@@ -1343,12 +1337,65 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#if DEAD_FUNC
     public void RemoveScent(OdorScent scent)
     {
-      m_Scents.Remove(scent);
-      if (!m_aux_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) return;
+      if (!m_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) return;
       odorScentList.Remove(scent);
-      if (0 >= odorScentList.Count) m_aux_ScentsByPosition.Remove(scent.Position);
+      if (0 >= odorScentList.Count) m_ScentsByPosition.Remove(scent.Position);
+    }
+#endif
+
+    public void ApplyArtificialStench()
+    {
+        List<OdorScent> odorScentList1 = new List<OdorScent>();
+        Dictionary<Point,int> living_suppress = new Dictionary<Point,int>();
+        Dictionary<Point,int> living_generate = new Dictionary<Point,int>();
+        foreach(var tmp in m_ScentsByPosition) {
+          living_suppress[tmp.Key] = 0;
+          living_generate[tmp.Key] = 0;
+          foreach(OdorScent scent in tmp.Value) {
+            switch (scent.Odor) {
+              case Odor.PERFUME_LIVING_SUPRESSOR:
+                living_suppress[tmp.Key] += scent.Strength;
+                continue;
+              case Odor.PERFUME_LIVING_GENERATOR:
+                living_generate[tmp.Key] += scent.Strength;
+                continue;
+              default:
+                continue;
+            }
+          }
+          if (0 < living_suppress[tmp.Key] && 0 < living_generate[tmp.Key]) {
+            int tmp2 = Math.Min(living_suppress[tmp.Key],living_generate[tmp.Key]);
+            living_suppress[tmp.Key] -= tmp2;
+            living_generate[tmp.Key] -= tmp2;
+          }
+          if (0 >= living_suppress[tmp.Key]) living_suppress.Remove(tmp.Key);
+          if (0 >= living_generate[tmp.Key]) living_generate.Remove(tmp.Key);
+        }
+        foreach(var x in living_generate) ModifyScentAt(Odor.LIVING, x.Value, x.Key);
+        foreach(var x2 in living_suppress) ModifyScentAt(Odor.LIVING, -x2.Value, x2.Key);
+    }
+
+    public void DecayScents(int odorDecayRate)
+    {
+      List<OdorScent> discard = new List<OdorScent>();
+      List<Point> discard2 = new List<Point>();
+      foreach(var tmp in m_ScentsByPosition) {
+        foreach(OdorScent scent in tmp.Value) {
+          scent.Strength -= odorDecayRate;
+          if (0 >= scent.Strength) discard.Add(scent);  // XXX looks like it could depend on OdorScent being class rather than struct, but if that were to matter we'd have to lock anyway.
+        }
+        if (0 < discard.Count()) {
+          foreach(var x in discard) tmp.Value.Remove(x);
+          discard.Clear();
+          if (0 >= tmp.Value.Count) discard2.Add(tmp.Key);
+        }
+      }
+      if (0 < discard2.Count) {
+        foreach(var x in discard2) m_ScentsByPosition.Remove(x);
+      }
     }
 
     public bool IsTransparent(int x, int y)
@@ -1598,15 +1645,6 @@ namespace djack.RogueSurvivor.Data
       m_aux_MapObjectsByPosition.Clear();
       foreach (MapObject mMapObjects in m_MapObjectsList)
         m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);
-      m_aux_ScentsByPosition.Clear();
-      foreach (OdorScent mScent in m_Scents) {
-        if (m_aux_ScentsByPosition.TryGetValue(mScent.Position, out List<OdorScent> odorScentList)) {
-          odorScentList.Add(mScent);
-        } else {
-          odorScentList = new List<OdorScent> { mScent };
-          m_aux_ScentsByPosition.Add(mScent.Position, odorScentList);
-        }
-      }
       m_aux_CorpsesByPosition.Clear();
       foreach (Corpse mCorpses in m_CorpsesList) {
         if (m_aux_CorpsesByPosition.TryGetValue(mCorpses.Position, out List<Corpse> corpseList))
@@ -1636,7 +1674,6 @@ namespace djack.RogueSurvivor.Data
         mActors.OptimizeBeforeSaving();
       m_ActorsList.TrimExcess();
       m_MapObjectsList.TrimExcess();
-      m_Scents.TrimExcess();
       m_Zones.TrimExcess();
       m_CorpsesList.TrimExcess();
       m_Timers.TrimExcess();

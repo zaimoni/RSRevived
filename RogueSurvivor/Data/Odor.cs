@@ -14,6 +14,6 @@ namespace djack.RogueSurvivor.Data
     LIVING,
     UNDEAD_MASTER,
     PERFUME_LIVING_SUPRESSOR,
-    PERFUME_LIVING_GENERATOR,
+    PERFUME_LIVING_GENERATOR,   // XXX unimplemented
   }
 }
