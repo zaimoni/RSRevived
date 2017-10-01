@@ -14,6 +14,33 @@ namespace djack.RogueSurvivor.Data
     LIVING,
     UNDEAD_MASTER,
     PERFUME_LIVING_SUPRESSOR,
-    PERFUME_LIVING_GENERATOR,   // XXX unimplemented
+    PERFUME_LIVING_GENERATOR,   // XXX unused
+  }
+
+  [Serializable]
+  internal class OdorScent
+  {
+    public const int MIN_STRENGTH = 1;
+    public const int MAX_STRENGTH = 9*WorldTime.TURNS_PER_HOUR;
+
+    private short m_Strength;
+    public readonly Odor Odor;
+
+    public int Strength {
+      get {
+        return m_Strength;
+      }
+      set {
+        if (MIN_STRENGTH > value) m_Strength = 0;
+        else if (MAX_STRENGTH < value) m_Strength = MAX_STRENGTH;
+        else m_Strength = (short)value;
+      }
+    }
+
+    public OdorScent(Odor odor, int strength)
+    {
+      Odor = odor;
+      Strength = strength;
+    }
   }
 }

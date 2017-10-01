@@ -167,7 +167,6 @@
     <Compile Include="Data\ActorAction.cs" />
     <Compile Include="Data\TileModel.cs" />
     <Compile Include="Data\Odor.cs" />
-    <Compile Include="Data\OdorScent.cs" />
     <Compile Include="Data\Weather.cs" />
     <Compile Include="Data\Direction.cs" />
     <Compile Include="Data\Item.cs" />
