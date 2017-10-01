@@ -589,6 +589,14 @@ namespace djack.RogueSurvivor.Gameplay
 
     private void CreateModels()
     {
+#if DEBUG
+      if (0 != (int)AmmoType.LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+      if ((int)AmmoType.HEAVY_PISTOL - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_HEAVY_PISTOL - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+      if ((int)AmmoType.LIGHT_RIFLE - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_LIGHT_RIFLE - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+      if ((int)AmmoType.HEAVY_RIFLE - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_HEAVY_RIFLE - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+      if ((int)AmmoType.SHOTGUN - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_SHOTGUN - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+      if ((int)AmmoType.BOLT - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_BOLTS - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+#endif
       // Medicine
       _setModel(IDs.MEDICINE_BANDAGES, new ItemMedicineModel(DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));
       _setModel(IDs.MEDICINE_MEDIKIT, new ItemMedicineModel(DATA_MEDICINE_MEDIKIT.NAME, DATA_MEDICINE_MEDIKIT.PLURAL, GameImages.ITEM_MEDIKIT, DATA_MEDICINE_MEDIKIT.HEALING, DATA_MEDICINE_MEDIKIT.STAMINABOOST, DATA_MEDICINE_MEDIKIT.SLEEPBOOST, DATA_MEDICINE_MEDIKIT.INFECTIONCURE, DATA_MEDICINE_MEDIKIT.SANITYCURE, DATA_MEDICINE_MEDIKIT.FLAVOR));

@@ -314,28 +314,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
         if (null != tmp_rw) {
           foreach(ItemRangedWeapon rw in tmp_rw) {
-            // V 0.10.0 : deal with misalignment of enum values
             if (null == m_Actor.GetCompatibleAmmoItem(rw)) {
-              switch(rw.AmmoType) {
-              case AmmoType.LIGHT_PISTOL:
-                ret.Add(GameItems.IDs.AMMO_LIGHT_PISTOL);
-                break;
-              case AmmoType.HEAVY_PISTOL:
-                ret.Add(GameItems.IDs.AMMO_HEAVY_PISTOL);
-                break;
-              case AmmoType.SHOTGUN:
-                ret.Add(GameItems.IDs.AMMO_SHOTGUN);
-                break;
-              case AmmoType.LIGHT_RIFLE:
-                ret.Add(GameItems.IDs.AMMO_LIGHT_RIFLE);
-                break;
-              case AmmoType.HEAVY_RIFLE:
-                ret.Add(GameItems.IDs.AMMO_HEAVY_RIFLE);
-                break;
-              case AmmoType.BOLT:
-                ret.Add(GameItems.IDs.AMMO_BOLTS);
-                break;
-              }
+              ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
             }
           }
 #if FAIL
