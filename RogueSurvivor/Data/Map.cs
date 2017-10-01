@@ -1303,12 +1303,12 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    private void AddNewScent(OdorScent scent)
+    private void AddNewScent(OdorScent scent, Point position)
     {
-      if (m_ScentsByPosition.TryGetValue(scent.Position, out List<OdorScent> odorScentList)) {
+      if (m_ScentsByPosition.TryGetValue(position, out List<OdorScent> odorScentList)) {
         odorScentList.Add(scent);
       } else {
-        m_ScentsByPosition.Add(scent.Position, new List<OdorScent>(2) { scent });
+        m_ScentsByPosition.Add(position, new List<OdorScent>(2) { scent });
       }
     }
 
@@ -1318,9 +1318,9 @@ namespace djack.RogueSurvivor.Data
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
       OdorScent scentByOdor = GetScentByOdor(odor, position);
-      if (scentByOdor == null)
-        AddNewScent(new OdorScent(odor, strengthChange, position));
-      else
+      if (scentByOdor == null) {
+        if (0 < strengthChange) AddNewScent(new OdorScent(odor, strengthChange), position);
+      } else
         scentByOdor.Strength += strengthChange;
     }
 
@@ -1331,7 +1331,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       OdorScent scentByOdor = GetScentByOdor(odor, position);
       if (scentByOdor == null) {
-        AddNewScent(new OdorScent(odor, freshStrength, position));
+        AddNewScent(new OdorScent(odor, freshStrength), position);
       } else if (scentByOdor.Strength < freshStrength) {
         scentByOdor.Strength = freshStrength;
       }

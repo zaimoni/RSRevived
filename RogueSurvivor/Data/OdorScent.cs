@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Drawing;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -15,7 +14,6 @@ namespace djack.RogueSurvivor.Data
     public const int MIN_STRENGTH = 1;
     public const int MAX_STRENGTH = 9*WorldTime.TURNS_PER_HOUR;
 
-    public readonly Point Position;
     private short m_Strength;
     public readonly Odor Odor;
 
@@ -24,17 +22,16 @@ namespace djack.RogueSurvivor.Data
         return m_Strength;
       }
       set {
-        if (1 > value) m_Strength = 0;
+        if (MIN_STRENGTH > value) m_Strength = 0;
         else if (MAX_STRENGTH < value) m_Strength = MAX_STRENGTH;
         else m_Strength = (short)value;
       }
     }
 
-    public OdorScent(Odor odor, int strength, Point position)
+    public OdorScent(Odor odor, int strength)
     {
       Odor = odor;
       Strength = strength;
-      Position = position;
     }
   }
 }

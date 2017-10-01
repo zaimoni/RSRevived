@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public List<Percept> Sense(Actor actor)
     {
 #if DEBUG
-      if (1 > actor.SmellThreshold) throw new ArgumentOutOfRangeException(nameof(actor), "1 > actor.SmellThreshold");
+      if (OdorScent.MIN_STRENGTH > actor.SmellThreshold) throw new ArgumentOutOfRangeException(nameof(actor), OdorScent.MIN_STRENGTH.ToString()+" > actor.SmellThreshold");
 #endif
       m_List.Clear();
       int num = actor.SmellThreshold;  // floors at 1
