@@ -5,15 +5,13 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using djack.RogueSurvivor.Engine;
-using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
+using Sensor = djack.RogueSurvivor.Engine.AI.Sensor;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 {
@@ -32,12 +30,14 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     public List<Percept> Sense(Actor actor)
     {
-      Contract.Requires(1 <= actor.SmellThreshold);
+#if DEBUG
+      if (1 > actor.SmellThreshold) throw new ArgumentOutOfRangeException(nameof(actor), "1 > actor.SmellThreshold");
+#endif
       m_List.Clear();
       int num = actor.SmellThreshold;  // floors at 1
       Rectangle survey = new Rectangle(actor.Location.Position.X - 1, actor.Location.Position.Y - 1, 3, 3);
       Map map = actor.Location.Map;
-      map.TrimToBounds(ref survey);
+      map.TrimToBounds(ref survey); // XXX change target for cross-district pathing
       int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
       int scentByOdorAt = 0;
       survey.DoForEach(pt => { 

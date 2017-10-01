@@ -13,7 +13,8 @@ namespace djack.RogueSurvivor.Data
   internal class WorldTime : ISerializable
     {
     public const int HOURS_PER_DAY = 24;    // not scalable
-    public const int TURNS_PER_HOUR = 30;   // defines space-time scale
+    public const int TURNS_PER_HOUR = 30;   // defines space-time scale.  Standard game is 30 turns/hour, district size 50
+                                            // Angband space-time scale is 900 turns/hour, district size 1500
     public const int TURNS_PER_DAY = HOURS_PER_DAY * TURNS_PER_HOUR;
     private static readonly DayPhase[] _phases = new DayPhase[HOURS_PER_DAY];
     private static readonly bool[] _is_night = new bool[HOURS_PER_DAY];
