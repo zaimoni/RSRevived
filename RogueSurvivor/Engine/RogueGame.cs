@@ -12240,11 +12240,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTurnAllGeneratorsOn(Map map)
     {
-      foreach (MapObject mapObject in map.MapObjects) {
-        if (mapObject is PowerGenerator powGen && !powGen.IsOn) {
-          powGen.TogglePower();
-          OnMapPowerGeneratorSwitch(powGen.Location);
-        }
+      foreach (var powGen in map.PowerGenerators.Get) {
+        if (powGen.IsOn) continue;
+        powGen.TogglePower();
+        OnMapPowerGeneratorSwitch(powGen.Location);
       }
     }
 
