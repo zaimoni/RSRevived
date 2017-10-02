@@ -96,18 +96,12 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       {
       case (byte)DW_type.WOODEN:
       case (byte)DW_type.HOSPITAL:
-        GivesWood = true;
-        break;
       case (byte)DW_type.CHAR:
       case (byte)DW_type.IRON:
         break;
       case (byte)DW_type.GLASS:
-        IsMaterialTransparent = true;
-        BreaksWhenFiredThrough = true;
-        break;
       case (byte)DW_type.WINDOW:
         IsMaterialTransparent = true;
-        GivesWood = true;
         BreaksWhenFiredThrough = true;
         break;
       }

@@ -156,9 +156,6 @@ namespace djack.RogueSurvivor.Data
           return m_BreakState != Break.BROKEN;
         return false;
       }
-      set {
-        SetFlag(Flags.GIVES_WOOD, value);
-      }
     }
 
     public bool IsMovable {
@@ -260,6 +257,37 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    private static bool _ID_GivesWood(IDs x)
+    {
+      switch (x) {
+        case IDs.FENCE: return true;
+        case IDs.TREE: return true;
+        case IDs.DOOR: return true;
+        case IDs.WINDOW: return true;
+        case IDs.HOSPITAL_DOOR: return true;
+        case IDs.BENCH: return true;
+        case IDs.LARGE_FORTIFICATION: return true;
+        case IDs.SMALL_FORTIFICATION: return true;
+        case IDs.BED: return true;
+        case IDs.HOSPITAL_BED: return true;
+        case IDs.CHAIR: return true;
+        case IDs.HOSPITAL_CHAIR: return true;
+        case IDs.CHAR_CHAIR: return true;
+        case IDs.TABLE: return true;
+        case IDs.CHAR_TABLE: return true;
+        case IDs.NIGHT_TABLE: return true;
+        case IDs.HOSPITAL_NIGHT_TABLE: return true;
+        case IDs.DRAWER: return true;
+        case IDs.WARDROBE: return true;
+        case IDs.HOSPITAL_WARDROBE: return true;
+        case IDs.SHOP_SHELF: return true;
+        case IDs.JUNK: return true;
+        case IDs.BARRELS: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -275,6 +303,7 @@ namespace djack.RogueSurvivor.Data
       m_ID = hiddenImageID.MapObject_ID();
       Weight = _ID_Weight(m_ID);
       if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
+      if (_ID_GivesWood(m_ID)) m_Flags |= Flags.GIVES_WOOD;
     }
 
     protected void InvalidateLOS()

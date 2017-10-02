@@ -621,7 +621,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
-        GivesWood = true,
         StandOnFovBonus = true
       };
     }
@@ -646,23 +645,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){
         IsMaterialTransparent = true,
-        GivesWood = true,
         JumpLevel = 1
       };
     }
 
     static public Fortification MakeObjLargeFortification()
     {
-      return new Fortification("large fortification", GameImages.OBJ_LARGE_WOODEN_FORTIFICATION, Fortification.LARGE_BASE_HITPOINTS) {
-          GivesWood = true
-      };
+      return new Fortification("large fortification", GameImages.OBJ_LARGE_WOODEN_FORTIFICATION, Fortification.LARGE_BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjTree()
     {
-      return new MapObject("tree", GameImages.OBJ_TREE, 10* DoorWindow.BASE_HITPOINTS) {
-        GivesWood = true
-      };
+      return new MapObject("tree", GameImages.OBJ_TREE, 10* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjWreckedCar(DiceRoller roller)
@@ -684,8 +678,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjShelf()
     {
       return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS) {
-        IsContainer = true,
-        GivesWood = true
+        IsContainer = true
       };
     }
 
@@ -694,8 +687,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
         JumpLevel = 1,
-        IsCouch = true,
-        GivesWood = true
+        IsCouch = true
       };
     }
 
@@ -714,8 +706,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         IsMaterialTransparent = true,
         IsWalkable = true,
-        IsCouch = true,
-        GivesWood = true
+        IsCouch = true
       };
     }
 
@@ -724,8 +715,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = false,
-        IsContainer = true,
-        GivesWood = true
+        IsContainer = true
       };
     }
 
@@ -733,8 +723,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
-        IsContainer = true,
-        GivesWood = true
+        IsContainer = true
       };
     }
 
@@ -743,8 +732,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        GivesWood = true
+        JumpLevel = 1
       };
     }
 
@@ -753,8 +741,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3)
       {
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        GivesWood = true
+        JumpLevel = 1
       };
     }
 
@@ -763,8 +750,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3)
       {
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        GivesWood = true
+        JumpLevel = 1
       };
     }
 
@@ -780,8 +766,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
-        IsMaterialTransparent = true,
-        GivesWood = true
+        IsMaterialTransparent = true
       };
     }
 
@@ -789,8 +774,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
-        IsMaterialTransparent = true,
-        GivesWood = true
+        IsMaterialTransparent = true
       };
     }
 
