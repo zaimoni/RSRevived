@@ -684,8 +684,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        IsCouch = true
+        JumpLevel = 1
       };
     }
 
@@ -693,8 +692,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH) {
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        IsCouch = true,
+        JumpLevel = 1
       };
     }
 
@@ -703,8 +701,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
-        IsWalkable = true,
-        IsCouch = true
+        IsWalkable = true
       };
     }
 

@@ -128,9 +128,6 @@ namespace djack.RogueSurvivor.Data
       get {
         return GetFlag(Flags.IS_COUCH);
       }
-      set {
-        SetFlag(Flags.IS_COUCH, value);
-      }
     }
 
     public bool IsBreakable {
@@ -304,6 +301,18 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_IsCouch(IDs x)
+    {
+      switch (x) {
+        case IDs.BENCH: return true;
+        case IDs.IRON_BENCH: return true;
+        case IDs.BED: return true;
+        case IDs.HOSPITAL_BED: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -321,6 +330,9 @@ namespace djack.RogueSurvivor.Data
       if (_ID_GivesWood(m_ID)) m_Flags |= Flags.GIVES_WOOD;
       if (_ID_StandOnFOVbonus(m_ID)) m_Flags |= Flags.STANDON_FOV_BONUS;
       if (_ID_BreaksWhenFiredThrough(m_ID)) m_Flags |= Flags.BREAKS_WHEN_FIRED_THROUGH;
+      if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
+      // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
+      // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
 
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
