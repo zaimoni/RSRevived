@@ -669,7 +669,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjWreckedCar(DiceRoller roller)
     {
-      return MakeObjWreckedCar(BaseMapGenerator.CARS[roller.Roll(0, BaseMapGenerator.CARS.Length)]);
+      return MakeObjWreckedCar(CARS[roller.Roll(0, CARS.Length)]);
     }
 
     static protected MapObject MakeObjWreckedCar(string carImageID)

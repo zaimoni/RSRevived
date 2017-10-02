@@ -5,15 +5,16 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
-using Point = System.Drawing.Point;
 using Zaimoni.Data;
+
+using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
   internal class MapObject
   {
+    private IDs m_ID;
     private string m_ImageID;
     private readonly string m_HiddenImageID;
     private readonly string m_Name;
@@ -244,14 +245,17 @@ namespace djack.RogueSurvivor.Data
 
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
-      Contract.Requires(null!=aName);
-      Contract.Requires(null!= hiddenImageID);
+#if DEBUG
+      if (string.IsNullOrEmpty(aName)) throw new ArgumentNullException(nameof(aName));
+      if (string.IsNullOrEmpty(hiddenImageID)) throw new ArgumentNullException(nameof(hiddenImageID));
+#endif
       m_Name = aName;
       m_ImageID = m_HiddenImageID = hiddenImageID;
       m_BreakState = (0==hitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
       m_FireState = burnable;
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
+      m_ID = hiddenImageID.MapObject_ID();
     }
 
     protected void InvalidateLOS()
@@ -357,5 +361,141 @@ namespace djack.RogueSurvivor.Data
       BREAKS_WHEN_FIRED_THROUGH = 256,
       STANDON_FOV_BONUS = 512,
     }
-  }
+
+    public enum IDs : byte
+    {
+      FENCE = 0,    // not-pushable ID block
+      IRON_FENCE,
+      BOARD,
+      TREE,
+      IRON_GATE_CLOSED,
+      IRON_GATE_OPEN,
+      CHAR_POWER_GENERATOR, // Tesla technology
+      DOOR,
+      WINDOW,
+      HOSPITAL_DOOR,
+      GLASS_DOOR,
+      CHAR_DOOR,
+      IRON_DOOR,
+      BENCH,
+      IRON_BENCH,
+      LARGE_FORTIFICATION,
+      SMALL_FORTIFICATION,  // pushable ID block
+      BED,          
+      HOSPITAL_BED,
+      CHAIR,
+      HOSPITAL_CHAIR,
+      CHAR_CHAIR,
+      TABLE,
+      CHAR_TABLE,
+      NIGHT_TABLE,
+      HOSPITAL_NIGHT_TABLE,
+      DRAWER,
+      FRIDGE,
+      WARDROBE,
+      HOSPITAL_WARDROBE,
+      CAR1,
+      CAR2,
+      CAR3,
+      CAR4,
+      SHOP_SHELF,
+      JUNK,
+      BARRELS
+//    on release of v0.10.0.0 all enumeration values "freeze" and new enumeration values must be later for savefile compatibility (until value 256 is needed at which point the savefile breaks)
+    }
+  } // MapObject
+
+  static class MapObject_ext
+  {
+    // We use a switch to do this translation because this is hand-maintained, and the relative ordering of the enumeration values is not expected to be stable.
+    static public string ImageID(this MapObject.IDs x)
+    {
+      switch (x) {
+        case MapObject.IDs.FENCE: return Gameplay.GameImages.OBJ_FENCE;
+        case MapObject.IDs.IRON_FENCE: return Gameplay.GameImages.OBJ_IRON_FENCE;
+        case MapObject.IDs.BOARD: return Gameplay.GameImages.OBJ_BOARD;
+        case MapObject.IDs.TREE: return Gameplay.GameImages.OBJ_TREE;
+        case MapObject.IDs.IRON_GATE_CLOSED: return Gameplay.GameImages.OBJ_GATE_CLOSED;
+        case MapObject.IDs.IRON_GATE_OPEN: return Gameplay.GameImages.OBJ_GATE_OPEN;
+        case MapObject.IDs.CHAR_POWER_GENERATOR: return Gameplay.GameImages.OBJ_POWERGEN_OFF;
+        case MapObject.IDs.DOOR: return Gameplay.GameImages.OBJ_WOODEN_DOOR_CLOSED;
+        case MapObject.IDs.WINDOW: return Gameplay.GameImages.OBJ_WINDOW_CLOSED;
+        case MapObject.IDs.HOSPITAL_DOOR: return Gameplay.GameImages.OBJ_HOSPITAL_DOOR_CLOSED;
+        case MapObject.IDs.GLASS_DOOR: return Gameplay.GameImages.OBJ_GLASS_DOOR_CLOSED;
+        case MapObject.IDs.CHAR_DOOR: return Gameplay.GameImages.OBJ_CHAR_DOOR_CLOSED;
+        case MapObject.IDs.IRON_DOOR: return Gameplay.GameImages.OBJ_IRON_DOOR_CLOSED;
+        case MapObject.IDs.BENCH: return Gameplay.GameImages.OBJ_BENCH;
+        case MapObject.IDs.IRON_BENCH: return Gameplay.GameImages.OBJ_IRON_BENCH;
+        case MapObject.IDs.LARGE_FORTIFICATION: return Gameplay.GameImages.OBJ_LARGE_WOODEN_FORTIFICATION;
+        case MapObject.IDs.SMALL_FORTIFICATION: return Gameplay.GameImages.OBJ_SMALL_WOODEN_FORTIFICATION;
+        case MapObject.IDs.BED: return Gameplay.GameImages.OBJ_BED;
+        case MapObject.IDs.HOSPITAL_BED: return Gameplay.GameImages.OBJ_HOSPITAL_BED;
+        case MapObject.IDs.CHAIR: return Gameplay.GameImages.OBJ_CHAIR;
+        case MapObject.IDs.HOSPITAL_CHAIR: return Gameplay.GameImages.OBJ_HOSPITAL_CHAIR;
+        case MapObject.IDs.CHAR_CHAIR: return Gameplay.GameImages.OBJ_CHAR_CHAIR;
+        case MapObject.IDs.TABLE: return Gameplay.GameImages.OBJ_TABLE;
+        case MapObject.IDs.CHAR_TABLE: return Gameplay.GameImages.OBJ_CHAR_TABLE;
+        case MapObject.IDs.NIGHT_TABLE: return Gameplay.GameImages.OBJ_NIGHT_TABLE;
+        case MapObject.IDs.HOSPITAL_NIGHT_TABLE: return Gameplay.GameImages.OBJ_HOSPITAL_NIGHT_TABLE;
+        case MapObject.IDs.DRAWER: return Gameplay.GameImages.OBJ_DRAWER;
+        case MapObject.IDs.FRIDGE: return Gameplay.GameImages.OBJ_FRIDGE;
+        case MapObject.IDs.WARDROBE: return Gameplay.GameImages.OBJ_WARDROBE;
+        case MapObject.IDs.HOSPITAL_WARDROBE: return Gameplay.GameImages.OBJ_HOSPITAL_WARDROBE;
+        case MapObject.IDs.CAR1: return Gameplay.GameImages.OBJ_CAR1;
+        case MapObject.IDs.CAR2: return Gameplay.GameImages.OBJ_CAR2;
+        case MapObject.IDs.CAR3: return Gameplay.GameImages.OBJ_CAR3;
+        case MapObject.IDs.CAR4: return Gameplay.GameImages.OBJ_CAR4;
+        case MapObject.IDs.SHOP_SHELF: return Gameplay.GameImages.OBJ_SHOP_SHELF;
+        case MapObject.IDs.JUNK: return Gameplay.GameImages.OBJ_JUNK;
+        case MapObject.IDs.BARRELS: return Gameplay.GameImages.OBJ_BARRELS;
+//      case MapObject.IDs.: return Gameplay.GameImages.;
+        default: throw new ArgumentOutOfRangeException(nameof(x), x, "not mapped to an MapObject ID");
+      }
+    }
+
+    static public MapObject.IDs MapObject_ID(this string x)
+    {
+      switch (x) {
+        case Gameplay.GameImages.OBJ_FENCE: return MapObject.IDs.FENCE;
+        case Gameplay.GameImages.OBJ_IRON_FENCE: return MapObject.IDs.IRON_FENCE;
+        case Gameplay.GameImages.OBJ_BOARD: return MapObject.IDs.BOARD;
+        case Gameplay.GameImages.OBJ_TREE: return MapObject.IDs.TREE;
+        case Gameplay.GameImages.OBJ_GATE_CLOSED: return MapObject.IDs.IRON_GATE_CLOSED;
+        case Gameplay.GameImages.OBJ_GATE_OPEN: return MapObject.IDs.IRON_GATE_OPEN;
+        case Gameplay.GameImages.OBJ_POWERGEN_OFF: return MapObject.IDs.CHAR_POWER_GENERATOR;
+        case Gameplay.GameImages.OBJ_WOODEN_DOOR_CLOSED: return MapObject.IDs.DOOR;
+        case Gameplay.GameImages.OBJ_WINDOW_CLOSED: return MapObject.IDs.WINDOW;
+        case Gameplay.GameImages.OBJ_HOSPITAL_DOOR_CLOSED: return MapObject.IDs.HOSPITAL_DOOR;
+        case Gameplay.GameImages.OBJ_GLASS_DOOR_CLOSED: return MapObject.IDs.GLASS_DOOR;
+        case Gameplay.GameImages.OBJ_CHAR_DOOR_CLOSED: return MapObject.IDs.CHAR_DOOR;
+        case Gameplay.GameImages.OBJ_IRON_DOOR_CLOSED: return MapObject.IDs.IRON_DOOR;
+        case Gameplay.GameImages.OBJ_BENCH: return MapObject.IDs.BENCH;
+        case Gameplay.GameImages.OBJ_IRON_BENCH: return MapObject.IDs.IRON_BENCH;
+        case Gameplay.GameImages.OBJ_LARGE_WOODEN_FORTIFICATION: return MapObject.IDs.LARGE_FORTIFICATION;
+        case Gameplay.GameImages.OBJ_SMALL_WOODEN_FORTIFICATION: return MapObject.IDs.SMALL_FORTIFICATION;
+        case Gameplay.GameImages.OBJ_BED: return MapObject.IDs.BED;
+        case Gameplay.GameImages.OBJ_HOSPITAL_BED: return MapObject.IDs.HOSPITAL_BED;
+        case Gameplay.GameImages.OBJ_CHAIR: return MapObject.IDs.CHAIR;
+        case Gameplay.GameImages.OBJ_HOSPITAL_CHAIR: return MapObject.IDs.HOSPITAL_CHAIR;
+        case Gameplay.GameImages.OBJ_CHAR_CHAIR: return MapObject.IDs.CHAR_CHAIR;
+        case Gameplay.GameImages.OBJ_TABLE: return MapObject.IDs.TABLE;
+        case Gameplay.GameImages.OBJ_CHAR_TABLE: return MapObject.IDs.CHAR_TABLE;
+        case Gameplay.GameImages.OBJ_NIGHT_TABLE: return MapObject.IDs.NIGHT_TABLE;
+        case Gameplay.GameImages.OBJ_HOSPITAL_NIGHT_TABLE: return MapObject.IDs.HOSPITAL_NIGHT_TABLE;
+        case Gameplay.GameImages.OBJ_DRAWER: return MapObject.IDs.DRAWER;
+        case Gameplay.GameImages.OBJ_FRIDGE: return MapObject.IDs.FRIDGE;
+        case Gameplay.GameImages.OBJ_WARDROBE: return MapObject.IDs.WARDROBE;
+        case Gameplay.GameImages.OBJ_HOSPITAL_WARDROBE: return MapObject.IDs.HOSPITAL_WARDROBE;
+        case Gameplay.GameImages.OBJ_CAR1: return MapObject.IDs.CAR1;
+        case Gameplay.GameImages.OBJ_CAR2: return MapObject.IDs.CAR2;
+        case Gameplay.GameImages.OBJ_CAR3: return MapObject.IDs.CAR3;
+        case Gameplay.GameImages.OBJ_CAR4: return MapObject.IDs.CAR4;
+        case Gameplay.GameImages.OBJ_SHOP_SHELF: return MapObject.IDs.SHOP_SHELF;
+        case Gameplay.GameImages.OBJ_JUNK: return MapObject.IDs.JUNK;
+        case Gameplay.GameImages.OBJ_BARRELS: return MapObject.IDs.BARRELS;
+//      case Gameplay.GameImages.: return MapObject.IDs.;
+        default: throw new ArgumentOutOfRangeException(nameof(x), x, "not mapped to an MapObject ID");
+      }
+    }
+  } // MapObject_ext
 }
