@@ -102,7 +102,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       case (byte)DW_type.GLASS:
       case (byte)DW_type.WINDOW:
         IsMaterialTransparent = true;
-        BreaksWhenFiredThrough = true;
         break;
       }
     }

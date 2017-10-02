@@ -166,9 +166,6 @@ namespace djack.RogueSurvivor.Data
       get {
         return GetFlag(Flags.BREAKS_WHEN_FIRED_THROUGH);
       }
-      set {
-        SetFlag(Flags.BREAKS_WHEN_FIRED_THROUGH, value);
-      }
     }
 
     public bool StandOnFovBonus {
@@ -297,6 +294,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_BreaksWhenFiredThrough(IDs x)
+    {
+      switch (x) {
+        case IDs.WINDOW: return true;
+        case IDs.GLASS_DOOR: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -313,6 +320,7 @@ namespace djack.RogueSurvivor.Data
       if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
       if (_ID_GivesWood(m_ID)) m_Flags |= Flags.GIVES_WOOD;
       if (_ID_StandOnFOVbonus(m_ID)) m_Flags |= Flags.STANDON_FOV_BONUS;
+      if (_ID_BreaksWhenFiredThrough(m_ID)) m_Flags |= Flags.BREAKS_WHEN_FIRED_THROUGH;
 
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
