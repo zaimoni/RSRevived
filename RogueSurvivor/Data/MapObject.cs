@@ -152,9 +152,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool GivesWood {
       get {
-        if (GetFlag(Flags.GIVES_WOOD))
-          return m_BreakState != Break.BROKEN;
-        return false;
+        return GetFlag(Flags.GIVES_WOOD) && Break.BROKEN != m_BreakState;
       }
     }
 
@@ -176,9 +174,6 @@ namespace djack.RogueSurvivor.Data
     public bool StandOnFovBonus {
       get {
         return GetFlag(Flags.STANDON_FOV_BONUS);
-      }
-      set {
-        SetFlag(Flags.STANDON_FOV_BONUS, value);
       }
     }
 
@@ -228,6 +223,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // This section of private switch statements arguably could designate properties of a MapObjectModel class.
     private static byte _ID_Weight(IDs x)
     {
       switch(x) {
@@ -288,6 +284,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_StandOnFOVbonus(IDs x)  // XXX requires jumpable
+    {
+      switch (x) {
+        case IDs.FENCE: return true;
+        case IDs.CAR1: return true;
+        case IDs.CAR2: return true;
+        case IDs.CAR3: return true;
+        case IDs.CAR4: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -298,12 +307,15 @@ namespace djack.RogueSurvivor.Data
       m_ImageID = m_HiddenImageID = hiddenImageID;
       m_BreakState = (0==hitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
       m_FireState = burnable;
-      if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
-      m_HitPoints = m_MaxHitPoints = hitPoints;
+
       m_ID = hiddenImageID.MapObject_ID();
       Weight = _ID_Weight(m_ID);
       if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
       if (_ID_GivesWood(m_ID)) m_Flags |= Flags.GIVES_WOOD;
+      if (_ID_StandOnFOVbonus(m_ID)) m_Flags |= Flags.STANDON_FOV_BONUS;
+
+      if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
+      m_HitPoints = m_MaxHitPoints = hitPoints;
     }
 
     protected void InvalidateLOS()

@@ -620,8 +620,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS)
       {
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        StandOnFovBonus = true
+        JumpLevel = 1
       };
     }
 
@@ -670,8 +669,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         BreakState = MapObject.Break.BROKEN,
         IsMaterialTransparent = true,
-        JumpLevel = 1,
-        StandOnFovBonus = true
+        JumpLevel = 1
       };
     }
 
