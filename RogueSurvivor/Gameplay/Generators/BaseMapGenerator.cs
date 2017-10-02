@@ -760,7 +760,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjJunk()
     {
       return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS) {
-        IsPlural = true,
         IsMaterialTransparent = true
       };
     }
@@ -768,7 +767,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjBarrels()
     {
       return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS) {
-        IsPlural = true,
         IsMaterialTransparent = true
       };
     }

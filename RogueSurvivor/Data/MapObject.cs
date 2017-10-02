@@ -41,10 +41,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsPlural {
       get {
-        return GetFlag(MapObject.Flags.IS_PLURAL);
-      }
-      set {
-        SetFlag(MapObject.Flags.IS_PLURAL, value);
+        return GetFlag(Flags.IS_PLURAL);
       }
     }
 
@@ -313,6 +310,16 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_IsPlural(IDs x)
+    {
+      switch (x) {
+        case IDs.JUNK: return true;
+        case IDs.BARRELS: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -331,6 +338,7 @@ namespace djack.RogueSurvivor.Data
       if (_ID_StandOnFOVbonus(m_ID)) m_Flags |= Flags.STANDON_FOV_BONUS;
       if (_ID_BreaksWhenFiredThrough(m_ID)) m_Flags |= Flags.BREAKS_WHEN_FIRED_THROUGH;
       if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
+      if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
       // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
 
