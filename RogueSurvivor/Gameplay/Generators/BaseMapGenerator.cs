@@ -647,8 +647,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){
         IsMaterialTransparent = true,
         GivesWood = true,
-        IsMovable = true,
-        Weight = 4,
         JumpLevel = 1
       };
     }
@@ -679,8 +677,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         BreakState = MapObject.Break.BROKEN,
         IsMaterialTransparent = true,
         JumpLevel = 1,
-        IsMovable = true,
-        Weight = 100,
         StandOnFovBonus = true
       };
     }
@@ -689,9 +685,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS) {
         IsContainer = true,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 6
+        GivesWood = true
       };
     }
 
@@ -721,9 +715,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         IsMaterialTransparent = true,
         IsWalkable = true,
         IsCouch = true,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 6
+        GivesWood = true
       };
     }
 
@@ -733,9 +725,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         IsMaterialTransparent = false,
         IsContainer = true,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 10
+        GivesWood = true
       };
     }
 
@@ -744,9 +734,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS) {
         IsMaterialTransparent = true,
         IsContainer = true,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 6
+        GivesWood = true
       };
     }
 
@@ -756,9 +744,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 2
+        GivesWood = true
       };
     }
 
@@ -768,9 +754,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 1
+        GivesWood = true
       };
     }
 
@@ -780,9 +764,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       {
         IsMaterialTransparent = true,
         JumpLevel = 1,
-        GivesWood = true,
-        IsMovable = true,
-        Weight = 1
+        GivesWood = true
       };
     }
 
@@ -790,9 +772,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("fridge", GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS)
       {
-        IsContainer = true,
-        IsMovable = true,
-        Weight = 10
+        IsContainer = true
       };
     }
 
@@ -801,9 +781,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
         IsMaterialTransparent = true,
-        IsMovable = true,
-        GivesWood = true,
-        Weight = 6
+        GivesWood = true
       };
     }
 
@@ -812,9 +790,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS) {
         IsPlural = true,
         IsMaterialTransparent = true,
-        IsMovable = true,
-        GivesWood = true,
-        Weight = 10
+        GivesWood = true
       };
     }
 

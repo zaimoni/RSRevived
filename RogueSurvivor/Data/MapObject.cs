@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     private readonly string m_Name;
     private Flags m_Flags;
     private int m_JumpLevel;
-    private int m_Weight;
+    public readonly byte Weight; // Weight is positive if and only if the object is movable
     private Break m_BreakState;
     private readonly int m_MaxHitPoints;
     private int m_HitPoints;
@@ -165,9 +165,6 @@ namespace djack.RogueSurvivor.Data
       get {
         return GetFlag(Flags.IS_MOVABLE);
       }
-      set {
-        SetFlag(Flags.IS_MOVABLE, value);
-      }
     }
 
     public bool BreaksWhenFiredThrough {
@@ -185,15 +182,6 @@ namespace djack.RogueSurvivor.Data
       }
       set {
         SetFlag(Flags.STANDON_FOV_BONUS, value);
-      }
-    }
-
-    public int Weight {
-      get {
-        return m_Weight;
-      }
-      set {
-        m_Weight = Math.Max(1, value);
       }
     }
 
@@ -243,6 +231,35 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    private static byte _ID_Weight(IDs x)
+    {
+      switch(x) {
+        case IDs.SMALL_FORTIFICATION: return 4;
+        case IDs.BED: return 6; // XXX all beds should have same weight
+        case IDs.HOSPITAL_BED: return 6;
+        case IDs.CHAIR: return 1;   // XXX all chairs should have same weight
+        case IDs.HOSPITAL_CHAIR: return 1;
+        case IDs.CHAR_CHAIR: return 1;
+        case IDs.TABLE: return 2;   // XXX all tables should have same weight
+        case IDs.CHAR_TABLE: return 2;
+        case IDs.NIGHT_TABLE: return 1; // XXX all night tables should have same weight
+        case IDs.HOSPITAL_NIGHT_TABLE: return 1;
+        case IDs.DRAWER: return 6;
+        case IDs.FRIDGE: return 10;
+        case IDs.WARDROBE: return 10;   // all wardrobes should have same weight
+        case IDs.HOSPITAL_WARDROBE: return 10;
+        case IDs.CAR1: return 100;  // all cars should have same weight
+        case IDs.CAR2: return 100;
+        case IDs.CAR3: return 100;
+        case IDs.CAR4: return 100;
+        case IDs.SHOP_SHELF: return 6;
+        case IDs.JUNK: return 6;
+        case IDs.BARRELS: return 10;
+//      case MapObject.IDs.: return ;
+        default: return 0;  // not moveable
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -256,6 +273,8 @@ namespace djack.RogueSurvivor.Data
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
       m_ID = hiddenImageID.MapObject_ID();
+      Weight = _ID_Weight(m_ID);
+      if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
     }
 
     protected void InvalidateLOS()
