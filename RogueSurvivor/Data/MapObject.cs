@@ -113,9 +113,6 @@ namespace djack.RogueSurvivor.Data
       get {
         return GetFlag(Flags.IS_CONTAINER);
       }
-      set {
-        SetFlag(Flags.IS_CONTAINER, value);
-      }
     }
 
     public bool IsCouch {
@@ -352,6 +349,19 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_IsContainer(IDs x)
+    {
+      switch (x) {
+        case IDs.DRAWER: return true;
+        case IDs.FRIDGE: return true;
+        case IDs.WARDROBE: return true;
+        case IDs.HOSPITAL_WARDROBE: return true;
+        case IDs.SHOP_SHELF: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -372,6 +382,8 @@ namespace djack.RogueSurvivor.Data
       if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
+      if (_ID_IsContainer(m_ID)) m_Flags |= Flags.IS_CONTAINER;
+
       // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
       // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
       // StandsOnFovBonus requires IsJumpable

@@ -666,9 +666,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjShelf()
     {
-      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS) {
-        IsContainer = true
-      };
+      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjBench()
@@ -695,17 +693,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjWardrobe(string wardrobeImageID)
     {
-      return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS)
-      {
-        IsContainer = true
-      };
+      return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjDrawer()
     {
-      return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS) {
-        IsContainer = true
-      };
+      return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjTable(string tableImageID)
@@ -734,10 +727,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjFridge()
     {
-      return new MapObject("fridge", GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS)
-      {
-        IsContainer = true
-      };
+      return new MapObject("fridge", GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjJunk()
