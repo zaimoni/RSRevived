@@ -92,18 +92,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     {
       m_type = (byte)_type;
       _SetState(STATE_CLOSED);
-      switch(m_type)
-      {
-      case (byte)DW_type.WOODEN:
-      case (byte)DW_type.HOSPITAL:
-      case (byte)DW_type.CHAR:
-      case (byte)DW_type.IRON:
-        break;
-      case (byte)DW_type.GLASS:
-      case (byte)DW_type.WINDOW:
-        IsMaterialTransparent = true;
-        break;
-      }
     }
 
     public void Barricade(int delta)

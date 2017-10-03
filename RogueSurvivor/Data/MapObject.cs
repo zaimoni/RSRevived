@@ -83,9 +83,6 @@ namespace djack.RogueSurvivor.Data
       get {
         return GetFlag(Flags.IS_MATERIAL_TRANSPARENT);
       }
-      set {
-        SetFlag(Flags.IS_MATERIAL_TRANSPARENT, value);
-      }
     }
 
     public bool IsWalkable {
@@ -275,7 +272,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    static private bool _ID_StandOnFOVbonus(IDs x)  // XXX requires jumpable
+    static private bool _ID_StandOnFOVbonus(IDs x)
     {
       switch (x) {
         case IDs.FENCE: return true;
@@ -320,6 +317,41 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_MaterialIsTransparent(IDs x)
+    {
+      switch (x) {
+        case IDs.FENCE: return true;
+        case IDs.IRON_FENCE: return true;
+        case IDs.IRON_GATE_CLOSED: return true;
+        case IDs.IRON_GATE_OPEN: return true;
+        case IDs.WINDOW: return true;
+        case IDs.GLASS_DOOR: return true;
+        case IDs.BENCH: return true;
+        case IDs.IRON_BENCH: return true;
+        case IDs.SMALL_FORTIFICATION: return true;
+        case IDs.BED: return true;
+        case IDs.HOSPITAL_BED: return true;
+        case IDs.CHAIR: return true;
+        case IDs.HOSPITAL_CHAIR: return true;
+        case IDs.CHAR_CHAIR: return true;
+        case IDs.TABLE: return true;
+        case IDs.CHAR_TABLE: return true;
+        case IDs.NIGHT_TABLE: return true;
+        case IDs.HOSPITAL_NIGHT_TABLE: return true;
+        case IDs.DRAWER: return true;
+        case IDs.WARDROBE: return true;
+        case IDs.HOSPITAL_WARDROBE: return true;
+        case IDs.CAR1: return true;
+        case IDs.CAR2: return true;
+        case IDs.CAR3: return true;
+        case IDs.CAR4: return true;
+        case IDs.JUNK: return true;
+        case IDs.BARRELS: return true;
+//      case MapObject.IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -339,8 +371,10 @@ namespace djack.RogueSurvivor.Data
       if (_ID_BreaksWhenFiredThrough(m_ID)) m_Flags |= Flags.BREAKS_WHEN_FIRED_THROUGH;
       if (_ID_IsCouch(m_ID)) m_Flags |= Flags.IS_COUCH;
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
+      if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
       // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
       // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
+      // StandsOnFovBonus requires IsJumpable
 
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;

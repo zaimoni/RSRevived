@@ -619,31 +619,23 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS)
       {
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
 
     static protected MapObject MakeObjIronFence()
     {
-      return new MapObject("iron fence", GameImages.OBJ_IRON_FENCE)
-      {
-        IsMaterialTransparent = true,
-      };
+      return new MapObject("iron fence", GameImages.OBJ_IRON_FENCE);
     }
 
     static protected MapObject MakeObjIronGate()
     {
-      return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, 20* DoorWindow.BASE_HITPOINTS)
-      {
-        IsMaterialTransparent = true,
-      };
+      return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, 20* DoorWindow.BASE_HITPOINTS);
     }
 
     static public Fortification MakeObjSmallFortification()
     {
       return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -668,7 +660,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new MapObject("wrecked car", carImageID)
       {
         BreakState = MapObject.Break.BROKEN,
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -683,7 +674,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjBench()
     {
       return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS) {
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -691,7 +681,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjIronBench()
     {
       return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH) {
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -700,7 +689,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS)
       {
-        IsMaterialTransparent = true,
         IsWalkable = true
       };
     }
@@ -709,7 +697,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS)
       {
-        IsMaterialTransparent = false,
         IsContainer = true
       };
     }
@@ -717,7 +704,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     static protected MapObject MakeObjDrawer()
     {
       return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS) {
-        IsMaterialTransparent = true,
         IsContainer = true
       };
     }
@@ -726,7 +712,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS)
       {
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -735,7 +720,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3)
       {
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -744,7 +728,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3)
       {
-        IsMaterialTransparent = true,
         JumpLevel = 1
       };
     }
@@ -759,16 +742,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjJunk()
     {
-      return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS) {
-        IsMaterialTransparent = true
-      };
+      return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjBarrels()
     {
-      return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS) {
-        IsMaterialTransparent = true
-      };
+      return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS);
     }
 
     protected static PowerGenerator MakeObjPowerGenerator() { return new PowerGenerator(); }
