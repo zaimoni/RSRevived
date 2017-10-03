@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     // While there is only one kind of power generator currently, the graphics
     // should be isolated from the constructor "just in case".
     public PowerGenerator()
-      : base("power generator", m_imageIDs[0])
+      : base(m_imageIDs[0])
     {
     }
 

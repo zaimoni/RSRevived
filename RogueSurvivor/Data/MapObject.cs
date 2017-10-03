@@ -15,7 +15,6 @@ namespace djack.RogueSurvivor.Data
   internal class MapObject
   {
     private IDs m_ID;
-    private readonly string m_Name;
     private Flags m_Flags;
     private int m_JumpLevel;
     public readonly byte Weight; // Weight is positive if and only if the object is movable
@@ -25,8 +24,8 @@ namespace djack.RogueSurvivor.Data
     private Fire m_FireState;
     private Location m_Location;
 
-    public string AName { get { return IsPlural ? m_Name.PrefixIndefinitePluralArticle() : m_Name.PrefixIndefiniteSingularArticle(); } }
-    public string TheName { get { return m_Name.PrefixDefiniteSingularArticle(); } }
+    public string AName { get { return IsPlural ? _ID_Name(m_ID).PrefixIndefinitePluralArticle() : _ID_Name(m_ID).PrefixIndefiniteSingularArticle(); } }
+    public string TheName { get { return _ID_Name(m_ID).PrefixDefiniteSingularArticle(); } }
     public bool IsPlural { get { return GetFlag(Flags.IS_PLURAL); } }
 
     public IDs ID {
@@ -42,17 +41,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public virtual string ImageID {
-      get {
-        return m_ID.ImageID();
-      }
-    }
-
-    public string HiddenImageID {
-      get {
-        return m_ID.ImageID();
-      }
-    }
+    public virtual string ImageID { get { return m_ID.ImageID(); } }
+    public string HiddenImageID { get { return m_ID.ImageID(); } }
 
     public Location Location {
       get {
@@ -390,13 +380,11 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
+    public MapObject(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
-      if (string.IsNullOrEmpty(aName)) throw new ArgumentNullException(nameof(aName));
       if (string.IsNullOrEmpty(hiddenImageID)) throw new ArgumentNullException(nameof(hiddenImageID));
 #endif
-      m_Name = aName;
       m_BreakState = (0==hitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
       m_FireState = burnable;
 
@@ -511,6 +499,52 @@ namespace djack.RogueSurvivor.Data
     {
       ++m_JumpLevel;
       m_FireState = Fire.BURNABLE;
+    }
+
+    // could do this as non-static member function by hard coding m_ID as the switch
+    static private string _ID_Name(IDs x)
+    {
+      switch (x) {
+        case IDs.FENCE: return "fence";
+        case IDs.IRON_FENCE: return "iron fence";
+        case IDs.BOARD: return "board";
+        case IDs.TREE: return "tree";
+        case IDs.IRON_GATE_CLOSED: return "iron gate";
+        case IDs.IRON_GATE_OPEN: return "iron gate";
+        case IDs.CHAR_POWER_GENERATOR: return "power generator";
+        case IDs.DOOR: return "wooden door";
+        case IDs.WINDOW: return "window";
+        case IDs.HOSPITAL_DOOR: return "door";
+        case IDs.GLASS_DOOR: return "glass door";
+        case IDs.CHAR_DOOR: return "CHAR door";
+        case IDs.IRON_DOOR: return "iron door";
+        case IDs.BENCH: return "bench";
+        case IDs.IRON_BENCH: return "iron bench";
+        case IDs.LARGE_FORTIFICATION: return "large fortification";
+        case IDs.SMALL_FORTIFICATION: return "small fortification";
+        case IDs.BED: return "bed";
+        case IDs.HOSPITAL_BED: return "bed";
+        case IDs.CHAIR: return "chair";
+        case IDs.HOSPITAL_CHAIR: return "chair";
+        case IDs.CHAR_CHAIR: return "chair";
+        case IDs.TABLE: return "table";
+        case IDs.CHAR_TABLE: return "table";
+        case IDs.NIGHT_TABLE: return "night table";
+        case IDs.HOSPITAL_NIGHT_TABLE: return "night table";
+        case IDs.DRAWER: return "drawer";
+        case IDs.FRIDGE: return "fridge";
+        case IDs.WARDROBE: return "wardrobe";
+        case IDs.HOSPITAL_WARDROBE: return "wardrobe";
+        case IDs.CAR1: return "wrecked car";
+        case IDs.CAR2: return "wrecked car";
+        case IDs.CAR3: return "wrecked car";
+        case IDs.CAR4: return "wrecked car";
+        case IDs.SHOP_SHELF: return "shelf";
+        case IDs.JUNK: return "junk";
+        case IDs.BARRELS: return "barrels";
+//      case MapObject.IDs.: return Gameplay.GameImages.;
+        default: throw new ArgumentOutOfRangeException(nameof(x), x, "not mapped to an MapObject ID");
+      }
     }
 
     [Serializable]

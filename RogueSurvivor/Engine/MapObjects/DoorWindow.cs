@@ -28,19 +28,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       MAX
     };
 
-    // don't fold maxhp into here just yet.
-    // if we end up allowing constructing wooden doors w/carpentry, perhaps
-    // post-apocalypse doors shouldn't be as durable as pre-apocalypse
-    // or maybe other choices available in this regard
-    static readonly string[] names = new string[(int)DW_type.MAX]{
-      "wooden door",
-      "door",
-      "CHAR door",
-      "glass door",
-      "iron door",
-      "window"
-    };
-
     static readonly string[][] images = new string[(int)DW_type.MAX][]{
        new string[MAX_STATE]{ Gameplay.GameImages.OBJ_WOODEN_DOOR_CLOSED, Gameplay.GameImages.OBJ_WOODEN_DOOR_OPEN, Gameplay.GameImages.OBJ_WOODEN_DOOR_BROKEN},
        new string[MAX_STATE]{ Gameplay.GameImages.OBJ_HOSPITAL_DOOR_CLOSED, Gameplay.GameImages.OBJ_HOSPITAL_DOOR_OPEN, Gameplay.GameImages.OBJ_HOSPITAL_DOOR_BROKEN},
@@ -89,7 +76,7 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     public bool IsBarricaded { get { return m_BarricadePoints > 0; } }
 
     public DoorWindow(DW_type _type, int hitPoints)
-      : base(names[(int)(_type)], images[(int)(_type)][STATE_CLOSED], hitPoints, MapObject.Fire.BURNABLE)
+      : base(images[(int)(_type)][STATE_CLOSED], hitPoints, MapObject.Fire.BURNABLE)
     {
       m_type = (byte)_type;
       _SetState(STATE_CLOSED);

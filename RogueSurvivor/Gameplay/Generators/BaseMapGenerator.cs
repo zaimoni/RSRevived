@@ -617,32 +617,32 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjFence()
     {
-      return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjIronFence()
     {
-      return new MapObject("iron fence", GameImages.OBJ_IRON_FENCE);
+      return new MapObject(GameImages.OBJ_IRON_FENCE);
     }
 
     static protected MapObject MakeObjIronGate()
     {
-      return new MapObject("iron gate", GameImages.OBJ_GATE_CLOSED, 20* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_GATE_CLOSED, 20* DoorWindow.BASE_HITPOINTS);
     }
 
     static public Fortification MakeObjSmallFortification()
     {
-      return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS);
+      return new Fortification(GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS);
     }
 
     static public Fortification MakeObjLargeFortification()
     {
-      return new Fortification("large fortification", GameImages.OBJ_LARGE_WOODEN_FORTIFICATION, Fortification.LARGE_BASE_HITPOINTS);
+      return new Fortification(GameImages.OBJ_LARGE_WOODEN_FORTIFICATION, Fortification.LARGE_BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjTree()
     {
-      return new MapObject("tree", GameImages.OBJ_TREE, 10* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_TREE, 10* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjWreckedCar(DiceRoller roller)
@@ -652,7 +652,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjWreckedCar(string carImageID)
     {
-      return new MapObject("wrecked car", carImageID)
+      return new MapObject(carImageID)
       {
         BreakState = MapObject.Break.BROKEN
       };
@@ -660,69 +660,69 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjShelf()
     {
-      return new MapObject("shelf", GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_SHOP_SHELF, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjBench()
     {
-      return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjIronBench()
     {
-      return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH);
+      return new MapObject(GameImages.OBJ_IRON_BENCH);
     }
 
     static protected MapObject MakeObjBed(string bedImageID)
     {
-      return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(bedImageID, 2* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjWardrobe(string wardrobeImageID)
     {
-      return new MapObject("wardrobe", wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(wardrobeImageID, 6* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjDrawer()
     {
-      return new MapObject("drawer", GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_DRAWER, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjTable(string tableImageID)
     {
-      return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS);
+      return new MapObject(tableImageID, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjChair(string chairImageID)
     {
-      return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3);
+      return new MapObject(chairImageID, DoorWindow.BASE_HITPOINTS/3);
     }
 
     static protected MapObject MakeObjNightTable(string nightTableImageID)
     {
-      return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3);
+      return new MapObject(nightTableImageID, DoorWindow.BASE_HITPOINTS/3);
     }
 
     static protected MapObject MakeObjFridge()
     {
-      return new MapObject("fridge", GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_FRIDGE, 6* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjJunk()
     {
-      return new MapObject("junk", GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_JUNK, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjBarrels()
     {
-      return new MapObject("barrels", GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS);
+      return new MapObject(GameImages.OBJ_BARRELS, 2* DoorWindow.BASE_HITPOINTS);
     }
 
     protected static PowerGenerator MakeObjPowerGenerator() { return new PowerGenerator(); }
 
     static public MapObject MakeObjBoard(string imageID, string[] text)
     {
-      return new Board("board", imageID, text);
+      return new Board(imageID, text);
     }
 
     static protected void DecorateOutsideWalls(Map map, Rectangle rect, Func<int, int, string> decoFn)

@@ -14,8 +14,8 @@ namespace djack.RogueSurvivor.Engine.MapObjects
   {
     public string[] Text { get; private set; }
 
-    public Board(string name, string imageID, string[] text)
-      : base(name, imageID)
+    public Board(string imageID, string[] text)
+      : base(imageID)
     {
       Text = text;
     }
