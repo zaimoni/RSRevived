@@ -505,6 +505,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
                 m_Actor.Activity = Activity.FOLLOWING;
                 m_Actor.TargetActor = actor;
+#if FAIL
+               // need an after-action "hint" to the target on where/who to go to
+               if (!m_Actor.WillActAgainBefore(actor)) {
+                 int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
+                 (actor.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
+                }
+#endif
                 return tmpAction;
               }
             }
