@@ -212,13 +212,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
-    [Pure]
     public virtual bool IsInterestingItem(Item it)
     {
-	  Contract.Requires(null != it);
 #if DEBUG
-      Contract.Requires(Actor.Model.Abilities.HasInventory);    // CHAR guards: wander action can trigger getting items from containers.
-      Contract.Requires(Actor.Model.Abilities.CanUseMapObjects);
+      if (null == it) throw new ArgumentNullException(nameof(it));
+      if (!Actor.Model.Abilities.HasInventory) throw new InvalidOperationException("inventory required");   // CHAR guards: wander action can get item from containers
+      if (!Actor.Model.Abilities.CanUseMapObjects) throw new InvalidOperationException("using map objects required");
 #endif
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
@@ -281,8 +280,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == armor) return true;
         return armor.Rating < (it as ItemBodyArmor).Rating;
       }
-      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it))
-        return false;
+      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return false;
+      // If we got here, the item must not be a notably high priority item.  Stench killer known to have a want-can't-pickup loop.
+      if (0 >= m_Actor.Inventory.MaxCapacity - m_Actor.Inventory.CountItems) return false;
+
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
     }
 
