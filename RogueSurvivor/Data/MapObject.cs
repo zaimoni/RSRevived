@@ -15,8 +15,6 @@ namespace djack.RogueSurvivor.Data
   internal class MapObject
   {
     private IDs m_ID;
-    private string m_ImageID;
-    private readonly string m_HiddenImageID;
     private readonly string m_Name;
     private Flags m_Flags;
     private int m_JumpLevel;
@@ -40,23 +38,19 @@ namespace djack.RogueSurvivor.Data
         if (!_IDchangeIsLegal(value)) throw new ArgumentOutOfRangeException(nameof(value), "!_IDchangeIsLegal(value)");
 #endif
         m_ID = value;
-        m_ImageID = m_ID.ImageID();
         _InitModel();
       }
     }
 
-    public string ImageID {
+    public virtual string ImageID {
       get {
-        return m_ImageID;
-      }
-      protected set { // only used by subclasses of StateMapObject
-        m_ImageID = value;
+        return m_ID.ImageID();
       }
     }
 
     public string HiddenImageID {
       get {
-        return m_HiddenImageID;
+        return m_ID.ImageID();
       }
     }
 
@@ -403,7 +397,6 @@ namespace djack.RogueSurvivor.Data
       if (string.IsNullOrEmpty(hiddenImageID)) throw new ArgumentNullException(nameof(hiddenImageID));
 #endif
       m_Name = aName;
-      m_ImageID = m_HiddenImageID = hiddenImageID;
       m_BreakState = (0==hitPoints ? Break.UNBREAKABLE : Break.BREAKABLE); // breakable := nonzero max hp
       m_FireState = burnable;
 
@@ -482,12 +475,13 @@ namespace djack.RogueSurvivor.Data
     }
 
     // flag handling
-    private bool GetFlag(MapObject.Flags f)
+    private bool GetFlag(Flags f)
     {
-      return (m_Flags & f) != MapObject.Flags.NONE;
+      return (m_Flags & f) != Flags.NONE;
     }
 
-    private void SetFlag(MapObject.Flags f, bool value)
+#if DEAD_FUNC
+    private void SetFlag(Flags f, bool value)
     {
       if (value)
         m_Flags |= f;
@@ -495,15 +489,16 @@ namespace djack.RogueSurvivor.Data
         m_Flags &= ~f;
     }
 
-    private void OneFlag(MapObject.Flags f)
+    private void OneFlag(Flags f)
     {
       m_Flags |= f;
     }
 
-    private void ZeroFlag(MapObject.Flags f)
+    private void ZeroFlag(Flags f)
     {
       m_Flags &= ~f;
     }
+#endif
 
     // fire
     public void Ignite()

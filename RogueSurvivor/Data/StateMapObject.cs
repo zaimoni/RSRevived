@@ -15,6 +15,11 @@ namespace djack.RogueSurvivor.Data
 
     public int State { get { return m_State; } }
     abstract protected string StateToID(int x); // XXX intent is to validate before actually updating the state
+    public override string ImageID {
+      get {
+        return StateToID(m_State);
+      }
+    }
 
     public StateMapObject(string name, string hiddenImageID)
       : base(name, hiddenImageID)
@@ -28,7 +33,6 @@ namespace djack.RogueSurvivor.Data
 
     public virtual void SetState(int newState)
     {
-       ImageID = StateToID(newState);
        m_State = newState;
     }
   }
