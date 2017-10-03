@@ -12094,24 +12094,29 @@ namespace djack.RogueSurvivor.Engine
     private void SeeingCauseInsanity(Actor whoDoesTheAction, int sanCost, string what)
     {
       Location loc = whoDoesTheAction.Location;
-      foreach (Actor actor in loc.Map.Actors) {
-        if (actor.Model.Abilities.HasSanity && !actor.IsSleeping) {
-          int maxRange = actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather);
-          if (LOS.CanTraceViewLine(loc, actor.Location.Position, maxRange)) {
-            actor.SpendSanity(sanCost);
-            if (whoDoesTheAction == actor) {
-              if (actor.IsPlayer)
-                AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
-              else if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", Conjugate(actor, VERB_HAVE))));
-            }
-            else if (actor.IsPlayer)
-              AddMessage(new Data.Message(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
-            else if (ForceVisibleToPlayer(actor))
-              AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", Conjugate(actor, VERB_SEE))));
-          }
+      int maxLivingFOV = Actor.MaxLivingFOV(whoDoesTheAction.Location.Map);
+      Rectangle rect = new Rectangle(loc.Position.X-maxLivingFOV,loc.Position.Y-maxLivingFOV,2*maxLivingFOV+1,2*maxLivingFOV+1);
+      Actor actor = null;
+      rect.DoForEach(pt=>{
+        actor.SpendSanity(sanCost);
+        if (whoDoesTheAction == actor) {
+          if (actor.IsPlayer)
+            AddMessage(new Data.Message("That was a very disturbing thing to do...", loc.Map.LocalTime.TurnCounter, Color.Orange));
+          else if (ForceVisibleToPlayer(actor))
+            AddMessage(MakeMessage(actor, string.Format("{0} done something very disturbing...", Conjugate(actor, VERB_HAVE))));
         }
-      }
+        else if (actor.IsPlayer)
+          AddMessage(new Data.Message(string.Format("Seeing {0} is very disturbing...", what), loc.Map.LocalTime.TurnCounter, Color.Orange));
+        else if (ForceVisibleToPlayer(actor))
+          AddMessage(MakeMessage(actor, string.Format("{0} something very disturbing...", Conjugate(actor, VERB_SEE))));
+      },pt=>{
+        actor = loc.Map.GetActorAtExt(pt);
+        if (null == actor) return false;
+        if (!actor.Model.Abilities.HasSanity) return false;
+        if (actor.IsSleeping) return false;
+        if (!LOS.CanTraceViewLine(loc, actor.Location, actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather))) return false;
+        return true;
+      });
     }
 
     private void OnMapPowerGeneratorSwitch(Location location)

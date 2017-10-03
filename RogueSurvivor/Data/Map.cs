@@ -813,6 +813,18 @@ namespace djack.RogueSurvivor.Data
 #endif
     }
 
+    public Actor GetActorAtExt(Point pt)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(pt)) return GetActorAt(pt);
+      Location? test = Normalize(pt);
+      if (null==test) return null;
+      return test.Value.Map.GetActorAt(test.Value.Position);
+#else
+      return GetActorAt(pt);
+#endif
+    }
+
     public bool HasActorAt(Point position)
     {
 #if NO_PEACE_WALLS

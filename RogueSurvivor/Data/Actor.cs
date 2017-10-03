@@ -2546,15 +2546,17 @@ namespace djack.RogueSurvivor.Data
       return Math.Max(MINIMAL_FOV, FOV);
     }
 
-    static public int MaxLivingFOV(WorldTime time, Weather weather, Lighting light)
+    static public int MaxLivingFOV(Map map)
     {
+      WorldTime time = map.LocalTime;
+      Lighting light = map.Lighting;
       int FOV = MAX_BASE_VISION;
       switch (light) {
         case Lighting.DARKNESS:
           FOV = MINIMAL_FOV;
           break;
         case Lighting.OUTSIDE:
-          FOV -= LivingNightFovPenalty(time) + LivingWeatherFovPenalty(weather);
+          FOV -= LivingNightFovPenalty(time) + LivingWeatherFovPenalty(Engine.Session.Get.World.Weather);
           break;
       }
       FOV += FOV_BONUS_STANDING_ON_OBJECT;  // but there are no relevant objects except on the entry map

@@ -222,7 +222,7 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange)
+    public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange = int.MaxValue)
     {
       Map map = fromLocation.Map;
       Point goal = toPosition;
@@ -233,9 +233,12 @@ namespace djack.RogueSurvivor.Engine
 #endif
     }
 
-    public static bool CanTraceViewLine(Location fromLocation, Point toPosition)
+    public static bool CanTraceViewLine(Location from, Location to, int maxRange)
     {
-      return LOS.CanTraceViewLine(fromLocation, toPosition, int.MaxValue);
+      if (from.Map == to.Map) return CanTraceViewLine(from, to.Position, maxRange);
+      Location? test = from.Map.Denormalize(to);
+      if (null == test) return false;
+      return CanTraceViewLine(from, test.Value.Position, maxRange);
     }
 
     public static bool CanTraceHypotheticalFireLine(Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
