@@ -74,7 +74,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
       private set {
         if (value > 0 && m_BarricadePoints <= 0) {
-          --JumpLevel;
           IsWalkable = false;
         }
         else if (value <= 0 && m_BarricadePoints > 0)

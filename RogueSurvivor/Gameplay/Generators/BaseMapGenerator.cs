@@ -617,10 +617,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjFence()
     {
-      return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS)
-      {
-        JumpLevel = 1
-      };
+      return new MapObject("fence", GameImages.OBJ_FENCE, 10* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjIronFence()
@@ -635,9 +632,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static public Fortification MakeObjSmallFortification()
     {
-      return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS){
-        JumpLevel = 1
-      };
+      return new Fortification("small fortification", GameImages.OBJ_SMALL_WOODEN_FORTIFICATION, Fortification.SMALL_BASE_HITPOINTS);
     }
 
     static public Fortification MakeObjLargeFortification()
@@ -659,8 +654,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new MapObject("wrecked car", carImageID)
       {
-        BreakState = MapObject.Break.BROKEN,
-        JumpLevel = 1
+        BreakState = MapObject.Break.BROKEN
       };
     }
 
@@ -671,16 +665,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjBench()
     {
-      return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS) {
-        JumpLevel = 1
-      };
+      return new MapObject("bench", GameImages.OBJ_BENCH, 2* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjIronBench()
     {
-      return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH) {
-        JumpLevel = 1
-      };
+      return new MapObject("iron bench", GameImages.OBJ_IRON_BENCH);
     }
 
     static protected MapObject MakeObjBed(string bedImageID)
@@ -703,26 +693,17 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjTable(string tableImageID)
     {
-      return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS)
-      {
-        JumpLevel = 1
-      };
+      return new MapObject("table", tableImageID, DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjChair(string chairImageID)
     {
-      return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3)
-      {
-        JumpLevel = 1
-      };
+      return new MapObject("chair", chairImageID, DoorWindow.BASE_HITPOINTS/3);
     }
 
     static protected MapObject MakeObjNightTable(string nightTableImageID)
     {
-      return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3)
-      {
-        JumpLevel = 1
-      };
+      return new MapObject("night table", nightTableImageID, DoorWindow.BASE_HITPOINTS/3);
     }
 
     static protected MapObject MakeObjFridge()

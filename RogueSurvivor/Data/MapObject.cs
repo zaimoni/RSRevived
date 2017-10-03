@@ -98,9 +98,6 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_JumpLevel;
       }
-      set {
-        m_JumpLevel = value;
-      }
     }
 
     public bool IsJumpable {
@@ -362,6 +359,29 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private int _ID_Jumplevel(IDs x)
+    {
+      switch (x) {
+        case IDs.FENCE: return 1;
+        case IDs.BENCH: return 1;
+        case IDs.IRON_BENCH: return 1;
+        case IDs.SMALL_FORTIFICATION: return 1;
+        case IDs.CHAIR: return 1;
+        case IDs.HOSPITAL_CHAIR: return 1;
+        case IDs.CHAR_CHAIR: return 1;
+        case IDs.TABLE: return 1;
+        case IDs.CHAR_TABLE: return 1;
+        case IDs.NIGHT_TABLE: return 1;
+        case IDs.HOSPITAL_NIGHT_TABLE: return 1;
+        case IDs.CAR1: return 1;
+        case IDs.CAR2: return 1;
+        case IDs.CAR3: return 1;
+        case IDs.CAR4: return 1;
+//      case IDs.: return 1;
+        default: return 0;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -383,11 +403,14 @@ namespace djack.RogueSurvivor.Data
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
       if (_ID_IsContainer(m_ID)) m_Flags |= Flags.IS_CONTAINER;
+      m_JumpLevel = _ID_Jumplevel(m_ID);
 
       // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
       // would be nice if it was possible to move on a container (this would make the starting game items more accessible), but there are UI issues
       // StandsOnFovBonus requires IsJumpable
-
+#if DEBUG
+      if (StandOnFovBonus && !IsJumpable) throw new InvalidOperationException("must be able to jump on an object providing FOV bonus for standing on it");
+#endif
       if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
       m_HitPoints = m_MaxHitPoints = hitPoints;
     }
