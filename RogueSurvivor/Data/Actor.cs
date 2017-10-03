@@ -2469,11 +2469,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int NightFovPenalty(WorldTime time)
+    private static int LivingNightFovPenalty(WorldTime time)
     {
-      if (Model.Abilities.IsUndead) return 0;
-      switch (time.Phase)
-      {
+      switch (time.Phase) {
         case DayPhase.SUNSET: return FOV_PENALTY_SUNSET;
         case DayPhase.EVENING: return FOV_PENALTY_EVENING;
         case DayPhase.MIDNIGHT: return FOV_PENALTY_MIDNIGHT;
@@ -2483,15 +2481,23 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public int WeatherFovPenalty(Weather weather)
+    public int NightFovPenalty(WorldTime time)
     {
-      if (Model.Abilities.IsUndead) return 0;
-      switch (weather)
-      {
+      return (Model.Abilities.IsUndead ? 0 : LivingNightFovPenalty(time));
+    }
+
+    private static int LivingWeatherFovPenalty(Weather weather)
+    {
+      switch (weather) {
         case Weather.RAIN: return FOV_PENALTY_RAIN;
         case Weather.HEAVY_RAIN: return FOV_PENALTY_HEAVY_RAIN;
         default: return 0;
       }
+    }
+
+    public int WeatherFovPenalty(Weather weather)
+    {
+      return (Model.Abilities.IsUndead ? 0 : LivingWeatherFovPenalty(weather));
     }
 
     int LightBonus {
@@ -2536,6 +2542,25 @@ namespace djack.RogueSurvivor.Data
             lightBonus = 1;
         }
         FOV += lightBonus;
+      }
+      return Math.Max(MINIMAL_FOV, FOV);
+    }
+
+    static public int MaxLivingFOV(WorldTime time, Weather weather, Lighting light)
+    {
+      int FOV = MAX_BASE_VISION;
+      switch (light) {
+        case Lighting.DARKNESS:
+          FOV = MINIMAL_FOV;
+          break;
+        case Lighting.OUTSIDE:
+          FOV -= LivingNightFovPenalty(time) + LivingWeatherFovPenalty(weather);
+          break;
+      }
+      FOV += FOV_BONUS_STANDING_ON_OBJECT;  // but there are no relevant objects except on the entry map
+
+      if (light == Lighting.DARKNESS || (light == Lighting.OUTSIDE && time.IsNight)) {
+        FOV += MAX_LIGHT_FOV_BONUS;
       }
       return Math.Max(MINIMAL_FOV, FOV);
     }
