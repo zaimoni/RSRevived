@@ -11845,7 +11845,7 @@ namespace djack.RogueSurvivor.Engine
         if (map.HasAnyAdjacentInMap(player.Location.Position, pt => {
           MapObject mapObjectAt = map.GetMapObjectAt(pt);
           if (mapObjectAt == null) return false;
-          return mapObjectAt.ImageID == GameImages.OBJ_GATE_CLOSED;
+          return MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID;
         })) {
           DoTurnAllGeneratorsOn(map);
           AddMessage(new Data.Message("The gate system scanned your badge and turned the power on!", Session.Get.WorldTime.TurnCounter, Color.Green));

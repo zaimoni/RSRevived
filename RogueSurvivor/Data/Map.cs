@@ -1510,20 +1510,18 @@ namespace djack.RogueSurvivor.Data
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
               ascii_map[y][x] = "="; // XXX no good icon for bed...we have no rings so this is not-awful
-            } else if (Gameplay.GameImages.OBJ_TREE == tmp_obj.ImageID) {
+            } else if (MapObject.IDs.TREE == tmp_obj.ID) {
               ascii_map[y][x] = tree_symbol;
-#if DEBUG
-            } else if (Gameplay.GameImages.OBJ_CAR1 == tmp_obj.ImageID) {
+            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-            } else if (Gameplay.GameImages.OBJ_CAR2 == tmp_obj.ImageID) {
+            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-            } else if (Gameplay.GameImages.OBJ_CAR3 == tmp_obj.ImageID) {
+            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-            } else if (Gameplay.GameImages.OBJ_CAR4 == tmp_obj.ImageID) {
+            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-#endif
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
-              ascii_map[y][x] = "|"; // gate; iron wall; car
+              ascii_map[y][x] = "|"; // gate; iron wall
             } else {
               if (tmp_obj is Engine.MapObjects.DoorWindow tmp_door) {
                 if (tmp_door.IsBarricaded) {

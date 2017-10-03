@@ -767,7 +767,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       ItemsDrop(map, b.InsideRect, (pt =>
       {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
-        if (mapObjectAt == null || !(mapObjectAt.ImageID == "MapObjects\\shop_shelf")) return false;    // XXX leave unconverted as a red flag for ImageID abuse
+        if (mapObjectAt == null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
         Session.Get.PoliceInvestigate.Record(map, pt);
         return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
       }), (Func<Point, Item>) (pt => MakeRandomShopItem(shopType)));
