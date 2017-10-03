@@ -109,7 +109,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_BreakState;
       }
-      set { // Cf IsTransparent which affects LOS calculations
+      protected set { // Cf IsTransparent which affects LOS calculations
         Break old = m_BreakState;
         m_BreakState = value;
         if ((Break.BROKEN == old)!=(Break.BROKEN == value)) InvalidateLOS();
@@ -380,6 +380,18 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_StartsBroken(IDs x)
+    {
+      switch (x) {
+        case IDs.CAR1: return true;
+        case IDs.CAR2: return true;
+        case IDs.CAR3: return true;
+        case IDs.CAR4: return true;
+//      case IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -389,6 +401,7 @@ namespace djack.RogueSurvivor.Data
       m_FireState = burnable;
 
       m_ID = hiddenImageID.MapObject_ID();
+      if (_ID_StartsBroken(m_ID)) m_BreakState = Break.BROKEN;
 
       // model properties that may reasonably be expected to be invariant across changes
       Weight = _ID_Weight(m_ID);

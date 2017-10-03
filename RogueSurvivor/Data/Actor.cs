@@ -1241,8 +1241,7 @@ namespace djack.RogueSurvivor.Data
 #endif
       if (!Model.Abilities.CanBreakObjects) return "cannot break objects";
       if (IsTired) return "tired";
-      DoorWindow doorWindow = mapObj as DoorWindow;
-      bool flag = doorWindow != null && doorWindow.IsBarricaded;
+      bool flag = (mapObj as DoorWindow)?.IsBarricaded ?? false;
       if (mapObj.BreakState != MapObject.Break.BREAKABLE && !flag) return "can't break this object";
       if (mapObj.Location.Actor != null) return "someone is there";
       return "";
@@ -1391,7 +1390,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantBash(DoorWindow door)
 	{
-	  Contract.Requires(null != door);
+#if DEBUG
+      if (null == door) throw new ArgumentNullException(nameof(door));
+#endif
       if (!Model.Abilities.CanBashDoors) return "can't bash doors";
       if (IsTired) return "tired";
       if (door.BreakState != MapObject.Break.BREAKABLE && !door.IsBarricaded) return "can't break this object";

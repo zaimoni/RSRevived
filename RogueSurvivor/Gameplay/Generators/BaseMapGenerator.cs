@@ -652,10 +652,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjWreckedCar(string carImageID)
     {
-      return new MapObject(carImageID)
-      {
-        BreakState = MapObject.Break.BROKEN
-      };
+      return new MapObject(carImageID);
     }
 
     static protected MapObject MakeObjShelf()
