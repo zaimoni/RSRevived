@@ -212,6 +212,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
+    public bool IsInterestingItem(ItemAmmo am)
+    {
+      if (m_Actor.GetCompatibleRangedWeapon(am) == null) return false;
+      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2);
+    }
+      
     public virtual bool IsInterestingItem(Item it)
     {
 #if DEBUG
@@ -248,11 +254,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemRangedWeapon rw = it as ItemRangedWeapon;
         return rw.Ammo > 0 || m_Actor.GetCompatibleAmmoItem(rw) != null;
       }
-      if (it is ItemAmmo) {
-        ItemAmmo am = it as ItemAmmo;
-        if (m_Actor.GetCompatibleRangedWeapon(am) == null) return false;
-        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
-      }
+      if (it is ItemAmmo am) return IsInterestingItem(am);
       if (it is ItemMeleeWeapon) {
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
         if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;

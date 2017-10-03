@@ -244,10 +244,18 @@ namespace djack.RogueSurvivor.Data
     }
 */
 
+    public _T_ GetFirstMatching<_T_>() where _T_ : Item
+    {
+      foreach (Item obj in m_Items) {
+        if (obj is _T_ tmp) return tmp;
+      }
+      return null;
+    }
+
     public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
     {
       foreach (Item obj in m_Items) {
-        if (obj is _T_ tmp && (fn == null || fn(tmp))) return tmp;
+        if (obj is _T_ tmp && fn(tmp)) return tmp;
       }
       return null;
     }

@@ -2113,15 +2113,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorMakeRoomFor(Item it)
     {
-      Contract.Requires(null != it);
-      Contract.Requires(m_Actor.Inventory.IsFull);
-      Contract.Requires(IsInterestingItem(it));
-
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+      if (!m_Actor.Inventory.IsFull) throw new InvalidOperationException("already have room for items");
+      // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
+#endif
       Inventory inv = m_Actor.Inventory;
       if (it.Model.IsStackable && it.CanStackMore) {
          inv.GetItemsStackableWith(it, out int qty);
          if (qty>=it.Quantity) return null;
-      }
+      } // no action if the whole stack completely fits
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
@@ -2190,6 +2191,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpTracker) return BehaviorDropItem(tmpTracker);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
+      if (it is ItemSprayScent) return null;
       if (it is ItemLight) return null;
       if (it is ItemTrap) return null;
       if (it is ItemMedicine) return null;
@@ -2205,13 +2207,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ditch unimportant items
-      ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>(null);
+      ItemSprayScent tmpSprayScent = inv.GetFirstMatching<ItemSprayScent>();
+      if (null != tmpSprayScent) return BehaviorDropItem(tmpSprayScent);
+      ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>();
       if (null != tmpBarricade) return BehaviorDropItem(tmpBarricade);
-      ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>(null);
+      ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>();
       if (null != tmpTrap) return BehaviorDropItem(tmpTrap);
-      ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>(null);
+      ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>();
       if (null != tmpEntertainment) return BehaviorDropItem(tmpEntertainment);
-      ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>(null);
+      ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>();
       if (null != tmpMedicine) return BehaviorDropItem(tmpMedicine);
 
       // least charged flashlight goes
@@ -2223,7 +2227,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // uninteresting ammo
-      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>((Predicate<ItemAmmo>) (ammo => !IsInterestingItem(ammo)));
+      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));
       if (null != tmpAmmo) {
         ItemRangedWeapon tmpRw = m_Actor.GetCompatibleRangedWeapon(tmpAmmo);
         if (null != tmpRw) {
@@ -2243,7 +2247,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // grenades next
       if (it is ItemGrenade) return null;
-      ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>(null);
+      ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
       if (null != tmpGrenade) return BehaviorDropItem(tmpGrenade);
 
       // do not pick up trackers if it means dropping body armor or higher priority
