@@ -3932,7 +3932,7 @@ namespace djack.RogueSurvivor.Engine
     {
       bool player = ForceVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
-      SeeingCauseInsanity(a, a.Location, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
+      SeeingCauseInsanity(a, Rules.SANITY_HIT_BUTCHERING_CORPSE, string.Format("{0} butchering {1}", a.Name, c.DeadGuy.Name));
       int num = m_Rules.ActorDamageVsCorpses(a);
       if (player) AddMessage(MakeMessage(a, string.Format("{0} {1} corpse for {2} damage.", Conjugate(a, VERB_BUTCHER), c.DeadGuy.Name, num)));
       if (!c.TakeDamage(num)) return;
@@ -3961,7 +3961,7 @@ namespace djack.RogueSurvivor.Engine
         a.LivingEat(a.BiteNutritionValue(num));
         a.Infect(Rules.CorpseEatingInfectionTransmission(c.DeadGuy.Infection));
       }
-      SeeingCauseInsanity(a, a.Location, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
+      SeeingCauseInsanity(a, a.Model.Abilities.IsUndead ? Rules.SANITY_HIT_UNDEAD_EATING_CORPSE : Rules.SANITY_HIT_LIVING_EATING_CORPSE, string.Format("{0} eating {1}", a.Name, c.DeadGuy.Name));
     }
 
     public void DoReviveCorpse(Actor actor, Corpse corpse)
@@ -7587,7 +7587,7 @@ namespace djack.RogueSurvivor.Engine
             }
             KillActor(attacker, defender, "hit");
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
-              SeeingCauseInsanity(attacker, attacker.Location, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
+              SeeingCauseInsanity(attacker, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
             if (Session.Get.HasImmediateZombification || defender == m_Player) {
               if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(s_Options.ZombificationChance)) {
                 if (defender.IsPlayer)
@@ -9594,7 +9594,7 @@ namespace djack.RogueSurvivor.Engine
         actor.RecomputeStartingStats();
       }
       if (!isStartingGame)
-        SeeingCauseInsanity(actor, actor.Location, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", deadVictim.Name));
+        SeeingCauseInsanity(actor, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", deadVictim.Name));
       return actor;
     }
 
@@ -12091,8 +12091,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void SeeingCauseInsanity(Actor whoDoesTheAction, Location loc, int sanCost, string what)
+    private void SeeingCauseInsanity(Actor whoDoesTheAction, int sanCost, string what)
     {
+      Location loc = whoDoesTheAction.Location;
       foreach (Actor actor in loc.Map.Actors) {
         if (actor.Model.Abilities.HasSanity && !actor.IsSleeping) {
           int maxRange = actor.FOVrange(loc.Map.LocalTime, Session.Get.World.Weather);
