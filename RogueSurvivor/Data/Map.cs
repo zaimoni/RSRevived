@@ -1056,9 +1056,9 @@ namespace djack.RogueSurvivor.Data
 
     public void OpenAllGates()
     {
-      foreach(MapObject mapObject in MapObjects.Where(obj=>Gameplay.GameImages.OBJ_GATE_CLOSED==obj.ImageID)) {
-        mapObject.IsWalkable = true;
-        mapObject.ImageID = Gameplay.GameImages.OBJ_GATE_OPEN;
+      foreach(MapObject obj in MapObjects) { 
+        if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
+        obj.ID = MapObject.IDs.IRON_GATE_OPEN;
       }
     }
 

@@ -12205,10 +12205,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void CloseAllGates(Map map,string gate_name)
     {
-      foreach (MapObject mapObject in map.MapObjects.Where(obj=>GameImages.OBJ_GATE_OPEN==obj.ImageID)) {
-        mapObject.IsWalkable = false;
-        mapObject.ImageID = GameImages.OBJ_GATE_CLOSED;
-        Actor actorAt = map.GetActorAt(mapObject.Location.Position);
+      foreach (MapObject obj in map.MapObjects) {
+        if (MapObject.IDs.IRON_GATE_OPEN != obj.ID) continue;
+        obj.ID = MapObject.IDs.IRON_GATE_CLOSED;
+        Actor actorAt = map.GetActorAt(obj.Location.Position);
         if (null == actorAt) continue;
         KillActor(null, actorAt, "crushed");
         if (0<map.PlayerCount) {

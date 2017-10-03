@@ -675,10 +675,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static protected MapObject MakeObjBed(string bedImageID)
     {
-      return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS)
-      {
-        IsWalkable = true
-      };
+      return new MapObject("bed", bedImageID, 2* DoorWindow.BASE_HITPOINTS);
     }
 
     static protected MapObject MakeObjWardrobe(string wardrobeImageID)

@@ -66,6 +66,13 @@ namespace djack.RogueSurvivor.Engine.MapObjects
       }
     }
 
+    public override bool IsWalkable {
+      get {
+        return base.IsWalkable && State != STATE_CLOSED && 0 >= m_BarricadePoints;
+      }
+    }
+
+
     public bool IsWindow { get { return m_type==(byte)DW_type.WINDOW; } }
 
     public int BarricadePoints {
@@ -73,11 +80,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
         return m_BarricadePoints;
       }
       private set {
-        if (value > 0 && m_BarricadePoints <= 0) {
-          IsWalkable = false;
-        }
-        else if (value <= 0 && m_BarricadePoints > 0)
-          SetState(State);
         if (0>value) value = 0;
         if (Rules.BARRICADING_MAX < value) value = Rules.BARRICADING_MAX;
         m_BarricadePoints = value;
@@ -131,7 +133,6 @@ namespace djack.RogueSurvivor.Engine.MapObjects
     { // cf IsTransparent
       if ((STATE_OPEN==State)!=(STATE_OPEN==newState)) InvalidateLOS();
       base.SetState(newState);
-      IsWalkable = (State!= STATE_CLOSED);
       if (STATE_BROKEN == State) {
           BreakState = Break.BROKEN;
           HitPoints = 0;

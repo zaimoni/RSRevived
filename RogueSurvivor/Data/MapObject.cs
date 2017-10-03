@@ -27,21 +27,21 @@ namespace djack.RogueSurvivor.Data
     private Fire m_FireState;
     private Location m_Location;
 
-    public string AName {
-      get {
-        return IsPlural ? m_Name.PrefixIndefinitePluralArticle() : m_Name.PrefixIndefiniteSingularArticle();
-      }
-    }
+    public string AName { get { return IsPlural ? m_Name.PrefixIndefinitePluralArticle() : m_Name.PrefixIndefiniteSingularArticle(); } }
+    public string TheName { get { return m_Name.PrefixDefiniteSingularArticle(); } }
+    public bool IsPlural { get { return GetFlag(Flags.IS_PLURAL); } }
 
-    public string TheName {
+    public IDs ID {
       get {
-        return m_Name.PrefixDefiniteSingularArticle();
+        return m_ID;
       }
-    }
-
-    public bool IsPlural {
-      get {
-        return GetFlag(Flags.IS_PLURAL);
+      set {
+#if DEBUG
+        if (!_IDchangeIsLegal(value)) throw new ArgumentOutOfRangeException(nameof(value), "!_IDchangeIsLegal(value)");
+#endif
+        m_ID = value;
+        m_ImageID = m_ID.ImageID();
+        _InitModel();
       }
     }
 
@@ -49,7 +49,7 @@ namespace djack.RogueSurvivor.Data
       get {
         return m_ImageID;
       }
-      set { // only used by subclasses of StateMapObject
+      protected set { // only used by subclasses of StateMapObject
         m_ImageID = value;
       }
     }
@@ -85,12 +85,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsWalkable {
+    virtual public bool IsWalkable {
       get {
         return GetFlag(Flags.IS_WALKABLE);
-      }
-      set {
-        SetFlag(Flags.IS_WALKABLE, value);
       }
     }
 
@@ -382,6 +379,23 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    static private bool _ID_IsWalkable(IDs x)
+    {
+      switch (x) {
+        case IDs.IRON_GATE_OPEN: return true;
+        case IDs.DOOR: return true;
+        case IDs.WINDOW: return true;
+        case IDs.HOSPITAL_DOOR: return true;
+        case IDs.GLASS_DOOR: return true;
+        case IDs.CHAR_DOOR: return true;
+        case IDs.IRON_DOOR: return true;
+        case IDs.BED: return true;
+        case IDs.HOSPITAL_BED: return true;
+//      case MapObject.IDs.: return true;
+        default: return false;
+      }
+    }
+
     public MapObject(string aName, string hiddenImageID, int hitPoints=0, Fire burnable = Fire.UNINFLAMMABLE)
     {
 #if DEBUG
@@ -394,8 +408,19 @@ namespace djack.RogueSurvivor.Data
       m_FireState = burnable;
 
       m_ID = hiddenImageID.MapObject_ID();
+
+      // model properties that may reasonably be expected to be invariant across changes
       Weight = _ID_Weight(m_ID);
       if (0 < Weight) m_Flags |= Flags.IS_MOVABLE;
+
+      _InitModel();
+
+      if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
+      m_HitPoints = m_MaxHitPoints = hitPoints;
+    }
+
+    private void _InitModel()
+    {
       if (_ID_GivesWood(m_ID)) m_Flags |= Flags.GIVES_WOOD;
       if (_ID_StandOnFOVbonus(m_ID)) m_Flags |= Flags.STANDON_FOV_BONUS;
       if (_ID_BreaksWhenFiredThrough(m_ID)) m_Flags |= Flags.BREAKS_WHEN_FIRED_THROUGH;
@@ -403,6 +428,7 @@ namespace djack.RogueSurvivor.Data
       if (_ID_IsPlural(m_ID)) m_Flags |= Flags.IS_PLURAL;
       if (_ID_MaterialIsTransparent(m_ID)) m_Flags |= Flags.IS_MATERIAL_TRANSPARENT;
       if (_ID_IsContainer(m_ID)) m_Flags |= Flags.IS_CONTAINER;
+      if (_ID_IsWalkable(m_ID)) m_Flags |= Flags.IS_WALKABLE;
       m_JumpLevel = _ID_Jumplevel(m_ID);
 
       // following are currently mutually exclusive: IsWalkable, IsJumpable, IsContainer
@@ -410,9 +436,15 @@ namespace djack.RogueSurvivor.Data
       // StandsOnFovBonus requires IsJumpable
 #if DEBUG
       if (StandOnFovBonus && !IsJumpable) throw new InvalidOperationException("must be able to jump on an object providing FOV bonus for standing on it");
+      if (IsWalkable && IsJumpable) throw new InvalidOperationException("map objects may not be both walkable and jumpable");
 #endif
-      if (0 == hitPoints && burnable == Fire.UNINFLAMMABLE) return;
-      m_HitPoints = m_MaxHitPoints = hitPoints;
+    }
+
+    private bool _IDchangeIsLegal(IDs dest)
+    {
+      if (IDs.IRON_GATE_CLOSED == dest && IDs.IRON_GATE_OPEN   == m_ID) return true;
+      if (IDs.IRON_GATE_OPEN   == dest && IDs.IRON_GATE_CLOSED == m_ID) return true;
+      return false;
     }
 
     protected void InvalidateLOS()
