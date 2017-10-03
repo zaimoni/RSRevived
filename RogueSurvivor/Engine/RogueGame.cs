@@ -12074,9 +12074,12 @@ namespace djack.RogueSurvivor.Engine
           if (it.IsEquipped) return new ActionUnequipItem(actor, it);
           return new ActionDropItem(actor, it);
         case 4:
-          int maxRange = actor.FOVrange(actor.Location.Map.LocalTime, Session.Get.World.Weather);
-          foreach (Actor actor1 in actor.Location.Map.Actors) {
-            if (actor1 != actor && !actor.IsEnemyOf(actor1) && (LOS.CanTraceViewLine(actor.Location, actor1.Location.Position, maxRange) && m_Rules.RollChance(50))) {
+          foreach(Point pt in actor.Controller.FOV) {
+            Actor actor1 = actor.Location.Map.GetActorAtExt(pt);
+            if (null == actor1) continue;
+            if (actor1 == actor) continue;
+            if (actor.IsEnemyOf(actor1)) continue;
+            if (m_Rules.RollChance(50)) {
               if (actor.HasLeader) {
                 actor.Leader.RemoveFollower(actor);
                 actor.TrustInLeader = 0;
