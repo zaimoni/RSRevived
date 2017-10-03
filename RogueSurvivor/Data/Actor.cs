@@ -35,6 +35,8 @@ namespace djack.RogueSurvivor.Data
     public const int TRUST_TRUSTING_THRESHOLD = 12*WorldTime.TURNS_PER_HOUR;
     private const int LIVING_SCENT_DROP = OdorScent.MAX_STRENGTH;
     private const int UNDEAD_MASTER_SCENT_DROP = OdorScent.MAX_STRENGTH;
+
+    // most/all of these FOV modifiers should space-time scale
     private const int MINIMAL_FOV = 2;
     private const int FOV_PENALTY_SUNSET = 1;
     private const int FOV_PENALTY_EVENING = 2;
@@ -43,6 +45,11 @@ namespace djack.RogueSurvivor.Data
     private const int FOV_PENALTY_SUNRISE = 2;
     private const int FOV_PENALTY_RAIN = 1;
     private const int FOV_PENALTY_HEAVY_RAIN = 2;
+    private const int FOV_BONUS_STANDING_ON_OBJECT = 1;
+    private const int MAX_LIGHT_FOV_BONUS = 2;   // XXX should be read from configuration files (lights)
+    private const int MAX_BASE_VISION = 8;       // XXX should be read from configuration files (actors)
+    public const int  MAX_VISION = MAX_BASE_VISION + FOV_BONUS_STANDING_ON_OBJECT - FOV_PENALTY_SUNSET + MAX_LIGHT_FOV_BONUS;   // should be calculated after configuration files read
+
     private const int FIRE_DISTANCE_VS_RANGE_MODIFIER = 2;
     private const float FIRING_WHEN_STA_TIRED = 0.75f;
     private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
@@ -2509,7 +2516,7 @@ namespace djack.RogueSurvivor.Data
       if (IsExhausted) FOV -= 2;
       else if (IsSleepy) --FOV;
       MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
-      if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) ++FOV;
+      if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) FOV += FOV_BONUS_STANDING_ON_OBJECT;
       return Math.Max(MINIMAL_FOV, FOV);
     }
 
