@@ -7290,11 +7290,6 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         return false;
       }
-#if SPEEDY_GONZALES
-      if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-#else
-      if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-#endif
       if (isPlayer && exitAt.ToMap.District != map.District)
         BeforePlayerEnterDistrict(exitAt.ToMap.District);
       string reason = exitAt.ReasonIsBlocked(actor);
@@ -7302,13 +7297,22 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayer) AddMessage(MakeErrorMessage(reason));
         return true;
       }
+#if SPEEDY_GONZALES
+      if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+#else
+      if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+#endif
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
       map.Remove(actor);
       if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
-      exitAt.Location.Place(actor);
-      exitAt.ToMap.MoveActorToFirstPosition(actor); // XXX change target for NO_PEACE_WALLS; when entering a district that executes before ours we should be *last* -- if we can see what we're getting into
+      exitAt.Location.Place(actor); // Adds at last position by default
+#if NO_PEACE_WALLS
+      if (exitAt.ToMap.District == map.District) exitAt.ToMap.MoveActorToFirstPosition(actor); // If we can see what we're getting into, we shouldn't visibly double-move
+#else
+      exitAt.ToMap.MoveActorToFirstPosition(actor);
+#endif
       if (actor.DraggedCorpse != null) exitAt.Location.Add(actor.DraggedCorpse);
       if (ForceVisibleToPlayer(actor) || isPlayer)
       AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_ENTER), exitAt.ToMap.Name)));
