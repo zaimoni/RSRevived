@@ -381,7 +381,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
-      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>((Predicate<ItemRangedWeapon>) (rw => 0 >= rw.Ammo));
+      ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
       if (null != tmpRw2)
       {
          bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
@@ -393,14 +393,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
       if (null != tmpGrenade) return BehaviorDropItem(tmpGrenade);
 
+#if DEBUG
       // do not pick up trackers if it means dropping body armor or higher priority
       if (it is ItemTracker) return null;
 
       // body armor
       if (it is ItemBodyArmor) return null;
 
+      throw new InvalidOperationException("coverage hole of types in BehaviorMakeRoomFor");
+#else
       // give up
       return null;
+#endif
     }
 
     public bool IsInterestingItem(ItemAmmo am)
@@ -419,6 +423,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (it.IsForbiddenToAI) return false;
 	  if (it is ItemSprayPaint) return false;
 	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
+      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return false;
 
       // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
       if (Gameplay.GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI) && !(m_Actor.Controller is Gameplay.AI.SoldierAI)) return false;
@@ -473,19 +478,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == armor) return true;
         return armor.Rating < (it as ItemBodyArmor).Rating;
       }
-      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return false;
-      // If we got here, the item must not be a notably high priority item.  Stench killer known to have a want-can't-pickup loop.
-      if (0 >= m_Actor.Inventory.MaxCapacity - m_Actor.Inventory.CountItems) return false;
+
+      // No specific heuristic.
+      if (!m_Actor.CanGet(it) && null == BehaviorMakeRoomFor(it)) return false; // we already have many useful items
 
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
     }
 
     public virtual bool IsInterestingTradeItem(Actor speaker, Item offeredItem) // Cf. OrderableAI::IsRationalTradeItem
     {
-      Contract.Requires(null!=speaker);
-      Contract.Requires(speaker.Model.Abilities.CanTrade);
 #if DEBUG
-      Contract.Requires(Actor.Model.Abilities.CanTrade);
+      if (null == speaker) throw new ArgumentNullException(nameof(speaker));
+      if (!speaker.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(speaker)+" must be able to trade");
+      if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(nameof(m_Actor)+" must be able to trade");
 #endif
       if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
       return IsInterestingItem(offeredItem);
