@@ -8254,7 +8254,7 @@ namespace djack.RogueSurvivor.Engine
         obj = itemTrap2;
         if (itemTrap2.Model.ActivatesWhenDropped) itemTrap2.IsActivated = true;
         itemTrap1.IsActivated = false;
-#if DEBUG
+#if FALSE_POSITIVE
         if (!itemTrap2.IsActivated) throw new ArgumentOutOfRangeException(nameof(it)," trap being dropped intentionally must be activated");
 #endif
       };

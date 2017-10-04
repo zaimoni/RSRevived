@@ -72,6 +72,7 @@ namespace djack.RogueSurvivor.Data
       HashSet<Point> ret = new HashSet<Point>();
       foreach(Gameplay.GameItems.IDs it in src) {
         Dictionary<Location, int> tmp = WhereIs(it);
+        if (null == tmp) continue;
         tmp.OnlyIf(loc=>loc.Map == map);
         if (0 >= tmp.Count) continue;
         ret.UnionWith(tmp.Keys.Select(loc => loc.Position));
