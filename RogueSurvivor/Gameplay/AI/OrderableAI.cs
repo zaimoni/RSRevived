@@ -2348,6 +2348,51 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       return BehaviorIntelligentBumpToward(position);
     }
+
+    protected ActorAction BehaviorFindTrade(List<Percept> friends)
+    {
+#if DEBUG
+        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
+        if (!HasAnyTradeableItem()) throw new InvalidOperationException("must have something to trade away");
+#endif
+        Map map = m_Actor.Location.Map;
+        List<Item> TradeableItems = GetTradeableItems();  // iterating over friends next so m_Actor.GetInterestingTradeableItems(...) is inappropriate; do first half here
+        List<Percept> percepts2 = friends.FilterOut(p => {
+          if (p.Turn != map.LocalTime.TurnCounter) return true;
+          Actor actor = p.Percepted as Actor;
+          if (actor.IsPlayer) return true;
+          if (!m_Actor.CanTradeWith(actor)) return true;
+          if (IsActorTabooTrade(actor)) return true;
+          if (null == actor.GetRationalTradeableItems(this)) return true;   // XXX avoid Charisma check
+          if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
+          // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
+          return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
+        });
+        if (percepts2 != null) {
+          Actor actor = FilterNearest(percepts2).Percepted as Actor;
+          if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
+            ActorAction tmpAction = new ActionTrade(m_Actor, actor);
+            if (tmpAction.IsLegal()) {
+              MarkActorAsRecentTrade(actor);
+              RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
+              return tmpAction;
+            }
+          } else {
+            ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location.Position);
+            if (null != tmpAction) {
+              m_Actor.Activity = Activity.FOLLOWING;
+              m_Actor.TargetActor = actor;
+              // need an after-action "hint" to the target on where/who to go to
+              if (!m_Actor.WillActAgainBefore(actor)) {
+                int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
+                (actor.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
+              }
+              return tmpAction;
+            }
+         }
+       }
+      return null;
+    }
 #endregion
 
 #if FAIL
@@ -2380,8 +2425,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    // XXX arguably should be member function; doing this for code locality
-    protected static bool IsLegalPathingAction(ActorAction act)
+        // XXX arguably should be member function; doing this for code locality
+        protected static bool IsLegalPathingAction(ActorAction act)
     {
       if (act is ActionMoveStep) return true;
       if (act is ActionSwitchPlace) return true;

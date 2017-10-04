@@ -471,51 +471,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed");
         }
         if (Directives.CanTrade && HasAnyTradeableItem()) {
-          List<Item> TradeableItems = GetTradeableItems();  // iterating over friends next so m_Actor.GetInterestingTradeableItems(...) is inappropriate; do first half here
-          List<Percept> percepts2 = friends.FilterOut(p =>
-          {
-            if (p.Turn != map.LocalTime.TurnCounter)
-              return true;
-            Actor actor = p.Percepted as Actor;
-            if (actor.IsPlayer) return true;
-            if (!m_Actor.CanTradeWith(actor)) return true;
-            if (IsActorTabooTrade(actor)) return true;
-            if (null == actor.GetRationalTradeableItems(this)) return true;   // XXX avoid Charisma check
-            if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
-            // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
-            return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
-          });
-          if (percepts2 != null) {
-            Actor actor = FilterNearest(percepts2).Percepted as Actor;
-            if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
-              tmpAction = new ActionTrade(m_Actor, actor);
-              if (tmpAction.IsLegal()) {
-#if TRACE_SELECTACTION
-                if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "trading");
-#endif
-                MarkActorAsRecentTrade(actor);
-                RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
-                return tmpAction;
-              }
-            } else {
-              tmpAction = BehaviorIntelligentBumpToward(actor.Location.Position);
-              if (null != tmpAction) {
-#if TRACE_SELECTACTION
-                if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "preparing to trade");
-#endif
-                m_Actor.Activity = Activity.FOLLOWING;
-                m_Actor.TargetActor = actor;
-#if FAIL
-               // need an after-action "hint" to the target on where/who to go to
-               if (!m_Actor.WillActAgainBefore(actor)) {
-                 int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
-                 (actor.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
-                }
-#endif
-                return tmpAction;
-              }
-            }
-          }
+          tmpAction = BehaviorFindTrade(friends);
+          if (null != tmpAction) return tmpAction;
         }
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");
