@@ -220,7 +220,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
-        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point> { _dest.Location.Position });
+        IEnumerable<Point> dest_pts = Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
+        ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
         return ret?.IsLegal() ?? false;
       }
     }
