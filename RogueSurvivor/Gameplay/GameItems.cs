@@ -26,10 +26,47 @@ namespace djack.RogueSurvivor.Gameplay
     private static readonly Verb STRIKE = new Verb("strike");
 
     private static readonly ItemModel[] m_Models = new ItemModel[(int) IDs._COUNT];
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> ammo;
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> armor;
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> food;
-    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> melee;
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> ammo 
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.AMMO_LIGHT_PISTOL,
+            IDs.AMMO_HEAVY_PISTOL,
+            IDs.AMMO_SHOTGUN,
+            IDs.AMMO_LIGHT_RIFLE,
+            IDs.AMMO_HEAVY_RIFLE,
+            IDs.AMMO_BOLTS
+    });
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> armor
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.ARMOR_ARMY_BODYARMOR,
+            IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
+            IDs.ARMOR_HELLS_SOULS_JACKET,
+            IDs.ARMOR_FREE_ANGELS_JACKET,
+            IDs.ARMOR_POLICE_JACKET,
+            IDs.ARMOR_POLICE_RIOT,
+            IDs.ARMOR_HUNTER_VEST});
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> food 
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.FOOD_ARMY_RATION,
+            IDs.FOOD_GROCERIES,
+            IDs.FOOD_CANNED_FOOD});
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> melee
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.MELEE_BASEBALLBAT,
+            IDs.MELEE_COMBAT_KNIFE,
+            IDs.MELEE_CROWBAR,
+            IDs.UNIQUE_JASON_MYERS_AXE,
+            IDs.MELEE_HUGE_HAMMER,
+            IDs.MELEE_SMALL_HAMMER,
+            IDs.MELEE_GOLFCLUB,
+            IDs.MELEE_IRON_GOLFCLUB,
+            IDs.MELEE_SHOVEL,
+            IDs.MELEE_SHORT_SHOVEL,
+            IDs.MELEE_TRUNCHEON,
+            IDs.MELEE_IMPROVISED_CLUB,
+            IDs.MELEE_IMPROVISED_SPEAR});
+    public static readonly System.Collections.ObjectModel.ReadOnlyCollection<IDs> medicine
+    = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.MEDICINE_BANDAGES,
+        IDs.MEDICINE_MEDIKIT,
+        IDs.MEDICINE_PILLS_STA,
+        IDs.MEDICINE_PILLS_SLP,
+        IDs.MEDICINE_PILLS_SAN,
+        IDs.MEDICINE_PILLS_ANTIVIRAL});
 
     private GameItems.MedecineData DATA_MEDICINE_BANDAGE;
     private GameItems.MedecineData DATA_MEDICINE_MEDIKIT;
@@ -529,39 +566,6 @@ namespace djack.RogueSurvivor.Gameplay
       get {
         return m_Models[(int)IDs.UNIQUE_SUBWAY_BADGE];
       }
-    }
-
-    static GameItems()
-    {
-      ammo = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.AMMO_LIGHT_PISTOL,
-            IDs.AMMO_HEAVY_PISTOL,
-            IDs.AMMO_SHOTGUN,
-            IDs.AMMO_LIGHT_RIFLE,
-            IDs.AMMO_HEAVY_RIFLE,
-            IDs.AMMO_BOLTS});
-      armor = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.ARMOR_ARMY_BODYARMOR,
-            IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
-            IDs.ARMOR_HELLS_SOULS_JACKET,
-            IDs.ARMOR_FREE_ANGELS_JACKET,
-            IDs.ARMOR_POLICE_JACKET,
-            IDs.ARMOR_POLICE_RIOT,
-            IDs.ARMOR_HUNTER_VEST});
-      food = new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.FOOD_ARMY_RATION,
-            IDs.FOOD_GROCERIES,
-            IDs.FOOD_CANNED_FOOD});
-      melee= new System.Collections.ObjectModel.ReadOnlyCollection<IDs>(new List<IDs> { IDs.MELEE_BASEBALLBAT,
-            IDs.MELEE_COMBAT_KNIFE,
-            IDs.MELEE_CROWBAR,
-            IDs.UNIQUE_JASON_MYERS_AXE,
-            IDs.MELEE_HUGE_HAMMER,
-            IDs.MELEE_SMALL_HAMMER,
-            IDs.MELEE_GOLFCLUB,
-            IDs.MELEE_IRON_GOLFCLUB,
-            IDs.MELEE_SHOVEL,
-            IDs.MELEE_SHORT_SHOVEL,
-            IDs.MELEE_TRUNCHEON,
-            IDs.MELEE_IMPROVISED_CLUB,
-            IDs.MELEE_IMPROVISED_SPEAR});
     }
 
     public GameItems(IRogueUI ui)

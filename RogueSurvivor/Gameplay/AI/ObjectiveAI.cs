@@ -322,6 +322,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // light, traps, barricading, medical/entertainment, stench killer (civilians, screened at the interesting item check)
       // trackers (mainly because AI can't use properly), but cell phones are trackers
 
+      // dropping body armor to get a better one should be ok
+      if (it is ItemBodyArmor) {
+        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
+        if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) {
+          return BehaviorDropItem(armor);
+        }
+      }
+
+#if FAIL
+      foreach(GameItems.IDs x in GameItems.medicine) {
+        if (it.Model.ID == x) continue;
+      }
+#endif
+
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
       List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
@@ -336,29 +350,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemSprayScent) return null;
-      if (it is ItemLight) return null;
-      if (it is ItemTrap) return null;
-      if (it is ItemMedicine) return null;
-      if (it is ItemEntertainment) return null;
-      if (it is ItemBarricadeMaterial) return null;
-
-      // dropping body armor to get a better one should be ok
-      if (it is ItemBodyArmor) {
-        ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
-        if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) {
-          return BehaviorDropItem(armor);
-        }
-      }
-
-      // ditch unimportant items
       ItemSprayScent tmpSprayScent = inv.GetFirstMatching<ItemSprayScent>();
       if (null != tmpSprayScent) return BehaviorDropItem(tmpSprayScent);
+
+      if (it is ItemBarricadeMaterial) return null;
       ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>();
       if (null != tmpBarricade) return BehaviorDropItem(tmpBarricade);
-      ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>();
-      if (null != tmpTrap) return BehaviorDropItem(tmpTrap);
+
+      if (it is ItemEntertainment) return null;
       ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>();
       if (null != tmpEntertainment) return BehaviorDropItem(tmpEntertainment);
+
+      if (it is ItemTrap) return null;
+      ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>();
+      if (null != tmpTrap) return BehaviorDropItem(tmpTrap);
+
+      if (it is ItemLight) return null;
+      if (it is ItemMedicine) return null;
+
+      // ditch unimportant items
       ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>();
       if (null != tmpMedicine) return BehaviorDropItem(tmpMedicine);
 
