@@ -330,11 +330,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-#if FAIL
       foreach(GameItems.IDs x in GameItems.medicine) {
         if (it.Model.ID == x) continue;
+        ItemModel model = Models.Items[(int)x];
+        if (2>m_Actor.Count(model)) continue;
+        Item tmp = m_Actor.Inventory.GetBestDestackable(model);
+        if (null != tmp) return BehaviorDropItem(tmp);
       }
-#endif
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
       // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
