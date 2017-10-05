@@ -2120,39 +2120,34 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public _T_ GetFirstMatching<_T_>() where _T_ : Item // needed as null vacuum
+    {
+      return m_Inventory?.GetFirstMatching<_T_>();
+    }
+
     public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return null;
-      return m_Inventory.GetFirstMatching<_T_>(fn);
+      return m_Inventory?.GetFirstMatching<_T_>(fn);
     }
 
     public bool HasItemOfModel(ItemModel model)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      foreach (Item obj in m_Inventory.Items) {
-        if (obj.Model == model) return true;
-      }
-      return false;
+      return m_Inventory?.HasModel(model) ?? false;
+    }
+
+    public int Count(ItemModel model)
+    {
+      return m_Inventory?.Count(model) ?? 0;
     }
 
     public int CountItemsQuantityOfModel(ItemModel model)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
-      int num = 0;
-      foreach (Item obj in m_Inventory.Items) {
-        if (obj.Model == model) num += obj.Quantity;
-      }
-      return num;
+      return m_Inventory?.CountQuantityOf(model) ?? 0;
     }
 
-    public int CountItemQuantityOfType(Type tt)
+    public int CountQuantityOf<_T_>() where _T_ : Item
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
-      int num = 0;
-      foreach (Item obj in m_Inventory.Items) {
-        if (obj.GetType() == tt) num += obj.Quantity;
-      }
-      return num;
+      return m_Inventory?.CountQuantityOf<_T_>() ?? 0;
     }
 
     public int CountItemsOfSameType(Type tt)
@@ -2173,8 +2168,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool Has<_T_>() where _T_ : Item
     {
-      if (Inventory == null || Inventory.IsEmpty) return false;
-      return Inventory.Has<_T_>();
+      return m_Inventory?.Has<_T_>() ?? false;
     }
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
@@ -2185,13 +2179,12 @@ namespace djack.RogueSurvivor.Data
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public bool HasAtLeastFullStackOfItemTypeOrModel(Gameplay.GameItems.IDs it, int n)
+    public bool HasAtLeastFullStackOf(Gameplay.GameItems.IDs it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       ItemModel model = Models.Items[(int)it];
-      if (model.IsStackable)
-        return CountItemsQuantityOfModel(model) >= n * model.StackingLimit;
-      return CountItemsQuantityOfModel(model) >= n; // XXX assumes each model goes with a specific item type
+      if (model.IsStackable) return CountItemsQuantityOfModel(model) >= n * model.StackingLimit;
+      return Count(model) >= n; // XXX assumes each model goes with a specific item type
     }
 
     public ItemMeleeWeapon GetWorstMeleeWeapon()

@@ -1256,11 +1256,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!NeedsLight()) return false;
       ItemLight tmp = GetEquippedLight();
       if (null != tmp && !tmp.IsUseless) return true;
-      tmp = m_Actor.GetFirstMatching<ItemLight>((Predicate<ItemLight>)(it =>
-      {
-          if (!it.IsUseless) return !IsItemTaboo(it);
-          return false;
-      }));
+      tmp = m_Actor.GetFirstMatching<ItemLight>(it => !it.IsUseless && !IsItemTaboo(it));
       if (tmp != null && m_Actor.CanEquip(tmp)) {
         game.DoEquipItem(m_Actor, tmp);
         return true;
@@ -1291,7 +1287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (enemies == null || enemies.Count == 0) return null;
       if (enemies.Count < 3) return null;
-      ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>((Predicate<ItemGrenade>) (it => !IsItemTaboo(it)));
+      ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>(it => !IsItemTaboo(it));
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
       int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);

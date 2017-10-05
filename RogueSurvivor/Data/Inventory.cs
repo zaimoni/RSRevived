@@ -189,12 +189,38 @@ namespace djack.RogueSurvivor.Data
       return m_Items.Contains(it);
     }
 
+    public bool HasModel(ItemModel model)
+    {
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == model) return true;
+      }
+      return false;
+    }
+
     public Item GetFirstByModel(ItemModel model)
     {
       foreach (Item mItem in m_Items) {
         if (mItem.Model == model) return mItem;
       }
       return null;
+    }
+
+    public int Count(ItemModel model)
+    {
+      int num = 0;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == model) num++;
+      }
+      return num;
+    }
+
+    public int CountQuantityOf(ItemModel model)
+    {
+      int num = 0;
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == model) num += mItem.Quantity;
+      }
+      return num;
     }
 
     public bool Has<_T_>() where _T_ : Item
@@ -208,6 +234,15 @@ namespace djack.RogueSurvivor.Data
         if (it is _T_) return it as _T_;
       }
       return null;
+    }
+
+    public int CountQuantityOf<_T_>() where _T_ : Item
+    {
+      int num = 0;
+      foreach (Item it in m_Items) {
+        if (it is _T_) num += it.Quantity;
+      }
+      return num;
     }
 
     public bool Has(Gameplay.GameItems.IDs id)
@@ -232,7 +267,7 @@ namespace djack.RogueSurvivor.Data
       return tList;
     }
 
-/*
+#if DEAD_FUNC
     public Item GetFirstMatching(Predicate<Item> fn)
     {
       foreach (Item mItem in m_Items)
@@ -242,7 +277,7 @@ namespace djack.RogueSurvivor.Data
       }
       return (Item) null;
     }
-*/
+#endif
 
     public _T_ GetFirstMatching<_T_>() where _T_ : Item
     {

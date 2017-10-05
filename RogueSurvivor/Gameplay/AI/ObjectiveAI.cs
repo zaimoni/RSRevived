@@ -268,7 +268,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } // no action if the whole stack completely fits
 
       // not-best body armor can be dropped
-      if (2<=m_Actor.CountItemQuantityOfType(typeof (ItemBodyArmor))) {
+      if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
         ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
         if (null != armor) return BehaviorDropItem(armor);
       }
@@ -467,7 +467,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
         if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;
 
-        int melee_count = m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)); // XXX possibly obsolete
+        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
         if (2<= melee_count) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
@@ -560,7 +560,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach (GameItems.IDs am in GameItems.ammo) {
         if (m_Actor.GetCompatibleRangedWeapon(am) == null) continue;
-        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) continue;
+        if (m_Actor.HasAtLeastFullStackOf(am, 2)) continue;
         ret.Add(am);
       }
 
@@ -569,12 +569,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(GameItems.IDs melee in GameItems.melee) {
         ItemMeleeWeaponModel model = Models.Items[(int)melee] as ItemMeleeWeaponModel;
         if (m_Actor.MeleeWeaponAttack(model).Rating <= martial_arts.Rating) continue;
-        if (2<=m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon))) {
+        if (2<=m_Actor.CountQuantityOf<ItemMeleeWeapon>()) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           if (weapon.Model.Attack.Rating < model.Attack.Rating) ret.Add(melee);
           continue;
         }
-        if (1<= m_Actor.CountItemQuantityOfType(typeof(ItemMeleeWeapon)) && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
+        if (1<= m_Actor.CountQuantityOf<ItemMeleeWeapon>() && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
           ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
           if (null == weapon) {  // martial arts invalidates starting baton for police
             ret.Add(melee);
