@@ -323,14 +323,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // trackers (mainly because AI can't use properly), but cell phones are trackers
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
-      bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
+      // XXX this is triggering a coverage failure; we need to be more sophisticated about trackers
+      List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
       if (it is ItemTracker) {
-        bool tracker_ok = false;
-        if (wantCellPhone && GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID) tracker_ok = true;
-        if (!tracker_ok) return null;   // tracker normally not worth clearing a slot for
+        if (!ok_trackers.Contains(it.Model.ID)) return null;   // tracker normally not worth clearing a slot for
       }
       // ditch an unwanted tracker if possible
-      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !wantCellPhone || GameItems.IDs.TRACKER_CELL_PHONE != it2.Model.ID);
+      ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
       if (null != tmpTracker) return BehaviorDropItem(tmpTracker);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
@@ -426,13 +427,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return false;
 
       // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
-      if (Gameplay.GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI) && !(m_Actor.Controller is Gameplay.AI.SoldierAI)) return false;
+      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is CivilianAI) && !(m_Actor.Controller is SoldierAI)) return false;
 
       // only civilians use stench killer
-      if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
+      if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is CivilianAI)) return false;
 
       // police have implicit police trackers
-      if (Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && (int)Gameplay.GameFactions.IDs.ThePolice == m_Actor.Faction.ID) return false;
+      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && !!m_Actor.WantPoliceRadio) return false;
+      if (GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID && !m_Actor.WantCellPhone) return false;
 
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
       if (it is ItemFood) {
@@ -480,9 +482,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // No specific heuristic.
+      if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
       if (!m_Actor.CanGet(it) && null == BehaviorMakeRoomFor(it)) return false; // we already have many useful items
-
-      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
+      return true;
     }
 
     public virtual bool IsInterestingTradeItem(Actor speaker, Item offeredItem) // Cf. OrderableAI::IsRationalTradeItem

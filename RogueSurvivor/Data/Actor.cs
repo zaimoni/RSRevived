@@ -896,10 +896,30 @@ namespace djack.RogueSurvivor.Data
       return HypotheticalRangedAttack(CurrentRangedAttack, distance, target);
     }
 
+    public bool HasActiveCellPhone {
+      get {
+        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader && !it.IsUseless);
+      }
+    }
+
+    public bool HasCellPhone {
+      get {
+        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
+      }
+    }
+
+
     public bool HasActivePoliceRadio {
       get {
         if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
-        return (GetEquippedItem(DollPart.HIP_HOLSTER) as ItemTracker)?.CanTrackPolice ?? false;
+        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackPolice);  // charges on walking so won't stay useless
+      }
+    }
+
+    public bool HasPoliceRadio {
+      get {
+        if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return true;
+        return null != Inventory?.GetFirstMatching<ItemTracker>(it => it.CanTrackPolice);  // charges on walking so won't stay useless
       }
     }
 
@@ -907,6 +927,87 @@ namespace djack.RogueSurvivor.Data
     public bool HasActiveArmyRadio {
       get {
         if ((int)Gameplay.GameFactions.IDs.TheArmy==m_FactionID) return true;
+        return false;
+      }
+    }
+
+    public bool HasArmyRadio {
+      get {
+        if ((int)Gameplay.GameFactions.IDs.TheArmy==m_FactionID) return true;
+        return false;
+      }
+    }
+
+    public bool NeedActivePoliceRadio {
+      get {
+        if ((int)Gameplay.GameFactions.IDs.ThePolice==m_FactionID) return false; // implicit
+        // XXX disallow murderers under certain conditions, etc
+        Actor leader = LiveLeader;
+        if (null != leader) return leader.HasActivePoliceRadio;
+        if (0 >= CountFollowers) return false;
+        foreach(Actor fo in Followers) {
+          if (fo.HasPoliceRadio) return true;
+        }
+        return false;
+      }
+    }
+
+    public bool NeedActiveCellPhone {
+      get {
+        Actor leader = LiveLeader;
+        if (null != leader) {
+          return leader.HasActiveCellPhone;
+        }
+        if (0 < CountFollowers) {
+          foreach(Actor fo in Followers) {
+            if (fo.HasCellPhone) return true;
+          }
+        }
+        return false;
+      }
+    }
+
+    public bool WantPoliceRadio {
+      get {
+        if ((int)Gameplay.GameFactions.IDs.ThePolice == m_FactionID) return false; // police have implicit police radios
+        bool have_cellphone = HasCellPhone;
+        bool have_army = HasArmyRadio;
+        if (!have_cellphone && !have_army) return true;
+        Actor leader = LiveLeader;
+        if (null != leader) {
+          if (have_cellphone && leader.HasCellPhone) return false;
+          if (have_army && leader.HasArmyRadio) return false;
+          return true;
+        }
+        if (0 < CountFollowers) {
+          foreach(Actor fo in Followers) {
+            if (have_cellphone && fo.HasCellPhone) continue;
+            if (have_army && fo.HasArmyRadio) continue;
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+
+    public bool WantCellPhone {
+      get {
+        bool have_police = HasPoliceRadio;
+        bool have_army = HasArmyRadio;
+        if (!have_police && !have_army) return true;
+        Actor leader = LiveLeader;
+        if (null != leader) {
+          if (have_police && leader.HasPoliceRadio) return false;
+          if (have_army && leader.HasArmyRadio) return false;
+          return true;
+        }
+        if (0 < CountFollowers) {
+          foreach(Actor fo in Followers) {
+            if (have_police && fo.HasPoliceRadio) continue;
+            if (have_army && fo.HasArmyRadio) continue;
+            return true;
+          }
+        }
         return false;
       }
     }

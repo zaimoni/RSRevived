@@ -1271,25 +1271,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <returns>true if and only if a cell phone is required to be equipped</returns>
     protected bool BehaviorEquipCellPhone(RogueGame game)
     {
-      bool wantCellPhone = false;
-      if (m_Actor.CountFollowers > 0) wantCellPhone = true;
-      else if (m_Actor.HasLeader) {
-        ItemTracker itemTracker = m_Actor.Leader.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-        wantCellPhone = (null != itemTracker && itemTracker.CanTrackFollowersOrLeader);
-      }
-      else return false; // XXX could dial 911, at least while that desk is manned
-
+      bool wantCellPhone = m_Actor.NeedActiveCellPhone; // XXX could dial 911, at least while that desk is manned
       ItemTracker equippedCellPhone = m_Actor.GetEquippedCellPhone();
       if (equippedCellPhone != null) {
         if (wantCellPhone) return true;
         game.DoUnequipItem(m_Actor, equippedCellPhone);
       }
       if (!wantCellPhone) return false;
-      ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>(it =>
-      {
-        if (it.CanTrackFollowersOrLeader && 0 < it.Batteries) return !IsItemTaboo(it);
-        return false;
-      });
+      ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
       if (firstTracker != null && m_Actor.CanEquip(firstTracker)) {
         game.DoEquipItem(m_Actor, firstTracker);
         return true;
