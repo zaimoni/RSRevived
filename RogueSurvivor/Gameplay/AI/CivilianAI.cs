@@ -444,7 +444,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
-          if (m_Actor.Location.Position != p.Location.Position) {    // something wrong, e.g. iron gates in way
+          if (!m_Actor.MayTakeFromStackAt(p.Location.Position)) {    // something wrong, e.g. iron gates in way
             List<List<Point> > path = m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position);
             if (null == path) return true;
             if (!path[0].Any(pt=>null!=Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)))) return true;

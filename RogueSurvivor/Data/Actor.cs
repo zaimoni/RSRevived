@@ -2422,6 +2422,13 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
+    public bool MayTakeFromStackAt(Point pos)
+    {
+      if (Location.Position == pos) return true;
+      if (!Rules.IsAdjacent(Location.Position,pos)) return false;
+      return Location.Map.GetMapObjectAt(pos)?.IsContainer ?? false;
+    }
+
     private string ReasonCantGiveTo(Actor target, Item gift)
     {
       Contract.Requires(null != target);

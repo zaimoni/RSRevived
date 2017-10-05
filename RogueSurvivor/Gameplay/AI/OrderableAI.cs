@@ -130,7 +130,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         // expire if the offending item is not in LoS
         if (m_Actor.Controller.FOV.Select(pt => m_Actor.Location.Map.GetItemsAt(pt)).Any(inv => null!=inv && inv.Has(Avoid))) return false;
-        if (m_Actor.Inventory.Has(Avoid)) return false;
+//      if (m_Actor.Inventory.Has(Avoid)) return false; // checking whether this is actually needed
         _isExpired = true;  // but expire if the offending item is not in LOS or inventory
         return false;
       }
