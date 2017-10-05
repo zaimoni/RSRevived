@@ -482,8 +482,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemMedicine) {
         // XXX easy to action-loop if inventory full
         // this plausibly should actually check inventory-clearing options
-        if (0 >= m_Actor.Inventory.MaxCapacity - m_Actor.Inventory.CountItems) return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1);
-        return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+        if (!m_Actor.Inventory.IsFull) return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
       }
       if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
@@ -493,7 +492,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // No specific heuristic.
       if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
-      if (!m_Actor.CanGet(it) && null == BehaviorMakeRoomFor(it)) return false; // we already have many useful items
+      if (!m_Actor.CanGet(it)) {
+        if (m_Actor.Inventory.IsFull) return null != BehaviorMakeRoomFor(it);
+        return false;
+      }
       return true;
     }
 
