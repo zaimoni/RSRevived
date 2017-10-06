@@ -1926,12 +1926,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
       else if (lhs_low_priority) return false;
 
+      List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+
       bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
       if (rhs is ItemTracker)
         {
         if (!(lhs is ItemTracker)) return false;
-        if (wantCellPhone && (rhs as ItemTracker).CanTrackFollowersOrLeader) return true;
-        return false;
+        if (ok_trackers.Contains(lhs.Model.ID)) return false;
+        return ok_trackers.Contains(rhs.Model.ID);
         }
       else if (lhs is ItemTracker) return false;
 
