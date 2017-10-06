@@ -2085,8 +2085,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
-      ActorAction recover = ((!m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull) ? BehaviorMakeRoomFor(obj) : null);
-      if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
+      bool cant_get = !m_Actor.CanGet(obj);
+      bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
+      if (cant_get && null == recover) return null;
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = new ActionTakeItem(m_Actor, position, obj);
@@ -2120,8 +2122,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
-      ActorAction recover = ((!m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull) ? BehaviorMakeRoomFor(obj) : null);
-      if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
+      bool cant_get = !m_Actor.CanGet(obj);
+      bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
+      if (cant_get && null == recover) return null;
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
@@ -2139,9 +2143,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
-          if (recover is ActionDropItem) {
-            if (obj.Model.ID == (recover as ActionDropItem).Item.Model.ID) return null;
-            Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, (recover as ActionDropItem).Item.Model.ID));
+          if (recover is ActionDropItem drop) {
+            if (obj.Model.ID == drop.Item.Model.ID) return null;
+            Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
           }
           Objectives.Add(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
           return recover;

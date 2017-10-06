@@ -699,6 +699,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == victim) return false;
       if (victim.Model.Abilities.IsUndead) return false;
       if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersCounter > 0) return false;
+      if (killer.Model.Abilities.IsLawEnforcer && killer.Threats.IsThreat(victim)) return false;
       if (killer.Faction.IsEnemyOf(victim.Faction)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.

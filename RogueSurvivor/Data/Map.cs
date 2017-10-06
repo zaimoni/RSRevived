@@ -1066,6 +1066,18 @@ namespace djack.RogueSurvivor.Data
       return mapObjectAt;
     }
 
+    public int TrapsMaxDamageAt(Point pos)
+    {
+      Inventory itemsAt = GetItemsAt(pos);
+      if (itemsAt == null) return 0;
+      int num = 0;
+      foreach (Item obj in itemsAt.Items) {
+        if (obj is Engine.Items.ItemTrap trap) num += trap.Model.Damage;
+      }
+      return num;
+    }
+
+
     public void OpenAllGates()
     {
       foreach(MapObject obj in MapObjects) { 
@@ -1611,6 +1623,7 @@ namespace djack.RogueSurvivor.Data
               case Gameplay.GameActors.IDs.BIKER_MAN:
                 a_str = "<span style='background:darkorange;color:white'>"+a_str+"</span>"; break;
               case Gameplay.GameActors.IDs.POLICEMAN:
+              case Gameplay.GameActors.IDs.POLICEWOMAN:
                 a_str = "<span style='background:lightblue'>"+a_str+"</span>"; break;
               case Gameplay.GameActors.IDs.GANGSTA_MAN:
                 a_str = "<span style='background:red;color:white'>"+a_str+"</span>"; break;

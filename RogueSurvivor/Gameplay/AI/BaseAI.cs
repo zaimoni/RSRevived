@@ -264,7 +264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         float num = (float)Rules.StdDistance(ptA, ptB);
         if ((double) num >= (double) currentDistance) return float.NaN;
         if (!imStarvingOrCourageous) {
-          int trapsMaxDamage = ComputeTrapsMaxDamage(m_Actor.Location.Map, ptA);
+          int trapsMaxDamage = m_Actor.Location.Map.TrapsMaxDamageAt(ptA);
           if (trapsMaxDamage > 0) {
             if (trapsMaxDamage >= m_Actor.HitPoints) return float.NaN;
             num += 0.42f;
@@ -354,17 +354,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (equippedWeapon == bestMeleeWeapon) return null;
       game.DoEquipItem(m_Actor, bestMeleeWeapon);
       return null;
-    }
-
-    static protected int ComputeTrapsMaxDamage(Map map, Point pos)
-    {
-      Inventory itemsAt = map.GetItemsAt(pos);
-      if (itemsAt == null) return 0;
-      int num = 0;
-      foreach (Item obj in itemsAt.Items) {
-        if (obj is ItemTrap trap) num += trap.Model.Damage;
-      }
-      return num;
     }
 
     protected ActorAction BehaviorBuildTrap(RogueGame game)
@@ -489,7 +478,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 	  Dictionary<Point,int> trap_damage_field = new Dictionary<Point,int>();
 	  foreach (Point pt in src) {
-		trap_damage_field[pt] = ComputeTrapsMaxDamage(m_Actor.Location.Map, pt);
+		trap_damage_field[pt] = m_Actor.Location.Map.TrapsMaxDamageAt(pt);
 	  }
 	  IEnumerable<Point> safe = src.Where(pt => 0>=trap_damage_field[pt]);
 	  int new_dest = safe.Count();
@@ -868,7 +857,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location loc = m_Actor.Location + dir;
         Map map = loc.Map;
         Point position = loc.Position;
-        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && ComputeTrapsMaxDamage(map, position) >= m_Actor.HitPoints)
+        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && map.TrapsMaxDamageAt(position) >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += 1000;

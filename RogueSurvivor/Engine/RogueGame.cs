@@ -6332,6 +6332,9 @@ namespace djack.RogueSurvivor.Engine
       if (m_Player.IsAggressorOf(actor)) stringList.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
       if (actor.IsSelfDefenceFrom(m_Player)) stringList.Add("Killing you would be self-defence.");
       if (m_Player.AreIndirectEnemies(actor)) stringList.Add("You are enemies through relationships.");
+      if (m_Player.Model.Abilities.IsLawEnforcer && m_Player.Threats.IsThreat(actor)) {
+        stringList.Add("Is wanted for unspecified violent crimes.");
+      }
       stringList.Add("");
       string str = DescribeActorActivity(actor);
       stringList.Add(str ?? " ");
@@ -8760,6 +8763,7 @@ namespace djack.RogueSurvivor.Engine
       Actor m_Player_bak = m_Player;    // ForceVisibleToPlayer calls below can change this
 
       deadGuy.IsDead = true;
+      bool isMurder = Rules.IsMurder(killer, deadGuy);  // record this before it's invalidated
 	  deadGuy.Killed(reason);
       DoStopDragCorpse(deadGuy);
       UntriggerAllTrapsHere(deadGuy.Location);
@@ -8862,7 +8866,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (killer != null && Rules.IsMurder(killer, deadGuy)) {
+      if (killer != null && isMurder) {
         ++killer.MurdersCounter;
         if (killer.IsPlayer)
           Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Murdered {0} a {1}!", deadGuy.TheName, deadGuy.Model.Name));

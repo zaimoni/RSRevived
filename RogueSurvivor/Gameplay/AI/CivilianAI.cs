@@ -445,17 +445,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
           if (!m_Actor.MayTakeFromStackAt(p.Location.Position)) {    // something wrong, e.g. iron gates in way
+            // check for iron gates, etc in way
             List<List<Point> > path = m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position);
             if (null == path) return true;
             if (!path[0].Any(pt=>null!=Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)))) return true;
           }
-          return null==BehaviorWouldGrabFromStack(p.Location.Position, p.Percepted as Inventory);
+          return !BehaviorWouldGrabFromStack(p.Location.Position, p.Percepted as Inventory)?.IsLegal() ?? true;
         });
         if (perceptList2 != null) {
           Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
           tmpAction = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
-          if (null != tmpAction && tmpAction.IsLegal()) {
+          if (tmpAction?.IsLegal() ?? false) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
 #endif
