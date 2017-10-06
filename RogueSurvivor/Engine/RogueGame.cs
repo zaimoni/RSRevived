@@ -7478,9 +7478,18 @@ namespace djack.RogueSurvivor.Engine
       if (faction == GameFactions.ThePolice) {
         if (aggressor.Model.Abilities.IsLawEnforcer && !Rules.IsMurder(aggressor, target)) return;
         OnMakeEnemyOfCop(aggressor, target, wasAlreadyEnemy);
-      } else {
-        if (faction != GameFactions.TheArmy) return;
+      } else if (faction == GameFactions.TheArmy) {
         OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
+      }
+      Actor leader = target.LiveLeader;
+      if (null != leader) {
+        faction = leader.Faction;
+        if (faction == GameFactions.ThePolice) {
+          if (aggressor.Model.Abilities.IsLawEnforcer && !Rules.IsMurder(aggressor, target)) return;
+          OnMakeEnemyOfCop(aggressor, leader, wasAlreadyEnemy);
+        } else if (faction == GameFactions.TheArmy) {
+          OnMakeEnemyOfSoldier(aggressor, leader, wasAlreadyEnemy);
+        }
       }
     }
 
