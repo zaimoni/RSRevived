@@ -2685,7 +2685,8 @@ namespace djack.RogueSurvivor.Data
     public int SmellThreshold {
       get {
         if (IsSleeping) return -1;
-        return (OdorScent.MAX_STRENGTH+1) - (int) ((double)Smell * OdorScent.MAX_STRENGTH);
+        // Even a skill level of 1 will give a ZM a raw negative smell threshold.
+        return Math.Max(1,(OdorScent.MAX_STRENGTH+1) - (int) ((double)Smell * OdorScent.MAX_STRENGTH));
       }
     }
 

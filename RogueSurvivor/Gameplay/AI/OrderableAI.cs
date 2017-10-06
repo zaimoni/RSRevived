@@ -1969,6 +1969,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int weapon_rating = m_Actor.MeleeWeaponAttack(weapon.Model).Rating;
         if (weapon_rating <= martial_arts_rating) return BehaviorDropItem(weapon);
       }
+
+      ItemRangedWeapon rw = m_Actor.Inventory.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
+      if (null != rw) return BehaviorDropItem(rw);
+
       return null;
     }
 
