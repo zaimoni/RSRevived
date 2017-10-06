@@ -1066,7 +1066,7 @@ namespace djack.RogueSurvivor.Data
       return mapObjectAt;
     }
 
-    public int TrapsMaxDamageAt(Point pos)
+    public int TrapsMaxDamageAt(Point pos)  // XXX exceptionally likely to be a nonserialized cache target
     {
       Inventory itemsAt = GetItemsAt(pos);
       if (itemsAt == null) return 0;
