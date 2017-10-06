@@ -580,6 +580,11 @@ namespace djack.RogueSurvivor.Data
       OnModelSet();
     }
 
+    public void Retype(ActorModel model)
+    {
+      m_ModelID = model.ID;
+    }
+
     private void OnModelSet()
     {
       ActorModel model = Model;
