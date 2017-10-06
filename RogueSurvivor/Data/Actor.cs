@@ -2283,9 +2283,10 @@ namespace djack.RogueSurvivor.Data
 
     public List<Item> GetRationalTradeableItems(Gameplay.AI.OrderableAI buyer)    // only called from AI trading decision making
     {
-      Contract.Requires(Model.Abilities.CanTrade);
 #if DEBUG
-      Contract.Requires(buyer.Actor.Model.Abilities.CanTrade);
+      if (null == buyer) throw new ArgumentNullException(nameof(buyer));
+      if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
+      if (!buyer.Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(buyer.Actor.Name+" cannot trade");
 #endif
 
 //    if (buyer.IsPlayer) return Inventory.Items
@@ -2327,7 +2328,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantTradeWith(Actor target)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (target.IsPlayer) return "target is player";
       if (!Model.Abilities.CanTrade && target.Leader != this) return "can't trade";
       if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
@@ -2335,6 +2338,10 @@ namespace djack.RogueSurvivor.Data
       if (target.IsSleeping) return "is sleeping";
       if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
       if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
+      if (!IsPlayer) { 
+        if (null == target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI)) return "target unwilling to trade";
+        if (null == GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI)) return "unwilling to trade";
+      }
       return "";
     }
 

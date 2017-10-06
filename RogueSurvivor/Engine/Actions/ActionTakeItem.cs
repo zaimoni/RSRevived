@@ -7,7 +7,6 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -20,7 +19,10 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionTakeItem(Actor actor, Point position, Item it)
       : base(actor)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+      if (!(actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
+#endif
       m_Position = position;
       m_Item = it;
 #if DEBUG

@@ -8035,13 +8035,17 @@ namespace djack.RogueSurvivor.Engine
       target.Inventory.RemoveAllQuantity(trade);
       speaker.Inventory.AddAll(trade);
       target.Inventory.AddAll(itSpeaker);
+#if DEBUG
+      if (trade is ItemRangedWeapon rw && 2<=speaker.Inventory.Count(rw.Model)) throw new InvalidOperationException(speaker.Name+": duplicate ranged weapons");
+      if (itSpeaker is ItemRangedWeapon rw2 && 2<=target.Inventory.Count(rw2.Model)) throw new InvalidOperationException(target.Name+": duplicate ranged weapons");
+#endif
     }
 
     public void DoTrade(Actor speaker, Actor target)
     {   // precondition: !speaker.IsPlayer (need different implementation)
-      Contract.Requires(!speaker.IsPlayer);
-      Contract.Requires(!target.IsPlayer);  // strictly implied by Actor::CanTradeWith
 #if DEBUG
+      if (speaker.IsPlayer) throw new InvalidOperationException("player should use a supported pathway to trade with "+target.Name);
+      if (target.IsPlayer) throw new InvalidOperationException(speaker.Name+" cannot initiate trade with a player");
       if (!speaker.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
       Item trade = PickItemToTrade(speaker, target);
@@ -8162,7 +8166,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoTakeItem(Actor actor, Point position, Item it)
     {
-      Contract.Requires(actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? false);
+#if DEBUG
+      if (!actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
+#endif
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
@@ -8175,6 +8181,7 @@ namespace djack.RogueSurvivor.Engine
         DoEquipItem(actor, it);
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
+      if (it is ItemRangedWeapon rw && 2<=actor.Inventory.Count(rw.Model)) throw new InvalidOperationException(actor.Name+": duplicate ranged weapons");
 #endif
     }
 

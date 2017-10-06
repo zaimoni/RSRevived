@@ -722,32 +722,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // close to the inverse of IsInterestingItem
     public bool IsTradeableItem(Item it)
     {
-		Contract.Requires(null != it);
 #if DEBUG
-        Contract.Requires(Actor.Model.Abilities.CanTrade);
+        if (null == it) throw new ArgumentNullException(nameof(it));
+        if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(m_Actor.Name+" cannot trade");
 #endif
         if (it is ItemBodyArmor) return !it.IsEquipped; // XXX best body armor should be equipped
-        if (it is ItemFood)
+        if (it is ItemFood food)
             {
             if (!m_Actor.Model.Abilities.HasToEat) return true;
             if (m_Actor.IsHungry) return false;
             // only should trade away food that doesn't drop below threshold
-            ItemFood food = it as ItemFood;
             if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2 + food.Nutrition))
               return food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return true;
             }
-        if (it is ItemRangedWeapon)
+        if (it is ItemRangedWeapon rw)
             {
             if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
-            ItemRangedWeapon rw = it as ItemRangedWeapon;
             if (0 < rw.Ammo) return false;
             if (null != m_Actor.GetCompatibleAmmoItem(rw)) return false;
             return true;    // more work needed
             }
-        if (it is ItemAmmo)
+        if (it is ItemAmmo am)
             {
-            ItemAmmo am = it as ItemAmmo;
             if (m_Actor.GetCompatibleRangedWeapon(am) == null) return true;
             return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
             }
@@ -2163,9 +2160,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (p.Turn != map.LocalTime.TurnCounter) return true;
           Actor actor = p.Percepted as Actor;
           if (actor.IsPlayer) return true;
-          if (!m_Actor.CanTradeWith(actor)) return true;
           if (IsActorTabooTrade(actor)) return true;
-          if (null == actor.GetRationalTradeableItems(this)) return true;   // XXX avoid Charisma check
+          if (!m_Actor.CanTradeWith(actor)) return true;
           if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
           return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)

@@ -327,6 +327,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // medicine glut ... drop it
       foreach(GameItems.IDs x in GameItems.medicine) {
         if (it.Model.ID == x) continue;
         ItemModel model = Models.Items[(int)x];
