@@ -2084,7 +2084,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
-      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(obj) : null);
+      ActorAction recover = ((!m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull) ? BehaviorMakeRoomFor(obj) : null);
       if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
 
       // the get item checks do not validate that inventory is not full
@@ -2119,7 +2119,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
-      ActorAction recover = (m_Actor.Inventory.IsFull ? BehaviorMakeRoomFor(obj) : null);
+      ActorAction recover = ((!m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull) ? BehaviorMakeRoomFor(obj) : null);
       if (m_Actor.Inventory.IsFull && null == recover && !obj.Model.IsStackable) return null;
 
       // the get item checks do not validate that inventory is not full

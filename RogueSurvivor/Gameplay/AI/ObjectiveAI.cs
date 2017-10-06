@@ -258,14 +258,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
-      if (!m_Actor.Inventory.IsFull) throw new InvalidOperationException("already have room for items");
+      if (!m_Actor.Inventory.IsFull) throw new InvalidOperationException("already have room for "+it.ToString());
+      if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
 #endif
       Inventory inv = m_Actor.Inventory;
-      if (it.Model.IsStackable && it.CanStackMore) {
-         inv.GetItemsStackableWith(it, out int qty);
-         if (qty>=it.Quantity) return null;
-      } // no action if the whole stack completely fits
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
