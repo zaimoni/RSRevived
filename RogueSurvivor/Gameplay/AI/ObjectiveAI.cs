@@ -393,11 +393,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
       ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
-      if (null != tmpRw2)
-      {
+      if (null != tmpRw2) {
          bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
          if (!reloadable) return BehaviorDropItem(tmpRw2);
       }
+
+      // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
+      if (it is ItemMeleeWeapon || it is ItemFood) {
+        foreach(GameItems.IDs x in GameItems.ammo) {
+          ItemModel model = Models.Items[(int)x];
+          if (2<=m_Actor.Count(model)) {
+            ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
+            if (m_Actor.CanUse(ammo)) return new ActionUseItem(m_Actor, ammo);    // completeness; should not trigger due to above
+            return BehaviorDropItem(ammo);
+          }
+        }
+      }
+
+      // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
+      if (it is ItemAmmo && 1<=m_Actor.Count(it.Model)) return null;
 
       // grenades next
       if (it is ItemGrenade) return null;
