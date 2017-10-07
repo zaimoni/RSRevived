@@ -49,16 +49,37 @@ namespace djack.RogueSurvivor.Data
           lock(_threats) { return _threats.ContainsKey(a); }
         }
 
+#if DEAD_FUNC
 		public List<Actor> ThreatAt(Location loc)
 		{
 		  lock(_threats) {
 			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(loc.Map) && _threats[a][loc.Map].Contains(loc.Position)).ToList();
 		  }
 		}
+#endif
 
 		public HashSet<Point> ThreatWhere(Map map)
 		{
           HashSet<Point> ret = new HashSet<Point>();
+		  lock(_threats) {
+            foreach (var x in _threats) {
+              if (!x.Value.ContainsKey(map)) continue;
+              ret.UnionWith(x.Value[map]);
+            }
+		  }
+		  return ret;
+		}
+
+#if FAIL
+		public HashSet<Point> ThreatWhere(Map map, Rectangle view)
+		{
+          HashSet<Point> ret = new HashSet<Point>();
+          if (0> view.Left) {
+          } else if (map.Width <= view.Right) {
+          };
+          if (0 > view.Top) {
+          } else if (map.Height <= view.Bottom) {
+          }
 		  lock(_threats) {
             foreach (Actor a in _threats.Keys.Where(a => _threats[a].Keys.Contains(map))) {
               ret.UnionWith(_threats[a][map]);
@@ -66,13 +87,16 @@ namespace djack.RogueSurvivor.Data
 		  }
 		  return ret;
 		}
+#endif
 
-		public List<Actor> ThreatIn(Map map)
+#if DEAD_FUNC
+        public List<Actor> ThreatIn(Map map)
 		{
 		  lock(_threats) {
 			return _threats.Keys.Where(a=>_threats[a].Keys.Contains(map)).ToList();
 		  }
 		}
+#endif
 
         public void RecordSpawn(Actor a, Map m, IEnumerable<Point> pts)
         {
@@ -112,7 +136,7 @@ namespace djack.RogueSurvivor.Data
         public void Sighted(Actor a, Location loc)
         {
           lock(_threats) {
-		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
+            _threats[a] = new Dictionary<Map, HashSet<Point>>(1);
             _threats[a][loc.Map] = new HashSet<Point> { loc.Position };
           }
         }
@@ -136,14 +160,12 @@ namespace djack.RogueSurvivor.Data
         // cheating die handler
         private void HandleDie(object sender, Actor.DieArgs e)
         {
-          Contract.Requires(null!=(sender as Actor));
           lock(_threats) { _threats.Remove(sender as Actor); }
         }
 
         // cheating move handler
         private void HandleMove(object sender, EventArgs e)
         {
-          Contract.Requires(null != (sender as Actor));
           Actor moving = (sender as Actor);
           lock (_threats) {
             if (!_threats.ContainsKey(moving)) return;
