@@ -1533,11 +1533,11 @@ namespace djack.RogueSurvivor.Data
               ascii_map[y][x] = tree_symbol;
             } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
+            } else if (MapObject.IDs.CAR2 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
+            } else if (MapObject.IDs.CAR3 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
-            } else if (MapObject.IDs.CAR1 == tmp_obj.ID) {
+            } else if (MapObject.IDs.CAR4 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
               ascii_map[y][x] = "|"; // gate; iron wall
