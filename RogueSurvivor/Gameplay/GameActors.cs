@@ -263,7 +263,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           STD_LIVING | STD_HUMAN |
           Abilities.Flags.AI_CAN_USE_AI_EXITS),
           new ActorSheet(DATA_JASON_MYERS, NO_FOOD, NO_SLEEP, NO_SANITY, PUNCH, HUMAN_INVENTORY), typeof (InsaneHumanAI)));
-      _setModel(IDs.POLICEWOMAN, new ActorModel(null, DATA_POLICEWOMAN.NAME, DATA_POLICEWOMAN.PLURAL, DATA_POLICEWOMAN.SCORE, DATA_POLICEWOMAN.FLAVOR, new DollBody(true, DATA_POLICEWOMAN.SPD), new Abilities(
+      _setModel(IDs.POLICEWOMAN, new ActorModel(null, DATA_POLICEWOMAN.NAME, DATA_POLICEWOMAN.PLURAL, DATA_POLICEWOMAN.SCORE, DATA_POLICEWOMAN.FLAVOR, new DollBody(false, DATA_POLICEWOMAN.SPD), new Abilities(
           STD_LIVING | STD_HUMAN | STD_SANE |
           Abilities.Flags.CAN_TRADE | Abilities.Flags.HAS_TO_EAT | Abilities.Flags.AI_CAN_USE_AI_EXITS | Abilities.Flags.IS_LAW_ENFORCER),
           new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
