@@ -1525,6 +1525,9 @@ namespace djack.RogueSurvivor.Data
 #region map objects
           const string tree_symbol = "&#x2663;"; // unicode: card suit club looks enough like a tree
           const string car_symbol = "<span class='car'>&#x1F698;</span>";   // unicode: oncoming car
+          const string drawer_symbol = "&#x2584;";    // unicode: block elements
+          const string shop_shelf_symbol = "&#x25A1;";    // unicode: geometric shapes
+          const string large_fortification_symbol = "<span class='lfort'>&#x25A6;</span>";    // unicode: geometric shapes
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
@@ -1539,6 +1542,12 @@ namespace djack.RogueSurvivor.Data
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
             } else if (MapObject.IDs.CAR4 == tmp_obj.ID) {
               ascii_map[y][x] = car_symbol; // unicode: oncoming car
+            } else if (MapObject.IDs.DRAWER == tmp_obj.ID) {
+              ascii_map[y][x] = drawer_symbol;
+            } else if (MapObject.IDs.SHOP_SHELF == tmp_obj.ID) {
+              ascii_map[y][x] = shop_shelf_symbol;
+            } else if (MapObject.IDs.LARGE_FORTIFICATION == tmp_obj.ID) {
+              ascii_map[y][x] = large_fortification_symbol;
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
               ascii_map[y][x] = "|"; // gate; iron wall
             } else {
