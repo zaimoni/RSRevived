@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define POLICE_NO_QUESTIONS_ASKED
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
 using djack.RogueSurvivor.Engine.Items;
@@ -699,7 +701,9 @@ namespace djack.RogueSurvivor.Engine
       if (null == victim) return false;
       if (victim.Model.Abilities.IsUndead) return false;
       if (killer.Model.Abilities.IsLawEnforcer && victim.MurdersCounter > 0) return false;
+#if POLICE_NO_QUESTIONS_ASKED
       if (killer.Model.Abilities.IsLawEnforcer && killer.Threats.IsThreat(victim)) return false;
+#endif
       if (killer.Faction.IsEnemyOf(victim.Faction)) return false;
 
       // If your leader is a cop i.e. First Class Citizen, killing his enemies should not trigger murder charges.

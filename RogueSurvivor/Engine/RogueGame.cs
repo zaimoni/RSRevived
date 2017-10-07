@@ -12,6 +12,7 @@
 #define NO_PEACE_WALLS
 // #define SPEEDY_GONZALES
 #define FRAGILE_RENDERING
+// #define POLICE_NO_QUESTIONS_ASKED
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -6332,9 +6333,11 @@ namespace djack.RogueSurvivor.Engine
       if (m_Player.IsAggressorOf(actor)) stringList.Add(string.Format("You aggressed {0}.", HimOrHer(actor)));
       if (actor.IsSelfDefenceFrom(m_Player)) stringList.Add("Killing you would be self-defence.");
       if (m_Player.AreIndirectEnemies(actor)) stringList.Add("You are enemies through relationships.");
+#if POLICE_NO_QUESTIONS_ASKED
       if (m_Player.Model.Abilities.IsLawEnforcer && m_Player.Threats.IsThreat(actor)) {
         stringList.Add("Is wanted for unspecified violent crimes.");
       }
+#endif
       stringList.Add("");
       string str = DescribeActorActivity(actor);
       stringList.Add(str ?? " ");
@@ -7804,6 +7807,7 @@ namespace djack.RogueSurvivor.Engine
       if (itemGrenade == null) throw new InvalidOperationException("throwing grenade but no grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
+      // XXX fuse affected by whether target district executes before or after ours (need an extra turn if before)
       actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));
