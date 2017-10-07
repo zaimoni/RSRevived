@@ -7807,7 +7807,8 @@ namespace djack.RogueSurvivor.Engine
       if (itemGrenade == null) throw new InvalidOperationException("throwing grenade but no grenade equiped ");
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.Inventory.Consume(itemGrenade);
-      // XXX fuse affected by whether target district executes before or after ours (need an extra turn if before)
+      // XXX \todo fuse affected by whether target district executes before or after ours (need an extra turn if before)
+      // Cf. Map::DistrictDeltaCode
       actor.Location.Map.DropItemAtExt(new ItemGrenadePrimed(GameItems.Cast<ItemGrenadePrimedModel>(itemGrenade.PrimedModelID)), targetPos);
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(actor.Location.Map, targetPos)) return;
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(actor.Location), SIZE_OF_ACTOR)));

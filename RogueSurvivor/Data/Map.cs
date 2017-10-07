@@ -212,15 +212,10 @@ namespace djack.RogueSurvivor.Data
     {
       int ret = 0;
 
-      // XXX these thresholds chop off hearing ranges, etc.
-      if (-Engine.RogueGame.HALF_VIEW_WIDTH>pt.X) return 0;
-      else if (Width + Engine.RogueGame.HALF_VIEW_WIDTH <= pt.X) return 0;
-      else if (0>pt.X) ret -= 1;
+      if (0>pt.X) ret -= 1;
       else if (Width<=pt.X) ret += 1;
 
-      if (-Engine.RogueGame.HALF_VIEW_HEIGHT>pt.Y) return 0;
-      else if (Width + Engine.RogueGame.HALF_VIEW_HEIGHT <= pt.Y) return 0;
-      else if (0>pt.Y) ret -= 3;
+      if (0>pt.Y) ret -= 3;
       else if (Width<=pt.Y) ret += 3;
 
       return ret;
@@ -344,7 +339,7 @@ namespace djack.RogueSurvivor.Data
       if (0>=map_code) return null;
       if (map_code != loc.Map.District.UsesCrossDistrictView(loc.Map)) return null;
       Point district_delta = new Point(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
-      if (-1 > district_delta.X || 1 < district_delta.X) return null;
+      if (-1 > district_delta.X || 1 < district_delta.X) return null;   // XXX \todo fails for minimap if district size < 50
       if (-1 > district_delta.Y || 1 < district_delta.Y) return null;
       Point not_in_bounds = loc.Position;
       switch(district_delta.X)
