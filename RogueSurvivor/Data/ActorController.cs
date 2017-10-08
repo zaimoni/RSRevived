@@ -86,12 +86,15 @@ namespace djack.RogueSurvivor.Data
     // vision
     public abstract HashSet<Point> FOV { get; }
 
-    public bool CanSee(Location x)
+    public bool CanSee(Location x)  // correctness requires Location being value-copied
     {
       if (null == m_Actor) return false;
       if (null == x.Map) return false;    // convince Duckman to not superheroically crash many games on turn 0
-      if (x.Map != m_Actor.Location.Map) return false;  // revise these two when restricted district exits go away
-      if (!x.Map.IsInBounds(x.Position)) return false;
+      if (x.Map != m_Actor.Location.Map) {
+        Location? test = m_Actor.Location.Map.Denormalize(x);
+        if (null == test) return false;
+        x = test.Value;
+      }
       if (x.Position == m_Actor.Location.Position) return true; // for GUI purposes can see oneself even if sleeping.
       if (m_Actor.IsSleeping) return false;
       return FOV?.Contains(x.Position) ?? false;

@@ -2448,6 +2448,15 @@ namespace djack.RogueSurvivor.Engine
       return x != num2 || y != num2 ? 1f : 0.5f;
     }
 
+    // Refugees are up for a rethinking anyway (i.e., how do they get there)
+    // They currently use the same ley-line behavior as the undead invasion (indeed, all livings do)
+    // Ultimately, we would want to model both helicopters (supply drops, Blackops, possibly National Guard),
+    // gas/diesel motorcycles (Bikers), and gas/diesel car-like vehicles (Gangters, Survivors, possibly National Guard)
+    // note that there are no gas/diesel stations in town, so there must be one reasonably close outside of 
+    // the CHAR company town city limits to enable the gas/diesel vehicles to even get here.
+
+    // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map that was physically disconnected from the surface, from 
+    // their point of view.  It also artificially complicated using the subway as a safehouse.)
     private void FireEvent_RefugeesWave(District district)
     {
       if (district == m_Player.Location.Map.District && !m_Player.IsSleeping && !m_Player.Model.Abilities.IsUndead) {
