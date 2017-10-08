@@ -1581,7 +1581,7 @@ namespace djack.RogueSurvivor.Data
               inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");
             }
             ascii_map[y][x] = "&"; // Angband/Nethack pile.
-                    }
+          }
 #endregion
 #region actors
           Actor a = GetActorAt(x,y);

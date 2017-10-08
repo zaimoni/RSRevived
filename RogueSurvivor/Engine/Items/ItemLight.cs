@@ -49,5 +49,10 @@ namespace djack.RogueSurvivor.Engine.Items
     {
       Batteries += Math.Max(WorldTime.TURNS_PER_HOUR, Model.MaxBatteries/8);
     }
+
+    public override string ToString()
+    {
+      return Model.ID.ToString()+ string.Format(" {0}/{1} ({2}h)", Batteries, MaxBatteries, (Batteries / WorldTime.TURNS_PER_HOUR));
+    }
   }
 }

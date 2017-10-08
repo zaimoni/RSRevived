@@ -60,5 +60,10 @@ namespace djack.RogueSurvivor.Engine.Items
       BestBefore = new WorldTime(bestBefore);
       IsPerishable = true;
     }
+
+    public override string ToString()
+    {
+      return Model.ID.ToString()+(IsPerishable ? " (" + BestBefore.ToString() + ")" : "");
+    }
   }
 }
