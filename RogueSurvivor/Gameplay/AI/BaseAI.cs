@@ -557,11 +557,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         sights_to_see = null;
       }
 
-	  if (null != threats && 2<=tmp.Count) {
-        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+
+      if (null != threats && 2<=tmp.Count) {
+        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
 	  }
 	  if (null != sights_to_see && 2<=tmp.Count) {
-        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map);
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
 	  }
 
@@ -621,11 +624,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         sights_to_see = null;
       }
 
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+
 	  if (null != threats && 2<=tmp2.Count) {
-        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map), new_los, hypothetical_los);
+        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
 	  }
 	  if (null != sights_to_see && 2<=tmp2.Count) {
-        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map);
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
         if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
 	  }
 
