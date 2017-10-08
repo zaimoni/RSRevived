@@ -297,10 +297,15 @@ namespace djack.RogueSurvivor.Data
     }
     // end placeholder for define-controlled redefinitions
 
+    static public int UsesCrossDistrictView(Map m)
+    {
+      return m.District.UsesCrossDistrictView(m);
+    }
+
     public Location? Normalize(Point pt)
     {
       if (IsInBounds(pt)) return null;
-      int map_code = District.UsesCrossDistrictView(this);
+      int map_code = UsesCrossDistrictView(this);
       if (0>=map_code) return null;
       int delta_code = DistrictDeltaCode(pt);
       if (0==delta_code) return null;
@@ -335,9 +340,9 @@ namespace djack.RogueSurvivor.Data
     {
       if (this == loc.Map && IsValid(loc.Position)) return loc;
 #if NO_PEACE_WALLS
-      int map_code = District.UsesCrossDistrictView(this);
+      int map_code = UsesCrossDistrictView(this);
       if (0>=map_code) return null;
-      if (map_code != loc.Map.District.UsesCrossDistrictView(loc.Map)) return null;
+      if (map_code != UsesCrossDistrictView(loc.Map)) return null;
       Point district_delta = new Point(loc.Map.District.WorldPosition.X-District.WorldPosition.X, loc.Map.District.WorldPosition.Y - District.WorldPosition.Y);
       if (-1 > district_delta.X || 1 < district_delta.X) return null;   // XXX \todo fails for minimap if district size < 50
       if (-1 > district_delta.Y || 1 < district_delta.Y) return null;

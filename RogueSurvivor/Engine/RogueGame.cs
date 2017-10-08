@@ -9776,7 +9776,7 @@ namespace djack.RogueSurvivor.Engine
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
       // XXX these two aren't cross-district
-      HashSet<Point> tainted = threats?.ThreatWhere(map) ?? new HashSet<Point>();   // XXX needs to take MapViewRect as a parameter
+      HashSet<Point> tainted = threats?.ThreatWhere(map, m_MapViewRect) ?? new HashSet<Point>();
       HashSet<Point> tourism = sights_to_see?.In(map) ?? new HashSet<Point>();      // XXX needs to take MapViewRect as a parameter
 
       Point point = new Point();

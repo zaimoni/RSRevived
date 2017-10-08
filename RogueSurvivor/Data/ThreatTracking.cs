@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -70,24 +69,58 @@ namespace djack.RogueSurvivor.Data
 		  return ret;
 		}
 
-#if FAIL
-		public HashSet<Point> ThreatWhere(Map map, Rectangle view)
+		public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
 		{
           HashSet<Point> ret = new HashSet<Point>();
+          Zaimoni.Data.Dataflow<Map,int> crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
+          Point pos = map.District.WorldPosition;   // only used in denormalized cases
           if (0> view.Left) {
-          } else if (map.Width <= view.Right) {
+            if (0<pos.X && 0<crossdistrict_ok.Get) {
+              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X-1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(map.Width+view.Left,view.Top,-view.Left,view.Height));
+              foreach(Point pt in tmp) ret.Add(new Point(pt.X-map.Width,pt.Y));
+            }
+            view.Width += view.Left;
+            view.X = 0;
+          };
+          if (map.Width < view.Right) {
+            int new_width = map.Width-view.Left;
+            if (Engine.Session.Get.World.Size>pos.X+1 && 0<crossdistrict_ok.Get) {
+              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X+1,pos.Y].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(0,view.Top,view.Width-new_width,view.Height));
+              foreach(Point pt in tmp) ret.Add(new Point(pt.X+map.Width,pt.Y));
+            }
+            view.Width = new_width;
           };
           if (0 > view.Top) {
-          } else if (map.Height <= view.Bottom) {
-          }
-		  lock(_threats) {
-            foreach (Actor a in _threats.Keys.Where(a => _threats[a].Keys.Contains(map))) {
-              ret.UnionWith(_threats[a][map]);
+            if (0<pos.Y && 0<crossdistrict_ok.Get && 3!= crossdistrict_ok.Get) {
+              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,map.Height+view.Top,view.Width,-view.Top));
+              foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
             }
+            view.Height += view.Top;
+            view.X = 0;
+          };
+          if (map.Height < view.Bottom) {
+            int new_height = map.Height-view.Top;
+            if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get && 3 != crossdistrict_ok.Get) {
+              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
+              foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
+            }
+            view.Height = new_height;
+          };
+		  lock(_threats) {
+            HashSet<Point> tmp = new HashSet<Point>();
+            foreach (var x in _threats) {
+              if (!x.Value.ContainsKey(map)) continue;
+              tmp.UnionWith(x.Value[map]);
+            }
+            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
+            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
+            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
+            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
+            if (0 >= ret.Count) ret = tmp;
+            else ret.UnionWith(tmp);
 		  }
 		  return ret;
 		}
-#endif
 
 #if DEAD_FUNC
         public List<Actor> ThreatIn(Map map)

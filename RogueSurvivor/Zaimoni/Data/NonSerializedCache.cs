@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Zaimoni.Data
 {
@@ -30,4 +27,35 @@ namespace Zaimoni.Data
             m_invalidate?.Invoke(m_src);
         }
     }   // NonSerializedCache
+
+    class Dataflow<src,T> where T : struct
+    {
+        private src m_src;
+        private T? m_cache;
+        private readonly Func<src,T> m_bootstrap;
+        private readonly Action<src> m_invalidate;
+
+        public Dataflow(src x, Func<src,T> bootstrap, Action<src> invalidate = null)
+        {
+#if DEBUG
+            if (null == x) throw new ArgumentNullException(nameof(x));
+            if (null == bootstrap) throw new ArgumentNullException(nameof(bootstrap));
+#endif
+            m_src = x;
+            m_bootstrap = bootstrap;
+            m_invalidate = invalidate;
+        }
+
+        public T Get {
+            get {
+                if (null == m_cache) m_cache = m_bootstrap(m_src);
+                return m_cache.Value;
+            }
+        }
+
+        public void Recalc() {
+            m_cache = null;
+            m_invalidate?.Invoke(m_src);
+        }
+    }   // Dataflow
 }
