@@ -1533,6 +1533,7 @@ namespace djack.RogueSurvivor.Data
           const string drawer_symbol = "&#x2584;";    // unicode: block elements
           const string shop_shelf_symbol = "&#x25A1;";    // unicode: geometric shapes
           const string large_fortification_symbol = "<span class='lfort'>&#x25A6;</span>";    // unicode: geometric shapes
+          const string power_symbol = "&#x2B4D;";    // unicode: misc symbols & arrows
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
@@ -1553,6 +1554,8 @@ namespace djack.RogueSurvivor.Data
               ascii_map[y][x] = shop_shelf_symbol;
             } else if (MapObject.IDs.LARGE_FORTIFICATION == tmp_obj.ID) {
               ascii_map[y][x] = large_fortification_symbol;
+            } else if (MapObject.IDs.CHAR_POWER_GENERATOR == tmp_obj.ID) {
+              ascii_map[y][x] = power_symbol;
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
               ascii_map[y][x] = "|"; // gate; iron wall
             } else {

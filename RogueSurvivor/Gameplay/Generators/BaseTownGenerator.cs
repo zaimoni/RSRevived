@@ -2225,7 +2225,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap, Block policeBlock, Point exitPos)
     {
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, 20, 20, Lighting.DARKNESS);
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, 20, 20, Lighting.LIT);
 
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
@@ -2262,22 +2262,30 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             map.DropItemAt(stock_armory(), pt);
           });
           map.AddZone(MakeUniqueZone("security", rect3));
-        } else {    // \todo override top-left one to have a generator rather than furniture
-                    // \todo try to leave a non-jumping path to the doors
-          TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
-          TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
-          PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
-          MapObjectPlaceInGoodPosition(map, rect3, pt => {
-            return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
-          }, m_DiceRoller, pt => MakeObjTable(GameImages.OBJ_TABLE));
-          MapObjectPlaceInGoodPosition(map, rect3, pt => {
-            return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
-          }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
-          MapObjectPlaceInGoodPosition(map, rect3, pt => {
-            return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
-          }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
-          map.AddZone(MakeUniqueZone("office", rect3));
+          continue;
         }
+        // \todo try to leave a non-jumping path to the doors
+        TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
+        TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
+        PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
+        // top-left room has generator rather than furniture.  At Day 0 turn 0 it is on for backstory and gameplay reasons.
+        if (0 == rect2.Top && 3 == rect2.Left) {
+          PowerGenerator power = MakeObjPowerGenerator();
+          power.TogglePower();
+          map.PlaceAt(power, new Point(1,6)); // close, but not so close that using it keeps the door from auto-locking
+          continue;
+        }
+        // \todo genenrator goes in the office with left-top 3,0
+        MapObjectPlaceInGoodPosition(map, rect3, pt => {
+          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
+        }, m_DiceRoller, pt => MakeObjTable(GameImages.OBJ_TABLE));
+        MapObjectPlaceInGoodPosition(map, rect3, pt => {
+          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
+        }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
+        MapObjectPlaceInGoodPosition(map, rect3, pt => {
+          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
+        }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
+        map.AddZone(MakeUniqueZone("office", rect3));
       }
       DoForEachTile(new Rectangle(1, 1, 1, map.Height - 2), pt => {
         if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3) return;
@@ -2293,7 +2301,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Map GeneratePoliceStation_JailsLevel(Map surfaceMap)
     {
       const int JAILS_WIDTH = 22;
-      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, JAILS_WIDTH, 6, Lighting.DARKNESS);
+      Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Jails", surfaceMap.District, JAILS_WIDTH, 6, Lighting.LIT);
       TileFill(map, GameTiles.FLOOR_TILES, true);
       TileRectangle(map, GameTiles.WALL_POLICE_STATION, map.Rect);
       List<Rectangle> rectangleList = new List<Rectangle>();

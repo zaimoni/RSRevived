@@ -161,6 +161,7 @@ namespace djack.RogueSurvivor.Data
         if (0 < (m_SubwayMap?.PowerGenerators.Get.Count ?? 0)) return true;
         // The hospital doesn't count, here.
         // The police station is arguable, but the plot consequences are such that the current generator in the jails shouldn't count.
+        if (this == Engine.Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District) return true;  // \todo when power door locks go in this becomes accessible only to police
         return false;
       }
     }

@@ -12211,6 +12211,27 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+      if (map == Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap) {
+        lock (Session.Get) {
+          if (1.0 <= map.PowerRatio) {
+            if (0 < map.PlayerCount) {
+              ClearMessages();
+              AddMessage(new Data.Message("The lights turn on.", map.LocalTime.TurnCounter, Color.Green));
+              RedrawPlayScreen();
+            }
+            Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.Illuminate(true);
+            Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap.Illuminate(true);
+          } else {
+            if (0 < map.PlayerCount) {
+              ClearMessages();
+              AddMessage(new Data.Message("The lights turn off.", map.LocalTime.TurnCounter, Color.Green));
+              RedrawPlayScreen();
+            }
+            Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.Illuminate(false);
+            Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap.Illuminate(false);
+          }
+        }
+      }
       if (map == Session.Get.UniqueMaps.PoliceStation_JailsLevel.TheMap) {
         lock (Session.Get) {
           if (1.0 <= map.PowerRatio) {
