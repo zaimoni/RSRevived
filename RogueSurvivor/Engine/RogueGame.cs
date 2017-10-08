@@ -9775,9 +9775,8 @@ namespace djack.RogueSurvivor.Engine
       LocationSet sights_to_see = m_Player.InterestingLocs;
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
-      // XXX these two aren't cross-district
       HashSet<Point> tainted = threats?.ThreatWhere(map, m_MapViewRect) ?? new HashSet<Point>();
-      HashSet<Point> tourism = sights_to_see?.In(map) ?? new HashSet<Point>();      // XXX needs to take MapViewRect as a parameter
+      HashSet<Point> tourism = sights_to_see?.In(map, m_MapViewRect) ?? new HashSet<Point>();
 
       Point point = new Point();
       bool isUndead = m_Player.Model.Abilities.IsUndead;
