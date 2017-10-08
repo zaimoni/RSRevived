@@ -503,6 +503,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return subway;
     }
 
+    // XXX object orientation would lift this to BaseMapGenerator, starting a chain reaction of object orientation related changes.
+    // Deferring until a non-town map is needed (something outside of city limits...National Guard base or the gas station supplying the bikers and gangsters)
     private void QuadSplit(Rectangle rect, int minWidth, int minHeight, out int splitX, out int splitY, out Rectangle topLeft, out Rectangle topRight, out Rectangle bottomLeft, out Rectangle bottomRight)
     {
       int width1 = m_DiceRoller.Roll(rect.Width / 3, 2 * rect.Width / 3);

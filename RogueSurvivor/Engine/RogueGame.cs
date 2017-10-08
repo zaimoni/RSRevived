@@ -12221,7 +12221,7 @@ namespace djack.RogueSurvivor.Engine
             }
             map.OpenAllGates();
             // even if we missed talking to the Prisoner Who Should Not Be, make sure he'll think of thanking us if not an enemy
-            if (0 == Session.Get.ScriptStage_PoliceStationPrisoner) Session.Get.ScriptStage_PoliceStationPrisoner = 0;
+            if (0 == Session.Get.ScriptStage_PoliceStationPrisoner) Session.Get.ScriptStage_PoliceStationPrisoner = 1;
           } else {
             if (0 < map.PlayerCount) {
               ClearMessages();
