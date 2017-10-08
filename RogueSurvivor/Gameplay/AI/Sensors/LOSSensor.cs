@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           has_threat.Add(pt);
         }
         // ensure fact what is in sight is current, is recorded
-		threats.Cleared(m_Actor.Location.Map,new HashSet<Point>(FOV.Except(has_threat)));
+		threats.Cleared(m_Actor.Location.Map,FOV.Except(has_threat));
     }
 
     private void _seeItems(List<Percept> perceptList)

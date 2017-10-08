@@ -174,15 +174,77 @@ namespace djack.RogueSurvivor.Data
           }
         }
 
-		public void Cleared(Map m, HashSet<Point> pts)
+		public void Cleared(Map m, IEnumerable<Point> pts)
         {
           lock(_threats) {
-            foreach (Actor a in _threats.Keys.ToList().Where(a=>_threats[a].ContainsKey(m))) {
-			  _threats[a][m] = new HashSet<Point>(_threats[a][m].Except(pts));
-			  if (0 >= _threats[a][m].Count) _threats[a].Remove(m);
-			  if (0 >= _threats[a].Count) _threats.Remove(a);	// should not happen
-			}
+            foreach(var x in _threats) {
+              if (!x.Value.ContainsKey(m)) continue;
+              x.Value[m].ExceptWith(pts);
+              if (0 >= x.Value[m].Count) {
+                x.Value.Remove(m);
+#if DEBUG
+                if (0 >= x.Value.Count) throw new InvalidOperationException(x.Key.Name+" inferred to be nowhere");
+#endif
+              }
+            }
           }
+          // FOV is small compared to district size so will not overflow both ways
+          int crossdistrict_ok = Map.UsesCrossDistrictView(m);
+          if (0 >= crossdistrict_ok) return;
+          Point pos = m.District.WorldPosition;   // only used in denormalized cases
+          List<Point> invalid_xy = new List<Point>(pts.Count());
+          List<Point> invalid_x = new List<Point>(pts.Count());
+          List<Point> invalid_y = new List<Point>(pts.Count());
+          int x_delta = 0;
+          int y_delta = 0;
+          foreach(Point pt in pts) {
+                if (0 > pt.X) {
+                  if (0 >= pos.X) continue;
+                  x_delta = -1;
+                  if (0 > pt.Y) {
+                    if (3 == crossdistrict_ok) continue;
+                    if (0 >= pos.Y) continue;
+                    y_delta = -1;
+                    invalid_xy.Add(new Point(pt.X+m.Width,pt.Y+m.Height));
+                  } else if (m.Height <= pt.Y) {
+                    if (3 == crossdistrict_ok) continue;
+                    if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
+                    y_delta = 1;
+                    invalid_xy.Add(new Point(pt.X+m.Width,pt.Y-m.Height));
+                  } else {
+                    invalid_x.Add(new Point(pt.X+m.Width,pt.Y));
+                  }
+                } else if (m.Width <= pt.X) {
+                  if (Engine.Session.Get.World.Size <= pos.X+1) continue;
+                  x_delta = 1;
+                  if (0 > pt.Y) {
+                    if (3 == crossdistrict_ok) continue;
+                    if (0 >= pos.Y) continue;
+                    y_delta = -1;
+                    invalid_xy.Add(new Point(pt.X-m.Width,pt.Y+m.Height));
+                  } else if (m.Height <= pt.Y) {
+                    if (3 == crossdistrict_ok) continue;
+                    if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
+                    y_delta = 1;
+                    invalid_xy.Add(new Point(pt.X-m.Width,pt.Y-m.Height));
+                  } else {
+                    invalid_x.Add(new Point(pt.X-m.Width,pt.Y));
+                  }
+                } else if (3 == crossdistrict_ok) continue;
+                else if (0 > pt.Y) {
+                  if (0 >= pos.Y) continue;
+                  y_delta = -1;
+                  invalid_y.Add(new Point(pt.X,pt.Y+m.Height));
+                } else if (m.Height <= pt.Y) {
+                  if (Engine.Session.Get.World.Size <= pos.Y+1) continue;
+                  y_delta = 1;
+                  invalid_y.Add(new Point(pt.X,pt.Y-m.Height));
+                }
+          }
+          if (0==x_delta && 0==y_delta) return;
+          if (0<invalid_x.Count) Cleared(Engine.Session.Get.World[pos.X+x_delta,pos.Y].CrossDistrictViewing(crossdistrict_ok),invalid_x);
+          if (0<invalid_y.Count) Cleared(Engine.Session.Get.World[pos.X,pos.Y+y_delta].CrossDistrictViewing(crossdistrict_ok),invalid_y);
+          if (0<invalid_xy.Count) Cleared(Engine.Session.Get.World[pos.X+x_delta,pos.Y+y_delta].CrossDistrictViewing(crossdistrict_ok),invalid_xy);
         }
 
         public void Cleared(Actor a)
