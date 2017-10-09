@@ -2272,7 +2272,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (0 == rect2.Top && 3 == rect2.Left) {
           PowerGenerator power = MakeObjPowerGenerator();
           power.TogglePower();
-          map.PlaceAt(power, new Point(1,6)); // close, but not so close that using it keeps the door from auto-locking
+          map.PlaceAt(power, new Point(6,1)); // close, but not so close that using it keeps the door from auto-locking
           continue;
         }
         // \todo genenrator goes in the office with left-top 3,0

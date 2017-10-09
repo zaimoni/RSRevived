@@ -582,7 +582,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // direct move cost adapter; note reference copy of parameter
     protected ActorAction DecideMove(Dictionary<Point,int> dests)
 	{
-	  Contract.Requires(null != dests);
+#if DEBUG
+      if (null == dests) throw new ArgumentNullException(nameof(dests));
+#endif
+      if (0 >= dests.Count) return null;
       int min_cost = dests.Values.Min();
       dests.OnlyIf(val => min_cost>=val);
       return DecideMove(dests.Keys);

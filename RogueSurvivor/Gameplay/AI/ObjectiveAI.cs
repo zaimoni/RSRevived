@@ -436,6 +436,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool IsInterestingItem(ItemAmmo am)
     {
       if (m_Actor.GetCompatibleRangedWeapon(am) == null) return false;
+      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon)) + m_Actor.CountItemsOfSameType(typeof(ItemAmmo))) return false;
       return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2);
     }
       

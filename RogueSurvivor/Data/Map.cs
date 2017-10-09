@@ -213,10 +213,10 @@ namespace djack.RogueSurvivor.Data
       int ret = 0;
 
       if (0>pt.X) ret -= 1;
-      else if (Width<=pt.X) ret += 1;
+      else if (Width <= pt.X) ret += 1;
 
       if (0>pt.Y) ret -= 3;
-      else if (Width<=pt.Y) ret += 3;
+      else if (Height <= pt.Y) ret += 3;
 
       return ret;
     }
@@ -333,6 +333,9 @@ namespace djack.RogueSurvivor.Data
       else if (-1==district_delta.X) pt.X += dest.Width;
       if (1==district_delta.Y) pt.Y -= Height;
       else if (-1==district_delta.Y) pt.Y += dest.Height;
+#if DEBUG
+            if (!dest.IsInBounds(pt)) throw new InvalidOperationException("non-null return from Map::Normalize must be in bounds");
+#endif
       return new Location(dest,pt);
     }
 

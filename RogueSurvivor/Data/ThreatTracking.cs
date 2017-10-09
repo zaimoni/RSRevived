@@ -101,7 +101,7 @@ namespace djack.RogueSurvivor.Data
           if (map.Height < view.Bottom) {
             int new_height = map.Height-view.Top;
             if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get && 3 != crossdistrict_ok.Get) {
-              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
+              HashSet<Point> tmp = ThreatWhere(Engine.Session.Get.World[pos.X,pos.Y+1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
             }
             view.Height = new_height;
@@ -112,10 +112,10 @@ namespace djack.RogueSurvivor.Data
               if (!x.Value.ContainsKey(map)) continue;
               tmp.UnionWith(x.Value[map]);
             }
-            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
-            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
-            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
-            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
+//            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
+//            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
+//            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
+//            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
             if (0 >= ret.Count) ret = tmp;
             else ret.UnionWith(tmp);
 		  }
@@ -177,16 +177,16 @@ namespace djack.RogueSurvivor.Data
 		public void Cleared(Map m, IEnumerable<Point> pts)
         {
           lock(_threats) {
+            List<Actor> amnesia = new List<Actor>();
             foreach(var x in _threats) {
               if (!x.Value.ContainsKey(m)) continue;
               x.Value[m].ExceptWith(pts);
               if (0 >= x.Value[m].Count) {
                 x.Value.Remove(m);
-#if DEBUG
-                if (0 >= x.Value.Count) throw new InvalidOperationException(x.Key.Name+" inferred to be nowhere");
-#endif
+                if (0 >= x.Value.Count) amnesia.Add(x.Key);
               }
             }
+            foreach(Actor a in amnesia) _threats.Remove(a);
           }
           // FOV is small compared to district size so will not overflow both ways
           int crossdistrict_ok = Map.UsesCrossDistrictView(m);
@@ -334,7 +334,7 @@ namespace djack.RogueSurvivor.Data
           if (map.Height < view.Bottom) {
             int new_height = map.Height-view.Top;
             if (Engine.Session.Get.World.Size>pos.Y+1 && 0<crossdistrict_ok.Get && 3 != crossdistrict_ok.Get) {
-              HashSet<Point> tmp = In(Engine.Session.Get.World[pos.X,pos.Y-1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
+              HashSet<Point> tmp = In(Engine.Session.Get.World[pos.X,pos.Y+1].CrossDistrictViewing(crossdistrict_ok.Get),new Rectangle(view.Left,0,view.Width,view.Height-new_height));
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y+map.Height));
             }
             view.Height = new_height;
@@ -344,10 +344,10 @@ namespace djack.RogueSurvivor.Data
             if (!_locs.TryGetValue(map,out HashSet<Point> tmp2)) return ret;
             tmp.UnionWith(tmp2);    // want a value copy here
 
-            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
-            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
-            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
-            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
+//            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
+//            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
+//            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
+//            if (map.Height>view.Bottom) tmp.RemoveWhere(pt => pt.Y >= view.Bottom);
             if (0 >= ret.Count) ret = tmp;
             else ret.UnionWith(tmp);
 		  }
