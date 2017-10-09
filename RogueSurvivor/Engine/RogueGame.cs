@@ -8792,7 +8792,7 @@ namespace djack.RogueSurvivor.Engine
       Actor m_Player_bak = m_Player;    // ForceVisibleToPlayer calls below can change this
 
       deadGuy.IsDead = true;
-      bool isMurder = Rules.IsMurder(killer, deadGuy);  // record this before it's invalidated
+      bool isMurder = Rules.IsMurder(killer, deadGuy);  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);
       DoStopDragCorpse(deadGuy);
       UntriggerAllTrapsHere(deadGuy.Location);
@@ -8911,25 +8911,25 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      // XXX also a model for army radio, etc. usage
-      if (killer != null && killer.Model.Abilities.IsLawEnforcer && (killer.Faction.IsEnemyOf(deadGuy.Faction) || deadGuy.MurdersCounter > 0)) {
-        if (!killer.Faction.IsEnemyOf(deadGuy.Faction) /* &&  deadGuy.MurdersCounter > 0 */) {
-          if (killer.IsPlayer)
-            AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
-          else
-            DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
-        }
 
-        if (!killer.IsPlayer)
-          killer.MessagePlayerOnce(a => {
-            int turnCounter = Session.Get.WorldTime.TurnCounter;
-            // possible verbs: killed, terminated, erased, downed, wasted.
-            AddMessage(new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), turnCounter, Color.White));
-          }, a => {
-            if (a.IsSleeping) return false;
-            if (!a.HasActivePoliceRadio) return false;
-            return true;
-          });
+      if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.Faction.IsEnemyOf(deadGuy.Faction) && 0 < deadGuy.MurdersCounter) {
+         if (killer.IsPlayer)
+           AddMessage(new Data.Message("You feel like you did your duty with killing a murderer.", Session.Get.WorldTime.TurnCounter, Color.White));
+         else
+           DoSay(killer, deadGuy, "Good riddance, murderer!", RogueGame.Sayflags.IS_FREE_ACTION);
+      }
+
+      // Police report all (non-murder) kills via police radio.  National Guard likely to do same.
+      if (killer != null && killer.Model.Abilities.IsLawEnforcer && !killer.IsPlayer && !isMurder) {
+        killer.MessagePlayerOnce(a => {
+          int turnCounter = Session.Get.WorldTime.TurnCounter;
+          // possible verbs: killed, terminated, erased, downed, wasted.
+          AddMessage(new Data.Message(string.Format("(police radio, {0}) {1} killed.", killer.Name, deadGuy.Name), turnCounter, Color.White));
+        }, a => {
+          if (a.IsSleeping) return false;
+          if (!a.HasActivePoliceRadio) return false;
+          return true;
+        });
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
