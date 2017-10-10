@@ -135,7 +135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game)
     {
       ClearMovePlan();
-      BehaviorEquipBodyArmor(game);
+      BehaviorEquipBodyArmor();
 
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight(game) && !BehaviorEquipStenchKiller(game)) {

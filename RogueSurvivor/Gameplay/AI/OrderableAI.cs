@@ -811,13 +811,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected void BehaviorEquipBodyArmor(RogueGame game)
+    protected void BehaviorEquipBodyArmor()
     {
       ItemBodyArmor bestBodyArmor = m_Actor.GetBestBodyArmor();
       if (bestBodyArmor == null) return;
-      ItemBodyArmor equippedBodyArmor = GetEquippedBodyArmor();
-      if (equippedBodyArmor == bestBodyArmor) return;
-      game.DoEquipItem(m_Actor, bestBodyArmor);
+      if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
     protected ActorAction ManageMeleeRisk(List<Point> legal_steps, List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> friends, List<Percept> enemies, List<Actor> slow_melee_threat)

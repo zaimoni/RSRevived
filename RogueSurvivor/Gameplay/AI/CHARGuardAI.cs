@@ -53,7 +53,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected override ActorAction SelectAction(RogueGame game)
     {
       ClearMovePlan();
-      BehaviorEquipBodyArmor(game);
+      BehaviorEquipBodyArmor();
 
       List<Percept> percepts1 = FilterSameMap(UpdateSensors());
 
