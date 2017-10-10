@@ -470,7 +470,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return _InterestingItemPostprocess(am);
     }
 
-    public virtual bool IsInterestingItem(Item it)
+    public bool IsInterestingItem(Item it)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));

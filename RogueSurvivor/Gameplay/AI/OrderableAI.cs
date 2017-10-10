@@ -306,7 +306,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private const int LAW_ENFORCE_CHANCE = 30;
 
     // taboos really belong here
-    private Dictionary<Item, int> m_TabooItems;
     private List<Actor> m_TabooTrades;
 
     // these relate to PC orders for NPCs.  Alpha 9 had no support for AI orders to AI.
@@ -814,7 +813,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void BehaviorEquipBodyArmor(RogueGame game)
     {
-      ItemBodyArmor bestBodyArmor = m_Actor.GetBestBodyArmor(it => !IsItemTaboo(it));
+      ItemBodyArmor bestBodyArmor = m_Actor.GetBestBodyArmor();
       if (bestBodyArmor == null) return;
       ItemBodyArmor equippedBodyArmor = GetEquippedBodyArmor();
       if (equippedBodyArmor == bestBodyArmor) return;
@@ -990,7 +989,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies) {
         if (1==Rules.GridDistance(enemies[0].Location,m_Actor.Location)) {
           // something adjacent...check for one-shotting
-          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon(it => !IsItemTaboo(it));
+          ItemMeleeWeapon tmp_melee = m_Actor.GetBestMeleeWeapon();
           if (null!=tmp_melee) {
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
@@ -1253,7 +1252,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!NeedsLight()) return false;
       ItemLight tmp = GetEquippedLight();
       if (null != tmp && !tmp.IsUseless) return true;
-      tmp = m_Actor.GetFirstMatching<ItemLight>(it => !it.IsUseless && !IsItemTaboo(it));
+      tmp = m_Actor.GetFirstMatching<ItemLight>(it => !it.IsUseless);
       if (tmp != null && m_Actor.CanEquip(tmp)) {
         game.DoEquipItem(m_Actor, tmp);
         return true;
@@ -1284,7 +1283,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (enemies == null || enemies.Count == 0) return null;
       if (enemies.Count < 3) return null;
-      ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>(it => !IsItemTaboo(it));
+      ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>();
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
       int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
@@ -1842,12 +1841,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
-    public override bool IsInterestingItem(Item it)
-    {
-        if (IsItemTaboo(it)) return false;
-        return base.IsInterestingItem(it);
-    }
-
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
     {
       if (Items == null) return false;
@@ -1862,11 +1855,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected bool RHSMoreInteresting(Item lhs, Item rhs)
     {
-      Contract.Requires(null != lhs);
-      Contract.Requires(null != rhs);
-      Contract.Requires(IsInterestingItem(rhs));    // lhs may be from inventory
-      if (IsItemTaboo(rhs)) return false;
-      if (IsItemTaboo(lhs)) return true;
+#if DEBUG
+      if (null == lhs) throw new ArgumentNullException(nameof(lhs));
+      if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      if (!IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);  // lhs may be from inventory
+#endif
       if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
         if (lhs.Quantity > rhs.Quantity) return false;
@@ -2044,10 +2037,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return false;
       if (GetEquippedStenchKiller() != null) return true;
-      ItemSprayScent firstStenchKiller = GetFirstStenchKiller((Predicate<ItemSprayScent>)(it =>
-      {
-          return !it.IsUseless && !IsItemTaboo(it);
-      }));
+      ItemSprayScent firstStenchKiller = GetFirstStenchKiller(it => !it.IsUseless);
       if (firstStenchKiller != null && m_Actor.CanEquip(firstStenchKiller)) {
         game.DoEquipItem(m_Actor, firstStenchKiller);
         return true;
@@ -2703,35 +2693,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // taboos
-    public bool IsItemTaboo(Item it)
-    {
-      if (m_TabooItems == null) return false;
-      return m_TabooItems.ContainsKey(it);
-    }
-
-    protected void MarkItemAsTaboo(Item it, int expiresTurn)
-    {
-      if (m_TabooItems == null) m_TabooItems = new Dictionary<Item,int>(1);
-      else if (m_TabooItems.ContainsKey(it)) return;
-      m_TabooItems.Add(it, expiresTurn);
-    }
-
-#if DEAD_FUNC
-    public void MarkItemAsTaboo(Item it, Item alt)
-    {
-      if (m_TabooItems == null) return;
-      else if (!m_TabooItems.ContainsKey(it)) return;
-      m_TabooItems.Add(alt, m_TabooItems[it]);
-    }
-
-    protected void UnmarkItemAsTaboo(Item it)
-    {
-      if (m_TabooItems == null) return;
-      m_TabooItems.Remove(it);
-      if (m_TabooItems.Count == 0) m_TabooItems = null;
-    }
-#endif
-
     protected void MarkActorAsRecentTrade(Actor other)
     {
       if (m_TabooTrades == null) m_TabooTrades = new List<Actor>(1);
@@ -2748,14 +2709,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected void ExpireTaboos()
     {
       // maintain taboo information
-      int time = m_Actor.LastActionTurn;
-      if (null != m_TabooItems) {
-        m_TabooItems.OnlyIf(val => val<=time);
-        if (0 == m_TabooItems.Count) m_TabooItems = null;
-      }
       // actors ok to clear at midnight
-      if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight)
-        m_TabooTrades = null;
+      if (m_Actor.Location.Map.LocalTime.IsStrikeOfMidnight) m_TabooTrades = null;
     }
   }
 }
