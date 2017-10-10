@@ -1846,7 +1846,6 @@ namespace djack.RogueSurvivor.Engine
       // XXX the displayed turn on the message must agree with the displayed turn on the screen
       // XXX thus, displayed turn on screen for non-first PC districts is greater than the map time by one
       if (district == Session.Get.CurrentMap.District && Session.Get.CurrentMap.LocalTime.TurnCounter > Session.Get.WorldTime.TurnCounter) {
-        ++Session.Get.WorldTime.TurnCounter;
         bool isNight2 = Session.Get.WorldTime.IsNight;
         DayPhase phase2 = Session.Get.WorldTime.Phase;
         if (isNight1 && !isNight2) {
@@ -9692,7 +9691,7 @@ namespace djack.RogueSurvivor.Engine
                 m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), 680, 716, new Color?());
                 m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), 808, 704, new Color?());
                 m_UI.UI_DrawString(WeatherStatusText(), 808, 716);
-                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), 680, 728);
+                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.CurrentMap.LocalTime.TurnCounter), 680, 728);
                 m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Session.Get.Scoring.TotalPoints, (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), Session.DescShortGameMode(Session.Get.GameMode)), 808, 728);
                 m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), 808, 740);
                 if (null != m_Player) {

@@ -333,6 +333,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return m_Actor.WouldLikeToSleep && m_Actor.IsInside && m_Actor.CanSleep();
     } }
 
+#if PROTOTYPE
+    // would like to trigger pathing to inside to enable sleeping
+    // but have to distinguish between AI w/o item memory and AI w/item memory, etc.
+    protected bool WantToSleepNow { get {
+      return m_Actor.WouldLikeToSleep && !m_Actor.IsInside && m_Actor.CanSleep();
+    } }
+#endif
+
     public void SetOrder(ActorOrder newOrder)
     {
       m_Order = newOrder;
