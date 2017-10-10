@@ -247,6 +247,25 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public int CountType<_T_>() where _T_ : Item
+    {
+      int num = 0;
+      foreach (Item it in m_Items) {
+        if (it is _T_) ++num;
+      }
+      return num;
+    }
+
+    public int CountType<_T_>(Predicate<_T_> ok) where _T_ : Item
+    {
+      int num = 0;
+      foreach (Item it in m_Items) {
+        if (it is _T_ obj && ok(obj)) ++num;
+      }
+      return num;
+    }
+
+
     public int CountQuantityOf<_T_>() where _T_ : Item
     {
       int num = 0;

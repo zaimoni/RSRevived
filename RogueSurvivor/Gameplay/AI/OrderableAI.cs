@@ -1954,7 +1954,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret.Any() ? ret.ToList() : null;
     }
 
-    protected ActorAction BehaviorDropUselessItem()
+    protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item it in m_Actor.Inventory.Items) {
@@ -1972,6 +1972,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ItemRangedWeapon rw = m_Actor.Inventory.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
       if (null != rw) return BehaviorDropItem(rw);
+
+      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) {
+        if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) {
+          ItemAmmo am = m_Actor.Inventory.GetFirstMatching<ItemAmmo>(it => null == m_Actor.GetCompatibleRangedWeapon(it));
+          if (null != am) return BehaviorDropItem(am);
+        }
+      }
 
       return null;
     }

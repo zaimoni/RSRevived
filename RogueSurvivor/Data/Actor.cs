@@ -2237,7 +2237,9 @@ namespace djack.RogueSurvivor.Data
     {
       if (null == Inventory) return null;
       IEnumerable<ItemAmmo> tmp = Inventory.Items.Select(it=>it as ItemAmmo).Where(am => am != null && am.AmmoType == rw.AmmoType);
-      return tmp.FirstOrDefault();
+      ItemAmmo am2 = tmp.FirstOrDefault();
+      if (null == am2) return null;
+      return Inventory.GetBestDestackable(am2.Model) as ItemAmmo;
     }
 
     public bool HasEnoughFoodFor(int nutritionNeed)

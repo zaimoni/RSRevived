@@ -444,19 +444,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsInterestingItem(ItemRangedWeapon rw)
     {
-      if (1 <= m_Actor.CountItems< ItemRangedWeapon >()) return false;  // XXX rules out AI gun bunnies
-      if (!m_Actor.Inventory.Contains(rw) && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
-      return rw.Ammo > 0 || m_Actor.GetCompatibleAmmoItem(rw) != null;
+      if (!m_Actor.Inventory.Contains(rw)) {
+        if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+        if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
+      }
+      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+      // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
+      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)) return false;
+      if (0 >= rw.Ammo && null == m_Actor.GetCompatibleAmmoItem(rw)) return false;
+      return _InterestingItemPostprocess(rw);
     }
       
     public bool IsInterestingItem(ItemAmmo am)
     {
       if (m_Actor.GetCompatibleRangedWeapon(am) == null) {
-        return false;  // XXX normally
+        if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
+        if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
+      } else {
+        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return false;
+        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
       }
-      if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return false;
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
-      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon)) + m_Actor.CountItemsOfSameType(typeof(ItemAmmo))) return false;
+      // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
+      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) return false;
       return _InterestingItemPostprocess(am);
     }
 
