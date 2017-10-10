@@ -47,8 +47,8 @@ limited RNG adjustment by savescumming there is.
 This option only influences New Game.  If provided, cheat commands useful in 
 simulating an unusually effective divine interest in the PC are provided.
 
-  CTRL-I (hardcoded): updates Config/daimon_map.html .  Open in a web browser 
-                      to get the wisdom you asked for.
+  CTRL-[City Info] (default CTRL-I): updates Config/daimon_map.html .  Open in a web browser 
+    to get the wisdom you asked for.
 
 --subway-cop
 

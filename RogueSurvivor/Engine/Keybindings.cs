@@ -51,7 +51,6 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.BUILD_LARGE_FORTIFICATION, Keys.N | Keys.Control);
             Set(PlayerCommand.BUILD_SMALL_FORTIFICATION, Keys.N);
             Set(PlayerCommand.CITY_INFO, Keys.I);
-            Set(PlayerCommand.ITEM_INFO, Keys.I | Keys.Shift);
             Set(PlayerCommand.EAT_CORPSE, Keys.E | Keys.Shift);
             Set(PlayerCommand.GIVE_ITEM, Keys.G);
             Set(PlayerCommand.HINTS_SCREEN_MODE, Keys.H | Keys.Control);
@@ -115,9 +114,16 @@ namespace djack.RogueSurvivor.Engine
 
     public bool CheckForConflict()
     {
-      foreach(Keys key1 in  m_CommandToKeyData.Values) {
-        if (m_KeyToCommand.Keys.Count<Keys>((Func<Keys, bool>) (k => k == key1)) > 1) return true;
+      foreach (Keys key1 in  m_CommandToKeyData.Values) {
+        if (m_KeyToCommand.Keys.Count(k => k == key1) > 1) return true;
       }
+
+      Keys cityInfo = RogueGame.KeyBindings.Get(PlayerCommand.CITY_INFO);
+      if ((cityInfo | Keys.Shift) == cityInfo) return true; // hard-coded to item info
+      if ((cityInfo | Keys.Control) == cityInfo) return true;   // hard-coded to cheat map
+      if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Control)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Shift)) > 0) return true;
+            
       return false;
     }
 

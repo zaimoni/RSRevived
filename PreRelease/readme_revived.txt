@@ -4,8 +4,23 @@ As of 0.9.1, the minimum required .NET framework is 4.6.x
 REVIVED 0.10.0 CHANGES
 ------------------
 * names better matched to stereotypical English gender
+* key configuration files are not backward compatible.
+* even more AI overhaul.
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
+* The surface maps and sewer maps have lost their peace walls. For example, you can
+** see across district boundaries
+** throw grenades across district boundaries
+** fire at targets across district boundaries
+** [release blocker] Unfortunately, the AI is just as unimpaired as you.
+
+REVIVED 0.9.9.4 CHANGES
+------------------
+* off-by-one offset error in displaying item counts fixed (e.g., 10 looked like 1)
+* getting partial item stacks from containers should work reliably now.
+* In spite of critically misleading profiling, it does appear that the speed issues in 0.9.9 onwards were from
+  stacking enhanced pathfinding on top of disallowing districts to wildly diverge in game time.  A mitigation has
+  gone in, but anyone relying on letting other districts get 20+ turns behind will have to play an earlier version.
 
 REVIVED 0.9.9.3 CHANGES
 ------------------

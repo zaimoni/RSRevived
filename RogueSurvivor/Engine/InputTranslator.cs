@@ -12,11 +12,13 @@ namespace djack.RogueSurvivor.Engine
   {
     public static PlayerCommand KeyToCommand(KeyEventArgs key)
     {
-      // debugging/cheat commands
+      Keys cityInfo = RogueGame.KeyBindings.Get(PlayerCommand.CITY_INFO);
       if (Session.Get.CMDoptionExists("socrates-daimon")) {
-        if (key.KeyData == (Keys.I | Keys.Control)) return PlayerCommand.DAIMON_MAP;
+        if (key.KeyData == (cityInfo | Keys.Control)) return PlayerCommand.DAIMON_MAP;  // debugging/cheat command
       }
-      if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;
+      if (key.KeyData == (cityInfo | Keys.Shift)) return PlayerCommand.ITEM_INFO;
+
+      if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
 
       // allow configuring this when we want to break format : V.0.10.0
       if (key.KeyData == (Keys.O | Keys.Control)) return PlayerCommand.ALLIES_INFO;

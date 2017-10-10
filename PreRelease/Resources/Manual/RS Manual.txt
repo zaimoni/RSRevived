@@ -621,9 +621,10 @@ Also remember that in addition to having smell, some undeads have a visual memor
 
 
 > CITY INFO  (default I)
-Show information you know about the city, such as the city districts layout.
+Show information you know about the city, such as the city districts layout.  This key cannot be Shift- (conflicts with ITEM INFO)
+or Ctrl- (conflicts with 
 
-> ITEM INFO (hard-coded Shift-I)
+> ITEM INFO (Shift-[City Info]; default Shift-I)
 Review where you have seen items.
 
 > ALLIES OVERVIEW (hard-coded Ctrl-O)
