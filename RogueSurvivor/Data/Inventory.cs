@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
@@ -60,7 +59,9 @@ namespace djack.RogueSurvivor.Data
 
     public Inventory(int maxCapacity)
     {
-      Contract.Requires(0 <= maxCapacity);
+#if DEBUG
+      if (0 >= maxCapacity) throw new ArgumentOutOfRangeException(nameof(maxCapacity),maxCapacity,"must be positive");
+#endif
       MaxCapacity = maxCapacity;
     }
 
@@ -194,7 +195,6 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
-    [Pure]
     public bool Contains(Item it)
     {
       return m_Items.Contains(it);
