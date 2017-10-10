@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
+using ItemAmmo = djack.RogueSurvivor.Engine.Items.ItemAmmo;
+using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
+
 namespace djack.RogueSurvivor.Data
 {
   [Serializable]
@@ -181,6 +184,14 @@ namespace djack.RogueSurvivor.Data
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
       return GetBestDestackable(it.Model);
+    }
+
+    public ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)  // XXX layering violation
+    {
+      foreach(Item mItem in m_Items) {
+        if (mItem is ItemAmmo am && am.AmmoType == rw.AmmoType) return GetBestDestackable(am.Model) as ItemAmmo;
+      }
+      return null;
     }
 
     [Pure]

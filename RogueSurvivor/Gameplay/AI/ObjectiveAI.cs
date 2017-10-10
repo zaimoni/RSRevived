@@ -451,7 +451,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
       if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)) return false;
-      if (0 >= rw.Ammo && null == m_Actor.GetCompatibleAmmoItem(rw)) return false;
+      if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
       return _InterestingItemPostprocess(rw);
     }
       
@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
         if (null != tmp_rw) {
           foreach(ItemRangedWeapon rw in tmp_rw) {
-            if (null == m_Actor.GetCompatibleAmmoItem(rw)) {
+            if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {
               ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
             }
           }

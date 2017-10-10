@@ -2233,15 +2233,6 @@ namespace djack.RogueSurvivor.Data
       return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
     }
 
-    public ItemAmmo GetCompatibleAmmoItem(ItemRangedWeapon rw)
-    {
-      if (null == Inventory) return null;
-      IEnumerable<ItemAmmo> tmp = Inventory.Items.Select(it=>it as ItemAmmo).Where(am => am != null && am.AmmoType == rw.AmmoType);
-      ItemAmmo am2 = tmp.FirstOrDefault();
-      if (null == am2) return null;
-      return Inventory.GetBestDestackable(am2.Model) as ItemAmmo;
-    }
-
     public bool HasEnoughFoodFor(int nutritionNeed)
     {
       if (!Model.Abilities.HasToEat) return true;

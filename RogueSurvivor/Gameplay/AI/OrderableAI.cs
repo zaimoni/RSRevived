@@ -619,7 +619,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<ItemRangedWeapon> GetAvailableRangedWeapons()
     {
-      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.GetCompatibleAmmoItem(rw)));
+      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)));
       return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
     }
 
@@ -740,7 +740,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             {
             if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return true;
             if (0 < rw.Ammo) return false;
-            if (null != m_Actor.GetCompatibleAmmoItem(rw)) return false;
+            if (null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
             return true;    // more work needed
             }
         if (it is ItemAmmo am)
@@ -902,7 +902,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction Equip(ItemRangedWeapon rw) {
       if (!rw.IsEquipped && m_Actor.CanEquip(rw)) RogueForm.Game.DoEquipItem(m_Actor, rw);
       if (0 >= rw.Ammo) {
-        ItemAmmo ammo = m_Actor.GetCompatibleAmmoItem(rw);
+        ItemAmmo ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
         if (null != ammo) return new ActionUseItem(m_Actor, ammo);
       }
       return null;
