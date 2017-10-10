@@ -205,6 +205,17 @@ namespace djack.RogueSurvivor.Data
       return null;
     }
 
+    public Item GetFirstByModel<_T_>(ItemModel model, Predicate<_T_> ok) where _T_ : Item
+    {
+#if DEBUG
+      if (null == ok) throw new ArgumentNullException(nameof(ok));
+#endif
+      foreach (Item mItem in m_Items) {
+        if (mItem.Model == model && mItem is _T_ it && ok(it)) return mItem;
+      }
+      return null;
+    }
+
     public int Count(ItemModel model)
     {
       int num = 0;

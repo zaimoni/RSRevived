@@ -433,14 +433,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
-    public bool IsInterestingItem(ItemAmmo am)
+    private bool _InterestingItemPostprocess(Item it)
     {
-      if (m_Actor.GetCompatibleRangedWeapon(am) == null) return false;
-      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
-      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon)) + m_Actor.CountItemsOfSameType(typeof(ItemAmmo))) return false;
-      return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2);
+      if (!m_Actor.CanGet(it)) {
+        if (m_Actor.Inventory.IsFull) return null != BehaviorMakeRoomFor(it);
+        return false;
+      }
+      return true;
+    }
+
+    public bool IsInterestingItem(ItemRangedWeapon rw)
+    {
+      if (1 <= m_Actor.CountItems< ItemRangedWeapon >()) return false;  // XXX rules out AI gun bunnies
+      if (!m_Actor.Inventory.Contains(rw) && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+      return rw.Ammo > 0 || m_Actor.GetCompatibleAmmoItem(rw) != null;
     }
       
+    public bool IsInterestingItem(ItemAmmo am)
+    {
+      if (m_Actor.GetCompatibleRangedWeapon(am) == null) {
+        return false;  // XXX normally
+      }
+      if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return false;
+      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.CountItemsOfSameType(typeof(ItemRangedWeapon)) + m_Actor.CountItemsOfSameType(typeof(ItemAmmo))) return false;
+      return _InterestingItemPostprocess(am);
+    }
+
     public virtual bool IsInterestingItem(Item it)
     {
 #if DEBUG
@@ -472,14 +491,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
-      if (it is ItemRangedWeapon) {
+      if (it is ItemRangedWeapon rw) {
         if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
-        if (1 <= m_Actor.CountItems< ItemRangedWeapon >()) return false;  // XXX rules out AI gun bunnies
-        if (!m_Actor.Inventory.Contains(it) && m_Actor.HasItemOfModel(it.Model)) return false;
-        ItemRangedWeapon rw = it as ItemRangedWeapon;
-        return rw.Ammo > 0 || m_Actor.GetCompatibleAmmoItem(rw) != null;
+        return IsInterestingItem(rw);
       }
-      if (it is ItemAmmo am) return IsInterestingItem(am);
+      if (it is ItemAmmo am) {
+        if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
+        return IsInterestingItem(am);
+      }
       if (it is ItemMeleeWeapon) {
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
         if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;
@@ -504,16 +523,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null == armor) return true;
-        return armor.Rating < (it as ItemBodyArmor).Rating;
+        return armor.Rating < (it as ItemBodyArmor).Rating; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
 
       // No specific heuristic.
       if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
-      if (!m_Actor.CanGet(it)) {
-        if (m_Actor.Inventory.IsFull) return null != BehaviorMakeRoomFor(it);
-        return false;
-      }
-      return true;
+      return _InterestingItemPostprocess(it);
     }
 
     public virtual bool IsInterestingTradeItem(Actor speaker, Item offeredItem) // Cf. OrderableAI::IsRationalTradeItem
