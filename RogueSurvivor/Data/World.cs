@@ -21,6 +21,7 @@ namespace djack.RogueSurvivor.Data
     private readonly int m_Size;
     private readonly Queue<District> m_PCready;
     private readonly Queue<District> m_NPCready;
+    private readonly Queue<District> m_NPClive;
 
     public Weather Weather { get; private set; }
 
@@ -49,6 +50,7 @@ namespace djack.RogueSurvivor.Data
       Weather = (Weather)(RogueForm.Game?.Rules.Roll(0, (int)Weather._COUNT) ?? 0);
       m_PCready = new Queue<District>(size*size);
       m_NPCready = new Queue<District>(size*size);
+      m_NPClive = new Queue<District>(1);
     }
 
     public void DaimonMap()
@@ -206,6 +208,7 @@ retry:
       d = irrational_caution;
       if (m_PCready.Contains(d)) return;
       if (m_NPCready.Contains(d)) return;
+      if (m_NPClive.Contains(d)) return;
 
       // these are based on morally readonly properties and thus can be used without a lock
       int x = d.WorldPosition.X;
@@ -384,7 +387,7 @@ retry:
 
       lock(m_PCready) {
         if (0 < m_PCready.Count && d == m_PCready.Peek()) m_PCready.Dequeue();
-        if (0 < m_NPCready.Count && d == m_NPCready.Peek()) m_NPCready.Dequeue();
+        if (0 < m_NPClive.Count && d == m_NPClive.Peek()) m_NPClive.Dequeue();
 
         // the ones that would typically be scheduled
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
@@ -415,7 +418,7 @@ retry:
           if (1 == m_PCready.Count || tmp.RequiresUI) return tmp;
           m_NPCready.Enqueue(m_PCready.Dequeue());
         }
-        if (0 >= m_NPCready.Count) throw new InvalidOperationException("no districts to simulate");
+        if (0 >= m_NPCready.Count) return null;
         m_PCready.Enqueue(m_NPCready.Dequeue());
         return m_PCready.Peek();
       }
@@ -424,11 +427,12 @@ retry:
     public District CurrentSimulationDistrict()
     {
       lock(m_PCready) {
-        while(0 < m_NPCready.Count) {
+        while(0 == m_NPClive.Count && 0 < m_NPCready.Count) {
           District tmp = m_NPCready.Peek();
-          if (!tmp.RequiresUI) return tmp;
-          m_PCready.Enqueue(m_NPCready.Dequeue());
+          if (!tmp.RequiresUI) m_NPClive.Enqueue(m_NPCready.Dequeue());
+          else m_PCready.Enqueue(m_NPCready.Dequeue());
         }
+        if (0 < m_NPClive.Count) return m_NPClive.Peek();
       }
       return null;
     }
