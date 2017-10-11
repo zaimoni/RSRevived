@@ -1522,6 +1522,7 @@ namespace djack.RogueSurvivor.Data
       if (null==tmp_Actors && null==inv_locs) return;
       // we have one of actors or items here...full map has motivation
       List<string> inv_data = new List<string>();
+      string[] actor_headers = { "pos", "name", "Priority", "AP", "HP", "Inventory" };  // XXX would be function-static in C++
       List<string> actor_data = new List<string>();
       string[][] ascii_map = new string[Height][];
       foreach(int y in Enumerable.Range(0, Height)) {
@@ -1648,7 +1649,31 @@ namespace djack.RogueSurvivor.Data
               case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }
-            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
+            List<string> actor_stats = new List<string> { " " };
+
+            if (a.Model.Abilities.HasToEat) {
+              if (a.IsStarving) actor_stats.Add("<span style='background-color:black; color:red'>H</span>");
+              else if (a.IsHungry) actor_stats.Add("<span style='background-color:black; color:yellow'>H</span>");
+              else if (a.IsAlmostHungry) actor_stats.Add("<span style='background-color:black; color:green'>H</span>");
+            }
+            else if (a.Model.Abilities.IsRotting) {
+              if (a.IsRotStarving) actor_stats.Add("<span style='background-color:black; color:red'>H</span>");
+              else if (a.IsRotHungry) actor_stats.Add("<span style='background-color:black; color:yellow'>R</span>");
+              else if (a.IsAlmostRotHungry) actor_stats.Add("<span style='background-color:black; color:green'>R</span>");
+            }
+            if (a.Model.Abilities.HasSanity) {
+              if (a.IsInsane) actor_stats.Add("<span style='background-color:black; color:red'>I</span>");
+              else if (a.IsDisturbed) actor_stats.Add("<span style='background-color:black; color:yellow'>I</span>");
+            }
+            if (a.Model.Abilities.HasToSleep) {
+              if (a.IsExhausted) actor_stats.Add("<span style='background-color:black; color:red'>Z</span>");
+              else if (a.IsSleepy) actor_stats.Add("<span style='background-color:black; color:yellow'>Z</span>");
+              else if (a.IsAlmostSleepy) actor_stats.Add("<span style='background-color:black; color:green'>Z</span>");
+            }
+            if (a.IsSleeping) actor_stats.Add("<span style='background-color:black; color:cyan'>Z</span>");
+            if (a.CountFollowers > 0) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
+
+            actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Join("", actor_stats) + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
           }
 #endregion
@@ -1657,7 +1682,7 @@ namespace djack.RogueSurvivor.Data
       if (0>=inv_data.Count && 0>=actor_data.Count) return;
       if (0<actor_data.Count) {
         dest.WriteLine("<table border=2 cellspacing=1 cellpadding=1 align=left>");
-        dest.WriteLine("<tr><th>pos</th><th>name</th><th>Priority</th><th>AP</th><th>HP</th><th>Inventory</th></tr>");
+        dest.WriteLine("<tr><th>"+string.Join("</th><th>", actor_headers) + "</th></tr>");
         foreach(string s in actor_data) dest.WriteLine(s);
         dest.WriteLine("</table>");
       }
