@@ -336,6 +336,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.MEDIKIT);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.BANDAGE);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SLP);
           if (null == drop) drop = inv.GetFirst<ItemGrenade>();
           if (null == drop) drop = inv.GetFirst<ItemAmmo>();
           if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
@@ -474,6 +478,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemGrenade) return null;
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
       if (null != tmpGrenade) return BehaviorDropItem(tmpGrenade);
+
+      // important trackers go for ammo
+      if (it is ItemAmmo) { 
+        ItemTracker discardTracker = inv.GetFirstMatching<ItemTracker>();
+        if (null != discardTracker) return BehaviorDropItem(discardTracker);
+      }
 
 #if DEBUG
       // do not pick up trackers if it means dropping body armor or higher priority
