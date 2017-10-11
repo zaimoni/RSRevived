@@ -353,32 +353,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // another behavior is responsible for pre-emptively eating perishable food
       // canned food is normally eaten at the last minute
+      {
       if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(it) is ItemFood food) {
         // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
         int need = m_Actor.MaxFood - m_Actor.FoodPoints;
         int num4 = m_Actor.CurrentNutritionOf(food);
         if (num4 <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
       }
-      // it should be ok to devour stimulants in a glut
+      }
+      { // it should be ok to devour stimulants in a glut
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID && inv.GetBestDestackable(it) is ItemMedicine stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
         int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
         if (num4 <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
-
-      // see if we can eat our way to a free slot
-      if (m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(GameItems.CANNED_FOOD) is ItemFood food2) {
-        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
-        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
-        int num4 = m_Actor.CurrentNutritionOf(food2);
-        if (num4*food2.Quantity <= need && m_Actor.CanUse(food2)) return new ActionUseItem(m_Actor, food2);
       }
 
-      // finisbing off stimulants to get a free slot is ok
-      if (inv.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim2) {
+      { // see if we can eat our way to a free slot
+      if (m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(GameItems.CANNED_FOOD) is ItemFood food) {
+        // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
+        int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+        int num4 = m_Actor.CurrentNutritionOf(food);
+        if (num4*food.Quantity <= need && m_Actor.CanUse(food)) return new ActionUseItem(m_Actor, food);
+      }
+      }
+
+      { // finisbing off stimulants to get a free slot is ok
+      if (inv.GetBestDestackable(GameItems.PILLS_SLP) is ItemMedicine stim) {
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
-        int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
-        if (num4*stim2.Quantity <= need && m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
+        int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
+        if (num4*stim.Quantity <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
+      }
       }
 
       if (it is ItemAmmo am) {
@@ -410,6 +415,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionChain(m_Actor,recover);
           }
         }
+      }
+
+      {
+      int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
+      if (0 < needHP) {
+        if (   (GameItems.MEDIKIT == it.Model && needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.MEDIKIT.Healing))
+            || (GameItems.BANDAGE == it.Model && needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.BANDAGE.Healing)))
+          { // same idea as reloading, only hp instead of ammo
+          Item drop = inv.GetFirst<ItemFood>();
+          if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
+          if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SLP);
+          if (null == drop) drop = inv.GetFirst<ItemGrenade>();
+          if (null == drop) drop = inv.GetFirst<ItemAmmo>();
+          if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
+          if (null != drop) {
+            List<ActorAction> recover = new List<ActorAction>(3);
+            // 3a) drop target without triggering the no-pickup schema
+            recover.Add(new ActionDropItem(m_Actor,drop));
+            // 3b) pick up ammo
+            recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
+            recover.Add(new ActionUse(m_Actor, it.Model.ID));
+            return new ActionChain(m_Actor,recover);
+          }
+          }
+      }
       }
 
       // priority classes of incoming items are:
@@ -714,6 +749,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
       }
+
+      int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
+      if (needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.MEDIKIT.Healing)) {
+        // We need second aid.
+        ret.Add(GameItems.IDs.MEDICINE_MEDIKIT);
+        ret.Add(GameItems.IDs.MEDICINE_BANDAGES);
+      }
       return ret;
     }
 
@@ -740,6 +782,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == rw) continue;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) continue;
         if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) ret.Add(am);
+      }
+
+      int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
+      if (needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.BANDAGE.Healing)) {
+        // We need first aid.
+        ret.Add(GameItems.IDs.MEDICINE_BANDAGES);
       }
 
       { // scoping brace
@@ -793,7 +841,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // only civilians use stench killer
       if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
 #endif
-            return ret;
+      return ret;
     }
 
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
