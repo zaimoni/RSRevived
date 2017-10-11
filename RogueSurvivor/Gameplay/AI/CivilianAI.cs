@@ -537,11 +537,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
           if (null != tmpAction)  return tmpAction;
         }
-        tmpAction = BehaviorDropBoringEntertainment();
-#if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "drop boring entertainment");
-#endif
-        if (null != tmpAction) return tmpAction;
       }
 
       if (m_Actor.HasLeader && !DontFollowLeader) {

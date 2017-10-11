@@ -1953,17 +1953,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret.Any() ? ret.ToList() : null;
     }
 
-    protected ActorAction BehaviorDropBoringEntertainment()
-    {
-      Inventory inventory = m_Actor.Inventory;
-      if (inventory.IsEmpty) return null;
-      foreach (Item it in inventory.Items) {
-        if (it is ItemEntertainment && m_Actor.IsBoredOf(it))
-          return new ActionDropItem(m_Actor, it);
-      }
-      return null;
-    }
-
     protected ActorAction BehaviorUseEntertainment()
     {
       Inventory inventory = m_Actor.Inventory;

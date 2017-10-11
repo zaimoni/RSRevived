@@ -270,12 +270,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
+    public bool ItemIsUseless(Item it)
+    {
+	  if (it.IsForbiddenToAI) return true;
+	  if (it is ItemSprayPaint) return true;
+	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return true;
+      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return true;
+
+      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
+      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is CivilianAI) && !(m_Actor.Controller is SoldierAI)) return true;
+
+      // only civilians use stench killer
+      if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is CivilianAI)) return true;
+
+      // police have implicit police trackers
+      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && !!m_Actor.WantPoliceRadio) return true;
+      if (GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID && !m_Actor.WantCellPhone) return true;
+
+      if (it is ItemFood && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
+      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Gangsters
+        if (it is ItemRangedWeapon || it is ItemAmmo) return true;
+      }
+
+      return false;
+    }
+
     protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
     {
       if (m_Actor.Inventory.IsEmpty) return null;
       foreach (Item it in m_Actor.Inventory.Items) {
-        if (it.IsUseless) return BehaviorDropItem(it);
+        if (ItemIsUseless(it)) return BehaviorDropItem(it); // allows recovering cleanly from bugs and charismatic trades
       }
+
+      // strict domination checks
       ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
       if (null != armor) return BehaviorDropItem(armor);
 
@@ -575,24 +602,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!Actor.Model.Abilities.HasInventory) throw new InvalidOperationException("inventory required");   // CHAR guards: wander action can get item from containers
       if (!Actor.Model.Abilities.CanUseMapObjects) throw new InvalidOperationException("using map objects required");
 #endif
-	  if (it.IsForbiddenToAI) return false;
-	  if (it is ItemSprayPaint) return false;
-	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return false;
-      if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return false;
-
-      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
-      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is CivilianAI) && !(m_Actor.Controller is SoldierAI)) return false;
-
-      // only civilians use stench killer
-      if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is CivilianAI)) return false;
-
-      // police have implicit police trackers
-      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && !!m_Actor.WantPoliceRadio) return false;
-      if (GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID && !m_Actor.WantCellPhone) return false;
+      if (ItemIsUseless(it)) return false;
 
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
       if (it is ItemFood) {
-        if (!m_Actor.Model.Abilities.HasToEat) return false;
+//      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return true;
         if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
           return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
@@ -600,11 +614,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (it is ItemRangedWeapon rw) {
-        if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
+//      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;    // redundant; for documentation
         return IsInterestingItem(rw);
       }
       if (it is ItemAmmo am) {
-        if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;
+//      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;    // redundant; for documentation
         return IsInterestingItem(am);
       }
       if (it is ItemMeleeWeapon) {

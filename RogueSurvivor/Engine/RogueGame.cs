@@ -8198,6 +8198,7 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       if (!actor.Location.Map.GetItemsAt(position)?.Contains(it) ?? true) throw new InvalidOperationException(it.ToString()+" not where expected");
+      if ((actor.Controller as OrderableAI)?.ItemIsUseless(it) ?? false) throw new InvalidOperationException("should not be taking useless item");
 #endif
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -8211,7 +8212,6 @@ namespace djack.RogueSurvivor.Engine
         DoEquipItem(actor, it);
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
-      if (!actor.IsPlayer && it is ItemRangedWeapon rw && 2<=actor.Inventory.Count(rw.Model)) throw new InvalidOperationException(actor.Name+": duplicate ranged weapons"); // XXX goes when AI is enhanced as well
 #endif
     }
 
