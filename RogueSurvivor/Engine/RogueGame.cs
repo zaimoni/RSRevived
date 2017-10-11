@@ -14,6 +14,7 @@
 #define FRAGILE_RENDERING
 // #define POLICE_NO_QUESTIONS_ASKED
 // #define REFUGEES_IN_SUBWAY
+// #define PANOPTIC_HOLYVISION
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -10734,11 +10735,19 @@ namespace djack.RogueSurvivor.Engine
     {
       if (actor == m_Player) return true;
       if (IsVisibleToPlayer(actor.Location)) return true;
+#if PANOPTIC_HOLYVISION
+      if (1<=actor.Location.Map.PlayerCount) {
+        PanViewportTo(actor);
+        return true;
+      }
+      return false;
+#else
       if (actor.IsPlayer) {
         PanViewportTo(actor);
         return true;
       }
       return ForceVisibleToPlayer(actor.Location);
+#endif
     }
 
     private bool ForceVisibleToPlayer(MapObject mapObj)
