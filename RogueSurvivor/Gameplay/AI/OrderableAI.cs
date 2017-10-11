@@ -2608,6 +2608,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
+      Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
+      if (null != itemsAt) {
+        ActorAction tmpAction = BehaviorGrabFromStack(RogueForm.Game, m_Actor.Location.Position, itemsAt);
+        if (null != tmpAction) return tmpAction;
+      }
+      foreach(Direction dir in Direction.COMPASS) {
+        Point pt = m_Actor.Location.Position+dir;
+        itemsAt = m_Actor.Location.Map.GetItemsAtExt(pt.X,pt.Y);
+        if (null == itemsAt) continue;
+        ActorAction tmpAction = BehaviorGrabFromStack(RogueForm.Game, pt, itemsAt);
+        if (null != tmpAction) return tmpAction;
+      }
       return BehaviorPathTo(m => WhereIs(critical, m));
     }
 

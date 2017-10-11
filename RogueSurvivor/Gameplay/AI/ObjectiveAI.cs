@@ -284,7 +284,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is CivilianAI)) return true;
 
       // police have implicit police trackers
-      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && !!m_Actor.WantPoliceRadio) return true;
+      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && !m_Actor.WantPoliceRadio) return true;
       if (GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID && !m_Actor.WantCellPhone) return true;
 
       if (it is ItemFood && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
@@ -451,6 +451,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
       if (null != tmpTracker) return BehaviorDropItem(tmpTracker);
 
+      // ahem...food glut, of all things
+      ItemFood tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+      if (null != tmpFood) return BehaviorDropItem(tmpFood);
+      tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsExpiredAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+      if (null != tmpFood) return BehaviorDropItem(tmpFood);
+      tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f));
+      if (null != tmpFood) return BehaviorDropItem(tmpFood);
+
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemSprayScent) return null;
       ItemSprayScent tmpSprayScent = inv.GetFirstMatching<ItemSprayScent>();
@@ -578,6 +586,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
       return _InterestingItemPostprocess(rw);
     }
+
+    private bool AmmoAtLimit {
+      get {
+        // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+        // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
+        if (m_Actor.Inventory.MaxCapacity - 5 <= m_Actor.Inventory.CountType<ItemAmmo>()) return true;
+        if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return true;
+        return false;
+      }
+    }
       
     public bool IsInterestingItem(ItemAmmo am)
     {
@@ -588,11 +606,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return false;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
       }
-      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
-      // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) return false;
-      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return false;
+      if (AmmoAtLimit) return false;
       return _InterestingItemPostprocess(am);
+    }
+
+    public bool IsInterestingItem(ItemFood food)
+    {
+      if (m_Actor.Inventory.Contains(food)) return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2 + food.Nutrition);
+      return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2);
     }
 
     public bool IsInterestingItem(Item it)
@@ -682,7 +703,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmp_rw) {
           foreach(ItemRangedWeapon rw in tmp_rw) {
             if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {
-              ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
+              if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) {
+                ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
+              }
             }
           }
 #if FAIL
@@ -713,9 +736,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
       foreach (GameItems.IDs am in GameItems.ammo) {
-        if (m_Actor.GetCompatibleRangedWeapon(am) == null) continue;
+        ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+        if (null == rw) continue;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) continue;
-        ret.Add(am);
+        if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) ret.Add(am);
       }
 
       { // scoping brace

@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_SELECTACTION
+#define TRACE_SELECTACTION
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -699,9 +698,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
             }
           }
 #endif
-                }
+        }
 
-                if (0 >= critical.Count) {
+        if (0 >= critical.Count) {
           // hunt down threats -- works for police
           if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
             tmpAction = BehaviorHuntDownThreatOtherMaps();
