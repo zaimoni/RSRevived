@@ -382,12 +382,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // uninteresting ammo
-      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));
+      ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
+//    ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
       if (null != tmpAmmo) {
         ItemRangedWeapon tmpRw = m_Actor.GetCompatibleRangedWeapon(tmpAmmo);
-        if (null != tmpRw) {
+        if (null != tmpRw && tmpRw.Ammo >= tmpRw.Model.MaxAmmo) { // inline a key part of the CanUse check here; stack overflow otherwise
           tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
-          if (m_Actor.CanUse(tmpAmmo)) return new ActionUseItem(m_Actor, tmpAmmo);
+          if (null != tmpAmmo) return new ActionUseItem(m_Actor, tmpAmmo);
         }
         return BehaviorDropItem(tmpAmmo);
       }
@@ -399,6 +400,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
          if (!reloadable) return BehaviorDropItem(tmpRw2);
       }
 
+
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
         foreach(GameItems.IDs x in GameItems.ammo) {
@@ -408,6 +410,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.CanUse(ammo)) return new ActionUseItem(m_Actor, ammo);    // completeness; should not trigger due to above
             return BehaviorDropItem(ammo);
           }
+        }
+        // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
+        ItemAmmo test = null;
+        foreach(GameItems.IDs x in GameItems.ammo) {
+          ItemAmmo ammo = inv.GetBestDestackable(Models.Items[(int)x]) as ItemAmmo;
+          if (null != ammo) {
+             if (null == test || test.Quantity>ammo.Quantity) test = ammo;
+          }
+        }
+        if (null != test) {
+            if (m_Actor.CanUse(test)) return new ActionUseItem(m_Actor, test);    // completeness; should not trigger due to above
+            return BehaviorDropItem(test);
         }
       }
 
@@ -446,11 +460,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (!m_Actor.Inventory.Contains(rw)) {
         if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+        if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
         if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
       if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)) return false;
+      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return false;
       if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
       return _InterestingItemPostprocess(rw);
     }
@@ -467,6 +483,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
       if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) return false;
+      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return false;
       return _InterestingItemPostprocess(am);
     }
 

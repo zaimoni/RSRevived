@@ -2215,12 +2215,13 @@ namespace djack.RogueSurvivor.Data
     // we prefer to return weapons that need reloading.
     private ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmoModel am)
     {
-      Contract.Requires(null != am);
-      Contract.Requires(null != Inventory);
-      IEnumerable<ItemRangedWeapon> tmp = Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(rw=> null!=rw && rw.AmmoType == am.AmmoType);
-      if (!tmp.Any()) return null;
-      IEnumerable<ItemRangedWeapon> tmp2 = tmp.Where(rw=> rw.Ammo<rw.Model.MaxAmmo);
-      return tmp2.FirstOrDefault() ?? tmp.FirstOrDefault();
+#if DEBUG
+      if (null == am) throw new ArgumentNullException(nameof(am));
+      if (null == m_Inventory) throw new ArgumentNullException(nameof(m_Inventory));
+#endif
+      ItemRangedWeapon rw = m_Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType && it.Ammo < it.Model.MaxAmmo);
+      if (null != rw) return rw;
+      return m_Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType == am.AmmoType);
     }
 
     public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmo am)
