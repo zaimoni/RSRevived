@@ -1953,35 +1953,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret.Any() ? ret.ToList() : null;
     }
 
-    protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
-    {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item it in m_Actor.Inventory.Items) {
-        if (it.IsUseless) return BehaviorDropItem(it);
-      }
-      ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
-      if (null != armor) return BehaviorDropItem(armor);
-
-      ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-      if (null != weapon) {
-        int martial_arts_rating = m_Actor.UnarmedMeleeAttack().Rating;
-        int weapon_rating = m_Actor.MeleeWeaponAttack(weapon.Model).Rating;
-        if (weapon_rating <= martial_arts_rating) return BehaviorDropItem(weapon);
-      }
-
-      ItemRangedWeapon rw = m_Actor.Inventory.GetFirstMatching<ItemRangedWeapon>(it => 0==it.Ammo && 2<=m_Actor.Count(it.Model));
-      if (null != rw) return BehaviorDropItem(rw);
-
-      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemAmmo>()) {
-        if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) {
-          ItemAmmo am = m_Actor.Inventory.GetFirstMatching<ItemAmmo>(it => null == m_Actor.GetCompatibleRangedWeapon(it));
-          if (null != am) return BehaviorDropItem(am);
-        }
-      }
-
-      return null;
-    }
-
     protected ActorAction BehaviorDropBoringEntertainment()
     {
       Inventory inventory = m_Actor.Inventory;
