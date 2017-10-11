@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System.Diagnostics.Contracts;
+using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,7 +16,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionUseItem(Actor actor, Item it)
       : base(actor)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       m_Item = it;
       actor.Activity = Activity.IDLE;
     }
@@ -30,5 +32,48 @@ namespace djack.RogueSurvivor.Engine.Actions
     {
       RogueForm.Game.DoUseItem(m_Actor, m_Item);
     }
-  }
+  } // ActionUseItem
+
+  [Serializable]
+  internal class ActionUse : ActorAction
+  {
+    private readonly Gameplay.GameItems.IDs m_ID;
+    private Item m_Item = null;
+
+    public ActionUse(Actor actor, Gameplay.GameItems.IDs it)
+      : base(actor)
+    {
+      m_ID = it;
+    }
+
+    public Gameplay.GameItems.IDs ID { get { return m_ID; } }
+
+    private Item Item {
+      get {
+        init();
+        return m_Item;
+      }
+    }
+
+    private void init()
+    {
+      if (null == m_Item) m_Item = m_Actor.Inventory.GetBestDestackable(Models.Items[(int) m_ID]);
+    }
+
+    public override bool IsLegal()
+    {
+      Item it = Item;
+      if (null == it) {
+        m_FailReason = "not in inventory";
+        return false;
+      }
+      return m_Actor.CanUse(it, out m_FailReason);
+    }
+
+    public override void Perform()
+    {
+      m_Actor.Activity = Activity.IDLE;
+      RogueForm.Game.DoUseItem(m_Actor, Item);
+    }
+  } // ActionUse
 }

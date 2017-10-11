@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.AI;
@@ -10,9 +9,12 @@ using djack.RogueSurvivor.Engine.Items;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
-using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
+using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
 using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInContainer;
+using ActionTake = djack.RogueSurvivor.Engine.Actions.ActionTake;
+using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
+using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -71,6 +73,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!PlannedMoves.ContainsKey(pt)) return null;
       if (null==PlannedMoves[pt]) return null;  // XXX probably being used incorrectly
       return new Dictionary<Point,int>(PlannedMoves[pt]);
+    }
+
+    public void ExecuteActionChain(IEnumerable<ActorAction> actions)
+    {
+      int insertAt = -2;
+      foreach(ActorAction action in actions) {
+        insertAt++;
+        if (0 > insertAt) {
+          action.Perform();
+          continue;
+        }
+        Objectives.Insert(insertAt,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, action));
+       }
     }
 
 #region damage field
@@ -308,6 +323,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
         int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
         if (num4*stim2.Quantity <= need && m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
+      }
+
+      if (it is ItemAmmo am) {
+        ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+        if (null != rw && rw.Ammo < rw.Model.MaxAmmo) {
+          // we really do need to reload this.
+          // 1) we would re-pickup food.
+          // 2) it would not be a big deal if something less important than ammo were not re-picked up.
+          Item drop = inv.GetFirst<ItemFood>();
+          if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
+          if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
+          if (null == drop) drop = inv.GetFirst<ItemGrenade>();
+          if (null == drop) drop = inv.GetFirst<ItemAmmo>();
+          if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
+          if (null != drop) {
+            List<ActorAction> recover = new List<ActorAction>(3);
+            // 3a) drop target without triggering the no-pickup schema
+            recover.Add(new ActionDropItem(m_Actor,drop));
+            // 3b) pick up ammo
+            recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
+            recover.Add(new ActionUse(m_Actor, it.Model.ID));
+            return new ActionChain(m_Actor,recover);
+          }
+        }
       }
 
       // priority classes of incoming items are:

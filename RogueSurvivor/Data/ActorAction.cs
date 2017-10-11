@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -15,21 +14,17 @@ namespace djack.RogueSurvivor.Data
     protected readonly Actor m_Actor;
     protected string m_FailReason;
 
-    public string FailReason {
-      get {
-        return m_FailReason;
-      }
-    }
+    public string FailReason { get { return m_FailReason; } }
 
     protected ActorAction(Actor actor)
     {
-      Contract.Requires(null != actor);
+#if DEBUG
+      if (null == actor || actor.IsDead) throw new ArgumentNullException(nameof(actor));
+#endif
       m_Actor = actor;
     }
 
-    [Pure]
     public abstract bool IsLegal();
-
     public abstract void Perform();
   }
 }

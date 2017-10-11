@@ -4,11 +4,12 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using djack.RogueSurvivor.Data;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
+  [Serializable]
   internal class ActionDropItem : ActorAction
   {
     private readonly Item m_Item;
@@ -18,7 +19,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionDropItem(Actor actor, Item it)
       : base(actor)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       m_Item = it;
       actor.Activity = Activity.IDLE;
     }
