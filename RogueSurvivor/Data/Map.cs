@@ -1678,8 +1678,10 @@ namespace djack.RogueSurvivor.Data
     {
       Engine.LOS.Now(this);
       m_aux_ActorsByPosition.Clear();
-      foreach (Actor mActors in m_ActorsList)
+      foreach (Actor mActors in m_ActorsList) {
         m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
+        (mActors.Controller as PlayerController)?.InstallHandlers();
+      }
       m_aux_MapObjectsByPosition.Clear();
       foreach (MapObject mMapObjects in m_MapObjectsList)
         m_aux_MapObjectsByPosition.Add(mMapObjects.Location.Position, mMapObjects);

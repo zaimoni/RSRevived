@@ -49,6 +49,11 @@ namespace djack.RogueSurvivor.Data
 	  }
 	}
 
+    public void InstallHandlers()
+    {
+      Actor.Says += HandleSay;
+    }
+
 	public override void TakeControl(Actor actor)
     {
       base.TakeControl(actor);

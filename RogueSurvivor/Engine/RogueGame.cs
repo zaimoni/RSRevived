@@ -604,6 +604,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void AnimDelay(int msecs)
     {
+      if (IsSimulating) return;   // deadlocks otherwise
       if (s_Options.IsAnimDelayOn) m_UI.UI_Wait(msecs);
     }
 
@@ -1824,6 +1825,7 @@ namespace djack.RogueSurvivor.Engine
 
       lock(district) {
       bool IsPCdistrict = (0 < district.PlayerCount);
+
       foreach(Map current in district.Maps) {
         // not processing secret maps used to be a micro-optimization; now a hang bug
         while(!current.IsSecret && null != current.NextActorToAct) {
