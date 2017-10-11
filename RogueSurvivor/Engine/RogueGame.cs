@@ -11219,29 +11219,33 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
       }
 
+      Map entryMap;
       if (!Session.Get.CMDoptionExists("no-spawn")) {
         int index = world.Size / 2;
-        Map entryMap = world[index, index].EntryMap;
+        entryMap = world[index, index].EntryMap;
         GeneratePlayerOnMap(entryMap);
-        SetCurrentMap(entryMap);
-        RefreshPlayer();
+      } else {
+        if (0 >= world.PlayerCount) throw new InvalidOperationException("hard to start a game with zero PCs");
+        entryMap = world.PlayerDistricts[0].EntryMap;
+      }
+      SetCurrentMap(entryMap);
+      RefreshPlayer();
+      foreach(Actor player in entryMap.Players.Get) {
+        player.Controller.UpdateSensors();
+      }
+      if (s_Options.RevealStartingDistrict) {
         foreach(Actor player in entryMap.Players.Get) {
-          player.Controller.UpdateSensors();
-        }
-        if (s_Options.RevealStartingDistrict) {
-          foreach(Actor player in entryMap.Players.Get) {
-            Point pos = player.Location.Position;
-            List<Zone> zonesAt1 = entryMap.GetZonesAt(pos);
-            if (null == zonesAt1) continue;
-            Zone zone = zonesAt1[0];
-            entryMap.Rect.DoForEach((pt => {
-              player.Controller.ForceKnown(pt);
-            }), (pt => {
-              if (!entryMap.IsInsideAt(pt)) return true;
-              List<Zone> zonesAt2 = entryMap.GetZonesAt(pt);
-              return zonesAt2 != null && zonesAt2[0] == zone;
-            }));
-          }
+          Point pos = player.Location.Position;
+          List<Zone> zonesAt1 = entryMap.GetZonesAt(pos);
+          if (null == zonesAt1) continue;
+          Zone zone = zonesAt1[0];
+          entryMap.Rect.DoForEach((pt => {
+            player.Controller.ForceKnown(pt);
+          }), (pt => {
+            if (!entryMap.IsInsideAt(pt)) return true;
+            List<Zone> zonesAt2 = entryMap.GetZonesAt(pt);
+            return zonesAt2 != null && zonesAt2[0] == zone;
+          }));
         }
       }
       if (!isVerbose) return;
