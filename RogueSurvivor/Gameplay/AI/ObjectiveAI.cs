@@ -738,7 +738,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {
         List<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
         List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
-        if (null != tmp_rw) {
+        if (null != tmp_rw && !AmmoAtLimit) {
           foreach(ItemRangedWeapon rw in tmp_rw) {
             if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {
               if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) {
@@ -780,11 +780,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 #endif
 
-      foreach (GameItems.IDs am in GameItems.ammo) {
-        ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
-        if (null == rw) continue;
-        if (m_Actor.HasAtLeastFullStackOf(am, 2)) continue;
-        if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) ret.Add(am);
+      if (!AmmoAtLimit) {
+        foreach (GameItems.IDs am in GameItems.ammo) {
+          ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+          if (null == rw) continue;
+          if (m_Actor.HasAtLeastFullStackOf(am, 2)) continue;
+          if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) ret.Add(am);
+        }
       }
 
       int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;

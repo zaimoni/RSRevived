@@ -1671,7 +1671,8 @@ namespace djack.RogueSurvivor.Data
               else if (a.IsAlmostSleepy) actor_stats.Add("<span style='background-color:black; color:green'>Z</span>");
             }
             if (a.IsSleeping) actor_stats.Add("<span style='background-color:black; color:cyan'>Z</span>");
-            if (a.CountFollowers > 0) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
+            if (0 < a.CountFollowers) actor_stats.Add("<span style='background-color:black; color:cyan'>L</span>");
+            if (0 < a.MurdersCounter) actor_stats.Add("<span style='background-color:black; color:red'>M</span>");
 
             actor_data.Add("<tr><td"+ pos_css + ">" + p_txt + "</td><td>" + a.UnmodifiedName + string.Join("", actor_stats) + "</td><td>"+m_ActorsList.IndexOf(a).ToString()+"</td><td>"+a.ActionPoints.ToString()+ "</td><td>"+a.HitPoints.ToString()+ "</td><td class='inv'>"+(null==a.Inventory ? "" : (a.Inventory.IsEmpty ? "" : a.Inventory.ToString()))+"</td></tr>");
             ascii_map[a.Location.Position.Y][a.Location.Position.X] = a_str;
