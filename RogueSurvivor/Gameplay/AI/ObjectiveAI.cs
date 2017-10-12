@@ -629,8 +629,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       get {
         // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-        if (m_Actor.Inventory.MaxCapacity - 5 <= m_Actor.Inventory.CountType<ItemAmmo>()) return true;
-        if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return true;
+        int limit = m_Actor.Inventory.MaxCapacity;
+        if (0< m_Actor.Inventory.CountType<ItemBodyArmor>()) limit--;
+        if (0< m_Actor.Inventory.CountType<ItemLight>()) limit--;
+        if (0< m_Actor.Inventory.CountType<ItemFood>()) limit--;
+        if (0< m_Actor.Inventory.CountType<ItemExplosive>()) limit--;
+        if (0< m_Actor.Inventory.CountType<ItemMeleeWeapon>()) limit--;
+
+        if (limit <= m_Actor.Inventory.CountType<ItemAmmo>()) return true;
+        if (limit <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return true;
         return false;
       }
     }
