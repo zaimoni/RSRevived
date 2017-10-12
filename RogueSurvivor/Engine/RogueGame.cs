@@ -7311,8 +7311,10 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendActionPoints(Rules.BASE_ACTION_COST);
         return false;
       }
+#if OBSOLETE
       if (isPlayer && exitAt.ToMap.District != map.District)
         BeforePlayerEnterDistrict(exitAt.ToMap.District);
+#endif
       string reason = exitAt.ReasonIsBlocked(actor);
       if (!string.IsNullOrEmpty(reason)) {
         if (isPlayer) AddMessage(MakeErrorMessage(reason));
@@ -7327,7 +7329,9 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
       map.Remove(actor);
       if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
+#if OBSOLETE
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
+#endif
       exitAt.Location.Place(actor); // Adds at last position by default
 #if NO_PEACE_WALLS
       if (exitAt.ToMap.District == map.District) exitAt.ToMap.MoveActorToFirstPosition(actor); // If we can see what we're getting into, we shouldn't visibly double-move
@@ -7995,7 +7999,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoChat(Actor speaker, Actor target)
     {
-      Contract.Requires(!speaker.IsPlayer);
+#if DEBUG
+      if (speaker.IsPlayer) throw new InvalidOperationException("target.IsPlayer");
+#endif
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
@@ -8005,7 +8011,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
-      Contract.Requires(!target.IsPlayer);
+#if DEBUG
+      if (target.IsPlayer) throw new InvalidOperationException("target.IsPlayer");
+#endif
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       // bail on null item from speaker early
       if (null == itSpeaker) {
@@ -11574,6 +11582,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if OBSOLETE
     // looks good in single-player but not really honest with the no-skew scheduler (and possibly can mess it up)
     // problems with turn skew should be handled in simulation (BeforePlayerEnterDistrict)
     private void OnPlayerLeaveDistrict()
@@ -11639,6 +11648,7 @@ namespace djack.RogueSurvivor.Engine
         RemoveLastMessage();
         m_MusicManager.StopAll();
     }
+#endif
 
     private SimFlags ComputeSimFlagsForTurn(int turn)
     {

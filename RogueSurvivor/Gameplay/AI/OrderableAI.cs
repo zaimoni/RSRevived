@@ -1938,13 +1938,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    public bool HasAnyTradeableItem()
-    {
-      Inventory inv = m_Actor.Inventory;
-      if (inv == null) return false;
-      return inv.Items.Any(it => IsTradeableItem(it));
-    }
-
     public List<Item> GetTradeableItems()
     {
       Inventory inv = m_Actor.Inventory;
@@ -2143,14 +2136,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorIntelligentBumpToward(position);
     }
 
-    protected ActorAction BehaviorFindTrade(List<Percept> friends)
+    protected ActorAction BehaviorFindTrade(List<Percept> friends, List<Item> TradeableItems)
     {
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
-        if (!HasAnyTradeableItem()) throw new InvalidOperationException("must have something to trade away");
 #endif
         Map map = m_Actor.Location.Map;
-        List<Item> TradeableItems = GetTradeableItems();  // iterating over friends next so m_Actor.GetInterestingTradeableItems(...) is inappropriate; do first half here
+
         List<Percept> percepts2 = friends.FilterOut(p => {
           if (p.Turn != map.LocalTime.TurnCounter) return true;
           Actor actor = p.Percepted as Actor;
@@ -2158,7 +2150,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (IsActorTabooTrade(actor)) return true;
           if (!m_Actor.CanTradeWith(actor)) return true;
           if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
-          // XXX if both parties have exactly one interesting tradeable item, check that the trade is allowed by the mutual-advantage filter (extract from RogueGame::PickItemToTrade)
+          if (1 == TradeableItems.Count) {
+            List<Item> other_TradeableItems = (actor.Controller as OrderableAI).GetTradeableItems();
+            if (null == other_TradeableItems) return true;
+            if (1 == other_TradeableItems.Count && TradeableItems[0].Model.ID== other_TradeableItems[0].Model.ID) return true;
+          }
           return !(actor.Controller as OrderableAI).HasAnyInterestingItem(TradeableItems);    // other half of m_Actor.GetInterestingTradeableItems(...)
         });
         if (percepts2 != null) {
