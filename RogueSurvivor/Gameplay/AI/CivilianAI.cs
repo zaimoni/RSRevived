@@ -408,6 +408,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      tmpAction = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ditching useless item");
+#endif
+      if (null != tmpAction) return tmpAction;
+
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && OkToSleepNow) {
         tmpAction = BehaviorSecurePerimeter();
         if (null != tmpAction) {
@@ -427,11 +433,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
       }
-      tmpAction = BehaviorDropUselessItem();
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ditching useless item");
-#endif
-      if (null != tmpAction) return tmpAction;
 
       // XXX this should lose to same-map threat hunting at close ETA
       if (null == enemies && Directives.CanTakeItems) {

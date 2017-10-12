@@ -573,6 +573,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
       if (it is ItemAmmo && 1<=m_Actor.Count(it.Model)) return null;
 
+      // if inventory is full and the problem is ranged weapon at this point, ignore if we already have one
+      if (it is ItemRangedWeapon && 1<= inv.CountType<ItemRangedWeapon>()) return null;
+
       // grenades next
       if (it is ItemGrenade) return null;
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
