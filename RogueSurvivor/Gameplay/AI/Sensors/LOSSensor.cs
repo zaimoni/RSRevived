@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     private void _seeActors(List<Percept> perceptList)
     {
       foreach (Point pt in FOV) {
-        Actor actorAt = m_Actor.Location.Map.GetActorAt(pt); // XXX change target for cross-district vision
+        Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
         if (null==actorAt) continue;
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
@@ -50,7 +50,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
         HashSet<Point> has_threat = (null==threats ? null : new HashSet<Point>());
         foreach (Point pt in FOV) {
-          Actor actorAt = m_Actor.Location.Map.GetActorAt(pt); // XXX change target for cross-district vision
+          Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
           if (null==actorAt) continue;
           if (actorAt== m_Actor) continue;
           if (actorAt.IsDead) continue;
