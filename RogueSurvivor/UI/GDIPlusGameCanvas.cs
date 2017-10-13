@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.UI
       m_RenderTile = Graphics.FromImage(m_TileImage);
 #endif
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas create minimap bitmap");
-      m_MinimapBitmap = new Bitmap(2*Engine.RogueGame.MAP_MAX_WIDTH, 2*Engine.RogueGame.MAP_MAX_HEIGHT);   // each minimap coordinate is 2x2 pixels
+      m_MinimapBitmap = new Bitmap(2*(1+2*Engine.RogueGame.MINIMAP_RADIUS), 2* (1+2*Engine.RogueGame.MINIMAP_RADIUS));   // each minimap coordinate is 2x2 pixels
       Logger.WriteLine(Logger.Stage.INIT_GFX, "GDIPlusGameCanvas get minimap stride");
       BitmapData bitmapdata = m_MinimapBitmap.LockBits(new Rectangle(0, 0, m_MinimapBitmap.Width, m_MinimapBitmap.Height), ImageLockMode.ReadWrite, m_MinimapBitmap.PixelFormat);
       m_MinimapStride = bitmapdata.Stride;

@@ -45,6 +45,19 @@ namespace Zaimoni.Data
       }
     }
 
+    public static void DoForEach(this Rectangle rect, Action<Point> doFn)
+    {
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+#endif
+      Point point = new Point();
+      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
+        for (point.Y = rect.Top; point.Y < rect.Bottom; ++point.Y) {
+          doFn(point);
+        }
+      }
+    }
+
     // imitate Enumerable interface here
     public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
     {

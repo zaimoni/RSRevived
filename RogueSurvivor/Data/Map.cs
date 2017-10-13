@@ -577,6 +577,14 @@ namespace djack.RogueSurvivor.Data
     public bool HasExitAt(Point pos) { return m_Exits.ContainsKey(pos); }
     public bool HasExitAt(int x, int y) { return m_Exits.ContainsKey(new Point(x,y)); }
 
+    public bool HasExitAtExt(Point pos)
+    {
+      if (IsInBounds(pos)) return HasExitAt(pos);
+      Location? test = Normalize(pos);
+      if (null == test) return false;
+      return test.Value.Map.HasExitAt(test.Value.Position);
+    }
+
     public Exit GetExitAt(Point pos)
     {
       if (m_Exits.TryGetValue(pos, out Exit exit)) return exit;

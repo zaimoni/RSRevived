@@ -211,6 +211,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly object m_SimMutex = new object();
     public const int MAP_MAX_HEIGHT = 100;
     public const int MAP_MAX_WIDTH = 100;
+    public const int MINIMAP_RADIUS = 50;
 
     public const int TILE_SIZE = 32;    // ACTOR_SIZE+ACTOR_OFFSET <= TILE_SIZE
     public const int ACTOR_SIZE = 32;
@@ -220,36 +221,38 @@ namespace djack.RogueSurvivor.Engine
 
     public const int HALF_VIEW_WIDTH = 10;
     public const int HALF_VIEW_HEIGHT = 10;
+#if DEAD_FUNC
     public const int TILE_VIEW_WIDTH = 2 * HALF_VIEW_WIDTH + 1;
     public const int TILE_VIEW_HEIGHT = 2 * HALF_VIEW_HEIGHT + 1;
+#endif
     public const int CANVAS_WIDTH = 1024;
     public const int CANVAS_HEIGHT = 768;
     private const int DAMAGE_DX = 10;
     private const int DAMAGE_DY = 10;
     private const int RIGHTPANEL_X = 676;
     private const int RIGHTPANEL_Y = 0;
-    private const int RIGHTPANEL_TEXT_X = 680;
-    private const int RIGHTPANEL_TEXT_Y = 4;
-    private const int INVENTORYPANEL_X = 680;
+    private const int RIGHTPANEL_TEXT_X = RIGHTPANEL_X+4;
+    private const int RIGHTPANEL_TEXT_Y = RIGHTPANEL_Y+4;
+    private const int INVENTORYPANEL_X = RIGHTPANEL_X+4;
     private const int INVENTORYPANEL_Y = 160;
     private const int GROUNDINVENTORYPANEL_Y = 224;
     private const int CORPSESPANEL_Y = 288;
     private const int INVENTORY_SLOTS_PER_LINE = 10;
     private const int SKILLTABLE_Y = 352;
     private const int SKILLTABLE_LINES = 10;
-    private const int LOCATIONPANEL_X = 676;
+    private const int LOCATIONPANEL_X = RIGHTPANEL_X;
     private const int LOCATIONPANEL_Y = 676;
-    private const int LOCATIONPANEL_TEXT_X = 680;
-    private const int LOCATIONPANEL_TEXT_Y = 680;
+    private const int LOCATIONPANEL_TEXT_X = LOCATIONPANEL_X+4;
+    private const int LOCATIONPANEL_TEXT_Y = LOCATIONPANEL_Y+4;
     private const int MESSAGES_X = 4;
-    private const int MESSAGES_Y = 676;
+    private const int MESSAGES_Y = LOCATIONPANEL_Y;
     private const int MESSAGES_SPACING = 12;
     private const int MESSAGES_FADEOUT = 25;
     private const int MAX_MESSAGES = 7;
     private const int MESSAGES_HISTORY = 59;
     public const int MINITILE_SIZE = 2;
     private const int MINIMAP_X = 750;
-    private const int MINIMAP_Y = 475;
+    private const int MINIMAP_Y = LOCATIONPANEL_Y-MINITILE_SIZE*(2+2*MINIMAP_RADIUS);
     private const int MINI_TRACKER_OFFSET = 1;
     private const int DELAY_SHORT = 250;
     private const int DELAY_NORMAL = 500;
@@ -549,7 +552,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void DrawMessages()
     {
-      m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, 4, 676);
+      m_MessageManager.Draw(m_UI, Session.Get.LastTurnPlayerActed, MESSAGES_X, MESSAGES_Y);
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -9689,13 +9692,18 @@ namespace djack.RogueSurvivor.Engine
             if (IsSimulating) return;   // deadlocks otherwise
             lock (m_UI) {
                 m_UI.UI_Clear(Color.Black);
-                m_UI.UI_DrawLine(Color.DarkGray, 676, 0, 676, 676);
+                m_UI.UI_DrawLine(Color.DarkGray, RIGHTPANEL_X, RIGHTPANEL_Y, LOCATIONPANEL_X, LOCATIONPANEL_Y);
                 DrawMap(Session.Get.CurrentMap);
-                m_UI.UI_DrawLine(Color.DarkGray, 676, 471, CANVAS_WIDTH, 471);
-                DrawMiniMap(Session.Get.CurrentMap, Session.Get.CurrentMap.Rect);
+                m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, MINIMAP_Y- MINITILE_SIZE, CANVAS_WIDTH, MINIMAP_Y - MINITILE_SIZE);
+                if (0 >= Map.UsesCrossDistrictView(Session.Get.CurrentMap)) {
+                    DrawMiniMap(Session.Get.CurrentMap, Session.Get.CurrentMap.Rect);
+                } else {
+                    Rectangle view = new Rectangle(m_Player.Location.Position.X-MINIMAP_RADIUS, m_Player.Location.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
+                    DrawMiniMap(Session.Get.CurrentMap, view);
+                }
                 m_UI.UI_DrawLine(Color.DarkGray, 4, 675, CANVAS_WIDTH, 675);
                 DrawMessages();
-                m_UI.UI_DrawLine(Color.DarkGray, 676, 676, 676, 768);
+                m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
                 m_UI.UI_DrawString(Color.White, Session.Get.CurrentMap.Name, 680, 680, new Color?());
                 m_UI.UI_DrawString(Color.White, LocationText(Session.Get.CurrentMap, m_Player), 680, 692, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", Session.Get.WorldTime.Day), 680, 704, new Color?());
@@ -10304,31 +10312,28 @@ namespace djack.RogueSurvivor.Engine
 	  if (s_Options.IsMinimapOn) {
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
-        Point pos = new Point();
 		if (null == threats) {
-          map.Rect.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X, pt.Y, (map.HasExitAt(pt) ? Color.HotPink : map.GetTileModelAt(pt).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pt)));
+          view.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X, pt.Y, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pt)));
 		} else {
-          HashSet<Point> tainted = threats.ThreatWhere(map);
-          HashSet<Point> tourism = sights_to_see.In(map);
-          for (pos.X = 0; pos.X < map.Width; ++pos.X) {
-            for (pos.Y = 0; pos.Y < map.Height; ++pos.Y) {
+          HashSet<Point> tainted = threats.ThreatWhere(map, view);
+          HashSet<Point> tourism = sights_to_see.In(map, view);
+          view.DoForEach(pos => {
               if (tainted.Contains(pos)) {
-                m_UI.UI_SetMinimapColor(pos.X, pos.Y, Color.Maroon);
-                continue;
+                m_UI.UI_SetMinimapColor(pos.X-view.Left, pos.Y-view.Top, Color.Maroon);
+                return;
               }
               if (tourism.Contains(pos)) {
-                m_UI.UI_SetMinimapColor(pos.X, pos.Y, Color.Magenta);
-                continue;
+                m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, Color.Magenta);
+                return;
               }
-              if (!m_Player.Controller.IsKnown(new Location(map, pos))) continue;
-              m_UI.UI_SetMinimapColor(pos.X, pos.Y, (map.HasExitAt(pos) ? Color.HotPink : map.GetTileModelAt(pos).MinimapColor));
-            }
-          }
+              if (!m_Player.Controller.IsKnown(new Location(map, pos))) return;
+              m_UI.UI_SetMinimapColor(pos.X - view.Left, pos.Y - view.Top, (map.HasExitAtExt(pos) ? Color.HotPink : map.GetTileModelAtExt(pos).MinimapColor));
+          });
 		}
 #endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
       }
-      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + m_MapViewRect.Left * MINITILE_SIZE, MINIMAP_Y + m_MapViewRect.Top * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
+      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + (m_MapViewRect.Left-view.Left) * MINITILE_SIZE, MINIMAP_Y + (m_MapViewRect.Top-view.Top) * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
       if (s_Options.ShowPlayerTagsOnMinimap) {
         view.DoForEach(pt => {
                 Tile tileAt = map.GetTileAtExt(pt);
@@ -10397,8 +10402,8 @@ namespace djack.RogueSurvivor.Engine
         }
       }	// end if (!m_Player.IsSleeping)
       Point position = m_Player.Location.Position;
-      int x1 = MINIMAP_X + position.X * 2;
-      int y1 = MINIMAP_Y + position.Y * 2;
+      int x1 = MINIMAP_X + (position.X-view.Left) * 2;
+      int y1 = MINIMAP_Y + (position.Y-view.Top) * 2;
       m_UI.UI_DrawImage(GameImages.MINI_PLAYER_POSITION, x1 - 1, y1 - 1);
     }
 
