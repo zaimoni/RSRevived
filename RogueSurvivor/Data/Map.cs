@@ -353,22 +353,18 @@ namespace djack.RogueSurvivor.Data
       switch(district_delta.X)
       {
       case 1:
-        if (Engine.RogueGame.HALF_VIEW_WIDTH <= not_in_bounds.X) return null;
         not_in_bounds.X += Width;
         break;
       case -1:
-        if (loc.Map.Width-Engine.RogueGame.HALF_VIEW_WIDTH > not_in_bounds.X) return null;
         not_in_bounds.X -= loc.Map.Width;
         break;
       };
       switch(district_delta.Y)
       {
       case 1:
-        if (Engine.RogueGame.HALF_VIEW_HEIGHT <= not_in_bounds.Y) return null;
         not_in_bounds.Y += Height;
         break;
       case -1:
-        if (loc.Map.Width-Engine.RogueGame.HALF_VIEW_HEIGHT > not_in_bounds.Y) return null;
         not_in_bounds.Y -= loc.Map.Height;
         break;
       };
@@ -376,6 +372,16 @@ namespace djack.RogueSurvivor.Data
 #else
       return null;
 #endif
+    }
+
+    public bool IsInViewRect(Location loc, Rectangle view)
+    {
+      if (this != loc.Map) {
+        Location? test = Denormalize(loc);
+        if (null == test) return false;
+        loc = test.Value;
+      }
+      return view.Left <= loc.Position.X && view.Right > loc.Position.X && view.Top <= loc.Position.Y && view.Bottom > loc.Position.Y;
     }
 
     // these two look wrong, may need fixing later

@@ -660,10 +660,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Point> FindRetreat(Dictionary<Point,int> damage_field, IEnumerable<Point> legal_steps)
     {
-      Contract.Requires(null != damage_field);
-      Contract.Requires(null != legal_steps);
 #if DEBUG
-      Contract.Requires(damage_field.ContainsKey(m_Actor.Location.Position));
+      if (null == damage_field) throw new ArgumentNullException(nameof(damage_field));
+      if (null == legal_steps) throw new ArgumentNullException(nameof(legal_steps));
+      if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
       IEnumerable<Point> tmp_point = legal_steps.Where(pt=>!damage_field.ContainsKey(pt));
       if (tmp_point.Any()) return tmp_point.ToList();

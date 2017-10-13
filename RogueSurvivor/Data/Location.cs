@@ -6,7 +6,6 @@
 
 using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -24,7 +23,9 @@ namespace djack.RogueSurvivor.Data
 
     public Location(Map map, Point position)
     {
-      Contract.Requires(null != map);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+#endif
       m_Map = map;
       m_Position = position;
     }
