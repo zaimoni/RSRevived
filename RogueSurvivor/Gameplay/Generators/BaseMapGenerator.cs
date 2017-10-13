@@ -1099,5 +1099,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       return new Zone(string.Format("{0}@{1}-{2}", (object) basename, (object) (rect.Left + rect.Width / 2), (object) (rect.Top + rect.Height / 2)), rect);
     }
+
+    // start RNG-dependent map generation utilities
   }
 }
