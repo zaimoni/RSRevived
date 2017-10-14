@@ -146,14 +146,14 @@ namespace djack.RogueSurvivor.Engine
 
     public Rules(DiceRoller diceRoller)
     {
-      Contract.Requires(null != diceRoller);
+#if DEBUG
+      if (null == diceRoller) throw new ArgumentNullException(nameof(diceRoller));
+#endif
       m_DiceRoller = diceRoller;
     }
 
     public int Roll(int min, int max)
     {
-      Contract.Ensures(Contract.Result<int>()>=min);
-      Contract.Ensures(Contract.Result<int>()<max);
       return m_DiceRoller.Roll(min, max);
     }
 
@@ -173,7 +173,6 @@ namespace djack.RogueSurvivor.Engine
       float num = deviation / 2f;
       return (float) ((double) value - (double) num * (double)m_DiceRoller.RollFloat() + (double) num * (double)m_DiceRoller.RollFloat());
     }
-#endif
 
     public int RollX(Map map)
     {
@@ -188,6 +187,7 @@ namespace djack.RogueSurvivor.Engine
         throw new ArgumentNullException("map");
       return m_DiceRoller.Roll(0, map.Height);
     }
+#endif
 
     public Direction RollDirection()
     {

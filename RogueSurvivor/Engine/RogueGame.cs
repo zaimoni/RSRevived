@@ -2573,23 +2573,22 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "An army chopper dropped supplies.");
     }
 
-    static private bool IsSuitableDropSuppliesPoint(Map map, Point pt)
+    static private bool IsSuitableDropSuppliesPoint(Map map, Point pt)  // XXX should be able to partially precalculate
     {
-      if (!map.IsValid(pt)) return false;
-      Tile tileAt = map.GetTileAtExt(pt);
-      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && DistanceToPlayer(map, pt) >= SPAWN_DISTANCE_TO_PLAYER;
+#if DEBUG
+      if (!map.IsInBounds(pt)) throw new ArgumentOutOfRangeException(nameof(pt),pt, "!map.IsInBounds(pt)");
+#endif
+      Tile tileAt = map.GetTileAt(pt);
+      return !tileAt.IsInside && tileAt.Model.IsWalkable && !map.HasActorAt(pt) && !map.HasMapObjectAt(pt) && NoPlayersNearerThan(map,pt,SPAWN_DISTANCE_TO_PLAYER);
     }
 
     private bool FindDropSuppliesPoint(Map map, out Point dropPoint)
     {
       dropPoint = new Point();
-      int num = 4 * map.Width;
-      for (int index = 0; index < num; ++index) {
-        dropPoint.X = m_Rules.RollX(map);
-        dropPoint.Y = m_Rules.RollY(map);
-        if (IsSuitableDropSuppliesPoint(map, dropPoint)) return true;
-      }
-      return false;
+      var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, pt));
+      if (0 >= pts.Count) return false;
+      dropPoint = pts[m_Rules.Roll(0,pts.Count)];
+      return true;
     }
 
     static private bool HasRaidHappenedSince(RaidType raid, District district, WorldTime mapTime, int sinceNTurns)
@@ -2723,28 +2722,25 @@ namespace djack.RogueSurvivor.Engine
       return DistanceToPlayer(map, pos.X, pos.Y);
     }
 
+    static private bool NoPlayersNearerThan(Map map, Point pos, int min_distance)   // XXX de-optimization but needed for cross-district
+    {
+        Rectangle exclude = new Rectangle(pos.X-min_distance+1, pos.Y-min_distance+1, -1+2* min_distance, -1+2* min_distance);
+        return !exclude.Any(pt => map.GetActorAtExt(pt)?.IsPlayer ?? false);
+    }
+
     private bool SpawnActorOnMapBorder(Map map, Actor actorToSpawn, int minDistToPlayer)
     {
-      int num1 = 4 * (map.Width + map.Height);
-      int num2 = 0;
-      Point point = new Point();
-      do {
-        if (m_Rules.RollChance(50)) {
-          point.X = m_Rules.RollX(map);
-          point.Y = m_Rules.RollChance(50) ? 0 : map.Height - 1;
-        } else{
-          point.X = m_Rules.RollChance(50) ? 0 : map.Width - 1;
-          point.Y = m_Rules.RollY(map);
-        }
-        if (!map.IsWalkableFor(point, actorToSpawn)) continue;
-        if (DistanceToPlayer(map, point) < minDistToPlayer) continue;
-        if (actorToSpawn.WouldBeAdjacentToEnemy(map, point)) continue;
-        map.PlaceAt(actorToSpawn, point);
-        OnActorEnterTile(actorToSpawn);
-        return true;
-      }
-      while (++num2 <= num1);
-      return false;
+      List<Point> tmp = map.Rect.WhereOnEdge(pt => {
+         if (!map.IsWalkableFor(pt, actorToSpawn)) return false;
+         if (!NoPlayersNearerThan(map, pt, minDistToPlayer)) return false;
+         if (actorToSpawn.WouldBeAdjacentToEnemy(map, pt)) return false;
+         return true;
+      });
+      if (0 >= tmp.Count) return false;
+      Point point = tmp[m_Rules.Roll(0,tmp.Count)];
+      map.PlaceAt(actorToSpawn, point);
+      OnActorEnterTile(actorToSpawn);
+      return true;
     }
 
     private bool SpawnActorNear(Map map, Actor actorToSpawn, int minDistToPlayer, Point nearPoint, int maxDistToPoint)

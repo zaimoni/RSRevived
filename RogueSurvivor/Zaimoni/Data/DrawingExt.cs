@@ -58,6 +58,28 @@ namespace Zaimoni.Data
       }
     }
 
+    public static void DoForEachOnEdge(this Rectangle rect, Action<Point> doFn, Predicate<Point> testFn)
+    {
+#if DEBUG
+      if (null == doFn) throw new ArgumentNullException(nameof(doFn));
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      Point point = new Point();
+      for (point.X = rect.Left; point.X < rect.Right; ++point.X) {
+        point.Y = rect.Top;
+        if (testFn(point)) doFn(point);
+        point.Y = rect.Bottom-1;
+        if (testFn(point)) doFn(point);
+      }
+      if (2 >= rect.Height) return;
+      for (point.Y = rect.Top+1; point.Y < rect.Bottom-2; ++point.Y) { 
+        point.X = rect.Left;
+        if (testFn(point)) doFn(point);
+        point.X = rect.Right-1;
+        if (testFn(point)) doFn(point);
+      }
+    }
+
     // imitate Enumerable interface here
     public static List<Point> Where(this Rectangle rect, Predicate<Point> testFn)
     {
@@ -66,6 +88,16 @@ namespace Zaimoni.Data
 #endif
       List<Point> ret = new List<Point>();
       rect.DoForEach(pt => ret.Add(pt),testFn);
+      return ret;
+    }
+
+    public static List<Point> WhereOnEdge(this Rectangle rect, Predicate<Point> testFn)
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      List<Point> ret = new List<Point>();
+      rect.DoForEachOnEdge(pt => ret.Add(pt),testFn);
       return ret;
     }
 
