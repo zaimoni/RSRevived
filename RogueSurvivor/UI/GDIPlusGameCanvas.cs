@@ -272,8 +272,8 @@ namespace djack.RogueSurvivor.UI
 
     public void ClearMinimap(Color color)
     {
-      for (int x = 0; x < Engine.RogueGame.MAP_MAX_WIDTH; ++x) {
-        for (int y = 0; y < Engine.RogueGame.MAP_MAX_HEIGHT; ++y)
+      for (int x = 0; x < 1+2*Engine.RogueGame.MINIMAP_RADIUS; ++x) {
+        for (int y = 0; y < 1+2*Engine.RogueGame.MINIMAP_RADIUS; ++y)
           SetMinimapColor(x, y, color);
       }
     }

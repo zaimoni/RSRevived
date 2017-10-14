@@ -7592,7 +7592,7 @@ namespace djack.RogueSurvivor.Engine
       attacker.SpendStaminaPoints(Rules.STAMINA_COST_MELEE_ATTACK + attack.StaminaPenalty);
       int num1 = m_Rules.RollSkill(attack.HitValue);
       int num2 = m_Rules.RollSkill(defence.Value);
-      // weird to have the presence of sleeping livings influence damage inflicted
+      // 2x damage against sleeping targets
       int dmg = (num1 > num2 ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
@@ -7601,12 +7601,13 @@ namespace djack.RogueSurvivor.Engine
 #endif
       bool player1 = ForceVisibleToPlayer(defender);
       bool player2 = player1 ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
-      bool flag = attacker.IsPlayer || defender.IsPlayer;
+      bool flag = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES flag?
+      bool display_defender = (defender.Location.Map == attacker.Location.Map || defender.Location.Map.District != attacker.Location.Map.District); // hard-crash if this is false -- denormalization will be null
       if (!player1 && !player2 && (!flag && m_Rules.RollChance(PLAYER_HEAR_FIGHT_CHANCE)))
         AddMessageIfAudibleForPlayer(attacker.Location, "You hear fighting");
       if (player2) {
         AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(attacker.Location), SIZE_OF_ACTOR)));
-        AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
+        if (display_defender) AddOverlay(new OverlayRect(Color.Red, new Rectangle(MapToScreen(defender.Location), SIZE_OF_ACTOR)));
         AddOverlay(new OverlayImage(MapToScreen(attacker.Location), GameImages.ICON_MELEE_ATTACK));
       }
       if (num1 > num2) {
@@ -7622,7 +7623,7 @@ namespace djack.RogueSurvivor.Engine
           if (defender.HitPoints <= 0) {
             if (player2 || player1) {
               AddMessage(MakeMessage(attacker, Conjugate(attacker, defender.Model.Abilities.IsUndead ? VERB_DESTROY : (Rules.IsMurder(attacker, defender) ? VERB_MURDER : VERB_KILL)), defender, " !"));
-              AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
+              if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_KILLED));
               RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
             }
@@ -7649,20 +7650,20 @@ namespace djack.RogueSurvivor.Engine
             }
           } else if (player2 || player1) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
-            DefenderDamageIcon(defender, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
+            if (display_defender) DefenderDamageIcon(defender, GameImages.ICON_MELEE_DAMAGE, dmg.ToString());
             RedrawPlayScreen();
             AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
           }
         } else if (player2 || player1) {
           AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, " for no effect."));
-          AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
+          if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
           RedrawPlayScreen();
           AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
         }
       }
       else if (player2 || player1) {
         AddMessage(MakeMessage(attacker, Conjugate(attacker, VERB_MISS), defender));
-        AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
+        if (display_defender) AddOverlay(new OverlayImage(MapToScreen(defender.Location), GameImages.ICON_MELEE_MISS));
         RedrawPlayScreen();
         AnimDelay(flag ? DELAY_NORMAL : DELAY_SHORT);
       }
@@ -10313,7 +10314,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_ClearMinimap(Color.Black);
 #region set visited tiles color.
 		if (null == threats) {
-          view.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X, pt.Y, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pt)));
+          view.DoForEach(pt => m_UI.UI_SetMinimapColor(pt.X - view.Left, pt.Y - view.Top, (map.HasExitAtExt(pt) ? Color.HotPink : map.GetTileModelAtExt(pt).MinimapColor)), pt => m_Player.Controller.IsKnown(new Location(map, pt)));
 		} else {
           HashSet<Point> tainted = threats.ThreatWhere(map, view);
           HashSet<Point> tourism = sights_to_see.In(map, view);

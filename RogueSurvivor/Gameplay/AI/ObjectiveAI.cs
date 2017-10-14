@@ -492,6 +492,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsExpiredAt(m_Actor.Location.Map.LocalTime.TurnCounter));
       if (null != tmpFood) return BehaviorDropItem(tmpFood);
       tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f));
+#if DEBUG
+      if (null != tmpFood && m_Actor.IsDebuggingTarget) throw new InvalidOperationException("food deemed unimportant");
+#endif
       if (null != tmpFood) return BehaviorDropItem(tmpFood);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
@@ -657,7 +660,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsInterestingItem(ItemFood food)
     {
-      if (m_Actor.Inventory.Contains(food)) return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2 + food.Nutrition);
+      if (m_Actor.Inventory.Contains(food)) return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2 + food.Nutrition*food.Quantity);
       return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2);
     }
 
