@@ -7627,26 +7627,27 @@ namespace djack.RogueSurvivor.Engine
               RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
             }
-            KillActor(attacker, defender, "hit");
+            // need to know whether it's a zombifying hit or not
+            bool to_immediately_zombify = Session.Get.HasImmediateZombification && attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(s_Options.ZombificationChance);
+            KillActor(attacker, defender, (to_immediately_zombify ? "hit" : "hit"));
             if (attacker.Model.Abilities.IsUndead && !defender.Model.Abilities.IsUndead)
               SeeingCauseInsanity(attacker, Rules.SANITY_HIT_EATEN_ALIVE, string.Format("{0} eaten alive", defender.Name));
-            if (Session.Get.HasImmediateZombification || defender == m_Player) {
-              if (attacker.Model.Abilities.CanZombifyKilled && !defender.Model.Abilities.IsUndead && m_Rules.RollChance(s_Options.ZombificationChance)) {
-                if (defender.IsPlayer)
-                  defender.Location.Map.TryRemoveCorpseOf(defender);
+            if (Session.Get.HasImmediateZombification) {
+              if (to_immediately_zombify) {
+                defender.Location.Map.TryRemoveCorpseOf(defender);
                 Zombify(attacker, defender, false);
                 if (player1) {
                   AddMessage(MakeMessage(attacker, Conjugate(attacker, "turn"), defender, " into a Zombie!"));
                   RedrawPlayScreen();
                   AnimDelay(DELAY_LONG);
                 }
-              } else if (defender == m_Player && !defender.Model.Abilities.IsUndead && defender.Infection > 0) {
-                defender.Location.Map.TryRemoveCorpseOf(defender);
-                Zombify(null, defender, false);
-                AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
-                RedrawPlayScreen();
-                AnimDelay(DELAY_LONG);
               }
+            } else if (defender == m_Player && !defender.Model.Abilities.IsUndead && defender.Infection > 0) {  // the player is Especially Vulnerable (this may be going)
+              defender.Location.Map.TryRemoveCorpseOf(defender);
+              Zombify(null, defender, false);
+              AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
+              RedrawPlayScreen();
+              AnimDelay(DELAY_LONG);
             }
           } else if (player2 || player1) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
@@ -8795,6 +8796,24 @@ namespace djack.RogueSurvivor.Engine
       if (actor.IsSleeping) DoWakeUp(actor);
     }
 
+    static private int ItemSurviveKillProbability(Item it, string reason)
+    {
+      switch(reason)    // XXX be sure not to typo
+      {
+      case "infection":
+      case "starvation":
+      case "suicide":   return Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE;  // these methods are *exceptionally* forgiving on item survival
+      case "trap":
+      case "shot":
+      case "hit":   return (it is ItemBodyArmor ? Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE : Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE);  // armor likely to be trashed by these methods.  Other items, not so much
+      // As in RS alpha 9.  Give a very high survival rate to ammo and food for balance, not so high for other items
+      // appropriate for zombification and optimistic for explosions and crushing by gates
+      default: return (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
+      }
+      // default, from RS Alpha 9
+      ;
+    }
+
     public void KillActor(Actor killer, Actor deadGuy, string reason)
     {
 #if DEBUG
@@ -8861,8 +8880,7 @@ namespace djack.RogueSurvivor.Engine
         }
         Item[] objArray = deadGuy.Inventory.Items.ToArray();
         foreach (Item it in objArray) {
-          int chance = (it is ItemAmmo || it is ItemFood) ? Rules.VICTIM_DROP_AMMOFOOD_ITEM_CHANCE : Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE;
-          if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(chance))
+          if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
         }
         Session.Get.PoliceInvestigate.Record(deadGuy.Location.Map,deadGuy.Location.Position);  // cheating ai: police consider death drops tourism targets

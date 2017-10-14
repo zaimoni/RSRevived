@@ -8,10 +8,14 @@ REVIVED 0.10.0 CHANGES
 * even more AI overhaul.
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
+* Items will survive better if the method of death isn't particularly destructive to them.  (A slightly weaker version 
+  of the change in Still Alive).
+** the historical resistance of food and ammo to destruction has been retained.  Armor will survive better
+   if the method of death is non-violent.  Other items will survive better if they aren't exposed to zombification.
 * The surface maps and sewer maps have lost their peace walls. For example, you can
-** see across district boundaries
+** see across district boundaries (so does your minimap)
 ** throw grenades across district boundaries
-** fire at targets across district boundaries
+** fire at targets across district boundaries, etc.
 ** [release blocker] Unfortunately, the AI is just as unimpaired as you.
 
 REVIVED 0.9.9.4 CHANGES

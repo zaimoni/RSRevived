@@ -8,7 +8,6 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.AI
 {
@@ -21,8 +20,10 @@ namespace djack.RogueSurvivor.Engine.AI
 
     public WhereWhen(Location loc, int t0)
     {
-      Contract.Requires(0 <= t0);
-      Contract.Requires(null != loc.Map);
+#if DEBUG
+      if (0 > t0) throw new ArgumentOutOfRangeException(nameof(t0),t0, "0 > t0");
+      if (null == loc.Map) throw new ArgumentNullException(nameof(loc.Map));
+#endif
       Turn = t0;
       Location = loc;
     }
@@ -47,7 +48,9 @@ namespace djack.RogueSurvivor.Engine.AI
     public Percept_(_T_ percepted, int turn, Location location)
      : base(location,turn)
     {
-      Contract.Requires(null != percepted);
+#if DEBUG
+      if (null == percepted) throw new ArgumentNullException(nameof(percepted));
+#endif
       m_Percepted = percepted;
     }
   }

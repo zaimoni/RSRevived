@@ -24,7 +24,7 @@ namespace Zaimoni.Data
         public DenormalizedProbability(Dictionary<T, float> src)
         {
             _weights = new Dictionary<T, float>(src);
-            foreach(T tmp in new List<T>(_weights.Keys)) {
+            foreach(T tmp in src.Keys) {
                 if (0 >= _weights[tmp]) _weights.Remove(tmp);
             }
         }
@@ -34,17 +34,8 @@ namespace Zaimoni.Data
             _weights = new Dictionary<T, float>(src._weights);
         }
 
-        public int Count {
-            get {
-              return _weights.Count;
-            }
-        }
-
-        public Dictionary<T,float>.KeyCollection Keys {
-            get {
-                return _weights.Keys;
-            }
-        }
+        public int Count { get { return _weights.Count; } }
+        public Dictionary<T,float>.KeyCollection Keys { get { return _weights.Keys; } }
 
         public float this[T x]
         {
@@ -54,7 +45,7 @@ namespace Zaimoni.Data
             }
             set {
                 if (0 < value) _weights[x] = value;
-                else if (_weights.ContainsKey(x)) _weights.Remove(x);
+                else _weights.Remove(x);
             }
         }
 
@@ -65,46 +56,36 @@ namespace Zaimoni.Data
 #endif
             if (0 >= _weights.Count) return;    // must have at least one entry to normalize
 retry:      if (1 == _weights.Count) {
-              foreach(T x in _weights.Keys) {
-                _weights[x] = target;
-                return;
-              }
+              var tmp = new Dictionary<T,float>();
+              foreach(var x in _weights) tmp[x.Key] = target;
+              _weights = tmp;
+              return;
             }
-            double sum = 0.0;
-            float scale = 1f;
+            double threshold = 2.0*target;
+retry2:     double sum = 0.0;
+            // accept inaccuracy in exchange for not flogging the GC
             {   // scoping brace
-                List<float> tmp2 = new List<float>(_weights.Values);
-            tmp2.Sort();    // nonstrictly increasing order is not a bad way to sum positive floating point numerals
-            foreach(float tmp3 in tmp2) {
-                while(float.MaxValue - sum <= tmp3 * scale) {
-                    if (_divide_by(2f)) goto retry;
-                    sum /= 2f;
-                    scale /= 2f;
+            foreach(var x in _weights) {
+                while(threshold - sum <= x.Value) {
+                    if (_divide_by(2f) && 1>=Count) goto retry;
+                    goto retry2;
                 }
-                sum += tmp3*scale;
+                sum += x.Value;
             }
             }   // end scoping brace
-            // could start micro-optimizing here
-            double threshold = 2.0 * target;
-            scale = 1f;
-            float discard = float.Epsilon;
-            while(threshold <= sum/scale) {
-                scale *= 2f;
-                discard *= 2f;
-                if (_weights.Values.Any(x => x<discard)) {
-                    _divide_by(scale);
-                    goto retry;
-                }
-            }
-            threshold = target / 2f;
-            scale = 1f;
-            while(threshold >= sum*scale) scale *= 2f;
-            sum *= scale;
-            _multiply_by(scale);
+            if (target == sum) return;
+            double scale = target/sum;
+            if (1.0-2*float.Epsilon < scale && 1.0+2*float.Epsilon > scale) return; // close to normalized
 
-            scale = (float)(target / sum);
-            if (1.0 == scale) return;   // already normalized
-            _multiply_by(scale);
+            {
+            var tmp = new Dictionary<T, float>();
+            foreach(var x in _weights) {
+                float tmp2 = (float)(x.Value*scale);
+                if (0f == tmp2) continue;                
+                tmp[x.Key] = tmp2;
+            }
+            _weights = tmp;
+            }
         }
 
         // powers of 2 are the safest choice
@@ -124,15 +105,6 @@ retry:      if (1 == _weights.Count) {
 
             _weights = tmp;
             return deleted;
-        }
-
-        private void _multiply_by(float n)
-        {
-            Dictionary<T, float> tmp = new Dictionary<T, float>();
-
-            foreach (KeyValuePair<T,float> x in _weights) tmp[x.Key] = n*x.Value;
-
-            _weights = tmp;
         }
     }
 }
