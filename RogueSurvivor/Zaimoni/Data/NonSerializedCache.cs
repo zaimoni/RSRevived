@@ -28,7 +28,7 @@ namespace Zaimoni.Data
         }
     }   // NonSerializedCache
 
-    class Dataflow<src,T> where T : struct
+    public class Dataflow<src,T> where T : struct
     {
         private src m_src;
         private T? m_cache;

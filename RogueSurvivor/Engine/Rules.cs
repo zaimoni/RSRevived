@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -199,6 +200,15 @@ namespace djack.RogueSurvivor.Engine
       if (skillValue <= 0)
         return 0;
       return (m_DiceRoller.Roll(0, skillValue + 1) + m_DiceRoller.Roll(0, skillValue + 1)) / 2;
+    }
+
+    private static int _Average(int x, int y) { return x+y/2; }
+
+    public DenormalizedProbability<int> SkillProbabilityDistribution(int skillValue)
+    {
+      if (0 >= skillValue) return ConstantDistribution<int>.Get(0);
+      DenormalizedProbability<int> sk_prob = UniformDistribution.Get(0,skillValue);
+      return DenormalizedProbability<int>.Apply(sk_prob*sk_prob,_Average);  // XXX \todo cache this
     }
 
     public int RollDamage(int damageValue)

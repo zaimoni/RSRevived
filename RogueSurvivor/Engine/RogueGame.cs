@@ -6371,6 +6371,31 @@ namespace djack.RogueSurvivor.Engine
         if (actor.IsInsane) stringList.Add("Insane!");
         else if (actor.IsDisturbed) stringList.Add("Disturbed.");
       }
+
+#if PROTOTYPE
+      if (/* ranged weapon */) stringList.Add("% shoot: "+/* */)
+#endif
+      Attack m_p_attack = m_Player.MeleeAttack(actor);
+      Defence a_defense = Rules.ActorDefence(actor, actor.CurrentDefence);
+      float melee_p_hit = m_Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
+      stringList.Add("% hit: "+melee_p_hit.ToString());
+      Attack m_a_attack = actor.MeleeAttack(m_Player);
+      Defence p_defense = Rules.ActorDefence(m_Player, m_Player.CurrentDefence);
+      float melee_a_hit = m_Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(m_a_attack.HitValue));
+      stringList.Add("% be hit: "+melee_a_hit.ToString());
+//       Attack attack = attacker.RangedAttack(distance, defender);
+      if (0<m_Player.CurrentRangedAttack.Range) {
+        Attack r_p_attack = m_Player.RangedAttack(Rules.GridDistance(m_Player.Location,actor.Location), actor);
+        float ranged_p_hit = m_Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(r_p_attack.HitValue));
+        stringList.Add("% shot: "+ranged_p_hit.ToString());
+      }
+      if (0<actor.CurrentRangedAttack.Range) {
+        Attack r_a_attack = actor.RangedAttack(Rules.GridDistance(m_Player.Location,actor.Location), m_Player);
+        float ranged_a_hit = m_Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
+        stringList.Add("% be shot: "+ranged_a_hit.ToString());
+      }
+
+      // main stat block
       stringList.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));
       StringBuilder stringBuilder = new StringBuilder();
       int num1 = actor.MaxHPs;
