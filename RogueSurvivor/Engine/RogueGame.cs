@@ -2894,8 +2894,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandlePlayerActor(Actor player)
     {
-      Contract.Requires(null != player);
-      Contract.Requires(!player.IsSleeping);
+#if DEBUG
+      if (null == player) throw new ArgumentNullException(nameof(player));
+      if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
+#endif
       player.Controller.UpdateSensors();
       m_Player = player;
       Session.Get.CurrentMap = player.Location.Map;  // multi-PC support
@@ -2925,8 +2927,7 @@ namespace djack.RogueSurvivor.Engine
           AddOverlay(new OverlayPopup(new string[1] { string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString()) }, Color.White, Color.White, Color.Black, MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1)));
         RedrawPlayScreen();
         m_UI.UI_PeekKey();
-        bool flag2 = true;
-        bool flag3 = false;
+        bool hasKey = false;
         Point mousePosition = m_UI.UI_GetMousePosition();
         Point point = new Point(-1, -1);
         MouseButtons? mouseButtons = new MouseButtons?();
@@ -2934,17 +2935,16 @@ namespace djack.RogueSurvivor.Engine
         do {
           key = m_UI.UI_PeekKey();
           if (key != null) {
-            flag3 = true;
-            flag2 = false;
+            hasKey = true;
+            break;
           } else {
             point = m_UI.UI_GetMousePosition();
             mouseButtons = m_UI.UI_PeekMouseButtons();
-            if (point != mousePosition || mouseButtons.HasValue)
-              flag2 = false;
+            if (point != mousePosition || mouseButtons.HasValue) break;
           }
         }
-        while (flag2);
-        if (flag3)
+        while(true);
+        if (hasKey)
         {
           PlayerCommand command = InputTranslator.KeyToCommand(key);
           if (command == PlayerCommand.QUIT_GAME) {
@@ -2953,13 +2953,9 @@ namespace djack.RogueSurvivor.Engine
               RedrawPlayScreen();
               return;
             }
-          }
-          else
-          {
-            switch (command)
-            {
-              case PlayerCommand.NONE:
-                break;
+          } else {
+            switch (command) {
+              case PlayerCommand.NONE: break;
               case PlayerCommand.HELP_MODE:
                 HandleHelpMode();
                 break;
@@ -3164,8 +3160,7 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.ITEM_SLOT_9:
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 9, key);
                 break;
-              default:
-                throw new ArgumentException("command unhandled");
+              default: throw new ArgumentException("command unhandled");
             }
           }
         } else if (!HandleMouseLook(point)) {
