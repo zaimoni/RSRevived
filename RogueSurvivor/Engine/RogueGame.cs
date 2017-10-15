@@ -8034,13 +8034,10 @@ namespace djack.RogueSurvivor.Engine
 
     public void DoChat(Actor speaker, Actor target)
     {
-#if DEBUG
-      if (speaker.IsPlayer) throw new InvalidOperationException("target.IsPlayer");
-#endif
       speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target))
         AddMessage(MakeMessage(speaker, Conjugate(speaker, VERB_CHAT_WITH), target));
-      if (!speaker.CanTradeWith(target)) return;
+      if (speaker.IsPlayer || !speaker.CanTradeWith(target)) return;
       DoTrade(speaker, target);
     }
 
