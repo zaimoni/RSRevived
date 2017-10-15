@@ -908,13 +908,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
-    {
-      DoorWindow door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
-      if (door == null) return null;
-      return (m_Actor.CanClose(door) ? new ActionCloseDoor(m_Actor, door) : null);
-    }
-
     protected ActorAction BehaviorUseExit(BaseAI.UseExitFlags useFlags)
     {
       Exit exitAt = m_Actor.Location.Exit;

@@ -19,7 +19,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionCloseDoor(Actor actor, DoorWindow door)
       : base(actor)
     {
-      Contract.Requires(null != door);
+#if DEBUG
+      if (null == door) throw new ArgumentNullException(nameof(door));
+#endif
       m_Door = door;
     }
 

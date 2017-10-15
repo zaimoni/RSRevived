@@ -6372,6 +6372,7 @@ namespace djack.RogueSurvivor.Engine
         else if (actor.IsDisturbed) stringList.Add("Disturbed.");
       }
 
+      if (m_Player.IsEnemyOf(actor)) {
       Attack m_p_attack = m_Player.MeleeAttack(actor);
       Defence a_defense = Rules.ActorDefence(actor, actor.CurrentDefence);
       float melee_p_hit = m_Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
@@ -6391,6 +6392,7 @@ namespace djack.RogueSurvivor.Engine
         float ranged_a_hit = m_Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
         stringList.Add("% be shot: "+ranged_a_hit.ToString());
       }
+      } // m_Player.IsEnemyOf(actor)
 
       // main stat block
       stringList.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));

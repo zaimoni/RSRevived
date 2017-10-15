@@ -1375,6 +1375,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }
 
+    protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
+    {
+      DoorWindow door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
+      if (null == door) return null;
+      if (!m_Actor.CanClose(door)) return null;
+      foreach(Direction dir in Direction.COMPASS) {
+        Actor actor = previousLocation.Map.GetActorAtExt(previousLocation.Position+dir);
+        if (null == actor) continue;
+        if (actor.Controller is ObjectiveAI ai) {
+          Dictionary<Point, int> tmp = ai.MovePlanIf(actor.Location.Position);
+          if (tmp?.ContainsKey(previousLocation.Position) ?? false) return null;
+        }
+      }
+      return new ActionCloseDoor(m_Actor, door);
+    }
+
     protected ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
