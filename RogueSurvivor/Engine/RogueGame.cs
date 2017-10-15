@@ -4711,6 +4711,16 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1] { string.Format(SHOVE_ACTOR_MODE_TEXT,  other.TheName) }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       AddOverlay(new OverlayRect(Color.Yellow, new Rectangle(MapToScreen(other.Location), SIZE_OF_ACTOR)));
+#if DEBUG
+      if (other.Controller is ObjectiveAI ai) {
+        Dictionary<Point, int> dests = ai.MovePlanIf(other.Location.Position);
+        if (null != dests) {
+          foreach(Point pt in dests.Keys) {
+            AddOverlay(new OverlayRect(Color.Green, new Rectangle(MapToScreen(new Location(other.Location.Map,pt)), SIZE_OF_ACTOR)));
+          }
+        }
+      }
+#endif
 
       bool flag2 = false;
       do {
