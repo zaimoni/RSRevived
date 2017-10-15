@@ -527,7 +527,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies=null, List<Percept> friends=null)
 	{
-	  Contract.Requires(null != src);
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
 	  List<Point> tmp = src.ToList();
 
 	  // do not get in the way of allies' line of fire
@@ -570,12 +572,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // weakly prefer not to jump
       if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
+	  var secondary = new List<ActorAction>();
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = Rules.IsPathableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
-		if (null != ret && ret.IsLegal()) return ret;
-		tmp.RemoveAt(i);
+        if (null == ret || !ret.IsLegal()) {    // not really an option
+		  tmp.RemoveAt(i);
+          continue;
+        }
+        if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
+           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
+           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+             // non-moving shove...would rather not spend the stamina if there is a better option
+             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
+       		 tmp.RemoveAt(i);
+             continue;
+           }
+           if (   null == ok_dests // shove is rude
+               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+                {
+                secondary.Add(ret);
+    		    tmp.RemoveAt(i);
+                continue;
+                }
+        }
+		return ret;
 	  }
+      if (0<secondary.Count) return secondary[RogueForm.Game.Rules.Roll(0,secondary.Count)];
 	  return null;
 	}
 

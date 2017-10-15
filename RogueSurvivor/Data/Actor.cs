@@ -1441,9 +1441,23 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantBeShovedTo(toPos));
     }
 
+    public Dictionary<Point, Direction> ShoveDestinations {
+      get {
+         Dictionary<Point,Direction> push_dest = new Dictionary<Point,Direction>();
+         foreach(Direction dir in Direction.COMPASS) {
+           Point pt = Location.Position+dir;
+           if (!CanBeShovedTo(pt)) continue;
+           push_dest[pt] = dir;
+         }
+         return push_dest;
+      }
+    }
+
     private string ReasonCantClose(DoorWindow door)
     {
-      Contract.Requires(null != door);
+#if DEBUG
+      if (null == door) throw new ArgumentNullException(nameof(door));
+#endif
       if (!Model.Abilities.CanUseMapObjects) return "can't use objects";
       if (!door.IsOpen) return "not open";
       if (door.Location.Actor != null) return "someone is there";

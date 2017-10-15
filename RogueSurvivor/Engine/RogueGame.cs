@@ -6372,9 +6372,6 @@ namespace djack.RogueSurvivor.Engine
         else if (actor.IsDisturbed) stringList.Add("Disturbed.");
       }
 
-#if PROTOTYPE
-      if (/* ranged weapon */) stringList.Add("% shoot: "+/* */)
-#endif
       Attack m_p_attack = m_Player.MeleeAttack(actor);
       Defence a_defense = Rules.ActorDefence(actor, actor.CurrentDefence);
       float melee_p_hit = m_Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(m_p_attack.HitValue));

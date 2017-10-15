@@ -2308,12 +2308,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         costs[pt] = navigate.Cost(pt);
       }
       ActorAction ret = DecideMove(costs);
-#if DEBUG
-      if (null == ret) throw new InvalidOperationException("DecideMove failed in no-fail situation");
-#endif
-#if TRACE_NAVIGATE
-      if (m_Actor.IsDebuggingTarget && null == ret) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": refused to choose move for navigation");
-#endif
+      if (null == ret) return null; // can happen due to postprocessing stage
       if (ret is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
         m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware

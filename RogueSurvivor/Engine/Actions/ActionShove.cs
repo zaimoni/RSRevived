@@ -1,6 +1,6 @@
 ﻿using djack.RogueSurvivor.Data;
+using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -13,11 +13,16 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionShove(Actor actor, Actor target, Direction pushDir)
       : base(actor)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       m_Target = target;
       m_Direction = pushDir;
       m_To = target.Location.Position + pushDir;
     }
+
+    public Actor Target { get { return m_Target; } }
+    public Point To { get { return m_To; } }
 
     public override bool IsLegal()
     {

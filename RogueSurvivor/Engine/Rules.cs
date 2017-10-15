@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -270,8 +269,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static ActorAction IsBumpableFor(Actor actor, Map map, int x, int y, out string reason)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != actor);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+#endif
       Point point = new Point(x, y);
       reason = "";
       if (!map.IsInBounds(x, y)) {
@@ -353,9 +354,11 @@ namespace djack.RogueSurvivor.Engine
     // * not ok to chat as a time-cost action (could be re-implemented)
     private static ActorAction IsPathableFor(Actor actor, Map map, int x, int y, out string reason)
     {
-      Contract.Requires(null != map);
-      Contract.Requires(null != actor);
-      Contract.Requires(actor.Controller is Gameplay.AI.ObjectiveAI);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+      if (!(actor.Controller is Gameplay.AI.ObjectiveAI)) throw new InvalidOperationException("!(actor.Controller is Gameplay.AI.ObjectiveAI)");
+#endif
       Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
       Point point = new Point(x, y);
       reason = "";
@@ -390,12 +393,7 @@ namespace djack.RogueSurvivor.Engine
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
            // we are adjacent due to the early-escape above
-           Dictionary<Point,Direction> push_dest = new Dictionary<Point,Direction>();
-           foreach(Direction dir in Direction.COMPASS) {
-             Point pt = actorAt.Location.Position+dir;
-             if (!actorAt.CanBeShovedTo(pt)) continue;
-             push_dest[pt] = dir;
-           }
+           Dictionary<Point,Direction> push_dest = actorAt.ShoveDestinations;
 
            bool push_legal = 1<=push_dest.Count;
            if (push_legal) {
