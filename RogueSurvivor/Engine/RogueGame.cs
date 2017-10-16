@@ -3185,7 +3185,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!m_Player.IsInsane || !m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) return false;
       ActorAction insaneAction = GenerateInsaneAction(m_Player);
-      if (insaneAction == null || !insaneAction.IsLegal()) return false;
+      if (!insaneAction?.IsLegal() ?? true) return false;
       ClearMessages();
       AddMessage(new Data.Message("(your insanity takes over)", m_Player.Location.Map.LocalTime.TurnCounter, Color.Orange));
       AddMessagePressEnter();
@@ -3828,18 +3828,55 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleMouseOverCorpses(Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
-      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
       hasDoneAction = false;
-      if (corpse == null)  return false;
+      Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
+      if (null == corpse)  return false;
+
+      bool OnRMBCorpse(Corpse c)
+      {
+        if (m_Player.Model.Abilities.IsUndead) {
+          if (m_Rules.CanActorEatCorpse(m_Player, c, out string reason)) { // currently automatically succeeds, other than null checks
+            DoEatCorpse(m_Player, c);
+            return true;
+          }
+          AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+          return false;
+        }
+        if (m_Rules.CanActorButcherCorpse(m_Player, c, out string reason1)) {
+          DoButcherCorpse(m_Player, c);
+          return true;
+        }
+       AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason1)));
+       return false;
+     }
+
+     bool OnLMBCorpse(Corpse c)
+     {
+       if (c.IsDragged) {
+         if (m_Rules.CanActorStopDragCorpse(m_Player, c, out string reason)) {
+           DoStopDragCorpse(m_Player);
+           return false;
+         }
+         AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
+         return false;
+       }
+       if (m_Rules.CanActorStartDragCorpse(m_Player, c, out string reason1)) {
+         DoStartDragCorpse(m_Player, c);
+         return false;
+       }
+       AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason1)));
+       return false;
+     }
+
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, 32, 32)));
-      AddOverlay(new RogueGame.OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, 30, 30)));
+      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(corpsePos.X, corpsePos.Y, TILE_SIZE, TILE_SIZE)));
+      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(corpsePos.X + 1, corpsePos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
 
       string[] lines = DescribeCorpseLong(corpse, true);
       int num = 1 + FindLongestLine(lines);
       int x = corpsePos.X - 7 * num;
       int y = corpsePos.Y + TILE_SIZE;
-      AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
+      AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
       if (mouseButtons.HasValue) {
         if (mouseButtons.GetValueOrDefault() == MouseButtons.Left) {
           hasDoneAction = OnLMBCorpse(corpse);
@@ -3861,42 +3898,6 @@ namespace djack.RogueSurvivor.Engine
       int index = inventorySlot.X + inventorySlot.Y * 10;
       if (index >= 0 && index < corpsesAt.Count) return corpsesAt[index];
       return null;
-    }
-
-    private bool OnLMBCorpse(Corpse c)
-    {
-      if (c.IsDragged) {
-        if (m_Rules.CanActorStopDragCorpse(m_Player, c, out string reason)) {
-          DoStopDragCorpse(m_Player);
-          return false;
-        }
-        AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
-        return false;
-      }
-      if (m_Rules.CanActorStartDragCorpse(m_Player, c, out string reason1)) {
-        DoStartDragCorpse(m_Player, c);
-        return false;
-      }
-      AddMessage(MakeErrorMessage(string.Format("Cannot start dragging {0} corpse : {1}.", c.DeadGuy.Name, reason1)));
-      return false;
-    }
-
-    private bool OnRMBCorpse(Corpse c)
-    {
-      if (m_Player.Model.Abilities.IsUndead) {
-        if (m_Rules.CanActorEatCorpse(m_Player, c, out string reason)) { // currently automatically succeeds, other than null checks
-          DoEatCorpse(m_Player, c);
-          return true;
-        }
-        AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
-        return false;
-      }
-      if (m_Rules.CanActorButcherCorpse(m_Player, c, out string reason1)) {
-        DoButcherCorpse(m_Player, c);
-        return true;
-      }
-      AddMessage(MakeErrorMessage(string.Format("Cannot butcher {0} corpse : {1}.", c.DeadGuy.Name, reason1)));
-      return false;
     }
 
     private bool HandlePlayerEatCorpse(Actor player, Point mousePos)
@@ -3938,7 +3939,7 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(MakeMessage(a, string.Format("{0} dragging {1} corpse.", Conjugate(a, VERB_STOP), c.DeadGuy.Name)));
     }
 
-    public void DoButcherCorpse(Actor a, Corpse c)
+    public void DoButcherCorpse(Actor a, Corpse c)  // AI doesn't currently do this, but should be able to once it knows how to manage sanity
     {
       bool player = ForceVisibleToPlayer(a);
       a.SpendActionPoints(Rules.BASE_ACTION_COST);
@@ -5449,8 +5450,7 @@ namespace djack.RogueSurvivor.Engine
       ActorAction actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);
-        if (insaneAction != null && insaneAction.IsLegal())
-          actorAction = insaneAction;
+        if (insaneAction?.IsLegal() ?? false) actorAction = insaneAction;
       }
       // we need to know if this got past internal testing.
 #if DEBUG
