@@ -238,11 +238,13 @@ namespace djack.RogueSurvivor.Engine
     private const int GROUNDINVENTORYPANEL_Y = 224;
     private const int CORPSESPANEL_Y = 288;
     private const int INVENTORY_SLOTS_PER_LINE = 10;
+    private const int SKILLTABLE_X = RIGHTPANEL_X + 4;
     private const int SKILLTABLE_Y = 352;
     private const int SKILLTABLE_LINES = 10;
     private const int LOCATIONPANEL_X = RIGHTPANEL_X;
     private const int LOCATIONPANEL_Y = 676;
     private const int LOCATIONPANEL_TEXT_X = LOCATIONPANEL_X+4;
+    private const int LOCATIONPANEL_TEXT_X_COL2 = LOCATIONPANEL_TEXT_X+(CANVAS_WIDTH - LOCATIONPANEL_TEXT_X)/3;
     private const int LOCATIONPANEL_TEXT_Y = LOCATIONPANEL_Y+4;
     private const int MESSAGES_X = 4;
     private const int MESSAGES_Y = LOCATIONPANEL_Y;
@@ -3274,20 +3276,20 @@ namespace djack.RogueSurvivor.Engine
         do {
           m_UI.UI_Clear(Color.Black);
           DrawHeader();
-          int gy1 = 14;
+          int gy1 = BOLD_LINE_SPACING;
           m_UI.UI_DrawStringBold(Color.Yellow, "Game Manual", 0, gy1, new Color?());
-          gy1 += 14;
+          gy1 += BOLD_LINE_SPACING;
           m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
-          gy1 += 14;
+          gy1 += BOLD_LINE_SPACING;
           int index = m_ManualLine;
           do {
             if (!(formatedLines[index] == "<SECTION>")) {
               m_UI.UI_DrawStringBold(Color.LightGray, formatedLines[index], 0, gy1, new Color?());
-              gy1 += 14;
+              gy1 += BOLD_LINE_SPACING;
             }
             ++index;
           }
-          while (index < formatedLines.Count && gy1 < 740);
+          while (index < formatedLines.Count && gy1 < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
             m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
           DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, numbers to jump to section, ESC to leave");
           m_UI.UI_Repaint();
@@ -3352,18 +3354,18 @@ namespace djack.RogueSurvivor.Engine
       do {
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
-        int gy3 = 14;
+        int gy3 = BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy3, new Color?());
-        gy3 += 14;
+        gy3 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3, new Color?());
-        gy3 += 14;
+        gy3 += BOLD_LINE_SPACING;
         int index = num3;
         do {
           m_UI.UI_DrawStringBold(Color.LightGray, stringList[index], 0, gy3, new Color?());
-          gy3 += 14;
+          gy3 += BOLD_LINE_SPACING;
           ++index;
         }
-        while (index < stringList.Count && gy3 < 740);
+        while (index < stringList.Count && gy3 < CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING);
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy3, new Color?());
         DrawFootnote(Color.White, "cursor and PgUp/PgDn to move, R to reset hints, ESC to leave");
         m_UI.UI_Repaint();
@@ -3378,9 +3380,8 @@ namespace djack.RogueSurvivor.Engine
             s_Hints.ResetAllHints();
             m_UI.UI_Clear(Color.Black);
             DrawHeader();
-            int gy6 = 14;
-            m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, gy6, new Color?());
-            m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, gy6 + 14, new Color?());
+            m_UI.UI_DrawStringBold(Color.Yellow, "Advisor Hints", 0, BOLD_LINE_SPACING, new Color?());
+            m_UI.UI_DrawStringBold(Color.White, "Hints reset done.", 0, 2*BOLD_LINE_SPACING, new Color?());
             m_UI.UI_Repaint();
             m_UI.UI_Wait(DELAY_LONG);
             break;
@@ -3501,17 +3502,17 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawStringBold(Color.White, "=", num4 + index * 48 - 8, num5 + num6 * 3 * BOLD_LINE_SPACING + BOLD_LINE_SPACING, new Color?());
         int gy3 = num3 + (Session.Get.World.Size * 3 + 1) * BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, "Legend", gx, gy3, new Color?());
-        int gy4 = gy3 + BOLD_LINE_SPACING;
-        m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy4, new Color?());
-        int gy5 = gy4 + LINE_SPACING;
-        m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy5, new Color?());
-        int gy6 = gy5 + LINE_SPACING;
-        m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy6, new Color?());
-        int gy7 = gy6 + LINE_SPACING;
-        m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy7, new Color?());
-        int gy8 = gy7 + LINE_SPACING + BOLD_LINE_SPACING;
-        m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy8, new Color?());
-        int gy9 = gy8 + BOLD_LINE_SPACING;
+        gy3 += BOLD_LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  *   - current     ?   - unvisited", gx, gy3, new Color?());
+        gy3 += LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  Bus - Business    Gen - General    Gre - Green", gx, gy3, new Color?());
+        gy3 += LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  Res - Residential Sho - Shopping", gx, gy3, new Color?());
+        gy3 += LINE_SPACING;
+        m_UI.UI_DrawString(Color.White, "  =   - Subway Line", gx, gy3, new Color?());
+        gy3 += LINE_SPACING + BOLD_LINE_SPACING;
+        m_UI.UI_DrawStringBold(Color.White, "> NOTABLE LOCATIONS", gx, gy3, new Color?());
+        int gy9 = gy3 + BOLD_LINE_SPACING;
         int num7 = gy9;
         for (int y = 0; y < Session.Get.World.Size; ++y) {
           for (int x = 0; x < Session.Get.World.Size; ++x) {
@@ -3520,7 +3521,7 @@ namespace djack.RogueSurvivor.Engine
             if ((zoneByPartialName1 = entryMap.GetZoneByPartialName("Subway Station")) != null) {
               m_UI.UI_DrawStringBold(Color.Blue, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName1.Name), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= 740) {
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -3529,7 +3530,7 @@ namespace djack.RogueSurvivor.Engine
             if ((zoneByPartialName2 = entryMap.GetZoneByPartialName("Sewers Maintenance")) != null) {
               m_UI.UI_DrawStringBold(Color.Green, string.Format("at {0} : {1}.", World.CoordToString(x, y), zoneByPartialName2.Name), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= 740) {
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -3537,7 +3538,7 @@ namespace djack.RogueSurvivor.Engine
             if (entryMap == Session.Get.UniqueMaps.PoliceStation_OfficesLevel.TheMap.District.EntryMap) {
               m_UI.UI_DrawStringBold(Color.CadetBlue, string.Format("at {0} : Police Station.", World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= 740) {
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -3545,7 +3546,7 @@ namespace djack.RogueSurvivor.Engine
             if (entryMap == Session.Get.UniqueMaps.Hospital_Admissions.TheMap.District.EntryMap) {
               m_UI.UI_DrawStringBold(Color.White, string.Format("at {0} : Hospital.", World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= 740) {
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -3553,7 +3554,7 @@ namespace djack.RogueSurvivor.Engine
             if (Session.Get.PlayerKnows_CHARUndergroundFacilityLocation && entryMap == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.District.EntryMap) {
               m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : {1}.", World.CoordToString(x, y), Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap.Name), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= 740) {
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -3562,7 +3563,7 @@ namespace djack.RogueSurvivor.Engine
             {
               m_UI.UI_DrawStringBold(Color.Red, string.Format("at {0} : The Sewers Thing lives down there.", World.CoordToString(x, y)), gx, gy9, new Color?());
               gy9 += BOLD_LINE_SPACING;
-              if (gy9 >= 740) {
+              if (gy9 >= CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING) {
                 gy9 = num7;
                 gx += 350;
               }
@@ -3585,7 +3586,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = 0;
       do {
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         ClearMessages();
         AddMessage(new Data.Message(header, Session.Get.WorldTime.TurnCounter, Color.Yellow));
         int num2;
@@ -3719,8 +3720,8 @@ namespace djack.RogueSurvivor.Engine
           if (null != test) lines = DescribeStuffAt(test.Value.Map, test.Value.Position);
         }
         if (lines != null) {
-          Point screenPos = new Point(screen.X + 32, screen.Y);
-          AddOverlay(new RogueGame.OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
+          Point screenPos = new Point(screen.X + TILE_SIZE, screen.Y);
+          AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
           if (s_Options.ShowTargets) {
             Actor actorAt = Session.Get.CurrentMap.GetActorAt(pt);
             if (actorAt != null)
@@ -3768,6 +3769,7 @@ namespace djack.RogueSurvivor.Engine
             AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
             return false;
           }
+          // Above strictly implies that an equippable item that also can ube used, is not used by mouse click
           if (m_Player.CanUse(it, out string reason1)) {
             DoUseItem(m_Player, it);
             return true;
@@ -4094,7 +4096,7 @@ namespace djack.RogueSurvivor.Engine
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
       bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(GIVE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         AddMessage(new Data.Message(string.Format("Giving {0} to...", inventoryItem.TheName), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen();
@@ -4131,7 +4133,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         AddMessage(new Data.Message(string.Format("Trading {0} with...", inventoryItem.TheName), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen();
@@ -4175,7 +4177,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(CLOSE_DOOR_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
@@ -4250,7 +4252,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(BREAK_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
@@ -4320,7 +4322,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(isLarge ? BUILD_LARGE_FORT_MODE_TEXT : BUILD_SMALL_FORT_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(isLarge ? BUILD_LARGE_FORT_MODE_TEXT : BUILD_SMALL_FORT_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
       do {
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
@@ -4377,7 +4379,7 @@ namespace djack.RogueSurvivor.Engine
         bool flag3 = player.CanFireAt(actor, LoF, out string reason);
         int num1 = Rules.GridDistance(player.Location, actor.Location);
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(FIRE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         AddOverlay(new OverlayImage(MapToScreen(actor.Location), GameImages.ICON_TARGET));
         string imageID = flag3 ? (num1 <= attack.EfficientRange ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BAD) : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in LoF)
@@ -4425,7 +4427,7 @@ namespace djack.RogueSurvivor.Engine
           do {
             Actor target = actorList[index];
             ClearOverlays();
-            AddOverlay(new RogueGame.OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+            AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
             AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
             RedrawPlayScreen();
             KeyEventArgs key = m_UI.UI_WaitKey();
@@ -4475,7 +4477,7 @@ namespace djack.RogueSurvivor.Engine
         LoF.Clear();
         bool flag3 = player.CanThrowTo(point1, out string reason, LoF);
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(THROW_GRENADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         string imageID = flag3 ? GameImages.ICON_LINE_CLEAR : GameImages.ICON_LINE_BLOCKED;
         foreach (Point mapPosition in LoF)
           AddOverlay(new OverlayImage(MapToScreen(mapPosition), imageID));
@@ -4633,7 +4635,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool flag2 = false;
       do {
-        AddOverlay(new RogueGame.OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(PUSH_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
         if (direction == null) break;
@@ -4868,7 +4870,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = 0;
       do {
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         ClearMessages();
         AddMessage(new Data.Message("Choose a follower.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         int num2;
@@ -4913,7 +4915,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         ActorDirective directives = (follower.Controller as OrderableAI).Directives;
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("{0} directives...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message(string.Format("1. {0} items.", directives.CanTakeItems ? "Take" : "Don't take"), Session.Get.WorldTime.TurnCounter, Color.LightGreen));
@@ -4982,7 +4984,7 @@ namespace djack.RogueSurvivor.Engine
       do {
         string str2 = (follower.Controller as OrderableAI).DontFollowLeader ? "Start" : "Stop";
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Order {0} to...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         AddMessage(new Data.Message(string.Format("0. Cancel current order {0}.", str1), Session.Get.WorldTime.TurnCounter, Color.Green));
@@ -5378,7 +5380,7 @@ namespace djack.RogueSurvivor.Engine
       Inventory inventory = follower.Inventory;
       do {
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayPopup(ORDER_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
         ClearMessages();
         AddMessage(new Data.Message(string.Format("Ordering {0} to give...", follower.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         int num2;
@@ -6180,7 +6182,7 @@ namespace djack.RogueSurvivor.Engine
       lines1[0] = "HINT : " + title;
       Array.Copy(lines, 0, lines1, 1, lines.Length);
       lines1[lines.Length + 1] = string.Format("(hint {0}/{1})", s_Hints.CountAdvisorHintsGiven(), (int)AdvisorHint._COUNT);
-      AddOverlay(new RogueGame.OverlayPopup(lines1, Color.White, Color.White, Color.Black, new Point(0, 0)));
+      AddOverlay(new OverlayPopup(lines1, Color.White, Color.White, Color.Black, new Point(0, 0)));
       ClearMessages();
       AddMessage(new Data.Message("You can disable the advisor in the options screen.", Session.Get.WorldTime.TurnCounter, Color.White));
       AddMessage(new Data.Message(string.Format("To show the options screen : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.OPTIONS_MODE).ToString()), Session.Get.WorldTime.TurnCounter, Color.White));
@@ -8068,7 +8070,7 @@ namespace djack.RogueSurvivor.Engine
 
       bool acceptDeal = true;
       if (speaker.IsPlayer) {
-        AddOverlay(new RogueGame.OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+        AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
         RedrawPlayScreen();
         acceptDeal = WaitYesOrNo();
         ClearOverlays();
@@ -9276,18 +9278,15 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("May {0} soul rest in peace.", HisOrHer(m_Player)));
       textFile.Append(string.Format("For {0} body is now a meal for evil.", HisOrHer(m_Player)));
       textFile.Append("The End.");
-      int num1 = 0;
       m_UI.UI_Clear(Color.Black);
       m_UI.UI_DrawStringBold(Color.Yellow, "Saving post mortem to graveyard...", 0, 0, new Color?());
-      int gy1 = num1 + 14;
       m_UI.UI_Repaint();
       string str4 = RogueGame.GraveFilePath(GetUserNewGraveyardName());
       if (!textFile.Save(str4)) {
-        m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, gy1, new Color?());
+        m_UI.UI_DrawStringBold(Color.Red, "Could not save to graveyard.", 0, BOLD_LINE_SPACING, new Color?());
       } else {
-        m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, gy1, new Color?());
-        int gy2 = gy1 + 14;
-        m_UI.UI_DrawString(Color.White, str4, 0, gy2, new Color?());
+        m_UI.UI_DrawStringBold(Color.Yellow, "Grave saved to :", 0, BOLD_LINE_SPACING, new Color?());
+        m_UI.UI_DrawString(Color.White, str4, 0, 2*BOLD_LINE_SPACING, new Color?());
       }
       DrawFootnote(Color.White, "press ENTER");
       m_UI.UI_Repaint();
@@ -9297,20 +9296,17 @@ namespace djack.RogueSurvivor.Engine
       do {
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
-        int gy2 = 14;
+        int gy2 = BOLD_LINE_SPACING;
         int num5 = 0;
         m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy2, new Color?());
-        gy2 += 14;
+        gy2 += BOLD_LINE_SPACING;
         for (; num5 < 50 && index < textFile.FormatedLines.Count; ++num5) {
           m_UI.UI_DrawStringBold(Color.White, textFile.FormatedLines[index], 0, gy2, new Color?());
-          gy2 += 14;
+          gy2 += BOLD_LINE_SPACING;
           ++index;
         }
-        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, 740, new Color?());
-        if (index < textFile.FormatedLines.Count)
-          DrawFootnote(Color.White, "press ENTER for more");
-        else
-          DrawFootnote(Color.White, "press ENTER to leave");
+        m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, CANVAS_HEIGHT - 2 * BOLD_LINE_SPACING, new Color?());
+        DrawFootnote(Color.White,(index < textFile.FormatedLines.Count ? "press ENTER for more" : "press ENTER to leave"));
         m_UI.UI_Repaint();
         WaitEnter();
       }
@@ -9335,7 +9331,7 @@ namespace djack.RogueSurvivor.Engine
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.RatsUpgrade) && GameActors.IsRatBranch(m_Player.Model)) return;
       if ((GameMode.GM_VINTAGE == Session.Get.GameMode || !s_Options.ShamblersUpgrade) && GameActors.IsShamblerBranch(m_Player.Model)) return;
       ClearOverlays();
-      AddOverlay(new RogueGame.OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+      AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
       m_MusicManager.StopAll();
       m_MusicManager.Play(GameMusics.INTERLUDE);
       ClearMessages();
@@ -9354,7 +9350,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!m_Player.Model.Abilities.IsUndead) {
         ClearOverlays();
-        AddOverlay(new RogueGame.OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+        AddOverlay(new OverlayPopup(UPGRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
         m_MusicManager.StopAll();
         m_MusicManager.Play(GameMusics.INTERLUDE);
         ClearMessages();
@@ -9737,28 +9733,29 @@ namespace djack.RogueSurvivor.Engine
                     Rectangle view = new Rectangle(m_Player.Location.Position.X-MINIMAP_RADIUS, m_Player.Location.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
                     DrawMiniMap(Session.Get.CurrentMap, view);
                 }
-                m_UI.UI_DrawLine(Color.DarkGray, 4, 675, CANVAS_WIDTH, 675);
+                m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
                 DrawMessages();
+                // We have one spare line of text in the location panel, should it be needed
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
-                m_UI.UI_DrawString(Color.White, Session.Get.CurrentMap.Name, 680, 680, new Color?());
-                m_UI.UI_DrawString(Color.White, LocationText(Session.Get.CurrentMap, m_Player), 680, 692, new Color?());
-                m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", Session.Get.WorldTime.Day), 680, 704, new Color?());
-                m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), 680, 716, new Color?());
-                m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), 808, 704, new Color?());
-                m_UI.UI_DrawString(WeatherStatusText(), 808, 716);
-                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), 680, 728);
-                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Session.Get.Scoring.TotalPoints, (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), Session.DescShortGameMode(Session.Get.GameMode)), 808, 728);
-                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), 808, 740);
+                m_UI.UI_DrawString(Color.White, Session.Get.CurrentMap.Name, LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y, new Color?());
+                m_UI.UI_DrawString(Color.White, LocationText(Session.Get.CurrentMap, m_Player), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+LINE_SPACING, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", Session.Get.WorldTime.Day), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
+                m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING, new Color?());
+                m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
+                m_UI.UI_DrawString(WeatherStatusText(), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING);
+                m_UI.UI_DrawString(Color.White, string.Format("Turn {0}", Session.Get.WorldTime.TurnCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
+                m_UI.UI_DrawString(Color.White, string.Format("Score   {0}@{1}% {2}", Session.Get.Scoring.TotalPoints, (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber)), Session.DescShortGameMode(Session.Get.GameMode)), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
+                m_UI.UI_DrawString(Color.White, string.Format("Avatar  {0}/{1}", 1 + Session.Get.Scoring.ReincarnationNumber, 1 + s_Options.MaxReincarnations), LOCATIONPANEL_TEXT_X_COL2, CANVAS_HEIGHT-BOLD_LINE_SPACING);
                 if (null != m_Player) {
                   if (m_Player.MurdersCounter > 0)
-                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", m_Player.MurdersCounter), 808, 752);
-                  DrawActorStatus(m_Player, 680, 4);
+                    m_UI.UI_DrawString(Color.White, string.Format("Murders {0}", m_Player.MurdersCounter), LOCATIONPANEL_TEXT_X, CANVAS_HEIGHT-2*BOLD_LINE_SPACING);
+                  DrawActorStatus(m_Player, RIGHTPANEL_TEXT_X, RIGHTPANEL_TEXT_Y);
                   if (m_Player.Inventory != null && m_Player.Model.Abilities.HasInventory)
                     DrawInventory(m_Player.Inventory, "Inventory", true, Map.GROUND_INVENTORY_SLOTS, m_Player.Inventory.MaxCapacity, INVENTORYPANEL_X, INVENTORYPANEL_Y);
                   DrawInventory(m_Player.Location.Items, "Items on ground", true, Map.GROUND_INVENTORY_SLOTS, Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, GROUNDINVENTORYPANEL_Y);
                   DrawCorpsesList(m_Player.Location.Map.GetCorpsesAt(m_Player.Location.Position), "Corpses on ground", Map.GROUND_INVENTORY_SLOTS, INVENTORYPANEL_X, CORPSESPANEL_Y);
                   if (m_Player.Sheet.SkillTable != null && m_Player.Sheet.SkillTable.CountSkills > 0)
-                    DrawActorSkillTable(m_Player, 680, 352);
+                    DrawActorSkillTable(m_Player, SKILLTABLE_X, SKILLTABLE_Y);
                 }
                 lock (m_Overlays) {
                   foreach (Overlay mOverlay in m_Overlays)
@@ -11790,7 +11787,7 @@ namespace djack.RogueSurvivor.Engine
       stringList.Add(string.Format("Achievements : {0}/{1}.", Session.Get.Scoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
       stringList.Add(str);
       Point screenPos = new Point(0, 0);
-      AddOverlay(new RogueGame.OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, screenPos));
+      AddOverlay(new OverlayPopup(stringList.ToArray(), Color.Gold, Color.Gold, Color.DimGray, screenPos));
       ClearMessages();
       AddMessagePressEnter();
       ClearOverlays();
