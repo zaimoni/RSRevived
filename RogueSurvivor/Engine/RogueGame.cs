@@ -3733,16 +3733,59 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleMouseInventory(Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
     {
+      hasDoneAction = false;
       Item inventoryItem = MouseToInventoryItem(mousePos, out Inventory inv, out Point itemPos);
-      if (inv == null) {
-        hasDoneAction = false;
+      if (null == inv) return false;
+      bool isPlayerInventory = inv == m_Player.Inventory;
+
+      bool OnRMBItem(Item it)
+      {
+        if (!isPlayerInventory) return false;
+        if (m_Player.CanDrop(it, out string reason)) {
+          DoDropItem(m_Player, it);
+          return true;
+        }
+        AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
         return false;
       }
-      bool isPlayerInventory = inv == m_Player.Inventory;
-      hasDoneAction = false;
+
+      bool OnLMBItem(Item it)
+      {
+        if (isPlayerInventory) {
+          if (it.IsEquipped) {
+            if (m_Player.CanUnequip(it, out string reason)) {
+              DoUnequipItem(m_Player, it);
+              return false;
+            }
+            AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
+            return false;
+          }
+          if (it.Model.IsEquipable) {
+            if (m_Player.CanEquip(it, out string reason)) {
+              DoEquipItem(m_Player, it);
+              return false;
+            }
+            AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
+            return false;
+          }
+          if (m_Player.CanUse(it, out string reason1)) {
+            DoUseItem(m_Player, it);
+            return true;
+          }
+          AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
+          return false;
+        }   // if (isPlayerInventory)
+        if (m_Player.CanGet(it, out string reason2)) {
+          DoTakeItem(m_Player, m_Player.Location.Position, it);
+          return true;
+        }
+        AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason2)));
+        return false;
+      }
+
       ClearOverlays();
-      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, 32, 32)));
-      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, 30, 30)));
+      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X, itemPos.Y, TILE_SIZE, TILE_SIZE)));
+      AddOverlay(new OverlayRect(Color.Cyan, new Rectangle(itemPos.X + 1, itemPos.Y + 1, TILE_SIZE-2, TILE_SIZE-2)));
       if (inventoryItem != null) {
         string[] lines = DescribeItemLong(inventoryItem, isPlayerInventory);
         int num = 1 + FindLongestLine(lines);
@@ -3750,8 +3793,8 @@ namespace djack.RogueSurvivor.Engine
         int y = itemPos.Y + TILE_SIZE;
         AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
         if (mouseButtons.HasValue) {
-          if (mouseButtons.GetValueOrDefault() == MouseButtons.Left) hasDoneAction = OnLMBItem(inv, inventoryItem);
-          else if (mouseButtons.GetValueOrDefault() == MouseButtons.Right) hasDoneAction = OnRMBItem(inv, inventoryItem);
+          if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBItem(inventoryItem);
+          else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBItem(inventoryItem);
         }
       }
       return true;
@@ -3779,51 +3822,6 @@ namespace djack.RogueSurvivor.Engine
       if (index2 < 0 || index2 >= itemsAt.MaxCapacity) return null;
       inv = itemsAt;
       return itemsAt[index2];
-    }
-
-    private bool OnLMBItem(Inventory inv, Item it)
-    {
-      if (inv == m_Player.Inventory) {
-        if (it.IsEquipped) {
-          if (m_Player.CanUnequip(it, out string reason)) {
-            DoUnequipItem(m_Player, it);
-            return false;
-          }
-          AddMessage(MakeErrorMessage(string.Format("Cannot unequip {0} : {1}.", it.TheName, reason)));
-          return false;
-        }
-        if (it.Model.IsEquipable) {
-          if (m_Player.CanEquip(it, out string reason)) {
-            DoEquipItem(m_Player, it);
-            return false;
-          }
-          AddMessage(MakeErrorMessage(string.Format("Cannot equip {0} : {1}.", it.TheName, reason)));
-          return false;
-        }
-        if (m_Player.CanUse(it, out string reason1)) {
-          DoUseItem(m_Player, it);
-          return true;
-        }
-        AddMessage(MakeErrorMessage(string.Format("Cannot use {0} : {1}.", it.TheName, reason1)));
-        return false;
-      }
-      if (m_Player.CanGet(it, out string reason2)) {
-        DoTakeItem(m_Player, m_Player.Location.Position, it);
-        return true;
-      }
-      AddMessage(MakeErrorMessage(string.Format("Cannot take {0} : {1}.", it.TheName, reason2)));
-      return false;
-    }
-
-    private bool OnRMBItem(Inventory inv, Item it)
-    {
-      if (inv != m_Player.Inventory) return false;
-      if (m_Player.CanDrop(it, out string reason)) {
-        DoDropItem(m_Player, it);
-        return true;
-      }
-      AddMessage(MakeErrorMessage(string.Format("Cannot drop {0} : {1}.", it.TheName, reason)));
-      return false;
     }
 
     private bool HandleMouseOverCorpses(Point mousePos, MouseButtons? mouseButtons, out bool hasDoneAction)
@@ -3878,11 +3876,8 @@ namespace djack.RogueSurvivor.Engine
       int y = corpsePos.Y + TILE_SIZE;
       AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, new Point(x, y)));
       if (mouseButtons.HasValue) {
-        if (mouseButtons.GetValueOrDefault() == MouseButtons.Left) {
-          hasDoneAction = OnLMBCorpse(corpse);
-        } else if (mouseButtons.GetValueOrDefault() == MouseButtons.Right) {
-          hasDoneAction = OnRMBCorpse(corpse);
-        }
+        if (MouseButtons.Left == mouseButtons.Value) hasDoneAction = OnLMBCorpse(corpse);
+        else if (MouseButtons.Right == mouseButtons.Value) hasDoneAction = OnRMBCorpse(corpse);
       }
       return true;
     }
