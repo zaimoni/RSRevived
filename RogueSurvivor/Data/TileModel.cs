@@ -4,8 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -18,8 +18,10 @@ namespace djack.RogueSurvivor.Data
     public int ID {
       get { return m_ID; }
       set {
-        Contract.Requires(-1 == ID);
-        Contract.Requires(0 <= value);
+#if DEBUG
+        if (-1 != m_ID) throw new InvalidOperationException("can only assign tile id once");
+        if (0 > value) throw new ArgumentOutOfRangeException("0 > "+nameof(value));
+#endif
         m_ID = value;
       }
     }
@@ -32,6 +34,9 @@ namespace djack.RogueSurvivor.Data
 
     public TileModel(string imageID, Color minimapColor, bool isWalkable, bool isTransparent, string waterCoverImageID=null)
     {
+#if DEBUG
+      if (null == imageID) throw new ArgumentNullException(nameof(imageID));  // the undef tile is empty-string imageID
+#endif
       m_ID = -1;
       ImageID = imageID;
       IsWalkable = isWalkable;
