@@ -5,8 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
+using Zaimoni.Data;
 
 // XXX C# Point is not a point in a vector space at all.
 // C# Size  is closer (closed under + but doesn't honor left/right multiplication by a scalar)
@@ -89,7 +89,7 @@ namespace djack.RogueSurvivor.Data
 
     public static Direction FromVector(Point v)
     {
-      foreach (Direction direction in Direction.COMPASS) {
+      foreach (Direction direction in COMPASS) {
         if (direction.Vector == v) return direction;
       }
       return null;
@@ -97,7 +97,7 @@ namespace djack.RogueSurvivor.Data
 
     public static Direction FromVector(int vx, int vy)
     {
-      foreach (Direction direction in Direction.COMPASS) {
+      foreach (Direction direction in COMPASS) {
         if (direction.Vector.X == vx & direction.Vector.Y == vy) return direction;
       }
       return null;
@@ -224,34 +224,26 @@ diagonalExit:
     {
       PointF pointF = (PointF) v;
       float num1 = (float) Math.Sqrt((double) pointF.X * (double) pointF.X + (double) pointF.Y * (double) pointF.Y);
-      if ((double) num1 == 0.0) return Direction.N;
+      if ((double) num1 == 0.0) return N;
       pointF.X /= num1;
       pointF.Y /= num1;
-      float num2 = float.MaxValue;
-      Direction direction1 = Direction.N;
-      foreach (Direction direction2 in Direction.COMPASS) {
-        float num3 = Math.Abs(pointF.X - direction2.NormalizedVector.X) + Math.Abs(pointF.Y - direction2.NormalizedVector.Y);
-        if ((double) num3 < (double) num2) {
-          direction1 = direction2;
-          num2 = num3;
-        }
-      }
-      return direction1;
+      Direction dir = COMPASS.Minimize(d=> Math.Abs(pointF.X - d.NormalizedVector.X) + Math.Abs(pointF.Y - d.NormalizedVector.Y));
+      return dir ?? N;
     }
 
     public static Direction Right(Direction d)
     {
-      return Direction.COMPASS[(d.m_Index + 1) % 8];
+      return COMPASS[(d.m_Index + 1) % 8];
     }
 
     public static Direction Left(Direction d)
     {
-      return Direction.COMPASS[(d.m_Index - 1) % 8];
+      return COMPASS[(d.m_Index - 1) % 8];
     }
 
     public static Direction Opposite(Direction d)
     {
-      return Direction.COMPASS[(d.m_Index + 4) % 8];
+      return COMPASS[(d.m_Index + 4) % 8];
     }
 
     public override string ToString()
