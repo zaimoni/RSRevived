@@ -1443,13 +1443,7 @@ namespace djack.RogueSurvivor.Data
 
     public Dictionary<Point, Direction> ShoveDestinations {
       get {
-         Dictionary<Point,Direction> push_dest = new Dictionary<Point,Direction>();
-         foreach(Direction dir in Direction.COMPASS) {
-           Point pt = Location.Position+dir;
-           if (!CanBeShovedTo(pt)) continue;
-           push_dest[pt] = dir;
-         }
-         return push_dest;
+         return Location.Map.ValidDirections(Location.Position, (m, pt) => CanBeShovedTo(pt));
       }
     }
 

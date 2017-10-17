@@ -464,12 +464,7 @@ namespace djack.RogueSurvivor.Engine
         if (actor.AbleToPush && actor.CanPush(mapObjectAt)) {
            // at least 2 destinations: ok (1 ok if adjacent)
            // better to push to non-adjacent when pathing
-           Dictionary<Point,Direction> push_dest = new Dictionary<Point,Direction>();
-           foreach(Direction dir in Direction.COMPASS) {
-             Point pt = mapObjectAt.Location.Position+dir;
-             if (!mapObjectAt.CanPushTo(pt)) continue;
-             push_dest[pt] = dir;
-           }
+           Dictionary<Point,Direction> push_dest = map.ValidDirections(mapObjectAt.Location.Position, (m, pt) => mapObjectAt.CanPushTo(pt));
 
            bool is_adjacent = Rules.IsAdjacent(actor.Location, mapObjectAt.Location);
            bool push_legal = (is_adjacent ? 1 : 2)<=push_dest.Count;

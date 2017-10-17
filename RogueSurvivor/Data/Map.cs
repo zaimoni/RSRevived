@@ -1469,6 +1469,20 @@ namespace djack.RogueSurvivor.Data
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
     }
 
+    public Dictionary<Point,Direction> ValidDirections(Point pos, Func<Map, Point, bool> testFn)
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+#endif
+      var ret = new Dictionary<Point,Direction>();
+      foreach(Direction dir in Direction.COMPASS) {
+        Point pt = pos+dir;
+        if (!testFn(this,pt)) continue;
+        ret[pt] = dir;
+      }
+      return ret;
+    }
+
     /// <remark>testFn has to tolerate denormalized coordinates</remark>
     public Dictionary<Point,T> FindAdjacent<T>(Point pos, Func<Map,Point,T> testFn) where T:class
     {
