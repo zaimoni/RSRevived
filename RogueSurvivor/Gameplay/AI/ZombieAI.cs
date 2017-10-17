@@ -110,7 +110,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return tmpAction;
       }
       if (m_Actor.AbleToPush && game.Rules.RollChance(PUSH_OBJECT_CHANCE)) {
-        tmpAction = BehaviorPushNonWalkableObject(game);
+        tmpAction = BehaviorPushNonWalkableObject();
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

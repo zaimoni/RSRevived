@@ -590,7 +590,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.IsHungry) {
-        tmpAction = BehaviorAttackBarricade(game);
+        tmpAction = BehaviorAttackBarricade();
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind barricade");
@@ -599,7 +599,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return tmpAction;
         }
         if (game.Rules.RollChance(HUNGRY_PUSH_OBJECTS_CHANCE)) {
-          tmpAction = BehaviorPushNonWalkableObjectForFood(game);
+          tmpAction = BehaviorPushNonWalkableObjectForFood();
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for food behind non-walkable objects");

@@ -248,7 +248,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      tmpAction = BehaviorAttackBarricade(game);    // gang-specific
+      tmpAction = BehaviorAttackBarricade();    // gang-specific
       if (null != tmpAction) return tmpAction;
 
       if (m_Actor.HasLeader && !DontFollowLeader) {

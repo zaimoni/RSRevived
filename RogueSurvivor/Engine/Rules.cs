@@ -189,6 +189,14 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
+    public T Choose<T>(IEnumerable<T> src) {
+      int n = (src?.Count() ?? 0);
+      if (0 >= n) throw new ArgumentNullException(nameof(src));
+      n = m_DiceRoller.Roll(0, n);
+      foreach(var x in src) if (0 >= n--) return x;
+      throw new ArgumentNullException(nameof(src)); // unreachable with a sufficiently correct compiler
+    }
+
     public Direction RollDirection()
     {
       return Direction.COMPASS[m_DiceRoller.Roll(0, 8)];
@@ -212,8 +220,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int RollDamage(int damageValue)
     {
-      if (damageValue <= 0)
-        return 0;
+      if (damageValue <= 0) return 0;
       return m_DiceRoller.Roll(damageValue / 2, damageValue + 1);
     }
 

@@ -1469,6 +1469,22 @@ namespace djack.RogueSurvivor.Data
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
     }
 
+    /// <remark>testFn has to tolerate denormalized coordinates</remark>
+    public Dictionary<Point,T> FindAdjacent<T>(Point pos, Func<Map,Point,T> testFn) where T:class
+    {
+#if DEBUG
+      if (null == testFn) throw new ArgumentNullException(nameof(testFn));
+      if (!IsInBounds(pos)) throw new InvalidOperationException("!IsInBounds(pos)");
+#endif
+      var ret = new Dictionary<Point,T>();
+      foreach(Point pt in Direction.COMPASS.Select(dir => pos + dir)) {
+        T test = testFn(this,pt);
+        if (null == test) continue;
+        ret[pt] = test;
+      }
+      return ret;
+    }
+
     public List<Point> FilterAdjacentInMap(Point position, Predicate<Point> predicateFn)
     {
 #if DEBUG

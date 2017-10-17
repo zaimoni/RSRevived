@@ -1347,13 +1347,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorTellFriendAboutPercept(RogueGame game, Percept percept)
     {
       Map map = m_Actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
-      {
-        Actor actorAt = map.GetActorAt(pt);
-        return actorAt != null && !actorAt.IsSleeping && !m_Actor.IsEnemyOf(actorAt);
-      }));
-      if (pointList == null || pointList.Count == 0) return null;
-      Actor actorAt1 = map.GetActorAt(pointList[game.Rules.Roll(0, pointList.Count)]);
+      Dictionary<Point,Actor> friends = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
+        Actor a = m.GetActorAtExt(pt);
+        if (null == a) return null;
+        if (a.IsSleeping) return null;
+        return (m_Actor.IsEnemyOf(a) ? null : a);
+      });
+      if (0 >= friends.Count) return null;
+      Actor actorAt1 = RogueForm.Game.Rules.Choose(friends).Value;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
       string str2 = string.Format("{0} ago", (object) WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
       string text;

@@ -387,16 +387,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
     }
 
-    protected ActorAction BehaviorAttackBarricade(RogueGame game)
+    protected ActorAction BehaviorAttackBarricade()
     {
       Map map = m_Actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
-      {
-        DoorWindow doorWindow = map.GetMapObjectAt(pt) as DoorWindow;
-        return ((null != doorWindow) ? doorWindow.IsBarricaded : false);
-      }));
-      if (pointList == null) return null;
-      DoorWindow doorWindow1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]) as DoorWindow;
+      Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
+        DoorWindow doorWindow = m.GetMapObjectAtExt(pt.X,pt.Y) as DoorWindow;
+        return ((doorWindow?.IsBarricaded ?? false) ? doorWindow : null);
+      });
+      if (0 >= doors.Count) return null;
+      DoorWindow doorWindow1 = RogueForm.Game.Rules.Choose(doors).Value;
       return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
     }
 
@@ -420,36 +419,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    protected ActionPush BehaviorPushNonWalkableObject(RogueGame game)
+    protected ActionPush BehaviorPushNonWalkableObject()
     {
       if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
-      {
-        MapObject mapObjectAt = map.GetMapObjectAt(pt);
-        if (mapObjectAt == null || mapObjectAt.IsWalkable) return false;
-        return m_Actor.CanPush(mapObjectAt);
-      }));
-      if (pointList == null) return null;
-      MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);
-      ActionPush tmp = new ActionPush(m_Actor, mapObjectAt1, game.Rules.RollDirection());
+      Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
+        MapObject o = m.GetMapObjectAtExt(pt.X,pt.Y);
+        if (o?.IsWalkable ?? true) return null;
+        return (m_Actor.CanPush(o) ? o : null);
+      });
+      if (0 >= objs.Count) return null;
+      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
       return (tmp.IsLegal() ? tmp : null);
     }
 
-    protected ActionPush BehaviorPushNonWalkableObjectForFood(RogueGame game)
+    protected ActionPush BehaviorPushNonWalkableObjectForFood()
     {
       if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
-      List<Point> pointList = map.FilterAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt =>
-      {
-        MapObject mapObjectAt = map.GetMapObjectAt(pt);
-        // Wrecked cars are very tiring to push, and are jumpable so they don't need to be pushed.
-        if (mapObjectAt == null || mapObjectAt.IsWalkable || mapObjectAt.IsJumpable) return false;
-        return m_Actor.CanPush(mapObjectAt);
-      }));
-      if (pointList == null) return null;
-      MapObject mapObjectAt1 = map.GetMapObjectAt(pointList[game.Rules.Roll(0, pointList.Count)]);
-      ActionPush tmp = new ActionPush(m_Actor, mapObjectAt1, game.Rules.RollDirection());
+      Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
+        MapObject o = m.GetMapObjectAtExt(pt.X,pt.Y);
+        if (null == o) return null;
+        if (o.IsWalkable) return null;
+        if (o.IsJumpable) return null;
+        return (m_Actor.CanPush(o) ? o : null);
+      });
+      if (0 >= objs.Count) return null;
+      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
       return (tmp.IsLegal() ? tmp : null);
     }
 
