@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   abstract class StateMapObject : MapObject
   {
-    protected int m_State = 0;
+    protected int m_State;
 
     public int State { get { return m_State; } }
     abstract protected string StateToID(int x); // XXX intent is to validate before actually updating the state

@@ -557,8 +557,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
         ItemAmmo test = null;
         foreach(GameItems.IDs x in GameItems.ammo) {
-          ItemAmmo ammo = inv.GetBestDestackable(Models.Items[(int)x]) as ItemAmmo;
-          if (null != ammo) {
+          if (inv.GetBestDestackable(Models.Items[(int)x]) is ItemAmmo ammo) {
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
@@ -580,7 +579,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpGrenade) return BehaviorDropItem(tmpGrenade);
 
       // important trackers go for ammo
-      if (it is ItemAmmo) { 
+      if (it is ItemAmmo) {
         ItemTracker discardTracker = inv.GetFirstMatching<ItemTracker>();
         if (null != discardTracker) return BehaviorDropItem(discardTracker);
       }
@@ -639,7 +638,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
     }
-      
+
     public bool IsInterestingItem(ItemAmmo am)
     {
       if (m_Actor.GetCompatibleRangedWeapon(am) == null) {
@@ -742,7 +741,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (!m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {
         List<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
-        List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
         if (null != tmp_rw && !AmmoAtLimit) {
           foreach(ItemRangedWeapon rw in tmp_rw) {
             if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {

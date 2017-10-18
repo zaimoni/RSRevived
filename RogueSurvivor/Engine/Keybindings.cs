@@ -88,17 +88,13 @@ namespace djack.RogueSurvivor.Engine
 
     public Keys Get(PlayerCommand command)
     {
-      Keys keys;
-      if (m_CommandToKeyData.TryGetValue(command, out keys))
-        return keys;
+      if (m_CommandToKeyData.TryGetValue(command, out Keys keys)) return keys;
       return Keys.None;
     }
 
     public PlayerCommand Get(Keys key)
     {
-      PlayerCommand playerCommand;
-      if (m_KeyToCommand.TryGetValue(key, out playerCommand))
-        return playerCommand;
+      if (m_KeyToCommand.TryGetValue(key, out PlayerCommand playerCommand)) return playerCommand;
       return PlayerCommand.NONE;
     }
 
@@ -123,7 +119,7 @@ namespace djack.RogueSurvivor.Engine
       if ((cityInfo | Keys.Control) == cityInfo) return true;   // hard-coded to cheat map
       if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Control)) > 0) return true;
       if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Shift)) > 0) return true;
-            
+
       return false;
     }
 

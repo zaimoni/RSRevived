@@ -11,7 +11,6 @@ namespace Zaimoni.Data
     // are illegal.
     // Default value if no key is zero.
 
-    [Serializable]
     public class DenormalizedProbability<T>
     {
         private readonly Dictionary<T, float> _weights;
@@ -39,6 +38,9 @@ namespace Zaimoni.Data
 
         public DenormalizedProbability(DenormalizedProbability<T> src)
         {
+#if DEBUG
+            if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
             _weights = new Dictionary<T, float>(src._weights);
             Norm = new Dataflow<Dictionary<T, float>, double>(_weights, _current_norm);
         }
@@ -90,6 +92,10 @@ retry:      if (target == Norm.Get) return;
         // overload operator *
         public static DenormalizedProbability<KeyValuePair<T, T>> operator *(DenormalizedProbability<T> lhs, DenormalizedProbability<T> rhs)
         {
+#if DEBUG
+            if (null == lhs) throw new ArgumentNullException(nameof(lhs));
+            if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+#endif
             var ret = new DenormalizedProbability<KeyValuePair<T, T>>();
             foreach (var x in lhs._weights) {
                 foreach (var y in rhs._weights) {
@@ -106,6 +112,7 @@ retry:      if (target == Norm.Get) return;
         {
 #if DEBUG
             if (null == op) throw new ArgumentNullException(nameof(op));
+            if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
             var ret = new DenormalizedProbability<T>();
             foreach (var x in src._weights) {
@@ -126,13 +133,12 @@ retry:      if (target == Norm.Get) return;
 
     static public class ConstantDistribution<T> where T : struct
     {
-        private static Dictionary<T, DenormalizedProbability<T>> _cache = new Dictionary<T, DenormalizedProbability<T>>();
+        readonly private static Dictionary<T, DenormalizedProbability<T>> _cache = new Dictionary<T, DenormalizedProbability<T>>();
 
         public static DenormalizedProbability<T> Get(T x)
         {
             if (_cache.TryGetValue(x, out var val)) return new DenormalizedProbability<T>(val);
-            var raw = new Dictionary<T, float>();
-            raw[x] = 1;
+            var raw = new Dictionary<T, float> { [x] = 1 };
             var ret = new DenormalizedProbability<T>(raw);
             _cache[x] = new DenormalizedProbability<T>(ret);
             return ret;
@@ -141,7 +147,7 @@ retry:      if (target == Norm.Get) return;
 
     static public class UniformDistribution
     {
-        private static Dictionary<KeyValuePair<int,int>, DenormalizedProbability<int>> _cache = new Dictionary<KeyValuePair<int, int>, DenormalizedProbability<int>>();
+        readonly private static Dictionary<KeyValuePair<int,int>, DenormalizedProbability<int>> _cache = new Dictionary<KeyValuePair<int, int>, DenormalizedProbability<int>>();
 
         public static DenormalizedProbability<int> Get(int lb, int ub)
         {

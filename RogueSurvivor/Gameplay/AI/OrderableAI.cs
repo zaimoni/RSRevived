@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     [Serializable]
     internal class Goal_BreakLineOfSight : Objective
     {
-      private HashSet<Location> _locs;
+      readonly private HashSet<Location> _locs;
 
       public Goal_BreakLineOfSight(int t0, Actor who, Location loc)
       : base(t0,who)
@@ -1943,7 +1943,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
       if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
 
-      bool wantCellPhone = (m_Actor.CountFollowers > 0 || m_Actor.HasLeader);
       if (rhs is ItemTracker)
         {
         if (!(lhs is ItemTracker)) return false;

@@ -5,7 +5,7 @@ namespace Zaimoni.Data
     public class OutTextFile
     {
         public readonly string filepath;
-        private StreamWriter _file = null;
+        private StreamWriter _file;
 
         public OutTextFile(string dest) {
             filepath = dest;

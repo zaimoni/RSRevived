@@ -72,7 +72,7 @@ namespace Zaimoni.Data
         if (testFn(point)) doFn(point);
       }
       if (2 >= rect.Height) return;
-      for (point.Y = rect.Top+1; point.Y < rect.Bottom-2; ++point.Y) { 
+      for (point.Y = rect.Top+1; point.Y < rect.Bottom-2; ++point.Y) {
         point.X = rect.Left;
         if (testFn(point)) doFn(point);
         point.X = rect.Right-1;
@@ -213,6 +213,7 @@ namespace Zaimoni.Data
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       foreach(Key k in src.Keys.ToList()) {
         if (!fn(src[k])) src.Remove(k);
@@ -224,6 +225,7 @@ namespace Zaimoni.Data
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       foreach(Key k in src.Keys.ToList()) {
         if (!fn(k)) src.Remove(k);
@@ -235,6 +237,7 @@ namespace Zaimoni.Data
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = (R)typeof(R).GetField("MaxValue").GetValue(default(R));
       T ret = default(T);
@@ -252,6 +255,7 @@ namespace Zaimoni.Data
     {
 #if DEBUG
       if (null == metric) throw new ArgumentNullException(nameof(metric));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       R num1 = (R)typeof(R).GetField("MinValue").GetValue(default(R));
       T ret = default(T);
@@ -281,6 +285,7 @@ namespace Zaimoni.Data
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
       if (null == test) throw new ArgumentNullException(nameof(test));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       foreach (T x in src) {
         if (test(x)) {
@@ -296,6 +301,7 @@ namespace Zaimoni.Data
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
       if (null == test) throw new ArgumentNullException(nameof(test));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       foreach (T x in src) {
         if (test(x)) fn(x);
@@ -307,6 +313,7 @@ namespace Zaimoni.Data
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
       foreach (T x in src) fn(x);
     }

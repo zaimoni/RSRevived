@@ -51,11 +51,11 @@ namespace djack.RogueSurvivor.Data
     private readonly Dictionary<Point, List<Corpse>> m_aux_CorpsesByPosition = new Dictionary<Point, List<Corpse>>(5);
     // AI support caches, etc.
     [NonSerialized]
-    public NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
+    public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Players;
     [NonSerialized]
-    public NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
+    public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
     [NonSerialized]
-    public NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
+    public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
 
     public bool IsSecret { get; private set; }
 
@@ -1097,7 +1097,7 @@ namespace djack.RogueSurvivor.Data
 
     public void OpenAllGates()
     {
-      foreach(MapObject obj in MapObjects) { 
+      foreach(MapObject obj in MapObjects) {
         if (MapObject.IDs.IRON_GATE_CLOSED != obj.ID) continue;
         obj.ID = MapObject.IDs.IRON_GATE_OPEN;
       }
@@ -1389,7 +1389,6 @@ namespace djack.RogueSurvivor.Data
 
     public void ApplyArtificialStench()
     {
-        List<OdorScent> odorScentList1 = new List<OdorScent>();
         Dictionary<Point,int> living_suppress = new Dictionary<Point,int>();
         Dictionary<Point,int> living_generate = new Dictionary<Point,int>();
         foreach(var tmp in m_ScentsByPosition) {

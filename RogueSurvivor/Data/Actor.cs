@@ -2345,7 +2345,7 @@ namespace djack.RogueSurvivor.Data
       if (target.IsSleeping) return "is sleeping";
       if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
       if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
-      if (!IsPlayer) { 
+      if (!IsPlayer) {
         if (null == target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI)) return "target unwilling to trade";
         if (null == GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI)) return "unwilling to trade";
       }

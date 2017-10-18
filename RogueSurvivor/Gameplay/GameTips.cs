@@ -8,7 +8,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class GameTips
   {
-    public static string[] TIPS = new string[26]
+    public static readonly string[] TIPS = new string[26]
     {
       "...livings tire faster at night?",
       "...some people will wreck havoc and attack others for food?",

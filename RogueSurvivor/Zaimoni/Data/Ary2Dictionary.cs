@@ -64,10 +64,8 @@ namespace Zaimoni.Data
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
             List<Key2> expired = new List<Key2>();
             Range val;
-            ConcurrentDictionary<Key1, Range> val2;
-            KeyValuePair<Range, HashSet<Key2>> val3;
             if (null == keys2 || 0==keys2.Count()) {
-                _first_second_dict.TryRemove(key,out val3);
+                _first_second_dict.TryRemove(key,out KeyValuePair<Range, HashSet<Key2>> val3);
                 _no_entries[key] = value;
                 Remove(key);
                 return;
@@ -83,10 +81,9 @@ namespace Zaimoni.Data
                 }
                 if (tmp.Value.TryRemove(key,out val) && 0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
-            foreach (Key2 tmp in expired) _second_first_dict.TryRemove(tmp,out val2);
+            foreach (Key2 tmp in expired) _second_first_dict.TryRemove(tmp,out ConcurrentDictionary<Key1, Range> val2);
             foreach(Key2 tmp in incoming) {
-              ConcurrentDictionary<Key1,Range> tmp2 = new ConcurrentDictionary<Key1, Range>();
-              tmp2[key] = value;
+              ConcurrentDictionary<Key1,Range> tmp2 = new ConcurrentDictionary<Key1, Range> { [key] = value };
               _second_first_dict[tmp] = tmp2;
             }
 
@@ -96,13 +93,11 @@ namespace Zaimoni.Data
         private void Remove(Key1 key)
         {
             List<Key2> expired = new List<Key2>();
-            Range val;
-            ConcurrentDictionary<Key1, Range> val2;
             foreach (KeyValuePair<Key2, ConcurrentDictionary<Key1, Range>> tmp in _second_first_dict) {
-                tmp.Value.TryRemove(key, out val);
+                tmp.Value.TryRemove(key, out Range val);
                 if (0 >= tmp.Value.Count) expired.Add(tmp.Key);
             }
-            foreach (Key2 tmp in expired) _second_first_dict.TryRemove(tmp, out val2);
+            foreach (Key2 tmp in expired) _second_first_dict.TryRemove(tmp, out ConcurrentDictionary<Key1, Range> val2);
         }
 
 #if FAIL

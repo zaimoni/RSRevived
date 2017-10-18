@@ -12,22 +12,17 @@ namespace djack.RogueSurvivor
 {
   internal static class Logger
   {
-    private static List<string> s_Lines = new List<string>();
-    private static object s_Mutex = new object();
+    readonly private static List<string> s_Lines = new List<string>();
+    readonly private static object s_Mutex = new object();
 
-    public static IEnumerable<string> Lines
-    {
-      get
-      {
-        return (IEnumerable<string>) Logger.s_Lines;
-      }
-    }
+    public static IEnumerable<string> Lines { get { return Logger.s_Lines; } }
 
-    // XXX dead function?
+#if DEAD_FUNC
     public static void Clear()
     {
       lock (Logger.s_Mutex) { Logger.s_Lines.Clear(); }
     }
+#endif
 
     public static void CreateFile()
     {

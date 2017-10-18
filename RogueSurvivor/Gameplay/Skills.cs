@@ -16,18 +16,18 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class Skills
   {
-    private readonly static string[] s_Names = new string[(int) Skills.IDs._COUNT];
-    public static Skills.IDs[] UNDEAD_SKILLS = new Skills.IDs[(int)Skills.IDs._COUNT - (int)Skills.IDs._LAST_LIVING-1]  // \todo adjust this naming when breaking savefile format?
+    private readonly static string[] s_Names = new string[(int) IDs._COUNT];
+    public readonly static IDs[] UNDEAD_SKILLS = new IDs[(int)IDs._COUNT - (int)IDs._LAST_LIVING-1]  // \todo adjust this naming when breaking savefile format?
     {
-      Skills.IDs._FIRST_UNDEAD,
-      Skills.IDs.Z_EATER,
-      Skills.IDs.Z_GRAB,
-      Skills.IDs.Z_INFECTOR,
-      Skills.IDs.Z_LIGHT_EATER,
-      Skills.IDs.Z_LIGHT_FEET,
-      Skills.IDs.Z_STRONG,
-      Skills.IDs.Z_TOUGH,
-      Skills.IDs.Z_TRACKER
+      IDs._FIRST_UNDEAD,
+      IDs.Z_EATER,
+      IDs.Z_GRAB,
+      IDs.Z_INFECTOR,
+      IDs.Z_LIGHT_EATER,
+      IDs.Z_LIGHT_FEET,
+      IDs.Z_STRONG,
+      IDs.Z_TOUGH,
+      IDs.Z_TRACKER
     };
 
     public static string Name(Skills.IDs id)

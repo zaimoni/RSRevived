@@ -1487,7 +1487,7 @@ namespace djack.RogueSurvivor.Engine
                 --s_Options.MaxDogs;
                 break;
               case GameOptions.IDs.GAME_MAX_UNDEADS:
-                          s_Options.MaxUndeads -= 10;
+                s_Options.MaxUndeads -= 10;
                 break;
               case GameOptions.IDs.GAME_SIMULATE_DISTRICTS:
                 break;
@@ -2458,10 +2458,10 @@ namespace djack.RogueSurvivor.Engine
     // They currently use the same ley-line behavior as the undead invasion (indeed, all livings do)
     // Ultimately, we would want to model both helicopters (supply drops, Blackops, possibly National Guard),
     // gas/diesel motorcycles (Bikers), and gas/diesel car-like vehicles (Gangters, Survivors, possibly National Guard)
-    // note that there are no gas/diesel stations in town, so there must be one reasonably close outside of 
+    // note that there are no gas/diesel stations in town, so there must be one reasonably close outside of
     // the CHAR company town city limits to enable the gas/diesel vehicles to even get here.
 
-    // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map that was physically disconnected from the surface, from 
+    // Subway arrivals were disabled for gameplay reasons. (It was just plain strange for refugees to arrive in a map that was physically disconnected from the surface, from
     // their point of view.  It also artificially complicated using the subway as a safehouse.)
     private void FireEvent_RefugeesWave(District district)
     {

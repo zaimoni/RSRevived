@@ -35,6 +35,9 @@ namespace Zaimoni.Data
         // Need a value copy constructor for typical uses
         public FloodfillPathfinder(FloodfillPathfinder<T> src)
         {
+#if DEBUG
+            if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
             _blacklist = new HashSet<T>(src._blacklist);
             _inDomain = src._inDomain;
             _map = new Dictionary<T, int>(src._map);
@@ -48,6 +51,7 @@ namespace Zaimoni.Data
 #if DEBUG
             if (null == Forward) throw new ArgumentNullException(nameof(Forward));
             if (null == Inverse) throw new ArgumentNullException(nameof(Inverse));
+            if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
             _blacklist = new HashSet<T>(src._blacklist);
             _inDomain = src._inDomain;

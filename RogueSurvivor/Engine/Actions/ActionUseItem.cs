@@ -38,7 +38,7 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionUse : ActorAction
   {
     private readonly Gameplay.GameItems.IDs m_ID;
-    private Item m_Item = null;
+    private Item m_Item;
 
     public ActionUse(Actor actor, Gameplay.GameItems.IDs it)
       : base(actor)

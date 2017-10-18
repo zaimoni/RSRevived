@@ -12,7 +12,7 @@ namespace djack.RogueSurvivor.Data
   internal class TileModel
   {
     public static readonly TileModel UNDEF = new TileModel("", Color.Pink, false, true);
-    
+
     private int m_ID;
 
     public int ID {

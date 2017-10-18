@@ -30,14 +30,13 @@ namespace djack.RogueSurvivor
             }
             reading_PC = false;
           }
-          if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) { 
-            int tmp2;
-            if (int.TryParse(tmp.Substring(7), out tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
+          if (tmp.StartsWith("--seed=") && 0 == Engine.Session.COMMAND_LINE_SEED) {
+            if (int.TryParse(tmp.Substring(7), out int tmp2)) Engine.Session.COMMAND_LINE_SEED = tmp2;
           }
-          if (tmp.StartsWith("--spawn=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn")) { 
+          if (tmp.StartsWith("--spawn=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn")) {
             Engine.Session.CommandLineOptions["spawn"] = tmp.Substring(8);
           }
-          if (tmp.StartsWith("--spawn-district=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn-district")) { 
+          if (tmp.StartsWith("--spawn-district=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn-district")) {
             Engine.Session.CommandLineOptions["spawn-district"] = tmp.Substring(17);
           }
           if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist

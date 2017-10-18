@@ -235,17 +235,17 @@ namespace djack.RogueSurvivor.Engine
         else
           num1 -= num2;
       }
-      float num3 = (float) Math.Sqrt(125.0) / 12500f;
+      float num3 = (float) Math.Sqrt(GameOptions.DEFAULT_MAX_UNDEADS+ GameOptions.DEFAULT_MAX_CIVILIANS) / (GameOptions.DEFAULT_CITY_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE);
       float num4 = ((float) Math.Sqrt((double) (options.MaxCivilians + options.MaxUndeads)) / (float) (options.CitySize * options.DistrictSize * options.DistrictSize) - num3) / num3;
       float num5 = side != DifficultySide.FOR_SURVIVOR ? num1 - 0.99f * num4 : num1 + 0.99f * num4;
-      float num6 = 4f;
+      const float num6 = (float)(GameOptions.DEFAULT_MAX_UNDEADS) /(float)(GameOptions.DEFAULT_MAX_CIVILIANS);
       float num7 = ((float) options.MaxUndeads / (float) options.MaxCivilians - num6) / num6;
       float num8 = (float) (options.DayZeroUndeadsPercent - GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT) / (float)GameOptions.DEFAULT_DAY_ZERO_UNDEADS_PERCENT;
       float num9 = (float) (options.ZombieInvasionDailyIncrease - 5) / 5f;
       float num10 = side != DifficultySide.FOR_SURVIVOR ? num5 - (float) (0.3 * (double) num7 + 0.05 * (double) num8 + 0.15 * (double) num9) : num5 + (float) (0.3 * (double) num7 + 0.05 * (double) num8 + 0.15 * (double) num9);
-      float num11 = 2500f;
+      const float num11 = (float)(GameOptions.DEFAULT_MAX_CIVILIANS* GameOptions.DEFAULT_ZOMBIFICATION_CHANCE);
       float num12 = ((float) (options.MaxCivilians * options.ZombificationChance) - num11) / num11;
-      float num13 = 1250f;
+      const float num13 = (float)(GameOptions.DEFAULT_MAX_CIVILIANS* GameOptions.DEFAULT_STARVED_ZOMBIFICATION_CHANCE);
       float num14 = ((float) (options.MaxCivilians * options.StarvedZombificationChance) - num13) / num13;
       if (!options.NPCCanStarveToDeath)
         num14 = -1f;

@@ -52,8 +52,7 @@ namespace djack.RogueSurvivor.Engine
     public void Play(string musicname)
     {
       if (!IsMusicEnabled) return;
-      SoundPlayer audio;
-      if (!m_Musics.TryGetValue(musicname, out audio)) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer audio)) return;
       Logger.WriteLine(Logger.Stage.RUN_SOUND, string.Format("playing music {0}.", (object) musicname));
       audio.Play();
       m_PlayingMusics[musicname] = audio;
@@ -62,8 +61,7 @@ namespace djack.RogueSurvivor.Engine
     public void PlayIfNotAlreadyPlaying(string musicname)
     {
       if (!IsMusicEnabled) return;
-      SoundPlayer audio;
-      if (m_PlayingMusics.TryGetValue(musicname, out audio)) return;
+      if (m_PlayingMusics.TryGetValue(musicname, out SoundPlayer audio)) return;
       if (!m_Musics.TryGetValue(musicname, out audio)) return;
       Logger.WriteLine(Logger.Stage.RUN_SOUND, string.Format("playing music {0}.", (object) musicname));
       audio.Play();
@@ -72,8 +70,7 @@ namespace djack.RogueSurvivor.Engine
     public void PlayLooping(string musicname)
     {
       if (!IsMusicEnabled) return;
-      SoundPlayer audio;
-      if (!m_Musics.TryGetValue(musicname, out audio)) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer audio)) return;
       Logger.WriteLine(Logger.Stage.RUN_SOUND, string.Format("playing looping music {0}.", (object) musicname));
       audio.PlayLooping();
       m_PlayingMusics[musicname] = audio;
@@ -83,8 +80,7 @@ namespace djack.RogueSurvivor.Engine
     public void ResumeLooping(string musicname)
     {
       if (!IsMusicEnabled) return;
-      SoundPlayer audio;
-      if (!m_Musics.TryGetValue(musicname, out audio)) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer audio)) return;
       audio.PlayLooping();
       m_PlayingMusics[musicname] = audio;
     }
@@ -92,8 +88,7 @@ namespace djack.RogueSurvivor.Engine
     public void Stop(string musicname)
     {
       if (!IsMusicEnabled) return;
-      SoundPlayer audio;
-      if (!m_Musics.TryGetValue(musicname, out audio)) return;
+      if (!m_Musics.TryGetValue(musicname, out SoundPlayer audio)) return;
       audio.Stop();
       m_PlayingMusics.Remove(musicname);
     }
@@ -101,7 +96,7 @@ namespace djack.RogueSurvivor.Engine
     public void StopAll()
     {
       Logger.WriteLine(Logger.Stage.RUN_SOUND, "stopping all musics.");
-      foreach (SoundPlayer audio in m_Musics.Values) { 
+      foreach (SoundPlayer audio in m_Musics.Values) {
         audio.Stop();
       }
       m_PlayingMusics.Clear();
@@ -110,8 +105,7 @@ namespace djack.RogueSurvivor.Engine
     public bool IsPlaying(string musicname)
     {
       if (!IsMusicEnabled) return false;
-      SoundPlayer audio;
-      if (!m_PlayingMusics.TryGetValue(musicname, out audio)) return false;
+      if (!m_PlayingMusics.TryGetValue(musicname, out SoundPlayer audio)) return false;
       return true;
     }
 

@@ -21,18 +21,18 @@ namespace djack.RogueSurvivor.Engine
 {
   internal class Rules
   {
-    public static int INFECTION_LEVEL_1_WEAK = 10;
-    public static int INFECTION_LEVEL_2_TIRED = 30;
-    public static int INFECTION_LEVEL_3_VOMIT = 50;
-    public static int INFECTION_LEVEL_4_BLEED = 75;
-    public static int INFECTION_LEVEL_5_DEATH = 100;
-    public static int INFECTION_LEVEL_1_WEAK_STA = 24;
-    public static int INFECTION_LEVEL_2_TIRED_STA = 24;
-    public static int INFECTION_LEVEL_2_TIRED_SLP = 90;
-    public static int INFECTION_LEVEL_4_BLEED_HP = 6;
-    public static int INFECTION_EFFECT_TRIGGER_CHANCE_1000 = 2;
-    public static int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
-    public static int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
+    public const int INFECTION_LEVEL_1_WEAK = 10;
+    public const int INFECTION_LEVEL_2_TIRED = 30;
+    public const int INFECTION_LEVEL_3_VOMIT = 50;
+    public const int INFECTION_LEVEL_4_BLEED = 75;
+    public const int INFECTION_LEVEL_5_DEATH = 100;
+    public const int INFECTION_LEVEL_1_WEAK_STA = 24;
+    public const int INFECTION_LEVEL_2_TIRED_STA = 24;
+    public const int INFECTION_LEVEL_2_TIRED_SLP = 90;
+    public const int INFECTION_LEVEL_4_BLEED_HP = 6;
+    public const int INFECTION_EFFECT_TRIGGER_CHANCE_1000 = 2;
+    public const int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
+    public const int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
     public static int SKILL_AGILE_DEF_BONUS = 2;
     public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.2f;
     public static float SKILL_CARPENTRY_BARRICADING_BONUS = 0.2f;
@@ -43,15 +43,15 @@ namespace djack.RogueSurvivor.Engine
     public static int SKILL_LIGHT_SLEEPER_WAKEUP_CHANCE_BONUS = 10;
     public static float SKILL_MEDIC_BONUS = 0.2f;
     public static int SKILL_MEDIC_REVIVE_BONUS = 10;
-    public static int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
+    public const int SKILL_MEDIC_LEVEL_FOR_REVIVE_EST = 1;
     public static int SKILL_NECROLOGY_CORPSE_BONUS = 4;
-    public static int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
-    public static int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
+    public const int SKILL_NECROLOGY_LEVEL_FOR_INFECTION = 3;
+    public const int SKILL_NECROLOGY_LEVEL_FOR_RISE = 5;
     public static float SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15f;
     public static float SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15f;
     public static int SKILL_UNSUSPICIOUS_BONUS = 25;
-    public static int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
-    public static int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
+    public const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
+    public const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static float SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;

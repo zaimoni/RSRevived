@@ -6,7 +6,7 @@ using System.Linq;
 namespace Zaimoni.Data
 {
     // rethinking design here
-    // hard-coding Point as the domain didn't work, as that didn't cope with exits.  We really wanted Location as the domain. 
+    // hard-coding Point as the domain didn't work, as that didn't cope with exits.  We really wanted Location as the domain.
     // We probably shouldn't be as concerned with data validation (delegate that to the forward iteration)
     class PlausbilityMap<T>
     {
@@ -17,7 +17,7 @@ namespace Zaimoni.Data
         /// </summary>
         public const int CERTAIN = 5040;
 
-        private Dictionary<T, int> _map;
+        readonly private Dictionary<T, int> _map;
 
         readonly private Func<T, Dictionary<T,int>> _forward;
         private int _target_count;
@@ -105,7 +105,7 @@ namespace Zaimoni.Data
                 foreach(T tmp2 in new HashSet<T>(next_step.Keys)) {
                     next_step.Remove(tmp2);
                 }
-                int total_weight = Enumerable.Sum(next_step.Values);
+                int total_weight = next_step.Values.Sum();
                 foreach(T tmp2 in next_step.Keys) {
                     if (new_map.ContainsKey(tmp2)) new_map[tmp2] += (new NormalizeScaler(next_step[tmp2],total_weight)).Scale(_map[tmp]);
                     else new_map[tmp2] = (new NormalizeScaler(next_step[tmp2], total_weight)).Scale(_map[tmp]);
@@ -150,7 +150,7 @@ namespace Zaimoni.Data
             if (TrivialNormalize()) return;
 
             // if everything adds up, do nothing
-            int TotalConfidence = Enumerable.Sum(_map.Values);
+            int TotalConfidence = _map.Values.Sum();
             if (TotalConfidence == _target_count * CERTAIN) return;
 
             // we are currently denormalized.
@@ -163,12 +163,12 @@ namespace Zaimoni.Data
 
             // typical case
             if (0 < _target_count) {
-                TotalConfidence = Enumerable.Sum(_map.Values);
+                TotalConfidence = _map.Values.Sum();
                 int TheoreticalTotalConfidence = _target_count * CERTAIN;
                 // over-certain locations could have denormalized us, so re-check
                 if (TotalConfidence != TheoreticalTotalConfidence) {
                     NormalizeScaler scaler = new NormalizeScaler(TheoreticalTotalConfidence,TotalConfidence);
-                    int max = Enumerable.Max(_map.Values);
+                    int max = _map.Values.Max();
                     if (max != scaler.Scale(max)) { // not a no-op
                         Queue<T> tmp2 = new Queue<T>(_map.Keys);
                         while(0 < tmp2.Count) {

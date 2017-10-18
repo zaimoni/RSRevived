@@ -2125,7 +2125,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       policeBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
       GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
-      Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map, policeBlock, stairsToLevel1);
+      Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map);
       Map stationJailsLevel = GeneratePoliceStation_JailsLevel(stationOfficesLevel);
       AddExit(map, stairsToLevel1, stationOfficesLevel, new Point(1, 1), GameImages.DECO_STAIRS_DOWN, true);
       AddExit(stationOfficesLevel, new Point(1, 1), map, stairsToLevel1, GameImages.DECO_STAIRS_UP, true);
@@ -2163,7 +2163,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       MakeWalkwayZones(surfaceMap, policeBlock);
     }
 
-    private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap, Block policeBlock, Point exitPos)
+    private Map GeneratePoliceStation_OfficesLevel(Map surfaceMap)
     {
       Map map = new Map(surfaceMap.Seed << 1 ^ surfaceMap.Seed, "Police Station - Offices", surfaceMap.District, 20, 20, Lighting.LIT);
 

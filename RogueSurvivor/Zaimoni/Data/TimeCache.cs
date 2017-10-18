@@ -9,7 +9,7 @@ namespace Zaimoni.Data
     class TimeCache<K,V>
     {
       private readonly Dictionary<int, Dictionary<K,V> > _map = new Dictionary<int, Dictionary<K, V>>();
-      private int _now = 0;
+      private int _now;
 
       public bool Expire(int t0) { _map.OnlyIf(t => t > t0); return 0 >= _map.Count; }
       public void Now(int t0) {

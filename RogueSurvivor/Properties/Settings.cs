@@ -14,14 +14,8 @@ namespace djack.RogueSurvivor.Properties
   [CompilerGenerated]
   internal sealed class Settings : ApplicationSettingsBase
   {
-    private static Settings defaultInstance = (Settings) SettingsBase.Synchronized((SettingsBase) new Settings());
+    readonly private static Settings defaultInstance = (Settings) SettingsBase.Synchronized((SettingsBase) new Settings());
 
-    public static Settings Default
-    {
-      get
-      {
-        return Settings.defaultInstance;
-      }
-    }
+    public static Settings Default { get { return Settings.defaultInstance; } }
   }
 }

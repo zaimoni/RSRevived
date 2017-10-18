@@ -15,12 +15,7 @@ namespace djack.RogueSurvivor.Data
   {
     private Dictionary<Gameplay.Skills.IDs, Skill> m_Table;
 
-    public IEnumerable<Skill> Skills
-    {
-      get {
-        return (null== m_Table ? null : m_Table.Values);
-      }
-    }
+    public IEnumerable<Skill> Skills { get { return m_Table?.Values; } }
 
     public int[] SkillsList
     {
@@ -64,8 +59,7 @@ namespace djack.RogueSurvivor.Data
     public Skill GetSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
       if (m_Table == null) return null;
-      Skill skill;
-      if (m_Table.TryGetValue(id, out skill)) return skill;
+      if (m_Table.TryGetValue(id, out Skill skill)) return skill;
       return null;
     }
 

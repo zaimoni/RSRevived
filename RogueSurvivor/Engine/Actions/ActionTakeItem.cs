@@ -61,8 +61,8 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionTake : ActorAction
   {
     private readonly Gameplay.GameItems.IDs m_ID;
-    private Item m_Item = null;
-    private Point? m_pos = null;
+    private Item m_Item;
+    private Point? m_pos;
 
     public ActionTake(Actor actor, Gameplay.GameItems.IDs it)
       : base(actor)

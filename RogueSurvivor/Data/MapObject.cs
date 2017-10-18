@@ -612,7 +612,7 @@ namespace djack.RogueSurvivor.Data
       IRON_BENCH,
       LARGE_FORTIFICATION,
       SMALL_FORTIFICATION,  // pushable ID block
-      BED,          
+      BED,
       HOSPITAL_BED,
       CHAIR,
       HOSPITAL_CHAIR,

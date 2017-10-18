@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine
   internal class Session : ISerializable
   {
     public static int COMMAND_LINE_SEED;
-    public static Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
+    public static readonly Dictionary<string, string> CommandLineOptions = new Dictionary<string, string>();
     private static Session s_TheSession;
 
     private Scoring m_Scoring;
