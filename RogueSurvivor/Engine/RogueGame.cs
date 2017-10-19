@@ -11197,6 +11197,8 @@ namespace djack.RogueSurvivor.Engine
             m_UI.UI_DrawStringBold(Color.White, string.Format("Linking District@{0}...", World.CoordToString(x1, y1)), 0, 0, new Color?());
             m_UI.UI_Repaint();
           }
+          // In RS Alpha 9, the peacewalls meant the entry map and the sewers map had to be handled differently.
+          // Retain this duplication for now.
           Map entryMap1 = world[x1, y1].EntryMap;
           if (y1 > 0) {
             Map entryMap2 = world[x1, y1 - 1].EntryMap;
@@ -11227,6 +11229,28 @@ namespace djack.RogueSurvivor.Engine
                 }
               }
             }
+            if (y1 > 0) {
+              entryMap2 = world[x1 - 1, y1-1].EntryMap;
+              Point from1 = new Point(-1, -1);
+              Point to1 = new Point(entryMap2.Width - 1, entryMap2.Height - 1);
+              Point from2 = new Point(entryMap2.Width, entryMap2.Height);
+              Point to2 = new Point(0, 0);
+              if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
+                GenerateExit(entryMap1, from1, entryMap2, to1);
+                GenerateExit(entryMap2, from2, entryMap1, to2);
+              }
+            }
+            if (y1 < world.Size-1) { 
+              entryMap2 = world[x1 - 1, y1+1].EntryMap;
+              Point from1 = new Point(-1, entryMap1.Height);
+              Point to1 = new Point(entryMap2.Width - 1, 0);
+              Point from2 = new Point(entryMap2.Width, -1);
+              Point to2 = new Point(0, entryMap1.Height-1);
+              if (CheckIfExitIsGood(entryMap2, to1) && CheckIfExitIsGood(entryMap1, to2)) {
+                GenerateExit(entryMap1, from1, entryMap2, to1);
+                GenerateExit(entryMap2, from2, entryMap1, to2);
+              }
+            }
           }
           Map sewersMap1 = world[x1, y1].SewersMap;
           if (y1 > 0) {
@@ -11254,7 +11278,30 @@ namespace djack.RogueSurvivor.Engine
                 GenerateExit(sewersMap2, from2, sewersMap1, to2);
               }
             }
+            if (y1 > 0) {
+              sewersMap2 = world[x1 - 1, y1-1].SewersMap;
+              Point from1 = new Point(-1, -1);
+              Point to1 = new Point(sewersMap2.Width - 1, sewersMap2.Height - 1);
+              Point from2 = new Point(sewersMap2.Width, sewersMap2.Height);
+              Point to2 = new Point(0, 0);
+              if (CheckIfExitIsGood(sewersMap2, to1) && CheckIfExitIsGood(sewersMap1, to2)) {
+                GenerateExit(sewersMap1, from1, sewersMap2, to1);
+                GenerateExit(sewersMap2, from2, sewersMap1, to2);
+              }
+            }
+            if (y1 < world.Size-1) { 
+              sewersMap2 = world[x1 - 1, y1+1].SewersMap;
+              Point from1 = new Point(-1, sewersMap1.Height);
+              Point to1 = new Point(sewersMap2.Width - 1, 0);
+              Point from2 = new Point(sewersMap2.Width, -1);
+              Point to2 = new Point(0, sewersMap1.Height-1);
+              if (CheckIfExitIsGood(sewersMap2, to1) && CheckIfExitIsGood(sewersMap1, to2)) {
+                GenerateExit(sewersMap1, from1, sewersMap2, to1);
+                GenerateExit(sewersMap2, from2, sewersMap1, to2);
+              }
+            }
           }
+          // subway has a different geometry than the other two canonical maps
           Map subwayMap1 = world[x1, y1].SubwayMap;
           if (subwayMap1 != null && x1 > 0) {
             Map subwayMap2 = world[x1 - 1, y1].SubwayMap;
