@@ -796,6 +796,15 @@ namespace djack.RogueSurvivor.Data
       return GetZonesAt(pos)?.Any(zone=>zone.Name.Contains(partOfName)) ?? false;
     }
 
+    public void OnMapGenerated()
+    { // coordinates with StdTownGenerator::Generate
+      // 1) flush all NoCivSpawn zones
+      int i = m_Zones.Count;
+      while(0 < i--) {
+        if ("NoCivSpawn"==m_Zones[i].Name) m_Zones.RemoveAt(i);
+      }
+    }
+
     // Actor manipulation functions
     public bool HasActor(Actor actor)
     {

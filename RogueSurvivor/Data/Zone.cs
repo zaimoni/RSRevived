@@ -24,7 +24,9 @@ namespace djack.RogueSurvivor.Data
 
     public Zone(string name, Rectangle bounds)
     {
-      Contract.Requires(null!=name);
+#if DEBUG
+      if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+#endif
       m_Name = name;
       m_Bounds = bounds;
     }
@@ -37,9 +39,11 @@ namespace djack.RogueSurvivor.Data
 
     public void SetGameAttribute<_T_>(string key, _T_ value)
     {
-      Contract.Requires(null!=key);
+#if DEBUG
+      if (string.IsNullOrEmpty(key)) throw new ArgumentNullException(nameof(key));
+#endif
       if (m_Attributes == null) m_Attributes = new Dictionary<string, object>(1);
-      if (m_Attributes.Keys.Contains<string>(key))
+      if (m_Attributes.Keys.Contains(key))
         m_Attributes[key] = value;
       else
         m_Attributes.Add(key, value);

@@ -873,27 +873,20 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         return GameImages.DECO_CHAR_OFFICE;
       }));
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
-      if (direction == Direction.N)
+
+      if (direction == Direction.N) {
         TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + 3, b.InsideRect.Width);
-      else if (direction == Direction.S) {
-        TileModel wallCharOffice = GameTiles.WALL_CHAR_OFFICE;
-        int left = b.InsideRect.Left;
-        int top = b.InsideRect.Bottom - 1 - 3;
-        int width = b.InsideRect.Width;
-        TileHLine(map, wallCharOffice, left, top, width);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top+3, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+      } else if (direction == Direction.S) {
+        TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Bottom - 1 - 3, b.InsideRect.Width);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.E) {
-        TileModel wallCharOffice = GameTiles.WALL_CHAR_OFFICE;
-        int left = b.InsideRect.Right - 1 - 3;
-        int top = b.InsideRect.Top;
-        int height = b.InsideRect.Height;
-        TileVLine(map, wallCharOffice, left, top, height);
+        TileVLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Right - 1 - 3, b.InsideRect.Top, b.InsideRect.Height);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else {
         if (direction != Direction.W) throw new InvalidOperationException("unhandled door side");
-        TileModel wallCharOffice = GameTiles.WALL_CHAR_OFFICE;
-        int left = b.InsideRect.Left + 3;
-        int top = b.InsideRect.Top;
-        int height = b.InsideRect.Height;
-        TileVLine(map, wallCharOffice, left, top, height);
+        TileVLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left + 3, b.InsideRect.Top, b.InsideRect.Height);
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left+3, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       }
       Rectangle rect1;
       Point point;
@@ -927,19 +920,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       PlaceDoor(map, point.X, point.Y, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       Rectangle rect2;
       Rectangle rect3;
-      Rectangle rectangle1 = b.BuildingRect;
       if (flag) {
         int left = rect1.Left;
-        int top = rectangle1.Top;
+        int top = b.BuildingRect.Top;
         int width = rect1.Width;
         rect2 = new Rectangle(left, top, width, 1 + rect1.Top - top);
-        rect3 = new Rectangle(left, rect1.Bottom - 1, width, 1 + rectangle1.Bottom - rect1.Bottom);
+        rect3 = new Rectangle(left, rect1.Bottom - 1, width, 1 + b.BuildingRect.Bottom - rect1.Bottom);
       } else {
-        int left = rectangle1.Left;
+        int left = b.BuildingRect.Left;
         int top = rect1.Top;
         int height = rect1.Height;
         rect2 = new Rectangle(left, top, 1 + rect1.Left - left, height);
-        rect3 = new Rectangle(rect1.Right - 1, top, 1 + rectangle1.Right - rect1.Right, height);
+        rect3 = new Rectangle(rect1.Right - 1, top, 1 + b.BuildingRect.Right - rect1.Right, height);
       }
       List<Rectangle> list1 = new List<Rectangle>();
       MakeRoomsPlan(map, ref list1, rect2, 4);
@@ -2142,12 +2134,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileFill(surfaceMap, GameTiles.FLOOR_TILES, policeBlock.InsideRect, true);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, policeBlock.BuildingRect);
       TileRectangle(surfaceMap, GameTiles.FLOOR_WALKWAY, policeBlock.Rectangle);
-      DoForEachTile(policeBlock.InsideRect,(Action<Point>)(pt => {
-          Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt));
-      }));
+      DoForEachTile(policeBlock.InsideRect,pt => Session.Get.ForcePoliceKnown(new Location(surfaceMap, pt)));
       Point point = new Point(policeBlock.BuildingRect.Left + policeBlock.BuildingRect.Width / 2, policeBlock.BuildingRect.Bottom - 1);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, point.X - 1, point.Y);
       surfaceMap.AddDecorationAt(GameImages.DECO_POLICE_STATION, point.X + 1, point.Y);
+      surfaceMap.AddZone(new Zone("NoCivSpawn", new Rectangle(policeBlock.BuildingRect.Left,policeBlock.BuildingRect.Top,policeBlock.BuildingRect.Width,3)));  // once the power locks go in civilians won't be able to path here
       Rectangle rect = Rectangle.FromLTRB(policeBlock.BuildingRect.Left, policeBlock.BuildingRect.Top + 2, policeBlock.BuildingRect.Right, policeBlock.BuildingRect.Bottom);
       TileRectangle(surfaceMap, GameTiles.WALL_POLICE_STATION, rect);
       PlaceDoor(surfaceMap, rect.Left + rect.Width / 2, rect.Top, GameTiles.FLOOR_TILES, MakeObjIronDoor());

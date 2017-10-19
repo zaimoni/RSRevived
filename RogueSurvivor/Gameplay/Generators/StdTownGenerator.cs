@@ -27,7 +27,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0), outside_test);
         else {
           Actor newCivilian = CreateNewCivilian(0, 0, 1);
-          ActorPlace(m_DiceRoller, map, newCivilian, pt => map.IsInsideAt(pt));
+          ActorPlace(m_DiceRoller, map, newCivilian, pt => map.IsInsideAt(pt) && !map.HasZonePartiallyNamedAt(pt, "NoCivSpawn"));
         }
       }
       for (int index = 0; index < RogueGame.Options.MaxDogs; ++index) {
@@ -39,6 +39,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         Actor newUndead = CreateNewUndead(0);
         ActorPlace(m_DiceRoller, map, newUndead, outside_test);
       }
+      map.OnMapGenerated(); // remove deadwood that should not hit the savefile
       return map;
     }
 
