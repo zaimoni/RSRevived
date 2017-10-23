@@ -788,12 +788,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     // natural BaseMapGenerator, but anchored by PlaceDoor
     protected Direction PlaceShoplikeEntrance(Map map, Block b, TileModel model, Func<DoorWindow> make_door)
     {
-      bool flag = b.InsideRect.Width >= b.InsideRect.Height;
+      bool orientation_ew = b.InsideRect.Width >= b.InsideRect.Height;
       int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
       int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
       Direction ret;
       int door_edge;
-      if (flag) {
+      if (orientation_ew) {
         if (m_DiceRoller.RollChance(50)) {
           ret = Direction.W;
           door_edge = b.BuildingRect.Left;
@@ -863,9 +863,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
       TileFill(map, GameTiles.FLOOR_OFFICE, b.InsideRect, true);
-      bool flag = b.InsideRect.Width >= b.InsideRect.Height;
-      int x1 = b.Rectangle.Left + b.Rectangle.Width / 2;
-      int y1 = b.Rectangle.Top + b.Rectangle.Height / 2;
+      bool orientation_ew = b.InsideRect.Width >= b.InsideRect.Height;  // must agree with copy in PlaceShoplikeEntrance
+      Point midpoint = new Point(b.Rectangle.Left + b.Rectangle.Width / 2, b.Rectangle.Top + b.Rectangle.Height / 2);
       Direction direction = PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
@@ -874,64 +873,70 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
 
+      int end_foyer_wall = -1;
       if (direction == Direction.N) {
-        TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Top + 3, b.InsideRect.Width);
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top+3, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+        end_foyer_wall = b.InsideRect.Top + 3;
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, end_foyer_wall, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.S) {
-        TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, b.InsideRect.Bottom - 1 - 3, b.InsideRect.Width);
+        end_foyer_wall = b.InsideRect.Bottom - 1 - 3;
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.E) {
-        TileVLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Right - 1 - 3, b.InsideRect.Top, b.InsideRect.Height);
+        end_foyer_wall = b.InsideRect.Right - 1 - 3;
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+#if DEBUG
+      } else if (direction == Direction.W) {
+#else
       } else {
-        if (direction != Direction.W) throw new InvalidOperationException("unhandled door side");
-        TileVLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left + 3, b.InsideRect.Top, b.InsideRect.Height);
-        map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left+3, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
+#endif
+        end_foyer_wall = b.InsideRect.Left + 3;
+        map.AddZone(new Zone("NoCivSpawn", new Rectangle(end_foyer_wall, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       }
-      Rectangle rect1;
-      Point point;
+#if DEBUG
+      else throw new InvalidOperationException("unhandled door side");
+#endif
+
+      if (orientation_ew) TileVLine(map, GameTiles.WALL_CHAR_OFFICE, end_foyer_wall, b.InsideRect.Top, b.InsideRect.Height);
+      else TileHLine(map, GameTiles.WALL_CHAR_OFFICE, b.InsideRect.Left, end_foyer_wall, b.InsideRect.Width);
+
+      Rectangle restricted_zone;
       if (direction == Direction.N) {
-        int x2 = x1 - 1;
-        int y2 = b.InsideRect.Top + 3;
-        int height = b.BuildingRect.Height - 1 - 3;
-        rect1 = new Rectangle(x2, y2, 3, height);
-        point = new Point(rect1.Left + 1, rect1.Top);
+        restricted_zone = new Rectangle(midpoint.X - 1, end_foyer_wall, 3, b.BuildingRect.Height - 1 - 3);
       } else if (direction == Direction.S) {
-        int x2 = x1 - 1;
-        int top = b.BuildingRect.Top;
-        int height = b.BuildingRect.Height - 1 - 3;
-        rect1 = new Rectangle(x2, top, 3, height);
-        point = new Point(rect1.Left + 1, rect1.Bottom - 1);
+        restricted_zone = new Rectangle(midpoint.X - 1, b.BuildingRect.Top, 3, b.BuildingRect.Height - 1 - 3);
       } else if (direction == Direction.E) {
-        int left = b.BuildingRect.Left;
-        int y2 = y1 - 1;
-        int width = b.BuildingRect.Width - 1 - 3;
-        rect1 = new Rectangle(left, y2, width, 3);
-        point = new Point(rect1.Right - 1, rect1.Top + 1);
+        restricted_zone = new Rectangle(b.BuildingRect.Left, midpoint.Y - 1, b.BuildingRect.Width - 1 - 3, 3);
+#if DEBUG
+      } else if (direction == Direction.W) {
+#else
       } else {
-        if (direction != Direction.W) throw new InvalidOperationException("unhandled door side");
-        int x2 = b.InsideRect.Left + 3;
-        int y2 = y1 - 1;
-        int width = b.BuildingRect.Width - 1 - 3;
-        rect1 = new Rectangle(x2, y2, width, 3);
-        point = new Point(rect1.Left, rect1.Top + 1);
+#endif
+        restricted_zone = new Rectangle(end_foyer_wall, midpoint.Y - 1, b.BuildingRect.Width - 1 - 3, 3);
       }
-      TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, rect1);
-      PlaceDoor(map, point.X, point.Y, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+#if DEBUG
+      else throw new InvalidOperationException("unhandled door side");
+#endif
+
+      TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, restricted_zone);
+
+      { // \todo arrange for this door to be mechanically locked
+      Point chokepoint_door_pos = (orientation_ew ? new Point(end_foyer_wall, midpoint.Y) : new Point(midpoint.X, end_foyer_wall));
+      PlaceDoor(map, chokepoint_door_pos.X, chokepoint_door_pos.Y, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
+      }
+      
       Rectangle rect2;
       Rectangle rect3;
-      if (flag) {
-        int left = rect1.Left;
+      if (orientation_ew) {
+        int left = restricted_zone.Left;
         int top = b.BuildingRect.Top;
-        int width = rect1.Width;
-        rect2 = new Rectangle(left, top, width, 1 + rect1.Top - top);
-        rect3 = new Rectangle(left, rect1.Bottom - 1, width, 1 + b.BuildingRect.Bottom - rect1.Bottom);
+        int width = restricted_zone.Width;
+        rect2 = new Rectangle(left, top, width, midpoint.Y - top);
+        rect3 = new Rectangle(left, midpoint.Y + 1, width, b.BuildingRect.Bottom - midpoint.Y -1);
       } else {
         int left = b.BuildingRect.Left;
-        int top = rect1.Top;
-        int height = rect1.Height;
-        rect2 = new Rectangle(left, top, 1 + rect1.Left - left, height);
-        rect3 = new Rectangle(rect1.Right - 1, top, 1 + b.BuildingRect.Right - rect1.Right, height);
+        int top = restricted_zone.Top;
+        int height = restricted_zone.Height;
+        rect2 = new Rectangle(left, top, midpoint.X - left, height);
+        rect3 = new Rectangle(midpoint.X + 1, top, b.BuildingRect.Right - midpoint.X -1, height);
       }
       List<Rectangle> list1 = new List<Rectangle>();
       MakeRoomsPlan(map, ref list1, rect2, 4);
@@ -949,13 +954,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         map.AddZone(MakeUniqueZone("Office room", rect4));
       }
       foreach (Rectangle rectangle2 in list1){
-        if (flag)
+        if (orientation_ew)
           PlaceDoor(map, rectangle2.Left + rectangle2.Width / 2, rectangle2.Bottom - 1, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
         else
           PlaceDoor(map, rectangle2.Right - 1, rectangle2.Top + rectangle2.Height / 2, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       }
       foreach (Rectangle rectangle2 in list2) {
-        if (flag)
+        if (orientation_ew)
           PlaceDoor(map, rectangle2.Left + rectangle2.Width / 2, rectangle2.Top, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
         else
           PlaceDoor(map, rectangle2.Left, rectangle2.Top + rectangle2.Height / 2, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
@@ -968,7 +973,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           for (int index = 0; index < 2; ++index) {
             Rectangle rect5 = new Rectangle(tablePos.X - 1, tablePos.Y - 1, 3, 3);
             rect5.Intersect(rect4);
-            MapObjectPlaceInGoodPosition(map, rect5, (Func<Point, bool>) (pt => pt != tablePos), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjChair(GameImages.OBJ_CHAR_CHAIR)));
+            MapObjectPlaceInGoodPosition(map, rect5, pt => pt != tablePos, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAR_CHAIR));
           }
         }
       }
