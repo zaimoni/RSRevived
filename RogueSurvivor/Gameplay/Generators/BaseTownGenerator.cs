@@ -172,12 +172,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       blockList2.Clear();
       int num = 0;
       foreach (Block b in blockList1) {
-        if (m_Params.District.Kind == DistrictKind.BUSINESS && num == 0 || m_DiceRoller.RollChance(m_Params.CHARBuildingChance)) {
+        if ((m_Params.District.Kind == DistrictKind.BUSINESS && num == 0) || m_DiceRoller.RollChance(m_Params.CHARBuildingChance)) {
           CHARBuildingType charBuildingType = MakeCHARBuilding(map, b);
-          if (charBuildingType == CHARBuildingType.OFFICE) {
-            ++num;
-            PopulateCHAROfficeBuilding(map, b);
-          }
+          if (charBuildingType == CHARBuildingType.OFFICE) ++num;
           if (charBuildingType != CHARBuildingType.NONE) blockList2.Add(b);
         }
       }
@@ -778,7 +775,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual CHARBuildingType MakeCHARBuilding(Map map, Block b)
+    private CHARBuildingType MakeCHARBuilding(Map map, Block b)
     {
       if (b.InsideRect.Width < 8 || b.InsideRect.Height < 8)
         return MakeCHARAgency(map, b) ? CHARBuildingType.AGENCY : CHARBuildingType.NONE;
@@ -825,7 +822,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return ret;
     }
 
-    protected virtual bool MakeCHARAgency(Map map, Block b)
+    private bool MakeCHARAgency(Map map, Block b)
     {
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
@@ -858,7 +855,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return true;
     }
 
-    protected virtual bool MakeCHAROffice(Map map, Block b)
+    private void PopulateCHAROfficeBuilding(Map map, Point[] locs)
+    {
+      for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
+        map.PlaceAt(CreateNewCHARGuard(0), locs[index]); // do not use the ActorPlace function as we have pre-arranged the conditions when initializing the locs array
+      }
+    }
+
+    private bool MakeCHAROffice(Map map, Block b)
     {
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_CHAR_OFFICE, b.BuildingRect);
@@ -873,15 +877,25 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }));
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
 
+      Point[] CHAR_guard_locs = new Point[MAX_CHAR_GUARDS_PER_OFFICE];
       int end_foyer_wall = -1;
       if (direction == Direction.N) {
         end_foyer_wall = b.InsideRect.Top + 3;
+        CHAR_guard_locs[0] = new Point(midpoint.X,end_foyer_wall-1);
+        CHAR_guard_locs[1] = new Point(midpoint.X-1, b.InsideRect.Top);
+        CHAR_guard_locs[2] = new Point(midpoint.X+1, b.InsideRect.Top);
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, end_foyer_wall, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.S) {
         end_foyer_wall = b.InsideRect.Bottom - 1 - 3;
+        CHAR_guard_locs[0] = new Point(midpoint.X,end_foyer_wall+1);
+        CHAR_guard_locs[1] = new Point(midpoint.X-1, b.InsideRect.Bottom - 1);
+        CHAR_guard_locs[2] = new Point(midpoint.X+1, b.InsideRect.Bottom - 1);
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width, b.InsideRect.Height-3)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       } else if (direction == Direction.E) {
         end_foyer_wall = b.InsideRect.Right - 1 - 3;
+        CHAR_guard_locs[0] = new Point(end_foyer_wall+1, midpoint.Y);
+        CHAR_guard_locs[1] = new Point(b.InsideRect.Right - 1, midpoint.Y-1);
+        CHAR_guard_locs[2] = new Point(b.InsideRect.Right - 1, midpoint.Y+1);
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(b.InsideRect.Left, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
 #if DEBUG
       } else if (direction == Direction.W) {
@@ -889,6 +903,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       } else {
 #endif
         end_foyer_wall = b.InsideRect.Left + 3;
+        CHAR_guard_locs[0] = new Point(end_foyer_wall-1, midpoint.Y);
+        CHAR_guard_locs[1] = new Point(b.InsideRect.Left, midpoint.Y-1);
+        CHAR_guard_locs[2] = new Point(b.InsideRect.Left, midpoint.Y+1);
         map.AddZone(new Zone("NoCivSpawn", new Rectangle(end_foyer_wall, b.InsideRect.Top, b.InsideRect.Width-3, b.InsideRect.Height)));  // once the normal locks go in civilians won't be able to path here; one of these for each direction
       }
 #if DEBUG
@@ -983,6 +1000,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       zone.SetGameAttribute<bool>("CHAR Office", true);
       map.AddZone(zone);
       MakeWalkwayZones(map, b);
+
+      PopulateCHAROfficeBuilding(map, CHAR_guard_locs);
       return true;
     }
 
@@ -1743,14 +1762,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           return TAGS[m_DiceRoller.Roll(0, TAGS.Length)];
         return null;
       }));
-    }
-
-    protected virtual void PopulateCHAROfficeBuilding(Map map, Block b)
-    {
-      for (int index = 0; index < MAX_CHAR_GUARDS_PER_OFFICE; ++index) {
-        Actor newCharGuard = CreateNewCHARGuard(0);
-        ActorPlace(m_DiceRoller, map, newCharGuard, b.InsideRect);
-      }
     }
 
     // CHAR building codes have accounted for the possibility of a Z apocalypse.
