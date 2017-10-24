@@ -4,7 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-#define TRACE_SELECTACTION
+// #define TRACE_SELECTACTION
+#define XDISTRICT_PATHING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -141,8 +142,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         BehaviorUnequipLeftItem(game);
       }
       // end item juggling check
-
+#if XDISTRICT_PATHING
+      List<Percept> percepts_all = UpdateSensors();
+#else
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+#endif
       List<Percept> percepts1 = FilterCurrent(percepts_all);
 
 #if TRACE_SELECTACTION
@@ -453,7 +457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!path[0].Any(pt=>null!=Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)))) return true;
             if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAt(p.Location.Position) >= m_Actor.HitPoints)) return true;
           }
-          return !BehaviorWouldGrabFromStack(p.Location.Position, p.Percepted as Inventory)?.IsLegal() ?? true;
+          return !BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true;
         });
         if (perceptList2 != null) {
           Percept percept = FilterNearest(perceptList2);

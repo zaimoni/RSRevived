@@ -893,7 +893,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
         if (null != map.GetActivatedTrapAt(position)) num += -50;
-        if (map.IsInsideAt(position)) {
+        if (map.IsInsideAtExt(position)) {
           if (map.LocalTime.IsNight) num += 50;
         }
         else if (!map.LocalTime.IsNight) num += 50;

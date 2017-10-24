@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define XDISTRICT_PATHING
+
 using djack.RogueSurvivor.Engine.Items;
 using System;
 using System.Drawing;
@@ -1853,7 +1855,10 @@ namespace djack.RogueSurvivor.Data
 	// Ultimately, we do plan to allow the AI to cross district boundaries
 	private string ReasonCantLeaveMap()
 	{
+#if XDISTRICT_PATHING
+#else
       if (!IsPlayer) return "can't leave maps";
+#endif
       return "";
 	}
 

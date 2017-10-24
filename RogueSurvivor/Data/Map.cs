@@ -471,6 +471,14 @@ namespace djack.RogueSurvivor.Data
       return 0!=(m_IsInside[i/8] & (1<<(i%8)));
     }
 
+    public bool IsInsideAtExt(Point p)
+    {
+      if (IsInBounds(p)) return IsInsideAt(p);
+      Location? test = Normalize(p);
+      if (null == test) return false;
+      return test.Value.Map.IsInsideAt(test.Value.Position);
+    }
+
     public void SetTileModelAt(int x, int y, TileModel model)
     {
 #if DEBUG

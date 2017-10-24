@@ -2059,12 +2059,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return InterestingItems(inv?.Items);
     }
 
-    protected ActorAction BehaviorWouldGrabFromStack(Point position, Inventory stack)
+    protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
 
-      MapObject mapObjectAt = (position != m_Actor.Location.Position ? m_Actor.Location.Map.GetMapObjectAt(position) : null);    // XXX this check should affect BehaviorResupply
-      if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
+      MapObject mapObjectAt = (loc != m_Actor.Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
+      if (mapObjectAt != null && !mapObjectAt.IsContainer && !loc.Map.IsWalkableFor(loc.Position, m_Actor)) {
         // Cf. Actor::CanOpen
         if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
         // Cf. Actor::CanPush; closed door/window is not pushable but can be handled
@@ -2087,7 +2087,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (cant_get && null == recover) return null;
 
       // the get item checks do not validate that inventory is not full
-      ActorAction tmp = new ActionTakeItem(m_Actor, position, obj);
+      ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
       if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
         if (null == recover) return null;
         if (!recover.IsLegal()) return null;
@@ -2135,7 +2135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         may_take = true;
 
       if (may_take) {
-        tmp = new ActionTakeItem(m_Actor, position, obj);
+        tmp = new ActionTakeItem(m_Actor, new Location(m_Actor.Location.Map,position), obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;

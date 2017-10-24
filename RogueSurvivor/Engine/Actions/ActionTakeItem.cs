@@ -16,17 +16,22 @@ namespace djack.RogueSurvivor.Engine.Actions
     private readonly Point m_Position;
     private readonly Item m_Item;
 
-    public ActionTakeItem(Actor actor, Point position, Item it)
+    public ActionTakeItem(Actor actor, Location loc, Item it)
       : base(actor)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
       if (!(actor.Controller as Gameplay.AI.ObjectiveAI).IsInterestingItem(it)) throw new InvalidOperationException("trying to take not-interesting item"); // XXX temporary, not valid once safehouses are landing
 #endif
-      m_Position = position;
+      if (loc.Map != m_Actor.Location.Map) {
+        Location? test = m_Actor.Location.Map.Denormalize(loc);
+        if (null == test) throw new InvalidOperationException("tried to take " + it.ToString() + " from invalid location");
+        loc = test.Value;
+      }
+      m_Position = loc.Position;
       m_Item = it;
 #if DEBUG
-      Inventory itemsAt = actor.Location.Map.GetItemsAt(position);
+      Inventory itemsAt = actor.Location.Map.GetItemsAtExt(loc.Position.X,loc.Position.Y);
       if (null == itemsAt || !itemsAt.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
 #endif
     }
