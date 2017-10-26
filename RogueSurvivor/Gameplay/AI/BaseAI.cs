@@ -879,10 +879,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
-        if (exploration.HasExplored(location)) return false;
+        if (!location.Map.IsInBounds(location.Position)) {
+          Location? test = location.Map.Normalize(location.Position);
+          if (null == test) return false;
+          if (exploration.HasExplored(test.Value)) return false;
+        } else if (exploration.HasExplored(location)) return false;
         return IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, location));
       }, dir => {
         Location loc = m_Actor.Location + dir;
+        if (!loc.Map.IsInBounds(loc.Position)) {
+          Location? test = loc.Map.Normalize(loc.Position);
+          if (null == test) return float.NaN;
+          loc = test.Value;
+        }
         Map map = loc.Map;
         Point position = loc.Position;
         if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && map.TrapsMaxDamageAt(position) >= m_Actor.HitPoints)
