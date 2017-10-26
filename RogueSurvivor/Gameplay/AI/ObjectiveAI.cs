@@ -613,6 +613,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
         if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
         if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
+        if (0 >= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo) && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return true;
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
