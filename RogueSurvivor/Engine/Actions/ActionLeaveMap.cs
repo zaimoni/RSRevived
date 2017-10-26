@@ -21,12 +21,17 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return m_Actor.CanLeaveMap(out m_FailReason);
+      return m_Actor.CanLeaveMap(m_ExitPoint, out m_FailReason);
     }
 
     public override void Perform()
     {
       RogueForm.Game.DoLeaveMap(m_Actor, m_ExitPoint, true);
+    }
+
+    public override string ToString()
+    {
+      return m_Actor.Name+"leaving "+m_Actor.Location.ToString()+" for "+m_ExitPoint.ToString();
     }
   }
 }

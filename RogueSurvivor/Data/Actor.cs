@@ -1853,25 +1853,28 @@ namespace djack.RogueSurvivor.Data
     }
 
 	// Ultimately, we do plan to allow the AI to cross district boundaries
-	private string ReasonCantLeaveMap()
+	private string ReasonCantLeaveMap(Point dest)
 	{
 #if XDISTRICT_PATHING
+      Exit exitAt = Location.Map.GetExitAt(dest);
+      if (null == exitAt) return "no exit to leave map with";
+      return exitAt.ReasonIsBlocked(this);
 #else
       if (!IsPlayer) return "can't leave maps";
-#endif
       return "";
+#endif
 	}
 
-    public bool CanLeaveMap(out string reason)
+    public bool CanLeaveMap(Point dest, out string reason)
     {
-	  reason = ReasonCantLeaveMap();
+	  reason = ReasonCantLeaveMap(dest);
 	  return string.IsNullOrEmpty(reason);
     }
 
 #if DEAD_FUNC
-    public bool CanLeaveMap()
+    public bool CanLeaveMap(Point dest)
     {
-	  return string.IsNullOrEmpty(ReasonCantLeaveMap());
+	  return string.IsNullOrEmpty(ReasonCantLeaveMap(dest));
     }
 #endif
 

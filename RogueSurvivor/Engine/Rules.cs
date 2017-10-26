@@ -283,7 +283,7 @@ namespace djack.RogueSurvivor.Engine
       Point point = new Point(x, y);
       reason = "";
       if (!map.IsInBounds(x, y)) {
-	    return (actor.CanLeaveMap(out reason) ? new ActionLeaveMap(actor, point) : null);
+	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
       if (actionMoveStep.IsLegal()) {
@@ -370,7 +370,7 @@ namespace djack.RogueSurvivor.Engine
       Point point = new Point(x, y);
       reason = "";
       if (!map.IsInBounds(x, y)) {
-	    return (actor.CanLeaveMap(out reason) ? new ActionLeaveMap(actor, point) : null);
+	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
       if (actionMoveStep.IsLegal()) {
