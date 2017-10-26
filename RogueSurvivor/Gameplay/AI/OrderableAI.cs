@@ -1501,7 +1501,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool needCure = m_Actor.Infection > 0;
       bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
-      ChoiceEval<ItemMedicine> choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it => true, it =>
+      ChoiceEval<ItemMedicine> choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it =>
       {
         int num = 0;
         if (needHP) num += factorHealing * it.Healing;

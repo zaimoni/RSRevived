@@ -203,12 +203,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorWander(Predicate<Location> goodWanderLocFn=null)
     {
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
-        Location location = m_Actor.Location + dir;
-        if (goodWanderLocFn != null && !goodWanderLocFn(location)) return false;
-        return isValidWanderAction(Rules.IsBumpableFor(m_Actor, location));
-      }, dir => {
+        Location loc = m_Actor.Location + dir;
+        if (null != goodWanderLocFn && !goodWanderLocFn(loc)) return float.NaN;
+        if (!isValidWanderAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
+        if (!loc.Map.IsInBounds(loc.Position)) {
+          Location? test = loc.Map.Normalize(loc.Position);
+          if (null == test) return float.NaN;
+          loc = test.Value;
+        }
         int num = RogueForm.Game.Rules.Roll(0, 666);
-        if (m_Actor.Model.Abilities.IsIntelligent && null != m_Actor.Location.Map.GetActivatedTrapAt((m_Actor.Location + dir).Position))
+        if (m_Actor.Model.Abilities.IsIntelligent && null != loc.Map.GetActivatedTrapAt(loc.Position))
           num -= 1000;
         return (float) num;
       }, (a, b) => a > b);
@@ -308,8 +312,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         leaderLoF = new List<Point>(1);
         LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
       }
-      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, m_Actor.Location + dir)), dir => {
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
+        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
         if (null != leader) {
           num -= (float)Rules.StdDistance(location.Position, leader.Location.Position);
@@ -878,27 +883,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
       bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
-        Location location = m_Actor.Location + dir;
-        if (!location.Map.IsInBounds(location.Position)) {
-          Location? test = location.Map.Normalize(location.Position);
-          if (null == test) return false;
-          if (exploration.HasExplored(test.Value)) return false;
-        } else if (exploration.HasExplored(location)) return false;
-        return IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, location));
-      }, dir => {
         Location loc = m_Actor.Location + dir;
+        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
         if (!loc.Map.IsInBounds(loc.Position)) {
           Location? test = loc.Map.Normalize(loc.Position);
           if (null == test) return float.NaN;
           loc = test.Value;
         }
+        if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
         Point position = loc.Position;
         if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && map.TrapsMaxDamageAt(position) >= m_Actor.HitPoints)
           return float.NaN;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += 1000;
-        if (!exploration.HasExplored(loc)) num += 500;
+        /* if (!exploration.HasExplored(loc)) */ num += 500;
         MapObject mapObjectAt = map.GetMapObjectAt(position);
         if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
         if (null != map.GetActivatedTrapAt(position)) num += -50;
@@ -1049,6 +1048,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
       if (1 == ret_from.Count) return ret_from[0];
       return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
+    }
+
+    static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
+    {
+#if DEBUG
+      if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
+      if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
+#endif
+      if (null == listOfChoices ||  0 >= listOfChoices.Count()) return null;
+
+      float num = float.NaN;
+      List<ChoiceEval<_T_>> candidates = new List<ChoiceEval<_T_>>();
+      foreach(_T_ tmp in listOfChoices) {
+        float f = evalChoiceFn(tmp);
+        if (float.IsNaN(f)) continue;   // NaN is not valid
+        if (float.IsNaN(num) || isBetterEvalThanFn(f, num)) {
+          num = f;
+          candidates.Clear();
+          // XXX at our scale we shouldn't need to early-enable garbage collection here
+        } else if (num != f) continue;
+        candidates.Add(new ChoiceEval<_T_>(tmp, f));
+      }
+      if (0 >= candidates.Count) return null;
+      return candidates[RogueForm.Game.Rules.Roll(0, candidates.Count)];
     }
 
     // isBetterThanEvalFn will never see NaN

@@ -26,17 +26,17 @@ namespace djack.RogueSurvivor.Engine
 
     public int Roll(int min, int max)
     {
-      Contract.Ensures(Contract.Result<int>()>=min);
-      Contract.Ensures(Contract.Result<int>()<max);
-      if (max <= min) return min;
+      if (max <= min || 1 == max-min) return min;
       // should not need to defend aganst bugs in the C# library
       lock(m_Rng) { return m_Rng.Next(min, max); }
     }
 
+#if DEAD_FUNC
     public float RollFloat()
     {
       lock(m_Rng) { return (float) m_Rng.NextDouble(); }
     }
+#endif
 
     public bool RollChance(int chance)
     {
