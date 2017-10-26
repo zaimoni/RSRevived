@@ -385,7 +385,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return sewers;
     }
 
-    public virtual Map GenerateSubwayMap(int seed, District district)
+    public Map GenerateSubwayMap(int seed, District district)
     {
       m_DiceRoller = new DiceRoller(seed);
       Map subway = new Map(seed, string.Format("Subway@{0}-{1}", district.WorldPosition.X, district.WorldPosition.Y), district, district.EntryMap.Width, district.EntryMap.Height, Lighting.DARKNESS);
@@ -414,31 +414,27 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endregion
 
 #region 2. Make station linked to surface.
-      List<Block> blockList = (List<Block>) null;
-      foreach (Block mSurfaceBlock in m_SurfaceBlocks)
-      {
-        if (mSurfaceBlock.BuildingRect.Width <= m_Params.MinBlockSize + 2 && (mSurfaceBlock.BuildingRect.Height <= m_Params.MinBlockSize + 2 && !IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)))
-        {
-           // unclear whether this scales with turns per hour.
-           // If anything, at high magnifications we may need to not be "too far" from the rails either
-          const int minDistToRails = 8;
-          bool flag = false;
-          // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
-          // at district size 50: railY 24, upper bound 27; 38 should pass
-          // we want a simple interval-does-not-intersect test
-          if (mSurfaceBlock.Rectangle.Top - minDistToRails > railY-1+height) flag = true;  // top below critical y
-          if (mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 < railY) flag = true;   // bottom above critical y
-          if (flag)
-          {
-            if (blockList == null)
-              blockList = new List<Block>(m_SurfaceBlocks.Count);
-            blockList.Add(mSurfaceBlock);
-            break;
-          }
+      List<Block> blockList = null;
+      foreach (Block mSurfaceBlock in m_SurfaceBlocks) {
+        if (mSurfaceBlock.BuildingRect.Width > m_Params.MinBlockSize + 2) continue;
+        if (mSurfaceBlock.BuildingRect.Height > m_Params.MinBlockSize + 2) continue;
+        if (IsThereASpecialBuilding(entryMap, mSurfaceBlock.InsideRect)) continue;
+        // unclear whether this scales with turns per hour.
+        // If anything, at high magnifications we may need to not be "too far" from the rails either
+        const int minDistToRails = 8;
+        bool flag = false;
+        // old test failed for subway.Width/2-1-minDistToRails to subway.Width/2+2+minDistToRails
+        // at district size 50: railY 24, upper bound 27; 38 should pass
+        // we want a simple interval-does-not-intersect test
+        if (mSurfaceBlock.Rectangle.Top - minDistToRails > railY-1+height) flag = true;  // top below critical y
+        if (mSurfaceBlock.Rectangle.Bottom + minDistToRails-1 < railY) flag = true;   // bottom above critical y
+        if (flag) {
+          if (blockList == null) blockList = new List<Block>(m_SurfaceBlocks.Count);
+          blockList.Add(mSurfaceBlock);
+          break;
         }
       }
-      if (blockList != null)
-      {
+      if (blockList != null) {
         Block block = blockList[m_DiceRoller.Roll(0, blockList.Count)];
         ClearRectangle(entryMap, block.BuildingRect);
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
@@ -1179,47 +1175,34 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       map.AddZone(MakeUniqueZone("Sewers Maintenance", b.BuildingRect));
     }
 
-    protected virtual void MakeSubwayStationBuilding(Map map, bool isSurface, Block b, Map linkedMap, Point exitPosition)
+    /// <remark>isSurface parameter cannot be calculated as map.District.EntryMap == map because that hasn't been initialized yet</remark>
+    private void MakeSubwayStationBuilding(Map map, bool isSurface, Block b, Map linkedMap, Point exitPosition)
     {
       if (!isSurface) TileFill(map, GameTiles.FLOOR_CONCRETE, b.InsideRect, true);
       TileRectangle(map, GameTiles.WALL_SUBWAY, b.BuildingRect);
-      DoForEachTile(b.BuildingRect,(Action<Point>)(pt => {
+      DoForEachTile(b.BuildingRect,pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));
           Session.Get.PoliceInvestigate.Seen(map, pt);
-      }));
+      });
       Direction direction;
-      int x1;
-      int num;
+      Point doorAt = new Point(-1,-1);
+      bool orientation_ew = false;
       switch (!isSurface ? (b.Rectangle.Bottom < map.Width / 2 ? 1 : 0) : m_DiceRoller.Roll(0, 4)) {
         case 0:
           direction = Direction.N;
-          x1 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          num = b.BuildingRect.Top;
-          if (isSurface) {
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 - 1, num);
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 + 1, num);
-            break;
-          }
+          doorAt.X = b.BuildingRect.Left + b.BuildingRect.Width / 2;
+          doorAt.Y = b.BuildingRect.Top;
           break;
         case 1:
           direction = Direction.S;
-          x1 = b.BuildingRect.Left + b.BuildingRect.Width / 2;
-          num = b.BuildingRect.Bottom - 1;
-          if (isSurface) {
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 - 1, num);
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1 + 1, num);
-            break;
-          }
+          doorAt.X = b.BuildingRect.Left + b.BuildingRect.Width / 2;
+          doorAt.Y = b.BuildingRect.Bottom - 1;
           break;
         case 2:
           direction = Direction.W;
-          x1 = b.BuildingRect.Left;
-          num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          if (isSurface) {
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num - 1);
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num + 1);
-            break;
-          }
+          orientation_ew = true;
+          doorAt.X = b.BuildingRect.Left;
+          doorAt.Y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           break;
 #if DEBUG
         case 3:
@@ -1227,13 +1210,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         default:
 #endif
           direction = Direction.E;
-          x1 = b.BuildingRect.Right - 1;
-          num = b.BuildingRect.Top + b.BuildingRect.Height / 2;
-          if (isSurface) {
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num - 1);
-            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, x1, num + 1);
-            break;
-          }
+          orientation_ew = true;
+          doorAt.X = b.BuildingRect.Right - 1;
+          doorAt.Y = b.BuildingRect.Top + b.BuildingRect.Height / 2;
           break;
 #if DEBUG
         default:
@@ -1241,32 +1220,35 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endif
       }
       if (isSurface) {
-        map.SetTileModelAt(x1, num, GameTiles.FLOOR_CONCRETE);
-        map.PlaceAt(MakeObjGlassDoor(), new Point(x1, num));
+        map.SetTileModelAt(doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE);
+        map.PlaceAt(MakeObjGlassDoor(), doorAt);
+        if (orientation_ew) { 
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.N);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.S);
+        } else { 
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.W);
+            map.AddDecorationAt(GameImages.DECO_SUBWAY_BUILDING, doorAt + Direction.E);
+        }
       }
       for (int x2 = exitPosition.X - 1; x2 <= exitPosition.X + 1; ++x2) {
         Point point = new Point(x2, exitPosition.Y);
         AddExit(map, point, linkedMap, point, (isSurface ? GameImages.DECO_STAIRS_DOWN : GameImages.DECO_STAIRS_UP), true);
       }
       if (!isSurface) {
-        map.SetTileModelAt(x1, num, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(x1 + 1, num, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(x1 - 1, num, GameTiles.FLOOR_CONCRETE);
-        map.SetTileModelAt(x1 - 2, num, GameTiles.WALL_STONE);
-        map.SetTileModelAt(x1 + 2, num, GameTiles.WALL_STONE);
-        DoForEachTile(new Rectangle(x1-2,num,5,1),(Action<Point>)(pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));
-        }));
-        Point p = new Point(x1, num) + direction;
+        map.SetTileModelAt(doorAt.X, doorAt.Y, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt.X + 1, doorAt.Y, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt.X - 1, doorAt.Y, GameTiles.FLOOR_CONCRETE);
+        map.SetTileModelAt(doorAt.X - 2, doorAt.Y, GameTiles.WALL_STONE);
+        map.SetTileModelAt(doorAt.X + 2, doorAt.Y, GameTiles.WALL_STONE);
+        DoForEachTile(new Rectangle(doorAt.X - 2, doorAt.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
+        Point p = doorAt + direction;
         while (map.IsInBounds(p) && !map.GetTileModelAt(p).IsWalkable) {
           map.SetTileModelAt(p.X, p.Y, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X - 1, p.Y, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X + 1, p.Y, GameTiles.FLOOR_CONCRETE);
           map.SetTileModelAt(p.X - 2, p.Y, GameTiles.WALL_STONE);
           map.SetTileModelAt(p.X + 2, p.Y, GameTiles.WALL_STONE);
-          DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),(Action<Point>)(pt => {
-            Session.Get.ForcePoliceKnown(new Location(map, pt));
-          }));
+          DoForEachTile(new Rectangle(p.X - 2, p.Y, 5,1),pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
           p += direction;
         }
         int left1 = Math.Max(0, b.BuildingRect.Left - 10);
@@ -1276,32 +1258,30 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (direction == Direction.S) {
           rect1 = Rectangle.FromLTRB(left1, p.Y - 3, right, p.Y);
           y = rect1.Top;
-          map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(x1 - 1, num, x1 + 1 + 1, rect1.Top)));
+          map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(doorAt.X - 1, doorAt.Y, doorAt.X + 1 + 1, rect1.Top)));
         } else {
           rect1 = Rectangle.FromLTRB(left1, p.Y + 1, right, p.Y + 1 + 3);
           y = rect1.Bottom - 1;
-          map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(x1 - 1, rect1.Bottom, x1 + 1 + 1, num + 1)));
+          map.AddZone(MakeUniqueZone("corridor", Rectangle.FromLTRB(doorAt.X - 1, rect1.Bottom, doorAt.X + 1 + 1, doorAt.Y + 1)));
         }
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect1);
         for (int left2 = rect1.Left; left2 < rect1.Right; ++left2) {
           if (CountAdjWalls(map, left2, y) >= 3)
             map.PlaceAt(MakeObjIronBench(), new Point(left2, y));
         }
-        DoForEachTile(rect1,(pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));
-        }));
+        DoForEachTile(rect1,pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
         map.AddZone(MakeUniqueZone("platform", rect1));
-        Point point1 = direction != Direction.S ? new Point(x1, rect1.Bottom) : new Point(x1, rect1.Top - 1);
+        Point point1 = direction != Direction.S ? new Point(doorAt.X, rect1.Bottom) : new Point(doorAt.X, rect1.Top - 1);
         map.PlaceAt(MakeObjIronGate(), new Point(point1.X, point1.Y));
         map.PlaceAt(MakeObjIronGate(), new Point(point1.X + 1, point1.Y));
         map.PlaceAt(MakeObjIronGate(), new Point(point1.X - 1, point1.Y));
         Point point2;
         Rectangle rect2;
-        if (x1 > map.Width / 2) {
-          point2 = new Point(x1 - 2, num + 2 * direction.Vector.Y);
+        if (doorAt.X > map.Width / 2) {
+          point2 = new Point(doorAt.X - 2, doorAt.Y + 2 * direction.Vector.Y);
           rect2 = Rectangle.FromLTRB(point2.X - 4, point2.Y - 2, point2.X + 1, point2.Y + 2 + 1);
         } else {
-          point2 = new Point(x1 + 2, num + 2 * direction.Vector.Y);
+          point2 = new Point(doorAt.X + 2, doorAt.Y + 2 * direction.Vector.Y);
           rect2 = Rectangle.FromLTRB(point2.X, point2.Y - 2, point2.X + 4, point2.Y + 2 + 1);
         }
         TileFill(map, GameTiles.FLOOR_CONCRETE, rect2);
@@ -1315,13 +1295,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (CountAdjWalls(map, pt.X, pt.Y) < 3 || CountAdjDoors(map, pt.X, pt.Y) > 0) return null;
           return MakeObjPowerGenerator();
         }));
-        DoForEachTile(rect2, (Action<Point>)(pt => {
-          Session.Get.ForcePoliceKnown(new Location(map, pt));
-        }));
+        DoForEachTile(rect2, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
       }
       for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
-          if (CountAdjWalls(map, left, y) >= 2 && CountAdjDoors(map, left, y) <= 0 && !Rules.IsAdjacent(new Point(left, y), new Point(x1, num)))
+          if (CountAdjWalls(map, left, y) >= 2 && CountAdjDoors(map, left, y) <= 0 && !Rules.IsAdjacent(new Point(left, y), doorAt))
             map.PlaceAt(MakeObjIronBench(), new Point(left, y));
         }
       }

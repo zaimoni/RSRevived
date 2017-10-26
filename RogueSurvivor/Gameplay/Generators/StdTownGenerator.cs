@@ -54,10 +54,5 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       return sewersMap;
     }
-
-    public override Map GenerateSubwayMap(int seed, District district)
-    {
-      return base.GenerateSubwayMap(seed, district);
-    }
   }
 }
