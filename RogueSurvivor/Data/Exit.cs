@@ -4,9 +4,10 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+#define XDISTRICT_PATHING
+
 using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -21,9 +22,15 @@ namespace djack.RogueSurvivor.Data
 
     public Exit(Map toMap, Point toPosition, bool AIexit=false)
     {
-	  Contract.Requires(null!=toMap);
+#if DEBUG
+      if (null == toMap) throw new ArgumentNullException(nameof(toMap));
+#endif
       m_Location = new Location(toMap,toPosition);
+#if XDISTRICT_PATHING
+	  IsAnAIExit = true;
+#else
 	  IsAnAIExit = AIexit;
+#endif
     }
 
     // note that if we are pathfinding, we do not have actor anyway.  All livings can jump, however
