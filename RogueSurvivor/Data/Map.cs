@@ -713,13 +713,24 @@ namespace djack.RogueSurvivor.Data
 	  // should be at least one by construction
 	  HashSet<Map> exit_maps = new HashSet<Map>(exits.Select(e=>e.ToMap));
       if (1>=exit_maps.Count) return exit_maps;
+retry:
       if (exit_maps.Contains(dest)) {
         exit_maps.Clear();
         exit_maps.Add(dest);
         exits.RemoveWhere(e => e.ToMap!=dest);
         return exit_maps;
       }
-      // cross-district is ruled out due to AI exit restriction, currently
+      if (dest.District != District) {
+        int dest_extended = UsesCrossDistrictView(dest);
+        if (0 == dest_extended) {
+          dest = dest.District.EntryMap;
+          goto retry;
+        }
+      }
+#if DEBUG
+      if (dest.District != District) throw new InvalidOperationException("test case: cross-district map not handled");
+#endif
+      // no particular insight
       return exit_maps;
     }
 
@@ -749,8 +760,8 @@ namespace djack.RogueSurvivor.Data
       // ...
 #endif
 
-      // cross-district is ruled out due to AI exit restriction, currently
-      return exit_maps;
+            // do something uninteillgent
+            return exit_maps;
     }
 
     public void AddZone(Zone zone)
