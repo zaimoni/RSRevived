@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
-#define XDISTRICT_PATHING
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -142,11 +141,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         BehaviorUnequipLeftItem(game);
       }
       // end item juggling check
-#if XDISTRICT_PATHING
-      List<Percept> percepts_all = UpdateSensors();
-#else
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
-#endif
       List<Percept> percepts1 = FilterCurrent(percepts_all);
 
 #if TRACE_SELECTACTION
