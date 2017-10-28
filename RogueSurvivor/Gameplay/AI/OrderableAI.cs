@@ -1935,6 +1935,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
       else if (lhs is ItemGrenade) return false;
 
+      // XXX note that sleep and stamina have special uses for sufficiently good AI
       bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
       if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
       else if (lhs_low_priority) return false;

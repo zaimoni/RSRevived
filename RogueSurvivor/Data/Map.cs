@@ -726,6 +726,33 @@ retry:
           dest = dest.District.EntryMap;
           goto retry;
         }
+        int this_extended = UsesCrossDistrictView(this);
+        if (1==dest_extended && 2==this_extended) {
+          dest = District.EntryMap;
+          goto retry;
+        }
+        if (2==dest_extended && 1==this_extended) {
+          dest = dest.District.EntryMap;
+          goto retry;
+        }
+        if (1==dest_extended && 1==this_extended) {
+          int x_delta = dest.District.WorldPosition.X - District.WorldPosition.X;
+          int y_delta = dest.District.WorldPosition.Y - District.WorldPosition.Y;
+          int abs_x_delta = (0<=x_delta ? x_delta : -x_delta);
+          int abs_y_delta = (0<=y_delta ? y_delta : -y_delta);
+          int sgn_x_delta = (0<=x_delta ? (0 == x_delta ? 0 : 1) : -1);
+          int sgn_y_delta = (0<=y_delta ? (0 == y_delta ? 0 : 1) : -1);
+          if (abs_x_delta<abs_y_delta) {
+            dest = Engine.Session.Get.World[District.WorldPosition.X, District.WorldPosition.Y + sgn_y_delta].EntryMap;
+            goto retry;
+          } else if (abs_x_delta > abs_y_delta) { 
+            dest = Engine.Session.Get.World[District.WorldPosition.X + sgn_x_delta, District.WorldPosition.Y].EntryMap;
+            goto retry;
+          } else if (2 <= abs_x_delta) {
+            dest = Engine.Session.Get.World[District.WorldPosition.X + sgn_x_delta, District.WorldPosition.Y + sgn_y_delta].EntryMap;
+            goto retry;
+          } else return exit_maps;  // no particular insight, not worth a debug crash
+        }
       }
 #if DEBUG
       if (dest.District != District) throw new InvalidOperationException("test case: cross-district map not handled");
