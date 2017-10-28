@@ -402,7 +402,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 #if TRACE_SELECTACTION
             else {
-              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task");
+              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task: "+o.ToString());
               return goal_action;
             }
 #else

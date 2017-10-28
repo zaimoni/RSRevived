@@ -317,5 +317,18 @@ namespace Zaimoni.Data
 #endif
       foreach (T x in src) fn(x);
     }
+
+    // Some library classes have less than useful ToString() overrides.
+    // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
+    public static string to_s<T>(this HashSet<T> x) {
+      if (0 >= x.Count) return "{}";
+      List<string> tmp = new List<string>(x.Count);
+      foreach(T iter in x) {
+        tmp.Add(iter.ToString());
+      }
+      tmp[0] = "{"+ tmp[0];
+      tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
+      return string.Join(",\n",tmp);
+    }
   } // ext_Drawing
 }   // Zaimoni.Data

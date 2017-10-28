@@ -158,10 +158,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret = null;
         IEnumerable<Point> tmp = _locs.Where(loc => loc.Map==m_Actor.Location.Map).Select(loc => loc.Position);
         if (!tmp.Any()) return true;
-        tmp = tmp.Except(m_Actor.Controller.FOV);
+        tmp = tmp.Intersect(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
         ret = (m_Actor.Controller as BaseAI).BehaviorWalkAwayFrom(tmp);
         return true;
+      }
+
+      public override string ToString()
+      {
+        return "Breaking line of sight to "+_locs.to_s();
       }
     }
 
