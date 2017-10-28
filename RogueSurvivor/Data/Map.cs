@@ -887,17 +887,27 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
-      // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
-      if (actor.Location.Map == this && HasActor(actor)) {
-        if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
-      } else {
-        if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.Remove(actor);
-        m_ActorsList.Add(actor);
-        Engine.LOS.Now(this);
-        if (actor.IsPlayer) Players.Recalc();
+      lock(m_aux_ActorsByPosition) {
+        // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
+        if (actor.Location.Map == this && HasActor(actor)) {
+#if DEBUG
+          if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) {
+            foreach(var x in m_aux_ActorsByPosition) {
+              if (x.Value==actor) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
+            }
+          }
+#else
+          m_aux_ActorsByPosition.Remove(actor.Location.Position);
+#endif
+        } else {
+          if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.Remove(actor);
+          m_ActorsList.Add(actor);
+          Engine.LOS.Now(this);
+          if (actor.IsPlayer) Players.Recalc();
+        }
+        m_aux_ActorsByPosition.Add(position, actor);
+        actor.Location = new Location(this, position);
       }
-      m_aux_ActorsByPosition.Add(position, actor);
-      actor.Location = new Location(this, position);
       m_iCheckNextActorIndex = 0;
     }
 
@@ -912,10 +922,20 @@ namespace djack.RogueSurvivor.Data
 
     public void Remove(Actor actor)
     {
-      if (m_ActorsList.Remove(actor)) {
-        m_aux_ActorsByPosition.Remove(actor.Location.Position);
-        m_iCheckNextActorIndex = 0;
-        if (actor.IsPlayer) Players.Recalc();
+      lock(m_aux_ActorsByPosition) {
+        if (m_ActorsList.Remove(actor)) {
+#if DEBUG
+          if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) {
+            foreach(var x in m_aux_ActorsByPosition) {
+              if (x.Value==actor) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
+            }
+          }
+#else
+          m_aux_ActorsByPosition.Remove(actor.Location.Position);
+#endif
+          m_iCheckNextActorIndex = 0;
+          if (actor.IsPlayer) Players.Recalc();
+        }
       }
     }
 
