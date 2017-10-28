@@ -396,7 +396,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!toTheMax) SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(location.Position);
+      tmpAction = BehaviorIntelligentBumpToward(location);
       if (null == tmpAction) return null;
       RunIfPossible();
       return tmpAction;
@@ -413,7 +413,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         SetOrder(null);
         return tmpAction;
       }
-      tmpAction = BehaviorIntelligentBumpToward(location.Position);
+      tmpAction = BehaviorIntelligentBumpToward(location);
       if (null == tmpAction) return null;
       RunIfPossible();
       return tmpAction;
@@ -429,7 +429,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.Location.Position != location.Position) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location.Position);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -458,7 +458,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         m_ReachedPatrolPoint = m_Actor.Location.Position == location.Position;
 
       if (!m_ReachedPatrolPoint) {
-        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location.Position);
+        ActorAction actorAction3 = BehaviorIntelligentBumpToward(location);
         if (actorAction3 != null) {
           m_Actor.Activity = Activity.IDLE;
           return actorAction3;
@@ -1493,7 +1493,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
         (target1.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
       }
-      return BehaviorIntelligentBumpToward(target1.Location.Position);
+      return BehaviorIntelligentBumpToward(target1.Location);
     }
 
     protected ActionUseItem BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
@@ -1529,7 +1529,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
           return (ActorAction)BehaviorUseMedecine(0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
-        tmpAction = BehaviorHeadFor(target.Location.Position);
+        tmpAction = BehaviorHeadFor(target.Location);
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
@@ -2048,7 +2048,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionReviveCorpse(m_Actor, corpse);
         }
 	  }
-      return BehaviorHeadFor(percept.Location.Position);
+      return BehaviorHeadFor(percept.Location);
     }
 
 #region ground inventory stacks
@@ -2189,7 +2189,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return tmpAction;
             }
           } else {
-            ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location.Position);
+            ActorAction tmpAction = BehaviorIntelligentBumpToward(actor.Location);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.FOLLOWING;
               m_Actor.TargetActor = actor;

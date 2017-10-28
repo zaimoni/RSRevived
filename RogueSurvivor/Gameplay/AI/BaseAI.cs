@@ -129,8 +129,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       int scent_strength = 0;   // minimum valid scent strength is 1
       foreach (Percept scent in scents) {
         SmellSensor.AIScent aiScent2 = scent.Percepted as SmellSensor.AIScent;
-        if (aiScent2 == null)
-          throw new InvalidOperationException("percept not an aiScent");
+#if DEBUG
+        if (aiScent2 == null) throw new InvalidOperationException("percept not an aiScent");
+#endif
         if (aiScent2.Strength > scent_strength) {
           scent_strength = aiScent2.Strength;
           percept = scent;
@@ -263,6 +264,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
+    protected ActorAction BehaviorStupidBumpToward(Location goal)
+    {
+      if (m_Actor.Location.Map == goal.Map) return BehaviorStupidBumpToward(goal.Position);
+      Location? test = m_Actor.Location.Map.Denormalize(goal);
+      if (null == test) return null;
+      return BehaviorStupidBumpToward(test.Value.Position);
+    }
+
     protected ActorAction BehaviorIntelligentBumpToward(Point goal)
     {
       float currentDistance = (float)Rules.StdDistance(m_Actor.Location.Position, goal);
@@ -284,7 +293,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }));
     }
 
-    protected ActorAction BehaviorHeadFor(Point goal)
+    protected ActorAction BehaviorIntelligentBumpToward(Location goal)
+    {
+      if (m_Actor.Location.Map == goal.Map) return BehaviorIntelligentBumpToward(goal.Position);
+      Location? test = m_Actor.Location.Map.Denormalize(goal);
+      if (null == test) return null;
+      return BehaviorIntelligentBumpToward(test.Value.Position);
+    }
+
+    protected ActorAction BehaviorHeadFor(Location goal)
     {
       if (m_Actor.Model.Abilities.IsIntelligent) return BehaviorIntelligentBumpToward(goal);
       return BehaviorStupidBumpToward(goal);
@@ -297,7 +314,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == perceptList) return null; // inefficient, but reduces lines of code elsewhere
       foreach (Percept percept in perceptList) {
-        ActorAction tmp = BehaviorStupidBumpToward(percept.Location.Position);
+        ActorAction tmp = BehaviorStupidBumpToward(percept.Location);
         if (null != tmp) {
           m_Actor.Activity = Activity.CHASING;
           m_Actor.TargetActor = percept.Percepted as Actor;
@@ -748,9 +765,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (other.Location.Map != m_Actor.Location.Map) {
         Exit exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
-          return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+          return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       }
-      ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location.Position);
+      ActorAction actorAction = BehaviorIntelligentBumpToward(other.Location);
       if (actorAction == null || !actorAction.IsLegal()) return null;
       if (other.IsRunning) RunIfPossible();
       return actorAction;
@@ -776,13 +793,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorTrackScent(List<Percept> scents)
     {
-      if (scents == null || scents.Count == 0) return null;
+      if (0 >= (scents?.Count ?? 0)) return null;
       Percept percept = FilterStrongestScent(scents);
-      Map map = m_Actor.Location.Map;
-      if (!(m_Actor.Location.Position == percept.Location.Position))
-        return BehaviorIntelligentBumpToward(percept.Location.Position);
-      if (map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
-        return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+      if (!(m_Actor.Location == percept.Location))
+        return BehaviorIntelligentBumpToward(percept.Location);
+      if (m_Actor.Location.Map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
+        return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       return null;
     }
 
@@ -795,7 +811,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
           return new ActionWait(m_Actor);
-        tmpAction = BehaviorHeadFor(target.Location.Position);
+        tmpAction = BehaviorHeadFor(target.Location);
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
@@ -946,7 +962,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemFood firstByType = m_Actor.Location.Items?.GetFirst<ItemFood>();
       if (null != firstByType) return new ActionEatFoodOnGround(m_Actor, firstByType);
       Percept percept = FilterNearest(percepts);
-      return BehaviorStupidBumpToward(percept.Location.Position);
+      return BehaviorStupidBumpToward(percept.Location);
     }
 
     protected ActorAction BehaviorGoEatCorpse(List<Percept> percepts)
@@ -960,7 +976,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (m_Actor.Location.Position==percept.Location.Position) {
         return new ActionEatCorpse(m_Actor, (percept.Percepted as List<Corpse>)[0]);
 	  }
-      return BehaviorHeadFor(percept.Location.Position);
+      return BehaviorHeadFor(percept.Location);
     }
 
     protected void RunIfPossible()

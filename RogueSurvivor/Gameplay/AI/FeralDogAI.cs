@@ -58,7 +58,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor targetActor = m_Actor.Leader.TargetActor;
         if (targetActor != null && targetActor.Location.Map == m_Actor.Location.Map) {
           RogueGame.DoSay(m_Actor, targetActor, "GRRRRRR WAF WAF", RogueGame.Sayflags.IS_FREE_ACTION);
-          ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location.Position);
+          ActorAction actorAction = BehaviorStupidBumpToward(targetActor.Location);
           if (actorAction != null) {
             m_Actor.IsRunning = true;
             m_Actor.Activity = Activity.FIGHTING;

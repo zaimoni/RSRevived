@@ -997,9 +997,9 @@ retry:
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
       if (!IsInBounds(x, y)) return "out of map";
-      if (!GetTileModelAt(x, y).IsWalkable) return "blocked";   // XXX change to GetTileModelAtExt when handling peace walls
-      MapObject mapObjectAt = GetMapObjectAt(x, y);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable) {
+      if (!GetTileModelAtExt(x, y).IsWalkable) return "blocked";
+      MapObject mapObjectAt = GetMapObjectAtExt(x, y);
+      if (!mapObjectAt?.IsWalkable ?? false) {
         if (mapObjectAt.IsJumpable) {
           if (!actor.CanJump) return "cannot jump";
           if (actor.StaminaPoints < Engine.Rules.STAMINA_COST_JUMP) return "not enough stamina to jump";
