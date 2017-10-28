@@ -2557,7 +2557,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return navigate;
       }
 
-      // currently, there are no cross-district AI exits.
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
       valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
         MapObject mapObjectAt = exit.Location.MapObject;

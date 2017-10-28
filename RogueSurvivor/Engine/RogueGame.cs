@@ -8036,7 +8036,8 @@ namespace djack.RogueSurvivor.Engine
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
 #if DEBUG
-      if (target.IsPlayer) throw new InvalidOperationException("target.IsPlayer");
+      if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer");
+//    if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
 #endif
       bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
       // bail on null item from speaker early
@@ -8099,11 +8100,77 @@ namespace djack.RogueSurvivor.Engine
       target.Inventory.RemoveAllQuantity(trade);
       speaker.Inventory.AddAll(trade);
       target.Inventory.AddAll(itSpeaker);
-#if FALSE_POSITIVE
-      // charisma invalidates these
-      if (trade is ItemRangedWeapon rw && 2<=speaker.Inventory.Count(rw.Model)) throw new InvalidOperationException(speaker.Name+": duplicate ranged weapons");
-      if (itSpeaker is ItemRangedWeapon rw2 && 2<=target.Inventory.Count(rw2.Model)) throw new InvalidOperationException(target.Name+": duplicate ranged weapons");
+    }
+
+    /// <remark>speaker's item is Key of trade; target's item is Value</remark>
+    private void DoTrade(Actor speaker, KeyValuePair<Item, Item>? trade, Actor target, bool doesTargetCheckForInterestInOffer)
+    {
+#if DEBUG
+      if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer");
+      if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
 #endif
+      bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
+      // bail on null item from speaker early
+      if (null == trade) {
+        if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", speaker.Name)));
+        return;
+      }
+
+      bool wantedItem = true;
+      bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, trade.Value.Key);
+      if (target.Leader == speaker)
+        wantedItem = true;
+      else if (doesTargetCheckForInterestInOffer)
+        wantedItem = flag3;
+
+      if (!wantedItem)
+      { // offered item is not of perceived use
+        if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0}.", trade.Value.Key.TheName)));
+        return;
+      };
+
+#if OBSOLETE
+      Item trade2 = PickItemToTrade(target, speaker, itSpeaker);
+      if (null == trade2) {
+        if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
+        return;
+      };
+#endif
+
+      bool isPlayer = speaker.IsPlayer;
+      if (flag1)
+        AddMessage(MakeMessage(target, string.Format("{0} {1} for {2}.", Conjugate(target, VERB_OFFER), trade.Value.Value.AName, trade.Value.Key.AName)));
+
+      bool acceptDeal = true;
+      if (speaker.IsPlayer) {
+        AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+        RedrawPlayScreen();
+        acceptDeal = WaitYesOrNo();
+        ClearOverlays();
+        RedrawPlayScreen();
+      }
+      else
+        acceptDeal = !target.HasLeader || (target.Controller as OrderableAI).Directives.CanTrade;
+
+      if (!acceptDeal) {
+        if (!flag1) return;
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+        if (isPlayer) RedrawPlayScreen();
+        return;
+      }
+
+      if (flag1) {
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+        if (isPlayer) RedrawPlayScreen();
+      }
+      if (target.Leader == speaker && flag3)
+        DoSay(target, speaker, "Thank you for this good deal.", RogueGame.Sayflags.IS_FREE_ACTION);
+      if (trade.Value.Key.IsEquipped) DoUnequipItem(speaker, trade.Value.Key);
+      if (trade.Value.Value.IsEquipped) DoUnequipItem(target, trade.Value.Value);
+      speaker.Inventory.RemoveAllQuantity(trade.Value.Key);
+      target.Inventory.RemoveAllQuantity(trade.Value.Value);
+      speaker.Inventory.AddAll(trade.Value.Value);
+      target.Inventory.AddAll(trade.Value.Key);
     }
 
     public void DoTrade(Actor speaker, Actor target)
@@ -8113,7 +8180,7 @@ namespace djack.RogueSurvivor.Engine
       if (target.IsPlayer) throw new InvalidOperationException(speaker.Name+" cannot initiate trade with a player");
       if (!speaker.CanTradeWith(target, out string reason)) throw new ArgumentOutOfRangeException("Trading not supported",reason);
 #endif
-      Item trade = PickItemToTrade(speaker, target);
+      KeyValuePair<Item,Item>? trade = PickItemsToTrade(speaker, target);
       DoTrade(speaker, trade, target, false);
     }
 
@@ -8124,8 +8191,68 @@ namespace djack.RogueSurvivor.Engine
       return objList[m_Rules.Roll(0, objList.Count)];
     }
 
+    /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.</remark>
+    private bool TradeVeto(Item lhs, Item rhs)
+    {
+      switch(lhs.Model.ID)
+      {
+      // two weapons for the ammo
+      case GameItems.IDs.RANGED_PRECISION_RIFLE:
+      case GameItems.IDs.RANGED_ARMY_RIFLE:
+        if (GameItems.IDs.AMMO_HEAVY_RIFLE==rhs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_PISTOL:
+      case GameItems.IDs.RANGED_KOLT_REVOLVER:
+        if (GameItems.IDs.AMMO_LIGHT_PISTOL==rhs.Model.ID) return true;
+        break;
+      // one weapon for the ammo
+      case GameItems.IDs.RANGED_ARMY_PISTOL:
+        if (GameItems.IDs.AMMO_HEAVY_PISTOL==rhs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
+        if (GameItems.IDs.AMMO_BOLTS==rhs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_HUNTING_RIFLE:
+        if (GameItems.IDs.AMMO_LIGHT_RIFLE==rhs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_SHOTGUN:
+        if (GameItems.IDs.AMMO_SHOTGUN==rhs.Model.ID) return true;
+        break;
+      // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
+      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
+        if (GameItems.IDs.LIGHT_FLASHLIGHT==rhs.Model.ID && (rhs as BatteryPowered).Batteries<(lhs as BatteryPowered).Batteries) return true;
+        if (GameItems.IDs.LIGHT_BIG_FLASHLIGHT==rhs.Model.ID && (rhs as BatteryPowered).Batteries<(lhs as BatteryPowered).Batteries) return true;
+        break;
+      case GameItems.IDs.LIGHT_FLASHLIGHT:
+        if (GameItems.IDs.LIGHT_FLASHLIGHT==rhs.Model.ID && (rhs as BatteryPowered).Batteries<(lhs as BatteryPowered).Batteries) return true;
+        break;
+      }
+      return false;
+    }
+
+    private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
+    {
+      List<Item> speaker_offers = speaker.GetInterestingTradeableItems(buyer);  // charisma check involved for these
+      if (0>=(speaker_offers?.Count ?? 0)) return null;
+      List<Item> buyer_offers = buyer.GetInterestingTradeableItems(speaker);
+      if (0>=(buyer_offers?.Count ?? 0)) return null;
+      var negotiate = new List<KeyValuePair<Item,Item>>(speaker_offers.Count*buyer_offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
+      foreach(var s_item in speaker_offers) {
+        foreach(var b_item in buyer_offers) {
+          if (TradeVeto(s_item,b_item)) continue;
+          if (TradeVeto(b_item,s_item)) continue;
+          // charisma can't do everything
+          negotiate.Add(new KeyValuePair<Item,Item>(s_item,b_item));
+        }
+      }
+      return negotiate[Rules.Roll(0,negotiate.Count)];
+    }
+
     private Item PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
     {
+#if DEBUG
+      if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
+#endif
       List<Item> objList = speaker.GetInterestingTradeableItems(buyer);
       if (objList == null || 0>=objList.Count) return null;
       IEnumerable<Item> tmp = objList.Where(it=>itSpeaker.Model.ID != it.Model.ID);
