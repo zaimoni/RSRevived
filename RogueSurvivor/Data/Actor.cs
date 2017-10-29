@@ -837,7 +837,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // does not properly account for martial arts
-    public ItemMeleeWeapon GetBestMeleeWeapon(Predicate<Item> fn=null)
+    public ItemMeleeWeapon GetBestMeleeWeapon()
     {
       if (Inventory == null) return null;
       List<ItemMeleeWeapon> tmp = Inventory.GetItemsByType<ItemMeleeWeapon>();
@@ -846,12 +846,10 @@ namespace djack.RogueSurvivor.Data
       int num1 = 0;
       ItemMeleeWeapon itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
-        if (fn == null || fn(obj)) {
-          int num2 = MeleeWeaponAttack(obj.Model).Rating;    // XXX should disallow martial arts bonus
-          if (num2 <= martial_arts_rating || num2 <= num1) continue;
-          num1 = num2;
-          itemMeleeWeapon1 = obj;
-        }
+        int num2 = MeleeWeaponAttack(obj.Model).Rating;    // XXX should disallow martial arts bonus
+        if (num2 <= martial_arts_rating || num2 <= num1) continue;
+        num1 = num2;
+        itemMeleeWeapon1 = obj;
       }
       return itemMeleeWeapon1;
     }
@@ -2354,8 +2352,21 @@ namespace djack.RogueSurvivor.Data
       if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
       if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
       if (!IsPlayer) {
-        if (null == target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI)) return "target unwilling to trade";
-        if (null == GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI)) return "unwilling to trade";
+        List<Item> theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
+        if (null == theirs) return "target unwilling to trade";
+        List<Item> mine = GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
+        if (null == mine) return "unwilling to trade";
+        bool ok = false;
+        foreach(Item want in theirs) {
+          foreach(Item have in mine) {
+            if (   !Gameplay.AI.ObjectiveAI.TradeVeto(have, want)
+                && !Gameplay.AI.ObjectiveAI.TradeVeto(want, have)) {
+               ok = true;
+               break;
+            }
+          }
+        }
+        if (!ok) return "no mutually acceptable trade";
       }
       return "";
     }

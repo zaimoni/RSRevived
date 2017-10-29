@@ -762,6 +762,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             {
             Attack martial_arts = m_Actor.UnarmedMeleeAttack();
             if ((it.Model as ItemMeleeWeaponModel).Attack.Rating <= martial_arts.Rating) return true;
+            if (2<=m_Actor.Inventory.Count(it.Model)) return true;  // trading away a spare is ok
             // do not trade away the best melee weapon.  Others ok.
             return m_Actor.GetBestMeleeWeapon() != it;  // return value should not be null
             }

@@ -728,6 +728,46 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return IsInterestingItem(offeredItem);
     }
 
+    /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.
+    /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>
+    static public bool TradeVeto(Item mine, Item theirs)
+    {
+      switch(mine.Model.ID)
+      {
+      // two weapons for the ammo
+      case GameItems.IDs.RANGED_PRECISION_RIFLE:
+      case GameItems.IDs.RANGED_ARMY_RIFLE:
+        if (GameItems.IDs.AMMO_HEAVY_RIFLE==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_PISTOL:
+      case GameItems.IDs.RANGED_KOLT_REVOLVER:
+        if (GameItems.IDs.AMMO_LIGHT_PISTOL==theirs.Model.ID) return true;
+        break;
+      // one weapon for the ammo
+      case GameItems.IDs.RANGED_ARMY_PISTOL:
+        if (GameItems.IDs.AMMO_HEAVY_PISTOL==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
+        if (GameItems.IDs.AMMO_BOLTS==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_HUNTING_RIFLE:
+        if (GameItems.IDs.AMMO_LIGHT_RIFLE==theirs.Model.ID) return true;
+        break;
+      case GameItems.IDs.RANGED_SHOTGUN:
+        if (GameItems.IDs.AMMO_SHOTGUN==theirs.Model.ID) return true;
+        break;
+      // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
+      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
+        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        if (GameItems.IDs.LIGHT_BIG_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        break;
+      case GameItems.IDs.LIGHT_FLASHLIGHT:
+        if (GameItems.IDs.LIGHT_FLASHLIGHT==theirs.Model.ID && (theirs as BatteryPowered).Batteries<(mine as BatteryPowered).Batteries) return true;
+        break;
+      }
+      return false;
+    }
+
     // cf ActorController::IsTradeableItem
     // this must prevent CivilianAI from
     // 1) bashing barricades, etc. for food when hungry

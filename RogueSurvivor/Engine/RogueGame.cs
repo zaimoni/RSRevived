@@ -8191,46 +8191,6 @@ namespace djack.RogueSurvivor.Engine
       return objList[m_Rules.Roll(0, objList.Count)];
     }
 
-    /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.
-    /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>
-    private bool TradeVeto(Item lhs, Item rhs)
-    {
-      switch(lhs.Model.ID)
-      {
-      // two weapons for the ammo
-      case GameItems.IDs.RANGED_PRECISION_RIFLE:
-      case GameItems.IDs.RANGED_ARMY_RIFLE:
-        if (GameItems.IDs.AMMO_HEAVY_RIFLE==rhs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_PISTOL:
-      case GameItems.IDs.RANGED_KOLT_REVOLVER:
-        if (GameItems.IDs.AMMO_LIGHT_PISTOL==rhs.Model.ID) return true;
-        break;
-      // one weapon for the ammo
-      case GameItems.IDs.RANGED_ARMY_PISTOL:
-        if (GameItems.IDs.AMMO_HEAVY_PISTOL==rhs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_HUNTING_CROSSBOW:
-        if (GameItems.IDs.AMMO_BOLTS==rhs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_HUNTING_RIFLE:
-        if (GameItems.IDs.AMMO_LIGHT_RIFLE==rhs.Model.ID) return true;
-        break;
-      case GameItems.IDs.RANGED_SHOTGUN:
-        if (GameItems.IDs.AMMO_SHOTGUN==rhs.Model.ID) return true;
-        break;
-      // flashlights.  larger radius and longer duration are independently better...do not trade if both are worse
-      case GameItems.IDs.LIGHT_BIG_FLASHLIGHT:
-        if (GameItems.IDs.LIGHT_FLASHLIGHT==rhs.Model.ID && (rhs as BatteryPowered).Batteries<(lhs as BatteryPowered).Batteries) return true;
-        if (GameItems.IDs.LIGHT_BIG_FLASHLIGHT==rhs.Model.ID && (rhs as BatteryPowered).Batteries<(lhs as BatteryPowered).Batteries) return true;
-        break;
-      case GameItems.IDs.LIGHT_FLASHLIGHT:
-        if (GameItems.IDs.LIGHT_FLASHLIGHT==rhs.Model.ID && (rhs as BatteryPowered).Batteries<(lhs as BatteryPowered).Batteries) return true;
-        break;
-      }
-      return false;
-    }
-
     private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
     {
       List<Item> speaker_offers = speaker.GetInterestingTradeableItems(buyer);  // charisma check involved for these
@@ -8240,8 +8200,8 @@ namespace djack.RogueSurvivor.Engine
       var negotiate = new List<KeyValuePair<Item,Item>>(speaker_offers.Count*buyer_offers.Count);   // relies on "small" inventory to avoid arithmetic overflow
       foreach(var s_item in speaker_offers) {
         foreach(var b_item in buyer_offers) {
-          if (TradeVeto(s_item,b_item)) continue;
-          if (TradeVeto(b_item,s_item)) continue;
+          if (ObjectiveAI.TradeVeto(s_item,b_item)) continue;
+          if (ObjectiveAI.TradeVeto(b_item,s_item)) continue;
           // charisma can't do everything
           negotiate.Add(new KeyValuePair<Item,Item>(s_item,b_item));
         }
