@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System.Diagnostics.Contracts;
+using System;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -26,12 +26,16 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemSprayPaintModel(string aName, string theNames, string imageID, int paintQuantity, string tagImageID)
+    public ItemSprayPaintModel(string aName, string theNames, string imageID, int paintQuantity, string tagImageID, string flavor)
       : base(aName, theNames, imageID)
     {
-      Contract.Requires(null != tagImageID);
+#if DEBUG
+     if (string.IsNullOrEmpty(tagImageID)) throw new ArgumentNullException(nameof(tagImageID));
+#endif
       m_MaxPaintQuantity = paintQuantity;
       m_TagImageID = tagImageID;
+      EquipmentPart = DollPart.LEFT_HAND;
+      FlavorDescription = flavor;
     }
   }
 }

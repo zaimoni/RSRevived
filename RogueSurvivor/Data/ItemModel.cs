@@ -17,7 +17,6 @@ namespace djack.RogueSurvivor.Data
     public bool IsProper { get; set; }
     public readonly string ImageID;
     public string FlavorDescription { get; set; }
-    public bool IsStackable { get; private set; }
     private int m_StackingLimit;
     public DollPart EquipmentPart { get; set; }
     public bool DontAutoEquip { get; set; }
@@ -31,15 +30,11 @@ namespace djack.RogueSurvivor.Data
       set
       {
         m_StackingLimit = value;
-        IsStackable = (2 <= value);
       }
     }
 
-    public bool IsEquipable {
-      get {
-        return EquipmentPart != DollPart.NONE;
-      }
-    }
+    public bool IsStackable { get { return 2 <= m_StackingLimit; } }
+    public bool IsEquipable { get { return EquipmentPart != DollPart.NONE; } }
 
     public ItemModel(string aName, string theNames, string imageID)
     {

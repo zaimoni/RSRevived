@@ -766,26 +766,10 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(IDs.TRACKER_POLICE_RADIO, tmpTrackerModel);
 
       // spray paint
-      GameItems.SprayPaintData sprayPaintData = DATA_SPRAY_PAINT1;
-      ItemSprayPaintModel tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, GameImages.ITEM_SPRAYPAINT, sprayPaintData.QUANTITY, GameImages.DECO_PLAYER_TAG1);
-      tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
-      _setModel(IDs.SPRAY_PAINT1, tmpSprayPaintModel);
-      sprayPaintData = DATA_SPRAY_PAINT2;
-      tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, GameImages.ITEM_SPRAYPAINT2, sprayPaintData.QUANTITY, GameImages.DECO_PLAYER_TAG2);
-      tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
-      _setModel(IDs.SPRAY_PAINT2, tmpSprayPaintModel);
-      sprayPaintData = DATA_SPRAY_PAINT3;
-      tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, GameImages.ITEM_SPRAYPAINT3, sprayPaintData.QUANTITY, GameImages.DECO_PLAYER_TAG3);
-      tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
-      _setModel(IDs.SPRAY_PAINT3, tmpSprayPaintModel);
-      sprayPaintData = DATA_SPRAY_PAINT4;
-      tmpSprayPaintModel = new ItemSprayPaintModel(sprayPaintData.NAME, sprayPaintData.PLURAL, GameImages.ITEM_SPRAYPAINT4, sprayPaintData.QUANTITY, GameImages.DECO_PLAYER_TAG4);
-      tmpSprayPaintModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpSprayPaintModel.FlavorDescription = sprayPaintData.FLAVOR;
-      _setModel(IDs.SPRAY_PAINT4, tmpSprayPaintModel);
+      _setModel(IDs.SPRAY_PAINT1, new ItemSprayPaintModel(DATA_SPRAY_PAINT1.NAME, DATA_SPRAY_PAINT1.PLURAL, GameImages.ITEM_SPRAYPAINT, DATA_SPRAY_PAINT1.QUANTITY, GameImages.DECO_PLAYER_TAG1, DATA_SPRAY_PAINT1.FLAVOR));
+      _setModel(IDs.SPRAY_PAINT2, new ItemSprayPaintModel(DATA_SPRAY_PAINT2.NAME, DATA_SPRAY_PAINT2.PLURAL, GameImages.ITEM_SPRAYPAINT2, DATA_SPRAY_PAINT2.QUANTITY, GameImages.DECO_PLAYER_TAG2, DATA_SPRAY_PAINT2.FLAVOR));
+      _setModel(IDs.SPRAY_PAINT3, new ItemSprayPaintModel(DATA_SPRAY_PAINT3.NAME, DATA_SPRAY_PAINT3.PLURAL, GameImages.ITEM_SPRAYPAINT3, DATA_SPRAY_PAINT3.QUANTITY, GameImages.DECO_PLAYER_TAG3, DATA_SPRAY_PAINT3.FLAVOR));
+      _setModel(IDs.SPRAY_PAINT4, new ItemSprayPaintModel(DATA_SPRAY_PAINT4.NAME, DATA_SPRAY_PAINT4.PLURAL, GameImages.ITEM_SPRAYPAINT4, DATA_SPRAY_PAINT4.QUANTITY, GameImages.DECO_PLAYER_TAG4, DATA_SPRAY_PAINT4.FLAVOR));
 
       // Flashlights
       _setModel(IDs.LIGHT_FLASHLIGHT, new ItemLightModel(DATA_LIGHT_FLASHLIGHT.NAME, DATA_LIGHT_FLASHLIGHT.PLURAL, GameImages.ITEM_FLASHLIGHT, DATA_LIGHT_FLASHLIGHT.FOV, DATA_LIGHT_FLASHLIGHT.BATTERIES * WorldTime.TURNS_PER_HOUR, GameImages.ITEM_FLASHLIGHT_OUT, DATA_LIGHT_FLASHLIGHT.FLAVOR));
