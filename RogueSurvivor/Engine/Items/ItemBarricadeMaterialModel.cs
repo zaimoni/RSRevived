@@ -5,25 +5,17 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
-  [Serializable]
   internal class ItemBarricadeMaterialModel : ItemModel
   {
-    private readonly int m_BarricadingValue;
-
-    public int BarricadingValue {
-      get {
-        return m_BarricadingValue;
-      }
-    }
+    public readonly int BarricadingValue;
 
     public ItemBarricadeMaterialModel(string aName, string theNames, string imageID, int barricadingValue)
       : base(aName, theNames, imageID)
     {
-      m_BarricadingValue = barricadingValue;
+      BarricadingValue = barricadingValue;
     }
   }
 }

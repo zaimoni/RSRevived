@@ -14,13 +14,13 @@ namespace djack.RogueSurvivor.Data
     public readonly string SingleName;
     public readonly string PluralName;
     public readonly string ImageID;
+    public readonly DollPart EquipmentPart;
 
     private int m_StackingLimit = 1;
 
     public bool IsPlural { get; set; }
     public bool IsProper { get; set; }
     public string FlavorDescription { get; set; }
-    public DollPart EquipmentPart { get; set; }
     public bool DontAutoEquip { get; set; }
     public bool IsUnbreakable { get; set; }
     public bool IsUnique { get; set; }
@@ -40,11 +40,12 @@ namespace djack.RogueSurvivor.Data
     public bool IsStackable { get { return 2 <= m_StackingLimit; } }
     public bool IsEquipable { get { return EquipmentPart != DollPart.NONE; } }
 
-    public ItemModel(string aName, string theNames, string imageID)
+    public ItemModel(string aName, string theNames, string imageID, DollPart part = DollPart.NONE)
     {
       SingleName = aName;
       PluralName = theNames;
       ImageID = imageID;
+      EquipmentPart = part;
     }
   }
 }

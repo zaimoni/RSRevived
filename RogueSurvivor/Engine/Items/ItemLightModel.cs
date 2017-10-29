@@ -4,42 +4,27 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemLightModel : ItemModel
   {
-    private readonly int m_MaxBatteries;
-    private readonly int m_FovBonus;
-    private readonly string m_OutOfBatteriesImageID;
-
-    public int MaxBatteries {
-      get {
-        return m_MaxBatteries;
-      }
-    }
-
-    public int FovBonus {
-      get {
-        return m_FovBonus;
-      }
-    }
-
-    public string OutOfBatteriesImageID {
-      get {
-        return m_OutOfBatteriesImageID;
-      }
-    }
+    public readonly int MaxBatteries;
+    public readonly int FovBonus;
+    public readonly string OutOfBatteriesImageID;
 
     public ItemLightModel(string aName, string theNames, string imageID, int fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, DollPart.LEFT_HAND)
     {
-      m_FovBonus = fovBonus;
-      m_MaxBatteries = maxBatteries;
-      m_OutOfBatteriesImageID = outOfBatteriesImageID;
+#if DEBUG
+      if (string.IsNullOrEmpty(outOfBatteriesImageID)) throw new ArgumentNullException(nameof(outOfBatteriesImageID));
+#endif
+      FovBonus = fovBonus;
+      MaxBatteries = maxBatteries;
+      OutOfBatteriesImageID = outOfBatteriesImageID;
       DontAutoEquip = true;
-      EquipmentPart = DollPart.LEFT_HAND;
       FlavorDescription = flavor;
     }
   }

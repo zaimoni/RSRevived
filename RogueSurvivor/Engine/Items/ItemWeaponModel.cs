@@ -12,14 +12,10 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     private readonly Attack m_Attack;
 
-    public Attack Attack {
-      get {
-        return m_Attack;
-      }
-    }
+    public Attack Attack { get { return m_Attack; } }   // need value copy here for safety
 
     public ItemWeaponModel(string aName, string theNames, string imageID, Attack attack)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, DollPart.RIGHT_HAND)
     {
       m_Attack = attack;
     }

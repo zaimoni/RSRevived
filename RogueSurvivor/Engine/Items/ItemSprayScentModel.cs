@@ -10,36 +10,17 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemSprayScentModel : ItemModel
   {
-    private readonly int m_MaxSprayQuantity;
-    private readonly Odor m_Odor;
-    private readonly int m_Strength;
-
-    public int MaxSprayQuantity {
-      get {
-        return m_MaxSprayQuantity;
-      }
-    }
-
-    public int Strength {
-      get {
-        return m_Strength;
-      }
-    }
-
-    public Odor Odor {
-      get {
-        return m_Odor;
-      }
-    }
+    public readonly int MaxSprayQuantity;
+    public readonly Odor Odor;
+    public readonly int Strength;
 
     public ItemSprayScentModel(string aName, string theNames, string imageID, int sprayQuantity, Odor odor, int strength, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, DollPart.LEFT_HAND)
     {
-      m_MaxSprayQuantity = sprayQuantity;
-      m_Odor = odor;
-      m_Strength = strength;
+      MaxSprayQuantity = sprayQuantity;
+      Odor = odor;
+      Strength = strength;
       FlavorDescription = flavor;
-      EquipmentPart = DollPart.LEFT_HAND;
     }
   }
 }

@@ -10,39 +10,17 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemRangedWeaponModel : ItemWeaponModel
   {
-    private readonly int m_MaxAmmo;
-    private readonly AmmoType m_AmmoType;
+    public readonly int MaxAmmo;
+    public readonly AmmoType AmmoType;
 
-    public bool IsFireArm {
-      get {
-        return Attack.Kind == AttackKind.FIREARM;
-      }
-    }
-
-    public bool IsBow {
-      get {
-        return Attack.Kind == AttackKind.BOW;
-      }
-    }
-
-    public int MaxAmmo {
-      get {
-        return m_MaxAmmo;
-      }
-    }
-
-    public AmmoType AmmoType {
-      get {
-        return m_AmmoType;
-      }
-    }
+    public bool IsFireArm { get { return Attack.Kind == AttackKind.FIREARM; } }
+    public bool IsBow { get { return Attack.Kind == AttackKind.BOW; } }
 
     public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType, string flavor)
       : base(aName, theNames, imageID, attack)
     {
-      m_MaxAmmo = maxAmmo;
-      m_AmmoType = ammoType;
-      EquipmentPart = DollPart.RIGHT_HAND;
+      MaxAmmo = maxAmmo;
+      AmmoType = ammoType;
       FlavorDescription = flavor;
     }
   }

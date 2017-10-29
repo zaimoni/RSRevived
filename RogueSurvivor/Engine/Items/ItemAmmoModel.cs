@@ -10,24 +10,14 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemAmmoModel : ItemModel
   {
-    private readonly AmmoType m_AmmoType;
+    public readonly AmmoType AmmoType;
 
-    public AmmoType AmmoType {
-      get {
-        return m_AmmoType;
-      }
-    }
-
-    public int MaxQuantity {
-      get {
-        return StackingLimit;
-      }
-    }
+    public int MaxQuantity { get { return StackingLimit; } }
 
     public ItemAmmoModel(string imageID, AmmoType ammoType, int maxQuantity)
       : base(ammoType.Describe(), ammoType.Describe(true), imageID)
     {
-      m_AmmoType = ammoType;
+      AmmoType = ammoType;
       StackingLimit = maxQuantity;
       FlavorDescription = "";
     }

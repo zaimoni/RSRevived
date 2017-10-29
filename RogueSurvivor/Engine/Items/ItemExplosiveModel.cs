@@ -10,34 +10,18 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemExplosiveModel : ItemModel
   {
-    private readonly int m_FuseDelay;
+    public readonly int FuseDelay;
     private readonly BlastAttack m_Attack;
-    private readonly string m_BlastImageID;
+    public readonly string BlastImage;
 
-    public int FuseDelay {
-      get {
-        return m_FuseDelay;
-      }
-    }
-
-    public BlastAttack BlastAttack {
-      get {
-        return m_Attack;
-      }
-    }
-
-    public string BlastImage {
-      get {
-        return m_BlastImageID;
-      }
-    }
+    public BlastAttack BlastAttack { get { return m_Attack; } } // need value copy here
 
     public ItemExplosiveModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, DollPart.RIGHT_HAND)
     {
-      m_FuseDelay = fuseDelay;
+      FuseDelay = fuseDelay;
       m_Attack = attack;
-      m_BlastImageID = blastImageID;
+      BlastImage = blastImageID;
     }
   }
 }

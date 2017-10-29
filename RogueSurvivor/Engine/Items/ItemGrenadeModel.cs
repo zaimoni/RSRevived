@@ -16,7 +16,6 @@ namespace djack.RogueSurvivor.Engine.Items
       : base(aName, theNames, imageID, fuseDelay, attack, blastImageID)
     {
       MaxThrowDistance = maxThrowDistance;
-      EquipmentPart = DollPart.RIGHT_HAND;
       StackingLimit = stackingLimit;
       FlavorDescription = flavor;
     }

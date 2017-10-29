@@ -10,26 +10,14 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemEntertainmentModel : ItemModel
   {
-    private readonly int m_Value;
-    private readonly int m_BoreChance;
-
-    public int Value {
-      get {
-        return m_Value;
-      }
-    }
-
-    public int BoreChance {
-      get {
-        return m_BoreChance;
-      }
-    }
+    public readonly int Value;
+    public readonly int BoreChance;
 
     public ItemEntertainmentModel(string aName, string theNames, string imageID, int value, int boreChance, int stacking, string flavor)
       : base(aName, theNames, imageID)
     {
-      m_Value = value;
-      m_BoreChance = boreChance;
+      Value = value;
+      BoreChance = boreChance;
       StackingLimit = stacking;
       FlavorDescription = flavor;
     }

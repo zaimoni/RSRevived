@@ -765,10 +765,9 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(IDs.ENT_BOOK, new ItemEntertainmentModel(DATA_ENT_BOOK.NAME, DATA_ENT_BOOK.PLURAL, GameImages.ITEM_BOOK, DATA_ENT_BOOK.VALUE, DATA_ENT_BOOK.BORECHANCE, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
       _setModel(IDs.ENT_MAGAZINE, new ItemEntertainmentModel(DATA_ENT_MAGAZINE.NAME, DATA_ENT_MAGAZINE.PLURAL, GameImages.ITEM_MAGAZINE, DATA_ENT_MAGAZINE.VALUE, DATA_ENT_MAGAZINE.BORECHANCE, DATA_ENT_MAGAZINE.STACKING, DATA_ENT_MAGAZINE.FLAVOR));
 
-      _setModel(IDs.UNIQUE_SUBWAY_BADGE, new ItemModel("Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE)
+      _setModel(IDs.UNIQUE_SUBWAY_BADGE, new ItemModel("Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, DollPart.LEFT_HAND)
       {
         DontAutoEquip = true,
-        EquipmentPart = DollPart.LEFT_HAND,
         FlavorDescription = "You got yourself a new job!",
         IsUnique = true,
         IsForbiddenToAI = true

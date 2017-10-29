@@ -10,53 +10,22 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemBodyArmorModel : ItemModel
   {
-    private readonly int m_Protection_Hit;
-    private readonly int m_Protection_Shot;
-    private readonly int m_Encumbrance;
-    private readonly int m_Weight;
-
-    public int Protection_Hit {
-      get {
-        return m_Protection_Hit;
-      }
-    }
-
-    public int Protection_Shot {
-      get {
-        return m_Protection_Shot;
-      }
-    }
-
-    public int Encumbrance {
-      get {
-        return m_Encumbrance;
-      }
-    }
-
-    public int Weight {
-      get {
-        return m_Weight;
-      }
-    }
+    public readonly int Protection_Hit;
+    public readonly int Protection_Shot;
+    public readonly int Encumbrance;
+    public readonly int Weight;
 
     public ItemBodyArmorModel(string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, DollPart.TORSO)
     {
-      m_Protection_Hit = protection_hit;
-      m_Protection_Shot = protection_shot;
-      m_Encumbrance = encumbrance;
-      m_Weight = weight;
-      EquipmentPart = DollPart.TORSO;
+      Protection_Hit = protection_hit;
+      Protection_Shot = protection_shot;
+      Encumbrance = encumbrance;
+      Weight = weight;
       FlavorDescription = flavor;
     }
 
-    public Defence ToDefence()
-    {
-      return new Defence(-m_Encumbrance, m_Protection_Hit, m_Protection_Shot);
-    }
-
-    public int Rating { 
-      get { return m_Protection_Hit + m_Protection_Shot; }
-    }
+    public Defence ToDefence() { return new Defence(-Encumbrance, Protection_Hit, Protection_Shot); }
+    public int Rating { get { return Protection_Hit + Protection_Shot; } }
   }
 }

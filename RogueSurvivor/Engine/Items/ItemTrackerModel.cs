@@ -10,28 +10,15 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemTrackerModel : ItemModel
   {
-    private readonly ItemTrackerModel.TrackingFlags m_Tracking;
-    private readonly int m_MaxBatteries;
-
-    public ItemTrackerModel.TrackingFlags Tracking {
-      get {
-        return m_Tracking;
-      }
-    }
-
-    public int MaxBatteries {
-      get {
-        return m_MaxBatteries;
-      }
-    }
+    public readonly TrackingFlags Tracking;
+    public readonly int MaxBatteries;
 
     public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, part)
     {
-       m_Tracking = tracking;
-       m_MaxBatteries = maxBatteries;
+       Tracking = tracking;
+       MaxBatteries = maxBatteries;
        DontAutoEquip = true;
-       EquipmentPart = part;
        FlavorDescription = flavor;
     }
 

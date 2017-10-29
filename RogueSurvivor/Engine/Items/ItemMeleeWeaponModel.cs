@@ -15,7 +15,6 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemMeleeWeaponModel(string aName, string theNames, string imageID, Attack attack, string flavor)
       : base(aName, theNames, imageID, attack)
     {
-      EquipmentPart = DollPart.RIGHT_HAND;
       FlavorDescription = flavor;
     }
 

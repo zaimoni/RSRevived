@@ -20,7 +20,6 @@ namespace djack.RogueSurvivor.Engine.Items
       if (null == grenadeModel) throw new ArgumentNullException(nameof(grenadeModel));
 #endif
       GrenadeModel = grenadeModel;
-      EquipmentPart = DollPart.RIGHT_HAND;
     }
   }
 }
