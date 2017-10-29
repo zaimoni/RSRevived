@@ -12,10 +12,12 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public readonly int BarricadingValue;
 
-    public ItemBarricadeMaterialModel(string aName, string theNames, string imageID, int barricadingValue)
+    public ItemBarricadeMaterialModel(string aName, string theNames, string imageID, int barricadingValue, int stackingLimit, string flavor)
       : base(aName, theNames, imageID)
     {
       BarricadingValue = barricadingValue;
+      StackingLimit = stackingLimit;
+      FlavorDescription = flavor;
     }
   }
 }

@@ -721,11 +721,7 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(IDs.EXPLOSIVE_GRENADE_PRIMED, new ItemGrenadePrimedModel("primed " + DATA_EXPLOSIVE_GRENADE.NAME, "primed " + DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE_PRIMED, this[IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel));
 
       // carpentry
-      GameItems.BarricadingMaterialData barricadingMaterialData = DATA_BAR_WOODEN_PLANK;
-      ItemBarricadeMaterialModel barricadeMaterialModel1 = new ItemBarricadeMaterialModel(barricadingMaterialData.NAME, barricadingMaterialData.PLURAL, GameImages.ITEM_WOODEN_PLANK, barricadingMaterialData.VALUE);
-      barricadeMaterialModel1.StackingLimit = barricadingMaterialData.STACKINGLIMIT;
-      barricadeMaterialModel1.FlavorDescription = barricadingMaterialData.FLAVOR;
-      _setModel(IDs.BAR_WOODEN_PLANK, barricadeMaterialModel1);
+      _setModel(IDs.BAR_WOODEN_PLANK, new ItemBarricadeMaterialModel(DATA_BAR_WOODEN_PLANK.NAME, DATA_BAR_WOODEN_PLANK.PLURAL, GameImages.ITEM_WOODEN_PLANK, DATA_BAR_WOODEN_PLANK.VALUE, DATA_BAR_WOODEN_PLANK.STACKINGLIMIT, DATA_BAR_WOODEN_PLANK.FLAVOR));
 
       // body armor
       _setModel(IDs.ARMOR_ARMY_BODYARMOR, new ItemBodyArmorModel(DATA_ARMOR_ARMY.NAME, DATA_ARMOR_ARMY.PLURAL, GameImages.ITEM_ARMY_BODYARMOR, DATA_ARMOR_ARMY.PRO_HIT, DATA_ARMOR_ARMY.PRO_SHOT, DATA_ARMOR_ARMY.ENC, DATA_ARMOR_ARMY.WEIGHT, DATA_ARMOR_ARMY.FLAVOR));
