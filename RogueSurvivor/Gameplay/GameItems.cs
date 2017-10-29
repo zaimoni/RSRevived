@@ -737,26 +737,10 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(IDs.ARMOR_HUNTER_VEST, new ItemBodyArmorModel(DATA_ARMOR_HUNTER_VEST.NAME, DATA_ARMOR_HUNTER_VEST.PLURAL, GameImages.ITEM_HUNTER_VEST, DATA_ARMOR_HUNTER_VEST.PRO_HIT, DATA_ARMOR_HUNTER_VEST.PRO_SHOT, DATA_ARMOR_HUNTER_VEST.ENC, DATA_ARMOR_HUNTER_VEST.WEIGHT, DATA_ARMOR_HUNTER_VEST.FLAVOR));
 
       // trackers
-      GameItems.TrackerData trackerData = DATA_TRACKER_CELL_PHONE;
-      ItemTrackerModel tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, GameImages.ITEM_CELL_PHONE, ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
-      tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
-      _setModel(IDs.TRACKER_CELL_PHONE, tmpTrackerModel);
-      trackerData = DATA_TRACKER_ZTRACKER;
-      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, GameImages.ITEM_ZTRACKER, ItemTrackerModel.TrackingFlags.UNDEADS, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
-      tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
-      _setModel(IDs.TRACKER_ZTRACKER, tmpTrackerModel);
-      trackerData = DATA_TRACKER_BLACKOPS_GPS;
-      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, GameImages.ITEM_BLACKOPS_GPS, ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
-      tmpTrackerModel.EquipmentPart = DollPart.LEFT_HAND;
-      tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
-      _setModel(IDs.TRACKER_BLACKOPS, tmpTrackerModel);
-      trackerData = DATA_TRACKER_POLICE_RADIO;
-      tmpTrackerModel = new ItemTrackerModel(trackerData.NAME, trackerData.PLURAL, GameImages.ITEM_POLICE_RADIO, ItemTrackerModel.TrackingFlags.POLICE_FACTION, trackerData.BATTERIES * WorldTime.TURNS_PER_HOUR);
-      tmpTrackerModel.EquipmentPart = DollPart.HIP_HOLSTER;
-      tmpTrackerModel.FlavorDescription = trackerData.FLAVOR;
-      _setModel(IDs.TRACKER_POLICE_RADIO, tmpTrackerModel);
+      _setModel(IDs.TRACKER_CELL_PHONE, new ItemTrackerModel(DATA_TRACKER_CELL_PHONE.NAME, DATA_TRACKER_CELL_PHONE.PLURAL, GameImages.ITEM_CELL_PHONE, ItemTrackerModel.TrackingFlags.FOLLOWER_AND_LEADER, DATA_TRACKER_CELL_PHONE.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_CELL_PHONE.FLAVOR));
+      _setModel(IDs.TRACKER_ZTRACKER, new ItemTrackerModel(DATA_TRACKER_ZTRACKER.NAME, DATA_TRACKER_ZTRACKER.PLURAL, GameImages.ITEM_ZTRACKER, ItemTrackerModel.TrackingFlags.UNDEADS, DATA_TRACKER_ZTRACKER.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_ZTRACKER.FLAVOR));
+      _setModel(IDs.TRACKER_BLACKOPS, new ItemTrackerModel(DATA_TRACKER_BLACKOPS_GPS.NAME, DATA_TRACKER_BLACKOPS_GPS.PLURAL, GameImages.ITEM_BLACKOPS_GPS, ItemTrackerModel.TrackingFlags.BLACKOPS_FACTION, DATA_TRACKER_BLACKOPS_GPS.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.LEFT_HAND, DATA_TRACKER_BLACKOPS_GPS.FLAVOR));
+      _setModel(IDs.TRACKER_POLICE_RADIO, new ItemTrackerModel(DATA_TRACKER_POLICE_RADIO.NAME, DATA_TRACKER_POLICE_RADIO.PLURAL, GameImages.ITEM_POLICE_RADIO, ItemTrackerModel.TrackingFlags.POLICE_FACTION, DATA_TRACKER_POLICE_RADIO.BATTERIES * WorldTime.TURNS_PER_HOUR, DollPart.HIP_HOLSTER, DATA_TRACKER_POLICE_RADIO.FLAVOR));
 
       // spray paint
       _setModel(IDs.SPRAY_PAINT1, new ItemSprayPaintModel(DATA_SPRAY_PAINT1.NAME, DATA_SPRAY_PAINT1.PLURAL, GameImages.ITEM_SPRAYPAINT, DATA_SPRAY_PAINT1.QUANTITY, GameImages.DECO_PLAYER_TAG1, DATA_SPRAY_PAINT1.FLAVOR));

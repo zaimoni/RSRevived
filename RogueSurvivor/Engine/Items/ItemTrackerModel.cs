@@ -25,12 +25,14 @@ namespace djack.RogueSurvivor.Engine.Items
       }
     }
 
-    public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries)
+    public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
       : base(aName, theNames, imageID)
     {
        m_Tracking = tracking;
        m_MaxBatteries = maxBatteries;
        DontAutoEquip = true;
+       EquipmentPart = part;
+       FlavorDescription = flavor;
     }
 
     [System.Flags]
