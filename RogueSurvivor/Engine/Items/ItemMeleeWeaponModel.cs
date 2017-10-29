@@ -13,9 +13,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsFragile { get; set; }
 
     public ItemMeleeWeaponModel(string aName, string theNames, string imageID, Attack attack, string flavor)
-      : base(aName, theNames, imageID, attack)
+      : base(aName, theNames, imageID, attack, flavor)
     {
-      FlavorDescription = flavor;
     }
 
     public Attack BaseMeleeAttack(ActorSheet Sheet) {

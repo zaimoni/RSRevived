@@ -15,7 +15,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int BestBeforeDays;
 
     public ItemFoodModel(string aName, string theNames, string imageID, int nutrition, int bestBeforeDays, int stackingLimit, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, flavor)
     {
       Nutrition = nutrition;
       if (bestBeforeDays < 0) {
@@ -26,7 +26,6 @@ namespace djack.RogueSurvivor.Engine.Items
       }
       IsPlural = (aName==theNames);
       StackingLimit = stackingLimit;
-      FlavorDescription = flavor;
     }
   }
 }

@@ -16,13 +16,12 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int Weight;
 
     public ItemBodyArmorModel(string aName, string theNames, string imageID, int protection_hit, int protection_shot, int encumbrance, int weight, string flavor)
-      : base(aName, theNames, imageID, DollPart.TORSO)
+      : base(aName, theNames, imageID, flavor, DollPart.TORSO)
     {
       Protection_Hit = protection_hit;
       Protection_Shot = protection_shot;
       Encumbrance = encumbrance;
       Weight = weight;
-      FlavorDescription = flavor;
     }
 
     public Defence ToDefence() { return new Defence(-Encumbrance, Protection_Hit, Protection_Shot); }

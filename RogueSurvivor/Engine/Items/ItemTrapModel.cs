@@ -10,7 +10,7 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemTrapModel : ItemModel
   {
-    private readonly ItemTrapModel.Flags m_Flags;
+    private readonly Flags m_Flags = Flags.NONE;
     public readonly int TriggerChance;
     public readonly int Damage;
     public readonly int BreakChance;
@@ -25,7 +25,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool ActivatesWhenDropped { get { return (m_Flags & Flags.DROP_ACTIVATE) != Flags.NONE; } }
 
     public ItemTrapModel(string aName, string theNames, string imageID, int stackLimit, int triggerChance, int damage, bool dropActivate, bool useToActivate, bool IsOneTimeUse, int breakChance, int blockChance, int breakChanceWhenEscape, bool IsNoisy, string noiseName, bool IsFlammable, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, flavor)
     {
       DontAutoEquip = true;
       if (stackLimit > 1) StackingLimit = stackLimit;
@@ -34,16 +34,14 @@ namespace djack.RogueSurvivor.Engine.Items
       BreakChance = breakChance;
       BlockChance = blockChance;
       BreakChanceWhenEscape = breakChanceWhenEscape;
-      FlavorDescription = flavor;
-      m_Flags = ItemTrapModel.Flags.NONE;
-      if (dropActivate) m_Flags |= ItemTrapModel.Flags.DROP_ACTIVATE;
-      if (useToActivate) m_Flags |= ItemTrapModel.Flags.USE_TO_ACTIVATE;
+      if (dropActivate) m_Flags |= Flags.DROP_ACTIVATE;
+      if (useToActivate) m_Flags |= Flags.USE_TO_ACTIVATE;
       if (IsNoisy) {
-        m_Flags |= ItemTrapModel.Flags.IS_NOISY;
+        m_Flags |= Flags.IS_NOISY;
         NoiseName = noiseName;
       }
-      if (IsOneTimeUse) m_Flags |= ItemTrapModel.Flags.IS_ONE_TIME_USE;
-      if (IsFlammable) m_Flags |= ItemTrapModel.Flags.IS_FLAMMABLE;
+      if (IsOneTimeUse) m_Flags |= Flags.IS_ONE_TIME_USE;
+      if (IsFlammable) m_Flags |= Flags.IS_FLAMMABLE;
     }
 
     [System.Flags]

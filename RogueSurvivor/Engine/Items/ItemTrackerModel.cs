@@ -14,12 +14,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int MaxBatteries;
 
     public ItemTrackerModel(string aName, string theNames, string imageID, ItemTrackerModel.TrackingFlags tracking, int maxBatteries, DollPart part, string flavor)
-      : base(aName, theNames, imageID, part)
+      : base(aName, theNames, imageID, flavor, part)
     {
        Tracking = tracking;
        MaxBatteries = maxBatteries;
        DontAutoEquip = true;
-       FlavorDescription = flavor;
     }
 
     [System.Flags]

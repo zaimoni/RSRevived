@@ -13,11 +13,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int MaxThrowDistance;
 
     public ItemGrenadeModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, int maxThrowDistance, int stackingLimit, string flavor)
-      : base(aName, theNames, imageID, fuseDelay, attack, blastImageID)
+      : base(aName, theNames, imageID, fuseDelay, attack, blastImageID, flavor)
     {
       MaxThrowDistance = maxThrowDistance;
       StackingLimit = stackingLimit;
-      FlavorDescription = flavor;
     }
   }
 }

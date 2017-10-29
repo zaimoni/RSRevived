@@ -17,11 +17,10 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsBow { get { return Attack.Kind == AttackKind.BOW; } }
 
     public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType, string flavor)
-      : base(aName, theNames, imageID, attack)
+      : base(aName, theNames, imageID, attack, flavor)
     {
       MaxAmmo = maxAmmo;
       AmmoType = ammoType;
-      FlavorDescription = flavor;
     }
   }
 }

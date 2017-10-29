@@ -16,8 +16,8 @@ namespace djack.RogueSurvivor.Engine.Items
 
     public BlastAttack BlastAttack { get { return m_Attack; } } // need value copy here
 
-    public ItemExplosiveModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID)
-      : base(aName, theNames, imageID, DollPart.RIGHT_HAND)
+    public ItemExplosiveModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, string flavor)
+      : base(aName, theNames, imageID, flavor, DollPart.RIGHT_HAND)
     {
       FuseDelay = fuseDelay;
       m_Attack = attack;

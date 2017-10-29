@@ -15,14 +15,13 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly string TagImageID;
 
     public ItemSprayPaintModel(string aName, string theNames, string imageID, int paintQuantity, string tagImageID, string flavor)
-      : base(aName, theNames, imageID, DollPart.LEFT_HAND)
+      : base(aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(tagImageID)) throw new ArgumentNullException(nameof(tagImageID));
 #endif
       MaxPaintQuantity = paintQuantity;
       TagImageID = tagImageID;
-      FlavorDescription = flavor;
     }
   }
 }
