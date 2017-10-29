@@ -337,18 +337,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected List<Actor> TabooTrades { get { return m_TabooTrades; } }
     public ActorOrder Order { get { return m_Order; } }
 
-    // doesn't include no-enemies check or any directives/orders
-    protected bool OkToSleepNow { get {
-      return m_Actor.WouldLikeToSleep && m_Actor.IsInside && m_Actor.CanSleep();
-    } }
-
-#if PROTOTYPE
+    // doesn't include no-enemies check, inside check or any directives/orders
     // would like to trigger pathing to inside to enable sleeping
     // but have to distinguish between AI w/o item memory and AI w/item memory, etc.
     protected bool WantToSleepNow { get {
-      return m_Actor.WouldLikeToSleep && !m_Actor.IsInside && m_Actor.CanSleep();
+      return m_Actor.WouldLikeToSleep && m_Actor.CanSleep();
     } }
-#endif
 
     public void SetOrder(ActorOrder newOrder)
     {

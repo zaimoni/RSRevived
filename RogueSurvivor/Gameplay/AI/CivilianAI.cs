@@ -413,23 +413,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (null != tmpAction) return tmpAction;
 
-      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && OkToSleepNow) {
-        tmpAction = BehaviorSecurePerimeter();
-        if (null != tmpAction) {
+      if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && WantToSleepNow) {
+        if (m_Actor.IsInside) {
+          tmpAction = BehaviorSecurePerimeter();
+          if (null != tmpAction) {
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "securing perimeter");
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "securing perimeter");
 #endif
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-        tmpAction = BehaviorSleep(game);
-        if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+          tmpAction = BehaviorSleep(game);
+          if (null != tmpAction) {
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "sleeping");
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "sleeping");
 #endif
-          if (tmpAction is ActionSleep)
-            m_Actor.Activity = Activity.SLEEPING;
-          return tmpAction;
+            if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
+            return tmpAction;
+          }
+        } else {
+          IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt.X,pt.Y).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
+          tmpAction = BehaviorHeadFor(see_inside);
+          if (null != tmpAction) return tmpAction;
         }
       }
 

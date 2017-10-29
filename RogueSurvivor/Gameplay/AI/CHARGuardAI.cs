@@ -12,7 +12,7 @@ using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Diagnostics.Contracts;
+using System.Linq;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -182,12 +182,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (null == old_enemies && OkToSleepNow) {
-        tmpAction = BehaviorSleep(game);
-        if (null != tmpAction) {
-          if (tmpAction is ActionSleep)
-            m_Actor.Activity = Activity.SLEEPING;
-          return tmpAction;
+      if (null == old_enemies && WantToSleepNow) {
+        if (m_Actor.IsInside) {
+          tmpAction = BehaviorSleep(game);
+          if (null != tmpAction) {
+            if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
+            return tmpAction;
+          }
+        } else {
+          IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt.X,pt.Y).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
+          tmpAction = BehaviorHeadFor(see_inside);
+          if (null != tmpAction) return tmpAction;
         }
       }
       tmpAction = BehaviorDropUselessItem();

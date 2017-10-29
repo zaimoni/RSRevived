@@ -196,17 +196,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      if (null == old_enemies && OkToSleepNow) {
-        tmpAction = BehaviorSecurePerimeter();
-        if (null != tmpAction) {
-          m_Actor.Activity = Activity.IDLE;
-          return tmpAction;
-        }
-        tmpAction = BehaviorSleep(game);
-        if (null != tmpAction) {
-          if (tmpAction is ActionSleep)
-            m_Actor.Activity = Activity.SLEEPING;
-          return tmpAction;
+      if (null == old_enemies && WantToSleepNow) {
+        if (m_Actor.IsInside) {
+          tmpAction = BehaviorSecurePerimeter();
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+          tmpAction = BehaviorSleep(game);
+          if (null != tmpAction) {
+            if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
+            return tmpAction;
+          }
+        } else {
+          IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt.X,pt.Y).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
+          tmpAction = BehaviorHeadFor(see_inside);
+          if (null != tmpAction) return tmpAction;
         }
       }
       tmpAction = BehaviorDropUselessItem();
