@@ -16,7 +16,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly string OutOfBatteriesImageID;
 
     public ItemLightModel(string aName, string theNames, string imageID, int fovBonus, int maxBatteries, string outOfBatteriesImageID, string flavor)
-      : base(aName, theNames, imageID, DollPart.LEFT_HAND)
+      : base(aName, theNames, imageID, flavor, DollPart.LEFT_HAND)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(outOfBatteriesImageID)) throw new ArgumentNullException(nameof(outOfBatteriesImageID));
@@ -25,7 +25,6 @@ namespace djack.RogueSurvivor.Engine.Items
       MaxBatteries = maxBatteries;
       OutOfBatteriesImageID = outOfBatteriesImageID;
       DontAutoEquip = true;
-      FlavorDescription = flavor;
     }
   }
 }

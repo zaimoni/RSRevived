@@ -20,9 +20,9 @@ namespace djack.RogueSurvivor.Data
     private int m_StackingLimit = 1;
 
     public bool IsPlural { get; set; }
-    public bool IsProper { get; set; }
+    public bool IsProper { get; protected set; }
     public bool DontAutoEquip { get; set; }
-    public bool IsUnbreakable { get; set; }
+    public bool IsUnbreakable { get; protected set; }
     public bool IsUnique { get; set; }
     public bool IsForbiddenToAI { get; set; }
 

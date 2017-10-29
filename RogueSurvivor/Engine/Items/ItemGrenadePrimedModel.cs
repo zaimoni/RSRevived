@@ -14,7 +14,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly ItemGrenadeModel GrenadeModel;
 
     public ItemGrenadePrimedModel(string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
-      : base(aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage)
+      : base(aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage, grenadeModel.FlavorDescription)
     {
 #if DEBUG
       if (null == grenadeModel) throw new ArgumentNullException(nameof(grenadeModel));

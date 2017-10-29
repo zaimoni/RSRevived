@@ -14,12 +14,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public readonly int BoreChance;
 
     public ItemEntertainmentModel(string aName, string theNames, string imageID, int value, int boreChance, int stacking, string flavor)
-      : base(aName, theNames, imageID)
+      : base(aName, theNames, imageID, flavor)
     {
       Value = value;
       BoreChance = boreChance;
       StackingLimit = stacking;
-      FlavorDescription = flavor;
     }
   }
 }

@@ -16,8 +16,8 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsFireArm { get { return Attack.Kind == AttackKind.FIREARM; } }
     public bool IsBow { get { return Attack.Kind == AttackKind.BOW; } }
 
-    public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType, string flavor)
-      : base(aName, theNames, imageID, attack, flavor)
+    public ItemRangedWeaponModel(string aName, string theNames, string imageID, Attack attack, int maxAmmo, AmmoType ammoType, string flavor, bool is_artifact = false)
+      : base(aName, theNames, imageID, attack, flavor, is_artifact)
     {
       MaxAmmo = maxAmmo;
       AmmoType = ammoType;
