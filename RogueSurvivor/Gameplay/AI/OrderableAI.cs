@@ -72,7 +72,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_NextAction(int t0, Actor who, ActorAction intent)
       : base(t0,who)
       {
-        Contract.Requires(null != intent);
+#if DEBUG
+        if (null == intent) throw new ArgumentNullException(nameof(intent));
+#endif
         Intent = intent;
       }
 
@@ -94,7 +96,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public Goal_LastAction(int t0, Actor who, T intent)
       : base(t0,who)
       {
-        Contract.Requires(null != intent);
+#if DEBUG
+        if (null == intent) throw new ArgumentNullException(nameof(intent));
+#endif
         Intent = intent;
       }
 

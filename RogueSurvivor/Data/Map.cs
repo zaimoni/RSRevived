@@ -727,6 +727,10 @@ retry:
           goto retry;
         }
         int this_extended = UsesCrossDistrictView(this);
+        if (0==this_extended) {
+          dest = District.EntryMap;
+          goto retry;
+        }
         if (1==dest_extended && 2==this_extended) {
           dest = District.EntryMap;
           goto retry;
@@ -787,8 +791,8 @@ retry:
       // ...
 #endif
 
-            // do something uninteillgent
-            return exit_maps;
+      // do something uninteillgent
+      return exit_maps;
     }
 
     public void AddZone(Zone zone)
