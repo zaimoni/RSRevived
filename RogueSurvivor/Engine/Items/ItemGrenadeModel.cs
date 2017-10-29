@@ -10,18 +10,15 @@ namespace djack.RogueSurvivor.Engine.Items
 {
   internal class ItemGrenadeModel : ItemExplosiveModel
   {
-    private readonly int m_MaxThrowDistance;
+    public readonly int MaxThrowDistance;
 
-    public int MaxThrowDistance {
-      get {
-        return m_MaxThrowDistance;
-      }
-    }
-
-    public ItemGrenadeModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, int maxThrowDistance)
+    public ItemGrenadeModel(string aName, string theNames, string imageID, int fuseDelay, BlastAttack attack, string blastImageID, int maxThrowDistance, int stackingLimit, string flavor)
       : base(aName, theNames, imageID, fuseDelay, attack, blastImageID)
     {
-      m_MaxThrowDistance = maxThrowDistance;
+      MaxThrowDistance = maxThrowDistance;
+      EquipmentPart = DollPart.RIGHT_HAND;
+      StackingLimit = stackingLimit;
+      FlavorDescription = flavor;
     }
   }
 }

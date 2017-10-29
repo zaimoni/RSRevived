@@ -713,17 +713,12 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(IDs.AMMO_BOLTS, new ItemAmmoModel(GameImages.ITEM_AMMO_BOLTS, AmmoType.BOLT, 30));
 
       // grenade, in its various states
-      GameItems.ExplosiveData explosiveData = DATA_EXPLOSIVE_GRENADE;
-      int[] damage = new int[explosiveData.RADIUS + 1];
-      for (int index = 0; index < explosiveData.RADIUS + 1; ++index)
-        damage[index] = explosiveData.DMG[index];   // XXX explosiveData.DMG is returned with a mismatched length
+      int[] damage = new int[DATA_EXPLOSIVE_GRENADE.RADIUS + 1];
+      for (int index = 0; index < DATA_EXPLOSIVE_GRENADE.RADIUS + 1; ++index)
+        damage[index] = DATA_EXPLOSIVE_GRENADE.DMG[index];   // XXX explosiveData.DMG is returned with a mismatched length
 
-      ItemGrenadeModel itemGrenadeModel1 = new ItemGrenadeModel(explosiveData.NAME, explosiveData.PLURAL, GameImages.ITEM_GRENADE, explosiveData.FUSE, new BlastAttack(explosiveData.RADIUS, damage, true, false), "Icons\\blast", explosiveData.MAXTHROW);
-      itemGrenadeModel1.EquipmentPart = DollPart.RIGHT_HAND;
-      itemGrenadeModel1.StackingLimit = explosiveData.STACKLINGLIMIT;
-      itemGrenadeModel1.FlavorDescription = explosiveData.FLAVOR;
-      _setModel(IDs.EXPLOSIVE_GRENADE, itemGrenadeModel1);
-      _setModel(IDs.EXPLOSIVE_GRENADE_PRIMED, new ItemGrenadePrimedModel("primed " + explosiveData.NAME, "primed " + explosiveData.PLURAL, GameImages.ITEM_GRENADE_PRIMED, this[GameItems.IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel));
+      _setModel(IDs.EXPLOSIVE_GRENADE, new ItemGrenadeModel(DATA_EXPLOSIVE_GRENADE.NAME, DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE, DATA_EXPLOSIVE_GRENADE.FUSE, new BlastAttack(DATA_EXPLOSIVE_GRENADE.RADIUS, damage, true, false), GameImages.ICON_BLAST, DATA_EXPLOSIVE_GRENADE.MAXTHROW, DATA_EXPLOSIVE_GRENADE.STACKLINGLIMIT, DATA_EXPLOSIVE_GRENADE.FLAVOR));
+      _setModel(IDs.EXPLOSIVE_GRENADE_PRIMED, new ItemGrenadePrimedModel("primed " + DATA_EXPLOSIVE_GRENADE.NAME, "primed " + DATA_EXPLOSIVE_GRENADE.PLURAL, GameImages.ITEM_GRENADE_PRIMED, this[IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel));
 
       // carpentry
       GameItems.BarricadingMaterialData barricadingMaterialData = DATA_BAR_WOODEN_PLANK;
