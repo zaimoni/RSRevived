@@ -380,29 +380,27 @@ namespace djack.RogueSurvivor.Data
 		}
       }
 
-      public void Seen(Map m, IEnumerable<Point> pts)
-      {
-        lock(_locs) {
-		  if (!_locs.ContainsKey(m)) return;
-          _locs[m].ExceptWith(pts);
-          if (0 >= _locs[m].Count) _locs.Remove(m);
-        }
-      }
-
-      public void Seen(Map m, Point pt)
-      {
-        lock(_locs) {
-		  if (!_locs.ContainsKey(m)) return;
-          if (_locs[m].Remove(pt) && 0>=_locs[m].Count) _locs.Remove(m);
-        }
-      }
-
       public void Seen(Location loc)
       {
+        if (!loc.Map.IsInBounds(loc.Position)) {
+          Location? test = loc.Map.Normalize(loc.Position);
+          if (null != test) Seen(test.Value);
+          return;
+        }
 		lock(_locs) {
 		  if (!_locs.ContainsKey(loc.Map)) return;
           if (_locs[loc.Map].Remove(loc.Position) && 0 >= _locs[loc.Map].Count) _locs.Remove(loc.Map);
 		}
+      }
+
+      public void Seen(Map m, IEnumerable<Point> pts)
+      {
+        foreach(Point pt in pts) Seen(new Location(m,pt));
+      }
+
+      public void Seen(Map m, Point pt)
+      {
+        Seen(new Location(m,pt));
       }
     }
 }

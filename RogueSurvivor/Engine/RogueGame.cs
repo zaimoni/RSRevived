@@ -8191,7 +8191,8 @@ namespace djack.RogueSurvivor.Engine
       return objList[m_Rules.Roll(0, objList.Count)];
     }
 
-    /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.</remark>
+    /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.
+    /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>
     private bool TradeVeto(Item lhs, Item rhs)
     {
       switch(lhs.Model.ID)
