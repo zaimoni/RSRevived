@@ -6,6 +6,7 @@ REVIVED 0.10.0 CHANGES
 * names better matched to stereotypical English gender
 * key configuration files are not backward compatible.
 * even more AI overhaul.
+* Closing the door behind you is now a free action.
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
 * It is rarely possible to see where a living is planning to move next.  (If you are about to shove him, you will see this.)

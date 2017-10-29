@@ -15,17 +15,20 @@ namespace djack.RogueSurvivor.Engine.Actions
   internal class ActionCloseDoor : ActorAction
   {
     private readonly DoorWindow m_Door;
+    private readonly bool m_IsFreeAction;
 
-    public ActionCloseDoor(Actor actor, DoorWindow door)
+    public ActionCloseDoor(Actor actor, DoorWindow door, bool free = false)
       : base(actor)
     {
 #if DEBUG
       if (null == door) throw new ArgumentNullException(nameof(door));
 #endif
       m_Door = door;
+      m_IsFreeAction = free;
     }
 
     public DoorWindow Door { get { return m_Door; } }
+    public bool IsFreeAction { get { return m_IsFreeAction; } }
 
     public override bool IsLegal()
     {
@@ -34,7 +37,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override void Perform()
     {
-      RogueForm.Game.DoCloseDoor(m_Actor, m_Door);
+      RogueForm.Game.DoCloseDoor(m_Actor, m_Door, m_IsFreeAction);
     }
   }
 }

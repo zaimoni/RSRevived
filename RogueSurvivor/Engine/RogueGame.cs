@@ -4188,7 +4188,7 @@ namespace djack.RogueSurvivor.Engine
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt is DoorWindow door) {
               if (player.CanClose(door, out string reason)) {
-                DoCloseDoor(player, door);
+                DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
                 RedrawPlayScreen();
                 flag1 = false;
                 flag2 = true;
@@ -8607,14 +8607,14 @@ namespace djack.RogueSurvivor.Engine
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void DoCloseDoor(Actor actor, DoorWindow door)
+    public void DoCloseDoor(Actor actor, DoorWindow door, bool free)
     {
       door.SetState(DoorWindow.STATE_CLOSED);
       if (ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(door)) {
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_CLOSE), door));
         RedrawPlayScreen();
       }
-      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (!free) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
     }
 
     public void DoBarricadeDoor(Actor actor, DoorWindow door)

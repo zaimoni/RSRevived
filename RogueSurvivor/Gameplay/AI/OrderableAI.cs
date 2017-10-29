@@ -1393,7 +1393,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (tmp?.ContainsKey(previousLocation.Position) ?? false) return null;
         }
       }
-      return new ActionCloseDoor(m_Actor, door);
+      return new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
     }
 
     protected ActorAction BehaviorSecurePerimeter()
@@ -1412,7 +1412,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               return new ActionWait(m_Actor);
             }
             // proceed
-            ActionCloseDoor tmp = new ActionCloseDoor(m_Actor, door);
+            ActionCloseDoor tmp = new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
             Objectives.Add(new Goal_LastAction<ActionCloseDoor>(m_Actor.Location.Map.LocalTime.TurnCounter,m_Actor,tmp));
             return tmp;
           }
@@ -1602,7 +1602,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           foreach(DoorWindow door in close_doors.Values) {
             if (0 >= i--) {
               Objectives.Add(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
-              return new ActionCloseDoor(m_Actor, door);
+              return new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
             }
           }
         } else if (0 < barricade_doors.Count) {

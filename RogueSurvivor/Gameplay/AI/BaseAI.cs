@@ -41,7 +41,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
     }
 
-    protected Location PrevLocation { get { return m_prevLocation; } }
+    public Location PrevLocation { get { return m_prevLocation; } }
 
     public override ActorAction GetAction(RogueGame game)
     {

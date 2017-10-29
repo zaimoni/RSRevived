@@ -732,6 +732,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>
     static public bool TradeVeto(Item mine, Item theirs)
     {
+      // reject identity trades for now.  This will change once AI state is involved.
+      if (mine.Model == theirs.Model) return true;
+
       switch(mine.Model.ID)
       {
       // two weapons for the ammo
