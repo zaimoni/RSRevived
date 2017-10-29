@@ -4,7 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using System.Diagnostics.Contracts;
+using System;
+using DollPart = djack.RogueSurvivor.Data.DollPart;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -15,8 +16,11 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemGrenadePrimedModel(string aName, string theNames, string imageID, ItemGrenadeModel grenadeModel)
       : base(aName, theNames, imageID, grenadeModel.FuseDelay, grenadeModel.BlastAttack, grenadeModel.BlastImage)
     {
-	  Contract.Requires(null!= grenadeModel);
+#if DEBUG
+      if (null == grenadeModel) throw new ArgumentNullException(nameof(grenadeModel));
+#endif
       GrenadeModel = grenadeModel;
+      EquipmentPart = DollPart.RIGHT_HAND;
     }
   }
 }

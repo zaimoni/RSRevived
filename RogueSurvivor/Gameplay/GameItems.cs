@@ -723,9 +723,7 @@ namespace djack.RogueSurvivor.Gameplay
       itemGrenadeModel1.StackingLimit = explosiveData.STACKLINGLIMIT;
       itemGrenadeModel1.FlavorDescription = explosiveData.FLAVOR;
       _setModel(IDs.EXPLOSIVE_GRENADE, itemGrenadeModel1);
-      ItemGrenadePrimedModel grenadePrimedModel1 = new ItemGrenadePrimedModel("primed " + explosiveData.NAME, "primed " + explosiveData.PLURAL, GameImages.ITEM_GRENADE_PRIMED, this[GameItems.IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel);
-      grenadePrimedModel1.EquipmentPart = DollPart.RIGHT_HAND;
-      _setModel(IDs.EXPLOSIVE_GRENADE_PRIMED, grenadePrimedModel1);
+      _setModel(IDs.EXPLOSIVE_GRENADE_PRIMED, new ItemGrenadePrimedModel("primed " + explosiveData.NAME, "primed " + explosiveData.PLURAL, GameImages.ITEM_GRENADE_PRIMED, this[GameItems.IDs.EXPLOSIVE_GRENADE] as ItemGrenadeModel));
 
       // carpentry
       GameItems.BarricadingMaterialData barricadingMaterialData = DATA_BAR_WOODEN_PLANK;
