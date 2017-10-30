@@ -122,8 +122,10 @@ namespace djack.RogueSurvivor.Data
     // map manipulation
     protected void AddMap(Map map)
     {
-      Contract.Requires(null != map);
-	  Contract.Requires(map.District == this);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+      if (map.District != this) throw new InvalidOperationException("map.District != this");
+#endif
       if (m_Maps.Contains(map)) return;
 //    map.District = this;
       m_Maps.Add(map);

@@ -459,6 +459,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       }
 
+      {
+      if (it is ItemFood food) {
+          Item drop = inv.GetFirst<ItemFood>();
+          if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
+          if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
+          if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
+          if (null != drop) {
+            List<ActorAction> recover = new List<ActorAction>(2);
+            // 3a) drop target without triggering the no-pickup schema
+            recover.Add(new ActionDropItem(m_Actor,drop));
+            // 3b) pick up food
+            recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            return new ActionChain(m_Actor,recover);
+          }
+      }
+      }
+
       // priority classes of incoming items are:
       // food
       // ranged weapon

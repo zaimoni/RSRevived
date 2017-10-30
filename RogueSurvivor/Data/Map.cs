@@ -717,10 +717,22 @@ retry:
           dest = dest.District.EntryMap;
           goto retry;
         }
+        if (3 == dest_extended) {
+          if (dest.Exits.Any(e => e.ToMap==dest.District.EntryMap)) {
+            dest = dest.District.EntryMap;
+            goto retry;
+          }
+        }
         int this_extended = UsesCrossDistrictView(this);
         if (0==this_extended) {
           dest = District.EntryMap;
           goto retry;
+        }
+        if (3 == this_extended) {
+          if (Exits.Any(e => e.ToMap==District.EntryMap)) {
+            dest = District.EntryMap;
+            goto retry;
+          }
         }
         if (1==dest_extended && 2==this_extended) {
           dest = District.EntryMap;
