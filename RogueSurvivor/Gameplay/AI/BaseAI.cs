@@ -42,6 +42,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     public Location PrevLocation { get { return m_prevLocation; } }
+    public void UpdatePrevLocation() { m_prevLocation = m_Actor.Location; } // for PlayerController
 
     public override ActorAction GetAction(RogueGame game)
     {

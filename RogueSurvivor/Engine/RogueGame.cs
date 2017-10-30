@@ -3180,6 +3180,7 @@ namespace djack.RogueSurvivor.Engine
       while (flag1);
       player.Controller.UpdateSensors();
       ComputeViewRect(player.Location.Position);
+      (player.Controller as PlayerController).UpdatePrevLocation();
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
     }
 
