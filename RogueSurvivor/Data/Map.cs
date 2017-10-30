@@ -1300,6 +1300,19 @@ retry:
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
     }
 
+    public void RemoveItemAtExt(Item it, Point position)
+    {
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
+      if (IsInBounds(position)) {
+        RemoveItemAt(it,position);
+        return;
+      }
+      Location? test = Normalize(position);
+      if (null != test) test.Value.Map.RemoveItemAt(it, test.Value.Position);
+    }
+
     public void RemoveItemAt(Item it, int x, int y)
     {
       RemoveItemAt(it, new Point(x, y));

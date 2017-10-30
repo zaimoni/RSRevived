@@ -7965,7 +7965,7 @@ namespace djack.RogueSurvivor.Engine
             objList.Add(obj);
         }
         foreach (Item it in objList)
-          map.RemoveItemAt(it, location.Position);
+          map.RemoveItemAtExt(it, location.Position);
       }
       if (blast.CanDamageObjects) {
         MapObject mapObjectAt = map.GetMapObjectAt(location.Position);
