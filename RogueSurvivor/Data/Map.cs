@@ -688,21 +688,12 @@ namespace djack.RogueSurvivor.Data
 	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
 	  }
       Zaimoni.Data.FloodfillPathfinder<Point> ret = new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
-      {
-	    Point p = new Point();
-		for (p.X = 0; p.X < Width; ++p.X) {
-		  for (p.Y = 0; p.Y < Height; ++p.Y) {
-            if (p == actor.Location.Position) continue;
-            ActorAction tmp = Engine.Rules.IsPathableFor(actor, new Location(this, p));
-            // XXX if inventory is full, then a container would return null but should be pathable anyway
-            if (null==tmp) {
-              if (actor.Location.Map.GetMapObjectAt(p)?.IsContainer ?? false) continue;
-              ret.Blacklist(p);
-              continue;
-            }
-	      }
-	    }
-      }
+      Rect.DoForEach(pt=>ret.Blacklist(pt),pt=> {
+        if (pt == actor.Location.Position && this == actor.Location.Map) return false;
+        if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
+        if (GetMapObjectAt(pt)?.IsContainer ?? false) return false;
+        return true;
+      });
       return ret;
     }
 
