@@ -558,6 +558,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
+        if ("Cop Saul Vance" == Name) return true;
         return false;
       }
     }

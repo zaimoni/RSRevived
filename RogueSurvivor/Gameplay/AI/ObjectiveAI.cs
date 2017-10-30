@@ -54,6 +54,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       PlannedMoves.Clear();
       Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
+      if (null == dest) {
+        // second opinion indicated
+        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
+        if (null != legal_steps) {
+          int current_cost = navigate.Cost(m_Actor.Location.Position);
+          var test = new Dictionary<Point,int>(8);
+          foreach(Point pt in legal_steps) {
+            int new_cost = navigate.Cost(pt);
+            if (new_cost >= current_cost) continue;
+            test[pt] = new_cost;
+          }
+          if (0<test.Count) dest = test;
+        }
+      }
       if (null == dest) return new Dictionary<Point,int>();
       PlannedMoves[m_Actor.Location.Position] = dest;
       foreach(Point pt in dest.Keys) {
