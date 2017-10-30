@@ -937,6 +937,7 @@ retry:
           m_ActorsList.Add(actor);
           Engine.LOS.Now(this);
           if (actor.IsPlayer) Players.Recalc();
+          if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
         }
         m_aux_ActorsByPosition.Add(position, actor);
         actor.Location = new Location(this, position);
@@ -968,6 +969,7 @@ retry:
 #endif
           m_iCheckNextActorIndex = 0;
           if (actor.IsPlayer) Players.Recalc();
+          if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
         }
       }
     }

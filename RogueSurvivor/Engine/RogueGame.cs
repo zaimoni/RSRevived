@@ -8971,6 +8971,7 @@ namespace djack.RogueSurvivor.Engine
         m_Player.Location.Map.Players.Recalc();
         if (0 >= Session.Get.World.PlayerCount) PlayerDied(killer, reason);
       }
+      if ((int)Gameplay.GameFactions.IDs.ThePolice == deadGuy.Faction.ID) deadGuy.Location.Map.Police.Recalc();
       deadGuy.RemoveAllFollowers();
       if (deadGuy.Leader != null) {
         if (deadGuy.Leader.IsPlayer) {
@@ -9524,6 +9525,7 @@ namespace djack.RogueSurvivor.Engine
           upgradeActor.Doll.AddDecoration(DollPart.FEET, GameImages.POLICE_SHOES);
           upgradeActor.Retype(Models.Actors[(int)(upgradeActor.Model.ID.IsFemale() ? GameActors.IDs.POLICEWOMAN : GameActors.IDs.POLICEMAN)]);
           upgradeActor.Controller = new PlayerController();
+          upgradeActor.Location.Map.Police.Recalc();
           AddMessage(new Data.Message("Welcome to the force.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
         } else
           AddMessage(new Data.Message("Acknowledged.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
