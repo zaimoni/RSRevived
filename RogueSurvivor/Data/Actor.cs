@@ -766,15 +766,10 @@ namespace djack.RogueSurvivor.Data
 
     public string ReasonCantMeleeAttack(Actor target)
     {
-      Contract.Requires(null != target);
-      if (Location.Map == target.Location.Map) {
-        if (!Rules.IsAdjacent(Location.Position, target.Location.Position)) return "not adjacent";
-      } else {
-        Exit exitAt = Location.Exit;
-        if (exitAt == null) return "not reachable";
-        if (!target.Location.Map.HasExitAt(target.Location.Position)) return "not reachable";
-        if (exitAt.Location != target.Location) return "not reachable";
-      }
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
+      if (!Rules.IsAdjacent(Location, target.Location)) return "not adjacent";
       if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
       if (target.IsDead) return "already dead!";
       return "";

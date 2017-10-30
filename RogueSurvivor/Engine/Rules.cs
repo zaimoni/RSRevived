@@ -282,16 +282,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Point point = new Point(x, y);
       reason = "";
-      if (!map.IsInBounds(x, y)) {
-	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
-      }
-      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
-      if (actionMoveStep.IsLegal()) {
-        reason = "";
-        return actionMoveStep;
-      }
-      reason = actionMoveStep.FailReason;
-      Actor actorAt = map.GetActorAt(point);
+      Actor actorAt = map.GetActorAtExt(point);
       if (actorAt != null) {
         if (actor.IsEnemyOf(actorAt)) {
           return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
@@ -302,6 +293,15 @@ namespace djack.RogueSurvivor.Engine
           return new ActionSwitchPlace(actor, actorAt);
         return (actor.CanChatWith(actorAt, out reason) ? new ActionChat(actor, actorAt) : null);
       }
+      if (!map.IsInBounds(x, y)) {
+	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
+      }
+      ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
+      if (actionMoveStep.IsLegal()) {
+        reason = "";
+        return actionMoveStep;
+      }
+      reason = actionMoveStep.FailReason;
       MapObject mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
         if (mapObjectAt is DoorWindow door) {
@@ -659,8 +659,12 @@ namespace djack.RogueSurvivor.Engine
     // These two somewhat counter-intuitively consider "same location" as adjacent
     public static bool IsAdjacent(Location a, Location b)
     {
-      if (a.Map != b.Map)
-        return false;
+      
+      if (a.Map != b.Map) {
+        Location? test = a.Map.Denormalize(b);
+        if (null == test) return false;
+        b = test.Value;
+      }
       return Rules.IsAdjacent(a.Position, b.Position);
     }
 
