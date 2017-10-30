@@ -68,6 +68,15 @@ namespace djack.RogueSurvivor.Data
             if (Engine.Session.Get.PoliceItemMemory.HaveEverSeen(new Location(m_EntryMap, pos))) continue;  // police already know this
             if (m_EntryMap.HasZonePartiallyNamedAt(pos, "CHAR Office")) continue;   // CHAR company town, police first assume things ok
             if (m_EntryMap.HasZonePartiallyNamedAt(pos, "CHAR Agency")) continue;   // CHAR company town, police first assume things ok
+            // stores have their own police AI cheat
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "GeneralStore")) continue;
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Grocery")) continue;
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Sportswear")) continue;
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Pharmacy")) continue;
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Construction")) continue;
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Gunshop")) continue;
+            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Hunting Shop")) continue;
+
             Engine.Session.Get.PoliceInvestigate.Record(m_EntryMap,pos);
           }
         }

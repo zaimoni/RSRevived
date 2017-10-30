@@ -626,7 +626,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileRectangle(map, GameTiles.FLOOR_WALKWAY, b.Rectangle);
       TileRectangle(map, GameTiles.WALL_STONE, b.BuildingRect);
       TileFill(map, GameTiles.FLOOR_TILES, b.InsideRect, true);
-      ShopType shopType = (ShopType)m_DiceRoller.Roll(0, 7);
+      ShopType shopType = (ShopType)m_DiceRoller.Roll(0, (int)ShopType._COUNT);
       int left1 = b.InsideRect.Left;
       int top1 = b.InsideRect.Top;
       int right = b.InsideRect.Right;
@@ -643,43 +643,41 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         centralAlley = b.InsideRect.Top + b.InsideRect.Height / 2;
       }
       Rectangle alleysRect = Rectangle.FromLTRB(left1, top1, right, bottom);
-      MapObjectFill(map, alleysRect, (Func<Point, MapObject>) (pt =>
-      {
+      MapObjectFill(map, alleysRect, pt => {
         if (!horizontalAlleys ? (pt.X - alleysRect.Left) % 2 == 1 && pt.Y != centralAlley : (pt.Y - alleysRect.Top) % 2 == 1 && pt.X != centralAlley) {
-          Session.Get.PoliceInvestigate.Record(map, pt);    // works because items chance morally hardcoded to 100% [cf ItemInShopShelfChance]
           return MakeObjShelf();    // XXX why not the shop items as well at this time?
         }
         return null;
-      }));
+      });
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       string basename;
       string shopImage;
       switch (shopType) {
-        case BaseTownGenerator.ShopType._FIRST:
+        case ShopType.GENERAL_STORE:
           shopImage = GameImages.DECO_SHOP_GENERAL_STORE;
           basename = "GeneralStore";
           break;
-        case BaseTownGenerator.ShopType.GROCERY:
+        case ShopType.GROCERY:
           shopImage = GameImages.DECO_SHOP_GROCERY;
           basename = "Grocery";
           break;
-        case BaseTownGenerator.ShopType.SPORTSWEAR:
+        case ShopType.SPORTSWEAR:
           shopImage = GameImages.DECO_SHOP_SPORTSWEAR;
           basename = "Sportswear";
           break;
-        case BaseTownGenerator.ShopType.PHARMACY:
+        case ShopType.PHARMACY:
           shopImage = GameImages.DECO_SHOP_PHARMACY;
           basename = "Pharmacy";
           break;
-        case BaseTownGenerator.ShopType.CONSTRUCTION:
+        case ShopType.CONSTRUCTION:
           shopImage = GameImages.DECO_SHOP_CONSTRUCTION;
           basename = "Construction";
           break;
-        case BaseTownGenerator.ShopType.GUNSHOP:
+        case ShopType.GUNSHOP:
           shopImage = GameImages.DECO_SHOP_GUNSHOP;
           basename = "Gunshop";
           break;
-        case BaseTownGenerator.ShopType.HUNTING:
+        case ShopType.HUNTING:
           shopImage = GameImages.DECO_SHOP_HUNTING;
           basename = "Hunting Shop";
           break;
@@ -725,17 +723,18 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (!map.GetTileModelAt(x2, y2).IsWalkable)
           PlaceDoor(map, x2, y2, GameTiles.FLOOR_TILES, MakeObjWindow());
       }
-      if (shopType == BaseTownGenerator.ShopType.GUNSHOP)
+      if (shopType == ShopType.GUNSHOP)
         BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
-      ItemsDrop(map, b.InsideRect, (pt =>
-      {
+      ItemsDrop(map, b.InsideRect, pt => {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
-        Session.Get.PoliceInvestigate.Record(map, pt);
         return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
-      }), (Func<Point, Item>) (pt => MakeRandomShopItem(shopType)));
+      }, pt => MakeRandomShopItem(shopType));
       map.AddZone(MakeUniqueZone(basename, b.BuildingRect));
       MakeWalkwayZones(map, b);
+      DoForEachTile(b.BuildingRect,pt => {
+          Session.Get.ForcePoliceKnown(new Location(map, pt));  // XXX exceptionally cheating police AI
+      });
       if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
         int seed = map.Seed << 1 ^ basename.GetHashCode();
         string name = "basement-" + basename + string.Format("{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object)(b.BuildingRect.Left + b.BuildingRect.Width / 2), (object)(b.BuildingRect.Top + b.BuildingRect.Height / 2));
@@ -753,8 +752,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (m_DiceRoller.RollChance(SHOP_BASEMENT_SHELF_CHANCE_PER_TILE)) {
             shopBasement.PlaceAt(MakeObjShelf(), pt);
             if (m_DiceRoller.RollChance(SHOP_BASEMENT_ITEM_CHANCE_PER_SHELF)) {
-              Session.Get.PoliceInvestigate.Record(map, pt);
-              MakeRandomShopItem(shopType)?.DropAt(shopBasement,pt);
+              Session.Get.PoliceInvestigate.Record(shopBasement, pt);
+              MakeRandomShopItem(shopType)?.DropAt(shopBasement,pt);              
             }
           }
           if (!Session.Get.HasZombiesInBasements || !m_DiceRoller.RollChance(SHOP_BASEMENT_ZOMBIE_RAT_CHANCE)) return;
@@ -1466,7 +1465,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     private Item MakeRandomShopItem(ShopType shop)
     {
       switch (shop) {
-        case ShopType._FIRST: return MakeShopGeneralItem();
+        case ShopType.GENERAL_STORE: return MakeShopGeneralItem();
         case ShopType.GROCERY: return MakeShopGroceryItem();
         case ShopType.SPORTSWEAR: return MakeShopSportsWearItem();
         case ShopType.PHARMACY: return MakeShopPharmacyItem();
@@ -2643,7 +2642,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     
         switch (roller.Roll(0, 10)) {
           case 0: return MakeRandomShopItem(ShopType.CONSTRUCTION);
-          case 1: return MakeRandomShopItem(ShopType._FIRST);
+          case 1: return MakeRandomShopItem(ShopType.GENERAL_STORE);
           case 2: return MakeRandomShopItem(ShopType.GROCERY);
           case 3: return MakeRandomShopItem(ShopType.GUNSHOP);
           case 4: return MakeRandomShopItem(ShopType.PHARMACY);
@@ -3091,7 +3090,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     protected enum ShopType : byte
     {
       GENERAL_STORE = 0,
-      _FIRST = 0,
       GROCERY = 1,
       SPORTSWEAR = 2,
       PHARMACY = 3,
