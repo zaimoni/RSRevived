@@ -546,6 +546,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
+      // XXX leaders should try to check what their followers use as well.
+      List<Gameplay.GameItems.IDs> items = WhatHaveISeen();
+      if (null != items) {
+        HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
+        // while we want to account for what our followers want, we don't want to block our followers from the items either
+        critical.IntersectWith(items);
+        if (0 < critical.Count) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
+#endif
+          tmpAction = BehaviorResupply(critical);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok");
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying: "+tmpAction.ToString());
+#endif
+          if (null != tmpAction) return tmpAction;
+        }
+      }
+
       if (m_Actor.HasLeader && !DontFollowLeader) {
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
@@ -572,26 +592,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // XXX if we are a leader, we should try to rearrange items for our followers (no one starving while another has a lot of food)
       // XXX if we are a follower, we should try to avoid being hurt by the leader's rearranging our items
-
-      // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
-      // XXX leaders should try to check what their followers use as well.
-      List<Gameplay.GameItems.IDs> items = WhatHaveISeen();
-      if (null != items) {
-        HashSet<Gameplay.GameItems.IDs> critical = WhatDoINeedNow();    // out of ammo, or hungry without food
-        // while we want to account for what our followers want, we don't want to block our followers from the items either
-        critical.IntersectWith(items);
-        if (0 < critical.Count) {
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply");
-#endif
-          tmpAction = BehaviorResupply(critical);
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok");
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying: "+tmpAction.ToString());
-#endif
-          if (null != tmpAction) return tmpAction;
-        }
-      }
 
       if (m_Actor.IsHungry) {
         tmpAction = BehaviorAttackBarricade();

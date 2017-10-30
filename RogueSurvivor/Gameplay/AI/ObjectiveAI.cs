@@ -49,10 +49,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
       _STA_reserve = tmp+m_Actor.NightSTApenalty*(jump+melee+push);
     }
 
+    // should give same results as navigate.Approach(pt)
+    protected Dictionary<Point, int> SimulateApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
+    {
+      List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      var test = new Dictionary<Point,int>(8);
+      if (null != legal_steps) {
+        int current_cost = navigate.Cost(m_Actor.Location.Position);
+        foreach(Point pt in legal_steps) {
+          int new_cost = navigate.Cost(pt);
+          if (new_cost >= current_cost) continue;
+          test[pt] = new_cost;
+        }
+      }
+      return test;
+    }
+
     // these two return a value copy for correctness
     protected Dictionary<Point, int> PlanApproach(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
     {
       PlannedMoves.Clear();
+#if DEBUG
+      Dictionary<Point, int> dest = SimulateApproach(navigate);
+      if (0 >= dest.Count) return dest;
+#else
       Dictionary<Point, int> dest = navigate.Approach(m_Actor.Location.Position);
       if (null == dest) {
         // second opinion indicated
@@ -69,6 +89,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (null == dest) return new Dictionary<Point,int>();
+#endif
       PlannedMoves[m_Actor.Location.Position] = dest;
       foreach(Point pt in dest.Keys) {
         if (0>navigate.Cost(pt)) continue;
