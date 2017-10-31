@@ -2590,7 +2590,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!remote_navigate.Domain.Contains(tmp.Value.Location.Position)) return null;
           int cost = remote_navigate.Cost(tmp.Value.Location.Position);
           if (int.MaxValue == cost) continue;   // should be same as not in domain, but evidently not.
-          navigate.ReviseGoalDistance(tmp.Key, cost+1,m_Actor.Location.Position);
+          navigate.ReviseGoalDistance(tmp.Key, cost+1,m_Actor.Location.Position);   // works even for denormalized coordinates as long as they're adjacent to real coordinates
         }
       }
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
