@@ -2305,7 +2305,6 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == buyer) throw new ArgumentNullException(nameof(buyer));
       if (!Model.Abilities.CanTrade) throw new InvalidOperationException(Name+" cannot trade");
-      if (!buyer.Actor.Model.Abilities.CanTrade) throw new InvalidOperationException(buyer.Actor.Name+" cannot trade");
 #endif
 
 //    if (buyer.IsPlayer) return Inventory.Items

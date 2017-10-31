@@ -991,7 +991,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
 #if DEBUG
       // == failed for traps
-      Contract.Requires(null==immediate_threat || (null!=damage_field && damage_field.ContainsKey(Actor.Location.Position)));
+      Contract.Requires(null==immediate_threat || (null!=damage_field && damage_field.ContainsKey(m_Actor.Location.Position)));
 #endif
 
       // migrated from CivilianAI::SelectAction

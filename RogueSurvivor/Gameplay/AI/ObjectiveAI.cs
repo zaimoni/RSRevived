@@ -698,8 +698,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
-      if (!Actor.Model.Abilities.HasInventory) throw new InvalidOperationException("inventory required");   // CHAR guards: wander action can get item from containers
-      if (!Actor.Model.Abilities.CanUseMapObjects) throw new InvalidOperationException("using map objects required");
+      if (!m_Actor.Model.Abilities.HasInventory) throw new InvalidOperationException("inventory required");   // CHAR guards: wander action can get item from containers
+      if (!m_Actor.Model.Abilities.CanUseMapObjects) throw new InvalidOperationException("using map objects required");
 #endif
       if (ItemIsUseless(it)) return false;
 
