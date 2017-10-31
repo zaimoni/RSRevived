@@ -12,19 +12,12 @@ namespace djack.RogueSurvivor.Engine
   internal class UniqueMaps
   {
     public UniqueMap CHARUndergroundFacility { get; set; }
-
     public UniqueMap PoliceStation_OfficesLevel { get; set; }
-
     public UniqueMap PoliceStation_JailsLevel { get; set; }
-
     public UniqueMap Hospital_Admissions { get; set; }
-
     public UniqueMap Hospital_Offices { get; set; }
-
     public UniqueMap Hospital_Patients { get; set; }
-
     public UniqueMap Hospital_Storage { get; set; }
-
     public UniqueMap Hospital_Power { get; set; }
   }
 }

@@ -6,7 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -17,7 +16,9 @@ namespace djack.RogueSurvivor.Engine
 
 	public UniqueMap(Map src)
 	{
-	  Contract.Requires(null != src);
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
 	  TheMap = src;
 	}
   }
