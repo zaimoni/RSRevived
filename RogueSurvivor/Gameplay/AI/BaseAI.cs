@@ -1026,10 +1026,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       float avoidCornerBonus = countFreeSquares * 0.1f;
 #endregion
 #region 2 Prefer going outside/inside if majority of dangers are inside/outside.
-      bool isFromInside = map.IsInsideAt(from);
+      bool isFromInside = map.IsInsideAtExt(from);
       int majorityDangersInside = 0;
       foreach (Point danger in dangers) {
-        if (map.IsInsideAt(danger))
+        if (map.IsInsideAtExt(danger))
           ++majorityDangersInside;
         else
           --majorityDangersInside;
@@ -1044,7 +1044,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 3 If can tire, prefer not jumping.
       float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
-        MapObject mapObjectAt = map.GetMapObjectAt(from);
+        MapObject mapObjectAt = map.GetMapObjectAtExt(from.X,from.Y);
         if (mapObjectAt != null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
       }
 #endregion

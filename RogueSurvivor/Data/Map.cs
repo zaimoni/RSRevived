@@ -734,6 +734,10 @@ retry:
             goto retry;
           }
         }
+        if (2==dest_extended && 2==this_extended) {
+          dest = District.EntryMap;
+          goto retry;
+        }
         if (1==dest_extended && 2==this_extended) {
           dest = District.EntryMap;
           goto retry;

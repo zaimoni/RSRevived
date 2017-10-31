@@ -1034,14 +1034,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if no enemies in sight, reload all ranged weapons and then equip longest-range weapon
       // XXX there may be more important objectives than this
       if (null == enemies) {
-        IEnumerable<ItemRangedWeapon> reloadable = available_ranged_weapons.Where(rw2 => 0 >= rw2.Ammo && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw2));
-        // XXX should not reload a precision rifle if also have an army rifle, but shouldn't have both in inventory anyway
-        ItemRangedWeapon rw = reloadable.FirstOrDefault();
-        if (null != rw) {
-          tmpAction = Equip(rw);
-          if (null != tmpAction) return tmpAction;
+        foreach(ItemRangedWeapon rw in available_ranged_weapons) {
+          if (rw.Model.MaxAmmo <= rw.Ammo) continue;
           ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
-          return new ActionUseItem(m_Actor,am);
+          if (null == am) continue;
+          if (0 == rw.Ammo || (rw.Model.MaxAmmo - rw.Ammo) >= am.Quantity) {
+            tmpAction = Equip(rw);
+            if (null != tmpAction) return tmpAction;
+            return new ActionUseItem(m_Actor,am);
+          }
         }
         return Equip(GetBestRangedWeaponWithAmmo());
       }
