@@ -330,5 +330,9 @@ namespace Zaimoni.Data
       tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
       return string.Join(",\n",tmp);
     }
+
+    public static string to_s(this Point x) {
+      return "("+x.X.ToString()+","+x.Y.ToString()+")";
+    }
   } // ext_Drawing
 }   // Zaimoni.Data

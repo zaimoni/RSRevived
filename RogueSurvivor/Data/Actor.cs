@@ -1330,7 +1330,17 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Point, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Point pt = p+dir;
-        if (already.ContainsKey(pt)) continue;
+        if (already.ContainsKey(pt)) {
+          ret[pt] = already[pt];
+          continue;
+        }
+        if (Location==(new Location(m,pt))) {
+          ret[pt] = new Engine.Actions.ActionShove(this, this, Direction.N);
+        }
+        if (pt == Location.Position) {
+          ret[pt] = new Engine.Actions.ActionMoveStep(this, pt);
+          continue;
+        }
         ActorAction tmp = Rules.IsPathableFor(this, new Location(m, pt));
         if (null == tmp) {
           if (m.GetMapObjectAt(pt)?.IsContainer ?? false) tmp = new Engine.Actions.ActionMoveStep(this, pt); // XXX wrong no matter what

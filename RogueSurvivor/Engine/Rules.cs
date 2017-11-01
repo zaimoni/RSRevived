@@ -372,14 +372,15 @@ namespace djack.RogueSurvivor.Engine
       if (!map.IsInBounds(x, y)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
+      Location loc = new Location(map,point);
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
-      if (actionMoveStep.IsLegal()) {
+      if (loc.IsWalkableFor(actor, out reason)) {
         reason = "";
         return actionMoveStep;
       }
 
       // only have to be completely accurate for adjacent squares
-      if (!Rules.IsAdjacent(actor.Location.Position, new Point(x,y))) {
+      if (!Rules.IsAdjacent(actor.Location, loc)) {
         if ("not enough stamina to jump"==actionMoveStep.FailReason) return actionMoveStep;
         if ("someone is there"==actionMoveStep.FailReason) return actionMoveStep;
       }

@@ -652,7 +652,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0 >= dests.Count) return null;
       int min_cost = dests.Values.Min();
       dests.OnlyIf(val => min_cost>=val);
-      return DecideMove(dests.Keys);
+      ActorAction tmp = DecideMove(dests.Keys);
+      if (null != tmp) return tmp;
+      return null;
 	}
 
     // src_r2 is the desired destination list

@@ -708,17 +708,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
 
-        if (0 >= critical.Count) {
-          // hunt down threats -- works for police
-          if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
-            tmpAction = BehaviorHuntDownThreatOtherMaps();
-#if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface");
-#endif
-            if (null != tmpAction) return tmpAction;
-          }
-        }
-
         if (null != items) {
           HashSet<Gameplay.GameItems.IDs> want = WhatDoIWantNow();    // non-emergency things
           // while we want to account for what our followers want, we don't want to block our followers from the items either
@@ -731,6 +720,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok");
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying: "+tmpAction.ToString());
+#endif
+            if (null != tmpAction) return tmpAction;
+          }
+        }
+
+        if (0 >= critical.Count) {
+          // hunt down threats -- works for police
+          if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
+            tmpAction = BehaviorHuntDownThreatOtherMaps();
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface");
 #endif
             if (null != tmpAction) return tmpAction;
           }

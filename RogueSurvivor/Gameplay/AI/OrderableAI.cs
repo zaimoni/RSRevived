@@ -1396,7 +1396,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (tmp?.ContainsKey(previousLocation.Position) ?? false) return null;
         }
       }
-      return new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
+      return new ActionCloseDoor(m_Actor, door, true);
     }
 
     protected ActorAction BehaviorSecurePerimeter()
@@ -2604,13 +2604,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
         List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
         int current_cost = navigate.Cost(m_Actor.Location.Position);
-        if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<current_cost)) {
+        if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<=current_cost)) {
           return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
         }
       }
-
       ActorAction ret = DecideMove(PlanApproach(navigate));
-      if (null == ret) return null;
+      if (null == ret) {
+        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
+        if (null != legal_steps) {
+          var costs = new Dictionary<Point,int>();
+          foreach(Point pt in m_Actor.OnePathRange(m_Actor.Location.Map, m_Actor.Location.Position)) {
+            costs[pt] = navigate.Cost(pt);
+          }
+          int min_cost = costs.Values.Min();
+          costs.OnlyIf(val => val <= min_cost);
+          if (0<costs.Count) {
+            var dests = costs.Keys.ToList();
+            return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,dests[RogueForm.Game.Rules.Roll(0,dests.Count)]));
+          }
+        }
+        return null;
+      }
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }
