@@ -683,8 +683,8 @@ namespace djack.RogueSurvivor.Data
 
     // for AI pathing, currently.
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
-    { // disallow the CHAR underground facility for now.  (remember to disallow secret maps even when it is enabled)
-	  exits = new HashSet<Exit>(Exits.Where(e => e.IsAnAIExit && string.IsNullOrEmpty(e.ReasonIsBlocked()) && Engine.Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap!=e.ToMap));
+    { // disallow secret maps
+	  exits = new HashSet<Exit>(Exits.Where(e => e.IsAnAIExit && string.IsNullOrEmpty(e.ReasonIsBlocked()) && !e.ToMap.IsSecret));
 	  // should be at least one by construction
 	  HashSet<Map> exit_maps = new HashSet<Map>(exits.Select(e=>e.ToMap));
       if (1>=exit_maps.Count) return exit_maps;
@@ -695,6 +695,22 @@ retry:
         exits.RemoveWhere(e => e.ToMap!=dest);
         return exit_maps;
       }
+	  HashSet<Map> dest_exit_maps = new HashSet<Map>(dest.Exits.Where(e => e.IsAnAIExit && string.IsNullOrEmpty(e.ReasonIsBlocked()) && !e.ToMap.IsSecret).Select(e => e.ToMap));
+      if (1 == dest_exit_maps.Count) {
+        foreach(Map m in dest_exit_maps) {
+          dest = m;
+          goto retry;
+        }
+      }
+      dest_exit_maps.IntersectWith(exit_maps);
+      if (1 == dest_exit_maps.Count) {
+        foreach(Map m in dest_exit_maps) {
+          dest = m;
+          goto retry;
+        }
+      }
+
+      
       if (dest.District != District) {
         int dest_extended = UsesCrossDistrictView(dest);
         if (0 == dest_extended) {
@@ -1827,7 +1843,15 @@ retry:
       Engine.LOS.Now(this);
       m_aux_ActorsByPosition.Clear();
       foreach (Actor mActors in m_ActorsList) {
-        m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
+        // XXX defensive coding: it is possible for actors to duplicate, apparently
+        if (!m_aux_ActorsByPosition.ContainsKey(mActors.Location.Position)) {
+          m_aux_ActorsByPosition.Add(mActors.Location.Position, mActors);
+        } else {
+          Actor doppleganger = m_aux_ActorsByPosition[mActors.Location.Position];
+          if (  mActors.Name != doppleganger.Name
+             || mActors.SpawnTime!=doppleganger.SpawnTime)
+            throw new InvalidOperationException("non-clone savefile corruption");
+        }
         (mActors.Controller as PlayerController)?.InstallHandlers();
       }
       m_aux_MapObjectsByPosition.Clear();
