@@ -378,16 +378,16 @@ namespace djack.RogueSurvivor.Engine
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
       m_MessageManager = new MessageManager(12, 25, 59);
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules");
-      m_Rules = new Rules(new DiceRoller(Session.Get.Seed));  // possibly no-op
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules, options");
+      s_Options = new GameOptions();
+      s_Options.ResetToDefaultValues();
+      m_Rules = new Rules(new DiceRoller(Session.Get.Seed));  // possibly no-op; triggers World constructor which requires options to be loaded
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
       parameters.MapWidth = MAP_MAX_WIDTH;
       parameters.MapHeight = RogueGame.MAP_MAX_HEIGHT;
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
       m_TownGenerator = new StdTownGenerator(this, parameters);
-      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating options, keys, hints.");
-      s_Options = new GameOptions();
-      s_Options.ResetToDefaultValues();
+      Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating keys, hints.");
       s_KeyBindings = new Keybindings();
       s_Hints = new GameHintsStatus();
       s_Hints.ResetAllHints();
@@ -3628,6 +3628,20 @@ namespace djack.RogueSurvivor.Engine
         Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
         List<string> tmp = new List<string>();
         foreach(var loc_qty in catalog) {
+          if (20<tmp.Count) break;
+          if (loc_qty.Key.Map != Session.Get.CurrentMap) continue;
+          tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
+        }
+        foreach(var loc_qty in catalog) {
+          if (20<tmp.Count) break;
+          if (loc_qty.Key.Map.District != Session.Get.CurrentMap.District) continue;
+          if (loc_qty.Key.Map == Session.Get.CurrentMap) continue;
+          tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
+          if (20<tmp.Count) break;
+        }
+        foreach(var loc_qty in catalog) {
+          if (20<tmp.Count) break;
+          if (loc_qty.Key.Map.District == Session.Get.CurrentMap.District) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
           if (20<tmp.Count) break;
         }
@@ -8546,7 +8560,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       ItemRangedWeapon itemRangedWeapon = actor.GetEquippedWeapon() as ItemRangedWeapon;
-      int num = Math.Min(itemRangedWeapon.Model.MaxAmmo - itemRangedWeapon.Ammo, ammoItem.Quantity);
+      sbyte num = (sbyte)Math.Min(itemRangedWeapon.Model.MaxAmmo - itemRangedWeapon.Ammo, ammoItem.Quantity);
       itemRangedWeapon.Ammo += num;
       ammoItem.Quantity -= num;
       if (ammoItem.Quantity <= 0) actor.Inventory.RemoveAllQuantity(ammoItem);
@@ -8672,7 +8686,7 @@ namespace djack.RogueSurvivor.Engine
         int val2 = 1 + mapObj.MaxHitPoints / 40;
         while (val2 > 0) {
           ItemBarricadeMaterial barricadeMaterial = new ItemBarricadeMaterial(GameItems.WOODENPLANK) {
-            Quantity = Math.Min(GameItems.WOODENPLANK.StackingLimit, val2)
+            Quantity = (sbyte)Math.Min(GameItems.WOODENPLANK.StackingLimit, val2)
           };
           val2 -= barricadeMaterial.Quantity;
           mapObj.Location.Map.DropItemAt(barricadeMaterial, mapObj.Location.Position);

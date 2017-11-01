@@ -1325,12 +1325,16 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public Dictionary<Point,ActorAction> OnePath(Map m, Point p)
+    public Dictionary<Point,ActorAction> OnePath(Map m, Point p, Dictionary<Point, ActorAction> already)
     {
       var ret = new Dictionary<Point, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Point pt = p+dir;
-        ActorAction tmp = Rules.IsPathableFor(this,new Location(m,pt));
+        if (already.ContainsKey(pt)) continue;
+        ActorAction tmp = Rules.IsPathableFor(this, new Location(m, pt));
+        if (null == tmp) {
+          if (m.GetMapObjectAt(pt)?.IsContainer ?? false) tmp = new Engine.Actions.ActionMoveStep(this, pt); // XXX wrong no matter what
+        }
         if (null != tmp) ret[pt] = tmp;
       }
       return ret;

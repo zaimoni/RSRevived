@@ -634,60 +634,44 @@ namespace djack.RogueSurvivor.Data
 	  return (0<ret.Count ? ret : null);
 	}
 
-    Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a)
+    Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
 	{
-	  Dictionary<Point,int> ret = new Dictionary<Point, int>();
-	  foreach(Direction dir in Direction.COMPASS) {
-	    Point dest = pt+dir;
-	    if (!IsInBounds(dest)) continue;
-		if (!GetTileModelAt(dest).IsWalkable) continue;
-	    MapObject tmp = GetMapObjectAt(dest);
-	    if (null==tmp || tmp.IsWalkable || tmp.IsJumpable) {
-          // check for actor: pushing actors is impolite so penalize more than for objects
-          Actor other = GetActorAt(dest);
-          if (null!=other && !a.IsEnemyOf(other)) {
-            ret[dest] = 4;
+	  var ret = new Dictionary<Point, int>();
+      Dictionary<Point,ActorAction> moves = a.OnePath(this, pt, already);
+      foreach(var move in moves) {
+        if (move.Value is Engine.Actions.ActionLeaveMap) continue; // not really in bounds
+        if (move.Value is Engine.Actions.ActionShove) {    // impolite so penalize just more than walking around
+            ret[move.Key] = 4;
             continue;
-          }
-	      ret[dest] = 1;
-	      continue;
-	    }
-        if (tmp is DoorWindow door) {
-		  // door should be closed as it isn't walkable.
-		  if (door.IsClosed) {
-		    int cost = 2;
-		    if (0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
-			ret[dest] = cost;
-			continue;
-		  }
-		}
-		if (tmp.IsMovable) {
-		  int cost = 2;	// time cost for a non-optimal push.  Cars are jumpable so we don't get here with them.
-		  ret[dest] = cost;	// time cost for pushing
-		  continue;
-		}
-		if (tmp.BreakState == MapObject.Break.BREAKABLE) {
-		  int cost = 1;
-		  if (0<tmp.HitPoints) cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
-		  ret[dest] = cost;
-		  continue;
-		}
-	    // the following objects are neither walkable nor jumpable: burning cars, barricaded windows/doors, large fortifications, some heavy furnitute
-	    // we do not want to path through burning cars.  Pathing through others is ok in some conditions but not others.
-		// we probably also want to account for traps.
-	  }
+        }
+        if (   move.Value is Engine.Actions.ActionOpenDoor  // extra turn
+            || move.Value is Engine.Actions.ActionPush)  // assume non-optimal
+            {
+            ret[move.Key] = 2;
+            continue;
+            }
+        if (   move.Value is Engine.Actions.ActionBashDoor
+            || move.Value is Engine.Actions.ActionBreak)
+            {
+    	    MapObject tmp = GetMapObjectAtExt(move.Key.X, move.Key.Y);
+		    int cost = 1;
+            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina          
+            else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
+            ret[move.Key] = cost;
+		    continue;
+            }
+        ret[move.Key] = 1;  // normal case
+      }
 	  return ret;
 	}
 
     // Default pather.  Recovery options would include allowing chat, and allowing pushing.
 	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps(Actor actor)
 	{
-	  Zaimoni.Data.FloodfillPathfinder<Point> m_StepPather = null;	// convert this to a non-zerialized member variable as cache
-	  if (null == m_StepPather) {
-	    Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt, actor));
-	    m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
-	  }
-      Zaimoni.Data.FloodfillPathfinder<Point> ret = new Zaimoni.Data.FloodfillPathfinder<Point>(m_StepPather);
+      var already = new Dictionary<Point,ActorAction>();
+      Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt, actor, already));
+	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
+      FloodfillPathfinder<Point> ret = new FloodfillPathfinder<Point>(m_StepPather);
       Rect.DoForEach(pt=>ret.Blacklist(pt),pt=> {
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;

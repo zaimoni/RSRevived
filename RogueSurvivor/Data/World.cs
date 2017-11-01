@@ -10,7 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
+using Point = System.Drawing.Point;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -22,28 +22,36 @@ namespace djack.RogueSurvivor.Data
     private readonly Queue<District> m_PCready;
     private readonly Queue<District> m_NPCready;
     private readonly Queue<District> m_NPClive;
-
     public Weather Weather { get; private set; }
+
+    [NonSerialized]
+    private Dictionary<Map, HashSet<Point>> m_BlankPositionDict;
 
     public int Size { get { return m_Size; } }
 
     public District this[int x, int y]
     {
       get {
-        Contract.Requires(0<=x && Size>x);
-        Contract.Requires(0<=y && Size>y);
+#if DEBUG
+        if (0> x || Size <= x) throw new ArgumentOutOfRangeException(nameof(x),x, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
+        if (0> y || Size <= y) throw new ArgumentOutOfRangeException(nameof(y),y, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
+#endif
         return m_DistrictsGrid[x, y];
       }
       set {
-        Contract.Requires(0<=x && Size>x);
-        Contract.Requires(0<=y && Size>y);
+#if DEBUG
+        if (0> x || Size <= x) throw new ArgumentOutOfRangeException(nameof(x),x, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
+        if (0> y || Size <= y) throw new ArgumentOutOfRangeException(nameof(y),y, "x must be between 0 and "+(Size-1).ToString()+" inclusive");
+#endif
         m_DistrictsGrid[x, y] = value;
       }
     }
 
     public World(int size)
     {
-      Contract.Requires(0 < size);
+#if DEBUG
+      if (0 >= size) throw new ArgumentOutOfRangeException(nameof(size),size, "0 >= size");
+#endif
       m_DistrictsGrid = new District[size, size];
       m_Size = size;
 //    Weather = Weather.CLEAR;
@@ -51,6 +59,22 @@ namespace djack.RogueSurvivor.Data
       m_PCready = new Queue<District>(size*size);
       m_NPCready = new Queue<District>(size*size);
       m_NPClive = new Queue<District>(1);
+    }
+
+    // low-level utilities
+    public Dictionary<Map, HashSet<Point>> BlankPositionDict {
+      get {
+        if (null == m_BlankPositionDict) {
+          var tmp = new Dictionary<Map, HashSet<Point>>(m_BlankPositionDict);
+          foreach(District d in m_DistrictsGrid) {
+            foreach(Map m in d.Maps) {
+              tmp[m] = new HashSet<Point>();
+            }
+          }
+          m_BlankPositionDict = tmp;
+        }
+        return new Dictionary<Map, HashSet<Point>>(m_BlankPositionDict);
+      }
     }
 
     public void DaimonMap()
