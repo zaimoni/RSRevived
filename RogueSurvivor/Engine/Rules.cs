@@ -282,6 +282,18 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Point point = new Point(x, y);
       reason = "";
+      Location loc = new Location(map,point);
+
+      ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.COURAGEOUS;  // need this to be inoperative for z
+      bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
+      if (!imStarvingOrCourageous) {
+        int trapsMaxDamage = loc.Map.TrapsMaxDamageAt(loc.Position);
+        if (trapsMaxDamage > 0 && trapsMaxDamage >= actor.HitPoints) {
+          reason = "deathtrapped";
+          return null;
+        }
+      }
+
       Actor actorAt = map.GetActorAtExt(point);
       if (actorAt != null) {
         if (actor.IsEnemyOf(actorAt)) {
@@ -368,11 +380,22 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Gameplay.AI.ObjectiveAI ai = actor.Controller as Gameplay.AI.ObjectiveAI;
       Point point = new Point(x, y);
+      Location loc = new Location(map,point);
       reason = "";
+
+      ActorCourage courage = (actor.Controller as Gameplay.AI.OrderableAI)?.Directives.Courage ?? ActorCourage.CAUTIOUS;
+      bool imStarvingOrCourageous = actor.IsStarving || ActorCourage.COURAGEOUS == courage;
+      if (!imStarvingOrCourageous) {
+        int trapsMaxDamage = loc.Map.TrapsMaxDamageAt(loc.Position);
+        if (trapsMaxDamage > 0 && trapsMaxDamage >= actor.HitPoints) {
+          reason = "deathtrapped";
+          return null;
+        }
+      }
+
       if (!map.IsInBounds(x, y)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
-      Location loc = new Location(map,point);
       ActionMoveStep actionMoveStep = new ActionMoveStep(actor, point);
       if (loc.IsWalkableFor(actor, out reason)) {
         reason = "";
