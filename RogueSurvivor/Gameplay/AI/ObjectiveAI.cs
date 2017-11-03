@@ -820,18 +820,48 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (!m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {
         List<ItemRangedWeapon> tmp_rw = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
-        if (null != tmp_rw && !AmmoAtLimit) {
-          foreach(ItemRangedWeapon rw in tmp_rw) {
-            if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {
-              if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) {
-                ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
+        if (null != tmp_rw) {
+          if (!AmmoAtLimit) {
+            foreach(ItemRangedWeapon rw in tmp_rw) {
+              if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {
+                if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) {
+                  ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
+                }
               }
             }
           }
-#if FAIL
-        // XXX need to fix AI to be gun bunny capable
-        } else if (null != tmp_ammo) {
-#endif
+        }
+        List<ItemAmmo> tmp_ammo = m_Actor.Inventory.GetItemsByType<ItemAmmo>();
+        if (null != tmp_ammo && (null == tmp_rw || !AmmoAtLimit)) {
+          foreach(ItemAmmo am in tmp_ammo) {
+            if (null == m_Actor.GetCompatibleRangedWeapon(am)) {
+                switch(am.Model.ID)
+                {
+                case GameItems.IDs.AMMO_LIGHT_PISTOL:
+                  ret.Add(GameItems.IDs.RANGED_PISTOL); // weakly dominates Kolt
+                  ret.Add(GameItems.IDs.RANGED_KOLT_REVOLVER);
+                  ret.Add(GameItems.IDs.UNIQUE_HANS_VON_HANZ_PISTOL);   // dominates both normal pistols
+                  break;
+                case GameItems.IDs.AMMO_HEAVY_PISTOL:
+                  ret.Add(GameItems.IDs.RANGED_ARMY_PISTOL);
+                  break;
+                case GameItems.IDs.AMMO_LIGHT_RIFLE:
+                  ret.Add(GameItems.IDs.RANGED_HUNTING_RIFLE);
+                  break;
+                case GameItems.IDs.AMMO_HEAVY_RIFLE:
+                  ret.Add(GameItems.IDs.RANGED_ARMY_RIFLE);     // mostly dominates precision rifle
+                  ret.Add(GameItems.IDs.RANGED_PRECISION_RIFLE);
+                  break;
+                case GameItems.IDs.AMMO_SHOTGUN:
+                  ret.Add(GameItems.IDs.RANGED_SHOTGUN);
+                  ret.Add(GameItems.IDs.UNIQUE_SANTAMAN_SHOTGUN);   // dominates shotgun
+                  break;
+                case GameItems.IDs.AMMO_BOLTS:
+                  ret.Add(GameItems.IDs.RANGED_HUNTING_CROSSBOW);
+                  break;
+                }
+            }
+          }
         }
       }
 
