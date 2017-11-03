@@ -837,7 +837,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ranged weapon: prefer to maintain LoF when retreating
         MaximizeRangedTargets(retreat, enemies);
         MaximizeRangedTargets(run_retreat, enemies);
-        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed <= 2 * m_Actor.Speed);   // typically rats.
+        IEnumerable<Actor> fast_enemies = enemies.Select(p => p.Percepted as Actor).Where(a => a.Speed >= 2 * m_Actor.Speed);   // typically rats.
         if (fast_enemies.Any()) return null;    // not practical to run from rats.
         // ranged weapon: fast retreat ok
         // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.

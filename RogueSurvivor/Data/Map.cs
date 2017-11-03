@@ -1009,7 +1009,11 @@ retry:
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
 #endif
+#if NO_PEACE_WALLS
+      if (!IsInBounds(x, y) && !HasExitAt(x,y)) return "out of map";
+#else
       if (!IsInBounds(x, y)) return "out of map";
+#endif
       if (!GetTileModelAtExt(x, y).IsWalkable) return "blocked";
       MapObject mapObjectAt = GetMapObjectAtExt(x, y);
       if (!mapObjectAt?.IsWalkable ?? false) {
