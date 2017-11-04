@@ -4440,7 +4440,7 @@ namespace djack.RogueSurvivor.Engine
         Map map = player.Location.Map;
         List<Actor> actorList = new List<Actor>();
         foreach (Point position in m_Player.Controller.FOV) {
-          Actor actorAt = map.GetActorAt(position);
+          Actor actorAt = map.GetActorAtExt(position);
           if (actorAt != null && actorAt!=player)
             actorList.Add(actorAt);
         }
