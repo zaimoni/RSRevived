@@ -4145,7 +4145,6 @@ namespace djack.RogueSurvivor.Engine
     {
       Item inventoryItem = MouseToInventoryItem(screen, out Inventory inv, out Point itemPos);
       if (inv == null || inv != player.Inventory || inventoryItem == null) return false;
-      bool flag1 = true;
       bool flag2 = false;
       ClearOverlays();
       AddOverlay(new OverlayPopup(INITIATE_TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
@@ -4153,26 +4152,38 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message(string.Format("Trading {0} with...", inventoryItem.TheName), Session.Get.WorldTime.TurnCounter, Color.Yellow));
         RedrawPlayScreen();
         Direction direction = WaitDirectionOrCancel();
-        if (direction == null) flag1 = false;
-        else if (direction != Direction.NEUTRAL) {
-          Point point = player.Location.Position + direction;
-          if (player.Location.Map.IsValid(point)) {
-            Actor actorAt = player.Location.Map.GetActorAt(point);
-            if (actorAt != null) {
-              if (player.CanTradeWith(actorAt, out string reason)) {
-                flag2 = true;
-                flag1 = false;
-                ClearOverlays();
-                RedrawPlayScreen();
-                DoTrade(player, inventoryItem, actorAt, true);
-              } else
-                AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
-            } else
-              AddMessage(MakeErrorMessage("Noone there."));
+        if (direction == null) break;
+        Point point = player.Location.Position + direction;
+        if (!player.Location.Map.IsValid(point)) continue;
+        if (direction != Direction.NEUTRAL) {
+          Actor actorAt = player.Location.Map.GetActorAt(point);
+          if (actorAt != null) {
+            if (player.CanTradeWith(actorAt, out string reason)) {
+              flag2 = true;
+              ClearOverlays();
+              RedrawPlayScreen();
+              DoTrade(player, inventoryItem, actorAt, true);
+              break;
+            } else {
+              AddMessage(MakeErrorMessage(string.Format("Can't trade with {0} : {1}.", actorAt.TheName, reason)));
+              continue;
+            }
           }
         }
-      }
-      while (flag1);
+        // RS revived: Trading with inventory.  XXX NPCs aren't up to this yet
+        Inventory ground_inv = player.Location.Map.GetItemsAtExt(point.X,point.Y);
+        if (0 >= (inv?.CountItems ?? 0)) ground_inv = null;
+        else if (direction != Direction.NEUTRAL) {
+          MapObject obj = player.Location.Map.GetMapObjectAtExt(point.X,point.Y);
+          if (!obj?.IsContainer ?? true) ground_inv = null;
+        }
+        if (null != ground_inv) {
+          DoTrade(player, inventoryItem, ground_inv);
+          flag2 = true;
+          break;
+        }
+        AddMessage(MakeErrorMessage("Noone there."));
+      } while (true);
       ClearOverlays();
       return flag2;
     }
@@ -8050,16 +8061,14 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoTrade(Actor speaker, Item itSpeaker, Actor target, bool doesTargetCheckForInterestInOffer)
     {
-#if DEBUG
-      if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer");
-//    if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
+#if OBSOLETE
+      if (target.IsPlayer) throw new InvalidOperationException(nameof(target)+".IsPlayer"); // valid for RS 9 Alpha; will go away
 #endif
-      bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);
-      // bail on null item from speaker early
-      if (null == itSpeaker) {
-        if (flag1) AddMessage(MakeMessage(target, string.Format("is not interested in {0} items.", speaker.Name)));
-        return;
-      }
+#if DEBUG
+      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+      if (!speaker.IsPlayer) throw new InvalidOperationException("!"+nameof(speaker)+".IsPlayer");  // not valid for RS 9 Alpha
+#endif
+      bool flag1 = ForceVisibleToPlayer(speaker) || ForceVisibleToPlayer(target);   // now constant true but wouldn't be for AI trades/RS 9 Alpha
 
       bool wantedItem = true;
       bool flag3 = (target.Controller as ObjectiveAI).IsInterestingTradeItem(speaker, itSpeaker);
@@ -8074,7 +8083,7 @@ namespace djack.RogueSurvivor.Engine
         return;
       };
 
-      Item trade = PickItemToTrade(target, speaker, itSpeaker);
+      Item trade = PickItemToTrade(target, speaker, itSpeaker); // XX rewrite target
       if (null == trade) {
         if (flag1) AddMessage(MakeMessage(speaker, string.Format("is not interested in {0} items.", target.Name)));
         return;
@@ -8115,6 +8124,48 @@ namespace djack.RogueSurvivor.Engine
       target.Inventory.RemoveAllQuantity(trade);
       speaker.Inventory.AddAll(trade);
       target.Inventory.AddAll(itSpeaker);
+    }
+
+    private void DoTrade(Actor speaker, Item itSpeaker, Inventory target)
+    {
+#if DEBUG
+      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+      if (!speaker.IsPlayer) throw new InvalidOperationException("!"+nameof(speaker)+".IsPlayer");  // not valid for RS 9 Alpha
+#endif
+      bool flag1 = ForceVisibleToPlayer(speaker);   // constant true (see above)
+
+      Item trade = PickItemToTrade(target, speaker, itSpeaker);
+      if (null == trade) return;
+
+      if (flag1)
+        AddMessage(MakeMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
+
+      AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
+      RedrawPlayScreen();
+      bool acceptDeal = WaitYesOrNo();
+      ClearOverlays();
+      RedrawPlayScreen();
+
+      if (!acceptDeal) {
+        if (!flag1) return;
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_REFUSE_THE_DEAL))));
+        RedrawPlayScreen();
+        return;
+      }
+
+      speaker.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (flag1) {
+        AddMessage(MakeMessage(speaker, string.Format("{0}.", Conjugate(speaker, VERB_ACCEPT_THE_DEAL))));
+        RedrawPlayScreen();
+      }
+      if (itSpeaker.IsEquipped) DoUnequipItem(speaker, itSpeaker);
+#if OBSOLETE
+      if (trade.IsEquipped) DoUnequipItem(target, trade);
+#endif
+      speaker.Inventory.RemoveAllQuantity(itSpeaker);
+      target.RemoveAllQuantity(trade);
+      speaker.Inventory.AddAll(trade);
+      target.AddAll(itSpeaker);
     }
 
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
@@ -8199,13 +8250,6 @@ namespace djack.RogueSurvivor.Engine
       DoTrade(speaker, trade, target, false);
     }
 
-    private Item PickItemToTrade(Actor speaker, Actor buyer)
-    {
-      List<Item> objList = speaker.GetInterestingTradeableItems(buyer);
-      if (objList == null || 0>=objList.Count) return null;
-      return objList[m_Rules.Roll(0, objList.Count)];
-    }
-
     private KeyValuePair<Item,Item>? PickItemsToTrade(Actor speaker, Actor buyer)
     {
       List<Item> speaker_offers = speaker.GetInterestingTradeableItems(buyer);  // charisma check involved for these
@@ -8226,11 +8270,16 @@ namespace djack.RogueSurvivor.Engine
 
     private Item PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
     {
-#if DEBUG
-      if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker)+".IsPlayer");
+#if OBSOLETE
+      if (speaker.IsPlayer) throw new InvalidOperationException(nameof(speaker) +".IsPlayer"); // valid for RS 9 Alpha; will go away
 #endif
-      List<Item> objList = speaker.GetInterestingTradeableItems(buyer);
+#if DEBUG
+      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+      if (!buyer.IsPlayer) throw new InvalidOperationException("!"+nameof(buyer) +".IsPlayer");  // not valid for RS 9 Alpha
+#endif
+      List<Item> objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
       if (objList == null || 0>=objList.Count) return null;
+      // following is AI-only
       IEnumerable<Item> tmp = objList.Where(it=>itSpeaker.Model.ID != it.Model.ID);
       // XXX disallow clearly non-mutual advantage trades
       switch(itSpeaker.Model.ID)
@@ -8285,7 +8334,42 @@ namespace djack.RogueSurvivor.Engine
       }
       if (!tmp.Any()) return null;
       objList = tmp.ToList();
+#if OBSOLETE
       return objList[m_Rules.Roll(0, objList.Count)];
+#else
+      Item ret = null;
+      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index]));
+      Predicate<int> details = index => {
+        ret = objList[index];
+        return true;
+      };
+
+      PagedMenu("Trading for ...", objList.Count, label, details);
+      return ret;
+#endif
+    }
+
+    private Item PickItemToTrade(Inventory speaker, Actor buyer, Item itSpeaker)
+    {
+#if DEBUG
+      if (null == itSpeaker) throw new ArgumentNullException(nameof(itSpeaker));    // can fail for AI trades, but AI is now on a different path
+      if (!buyer.IsPlayer) throw new InvalidOperationException("!"+nameof(buyer) +".IsPlayer");  // not valid for RS 9 Alpha
+#endif
+      List<Item> objList = speaker.Items.ToList(); // inventory has no mentality, trivialize
+      if (objList == null || 0>=objList.Count) return null;
+#if OBSOLETE
+      return objList[m_Rules.Roll(0, objList.Count)];
+#else
+      Item ret = null;
+      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index]));
+      Predicate<int> details = index => {
+        ret = objList[index];
+        return true;
+      };
+
+      PagedMenu("Trading for ...", objList.Count, label, details);
+      return ret;
+#endif
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]

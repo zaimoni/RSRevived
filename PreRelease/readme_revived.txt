@@ -10,6 +10,8 @@ REVIVED 0.10.0 CHANGES
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
 * It is rarely possible to see where a living is planning to move next.  (If you are about to shove him, you will see this.)
+* player-player trading is now possible.  A similar implementation is used for player-NPC trading (no more roulette, if the target doesn't
+  want to give up anything you want, you will know immediately)
 * Items will survive better if the method of death isn't particularly destructive to them.  (A slightly weaker version 
   of the change in Still Alive).
 ** the historical resistance of food and ammo to destruction has been retained.  Armor will survive better

@@ -2307,7 +2307,10 @@ namespace djack.RogueSurvivor.Data
       Contract.Requires(Model.Abilities.CanTrade);
       Contract.Requires(buyer.Model.Abilities.CanTrade);
 
-//    if (buyer.IsPlayer) return Inventory.Items
+#if OBSOLETE
+#else
+      if (buyer.IsPlayer) return Inventory.Items.ToList();
+#endif
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely
       List<Item> objList = Inventory.Items.Where(it=> (buyer.Controller as Gameplay.AI.ObjectiveAI).IsInterestingTradeItem(this, it) && (Controller as Gameplay.AI.OrderableAI).IsTradeableItem(it)).ToList();
@@ -2363,14 +2366,20 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
+#if OBSOLETE
       if (target.IsPlayer) return "target is player";
+#endif
       if (!Model.Abilities.CanTrade && target.Leader != this) return "can't trade";
       if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
       if (IsEnemyOf(target)) return "is an enemy";
       if (target.IsSleeping) return "is sleeping";
       if (Inventory == null || Inventory.IsEmpty) return "nothing to offer";
       if (target.Inventory == null || target.Inventory.IsEmpty) return "has nothing to trade";
+#if OBSOLETE
       if (!IsPlayer) {
+#else
+      if (!IsPlayer && !target.IsPlayer) {
+#endif
         List<Item> theirs = target.GetRationalTradeableItems(this.Controller as Gameplay.AI.OrderableAI);
         if (null == theirs) return "target unwilling to trade";
         List<Item> mine = GetRationalTradeableItems(target.Controller as Gameplay.AI.OrderableAI);
