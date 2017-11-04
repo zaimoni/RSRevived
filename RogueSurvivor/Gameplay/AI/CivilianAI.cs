@@ -462,7 +462,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (perceptList2 != null) {
           Percept percept = FilterNearest(perceptList2);
           m_LastItemsSaw = percept;
-          tmpAction = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
+          tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
           if (tmpAction?.IsLegal() ?? false) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking from stack");
@@ -476,7 +476,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
-          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed");
+          ActorAction failed = BehaviorWouldGrabFromStack(percept.Location, percept.Percepted as Inventory);
+          throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed.ToString()+" "+failed.IsLegal().ToString());
         }
         if (Directives.CanTrade) {
           List<Item> TradeableItems = GetTradeableItems();

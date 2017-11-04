@@ -228,7 +228,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         });
         if (percepts3 != null) {
           Percept percept = FilterNearest(percepts3);
-          tmpAction = BehaviorGrabFromStack(game, percept.Location.Position, percept.Percepted as Inventory);
+          tmpAction = BehaviorGrabFromStack(percept.Location, percept.Percepted as Inventory);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;

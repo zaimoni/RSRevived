@@ -2104,12 +2104,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
     }
 
-    protected ActorAction BehaviorGrabFromStack(RogueGame game, Point position, Inventory stack)
+    protected ActorAction BehaviorGrabFromStack(Location loc, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
 
-      MapObject mapObjectAt = (position != m_Actor.Location.Position ? m_Actor.Location.Map.GetMapObjectAt(position) : null);    // XXX this check should affect BehaviorResupply
-      if (mapObjectAt != null && !mapObjectAt.IsContainer && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor)) {
+      MapObject mapObjectAt = (loc != m_Actor.Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
+      if (mapObjectAt != null && !mapObjectAt.IsContainer && !loc.Map.IsWalkableFor(loc.Position, m_Actor)) {
         // Cf. Actor::CanOpen
         if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
         // Cf. Actor::CanPush; closed door is not pushable but can be handled
@@ -2133,17 +2133,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
-      if (game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
-        game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
-      bool may_take = (position == m_Actor.Location.Position);
+      if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+      bool may_take = (loc == m_Actor.Location);
       // XXX ActionGetFromContainer is obsolete.  Bypass BehaviorIntelligentBumpToward for containers.
       // currently all containers are not-walkable for UI reasons.
       if (mapObjectAt != null && mapObjectAt.IsContainer /* && !m_Actor.Location.Map.IsWalkableFor(position, m_Actor) */
-          && 1==Rules.GridDistance(m_Actor.Location.Position,position))
+          && 1==Rules.GridDistance(m_Actor.Location,loc))
         may_take = true;
 
       if (may_take) {
-        tmp = new ActionTakeItem(m_Actor, new Location(m_Actor.Location.Map,position), obj);
+        tmp = new ActionTakeItem(m_Actor, loc, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
           if (!recover.IsLegal()) return null;
@@ -2157,7 +2157,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
       }
 
-      return BehaviorIntelligentBumpToward(position);
+      return BehaviorIntelligentBumpToward(loc);
     }
 
     protected ActorAction BehaviorFindTrade(List<Percept> friends, List<Item> TradeableItems)
@@ -2638,14 +2638,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
       if (null != itemsAt) {
-        ActorAction tmpAction = BehaviorGrabFromStack(RogueForm.Game, m_Actor.Location.Position, itemsAt);
+        ActorAction tmpAction = BehaviorGrabFromStack(m_Actor.Location, itemsAt);
         if (null != tmpAction) return tmpAction;
       }
       foreach(Direction dir in Direction.COMPASS) {
+        Location loc = m_Actor.Location + dir;
+        if (!loc.Map.IsInBounds(loc.Position)) {
+          Location? test = loc.Map.Normalize(loc.Position);
+          if (null == test) continue;
+          loc = test.Value;
+        }
         Point pt = m_Actor.Location.Position+dir;
-        itemsAt = m_Actor.Location.Map.GetItemsAtExt(pt.X,pt.Y);
+        itemsAt = loc.Map.GetItemsAt(loc.Position);
         if (null == itemsAt) continue;
-        ActorAction tmpAction = BehaviorGrabFromStack(RogueForm.Game, pt, itemsAt);
+        ActorAction tmpAction = BehaviorGrabFromStack(loc, itemsAt);
         if (null != tmpAction) return tmpAction;
       }
       return BehaviorPathTo(m => WhereIs(critical, m));
