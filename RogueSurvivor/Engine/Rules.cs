@@ -350,7 +350,10 @@ namespace djack.RogueSurvivor.Engine
             if (tmp != null && actor.CanRecharge(tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
           }
-          return (actor.CanSwitch(powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
+          if (actor.CanSwitch(powGen, out reason)) {
+             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
+          }
+          return null;
         }
       }
       return null;
@@ -521,7 +524,10 @@ namespace djack.RogueSurvivor.Engine
             if (tmp != null && actor.CanRecharge(tmp, out reason))
               return new ActionRechargeItemBattery(actor, tmp);
           }
-          return (actor.CanSwitch(powGen, out reason) ? new ActionSwitchPowerGenerator(actor, powGen) : null);
+          if (actor.CanSwitch(powGen, out reason)) {
+             if (actor.IsPlayer || !powGen.IsOn) return new ActionSwitchPowerGenerator(actor, powGen);
+          }
+          return null;
         }
       }
       return null;
