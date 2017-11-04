@@ -699,9 +699,9 @@ namespace djack.RogueSurvivor.Data
     // for AI pathing, currently.
     private HashSet<Map> _PathTo(Map dest, out HashSet<Exit> exits)
     { // disallow secret maps
-	  exits = new HashSet<Exit>(Exits.Where(e => e.IsAnAIExit && string.IsNullOrEmpty(e.ReasonIsBlocked()) && !e.ToMap.IsSecret));
 	  // should be at least one by construction
-	  HashSet<Map> exit_maps = new HashSet<Map>(exits.Select(e=>e.ToMap));
+	  exits = new HashSet<Exit>(AI_exits.Get.Values.Where(e => string.IsNullOrEmpty(e.ReasonIsBlocked())));
+	  HashSet<Map> exit_maps = new HashSet<Map>(destination_maps.Get);
       if (1>=exit_maps.Count) return exit_maps;
 retry:
       if (exit_maps.Contains(dest)) {
@@ -710,19 +710,15 @@ retry:
         exits.RemoveWhere(e => e.ToMap!=dest);
         return exit_maps;
       }
-	  HashSet<Map> dest_exit_maps = new HashSet<Map>(dest.Exits.Where(e => e.IsAnAIExit && string.IsNullOrEmpty(e.ReasonIsBlocked()) && !e.ToMap.IsSecret).Select(e => e.ToMap));
+	  HashSet<Map> dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
       if (1 == dest_exit_maps.Count) {
-        foreach(Map m in dest_exit_maps) {
-          dest = m;
-          goto retry;
-        }
+        dest = dest_exit_maps.ToList()[0];
+        goto retry;
       }
       dest_exit_maps.IntersectWith(exit_maps);
-      if (1 == dest_exit_maps.Count) {
-        foreach(Map m in dest_exit_maps) {
-          dest = m;
-          goto retry;
-        }
+      if (1 <= dest_exit_maps.Count) {
+        dest = dest_exit_maps.ToList()[0];
+        goto retry;
       }
 
       
