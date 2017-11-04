@@ -56,10 +56,19 @@ namespace djack.RogueSurvivor.Data
     public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
     [NonSerialized]
     public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
+    [NonSerialized]
+    public readonly Dataflow<Map,Point,Exit> AI_exits;
+    [NonSerialized]
+    public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
 
     public bool IsSecret { get; private set; }
 
-    public void Expose() { IsSecret = false; }
+    public void Expose() {
+      IsSecret = false;
+      foreach(Map m in destination_maps.Get) {
+        m.destination_maps.Recalc();
+      }
+    }
 
     public Lighting Lighting { get { return m_Lighting; } }
     public bool Illuminate(bool on) {
@@ -117,6 +126,8 @@ namespace djack.RogueSurvivor.Data
     {
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList());
     }
+    
+    private static Dictionary<Point,Exit> _FindAIexits(Map m) { return m.GetExits(exit => exit.IsAnAIExit); }
 
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
@@ -139,6 +150,8 @@ namespace djack.RogueSurvivor.Data
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
+      AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
+      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
     }
 
 #region Implement ISerializable
@@ -166,6 +179,8 @@ namespace djack.RogueSurvivor.Data
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
+      AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
+      destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
       ReconstructAuxiliaryFields();
     }
 

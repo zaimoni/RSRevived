@@ -58,4 +58,30 @@ namespace Zaimoni.Data
             m_invalidate?.Invoke(m_src);
         }
     }   // Dataflow
+
+    public class Dataflow<src,Key,Value>
+    {
+        private src m_src;
+        private Dictionary<Key,Value> m_cache;
+        private readonly Func<src, Dictionary<Key, Value>> m_bootstrap;
+        private readonly Action<src> m_invalidate;
+
+        public Dataflow(src x, Func<src, Dictionary<Key, Value>> bootstrap, Action<src> invalidate = null)
+        {
+#if DEBUG
+            if (null == x) throw new ArgumentNullException(nameof(x));
+            if (null == bootstrap) throw new ArgumentNullException(nameof(bootstrap));
+#endif
+            m_src = x;
+            m_bootstrap = bootstrap;
+            m_invalidate = invalidate;
+        }
+
+        public Dictionary<Key, Value> Get { get { return new Dictionary<Key,Value>(m_cache ?? (m_cache = m_bootstrap(m_src))); } }
+
+        public void Recalc() {
+            m_cache = null;
+            m_invalidate?.Invoke(m_src);
+        }
+    }   // Dataflow
 }

@@ -2477,9 +2477,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ThreatTracking threats = m_Actor.Threats;
       if (null == threats) return null;
 
-      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
+      HashSet<Map> possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
       // but ignore the sewers if we're not vintage
       if (Session.Get.HasZombiesInSewers) {
         possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
@@ -2519,9 +2519,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LocationSet sights_to_see = m_Actor.InterestingLocs;
       if (null == sights_to_see) return null;
 
-      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(map => !map.IsSecret));
+      HashSet<Map> possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
 
       if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
         return BehaviorHeadForExit(valid_exits);    // done
@@ -2538,6 +2538,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         valid_exits.OnlyIf(e=>e.ToMap==m_Actor.Location.Map.District.EntryMap);
         return BehaviorHeadForExit(valid_exits);
       }
+      if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
+
+      // we are not directly connected to an exit to the surface, and have more than one destination map.
+      // reject maps that only have us as destination
+      possible_destinations.RemoveWhere(m => 1==m.destination_maps.Get.Count);
       if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
 #if DEBUG
       throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
@@ -2559,7 +2564,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return navigate;
       }
 
-      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.GetExits(exit=>exit.IsAnAIExit);
+      Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
         MapObject mapObjectAt = exit.Location.MapObject;
         if (null == mapObjectAt) return true;
@@ -2567,9 +2572,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!mapObjectAt.IsJumpable) return false;
         return m_Actor.CanJump;
       });
-      HashSet<Map> possible_destinations = new HashSet<Map>(valid_exits.Values.Select(exit=>exit.ToMap).Where(m=>!m.IsSecret));
       Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
-      foreach(Map m in possible_destinations) {
+      foreach(Map m in m_Actor.Location.Map.destination_maps.Get) {
         hazards[m] = targets_at(m);
       }
       hazards.OnlyIf(val=>0<val.Count);
