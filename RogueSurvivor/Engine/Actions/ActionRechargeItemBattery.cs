@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
-using System.Diagnostics.Contracts;
+using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -16,7 +16,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRechargeItemBattery(Actor actor, Item it)
       : base(actor)
     {
-      Contract.Requires(null != (it as BatteryPowered));
+#if DEBUG
+      if (null == (it as BatteryPowered)) throw new ArgumentNullException(nameof(it));
+#endif
       m_Item = it;
     }
 

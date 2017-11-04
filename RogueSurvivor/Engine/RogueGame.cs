@@ -7170,6 +7170,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessageIfAudibleForPlayer(actor.Location, "You hear screams of terror");
       }
       OnActorEnterTile(actor);
+      if (actor.IsPlayer) RedrawPlayScreen();
     }
 
     public void OnActorEnterTile(Actor actor)
@@ -8693,6 +8694,7 @@ namespace djack.RogueSurvivor.Engine
       (it as BatteryPowered).Recharge();
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, Conjugate(actor, VERB_RECHARGE), it, " batteries."));
+      if (actor.IsPlayer) RedrawPlayScreen();
     }
 
     public void DoOpenDoor(Actor actor, DoorWindow door)
