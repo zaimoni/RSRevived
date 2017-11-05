@@ -2368,6 +2368,8 @@ namespace djack.RogueSurvivor.Data
 #endif
 #if OBSOLETE
       if (target.IsPlayer) return "target is player";
+#else
+      if (!IsPlayer && target.IsPlayer) return "target is player";
 #endif
       if (!Model.Abilities.CanTrade && target.Leader != this) return "can't trade";
       if (!target.Model.Abilities.CanTrade && target.Leader != this) return "target can't trade";
