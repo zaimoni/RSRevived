@@ -558,7 +558,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
-        if ("Cop Harold Reeves"==Name) return true;
         return false;
       }
     }

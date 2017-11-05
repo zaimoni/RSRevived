@@ -639,14 +639,22 @@ namespace djack.RogueSurvivor.Data
       return rect.Any(pt => HasExitAt(pt));
     }
 
+    // <remakr>only caller wants result in-bounds</remark>
 	public List<Point> ExitLocations(HashSet<Exit> src)
 	{
       if (null==src || 0 >= src.Count) return null;
-	  List<Point> ret = new List<Point>();
+	  var ret = new HashSet<Point>();
       foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
-        if (src.Contains(mExit.Value)) ret.Add(mExit.Key);
+        if (!src.Contains(mExit.Value)) continue;
+        if (IsInBounds(mExit.Key)) ret.Add(mExit.Key);
+        else {
+          foreach(Direction dir in Direction.COMPASS) {
+            Point pt = mExit.Key+dir;
+            if (IsInBounds(pt)) ret.Add(pt);
+          }
+        }
       }
-	  return (0<ret.Count ? ret : null);
+	  return (0<ret.Count ? ret.ToList() : null);
 	}
 
     Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
