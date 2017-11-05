@@ -218,13 +218,16 @@ namespace djack.RogueSurvivor.Data
        return null;
     }
 
-    public void MessagePlayerOnce(Map already_failed, Action<Actor> fn, Func<Actor, bool> pred =null)
+    public bool MessagePlayerOnce(Map already_failed, Action<Actor> fn, Func<Actor, bool> pred =null)
     {
-      Contract.Requires(null!=fn);
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+#endif
       foreach(Map map in Maps) {
         if (map == already_failed) continue;
-        if (map.MessagePlayerOnce(fn,pred)) return;
+        if (map.MessagePlayerOnce(fn,pred)) return true;
       }
+      return false;
     }
 
     public bool ReadyForNextTurn

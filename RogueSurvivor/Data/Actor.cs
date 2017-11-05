@@ -1017,17 +1017,17 @@ namespace djack.RogueSurvivor.Data
       return Inventory?.GetFirstMatching<ItemTracker>(it => it.IsEquipped && it.CanTrackFollowersOrLeader);
     }
 
-    public void MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
+    public bool MessagePlayerOnce(Action<Actor> fn, Func<Actor, bool> pred =null)
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
       if (IsPlayer && !IsDead && (null == pred || pred(this))) {
         fn(this);
-        return;
+        return true;
       }
-      if (Location.Map.MessagePlayerOnce(fn,pred)) return;
-      Location.Map.District.MessagePlayerOnce(Location.Map,fn,pred);
+      if (Location.Map.MessagePlayerOnce(fn,pred)) return true;
+      return Location.Map.District.MessagePlayerOnce(Location.Map,fn,pred);
     }
 
     public Actor Sees(Actor a)
