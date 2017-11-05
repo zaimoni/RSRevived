@@ -6254,6 +6254,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void WaitEnter()
     {
+      if (IsSimulating) return;
       do
         ;
       while (m_UI.UI_WaitKey().KeyCode != Keys.Return);
@@ -6261,6 +6262,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void WaitEscape()
     {
+      if (IsSimulating) return;
       do
         ;
       while (m_UI.UI_WaitKey().KeyCode != Keys.Escape);
@@ -7543,7 +7545,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (aggressor.Faction.IsEnemyOf(target.Faction)) return;
       bool wasAlreadyEnemy = aggressor.IsAggressorOf(target) || target.IsAggressorOf(aggressor);
-      if (!target.IsPlayer && !target.IsSleeping && (!aggressor.IsAggressorOf(target) && !target.IsAggressorOf(aggressor)))
+      if (!target.IsPlayer && !target.IsSleeping && !wasAlreadyEnemy )
         DoSay(target, aggressor, "BASTARD! TRAITOR!", RogueGame.Sayflags.IS_FREE_ACTION);
       aggressor.MarkAsAgressorOf(target);
       target.MarkAsSelfDefenceFrom(aggressor);
