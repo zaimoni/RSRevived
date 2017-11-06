@@ -1104,31 +1104,29 @@ namespace djack.RogueSurvivor.Data
     public void MarkAsAgressorOf(Actor other)
     {
       if (other == null || other.IsDead) return;
-      if (m_AggressorOf == null) m_AggressorOf = new List<Actor>(1);
+      if (m_AggressorOf == null) m_AggressorOf = new List<Actor>{ other };
       else if (m_AggressorOf.Contains(other)) return;
-      m_AggressorOf.Add(other);
+      else m_AggressorOf.Add(other);
       Threats?.RecordTaint(other, other.Location);
     }
 
     public void MarkAsSelfDefenceFrom(Actor other)
     {
       if (other == null || other.IsDead) return;
-      if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>(1);
+      if (m_SelfDefenceFrom == null) m_SelfDefenceFrom = new List<Actor>{ other };
       else if (m_SelfDefenceFrom.Contains(other)) return;
-      m_SelfDefenceFrom.Add(other);
+      else m_SelfDefenceFrom.Add(other);
       Threats?.RecordTaint(other, other.Location);
     }
 
     public bool IsAggressorOf(Actor other)
     {
-      if (m_AggressorOf == null) return false;
-      return m_AggressorOf.Contains(other);
+      return m_AggressorOf?.Contains(other) ?? false;
     }
 
     public bool IsSelfDefenceFrom(Actor other)
     {
-      if (m_SelfDefenceFrom == null) return false;
-      return m_SelfDefenceFrom.Contains(other);
+      return m_SelfDefenceFrom?.Contains(other) ?? false;
     }
 
     public void RemoveAggressorOf(Actor other)
@@ -1147,15 +1145,13 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveAllAgressorSelfDefenceRelations()
     {
-      while (m_AggressorOf != null) {
-        Actor other = m_AggressorOf[0];
-        RemoveAggressorOf(other);
-        other.RemoveSelfDefenceFrom(this);
+      if (null != m_AggressorOf) {
+        foreach(Actor other in m_AggressorOf) other.RemoveSelfDefenceFrom(this);
+        m_AggressorOf = null;
       }
-      while (m_SelfDefenceFrom != null) {
-        Actor other = m_SelfDefenceFrom[0];
-        RemoveSelfDefenceFrom(other);
-        other.RemoveAggressorOf(this);
+      if (null != m_SelfDefenceFrom) { 
+        foreach(Actor other in m_SelfDefenceFrom) other.RemoveAggressorOf(this);
+        m_SelfDefenceFrom = null;
       }
     }
 
@@ -1167,7 +1163,8 @@ namespace djack.RogueSurvivor.Data
 
     public bool AreDirectEnemies(Actor other)
     {
-      return other != null && !other.IsDead && (m_AggressorOf != null && m_AggressorOf.Contains(other) || m_SelfDefenceFrom != null && m_SelfDefenceFrom.Contains(other) || (other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this)));
+      if (other == null || other.IsDead) return false;
+      return (m_AggressorOf?.Contains(other) ?? false) || (m_SelfDefenceFrom?.Contains(other) ?? false) || other.IsAggressorOf(this) || other.IsSelfDefenceFrom(this);
     }
 
     public bool AreIndirectEnemies(Actor other)
@@ -1200,15 +1197,18 @@ namespace djack.RogueSurvivor.Data
     // not just our FoV.
     public List<Actor> GetEnemiesInFov(HashSet<Point> fov)
     {
-      Contract.Requires(null != fov);
-      List<Actor> actorList = null;
+#if DEBUG
+      if (null == fov) throw new ArgumentNullException(nameof(fov));
+#endif
+      if (1 >= fov.Count) return null;  // sleeping?
+      List<Actor> actorList = new List<Actor>(fov.Count-1); // assuming ok to thrash GC
       foreach (Point position in fov) {
         Actor actorAt = Location.Map.GetActorAtExt(position.X,position.Y);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
-          (actorList ?? (actorList = new List<Actor>(3))).Add(actorAt);
+          actorList.Add(actorAt);
         }
       }
-      if (actorList != null) {
+      if (2 <= actorList.Count) {
         Point a_pos = Location.Position;
         actorList.Sort((Comparison<Actor>) ((a, b) =>
         {
@@ -1217,7 +1217,7 @@ namespace djack.RogueSurvivor.Data
           return num1.CompareTo(num2);
         }));
       }
-      return actorList;
+      return (1<=actorList.Count ? actorList : null);
     }
 
     // We do not handle the enemy relations here.

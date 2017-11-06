@@ -3126,6 +3126,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.ALLIES_INFO:
                 HandleAlliesInfo();
                 break;
+              case PlayerCommand.FACTION_INFO:
+                HandleFactionInfo();
+                break;
               case PlayerCommand.DAIMON_MAP:    // cheat command
                 HandleDaimonMap();
                 break;
@@ -3628,22 +3631,20 @@ namespace djack.RogueSurvivor.Engine
         Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
         List<string> tmp = new List<string>();
         foreach(var loc_qty in catalog) {
-          if (20<tmp.Count) break;
+          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
           if (loc_qty.Key.Map != Session.Get.CurrentMap) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
         foreach(var loc_qty in catalog) {
-          if (20<tmp.Count) break;
+          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
           if (loc_qty.Key.Map.District != Session.Get.CurrentMap.District) continue;
           if (loc_qty.Key.Map == Session.Get.CurrentMap) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
-          if (20<tmp.Count) break;
         }
         foreach(var loc_qty in catalog) {
-          if (20<tmp.Count) break;
+          if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
           if (loc_qty.Key.Map.District == Session.Get.CurrentMap.District) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
-          if (20<tmp.Count) break;
         }
         ShowSpecialDialogue(m_Player,tmp.ToArray());
         return false;
@@ -3711,6 +3712,30 @@ namespace djack.RogueSurvivor.Engine
       };
 
       PagedMenu("Reviewing...", allies.Count, label, details);
+    }
+
+    private void HandleFactionInfo()
+    {
+      List<string> options = new List<string> { "Status", "Enemies by aggression" };
+
+      Func<int,string> label = index => options[index];
+      Predicate<int> details = index => {
+        var display = new List<string>();
+        switch(index)
+        {
+        case 0:
+            display.Add("Placeholder");
+            break;
+        case 1:
+            display.Add("Placeholder");
+            break;
+        }
+
+        ShowSpecialDialogue(m_Player,display.ToArray());
+        return false;
+      };
+
+      PagedMenu("Reviewing...", options.Count, label, details);
     }
 
     private void HandleDaimonMap()
@@ -12039,6 +12064,7 @@ namespace djack.RogueSurvivor.Engine
       ClearOverlays();
     }
 
+    private const int SHOW_SPECIAL_DIALOGUE_LINE_LIMIT = 61;
     private void ShowSpecialDialogue(Actor speaker, string[] text)
     {
       m_MusicManager.StopAll();

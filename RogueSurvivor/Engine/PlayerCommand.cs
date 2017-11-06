@@ -71,5 +71,6 @@ namespace djack.RogueSurvivor.Engine
     DAIMON_MAP,
     ABANDON_PC,
     ALLIES_INFO,
+    FACTION_INFO,
    }
 }

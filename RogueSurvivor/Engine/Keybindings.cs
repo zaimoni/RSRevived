@@ -115,10 +115,12 @@ namespace djack.RogueSurvivor.Engine
       }
 
       Keys cityInfo = RogueGame.KeyBindings.Get(PlayerCommand.CITY_INFO);
-      if ((cityInfo | Keys.Shift) == cityInfo) return true; // hard-coded to item info
       if ((cityInfo | Keys.Control) == cityInfo) return true;   // hard-coded to cheat map
+      if ((cityInfo | Keys.Shift) == cityInfo) return true; // hard-coded to item info
+      if ((cityInfo | Keys.Shift | Keys.Control) == cityInfo) return true;   // hard-coded to ....
       if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Control)) > 0) return true;
       if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Shift)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Shift | Keys.Control)) > 0) return true;
 
       return false;
     }

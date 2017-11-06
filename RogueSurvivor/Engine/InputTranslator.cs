@@ -17,6 +17,7 @@ namespace djack.RogueSurvivor.Engine
         if (key.KeyData == (cityInfo | Keys.Control)) return PlayerCommand.DAIMON_MAP;  // debugging/cheat command
       }
       if (key.KeyData == (cityInfo | Keys.Shift)) return PlayerCommand.ITEM_INFO;
+      if (key.KeyData == (cityInfo | Keys.Shift | Keys.Control)) return PlayerCommand.FACTION_INFO;
 
       if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
 
