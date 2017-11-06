@@ -1699,6 +1699,9 @@ retry:
           const string shop_shelf_symbol = "&#x25A1;";    // unicode: geometric shapes
           const string large_fortification_symbol = "<span class='lfort'>&#x25A6;</span>";    // unicode: geometric shapes
           const string power_symbol = "&#x2B4D;";    // unicode: misc symbols & arrows
+          const string closed_gate = "<span class='lfort'>&#x2630;</span>";    // unicode: misc symbols (I Ching heaven)
+          const string iron_fence = "<span class='lfort'>&#x2632;</span>";    // unicode: misc symbols (I Ching fire)
+          const string open_gate = "<span class='lfort'>&#x2637;</span>";    // unicode: misc symbols (I Ching earth)
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
@@ -1721,6 +1724,12 @@ retry:
               ascii_map[y][x] = large_fortification_symbol;
             } else if (MapObject.IDs.CHAR_POWER_GENERATOR == tmp_obj.ID) {
               ascii_map[y][x] = power_symbol;
+            } else if (MapObject.IDs.IRON_GATE_CLOSED == tmp_obj.ID) {
+              ascii_map[y][x] = closed_gate;
+            } else if (MapObject.IDs.IRON_FENCE == tmp_obj.ID) {
+              ascii_map[y][x] = iron_fence;
+            } else if (MapObject.IDs.IRON_GATE_OPEN == tmp_obj.ID) {
+              ascii_map[y][x] = open_gate;
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
               ascii_map[y][x] = "|"; // gate; iron wall
             } else {
