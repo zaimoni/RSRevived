@@ -1835,6 +1835,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
         ActorAction actorAction = BehaviorWander(loc =>
         {
+          if (map.HasExitAt(loc.Position)) return false;    // both unsafe, and problematic for pathing in general
           if (!(map.GetMapObjectAt(loc.Position) is DoorWindow))
             return !map.HasAnyAdjacentInMap(loc.Position, (Predicate<Point>) (pt => loc.Map.GetMapObjectAt(pt) is DoorWindow));
           return false;
