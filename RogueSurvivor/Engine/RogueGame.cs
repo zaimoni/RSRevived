@@ -3727,7 +3727,23 @@ namespace djack.RogueSurvivor.Engine
             display.Add("Placeholder");
             break;
         case 1:
-            display.Add("Placeholder");
+            {
+            IEnumerable<Actor> personal_enemies = m_Player.Aggressing;
+            IEnumerable<Actor> self_defense = m_Player.Aggressors;
+            if (0 < personal_enemies.Count()) {
+              display.Add("Aggressed:");
+              foreach(Actor a in personal_enemies) display.Add(a.Name);
+            }
+            if (0 < self_defense.Count()) {
+              display.Add("Defending from:");
+              foreach(Actor a in self_defense) display.Add(a.Name);
+            }
+            if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT < display.Count) {
+              display.RemoveRange(SHOW_SPECIAL_DIALOGUE_LINE_LIMIT, (display.Count-SHOW_SPECIAL_DIALOGUE_LINE_LIMIT)+1);
+              display.Add("...");
+            }
+            if (0 >= display.Count) display.Add("No personal enemies");
+            }
             break;
         }
 

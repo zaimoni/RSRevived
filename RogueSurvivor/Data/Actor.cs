@@ -1101,6 +1101,9 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    public IEnumerable<Actor> Aggressing { get { return null != m_AggressorOf ? m_AggressorOf : new List<Actor>(); } }
+    public IEnumerable<Actor> Aggressors { get { return null != m_SelfDefenceFrom ? m_SelfDefenceFrom : new List<Actor>(); } }
+
     public void MarkAsAgressorOf(Actor other)
     {
       if (other == null || other.IsDead) return;

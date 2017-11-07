@@ -1700,7 +1700,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	    Exit exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
           return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
-	    navigate.GoalDistance(a_map.ExitLocations(valid_exits), m_Actor.Location.Position);
+        var goals = a_map.ExitLocations(valid_exits);
+        if (null == goals) return null;
+	    navigate.GoalDistance(goals, m_Actor.Location.Position);
 	  } else {
 	    navigate.GoalDistance(dest.Position, m_Actor.Location.Position);
 	  }
