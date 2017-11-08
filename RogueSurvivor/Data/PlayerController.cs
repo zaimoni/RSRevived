@@ -105,6 +105,7 @@ namespace djack.RogueSurvivor.Data
         if (e.shown) return;
         if (m_Actor.IsSleeping) return;
         if (!CanSee(speaker.Location) && !CanSee(e._target.Location)) return;
+        if (m_Actor!= e._target && e._target.IsPlayer) return;
         e.shown = true;
       }
       RogueForm.Game.PanViewportTo(m_Actor);

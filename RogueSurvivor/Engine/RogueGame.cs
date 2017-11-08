@@ -4255,7 +4255,11 @@ namespace djack.RogueSurvivor.Engine
             MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
             if (mapObjectAt is DoorWindow door) {
               if (player.CanClose(door, out string reason)) {
+#if PROTOTYPE
+                DoCloseDoor(player, door, point==(player.Controller as BaseAI).PrevLocation.Position);
+#else
                 DoCloseDoor(player, door, player.Location==(player.Controller as BaseAI).PrevLocation);
+#endif
                 RedrawPlayScreen();
                 flag1 = false;
                 flag2 = true;
