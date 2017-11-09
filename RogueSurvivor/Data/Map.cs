@@ -349,7 +349,7 @@ namespace djack.RogueSurvivor.Data
       if (1==district_delta.Y) pt.Y -= Height;
       else if (-1==district_delta.Y) pt.Y += dest.Height;
 #if DEBUG
-            if (!dest.IsInBounds(pt)) throw new InvalidOperationException("non-null return from Map::Normalize must be in bounds");
+      if (!dest.IsInBounds(pt)) throw new InvalidOperationException("non-null return from Map::Normalize must be in bounds");
 #endif
       return new Location(dest,pt);
     }
