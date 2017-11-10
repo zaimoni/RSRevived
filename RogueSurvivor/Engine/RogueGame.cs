@@ -4206,7 +4206,7 @@ namespace djack.RogueSurvivor.Engine
         Point point = player.Location.Position + direction;
         if (!player.Location.Map.IsValid(point)) continue;
         if (direction != Direction.NEUTRAL) {
-          Actor actorAt = player.Location.Map.GetActorAt(point);
+          Actor actorAt = player.Location.Map.GetActorAtExt(point);
           if (actorAt != null) {
             if (player.CanTradeWith(actorAt, out string reason)) {
               flag2 = true;
