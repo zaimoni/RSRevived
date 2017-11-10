@@ -2564,7 +2564,7 @@ namespace djack.RogueSurvivor.Engine
           Location loc = new Location(map, pt);
           // inaccurate, but ensures propor prioritzation
           var already_known = Session.Get.PoliceItemMemory.WhatIsAt(loc);
-          already_known.Add(GameItems.IDs.FOOD_ARMY_RATION);
+          (already_known ?? (already_known = new HashSet<GameItems.IDs>())).Add(GameItems.IDs.FOOD_ARMY_RATION);
           already_known.Add(GameItems.IDs.MEDICINE_MEDIKIT);
           Session.Get.PoliceItemMemory.Set(loc, already_known, map.LocalTime.TurnCounter);
         },
