@@ -7457,19 +7457,20 @@ namespace djack.RogueSurvivor.Engine
         SetCurrentMap(exitAt.ToMap);
       }
       OnActorEnterTile(actor);
-      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location);
+      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, (actor.Controller as BaseAI).PrevLocation);
       return true;
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void DoFollowersEnterMap(Actor leader, Location to)
+    private void DoFollowersEnterMap(Actor leader, Location to, Location from)
     {
-      Map fromMap = leader.Location.Map;
       List<Actor> actorList = null;
       foreach(Actor fo in leader.Followers) {
         bool flag3 = false;
+        if (fo.Location.Map==to.Map) continue;  // already in destination, ok
+        if (fo.Location.Map.District != to.Map.District) continue;  // cross-district change
         List<Point> pointList = null;
-        if (Rules.IsAdjacent(leader.Location, fo.Location)) {
+        if (Rules.IsAdjacent(from, fo.Location)) {
           pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo));
           flag3 = pointList != null && pointList.Count != 0;
         }
@@ -7488,7 +7489,7 @@ namespace djack.RogueSurvivor.Engine
       if (actorList == null) return;
 
       bool flag2 = m_Player == leader;
-      if (to.Map.District != fromMap.District) {
+      if (to.Map.District != from.Map.District) {
         foreach (Actor other in actorList) {
           if (!other.IsPlayer) leader.RemoveFollower(other);
           if (flag2) {
@@ -7505,9 +7506,9 @@ namespace djack.RogueSurvivor.Engine
         }
       } else if (flag2) {
         foreach (Actor other in actorList) {
-          if (other.Location.Map == fromMap) {
+          if (other.Location.Map == from.Map) {
             ClearMessages();
-            AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, fromMap.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+            AddMessage(new Data.Message(string.Format("{0} could not follow and is still in {1}.", other.TheName, from.Map.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
             AddMessagePressEnter();
             ClearMessages();
           }
