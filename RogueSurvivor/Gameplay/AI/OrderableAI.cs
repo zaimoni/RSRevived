@@ -1710,6 +1710,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
       ActorAction tmp3 = DecideMove(PlanApproach(navigate));   // only called when no enemies in sight anyway
+      if (null == tmp3) tmp3 = PlanApproachFailover(navigate);
       if (null == tmp3) return null;
       if (tmp3 is ActionMoveStep tmp2) {
         Exit exitAt = a_map.GetExitAt(tmp2.dest.Position);
@@ -2335,7 +2336,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         costs[pt] = navigate.Cost(pt);
       }
       ActorAction ret = DecideMove(costs);
-      if (null == ret) return null; // can happen due to postprocessing stage
+      if (null == ret) ret = PlanApproachFailover(navigate);
+      if (null == ret) return null; // can happen due to postprocessing
       if (ret is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
         m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
@@ -2346,12 +2348,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorHastyNavigate(IEnumerable<Point> tainted)
     {
-      Contract.Requires(0<tainted.Count());
-
+#if DEBUG
+      if (0 >= tainted.Count()) throw new InvalidOperationException("0 >= tainted.Count()");
+#endif
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted, m_Actor.Location.Position);
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       ActorAction ret = DecideMove(PlanApproach(navigate));
+      if (null == ret) ret = PlanApproachFailover(navigate);
       if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
@@ -2359,7 +2363,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorHeadForExit(Dictionary<Point,Exit> valid_exits)
     {
-      Contract.Requires(null!=valid_exits);
+#if DEBUG
+      if (null == valid_exits) throw new ArgumentNullException(nameof(valid_exits));
+#endif
       if (0 >= valid_exits.Count) return null;
       if (valid_exits.ContainsKey(m_Actor.Location.Position)) {
         return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
@@ -2546,7 +2552,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // we are not directly connected to an exit to the surface, and have more than one destination map.
       // reject maps that only have us as destination
       possible_destinations.RemoveWhere(m => 1==m.destination_maps.Get.Count);
-      if (1 == possible_destinations.Count) return BehaviorHeadForExit(valid_exits);
+      if (1 == possible_destinations.Count) {
+        valid_exits.OnlyIf(e=>possible_destinations.Contains(e.ToMap));
+        return BehaviorHeadForExit(valid_exits);
+      }
+
+      HashSet<Map> entry_destinations = new HashSet<Map>(m_Actor.Location.Map.District.EntryMap.destination_maps.Get);
+      entry_destinations.IntersectWith(possible_destinations);
+      if (0<entry_destinations.Count) {
+        valid_exits.OnlyIf(e=>entry_destinations.Contains(e.ToMap));
+        return BehaviorHeadForExit(valid_exits);
+      }
+
+      // all heuristics failed?
+      if (m_Actor.Location.Map==Session.Get.UniqueMaps.Hospital_Patients.TheMap) {
+        valid_exits.OnlyIf(e=>e.ToMap== Session.Get.UniqueMaps.Hospital_Offices.TheMap);
+        return BehaviorHeadForExit(valid_exits);
+      }
 #if DEBUG
       throw new InvalidOperationException("need Map::PathTo to handle hospital, police, etc. maps");
 #else
@@ -2616,22 +2638,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       ActorAction ret = DecideMove(PlanApproach(navigate));
-      if (null == ret) {
-        List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
-        if (null != legal_steps) {
-          var costs = new Dictionary<Point,int>();
-          foreach(Point pt in m_Actor.OnePathRange(m_Actor.Location.Map, m_Actor.Location.Position)) {
-            costs[pt] = navigate.Cost(pt);
-          }
-          int min_cost = costs.Values.Min();
-          costs.OnlyIf(val => val <= min_cost);
-          if (0<costs.Count) {
-            var dests = costs.Keys.ToList();
-            return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,dests[RogueForm.Game.Rules.Roll(0,dests.Count)]));
-          }
-        }
-        return null;
-      }
+      if (null == ret) ret = PlanApproachFailover(navigate);
+      if (null == ret) return null;
       if (ret is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
       return ret;
     }

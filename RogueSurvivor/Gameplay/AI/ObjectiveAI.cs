@@ -79,6 +79,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new Dictionary<Point,int>(PlannedMoves[m_Actor.Location.Position]);
     }
 
+    protected ActorAction PlanApproachFailover(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
+    {
+      List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
+      if (null != legal_steps) {
+        var costs = new Dictionary<Point,int>();
+        foreach(Point pt in m_Actor.OnePathRange(m_Actor.Location.Map, m_Actor.Location.Position)) {
+          costs[pt] = navigate.Cost(pt);
+        }
+        int min_cost = costs.Values.Min();
+        if (int.MaxValue == min_cost) return null;
+        costs.OnlyIf(val => val <= min_cost);
+        if (0<costs.Count) {
+          var dests = costs.Keys.ToList();
+          return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,dests[RogueForm.Game.Rules.Roll(0,dests.Count)]));
+        }
+      }
+      return null;
+    }
+
     protected void ClearMovePlan()
     {
       PlannedMoves.Clear();
