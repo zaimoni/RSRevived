@@ -11024,6 +11024,22 @@ namespace djack.RogueSurvivor.Engine
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
       if (!map.IsValid(position)) return false;
+      Rectangle survey = new Rectangle(position.X-Actor.MAX_VISION, position.Y - Actor.MAX_VISION,1+2*Actor.MAX_VISION,1+2*Actor.MAX_VISION);
+      var players = new List<Actor>();
+      survey.DoForEach(pt => {
+        Actor player = map.GetActorAtExt(pt);
+        if (!player?.IsPlayer ?? true) return;
+        Location? test = player.Location.Map.Denormalize(new Location(map,position));
+        if (null == test) return;
+        if (!player.Controller.FOV.Contains(test.Value.Position)) return;
+        players.Add(player);
+      });
+      if (0 >= players.Count) return false;
+      if (players.Contains(m_Player)) return true;
+      if (1==players.Count) {
+        PanViewportTo(players[0]);
+        return true;
+      }
       if (Session.Get.CurrentMap != map) {
         Location? tmp = Session.Get.CurrentMap.Denormalize(new Location(map,position));
         if (null == tmp) return false;
