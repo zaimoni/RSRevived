@@ -7568,6 +7568,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeMessage(actor, string.Format("{0}.", Conjugate(actor, VERB_WAIT))));
       }
       actor.RegenStaminaPoints(Actor.STAMINA_REGEN_WAIT);
+      if (actor == m_Player) RedrawPlayScreen();
     }
 
     public bool DoPlayerBump(Actor player, Direction direction)
