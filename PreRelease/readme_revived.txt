@@ -20,7 +20,14 @@ REVIVED 0.10.0 CHANGES
 ** see across district boundaries (so does your minimap)
 ** throw grenades across district boundaries
 ** fire at targets across district boundaries, etc.
-** [release blocker] Unfortunately, the AI is just as unimpaired as you.
+** Unfortunately, the AI is just as unimpaired as you.
+
+REVIVED 0.9.9.5 CHANGES
+* NPC speech restored.
+* bump to chat crash bug fixed
+* some redraws added -- should have much more immediate feedback that you have moved/rested/recharged.
+  There are most likely additional coverage holes (that is, won't guarantee that all times lag is happening
+  that your displayed energy level is 0 or less).
 
 REVIVED 0.9.9.4 CHANGES
 ------------------
