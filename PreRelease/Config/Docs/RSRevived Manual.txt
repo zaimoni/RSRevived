@@ -3,6 +3,7 @@ Supplementary Manual
 by zaimoni
 
 1. Command Line Options
+   --no-spawn
    --PC "name"
    --seed=[int]   
    --socrates-daimon
@@ -19,6 +20,12 @@ N+1 I get this crash ...
 =======================
 Sorry, there is no --help or /?.  C# actively disables C stdout 
 for graphical programs.
+
+--no-spawn
+
+This will be ignored without --PC to nominate an NPC for player control.  The usual player character will not be created.
+
+Use of a game with a known seed and the --socrates-daimon option is highly recommended, to get the name of an appropriately interesting NPC.
 
 --PC "name"
 
@@ -47,8 +54,8 @@ limited RNG adjustment by savescumming there is.
 This option only influences New Game.  If provided, cheat commands useful in 
 simulating an unusually effective divine interest in the PC are provided.
 
-  CTRL-I (hardcoded): updates Config/daimon_map.html .  Open in a web browser 
-                      to get the wisdom you asked for.
+  CTRL-[City Info] (default CTRL-I): updates Config/daimon_map.html .  Open in a web browser 
+    to get the wisdom you asked for.
 
 --subway-cop
 

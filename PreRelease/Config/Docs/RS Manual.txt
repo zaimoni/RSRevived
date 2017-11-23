@@ -621,10 +621,16 @@ Also remember that in addition to having smell, some undeads have a visual memor
 
 
 > CITY INFO  (default I)
-Show information you know about the city, such as the city districts layout.
+Show information you know about the city, such as the city districts layout.  This key cannot be Shift- (conflicts with ITEM INFO)
+or Ctrl- (conflicts with the cheat map) or Shift-Ctrl- (conflicts with Faction Info)
 
-> ITEM INFO (hard-coded Shift-I)
+> ITEM INFO (Shift-[City Info]; default Shift-I)
 Review where you have seen items.
+
+> FACTION INFO (Shift-Ctrl-[City Info]; default Shift-Control-I)
+Various items related to your current faction.  Police are much more "helpful".
+1) [unimplemented] Overview (how things look from your faction's point of view)
+2) Personal enemies (tracks both who has aggressed you, and who you have aggressed).
 
 > ALLIES OVERVIEW (hard-coded Ctrl-O)
 Basic overview of your allies.  Always includes followers.  Police get a review of all other police in the district as well.

@@ -46,6 +46,8 @@ namespace djack.RogueSurvivor.Engine
     public bool PlayerKnows_TheSewersThingLocation;
     public bool CHARUndergroundFacility_Activated;
     public int ScriptStage_PoliceStationPrisoner;
+    public int ScriptStage_PoliceCHARrelations;
+    public int ScriptStage_HospitalPowerup;
 
     public static Session Get {
       get {
@@ -67,7 +69,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Session()
     {
-      m_CommandLineOptions = (null == Session.CommandLineOptions || 0 >= Session.CommandLineOptions.Count ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
+      m_CommandLineOptions = (0 >= (CommandLineOptions?.Count ?? 0) ? null : new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(new Dictionary<string, string>(Session.CommandLineOptions)));
       Reset();
     }
 
@@ -79,6 +81,8 @@ namespace djack.RogueSurvivor.Engine
       m_Event_Raids = (int[,,]) info.GetValue("Event_Raids",typeof(int[,,]));
       GameMode = (GameMode) info.GetSByte("GameMode");
       ScriptStage_PoliceStationPrisoner = (int) info.GetSByte("ScriptStage_PoliceStationPrisoner");
+      ScriptStage_PoliceCHARrelations = (int) info.GetSByte("ScriptStage_PoliceCHARrelations");
+      ScriptStage_HospitalPowerup = (int) info.GetSByte("ScriptStage_HospitalPowerup");
       Seed = info.GetInt32("Seed");
       LastTurnPlayerActed = info.GetInt32("LastTurnPlayerActed");
       PlayerKnows_CHARUndergroundFacilityLocation = info.GetBoolean("PlayerKnows_CHARUndergroundFacilityLocation");
@@ -102,6 +106,8 @@ namespace djack.RogueSurvivor.Engine
 
       info.AddValue("GameMode",(SByte)GameMode);
       info.AddValue("ScriptStage_PoliceStationPrisoner",(SByte)ScriptStage_PoliceStationPrisoner);
+      info.AddValue("ScriptStage_PoliceCHARrelations", (SByte)ScriptStage_PoliceCHARrelations);
+      info.AddValue("ScriptStage_HospitalPowerup", (SByte)ScriptStage_HospitalPowerup);
       info.AddValue("Seed",Seed);
       info.AddValue("LastTurnPlayerActed",LastTurnPlayerActed);
       info.AddValue("PlayerKnows_CHARUndergroundFacilityLocation",PlayerKnows_CHARUndergroundFacilityLocation);
@@ -137,6 +143,8 @@ namespace djack.RogueSurvivor.Engine
       PlayerKnows_CHARUndergroundFacilityLocation = false;
       PlayerKnows_TheSewersThingLocation = false;
       ScriptStage_PoliceStationPrisoner = 0;
+      ScriptStage_PoliceCHARrelations = 0;
+      ScriptStage_HospitalPowerup = 0;
       UniqueActors = new UniqueActors();
       UniqueItems = new UniqueItems();
       UniqueMaps = new UniqueMaps();
