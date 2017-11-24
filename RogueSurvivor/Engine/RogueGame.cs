@@ -3733,6 +3733,55 @@ namespace djack.RogueSurvivor.Engine
         switch(index)
         {
         case 0:
+            if (GameFactions.ThePolice==m_Player.Faction) {
+              // full knowledge: police storyline
+              if (0 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                // XXX should have NPC start-of-game district chief
+                display.Add("The last contact the district chief had from CHAR was 19:12; some sort of 'containment failure', curfew requested.");
+              }
+              if (1 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                // XXX should record first-aggressed cop
+                // XXX each CHAR office is to have one copy of the CHAR Operation Dead Hand document
+                // XXX if the CHAR default orders document has been read then this text should be revised
+                display.Add("Something's very wrong; CHAR guards are attacking us cops.");
+                if (1==Session.Get.ScriptStage_PoliceCHARrelations && 2 > Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, may not be.  We need a civilian to make "+HimOrHer(Session.Get.UniqueActors.PoliceStationPrisonner.TheActor)+" squawk.");
+                // XXX ok for police to invade CHAR Offices at this point.
+                // XXX police will be able to aggress CHAR without risking murder at this point
+              }
+              if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("That criminal CHAR forwarded to us, was a framed experimental subject; "+HeOrShe(Session.Get.UniqueActors.PoliceStationPrisonner.TheActor) + " was contaminated by a ZM transformer agent.");
+              if (2 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                // XXX should record sighting officer
+                // XXX the cell phone used for last contact should be down here (plausibly not an artifact, however)
+                display.Add("We've found a CHAR research base they didn't tell us about.");
+                if (2 <= Session.Get.ScriptStage_PoliceStationPrisoner) display.Add("It's reasonable that whoever signed off on that ZM transformer agent was in this base.");
+              }
+#if PROTOTYPE
+              if (3 <= Session.Get.ScriptStage_PoliceCHARrelations) {
+                // XXX new map required: the lab where the ill-advised experimentation was done.
+                // XXX be sure to include lab rat cages.  Unique hazards may be here.
+                // XXX e.g. this area may be *contaminated* with a non-zero infection rate merely by existing here, in the infection modes
+              }
+              if (1 == Session.Get.ScriptStage_HospitalPowerup || 2 == Session.Get.ScriptStage_HospitalPowerup) {
+                display.Add("The hospital needs its emergency power turned on.  We'll need to terminate the psychopathic murderer first.");
+              }
+#endif
+            }
+#if PROTOTYPE
+            if (....) {
+              if (0 == Session.Get.ScriptStage_HospitalPowerup) {
+                display.Add("We've sent a nurse down to turn on the emergency generators.");
+              }
+              if (1 == Session.Get.ScriptStage_HospitalPowerup) {
+                display.Add("An escaped psyshopathic murderer is down near the emergency generators.  We'll need to evacuate.");
+              }
+              if (2 == Session.Get.ScriptStage_HospitalPowerup) {
+                display.Add("We need someone to take out the psychopathic murderer.");
+              }
+              if (3 == Session.Get.ScriptStage_HospitalPowerup) {
+                display.Add("Power has been restored.");
+              }
+            }
+#endif
             display.Add("Placeholder");
             break;
         case 1:
