@@ -26,20 +26,20 @@ using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.Gameplay.Generators;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Security.Permissions;
-using System.Linq;
-using System.Diagnostics.Contracts;
-using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 using Zaimoni.Data;
+using ColorString = System.Collections.Generic.KeyValuePair<System.Drawing.Color, string>;
 
 namespace djack.RogueSurvivor.Engine
 {
-  internal class RogueGame
+    internal class RogueGame
   {
     private readonly Color POPUP_FILLCOLOR = Color.FromArgb(192, Color.CornflowerBlue);
     // these are used by OverlayPopup, so are used as arrays of strings anyway
@@ -8790,6 +8790,30 @@ namespace djack.RogueSurvivor.Engine
       bool player = ForceVisibleToPlayer(actor);
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       actor.RegenSanity(Rules.ActorSanRegenValue(actor, ent.Model.Value));
+      switch(ent.Model.ID) {
+      case GameItems.IDs.ENT_CHAR_GUARD_MANUAL:
+        if (actor==m_Player) {  // this manual is highly informative
+          var display = new List<string>();
+          display.Add("It appears CHAR management had done some contingency planning for what is currently happening.");
+          display.Add("The absence of an exemption for police when clearing CHAR offices in event of losing communications with HQ, seems imprudent.  Even if there was a law enforcement raid on the HQ.");
+          display.Add("Projected looting:");
+          display.Add("  Bikers: arrive day "+BIKERS_RAID_DAY.ToString()+", need "+BIKERS_RAID_DAYS_GAP.ToString()+" days to reorganize; bases overrun by zombies day "+BIKERS_END_DAY.ToString());
+          display.Add("  Gangsters: arrive day "+GANGSTAS_RAID_DAY.ToString()+", need "+GANGSTAS_RAID_DAYS_GAP.ToString()+" days to reorganize; bases overrun by zombies day "+GANGSTAS_END_DAY.ToString());
+          display.Add("Military response:");
+          display.Add("  National Guard: arrive day "+NATGUARD_DAY.ToString()+"; zombies arrive at base day "+NATGUARD_END_DAY.ToString());
+          display.Add("  Supply drops: start day "+ARMY_SUPPLIES_DAY.ToString()+".");
+          display.Add("  Black ops: arrive day "+BLACKOPS_RAID_DAY.ToString()+", need "+BLACKOPS_RAID_DAY_GAP.ToString()+" days to reorganize.");
+          display.Add("Refugees:");
+          display.Add("  Civilians and police are expected to arrive around noon daily:");
+          display.Add("  Survivalists: arrive day "+SURVIVORS_BAND_DAY.ToString()+", need "+SURVIVORS_BAND_DAY_GAP.ToString()+" days to reorganize.");
+          ShowSpecialDialogue(m_Player,display.ToArray());
+        }
+#if PROTOTYPE
+        if (GameFactions.IDs.ThePolice == actor.Faction.ID) {   // XXX police will realize that the guards are just out of communication with CHAR HQ as they are; CHAR guards' no-comm orders also target police
+        }
+#endif
+        break;
+      }
       if (player) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_ENJOY), ent));
       int boreChance = ent.Model.BoreChance;
       if (boreChance == 100) {

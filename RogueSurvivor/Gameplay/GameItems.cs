@@ -736,6 +736,8 @@ namespace djack.RogueSurvivor.Gameplay
       // entertainment
       _setModel(IDs.ENT_BOOK, new ItemEntertainmentModel(DATA_ENT_BOOK.NAME, DATA_ENT_BOOK.PLURAL, GameImages.ITEM_BOOK, DATA_ENT_BOOK.VALUE, DATA_ENT_BOOK.BORECHANCE, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
       _setModel(IDs.ENT_MAGAZINE, new ItemEntertainmentModel(DATA_ENT_MAGAZINE.NAME, DATA_ENT_MAGAZINE.PLURAL, GameImages.ITEM_MAGAZINE, DATA_ENT_MAGAZINE.VALUE, DATA_ENT_MAGAZINE.BORECHANCE, DATA_ENT_MAGAZINE.STACKING, DATA_ENT_MAGAZINE.FLAVOR));
+      // this manual is *very* relevant, but dry reading.
+      _setModel(IDs.ENT_CHAR_GUARD_MANUAL, new ItemEntertainmentModel("CHAR Guard Manual","CHAR Guard Manuals", GameImages.ITEM_BOOK, DATA_ENT_MAGAZINE.VALUE, 0, DATA_ENT_BOOK.STACKING, DATA_ENT_BOOK.FLAVOR));
 
       _setModel(IDs.UNIQUE_SUBWAY_BADGE, new ItemModel("Subway Worker Badge", "Subways Worker Badges", GameImages.ITEM_SUBWAY_BADGE, "You got yourself a new job!", DollPart.LEFT_HAND)
       {
@@ -1114,7 +1116,8 @@ namespace djack.RogueSurvivor.Gameplay
       UNIQUE_ROGUEDJACK_KEYBOARD = 66,
       UNIQUE_SANTAMAN_SHOTGUN = 67,
       UNIQUE_HANS_VON_HANZ_PISTOL = 68,
-      _COUNT = 69,
+      ENT_CHAR_GUARD_MANUAL = 69,
+      _COUNT    // default this to guarantee correct value
     }
 
     private struct MedecineData
