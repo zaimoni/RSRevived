@@ -7,6 +7,8 @@ REVIVED 0.10.0 CHANGES
 * key configuration files are not backward compatible.
 * even more AI overhaul.
 * Closing the door behind you is now a free action.
+* The CHAR Guard Manual is very interesting (0% boredom rate), but dry reading (only restores as much sanity as a magazine per reading).
+** It is also informative in other ways
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
 * It is rarely possible to see where a living is planning to move next.  (If you are about to shove him, you will see this.)

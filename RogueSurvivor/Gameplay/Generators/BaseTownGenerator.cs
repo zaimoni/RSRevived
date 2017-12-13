@@ -977,20 +977,44 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         else
           PlaceDoor(map, rectangle2.Left, rectangle2.Top + rectangle2.Height / 2, GameTiles.FLOOR_OFFICE, MakeObjCharDoor());
       }
+      var table_pos = new List<Point>(rectangleList.Count);
+      var chair_pos = new List<Point>(8);
+      var chairs_pos = new List<KeyValuePair<Point,Point>>(28);
       foreach (Rectangle rectangle2 in rectangleList) {
         Point tablePos = new Point(rectangle2.Left + rectangle2.Width / 2, rectangle2.Top + rectangle2.Height / 2);
         map.PlaceAt(MakeObjTable(GameImages.OBJ_CHAR_TABLE), tablePos);
+        table_pos.Add(tablePos);
         Rectangle rect4 = new Rectangle(rectangle2.Left + 1, rectangle2.Top + 1, rectangle2.Width - 2, rectangle2.Height - 2);
-        if (!rect4.IsEmpty) {
-          for (int index = 0; index < 2; ++index) {
-            Rectangle rect5 = new Rectangle(tablePos.X - 1, tablePos.Y - 1, 3, 3);
-            rect5.Intersect(rect4);
-            MapObjectPlaceInGoodPosition(map, rect5, pt => pt != tablePos, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAR_CHAIR));
-          }
+        if (rect4.IsEmpty) continue;
+        Rectangle rect5 = new Rectangle(tablePos.X - 1, tablePos.Y - 1, 3, 3);
+        rect5.Intersect(rect4);
+        rect5.DoForEach(pt=>chair_pos.Add(pt),pt=> !map.HasMapObjectAt(pt));    // table is already placed
+        if (2 >= chair_pos.Count) {
+          foreach(Point pt in chair_pos) MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,pt);
+          chair_pos.Clear();
+          continue;
         }
+        // enumerate Choose(n,2) options
+        int i = chair_pos.Count;
+        while(1 < i--)
+            {
+            int j = i;
+            while(0 < j--)
+                {
+                chairs_pos.Add(new KeyValuePair<Point,Point>(chair_pos[i],chair_pos[j]));
+                }
+            }
+        // \todo geometric postprocessing
+        KeyValuePair<Point,Point> chairs_at = chairs_pos[m_DiceRoller.Roll(0, chairs_pos.Count)];
+        MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,chairs_at.Key);
+        MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,chairs_at.Value);
+        chair_pos.Clear();
+        chairs_pos.Clear();
       }
       foreach (Rectangle rect4 in rectangleList)
         ItemsDrop(map, rect4, (pt => map.GetTileModelAt(pt) == GameTiles.FLOOR_OFFICE && !map.HasMapObjectAt(pt)), pt => MakeRandomCHAROfficeItem());
+
+      (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map,table_pos[m_DiceRoller.Roll(0,table_pos.Count)]);
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
       zone.SetGameAttribute<bool>("CHAR Office", true);
       map.AddZone(zone);
@@ -1418,7 +1442,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
                 return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
-              }), m_DiceRoller, (Func<Point, MapObject>) (pt2 => MakeObjChair(GameImages.OBJ_CHAIR)));
+              }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
               return MakeObjTable(GameImages.OBJ_TABLE);
             }));
           int num4 = m_DiceRoller.Roll(1, 3);
@@ -1442,7 +1466,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
             {
               return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
-            }), m_DiceRoller, (Func<Point, MapObject>) (pt2 => MakeObjChair(GameImages.OBJ_CHAIR)));
+            }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
             return MakeObjTable(GameImages.OBJ_TABLE);
           }));
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>

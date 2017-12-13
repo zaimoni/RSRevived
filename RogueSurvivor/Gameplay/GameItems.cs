@@ -562,6 +562,12 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
+    static public ItemEntertainmentModel CHAR_GUARD_MANUAL {
+      get {
+        return m_Models[(int)IDs.ENT_CHAR_GUARD_MANUAL] as ItemEntertainmentModel;
+      }
+    }
+
     static public ItemModel UNIQUE_SUBWAY_BADGE {
       get {
         return m_Models[(int)IDs.UNIQUE_SUBWAY_BADGE];
