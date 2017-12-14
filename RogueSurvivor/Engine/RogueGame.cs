@@ -7674,6 +7674,37 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    private void DamnCHARtoPoliceInvestigation()
+    {
+#region 1) examine the underground base
+      Map m = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
+      Point exit_to_surface = new Point(m.Width / 2, m.Height / 2);
+      // underground base is square
+      bool in_underground_base_room(Point p) {
+        if (0 >= p.X) return false;
+        if (m.Width-1 <= p.X) return false;
+        if (exit_to_surface.X-2 <=p.X && exit_to_surface.X + 2 >= p.X) return false;
+        if (0 >= p.Y) return false;
+        if (m.Height-1 <= p.Y) return false;
+        if (exit_to_surface.Y-2 <=p.Y && exit_to_surface.Y + 2 >= p.Y) return false;
+        return true;
+      };
+      m.Rect.DoForEach(pt=>Session.Get.PoliceInvestigate.Record(m, pt),
+          pt => in_underground_base_room(pt));
+#endregion
+#region 2) examine all CHAR offices
+     Session.Get.World.DoForAllDistricts(d=> {
+       foreach(Map map in d.Maps) {
+         if (map != map.District.EntryMap) continue;
+         foreach(Zone zone in map.Zones) {
+           if (!zone.Name.Contains("CHAR Office")) continue;
+           zone.Bounds.DoForEach(pt => Session.Get.PoliceInvestigate.Record(map, pt));
+         }
+       }
+     });
+#endregion
+    }
+
     private void OnMakeEnemyOfCop(Actor aggressor, Actor cop, bool wasAlreadyEnemy)
     {
       if (!wasAlreadyEnemy)
@@ -7693,6 +7724,15 @@ namespace djack.RogueSurvivor.Engine
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
         return true;
       });
+      // XXX this should be a more evident message to PC police
+      if (aggressor.Faction == GameFactions.TheCHARCorporation && 1 > Session.Get.ScriptStage_PoliceCHARrelations) {
+        // Operation Dead Hand orders do not exclude police
+        // XXX should require a policeman to read the CHAR Guard Manual for this effect?
+        // XXX alternately: if a policeman reads the CHAR Guard Manual before contact w/CHAR HQ is re-established this becomes irreversible?
+        Session.Get.ScriptStage_PoliceCHARrelations = 1;
+        GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);
+        DamnCHARtoPoliceInvestigation();
+      }
     }
 
     private void OnMakeEnemyOfSoldier(Actor aggressor, Actor soldier, bool wasAlreadyEnemy)

@@ -46,6 +46,15 @@ namespace djack.RogueSurvivor.Data
         m_DistrictsGrid[x, y] = value;
       }
     }
+    
+    // cannot return IEnumerable<District>, but this does not error
+    public void DoForAllDistricts(Action<District> op)
+    {
+#if DEBUG
+      if (null == op) throw new ArgumentNullException(nameof(op));
+#endif
+      foreach(District d in m_DistrictsGrid) op(d);
+    }
 
     public World(int size)
     {

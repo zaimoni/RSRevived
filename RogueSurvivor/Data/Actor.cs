@@ -1160,7 +1160,11 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsEnemyOf(Actor target)
     {
-      return target != null && (Faction.IsEnemyOf(target.Faction) || (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) || AreDirectEnemies(target) || AreIndirectEnemies(target));
+      if (null == target) return false;
+      if (Faction.IsEnemyOf(target.Faction)) return true;
+      if (Faction == target.Faction && IsInAGang && target.IsInAGang && GangID != target.GangID) return true;
+      if (AreDirectEnemies(target)) return true;
+      return AreIndirectEnemies(target);
     }
 
 
