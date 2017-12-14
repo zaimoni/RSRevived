@@ -2494,8 +2494,10 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantGiveTo(Actor target, Item gift)
     {
-      Contract.Requires(null != target);
-      Contract.Requires(null != gift);
+#if DEBUG
+      if (null == target) throw new ArgumentException(nameof(target));
+      if (null == gift) throw new ArgumentException(nameof(gift));
+#endif
       if (IsEnemyOf(target)) return "enemy";
       if (gift.IsEquipped) return "equipped";
       if (target.IsSleeping) return "sleeping";

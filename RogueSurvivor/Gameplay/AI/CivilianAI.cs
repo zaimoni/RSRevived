@@ -454,8 +454,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             // check for iron gates, etc in way
             List<List<Point> > path = m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position);
             if (null == path) return true;
-            if (!path[0].Any(pt=>null!=Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt)))) return true;
-            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAt(p.Location.Position) >= m_Actor.HitPoints)) return true;
+            List<Point> test = path[0].Where(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))).ToList();
+            if (0 >= test.Count) return true;
+            path[0] = test;
+            if (!imStarvingOrCourageous && path[0].Any(pt=> map.TrapsMaxDamageAt(pt) >= m_Actor.HitPoints)) return true;
           }
           return !BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory)?.IsLegal() ?? true;
         });
