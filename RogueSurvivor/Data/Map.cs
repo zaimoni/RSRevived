@@ -718,11 +718,14 @@ retry:
         exits.RemoveWhere(e => e.ToMap!=dest);
         return exit_maps;
       }
+      exit_maps.RemoveWhere(m=> 1==m.destination_maps.Get.Count);
+      if (1>=exit_maps.Count) return exit_maps;
 	  HashSet<Map> dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
       if (1 == dest_exit_maps.Count) {
         dest = dest_exit_maps.ToList()[0];
         goto retry;
       }
+
       dest_exit_maps.IntersectWith(exit_maps);
       if (1 <= dest_exit_maps.Count) {
         dest = dest_exit_maps.ToList()[0];
