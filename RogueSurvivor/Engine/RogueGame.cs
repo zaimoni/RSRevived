@@ -11895,13 +11895,11 @@ namespace djack.RogueSurvivor.Engine
       Item it = new Item(GameItems.UNIQUE_SUBWAY_BADGE);
       // we intentionally do not take advantage of the current subway layout algorithm
       List<Map> mapList = new List<Map>();
-      for (int index1 = 0; index1 < world.Size; ++index1) {
-        for (int index2 = 0; index2 < world.Size; ++index2) {
-          if (world[index1, index2].HasSubway)
-            mapList.Add(world[index1, index2].SubwayMap);
-        }
-      }
-      if (mapList.Count == 0)
+      world.DoForAllDistricts(d=> {
+        if (!d.HasSubway) return;
+        mapList.Add(d.SubwayMap);
+      });
+      if (0 >= mapList.Count)
         return new UniqueItem{
           TheItem = it,
           IsSpawned = false
@@ -11910,7 +11908,7 @@ namespace djack.RogueSurvivor.Engine
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
       Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, point);
-      map.AddDecorationAt("Tiles\\Decoration\\bloodied_floor", point);
+      map.AddDecorationAt(GameImages.DECO_BLOODIED_FLOOR, point);
       return new UniqueItem{
         TheItem = it,
         IsSpawned = true
@@ -11919,33 +11917,16 @@ namespace djack.RogueSurvivor.Engine
 
     private UniqueMap CreateUniqueMap_CHARUndegroundFacility(World world)
     {
-      List<District> districtList = null;
-      for (int index1 = 0; index1 < world.Size; ++index1)
-      {
-        for (int index2 = 0; index2 < world.Size; ++index2)
-        {
-          if (world[index1, index2].Kind == DistrictKind.BUSINESS)
-          {
-            bool flag = false;
-            foreach (Zone zone in world[index1, index2].EntryMap.Zones)
-            {
-              if (zone.HasGameAttribute("CHAR Office"))
-              {
-                flag = true;
-                break;
-              }
-            }
-            if (flag)
-            {
-              if (districtList == null)
-                districtList = new List<District>();
-              districtList.Add(world[index1, index2]);
-            }
-          }
+      var districtList = new List<District>();
+      world.DoForAllDistricts(d=>{
+        if (DistrictKind.BUSINESS != d.Kind) return;
+        foreach(Zone zone in d.EntryMap.Zones) {
+          if (!zone.HasGameAttribute("CHAR Office")) continue;
+          districtList.Add(d);
+          return;
         }
-      }
-      if (districtList == null)
-        throw new InvalidOperationException("world has no business districts with offices");
+      });
+      if (0 >= districtList.Count) throw new InvalidOperationException("world has no business districts with offices");
       District district = districtList[m_Rules.Roll(0, districtList.Count)];
       List<Zone> zoneList = new List<Zone>();
       foreach (Zone zone in district.EntryMap.Zones)
