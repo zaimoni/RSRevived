@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
+using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -43,6 +43,18 @@ namespace djack.RogueSurvivor.Engine
       if (100<=chance) return true;
       if (0>=chance) return false;
       return Roll(0, 100) < chance; // mathematical range 0, ..., 99 allows above specializations
+    }
+
+    public T Choose<T>(List<T> src) {
+      int n = (src?.Count ?? 0);
+      if (0 >= n) throw new ArgumentNullException(nameof(src));
+      return src[Roll(0, n)];
+    }
+
+    public T Choose<T>(T[] src) {
+      int n = (src?.Length ?? 0);
+      if (0 >= n) throw new ArgumentNullException(nameof(src));
+      return src[Roll(0, n)];
     }
   }
 }

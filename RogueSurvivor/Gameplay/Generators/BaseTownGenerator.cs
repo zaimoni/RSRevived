@@ -300,7 +300,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       Rectangle buildingRect;
       if (blockList != null) {
-        Block block = blockList[m_DiceRoller.Roll(0, blockList.Count)];
+        Block block = m_DiceRoller.Choose(blockList);
         ClearRectangle(surface, block.BuildingRect);
         TileFill(surface, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         m_SurfaceBlocks.Remove(block);
@@ -375,7 +375,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (m_DiceRoller.RollChance(SEWERS_TAG_CHANCE)) {
             Tile tileAt = sewers.GetTileAt(x, y);
             if (!tileAt.Model.IsWalkable && CountAdjWalkables(sewers, x, y) >= 2)
-              tileAt.AddDecoration(BaseTownGenerator.TAGS[m_DiceRoller.Roll(0, BaseTownGenerator.TAGS.Length)]);
+              tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
           }
         }
       }
@@ -435,7 +435,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         }
       }
       if (blockList != null) {
-        Block block = blockList[m_DiceRoller.Roll(0, blockList.Count)];
+        Block block = m_DiceRoller.Choose(blockList);
         ClearRectangle(entryMap, block.BuildingRect);
         TileFill(entryMap, GameTiles.FLOOR_CONCRETE, block.BuildingRect);
         m_SurfaceBlocks.Remove(block);
@@ -484,9 +484,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             Tile tileAt = subway.GetTileAt(x2, y2);
             if (!tileAt.Model.IsWalkable && CountAdjWalkables(subway, x2, y2) >= 2) {
               if (m_DiceRoller.RollChance(50))
-                tileAt.AddDecoration(BaseTownGenerator.POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.POSTERS.Length)]);
+                tileAt.AddDecoration(m_DiceRoller.Choose(POSTERS));
               if (m_DiceRoller.RollChance(50))
-                tileAt.AddDecoration(BaseTownGenerator.TAGS[m_DiceRoller.Roll(0, BaseTownGenerator.TAGS.Length)]);
+                tileAt.AddDecoration(m_DiceRoller.Choose(TAGS));
             }
           }
         }
@@ -837,12 +837,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (CountAdjWalls(map, pt.X, pt.Y) < 3) return null;
         return MakeObjChair(GameImages.OBJ_CHAR_CHAIR);
       }));
-      TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(BaseTownGenerator.CHAR_POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.CHAR_POSTERS.Length)])));
+      TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
         if (CountAdjDoors(map, x, y) > 0) return null;
-        if (m_DiceRoller.RollChance(25))
-          return CHAR_POSTERS[m_DiceRoller.Roll(0, CHAR_POSTERS.Length)];
+        if (m_DiceRoller.RollChance(25)) return m_DiceRoller.Choose(CHAR_POSTERS);
         return null;
       }));
       map.AddZone(MakeUniqueZone("CHAR Agency", b.BuildingRect));
@@ -1005,7 +1004,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
                 }
             }
         // \todo geometric postprocessing
-        KeyValuePair<Point,Point> chairs_at = chairs_pos[m_DiceRoller.Roll(0, chairs_pos.Count)];
+        KeyValuePair<Point,Point> chairs_at = m_DiceRoller.Choose(chairs_pos);
         MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,chairs_at.Key);
         MakeObjChair(GameImages.OBJ_CHAR_CHAIR)?.PlaceAt(map,chairs_at.Value);
         chair_pos.Clear();
@@ -1014,7 +1013,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       foreach (Rectangle rect4 in rectangleList)
         ItemsDrop(map, rect4, (pt => map.GetTileModelAt(pt) == GameTiles.FLOOR_OFFICE && !map.HasMapObjectAt(pt)), pt => MakeRandomCHAROfficeItem());
 
-      (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map,table_pos[m_DiceRoller.Roll(0,table_pos.Count)]);
+      (new ItemEntertainment(GameItems.CHAR_GUARD_MANUAL))?.DropAt(map, m_DiceRoller.Choose(table_pos));
       Zone zone = MakeUniqueZone("CHAR Office", b.BuildingRect);
       zone.SetGameAttribute<bool>("CHAR Office", true);
       map.AddZone(zone);
@@ -1747,22 +1746,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     protected virtual void DecorateOutsideWallsWithPosters(Map map, Rectangle rect, int chancePerWall)
     {
-            DecorateOutsideWalls(map, rect, (Func<int, int, string>) ((x, y) =>
-      {
-        if (m_DiceRoller.RollChance(chancePerWall))
-          return BaseTownGenerator.POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.POSTERS.Length)];
-        return (string) null;
-      }));
+      DecorateOutsideWalls(map, rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(POSTERS) : null));
     }
 
     protected virtual void DecorateOutsideWallsWithTags(Map map, Rectangle rect, int chancePerWall)
     {
-      DecorateOutsideWalls(map, rect, (Func<int, int, string>) ((x, y) =>
-      {
-        if (m_DiceRoller.RollChance(chancePerWall))
-          return TAGS[m_DiceRoller.Roll(0, TAGS.Length)];
-        return null;
-      }));
+      DecorateOutsideWalls(map, rect, (x, y) => (m_DiceRoller.RollChance(chancePerWall) ? m_DiceRoller.Choose(TAGS) : null));
     }
 
     // CHAR building codes have accounted for the possibility of a Z apocalypse.
@@ -1826,12 +1815,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       basement.AddZone(MakeUniqueZone("basement", basement.Rect));
       TileFill(basement, GameTiles.FLOOR_CONCRETE, true);
       TileRectangle(basement, GameTiles.WALL_BRICK, new Rectangle(0, 0, basement.Width, basement.Height));
-      Point point = new Point();
-      do {
-        point.X = m_DiceRoller.Roll(buildingRect.Left, buildingRect.Right);
-        point.Y = m_DiceRoller.Roll(buildingRect.Top, buildingRect.Bottom);
-      }
-      while (!map.GetTileModelAt(point).IsWalkable || map.HasMapObjectAt(point));
+      var candidates = new List<Point>();
+      buildingRect.DoForEach(pt => candidates.Add(pt), pt => map.GetTileModelAt(pt).IsWalkable && !map.HasMapObjectAt(pt));
+      Point point = m_DiceRoller.Choose(candidates);
       Point basementStairs = new Point(point.X - buildingRect.Left, point.Y - buildingRect.Top);
       AddExit(map, point, basement, basementStairs, GameImages.DECO_STAIRS_DOWN, true);
       AddExit(basement, basementStairs, map, point, GameImages.DECO_STAIRS_UP, true);
@@ -1890,7 +1876,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           basement.DropItemAt(MakeItemGrenade(), pt);
           // There will be a primary ranged weapon (with 2 ammo clips)
           // and a secondary ranged weapon (with one ammo clip)
-          KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = survivalist_ranged_candidates[m_DiceRoller.Roll(0,survivalist_ranged_candidates.Length)];
+          KeyValuePair<GameItems.IDs,GameItems.IDs> survivalist_cache_ranged = m_DiceRoller.Choose(survivalist_ranged_candidates);
           basement.DropItemAt(MakeRangedWeapon(survivalist_cache_ranged.Key), pt);
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), pt);
           basement.DropItemAt(MakeAmmo(survivalist_cache_ranged.Key), pt);
@@ -1912,13 +1898,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileRectangle(underground, GameTiles.WALL_CHAR_OFFICE, new Rectangle(0, 0, underground.Width, underground.Height));
       Zone zone1 = null;
       Point point1 = new Point();
-      bool flag;
+      bool flag = false;
       do {
+        // We do not want to evaluate this for each point in the office
         do {
           int x = m_DiceRoller.Roll(officeZone.Bounds.Left, officeZone.Bounds.Right);
           int y = m_DiceRoller.Roll(officeZone.Bounds.Top, officeZone.Bounds.Bottom);
           List<Zone> zonesAt = surfaceMap.GetZonesAt(x, y);
-          if (zonesAt != null && zonesAt.Count != 0) {
+          if (0 < (zonesAt?.Count ?? 0)) {
             foreach (Zone zone2 in zonesAt) {
               if (zone2.Name.Contains("room")) {
                 zone1 = zone2;
@@ -1928,14 +1915,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
         while (zone1 == null);
-        int num = 0;
-        do {
-          point1.X = m_DiceRoller.Roll(zone1.Bounds.Left, zone1.Bounds.Right);
-          point1.Y = m_DiceRoller.Roll(zone1.Bounds.Top, zone1.Bounds.Bottom);
-          flag = surfaceMap.IsWalkable(point1.X, point1.Y);
-          ++num;
-        }
-        while (num < 100 && !flag);
+        var candidates = new List<Point>();
+        zone1.Bounds.DoForEach(pt => candidates.Add(pt),pt => surfaceMap.IsWalkable(pt));
+        if (0 >= candidates.Count) continue;
+        point1 = m_DiceRoller.Choose(candidates);
+        flag = true;
       }
       while (!flag);
       DoForEachTile(zone1.Bounds, (Action<Point>) (pt =>
@@ -2017,7 +2001,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           if (m_DiceRoller.RollChance(25)) {
             Tile tileAt = underground.GetTileAt(x, y);
             if (tileAt.Model.IsWalkable) continue;
-            tileAt.AddDecoration(BaseTownGenerator.CHAR_POSTERS[m_DiceRoller.Roll(0, BaseTownGenerator.CHAR_POSTERS.Length)]);
+            tileAt.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS));
           }
           if (m_DiceRoller.RollChance(20)) {
             Tile tileAt = underground.GetTileAt(x, y);
@@ -2132,7 +2116,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void MakePoliceStation(Map map, List<Block> freeBlocks, out Block policeBlock)
     {
-      policeBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
+      policeBlock = m_DiceRoller.Choose(freeBlocks);
       GeneratePoliceStation(map, policeBlock, out Point stairsToLevel1);
       Map stationOfficesLevel = GeneratePoliceStation_OfficesLevel(map);
       Map stationJailsLevel = GeneratePoliceStation_JailsLevel(stationOfficesLevel);
@@ -2310,7 +2294,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #if DEBUG
       if (null == map.District) throw new ArgumentNullException(nameof(map.District));
 #endif
-      hospitalBlock = freeBlocks[m_DiceRoller.Roll(0, freeBlocks.Count)];
+      hospitalBlock = m_DiceRoller.Choose(freeBlocks);
       GenerateHospitalEntryHall(map, hospitalBlock);
       Map hospitalAdmissions = GenerateHospital_Admissions(map.Seed << 1 ^ map.Seed, map.District);
       Map hospitalOffices = GenerateHospital_Offices(map.Seed << 2 ^ map.Seed, map.District);

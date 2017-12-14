@@ -1130,7 +1130,7 @@ namespace djack.RogueSurvivor.Engine
       Func<int, GameActors.IDs?> choice_handler = (currentChoice => {
         switch (currentChoice) {
           case 0:
-            GameActors.IDs modelID = undead[roller.Roll(0, 5)].ID;
+            GameActors.IDs modelID = roller.Choose(undead).ID;
             int gy3 = gy1 + 14;
             m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", GameActors[modelID].Name), gx, gy3);
             int gy4 = gy3 + 14;

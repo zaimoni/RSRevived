@@ -199,7 +199,7 @@ namespace djack.RogueSurvivor.Engine
 
     public Direction RollDirection()
     {
-      return Direction.COMPASS[m_DiceRoller.Roll(0, 8)];
+      return m_DiceRoller.Choose(Direction.COMPASS);
     }
 
     public int RollSkill(int skillValue)
