@@ -34,7 +34,6 @@ namespace djack.RogueSurvivor.Engine
     public const int UPGRADE_SKILLS_TO_CHOOSE_FROM = 5;
     public const int UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM = 2;
     public static int SKILL_AGILE_DEF_BONUS = 2;
-    public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.2f;
     public static float SKILL_CARPENTRY_BARRICADING_BONUS = 0.2f;
     public static int SKILL_CHARISMATIC_TRUST_BONUS = 1;
     public static int SKILL_CHARISMATIC_TRADE_BONUS = 10;
@@ -96,8 +95,6 @@ namespace djack.RogueSurvivor.Engine
     public const int ROT_STARVING_HP_CHANCE = 5;
     public const int ROT_HUNGRY_SKILL_CHANCE = 5;
     public const int SLEEP_EXHAUSTION_COLLAPSE_CHANCE = 5;
-    private const int SLEEP_COUCH_SLEEPING_REGEN = 6;
-    private const int SLEEP_NOCOUCH_SLEEPING_REGEN = 4;
     public const int SLEEP_ON_COUCH_HEAL_CHANCE = 5;
     public const int SLEEP_HEAL_HITPOINTS = 2;
     public const int LOUD_NOISE_RADIUS = WorldTime.TURNS_PER_HOUR/6;    // space-time scales; value 5 for 30 turns/hour
@@ -764,13 +761,6 @@ namespace djack.RogueSurvivor.Engine
     {
       int num = (int) ((double) baseValue * (double) Rules.SKILL_STRONG_PSYCHE_ENT_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG_PSYCHE));
       return baseValue + num;
-    }
-
-    public static int ActorSleepRegen(Actor actor, bool isOnCouch)
-    {
-      int num1 = isOnCouch ? SLEEP_COUCH_SLEEPING_REGEN : SLEEP_NOCOUCH_SLEEPING_REGEN;
-      int num2 = (int) ((double) num1 * (double) Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS * (double) actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
-      return num1 + num2;
     }
 
     public static int ActorDisturbedLevel(Actor actor)

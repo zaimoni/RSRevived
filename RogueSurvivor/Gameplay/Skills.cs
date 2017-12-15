@@ -132,7 +132,7 @@ namespace djack.RogueSurvivor.Gameplay
       Rules.SKILL_AGILE_DEF_BONUS = (int) skillData1.VALUE2;
       skillData1 = data[1];
       Actor.SKILL_AWAKE_SLEEP_BONUS = skillData1.VALUE1;
-      Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS = skillData1.VALUE2;
+      Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS = skillData1.VALUE2;
       skillData1 = data[2];
       Actor.SKILL_BOWS_ATK_BONUS = (int) skillData1.VALUE1;
       Actor.SKILL_BOWS_DMG_BONUS = (int) skillData1.VALUE2;

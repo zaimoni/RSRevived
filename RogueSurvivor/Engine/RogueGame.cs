@@ -2170,7 +2170,7 @@ namespace djack.RogueSurvivor.Engine
 #region 4.2 Handle sleeping actors.
               bool isOnCouch = actor.IsOnCouch;
               actor.Activity = Activity.SLEEPING;
-              actor.Rest(Rules.ActorSleepRegen(actor, isOnCouch));
+              actor.Rest(actor.SleepRegen(isOnCouch));
               if (actor.HitPoints < actor.MaxHPs && m_Rules.RollChance((isOnCouch ? Rules.SLEEP_ON_COUCH_HEAL_CHANCE : 0) + Rules.ActorHealChanceBonus(actor)))
                 actor.RegenHitPoints(Rules.SLEEP_HEAL_HITPOINTS);
               if (actor.IsHungry || actor.SleepPoints >= actor.MaxSleep)
@@ -7072,7 +7072,7 @@ namespace djack.RogueSurvivor.Engine
         case Skills.IDs._FIRST:
           return string.Format("+{0} melee ATK, +{1} DEF", Actor.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
         case Skills.IDs.AWAKE:
-          return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * (double)Rules.SKILL_AWAKE_SLEEP_REGEN_BONUS));
+          return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS));
         case Skills.IDs.BOWS:
           return string.Format("bows +{0} Atk, +{1} Dmg", Actor.SKILL_BOWS_ATK_BONUS, Actor.SKILL_BOWS_DMG_BONUS);
         case Skills.IDs.CARPENTRY:

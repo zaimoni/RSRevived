@@ -56,7 +56,8 @@ namespace djack.RogueSurvivor.Data
     private const float FIRING_WHEN_STA_TIRED = 0.75f;
     private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
 
-    public static float SKILL_AWAKE_SLEEP_BONUS = 0.15f;    // XXX 0.17f makes this useful at L1
+    public static float SKILL_AWAKE_SLEEP_BONUS = 0.1f;
+    public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17f;    // XXX 0.17f makes this useful at L1
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
@@ -2070,6 +2071,15 @@ namespace djack.RogueSurvivor.Data
         }
         return turns;
       }
+    }
+
+    public int SleepRegen(bool isOnCouch)
+    {
+      const int SLEEP_COUCH_SLEEPING_REGEN = 6;
+      const int SLEEP_NOCOUCH_SLEEPING_REGEN = 4;
+      int num1 = isOnCouch ? SLEEP_COUCH_SLEEPING_REGEN : SLEEP_NOCOUCH_SLEEPING_REGEN;
+      int num2 = (int) ((double) num1 * (double) SKILL_AWAKE_SLEEP_REGEN_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
+      return num1 + num2;
     }
 
     public int HoursUntilSleepy {
