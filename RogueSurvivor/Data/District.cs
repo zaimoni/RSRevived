@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics.Contracts;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -52,34 +53,25 @@ namespace djack.RogueSurvivor.Data
         m_EntryMap = value;
         if (value == null) return;
         AddMap(value);
-        // successfully placing a cop means the police faction knows all outside squares (map revealing effect)
-        Point pos = new Point(0);
-        if (0 < m_EntryMap.Police.Get.Count) {
-          for (pos.X = 0; pos.X < m_EntryMap.Width; ++pos.X) {
-            for (pos.Y = 0; pos.Y < m_EntryMap.Height; ++pos.Y) {
-              if (m_EntryMap.IsInsideAt(pos)) continue;
-              Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pos));
-            }
+        // the police faction knows all outside squares (map revealing effect)
+        m_EntryMap.Rect.DoForEach(pt=> {
+          if (!m_EntryMap.IsInsideAt(pt)) {
+            Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pt));
+            return;
           }
-        }
-        // all unknown squares become investigation targets
-        for (pos.X = 0; pos.X < m_EntryMap.Width; ++pos.X) {
-          for (pos.Y = 0; pos.Y < m_EntryMap.Height; ++pos.Y) {
-            if (Engine.Session.Get.PoliceItemMemory.HaveEverSeen(new Location(m_EntryMap, pos))) continue;  // police already know this
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "CHAR Office")) continue;   // CHAR company town, police first assume things ok
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "CHAR Agency")) continue;   // CHAR company town, police first assume things ok
-            // stores have their own police AI cheat
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "GeneralStore")) continue;
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Grocery")) continue;
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Sportswear")) continue;
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Pharmacy")) continue;
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Construction")) continue;
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Gunshop")) continue;
-            if (m_EntryMap.HasZonePartiallyNamedAt(pos, "Hunting Shop")) continue;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "CHAR Office")) return;   // CHAR company town, police first assume things ok
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "CHAR Agency")) return;   // CHAR company town, police first assume things ok
+          // stores have their own police AI cheat
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "GeneralStore")) return;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Grocery")) return;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Sportswear")) return;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Pharmacy")) return;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Construction")) return;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Gunshop")) return;
+          if (m_EntryMap.HasZonePartiallyNamedAt(pt, "Hunting Shop")) return;
 
-            Engine.Session.Get.PoliceInvestigate.Record(m_EntryMap,pos);
-          }
-        }
+          Engine.Session.Get.PoliceInvestigate.Record(m_EntryMap, pt);
+        });
       }
     }
 
