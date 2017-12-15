@@ -2082,11 +2082,32 @@ namespace djack.RogueSurvivor.Data
       return num1 + num2;
     }
 
-    public int HoursUntilSleepy {
-      get {
-        return TurnsUntilSleepy/WorldTime.TURNS_PER_HOUR;
+#if PROTOTYPE
+    public int EstimateWakeup(int delta,bool IsOnCouch)
+    {
+      int rest_rate = SleepRegen(IsOnCouch);
+      int num = Rules.SLEEP_BASE_POINTS - SleepPoints;
+      WorldTime now = new WorldTime(Location.Map.LocalTime);
+      if (0<delta) {
+        do {
+          int delta_t = WorldTime.TURNS_PER_HOUR-now.Tick;
+          int awake_cost = (now.IsNight ? 2 : 1);
+          if (delta<=delta_t) {
+            num += delta*awake_cost;
+            delta = 0;
+            now.TurnCounter += delta;
+          } else {
+            num += delta_t*awake_cost;
+            delta -= delta_t;
+            now.TurnCounter += delta_t;
+          }
+        } while(0<delta);
       }
+      return now.TurnCounter + num/rest_rate+1;  // XXX ignore exactly divisible special case; waking up one turn earlier isn't a disaster
     }
+#endif
+
+    public int HoursUntilSleepy { get { return TurnsUntilSleepy/WorldTime.TURNS_PER_HOUR; } }
 
     public bool IsAlmostSleepy {
       get {
