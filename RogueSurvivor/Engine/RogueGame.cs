@@ -420,19 +420,17 @@ namespace djack.RogueSurvivor.Engine
         if (0 >= tmp2.Length) return;
         PanViewportTo(tmp2[0]);
       }
-      // Data.Message msg = MakePlayerCentricMessage(string eventText, location.Position);
-      Data.Message msg = MakePlayerCentricMessage(text, loc.Position);
-      msg.Color = PLAYER_AUDIO_COLOR;
-      AddMessage(msg);
+      AddMessage(MakePlayerCentricMessage(text, loc.Position, PLAYER_AUDIO_COLOR));
 #if SUICIDE_BY_LONG_WAIT
       if (m_IsPlayerLongWait) m_IsPlayerLongWaitForcedStop = true;
 #endif
       RedrawPlayScreen();
     }
 
-    private Data.Message MakePlayerCentricMessage(string eventText, Point position)
+    private Data.Message MakePlayerCentricMessage(string eventText, Point position, Color? color=null)
     {
       Point v = new Point(position.X - m_Player.Location.Position.X, position.Y - m_Player.Location.Position.Y);
+      if (null != color) return new Data.Message(string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v)), Session.Get.WorldTime.TurnCounter, color.Value);
       return new Data.Message(string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v)), Session.Get.WorldTime.TurnCounter);
     }
 
@@ -471,10 +469,7 @@ namespace djack.RogueSurvivor.Engine
       stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter)
-      {
-        Color = !actor.IsPlayer ? color : PLAYER_ACTION_COLOR
-      };
+      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
     }
 
     private Data.Message MakeMessage(Actor actor, string doWhat, Actor target)
@@ -491,10 +486,7 @@ namespace djack.RogueSurvivor.Engine
       stringBuilder.Append(" ");
       stringBuilder.Append(ActorVisibleIdentity(target));
       stringBuilder.Append(phraseEnd);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter)
-      {
-        Color = actor.IsPlayer || target.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR
-      };
+      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
     private Data.Message MakeMessage(Actor actor, string doWhat, MapObject target)
@@ -511,10 +503,7 @@ namespace djack.RogueSurvivor.Engine
       stringBuilder.Append(" ");
       stringBuilder.Append(ObjectVisibleIdentity(target));
       stringBuilder.Append(phraseEnd);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter)
-      {
-        Color = !actor.IsPlayer ? OTHER_ACTION_COLOR : PLAYER_ACTION_COLOR
-      };
+      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
     private Data.Message MakeMessage(Actor actor, string doWhat, Item target)
@@ -531,10 +520,7 @@ namespace djack.RogueSurvivor.Engine
       stringBuilder.Append(" ");
       stringBuilder.Append(target.TheName);
       stringBuilder.Append(phraseEnd);
-      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter)
-      {
-        Color = !actor.IsPlayer ? OTHER_ACTION_COLOR : PLAYER_ACTION_COLOR
-      };
+      return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
     public void ClearMessages()

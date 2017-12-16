@@ -6,39 +6,35 @@
 
 using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
   internal class Message
   {
     private string m_Text;
-    public Color Color { get; set; }
-    private readonly int m_Turn;
+    public readonly Color Color;
+    public readonly int Turn;
 
     public string Text {
       get { 
-        Contract.Ensures(null!=Contract.Result<string>());
         return m_Text;
       }
-      set { 
-        Contract.Requires(null!=value);
+      set { // RogueGame::AddMessage requires this to be public
+#if DEBUG
+        if (string.IsNullOrEmpty(value)) throw new ArgumentNullException(nameof(value));
+#endif
         m_Text = value;
       }
     }
     
-    public int Turn {
-      get {
-        return m_Turn;
-      }
-    }
-
     public Message(string text, int turn, Color color)
     {
-      Contract.Requires(null!=text);
+#if DEBUG
+      if (string.IsNullOrEmpty(text)) throw new ArgumentNullException(nameof(text));
+#endif
       m_Text = text;
       Color = color;
-      m_Turn = turn;
+      Turn = turn;
     }
 
     public Message(string text, int turn)
