@@ -10,6 +10,7 @@ using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Data
 {
+  [Serializable]
   internal class Message
   {
     public readonly string Text;

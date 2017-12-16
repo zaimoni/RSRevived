@@ -377,7 +377,7 @@ namespace djack.RogueSurvivor.Engine
           break;
       }
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
-      m_MessageManager = new MessageManager(12, 25, 59);
+      m_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY, MAX_MESSAGES);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules, options");
       s_Options = new GameOptions();
       s_Options.ResetToDefaultValues();
@@ -399,9 +399,12 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddMessage(Data.Message msg)    // intentionally not sinking this validation into MessageManager::Add
     {
-      if (msg.Text.Length == 0) return;
-      if (m_MessageManager.Count >= MAX_MESSAGES) m_MessageManager.Clear();
       m_MessageManager.Add(msg);
+    }
+
+    private void AddMessages(IEnumerable<Data.Message> msgs)
+    {
+      foreach(var msg in msgs) m_MessageManager.Add(msg);
     }
 
     // XXX just about everything that rates this is probable cause for police investigation
@@ -2913,6 +2916,9 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_SetCursor(null);
         if (s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
           AddOverlay(new OverlayPopup(new string[1] { string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString()) }, Color.White, Color.White, Color.Black, MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1)));
+
+        var deferredMessages = (player.Controller as PlayerController)?.ReleaseMessages();
+        if (null != deferredMessages) AddMessages(deferredMessages);
         RedrawPlayScreen();
         m_UI.UI_PeekKey();
         bool hasKey = false;

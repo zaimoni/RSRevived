@@ -19,6 +19,7 @@ namespace djack.RogueSurvivor.Data
     {
     private Gameplay.AI.Sensors.LOSSensor m_LOSSensor;
     private Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> m_itemMemory;
+    private readonly List<Data.Message> m_MsgCache = new List<Data.Message>();
 
 	public PlayerController() {
       // XXX filter should be by the normal filter type of the AI being substituted for
@@ -26,11 +27,15 @@ namespace djack.RogueSurvivor.Data
       m_itemMemory = new Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>();
     }
 
-    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory {
-       get {
-         return m_itemMemory;
-       }
+    public void DeferMessage(Data.Message x) { m_MsgCache.Add(x); }
+    public List<Data.Message> ReleaseMessages() {
+      if (0 >= m_MsgCache.Count) return null;
+      var ret = new List<Data.Message>(m_MsgCache);
+      m_MsgCache.Clear();
+      return ret;
     }
+
+    public override Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> ItemMemory { get { return m_itemMemory; } }
 
 	private Gameplay.AI.Sensors.LOSSensor.SensingFilter VISION_SEES() {
 	  switch(m_Actor.Model.DefaultController.Name)

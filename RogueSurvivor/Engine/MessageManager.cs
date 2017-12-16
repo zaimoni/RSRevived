@@ -14,33 +14,29 @@ namespace djack.RogueSurvivor.Engine
 {
   internal class MessageManager
   {
-    private readonly List<Message> m_Messages = new List<Message>();
+    private readonly List<Message> m_Messages;
     private readonly int m_LinesSpacing;
     private readonly int m_FadeoutFactor;
     private readonly List<Message> m_History;
     private readonly int m_HistorySize;
+    private readonly int m_DisplaySize;
 
-    public int Count {
-      get {
-        return m_Messages.Count;
-      }
-    }
+    public int Count { get { return m_Messages.Count; } }
+    public IEnumerable<Message> History { get { return m_History; } }
 
-    public IEnumerable<Message> History {
-      get {
-        return m_History;
-      }
-    }
-
-    public MessageManager(int linesSpacing, int fadeoutFactor, int historySize)
+    public MessageManager(int linesSpacing, int fadeoutFactor, int historySize, int displaySize)
     {
-      Contract.Requires(0 <= linesSpacing);
-      Contract.Requires(0 <= fadeoutFactor);
-      Contract.Requires(0 <= historySize);
+#if DEBUG
+      if (0 >= linesSpacing) throw new ArgumentOutOfRangeException(nameof(linesSpacing));
+      if (0 >= fadeoutFactor) throw new ArgumentOutOfRangeException(nameof(fadeoutFactor));
+      if (0 >= historySize) throw new ArgumentOutOfRangeException(nameof(historySize));
+#endif
       m_LinesSpacing = linesSpacing;
       m_FadeoutFactor = fadeoutFactor;
       m_HistorySize = historySize;
+      m_DisplaySize = displaySize;
       m_History = new List<Message>(historySize);
+      m_Messages = new List<Message>(displaySize);
     }
 
     public void Clear()
@@ -57,15 +53,14 @@ namespace djack.RogueSurvivor.Engine
     {
       m_Messages.Add(msg);
       m_History.Add(msg);
-      if (m_History.Count <= m_HistorySize) return;
-      m_History.RemoveAt(0);
+      if (m_HistorySize < m_History.Count) m_History.RemoveAt(0);
+      if (m_DisplaySize < m_Messages.Count) m_History.RemoveAt(0);
     }
 
     public void RemoveLastMessage()
     {
-      if (m_Messages.Count == 0)
-        return;
-            m_Messages.RemoveAt(m_Messages.Count - 1);
+      if (m_Messages.Count == 0) return;
+      m_Messages.RemoveAt(m_Messages.Count - 1);
     }
 
     public void Draw(IRogueUI ui, int freshMessagesTurn, int gx, int gy)
