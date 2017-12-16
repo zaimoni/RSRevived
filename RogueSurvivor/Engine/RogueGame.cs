@@ -397,11 +397,10 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "RogueGame() done.");
     }
 
-    public void AddMessage(Data.Message msg)
+    public void AddMessage(Data.Message msg)    // intentionally not sinking this validation into MessageManager::Add
     {
       if (msg.Text.Length == 0) return;
       if (m_MessageManager.Count >= MAX_MESSAGES) m_MessageManager.Clear();
-      msg.Text = string.Format("{0} {1}", Session.Get.WorldTime.TurnCounter, msg.Text.Capitalize());
       m_MessageManager.Add(msg);
     }
 

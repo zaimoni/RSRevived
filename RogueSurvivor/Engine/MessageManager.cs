@@ -55,11 +55,6 @@ namespace djack.RogueSurvivor.Engine
 
     public void Add(Message msg)
     {
-/*
-      if (msg.Text.Length == 0) return;
-      if (m_MessageManager.Count >= MAX_MESSAGES) m_MessageManager.Clear();
-      msg.Text = string.Format("{0} {1}", Session.Get.WorldTime.TurnCounter, Capitalize(msg.Text));
- */
       m_Messages.Add(msg);
       m_History.Add(msg);
       if (m_History.Count <= m_HistorySize) return;
