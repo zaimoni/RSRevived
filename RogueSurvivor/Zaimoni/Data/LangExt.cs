@@ -63,6 +63,13 @@ namespace Zaimoni.Data
             return 0 <= "AEIOUaeiou".IndexOf(name[0]);
         }
 
+        public static string Capitalize(this string x)
+        {
+          if (string.IsNullOrEmpty(x)) return "";
+          if (1 == x.Length) return char.ToUpper(x[0]).ToString();
+          return char.ToUpper(x[0]).ToString()+x.Substring(1);
+        }
+
         // names of functions are English-centric
         public static string PrefixIndefiniteSingularArticle(this string name)
         {

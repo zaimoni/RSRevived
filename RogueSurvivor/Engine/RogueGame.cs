@@ -401,7 +401,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (msg.Text.Length == 0) return;
       if (m_MessageManager.Count >= MAX_MESSAGES) m_MessageManager.Clear();
-      msg.Text = string.Format("{0} {1}", Session.Get.WorldTime.TurnCounter, Capitalize(msg.Text));
+      msg.Text = string.Format("{0} {1}", Session.Get.WorldTime.TurnCounter, msg.Text.Capitalize());
       m_MessageManager.Add(msg);
     }
 
@@ -563,14 +563,6 @@ namespace djack.RogueSurvivor.Engine
     {
       if (!actor.IsProperName || actor.IsPluralName) return verb.YouForm;
       return verb.HeForm;
-    }
-
-    private string Capitalize(string text)
-    {
-      if (text == null) return "";
-      if (text.Length == 1)
-        return string.Format("{0}", char.ToUpper(text[0]));
-      return string.Format("{0}{1}", char.ToUpper(text[0]), text.Substring(1));
     }
 
     private string HisOrHer(Actor actor)
@@ -6427,12 +6419,12 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>(10);
       if (actor.Faction != null) {
         if (actor.IsInAGang)
-          stringList.Add(string.Format("{0}, {1}-{2}.", Capitalize(actor.Name), actor.Faction.MemberName, GameGangs.NAMES[(int)actor.GangID]));
+          stringList.Add(string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, GameGangs.NAMES[(int)actor.GangID]));
         else
-          stringList.Add(string.Format("{0}, {1}.", Capitalize(actor.Name), actor.Faction.MemberName));
+          stringList.Add(string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
       } else
-        stringList.Add(string.Format("{0}.", Capitalize(actor.Name)));
-      stringList.Add(string.Format("{0}.", Capitalize(actor.Model.Name)));
+        stringList.Add(string.Format("{0}.", actor.Name.Capitalize()));
+      stringList.Add(string.Format("{0}.", actor.Model.Name.Capitalize()));
       stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
       OrderableAI aiController = actor.Controller as OrderableAI;
       if (aiController?.Order != null) stringList.Add(string.Format("Order : {0}.", aiController.Order.ToString()));
@@ -6451,7 +6443,7 @@ namespace djack.RogueSurvivor.Engine
           stringList.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
           stringList.Add(string.Format("Inf : {0} {1}%", actor.Infection, actor.InfectionPercent));
         } else
-          stringList.Add(string.Format("Leader : {0}.", Capitalize(actor.Leader.Name)));
+          stringList.Add(string.Format("Leader : {0}.", actor.Leader.Name.Capitalize()));
       }
       if (actor.MurdersCounter > 0 && m_Player.Model.Abilities.IsLawEnforcer) {
         stringList.Add("WANTED FOR MURDER!");
@@ -7416,7 +7408,7 @@ namespace djack.RogueSurvivor.Engine
           if (victim != null)
             AddMessage(MakeMessage(victim, string.Format("stepping on {0} makes a bunch of noise!", trap.AName)));
           else if (mobj != null)
-            AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", Capitalize(trap.TheName)), map.LocalTime.TurnCounter));
+            AddMessage(new Data.Message(string.Format("{0} makes a lot of noise!", trap.TheName.Capitalize()), map.LocalTime.TurnCounter));
         }
         OnLoudNoise(map, pos, trapModel.NoiseName);
       }
@@ -7426,7 +7418,7 @@ namespace djack.RogueSurvivor.Engine
         if (victim != null)
           AddMessage(MakeMessage(victim, string.Format("{0} {1}.", Conjugate(victim, VERB_CRUSH), trap.TheName)));
         else if (mobj != null)
-          AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", Capitalize(mobj.TheName), trap.TheName), map.LocalTime.TurnCounter));
+          AddMessage(new Data.Message(string.Format("{0} breaks the {1}.", mobj.TheName.Capitalize(), trap.TheName), map.LocalTime.TurnCounter));
       }
       --trap.Quantity;
     }
