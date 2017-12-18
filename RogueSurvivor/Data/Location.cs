@@ -79,7 +79,7 @@ namespace djack.RogueSurvivor.Data
 
     public override string ToString()
     {
-      return m_Map.Name+" ("+m_Position.X.ToString()+","+m_Position.Y.ToString()+")";
+      return m_Map.Name+"@"+m_Position.X.ToString()+","+m_Position.Y.ToString();
     }
   }
 }

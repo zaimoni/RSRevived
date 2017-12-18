@@ -7638,7 +7638,7 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message("You get a message from your police radio.", turnCounter, Color.White));
         AddMessage(new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.TheName), turnCounter, Color.White));
-        AddMessage(new Data.Message(string.Format("Current location : {0}@{1},{2}", (object)aggressor.Location.Map.Name, (object)aggressor.Location.Position.X, (object)aggressor.Location.Position.Y), turnCounter, Color.White));
+        AddMessage(new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter, Color.White));
         AddMessagePressEnter();
       }, a => {
         if (a == cop) return false;    // target already knows
@@ -7668,7 +7668,7 @@ namespace djack.RogueSurvivor.Engine
         ClearMessages();
         AddMessage(new Data.Message("You get a message from your army radio.", turnCounter, Color.White));
         AddMessage(new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.Name), turnCounter, Color.White));
-        AddMessage(new Data.Message(string.Format("Current location : {0}@{1},{2}", (object)aggressor.Location.Map.Name, (object)aggressor.Location.Position.X, (object)aggressor.Location.Position.Y), turnCounter, Color.White));
+        AddMessage(new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter, Color.White));
         AddMessagePressEnter();
       }, a => {
         if (a == soldier) return false;    // target already knows
@@ -7683,9 +7683,16 @@ namespace djack.RogueSurvivor.Engine
     // fn is the UI message
     private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Func<Actor, bool> pred)
     {
-      if (null!=fn) {
-        if (!target.MessagePlayerOnce(fn, pred)) aggressor.MessagePlayerOnce(fn, pred);
-      }
+#if DEBUG
+      if (null == fn) throw new ArgumentNullException(nameof(fn));
+      if (null == pred) throw new ArgumentNullException(nameof(pred));
+#endif
+      // XXX this should actually be based on radio range
+      // the range should include the entire district: radio must reach (district size-1,district size -1) from (0,0)
+      // so first choice is grid distance vs. euclidean distance (noise and vision are on euclidean distance)
+      // we then have a concept of "radio-equivalent coordinates"; subway and sewer are 1-1 with entry map, basement embeds in entry map
+      // police station, hospital, CHAR base are problematic
+      if (!target.MessagePlayerOnce(fn, pred)) aggressor.MessagePlayerOnce(fn, pred);
       Faction faction = target.Faction;
       foreach (Map map in target.Location.Map.District.Maps) {
         foreach (Actor actor in map.Actors) {
