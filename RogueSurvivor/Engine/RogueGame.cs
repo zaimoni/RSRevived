@@ -422,18 +422,11 @@ namespace djack.RogueSurvivor.Engine
         if (0 >= tmp2.Length) return;
         PanViewportTo(tmp2[0]);
       }
-      AddMessage(MakePlayerCentricMessage(text, loc.Position, PLAYER_AUDIO_COLOR));
+      AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage(text, loc.Position, PLAYER_AUDIO_COLOR));
 #if SUICIDE_BY_LONG_WAIT
       if (m_IsPlayerLongWait) m_IsPlayerLongWaitForcedStop = true;
 #endif
       RedrawPlayScreen();
-    }
-
-    private Data.Message MakePlayerCentricMessage(string eventText, Point position, Color? color=null)
-    {
-      Point v = new Point(position.X - m_Player.Location.Position.X, position.Y - m_Player.Location.Position.Y);
-      if (null != color) return new Data.Message(string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v)), Session.Get.WorldTime.TurnCounter, color.Value);
-      return new Data.Message(string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v)), Session.Get.WorldTime.TurnCounter);
     }
 
     private Data.Message MakeErrorMessage(string text)
@@ -2481,7 +2474,7 @@ namespace djack.RogueSurvivor.Engine
         }
         ClearMessages();
         AddMessage(new Data.Message(unique.EventMessage, Session.Get.WorldTime.TurnCounter, Color.Pink));
-        AddMessage(MakePlayerCentricMessage("Seems to come from", unique.TheActor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location.Position));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2513,7 +2506,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.ARMY);
         ClearMessages();
         AddMessage(new Data.Message("A National Guard squad has arrived!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(MakePlayerCentricMessage("Soldiers seem to come from", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Soldiers seem to come from", actor.Location.Position));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2557,7 +2550,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.ARMY);
         ClearMessages();
         AddMessage(new Data.Message("An Army chopper has dropped supplies!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(MakePlayerCentricMessage("The drop point seems to be", dropPoint));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", dropPoint));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2611,7 +2604,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.BIKER);
         ClearMessages();
         AddMessage(new Data.Message("You hear the sound of roaring engines!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(MakePlayerCentricMessage("Motorbikes seem to come from", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Motorbikes seem to come from", actor.Location.Position));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2640,7 +2633,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.GANGSTA);
         ClearMessages();
         AddMessage(new Data.Message("You hear obnoxious loud music!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(MakePlayerCentricMessage("Cars seem to come from", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Cars seem to come from", actor.Location.Position));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2668,7 +2661,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.ARMY);
         ClearMessages();
         AddMessage(new Data.Message("You hear a chopper flying over the city!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(MakePlayerCentricMessage("The chopper has dropped something", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("The chopper has dropped something", actor.Location.Position));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2694,7 +2687,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.SURVIVORS);
         ClearMessages();
         AddMessage(new Data.Message("You hear shooting and honking in the distance.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage(MakePlayerCentricMessage("A van has stopped", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("A van has stopped", actor.Location.Position));
         AddMessagePressEnter();
         ClearMessages();
       }
