@@ -2893,35 +2893,17 @@ namespace djack.RogueSurvivor.Engine
         var deferredMessages = (player.Controller as PlayerController)?.ReleaseMessages();
         if (null != deferredMessages) AddMessages(deferredMessages);
         RedrawPlayScreen();
-        m_UI.UI_PeekKey();
-        bool hasKey = false;
-        Point mousePosition = m_UI.UI_GetMousePosition();
-        Point point = new Point(-1, -1);
-        MouseButtons? mouseButtons = new MouseButtons?();
-        KeyEventArgs key;
-        do {
-          key = m_UI.UI_PeekKey();
-          if (key != null) {
-            hasKey = true;
-            break;
-          } else {
-            point = m_UI.UI_GetMousePosition();
-            mouseButtons = m_UI.UI_PeekMouseButtons();
-            if (point != mousePosition || mouseButtons.HasValue) break;
-          }
-        }
-        while(true);
-        if (hasKey)
-        {
+        WaitKeyOrMouse(out KeyEventArgs key, out Point point, out MouseButtons? mouseButtons);
+        if (null != key) {
           PlayerCommand command = InputTranslator.KeyToCommand(key);
-          if (command == PlayerCommand.QUIT_GAME) {
-            if (HandleQuitGame()) {
-              StopTheWorld();
-              RedrawPlayScreen();
-              return;
-            }
-          } else {
-            switch (command) {
+            switch (command) {  // start indentation failure
+              case PlayerCommand.QUIT_GAME:
+                if (HandleQuitGame()) {
+                  StopTheWorld();
+                  RedrawPlayScreen();
+                  return;
+                }
+                break;
               case PlayerCommand.NONE: break;
               case PlayerCommand.HELP_MODE:
                 HandleHelpMode();
@@ -2934,13 +2916,13 @@ namespace djack.RogueSurvivor.Engine
                 ApplyOptions(true);
                 break;
               case PlayerCommand.KEYBINDING_MODE:
-                                HandleRedefineKeys();
+                HandleRedefineKeys();
                 break;
               case PlayerCommand.HINTS_SCREEN_MODE:
-                                HandleHintsScreen();
+                HandleHintsScreen();
                 break;
               case PlayerCommand.SCREENSHOT:
-                                HandleScreenshot();
+                HandleScreenshot();
                 break;
               case PlayerCommand.SAVE_GAME:
                 StopSimThread();
@@ -3121,8 +3103,7 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = !TryPlayerInsanity() && !DoPlayerItemSlot(player, 9, key);
                 break;
               default: throw new ArgumentException("command unhandled");
-            }
-          }
+            }  // end indentation failure
         } else if (!HandleMouseLook(point)) {
           if (HandleMouseInventory(point, mouseButtons, out bool hasDoneAction)) {
             if (!hasDoneAction) continue;
@@ -11052,12 +11033,17 @@ namespace djack.RogueSurvivor.Engine
       return m_Player?.Controller.IsVisibleTo(mapObj.Location) ?? false;
     }
 
+    public void PanViewportTo(Location loc)
+    {
+      Session.Get.CurrentMap = loc.Map;
+      ComputeViewRect(loc.Position);
+      RedrawPlayScreen();
+    }
+
     public void PanViewportTo(Actor player)
     {
       m_Player = player;
-      Session.Get.CurrentMap = player.Location.Map;
-      ComputeViewRect(m_Player.Location.Position);
-      RedrawPlayScreen();
+      PanViewportTo(player.Location);
     }
 
     private bool ForceVisibleToPlayer(Map map, Point position)
