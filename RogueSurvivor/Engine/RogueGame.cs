@@ -6950,7 +6950,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string DescribeBatteries(BatteryPowered it)
     {
-      int hours = BatteriesToHours(it.Batteries);
+      int hours = it.Batteries/WorldTime.TURNS_PER_HOUR;
       if (it.Batteries < it.MaxBatteries)
         return string.Format("Batteries : {0}/{1} ({2}h)", it.Batteries, it.MaxBatteries, hours);
       return string.Format("Batteries : {0} MAX ({1}h)", it.Batteries, hours);
@@ -7024,66 +7024,39 @@ namespace djack.RogueSurvivor.Engine
 
     static private string DescribeDayPhase(DayPhase phase)
     {
-      switch (phase)
-      {
-        case DayPhase.SUNSET:
-          return "Sunset";
-        case DayPhase.EVENING:
-          return "Evening";
-        case DayPhase.MIDNIGHT:
-          return "Midnight";
-        case DayPhase.DEEP_NIGHT:
-          return "Deep Night";
-        case DayPhase.SUNRISE:
-          return "Sunrise";
-        case DayPhase.MORNING:
-          return "Morning";
-        case DayPhase.MIDDAY:
-          return "Midday";
-        case DayPhase.AFTERNOON:
-          return "Afternoon";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled dayphase");
+      switch (phase) {
+        case DayPhase.SUNSET: return "Sunset";
+        case DayPhase.EVENING: return "Evening";
+        case DayPhase.MIDNIGHT: return "Midnight";
+        case DayPhase.DEEP_NIGHT: return "Deep Night";
+        case DayPhase.SUNRISE: return "Sunrise";
+        case DayPhase.MORNING: return "Morning";
+        case DayPhase.MIDDAY: return "Midday";
+        case DayPhase.AFTERNOON: return "Afternoon";
+        default: throw new ArgumentOutOfRangeException("unhandled dayphase");
       }
     }
 
     static private string DescribeWeather(Weather weather)
     {
-      switch (weather)
-      {
-        case Weather.CLEAR:
-          return "Clear";
-        case Weather.CLOUDY:
-          return "Cloudy";
-        case Weather.RAIN:
-          return "Rain";
-        case Weather.HEAVY_RAIN:
-          return "Heavy rain";
-        default:
-          throw new ArgumentOutOfRangeException("unhandled weather");
+      switch (weather) {
+        case Weather.CLEAR: return "Clear";
+        case Weather.CLOUDY: return "Cloudy";
+        case Weather.RAIN: return "Rain";
+        case Weather.HEAVY_RAIN: return "Heavy rain";
+        default: throw new ArgumentOutOfRangeException("unhandled weather");
       }
     }
 
     static private Color WeatherColor(Weather weather)
     {
-      switch (weather)
-      {
-        case Weather.CLEAR:
-          return Color.Yellow;
-        case Weather.CLOUDY:
-          return Color.Gray;
-        case Weather.RAIN:
-          return Color.LightBlue;
-        case Weather.HEAVY_RAIN:
-          return Color.Blue;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled weather");
+      switch (weather) {
+        case Weather.CLEAR: return Color.Yellow;
+        case Weather.CLOUDY: return Color.Gray;
+        case Weather.RAIN: return Color.LightBlue;
+        case Weather.HEAVY_RAIN: return Color.Blue;
+        default: throw new ArgumentOutOfRangeException("unhandled weather");
       }
-    }
-
-    static private int BatteriesToHours(int batteries)
-    {
-      return batteries / WorldTime.TURNS_PER_HOUR;
     }
 
     public static Direction CommandToDirection(PlayerCommand cmd)
