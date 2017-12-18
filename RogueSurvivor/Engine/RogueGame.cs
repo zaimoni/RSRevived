@@ -11046,6 +11046,69 @@ namespace djack.RogueSurvivor.Engine
       PanViewportTo(player.Location);
     }
 
+    /// <returns>The final location looked at if confirmed; null if cancelled</returns>
+    private Location? DoPlayerFarLook()
+    {
+      Location origin = m_Player.Location;
+      Location viewpoint = origin;
+      ClearOverlays();
+      AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+
+      do {
+        WaitKeyOrMouse(out KeyEventArgs key, out Point point, out MouseButtons? mouseButtons);
+        if (null != key) {
+          switch(key.KeyCode) {
+          case Keys.Escape:
+            ClearOverlays();
+            PanViewportTo(m_Player);
+            return null;
+          case Keys.Return:
+            ClearOverlays();
+            PanViewportTo(m_Player);
+            return viewpoint;
+          default: break;
+          };
+          PlayerCommand command = InputTranslator.KeyToCommand(key);
+          Location? tmp = null;
+          switch (command) {
+            // would be good if this enumeration value set was aligned [then Direction.COMPASS] makes sense]
+            case PlayerCommand.MOVE_N:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.N);
+                break;
+            case PlayerCommand.MOVE_NE:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.NE);
+                break;
+            case PlayerCommand.MOVE_E:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.E);
+                break;
+            case PlayerCommand.MOVE_SE:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.SE);
+                break;
+            case PlayerCommand.MOVE_S:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.S);
+                break;
+            case PlayerCommand.MOVE_SW:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.SW);
+                break;
+            case PlayerCommand.MOVE_W:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.W);
+                break;
+            case PlayerCommand.MOVE_NW:
+                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.NW);
+                break;
+            case PlayerCommand.USE_EXIT:
+                tmp = viewpoint.Exit?.Location;
+                break;
+            default: break; // intentionally do not handle all commands
+          }
+          if (null == tmp) continue;
+          if (!m_Player.Controller.IsKnown(tmp.Value)) continue;    // XXX probably should have some feedback here
+          viewpoint = tmp.Value;
+          PanViewportTo(viewpoint);
+        }
+      } while(true);
+    }
+
     private bool ForceVisibleToPlayer(Map map, Point position)
     {
       if (null == map) return false;    // convince Duckman to not superheroically crash many games on turn 0
