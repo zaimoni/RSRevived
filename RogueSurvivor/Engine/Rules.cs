@@ -731,8 +731,8 @@ namespace djack.RogueSurvivor.Engine
     {
       Location? test = from.Map.Denormalize(to);
       if (null == test) return double.MaxValue;
-      int num1 = to.Position.X - from.Position.X;
-      int num2 = to.Position.Y - from.Position.Y;
+      int num1 = test.Value.Position.X - from.Position.X;
+      int num2 = test.Value.Position.Y - from.Position.Y;
       return Math.Sqrt((double) (num1 * num1 + num2 * num2));
     }
 

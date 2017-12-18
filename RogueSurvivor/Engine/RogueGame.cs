@@ -411,10 +411,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (1>=Session.Get.World.PlayerCount) return;
 
-      int i = 0;
       Actor a = null;
       Rectangle survey = new Rectangle(loc.Position.X-GameActors.HUMAN_AUDIO,loc.Position.Y-GameActors.HUMAN_AUDIO,2*GameActors.HUMAN_AUDIO+1,2*GameActors.HUMAN_AUDIO+1);
-      survey.DoForEachOnEdge(pt=>{
+      survey.DoForEach(pt=>{
         if (a.Controller is PlayerController player) {
           player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
         }

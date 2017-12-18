@@ -50,6 +50,7 @@ namespace djack.RogueSurvivor.Data
             Engine.Session.Get.ForcePoliceKnown(new Location(m_EntryMap, pt));
             return;
           }
+          if (Engine.Session.Get.PoliceInvestigate.Contains(new Location(m_EntryMap,pt))) return; // already known
           if (m_EntryMap.HasZonePartiallyNamedAt(pt, "CHAR Office")) return;   // CHAR company town, police first assume things ok
           if (m_EntryMap.HasZonePartiallyNamedAt(pt, "CHAR Agency")) return;   // CHAR company town, police first assume things ok
           // stores have their own police AI cheat
