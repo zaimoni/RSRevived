@@ -2954,28 +2954,14 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 break;
               case PlayerCommand.MOVE_N:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.N);
-                break;
               case PlayerCommand.MOVE_NE:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.NE);
-                break;
               case PlayerCommand.MOVE_E:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.E);
-                break;
               case PlayerCommand.MOVE_SE:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.SE);
-                break;
               case PlayerCommand.MOVE_S:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.S);
-                break;
               case PlayerCommand.MOVE_SW:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.SW);
-                break;
               case PlayerCommand.MOVE_W:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.W);
-                break;
               case PlayerCommand.MOVE_NW:
-                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.NW);
+                flag1 = !TryPlayerInsanity() && !DoPlayerBump(player, Direction.COMPASS[(int)(command)-(int)(PlayerCommand.MOVE_N)]);
                 break;
               case PlayerCommand.RUN_TOGGLE:
                 if (TryPlayerInsanity()) {
@@ -7102,28 +7088,17 @@ namespace djack.RogueSurvivor.Engine
 
     public static Direction CommandToDirection(PlayerCommand cmd)
     {
-      switch (cmd)
-      {
-        case PlayerCommand.MOVE_N:
-          return Direction.N;
-        case PlayerCommand.MOVE_NE:
-          return Direction.NE;
-        case PlayerCommand.MOVE_E:
-          return Direction.E;
-        case PlayerCommand.MOVE_SE:
-          return Direction.SE;
-        case PlayerCommand.MOVE_S:
-          return Direction.S;
-        case PlayerCommand.MOVE_SW:
-          return Direction.SW;
-        case PlayerCommand.MOVE_W:
-          return Direction.W;
-        case PlayerCommand.MOVE_NW:
-          return Direction.NW;
-        case PlayerCommand.WAIT_OR_SELF:
-          return Direction.NEUTRAL;
-        default:
-          return null;
+      switch (cmd) {
+        case PlayerCommand.MOVE_N: return Direction.N;
+        case PlayerCommand.MOVE_NE: return Direction.NE;
+        case PlayerCommand.MOVE_E: return Direction.E;
+        case PlayerCommand.MOVE_SE: return Direction.SE;
+        case PlayerCommand.MOVE_S: return Direction.S;
+        case PlayerCommand.MOVE_SW: return Direction.SW;
+        case PlayerCommand.MOVE_W: return Direction.W;
+        case PlayerCommand.MOVE_NW: return Direction.NW;
+        case PlayerCommand.WAIT_OR_SELF: return Direction.NEUTRAL;
+        default: return null;
       }
     }
 
@@ -11073,32 +11048,18 @@ namespace djack.RogueSurvivor.Engine
           switch (command) {
             // would be good if this enumeration value set was aligned [then Direction.COMPASS] makes sense]
             case PlayerCommand.MOVE_N:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.N);
-                break;
             case PlayerCommand.MOVE_NE:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.NE);
-                break;
             case PlayerCommand.MOVE_E:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.E);
-                break;
             case PlayerCommand.MOVE_SE:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.SE);
-                break;
             case PlayerCommand.MOVE_S:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.S);
-                break;
             case PlayerCommand.MOVE_SW:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.SW);
-                break;
             case PlayerCommand.MOVE_W:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.W);
-                break;
             case PlayerCommand.MOVE_NW:
-                tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.NW);
-                break;
+              tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.COMPASS[(int)(command)-(int)(PlayerCommand.MOVE_N)]);
+              break;
             case PlayerCommand.USE_EXIT:
-                tmp = viewpoint.Exit?.Location;
-                break;
+              tmp = viewpoint.Exit?.Location;
+              break;
             default: break; // intentionally do not handle all commands
           }
           if (null == tmp) continue;

@@ -606,6 +606,15 @@ namespace djack.RogueSurvivor.Gameplay
       if ((int)AmmoType.HEAVY_RIFLE - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_HEAVY_RIFLE - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
       if ((int)AmmoType.SHOTGUN - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_SHOTGUN - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
       if ((int)AmmoType.BOLT - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_BOLTS - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
+
+      // no good place to do the Direction crosschecks so do them here
+      if (1 != (int)(PlayerCommand.MOVE_NE) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+      if (2 != (int)(PlayerCommand.MOVE_E) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+      if (3 != (int)(PlayerCommand.MOVE_SE) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+      if (4 != (int)(PlayerCommand.MOVE_S) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+      if (5 != (int)(PlayerCommand.MOVE_SW) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+      if (6 != (int)(PlayerCommand.MOVE_W) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
+      if (7 != (int)(PlayerCommand.MOVE_NW) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
 #endif
       // Medicine
       _setModel(IDs.MEDICINE_BANDAGES, new ItemMedicineModel(DATA_MEDICINE_BANDAGE.NAME, DATA_MEDICINE_BANDAGE.PLURAL, GameImages.ITEM_BANDAGES, DATA_MEDICINE_BANDAGE.HEALING, DATA_MEDICINE_BANDAGE.STAMINABOOST, DATA_MEDICINE_BANDAGE.SLEEPBOOST, DATA_MEDICINE_BANDAGE.INFECTIONCURE, DATA_MEDICINE_BANDAGE.SANITYCURE, DATA_MEDICINE_BANDAGE.FLAVOR, DATA_MEDICINE_BANDAGE.STACKINGLIMIT));

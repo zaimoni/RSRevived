@@ -36,6 +36,7 @@ namespace djack.RogueSurvivor.Data
       Direction.W,
       Direction.NW
     };
+#if DEAD_FUNC
     public static readonly Direction[] COMPASS_4 = new Direction[4]
     {
       Direction.N,
@@ -43,22 +44,14 @@ namespace djack.RogueSurvivor.Data
       Direction.S,
       Direction.W
     };
+#endif
     private readonly int m_Index;
     private readonly string m_Name;
     private readonly Point m_Vector;
     private readonly PointF m_NormalizedVector;
 
-    public Point Vector {
-      get {
-        return m_Vector;
-      }
-    }
-
-    public PointF NormalizedVector {
-      get {
-        return m_NormalizedVector;
-      }
-    }
+    public Point Vector { get { return m_Vector; } }
+    public PointF NormalizedVector { get { return m_NormalizedVector; } }
 
     private Direction(int index, string name, Point vector)
     {
