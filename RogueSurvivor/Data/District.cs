@@ -32,17 +32,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Map> Maps {
-      get {
-        return m_Maps;
-      }
-    }
-
-    public int CountMaps {
-      get {
-        return m_Maps.Count;
-      }
-    }
+    public IEnumerable<Map> Maps { get { return m_Maps; } }
+    public int CountMaps { get { return m_Maps.Count; } }
 
     public Map EntryMap {
       get {
@@ -99,11 +90,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool HasSubway {
-      get {
-        return m_SubwayMap != null;
-      }
-    }
+    public bool HasSubway { get { return m_SubwayMap != null; } }
 
     public District(Point worldPos, DistrictKind kind)
     {
@@ -135,7 +122,9 @@ namespace djack.RogueSurvivor.Data
 
     protected void RemoveMap(Map map)
     {
-      Contract.Requires(null != map);
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+#endif
       m_Maps.Remove(map);
 //    map.District = null;
     }

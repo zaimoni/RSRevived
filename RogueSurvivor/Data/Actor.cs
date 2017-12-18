@@ -1031,6 +1031,45 @@ namespace djack.RogueSurvivor.Data
       return Location.Map.District.MessagePlayerOnce(Location.Map,fn,pred);
     }
 
+    public void MessageAllInDistrictByRadio(Action<Actor> op, Func<Actor, bool> test, Action<Actor> msg_player, Func<Actor, bool> msg_player_test, Location? origin=null)
+    {
+#if DEBUG
+      if (null == op) throw new ArgumentNullException(nameof(op));
+      if (null == test) throw new ArgumentNullException(nameof(test));
+      if (null == msg_player) throw new ArgumentNullException(nameof(msg_player));
+      if (null == msg_player_test) throw new ArgumentNullException(nameof(msg_player_test));
+#endif
+      bool police_radio = HasActivePoliceRadio;
+      bool army_radio = HasActiveArmyRadio;
+      if (!police_radio && !army_radio) return;
+#if DEBUG
+      if (police_radio && army_radio) throw new InvalidOperationException("need to implement dual police and army radio case");
+#endif
+      if (null == origin) origin = Location;
+      foreach (Map map in origin.Value.Map.District.Maps) {
+        foreach (Actor actor in map.Actors) {
+          if (this == actor) continue;
+          // XXX defer implementing dual radios
+          if (police_radio) {
+            if (!actor.HasActivePoliceRadio) continue;
+          } else {
+            if (!actor.HasActiveArmyRadio) continue;
+          }
+          if (actor.IsSleeping) continue;   // can't hear when sleeping (this is debatable; might be interesting to be woken up by high-priority messages once radio alarms are implemented)
+
+          if (actor.IsPlayer && msg_player_test(actor)) {
+            RogueForm.Game.PanViewportTo(actor);
+            msg_player(actor);
+          }
+
+          // use cases.
+          // aggressing all faction in district: civilian/survivor cannot initiate, and have no obligation to respond if they get the message
+          // reporting z: civilian can initiate and respond (but threat tracking needed to respond)
+          if (test(actor)) op(actor);
+        }
+      }
+    }
+
     public Actor Sees(Actor a)
     {
       if (null == a) return null;

@@ -7631,20 +7631,27 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnMakeEnemyOfCop(Actor aggressor, Actor cop, bool wasAlreadyEnemy)
     {
+      if (GameFactions.ThePolice.IsEnemyOf(aggressor.Faction)) return;
       if (!wasAlreadyEnemy)
         DoSay(cop, aggressor, string.Format("TO DISTRICT PATROLS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
+      int turnCounter = Session.Get.WorldTime.TurnCounter;
+      var player_msgs = new List<Data.Message> {
+        new Data.Message("You get a message from your police radio.", turnCounter),
+        new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.TheName), turnCounter),
+        new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
+      };
+
       MakeEnemyOfTargetFactionInDistrict(aggressor, cop, a => {
-        int turnCounter = Session.Get.WorldTime.TurnCounter;
-        ClearMessages();
-        AddMessage(new Data.Message("You get a message from your police radio.", turnCounter, Color.White));
-        AddMessage(new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.TheName), turnCounter, Color.White));
-        AddMessage(new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter, Color.White));
-        AddMessagePressEnter();
+        if (a.IsEnemyOf(aggressor)) return; // already informed
+        if (a == m_Player) {
+          ClearMessages();
+          AddMessages(player_msgs);
+          AddMessagePressEnter();
+        } else {
+          (a.Controller as PlayerController).DeferMessages(player_msgs);
+        }
       }, a => {
-        if (a == cop) return false;    // target already knows
-        if (a.IsSleeping) return false;   // can't hear when sleeping
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
-        if (!a.HasActivePoliceRadio) return false;  // not in communication (police have implicit radios)
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
         return true;
       });
@@ -7661,20 +7668,26 @@ namespace djack.RogueSurvivor.Engine
 
     private void OnMakeEnemyOfSoldier(Actor aggressor, Actor soldier, bool wasAlreadyEnemy)
     {
+      if (GameFactions.TheArmy.IsEnemyOf(aggressor.Faction)) return;
       if (!wasAlreadyEnemy)
         DoSay(soldier, aggressor, string.Format("TO DISTRICT SQUADS : {0} MUST DIE!", aggressor.TheName), RogueGame.Sayflags.IS_FREE_ACTION);
+      int turnCounter = Session.Get.WorldTime.TurnCounter;
+      var player_msgs = new List<Data.Message> {
+        new Data.Message("You get a message from your army radio.", turnCounter),
+        new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.TheName), turnCounter),
+        new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter)
+      };
       MakeEnemyOfTargetFactionInDistrict(aggressor, soldier, a => {
-        int turnCounter = Session.Get.WorldTime.TurnCounter;
-        ClearMessages();
-        AddMessage(new Data.Message("You get a message from your army radio.", turnCounter, Color.White));
-        AddMessage(new Data.Message(string.Format("{0} is armed and dangerous. Shoot on sight!", (object)aggressor.Name), turnCounter, Color.White));
-        AddMessage(new Data.Message(string.Format("Current location : {0}", aggressor.Location), turnCounter, Color.White));
-        AddMessagePressEnter();
+        if (a.IsEnemyOf(aggressor)) return; // already informed
+        if (a == m_Player) {
+          ClearMessages();
+          AddMessages(player_msgs);
+          AddMessagePressEnter();
+        } else {
+          (a.Controller as PlayerController).DeferMessages(player_msgs);
+        }
       }, a => {
-        if (a == soldier) return false;    // target already knows
-        if (a.IsSleeping) return false;   // can't hear when sleeping
         if (a == aggressor || a.Leader == aggressor) return false;  // aggressor doesn't find this message informative
-        if (a.Faction != soldier.Faction) return false;  // not in communication
         if (a.IsEnemyOf(aggressor)) return false; // already an enemy...presumed informed
         return true;
       });
@@ -7692,26 +7705,19 @@ namespace djack.RogueSurvivor.Engine
       // so first choice is grid distance vs. euclidean distance (noise and vision are on euclidean distance)
       // we then have a concept of "radio-equivalent coordinates"; subway and sewer are 1-1 with entry map, basement embeds in entry map
       // police station, hospital, CHAR base are problematic
-      if (!target.MessagePlayerOnce(fn, pred)) aggressor.MessagePlayerOnce(fn, pred);
       Faction faction = target.Faction;
-      foreach (Map map in target.Location.Map.District.Maps) {
-        foreach (Actor actor in map.Actors) {
-          if (actor != aggressor && actor != target && (actor.Faction == faction && actor.Leader != aggressor)) {
-            aggressor.MarkAsAgressorOf(actor);
-            actor.MarkAsSelfDefenceFrom(aggressor);
-          }
-        }
+      void IsAggressed(Actor a){
+        aggressor.MarkAsAgressorOf(a);
+        a.MarkAsSelfDefenceFrom(aggressor);
       }
-      if (target.Location.Map.District!=aggressor.Location.Map.District) {
-        foreach (Map map in aggressor.Location.Map.District.Maps) {
-          foreach (Actor actor in map.Actors) {
-            if (actor != aggressor && actor != target && (actor.Faction == faction && actor.Leader != aggressor)) {
-              aggressor.MarkAsAgressorOf(actor);
-              actor.MarkAsSelfDefenceFrom(aggressor);
-            }
-          }
-        }
+      bool IsAggressable(Actor a) {
+        if (a == aggressor) return false;
+        if (a.Leader == aggressor) return false;
+        return a.Faction == faction;
       }
+
+      target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, fn, pred);
+      if (target.Location.Map.District!=aggressor.Location.Map.District) target.MessageAllInDistrictByRadio(IsAggressed, IsAggressable, fn, pred, aggressor.Location);
     }
 
     public void DoMeleeAttack(Actor attacker, Actor defender)

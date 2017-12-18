@@ -28,6 +28,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     public void DeferMessage(Data.Message x) { m_MsgCache.Add(x); }
+    public void DeferMessages(IEnumerable<Data.Message> x) {
+      foreach(Data.Message msg in x) m_MsgCache.Add(msg);
+    }
     public List<Data.Message> ReleaseMessages() {
       if (0 >= m_MsgCache.Count) return null;
       var ret = new List<Data.Message>(m_MsgCache);
