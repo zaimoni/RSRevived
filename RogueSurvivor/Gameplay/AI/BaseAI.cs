@@ -119,8 +119,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected Percept_<_T_> FilterNearest<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
       if (null == percepts || 0 == percepts.Count) return null;
-      Point a_pos = m_Actor.Location.Position;
-      return percepts.Minimize(p=>Rules.StdDistance(a_pos, p.Location.Position));
+      return percepts.Minimize(p=>Rules.StdDistance(m_Actor.Location, p.Location));
     }
 
     static protected Percept FilterStrongestScent(List<Percept> scents)
@@ -357,7 +356,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
         if (null != leader) {
-          num -= (float)Rules.StdDistance(location.Position, leader.Location.Position);
+          num -= (float)Rules.StdDistance(location, leader.Location);
           if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
         }
         return num;

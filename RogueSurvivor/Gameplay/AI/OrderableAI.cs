@@ -1373,12 +1373,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Item it = inventory[game.Rules.Roll(0, inventory.CountItems)];
         if (!IsItemWorthTellingAbout(it)) return null;
         int num = actorAt1.FOVrange(map.LocalTime, Session.Get.World.Weather);
-        if (percept.Location.Map == actorAt1.Location.Map && (double) Rules.StdDistance(percept.Location.Position, actorAt1.Location.Position) <= (double) (2 + num))
-          return null;
-        text = string.Format("I saw {0} {1} {2}.", (object) it.AName, (object) str1, (object) str2);
+        if ((double) Rules.StdDistance(percept.Location, actorAt1.Location) <= (double) (2 + num)) return null;
+        text = string.Format("I saw {0} {1} {2}.", it.AName, str1, str2);
       } else {
         if (!(percept.Percepted is string)) throw new InvalidOperationException("unhandled percept.Percepted type");
-        text = string.Format("I heard {0} {1} {2}!", (object) (percept.Percepted as string), (object) str1, (object) str2);
+        text = string.Format("I heard {0} {1} {2}!", (object) (percept.Percepted as string), str1, str2);
       }
       return new ActionSay(m_Actor, actorAt1, text, RogueGame.Sayflags.NONE);
     }

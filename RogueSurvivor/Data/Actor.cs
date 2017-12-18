@@ -1217,11 +1217,10 @@ namespace djack.RogueSurvivor.Data
         }
       }
       if (2 <= actorList.Count) {
-        Point a_pos = Location.Position;
         actorList.Sort((Comparison<Actor>) ((a, b) =>
         {
-          double num1 = Rules.StdDistance(a.Location.Position, a_pos);
-          double num2 = Rules.StdDistance(b.Location.Position, a_pos);
+          double num1 = Rules.StdDistance(a.Location, Location);
+          double num2 = Rules.StdDistance(b.Location, Location);
           return num1.CompareTo(num2);
         }));
       }
