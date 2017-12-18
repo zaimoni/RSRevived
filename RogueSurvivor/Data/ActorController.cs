@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -99,8 +98,10 @@ namespace djack.RogueSurvivor.Data
     // we would like to use the CanSee function name for these, but we probably don't need the overhead for sleeping special cases
     private bool _IsVisibleTo(Map map, Point position)
     {
-      Contract.Requires(null!=m_Actor);
-      Contract.Requires(null!=map);
+#if DEBUG
+      if (null == m_Actor) throw new ArgumentNullException(nameof(m_Actor));
+      if (null == map) throw new ArgumentNullException(nameof(map));
+#endif
 #if NO_PEACE_WALLS
       if (map != m_Actor.Location.Map)
         {
