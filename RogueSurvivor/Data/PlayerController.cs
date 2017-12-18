@@ -102,9 +102,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     // while the following is "valid" for any actor, messages are shown *only* to the player
-    public Data.Message MakeCentricMessage(string eventText, Point position, Color? color=null)
+    public Data.Message MakeCentricMessage(string eventText, Location loc, Color? color=null)
     {
-      Point v = new Point(position.X - m_Actor.Location.Position.X, position.Y - m_Actor.Location.Position.Y);
+      Location? test = m_Actor.Location.Map.Denormalize(loc);
+      if (null == test) throw new ArgumentNullException(nameof(test));
+      Point v = new Point(test.Value.Position.X - m_Actor.Location.Position.X, test.Value.Position.Y - m_Actor.Location.Position.Y);
       string msg_text = string.Format("{0} {1} tiles to the {2}.", eventText, (int)Rules.StdDistance(v), Direction.ApproximateFromVector(v));
       if (null != color) return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter, color.Value);
       return new Data.Message(msg_text, Session.Get.WorldTime.TurnCounter);

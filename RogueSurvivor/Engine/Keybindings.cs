@@ -4,8 +4,6 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define SUICIDE_BY_LONG_WAIT
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,9 +79,6 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.USE_SPRAY, Keys.A);
             Set(PlayerCommand.USE_EXIT, Keys.X);
             Set(PlayerCommand.WAIT_OR_SELF, Keys.NumPad5);
-#if SUICIDE_BY_LONG_WAIT
-            Set(PlayerCommand.WAIT_LONG, Keys.W);
-#endif
     }
 
     public Keys Get(PlayerCommand command)

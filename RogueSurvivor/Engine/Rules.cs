@@ -727,6 +727,15 @@ namespace djack.RogueSurvivor.Engine
       return Math.Sqrt((double) (v.X * v.X + v.Y * v.Y));
     }
 
+    public static double StdDistance(Location from, Location to)
+    {
+      Location? test = from.Map.Denormalize(to);
+      if (null == test) return double.MaxValue;
+      int num1 = to.Position.X - from.Position.X;
+      int num2 = to.Position.Y - from.Position.Y;
+      return Math.Sqrt((double) (num1 * num1 + num2 * num2));
+    }
+
     public static bool IsMurder(Actor killer, Actor victim)
     {
       if (null == killer) return false;

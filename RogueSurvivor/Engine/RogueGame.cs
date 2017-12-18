@@ -8,7 +8,6 @@
 
 // #define STABLE_SIM_OPTIONAL
 #define ENABLE_THREAT_TRACKING
-// #define SUICIDE_BY_LONG_WAIT
 #define NO_PEACE_WALLS
 // #define SPEEDY_GONZALES
 #define FRAGILE_RENDERING
@@ -336,11 +335,6 @@ namespace djack.RogueSurvivor.Engine
     private int m_ManualLine;
     private readonly GameActors m_GameActors;
     private readonly GameItems m_GameItems;
-#if SUICIDE_BY_LONG_WAIT
-    private bool m_IsPlayerLongWait;
-    private bool m_IsPlayerLongWaitForcedStop;
-    private WorldTime m_PlayerLongWaitEnd;
-#endif
     private Thread m_SimThread;
 
     public Rules Rules { get { return m_Rules; } }
@@ -411,22 +405,26 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     public void AddMessageIfAudibleForPlayer(Location loc, string text)
     {
-      if (  m_Player == null
-         || m_Player.IsSleeping
-         || loc.Map != m_Player.Location.Map
-         || Rules.StdDistance(m_Player.Location.Position, loc.Position) > m_Player.AudioRange)
-      {
-        var tmp = loc.Map.Players.Get;
-        if (0 >= tmp.Count) return;
-        var tmp2 = tmp.Where(a => !a.IsSleeping && Rules.StdDistance(a.Location.Position, loc.Position) <= a.AudioRange).ToArray();
-        if (0 >= tmp2.Length) return;
-        PanViewportTo(tmp2[0]);
+      if (null != m_Player && !m_Player.IsSleeping && Rules.StdDistance(m_Player.Location, loc) <= m_Player.AudioRange) {
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+        RedrawPlayScreen();
       }
-      AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage(text, loc.Position, PLAYER_AUDIO_COLOR));
-#if SUICIDE_BY_LONG_WAIT
-      if (m_IsPlayerLongWait) m_IsPlayerLongWaitForcedStop = true;
-#endif
-      RedrawPlayScreen();
+      if (1>=Session.Get.World.PlayerCount) return;
+
+      int i = 0;
+      Actor a = null;
+      Rectangle survey = new Rectangle(loc.Position.X-GameActors.HUMAN_AUDIO,loc.Position.Y-GameActors.HUMAN_AUDIO,2*GameActors.HUMAN_AUDIO+1,2*GameActors.HUMAN_AUDIO+1);
+      survey.DoForEachOnEdge(pt=>{
+        if (a.Controller is PlayerController player) {
+          player.DeferMessage(player.MakeCentricMessage(text, loc, PLAYER_AUDIO_COLOR));
+        }
+      },pt=>{
+        a = loc.Map.GetActorAtExt(pt);
+        if (a?.IsSleeping ?? true) return false;
+        if (a==m_Player) return false;
+        if (a.Controller.CanSee(loc)) return false;
+        return Rules.StdDistance(a.Location, loc) <= a.AudioRange;
+      });
     }
 
     private Data.Message MakeErrorMessage(string text)
@@ -1679,9 +1677,6 @@ namespace djack.RogueSurvivor.Engine
           new KeyValuePair< string,PlayerCommand >("Move W", PlayerCommand.MOVE_W),
           new KeyValuePair< string,PlayerCommand >("Move NW", PlayerCommand.MOVE_NW),
           new KeyValuePair< string,PlayerCommand >("Wait", PlayerCommand.WAIT_OR_SELF),
-#if SUICIDE_BY_LONG_WAIT
-          new KeyValuePair< string,PlayerCommand >("Wait 1 hour", PlayerCommand.WAIT_LONG),
-#endif
           new KeyValuePair< string,PlayerCommand >("Abandon Game", PlayerCommand.ABANDON_GAME),
           new KeyValuePair< string,PlayerCommand >("Advisor Hint", PlayerCommand.ADVISOR),
           new KeyValuePair< string,PlayerCommand >("Barricade", PlayerCommand.BARRICADE_MODE),
@@ -2474,7 +2469,7 @@ namespace djack.RogueSurvivor.Engine
         }
         ClearMessages();
         AddMessage(new Data.Message(unique.EventMessage, Session.Get.WorldTime.TurnCounter, Color.Pink));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Seems to come from", unique.TheActor.Location));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2506,7 +2501,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.ARMY);
         ClearMessages();
         AddMessage(new Data.Message("A National Guard squad has arrived!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Soldiers seem to come from", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Soldiers seem to come from", actor.Location));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2550,7 +2545,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.ARMY);
         ClearMessages();
         AddMessage(new Data.Message("An Army chopper has dropped supplies!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", dropPoint));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("The drop point seems to be", new Location(map,dropPoint)));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2604,7 +2599,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.BIKER);
         ClearMessages();
         AddMessage(new Data.Message("You hear the sound of roaring engines!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Motorbikes seem to come from", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Motorbikes seem to come from", actor.Location));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2633,7 +2628,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.GANGSTA);
         ClearMessages();
         AddMessage(new Data.Message("You hear obnoxious loud music!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Cars seem to come from", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("Cars seem to come from", actor.Location));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2661,7 +2656,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.ARMY);
         ClearMessages();
         AddMessage(new Data.Message("You hear a chopper flying over the city!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("The chopper has dropped something", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("The chopper has dropped something", actor.Location));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2687,7 +2682,7 @@ namespace djack.RogueSurvivor.Engine
         m_MusicManager.Play(GameMusics.SURVIVORS);
         ClearMessages();
         AddMessage(new Data.Message("You hear shooting and honking in the distance.", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
-        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("A van has stopped", actor.Location.Position));
+        AddMessage((m_Player.Controller as PlayerController).MakeCentricMessage("A van has stopped", actor.Location));
         AddMessagePressEnter();
         ClearMessages();
       }
@@ -2887,20 +2882,6 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.CurrentMap = player.Location.Map;  // multi-PC support
       ComputeViewRect(player.Location.Position);
       Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
-#if SUICIDE_BY_LONG_WAIT
-      if (m_IsPlayerLongWait) {
-        if (CheckPlayerWaitLong(player)) {
-          DoWait(player);
-          return;
-        }
-        m_IsPlayerLongWait = false;
-        m_IsPlayerLongWaitForcedStop = false;
-        if (Session.Get.WorldTime.TurnCounter >= m_PlayerLongWaitEnd.TurnCounter)
-          AddMessage(new Data.Message("Wait ended.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
-        else
-          AddMessage(new Data.Message("Wait interrupted!", Session.Get.WorldTime.TurnCounter, Color.Red));
-      }
-#endif
 
       GC.Collect(); // force garbage collection when things should be slow anyway
 
@@ -3030,16 +3011,6 @@ namespace djack.RogueSurvivor.Engine
                 flag1 = false;
                 DoWait(player);
                 break;
-#if SUICIDE_BY_LONG_WAIT
-              case PlayerCommand.WAIT_LONG:
-                if (TryPlayerInsanity()) {
-                  flag1 = false;
-                  break;
-                }
-                flag1 = false;
-                StartPlayerWaitLong(player);
-                break;
-#endif
               case PlayerCommand.BARRICADE_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerBarricade(player);
                 break;
@@ -4922,29 +4893,6 @@ namespace djack.RogueSurvivor.Engine
       reason = "";
       return true;
     }
-
-#if SUICIDE_BY_LONG_WAIT
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    private void StartPlayerWaitLong(Actor player)
-    {
-      m_IsPlayerLongWait = true;
-      m_IsPlayerLongWaitForcedStop = false;
-      m_PlayerLongWaitEnd = new WorldTime(Session.Get.WorldTime.TurnCounter + WorldTime.TURNS_PER_HOUR);
-      AddMessage(MakeMessage(player, string.Format("{0} waiting.", (object) Conjugate(player, VERB_START))));
-      RedrawPlayScreen();
-    }
-
-    private bool CheckPlayerWaitLong(Actor player)
-    {
-      if (m_IsPlayerLongWaitForcedStop || Session.Get.WorldTime.TurnCounter >= m_PlayerLongWaitEnd.TurnCounter || (player.IsHungry || player.IsStarving) || (player.IsSleepy || player.IsExhausted))
-        return false;
-      foreach (Point position in m_Player.Controller.FOV) {
-        Actor actorAt = player.Location.Map.GetActorAt(position);
-        if (actorAt != null && player.IsEnemyOf(actorAt)) return false;
-      }
-      return !TryPlayerInsanity();
-    }
-#endif
 
     private bool HandlePlayerOrderMode(Actor player)
     {
@@ -7774,9 +7722,6 @@ namespace djack.RogueSurvivor.Engine
       int dmg = (num1 > num2 ? m_Rules.RollDamage(defender.IsSleeping ? attack.DamageValue * 2 : attack.DamageValue) - defence.Protection_Hit : 0);
 
       OnLoudNoise(attacker.Location.Map, attacker.Location.Position, "Nearby fighting");
-#if SUICIDE_BY_LONG_WAIT
-      if (m_IsPlayerLongWait && defender.IsPlayer) m_IsPlayerLongWaitForcedStop = true;
-#endif
       bool player1 = ForceVisibleToPlayer(defender);
       bool player2 = player1 ? IsVisibleToPlayer(attacker) : ForceVisibleToPlayer(attacker);
       bool flag = attacker.IsPlayer || defender.IsPlayer;   // (player1 OR player2) IMPLIES flag?
@@ -7904,9 +7849,6 @@ namespace djack.RogueSurvivor.Engine
         if (itemRangedWeapon == null) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
         if (DoCheckFireThrough(attacker, LoF)) return;
-#if SUICIDE_BY_LONG_WAIT
-        if (m_IsPlayerLongWait && defender.IsPlayer) m_IsPlayerLongWaitForcedStop = true;
-#endif
         int num1 = (int)(accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
         int num2 = m_Rules.RollSkill(defence.Value);
         bool see_defender = ForceVisibleToPlayer(defender.Location);
@@ -9134,10 +9076,6 @@ namespace djack.RogueSurvivor.Engine
         int noiseDistance = Rules.GridDistance(noisePosition, pt);
         return /* noiseDistance <= Rules.LOUD_NOISE_RADIUS && */ m_Rules.RollChance(Rules.ActorLoudNoiseWakeupChance(actorAt, noiseDistance));  // would need to test for other kinds of distance
       });
-#if SUICIDE_BY_LONG_WAIT
-      if (!m_IsPlayerLongWait || (map != m_Player.Location.Map || !ForceVisibleToPlayer(map, noisePosition))) return;
-      m_IsPlayerLongWaitForcedStop = true;
-#endif
     }
 
     private void InflictDamage(Actor actor, int dmg)

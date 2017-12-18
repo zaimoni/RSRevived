@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Gameplay
     private const int HUMAN_SAN = 4*WorldTime.TURNS_PER_DAY;
     private const int HUMAN_STA = 2*WorldTime.TURNS_PER_HOUR;
     private const int HUMAN_INVENTORY = 7;
-    private const int HUMAN_AUDIO = 8* WorldTime.TURNS_PER_HOUR/15;
+    public const int HUMAN_AUDIO = 8*WorldTime.TURNS_PER_HOUR/15; // Also max hearing range; swamp thing also hears but much lower range
     private const int DOG_HUN = 2*Actor.FOOD_HUNGRY_LEVEL;
     private const int DOG_SLP = 2*Actor.SLEEP_SLEEPY_LEVEL;
     private const int DOG_STA = 3*WorldTime.TURNS_PER_HOUR;
