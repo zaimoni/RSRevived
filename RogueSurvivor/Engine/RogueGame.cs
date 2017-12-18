@@ -2893,6 +2893,18 @@ namespace djack.RogueSurvivor.Engine
         var deferredMessages = (player.Controller as PlayerController)?.ReleaseMessages();
         if (null != deferredMessages) AddMessages(deferredMessages);
         RedrawPlayScreen();
+
+        ActorAction tmpAction = (m_Player.Controller as PlayerController).AutoPilot();
+        if (null != tmpAction) {
+          tmpAction.Perform();
+          // XXX following is duplicated code
+          player.Controller.UpdateSensors();
+          ComputeViewRect(player.Location.Position);
+          (player.Controller as PlayerController).UpdatePrevLocation();
+          Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
+          return;
+        }
+
         WaitKeyOrMouse(out KeyEventArgs key, out Point point, out MouseButtons? mouseButtons);
         if (null != key) {
           PlayerCommand command = InputTranslator.KeyToCommand(key);

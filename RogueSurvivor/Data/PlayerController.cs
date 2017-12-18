@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Engine;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
@@ -97,6 +98,28 @@ namespace djack.RogueSurvivor.Data
     protected override ActorAction SelectAction(RogueGame game)
     {
       throw new InvalidOperationException("do not call PlayerController.SelectAction()");
+    }
+
+    // This is too dangerous to provide a member function for in ObjectiveAI.
+    // We duplicate this code fragment from CivilianAI::SelectAction and siblings to support a reasonable replacement 
+    // for the wait command (which has been removed as a cause of 1-keystroke deaths)
+    public ActorAction AutoPilot()
+    {
+      if (0 >= Objectives.Count) return null;
+      ActorAction goal_action = null;
+      foreach(var o in Objectives.ToList()) {
+        if (o.IsExpired) Objectives.Remove(o);
+        else if (o.UrgentAction(out goal_action)) {
+          if (null==goal_action) Objectives.Remove(o);
+#if DEBUG
+          else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+#else
+          else if (!goal_action.IsLegal()) Objectives.Remove(o);
+#endif
+          else return goal_action;
+        }
+      }
+      return null;
     }
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)
