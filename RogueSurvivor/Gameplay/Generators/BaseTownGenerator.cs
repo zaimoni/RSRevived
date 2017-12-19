@@ -2526,7 +2526,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Inventory.AddAll(MakeItemJasonMyersAxe());
       map.PlaceAt(named, new Point(map.Width / 2, map.Height / 2));
-      Session.Get.UniqueActors.JasonMyers = new UniqueActor(named,true);
+      Session.Get.UniqueActors.JasonMyers = new UniqueActor(named,true,false,GameMusics.INSANE);
       return map;
     }
 

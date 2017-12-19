@@ -2890,6 +2890,15 @@ namespace djack.RogueSurvivor.Engine
         if (s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
           AddOverlay(new OverlayPopup(new string[1] { string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString()) }, Color.White, Color.White, Color.Black, MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1)));
 
+#region Theme music
+        foreach(var unique in Session.Get.UniqueActors.ToArray()) {
+          if (null == unique.EventThemeMusic) continue;
+          if (unique.TheActor==player || null!=player.Sees(unique.TheActor)) {
+            if (!m_MusicManager.IsPlaying(unique.EventThemeMusic)) m_MusicManager.Play(unique.EventThemeMusic);
+          } else if (m_MusicManager.IsPlaying(unique.EventThemeMusic)) m_MusicManager.Stop(unique.EventThemeMusic);
+        }
+#endregion
+
         var deferredMessages = (player.Controller as PlayerController)?.ReleaseMessages();
         if (null != deferredMessages) AddMessages(deferredMessages);
         RedrawPlayScreen();
@@ -11717,7 +11726,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, "You hear an angry man shouting 'FOOLS!'", GameMusics.BIGBEAR_THEME_SONG);
+      return new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
     }
 
     private UniqueActor CreateUniqueFamuFataru()
@@ -11735,7 +11744,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, "You hear a woman laughing.", GameMusics.FAMU_FATARU_THEME_SONG);
+      return new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
     }
 
     private UniqueActor CreateUniqueSantaman()
@@ -11753,7 +11762,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, "You hear christmas music and drunken vomiting.", GameMusics.SANTAMAN_THEME_SONG);
+      return new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
     }
 
     private UniqueActor CreateUniqueRoguedjack()
@@ -11771,7 +11780,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, "You hear a man shouting in French.", GameMusics.ROGUEDJACK_THEME_SONG);
+      return new UniqueActor(named,false,true, GameMusics.ROGUEDJACK_THEME_SONG, "You hear a man shouting in French.");
     }
 
     private UniqueActor CreateUniqueDuckman()
@@ -11790,7 +11799,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, "You hear loud demented QUACKS.", GameMusics.DUCKMAN_THEME_SONG);
+      return new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
     }
 
     private UniqueActor CreateUniqueHansVonHanz()
@@ -11808,7 +11817,7 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, "You hear a man barking orders in German.",GameMusics.HANS_VON_HANZ_THEME_SONG);
+      return new UniqueActor(named,false,true,GameMusics.HANS_VON_HANZ_THEME_SONG, "You hear a man barking orders in German.");
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
@@ -12263,26 +12272,14 @@ namespace djack.RogueSurvivor.Engine
             throw new ArgumentOutOfRangeException("unhandled script stage " + Session.Get.ScriptStage_PoliceStationPrisoner.ToString());
         }
       }
-      vip = player.Sees(Session.Get.UniqueActors.JasonMyers.TheActor);
-      if (null != vip) {
-        if (!m_MusicManager.IsPlaying(GameMusics.INSANE)) {
-          m_MusicManager.StopAll();
-          m_MusicManager.Play(GameMusics.INSANE);
-        }
-        lock (Session.Get) {
-          if (!Session.Get.Scoring.HasSighted(Session.Get.UniqueActors.JasonMyers.TheActor.Model.ID)) {
+      if (!Session.Get.Scoring.HasSighted(Session.Get.UniqueActors.JasonMyers.TheActor.Model.ID)) {
+        if (null != player.Sees(Session.Get.UniqueActors.JasonMyers.TheActor)) {
+          lock (Session.Get) {
             ClearMessages();
             AddMessage(new Data.Message("Nice axe you have there!", Session.Get.WorldTime.TurnCounter, Color.Yellow));
             AddMessagePressEnter();
           }
         }
-      }
-      if (player != Session.Get.UniqueActors.Duckman.TheActor) {
-        if (!Session.Get.UniqueActors.Duckman.TheActor.IsDead && IsVisibleToPlayer(Session.Get.UniqueActors.Duckman.TheActor)) {
-          if (!m_MusicManager.IsPlaying(GameMusics.DUCKMAN_THEME_SONG))
-            m_MusicManager.Play(GameMusics.DUCKMAN_THEME_SONG);
-        } else if (m_MusicManager.IsPlaying(GameMusics.DUCKMAN_THEME_SONG))
-          m_MusicManager.Stop(GameMusics.DUCKMAN_THEME_SONG);
       }
       if (Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped && (player.Location.Map == player.Location.Map.District.SubwayMap && player.Inventory.Contains(Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem)))
       {
@@ -12389,10 +12386,7 @@ namespace djack.RogueSurvivor.Engine
       ClearMessages();
       AddMessage(new Data.Message(string.Format("{0} feels disoriented for a second...", m_Player.Name), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
-      string musicname = GameMusics.REINCARNATE;
-      // XXX feels gappy ... there are other uniques with music
-      if (m_Player == Session.Get.UniqueActors.JasonMyers.TheActor) musicname = GameMusics.INSANE;
-      m_MusicManager.Play(musicname);
+      m_MusicManager.Play(GameMusics.REINCARNATE);
       RestartSimThread();
     }
 
