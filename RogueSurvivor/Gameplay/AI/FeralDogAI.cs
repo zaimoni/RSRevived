@@ -51,7 +51,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts1 = FilterSameMap(UpdateSensors());
+      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
       // dogs target their leader's enemy before the usual check for enemies
       if (m_Actor.HasLeader) {
@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> enemies = FilterEnemies(percepts1);
+      List<Percept> enemies = FilterEnemies(percepts_all);
       // dogs cannot order their followers to stay behind
       if (enemies != null) {
         ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FeralDogAI.FIGHT_EMOTES);
@@ -78,7 +78,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsAlmostHungry) {
-        ActorAction actorAction = BehaviorGoEatFoodOnGround(percepts1.FilterT<Inventory>());
+        ActorAction actorAction = BehaviorGoEatFoodOnGround(percepts_all.FilterT<Inventory>());
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.IDLE;
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.IsHungry) {
-        ActorAction actorAction = BehaviorGoEatCorpse(percepts1);
+        ActorAction actorAction = BehaviorGoEatCorpse(percepts_all);
         if (actorAction != null) {
           m_Actor.IsRunning = true;
           m_Actor.Activity = Activity.IDLE;

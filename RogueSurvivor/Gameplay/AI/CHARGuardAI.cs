@@ -55,11 +55,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ClearMovePlan();
       BehaviorEquipBodyArmor();
 
-      List<Percept> percepts1 = FilterSameMap(UpdateSensors());
+      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
+        ActorAction actorAction = ExecuteOrder(game, Order, percepts_all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Actor.Activity = Activity.IDLE; // backstop
 
       // Mysteriously, CHAR guards do not throw grenades even though their offices stock them.
-      List<Percept> old_enemies = FilterEnemies(percepts1);
+      List<Percept> old_enemies = FilterEnemies(percepts_all);
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
       ActorAction tmpAction = null;
@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Actor> slow_melee_threat = new List<Actor>();
       HashSet<Actor> immediate_threat = new HashSet<Actor>();
       if (null != current_enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
-      AddTrapsToDamageField(damage_field, percepts1);
+      AddTrapsToDamageField(damage_field, percepts_all);
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       if (0>= immediate_threat.Count) immediate_threat = null;
@@ -116,7 +116,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-	  List<Percept> friends = FilterNonEnemies(percepts1);
+	  List<Percept> friends = FilterNonEnemies(percepts_all);
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 

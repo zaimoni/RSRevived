@@ -73,11 +73,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // end item juggling check
 
-      List<Percept> percepts1 = FilterSameMap(UpdateSensors());
+      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
       // OrderableAI specific: respond to orders
       if (null != Order) {
-        ActorAction actorAction = ExecuteOrder(game, Order, percepts1);
+        ActorAction actorAction = ExecuteOrder(game, Order, percepts_all);
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
@@ -90,7 +90,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> old_enemies = FilterEnemies(percepts1);
+      List<Percept> old_enemies = FilterEnemies(percepts_all);
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
       ActorAction tmpAction = null;
@@ -103,7 +103,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Actor> slow_melee_threat = new List<Actor>();
       HashSet<Actor> immediate_threat = new HashSet<Actor>();
       if (null != current_enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
-      AddTrapsToDamageField(damage_field, percepts1);
+      AddTrapsToDamageField(damage_field, percepts_all);
       if (0>=damage_field.Count) damage_field = null;
       if (0>= slow_melee_threat.Count) slow_melee_threat = null;
       if (0>= immediate_threat.Count) immediate_threat = null;
@@ -135,7 +135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // use above both for choosing which threat to target, and actual weapon equipping
       // Intermediate data structure: Dictionary<Actor,Dictionary<Item,float>>
 
-	  List<Percept> friends = FilterNonEnemies(percepts1);
+	  List<Percept> friends = FilterNonEnemies(percepts_all);
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
@@ -172,7 +172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorEat();
         if (null != tmpAction) return tmpAction;
         if (m_Actor.IsStarving || m_Actor.IsInsane) {
-          tmpAction = BehaviorGoEatCorpse(percepts1);
+          tmpAction = BehaviorGoEatCorpse(percepts_all);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
@@ -220,7 +220,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == current_enemies) {
         Map map = m_Actor.Location.Map;
-        List<Percept> percepts3 = percepts1.FilterT<Inventory>().FilterOut(p =>
+        List<Percept> percepts3 = percepts_all.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
           if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
@@ -237,7 +237,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (null == current_enemies) {
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
-        Percept victimize = FilterNearest(FilterCurrent(percepts1).FilterT<Actor>(a =>
+        Percept victimize = FilterNearest(FilterCurrent(percepts_all).FilterT<Actor>(a =>
         {
           if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(a)) return false;
           if (!game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);

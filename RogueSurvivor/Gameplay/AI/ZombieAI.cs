@@ -61,11 +61,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction SelectAction(RogueGame game)
     {
-      List<Percept> percepts1 = FilterSameMap(UpdateSensors());
+      List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
       if (m_Actor.Model.Abilities.ZombieAI_Explore) m_Exploration.Update(m_Actor.Location);
 
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       ActorAction tmpAction;
       if (enemies != null) {
         tmpAction = TargetGridMelee(FilterCurrent(enemies));
@@ -73,7 +73,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = TargetGridMelee(FilterOld(enemies));
         if (null != tmpAction) return tmpAction;
       }
-      tmpAction = BehaviorGoEatCorpse(percepts1);
+      tmpAction = BehaviorGoEatCorpse(percepts_all);
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
@@ -86,7 +86,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (!m_Actor.Model.Abilities.IsUndeadMaster) {
-        Percept percept = FilterNearest(percepts1.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
+        Percept percept = FilterNearest(percepts_all.FilterT<Actor>(a => a.Model.Abilities.IsUndeadMaster));
         if (percept != null) {
           tmpAction = BehaviorStupidBumpToward(RandomPositionNear(game.Rules, m_Actor.Location.Map, percept.Location.Position, 3));
           if (null != tmpAction) {
