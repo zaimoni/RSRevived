@@ -1874,7 +1874,7 @@ namespace djack.RogueSurvivor.Engine
         if (null != tmp)
           {
           m_Player = tmp;
-          Session.Get.CurrentMap = map;  // multi-PC support
+          SetCurrentMap(map);  // multi-PC support
           m_Player.Controller.UpdateSensors();
           ComputeViewRect(m_Player.Location.Position);
           RedrawPlayScreen();
@@ -2878,7 +2878,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       player.Controller.UpdateSensors();
       m_Player = player;
-      Session.Get.CurrentMap = player.Location.Map;  // multi-PC support
+      SetCurrentMap(player.Location.Map);  // multi-PC support
       ComputeViewRect(player.Location.Position);
       Session.Get.Scoring.TurnsSurvived = Session.Get.WorldTime.TurnCounter;
 
@@ -2893,9 +2893,8 @@ namespace djack.RogueSurvivor.Engine
 #region Theme music
         foreach(var unique in Session.Get.UniqueActors.ToArray()) {
           if (null == unique.EventThemeMusic) continue;
-          if (unique.TheActor==player || null!=player.Sees(unique.TheActor)) {
-            if (!m_MusicManager.IsPlaying(unique.EventThemeMusic)) m_MusicManager.Play(unique.EventThemeMusic);
-          } else if (m_MusicManager.IsPlaying(unique.EventThemeMusic)) m_MusicManager.Stop(unique.EventThemeMusic);
+          if (unique.TheActor==player || null!=player.Sees(unique.TheActor)) m_MusicManager.PlayIfNotAlreadyPlaying(unique.EventThemeMusic);
+          else if (m_MusicManager.IsPlaying(unique.EventThemeMusic)) m_MusicManager.Stop(unique.EventThemeMusic);
         }
 #endregion
 
@@ -11954,14 +11953,17 @@ namespace djack.RogueSurvivor.Engine
     {
       Session.Get.CurrentMap = map;
       if (map == map.District.SewersMap) {
-        m_MusicManager.StopAll();
-        m_MusicManager.PlayLooping(GameMusics.SEWERS);
+        m_MusicManager.Stop(GameMusics.SUBWAY);
+        m_MusicManager.Stop(GameMusics.HOSPITAL);
+        if (!m_MusicManager.IsPlaying(GameMusics.SEWERS)) m_MusicManager.PlayLooping(GameMusics.SEWERS);
       } else if (map == map.District.SubwayMap) {
-        m_MusicManager.StopAll();
-        m_MusicManager.PlayLooping(GameMusics.SUBWAY);
+        m_MusicManager.Stop(GameMusics.SEWERS);
+        m_MusicManager.Stop(GameMusics.HOSPITAL);
+        if (!m_MusicManager.IsPlaying(GameMusics.SUBWAY)) m_MusicManager.PlayLooping(GameMusics.SUBWAY);
       } else if (map == Session.Get.UniqueMaps.Hospital_Admissions.TheMap || map == Session.Get.UniqueMaps.Hospital_Offices.TheMap || (map == Session.Get.UniqueMaps.Hospital_Patients.TheMap || map == Session.Get.UniqueMaps.Hospital_Power.TheMap) || map == Session.Get.UniqueMaps.Hospital_Storage.TheMap) {
-        m_MusicManager.StopAll();
-        m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
+        m_MusicManager.Stop(GameMusics.SEWERS);
+        m_MusicManager.Stop(GameMusics.SUBWAY);
+        if (!m_MusicManager.IsPlaying(GameMusics.HOSPITAL)) m_MusicManager.PlayLooping(GameMusics.HOSPITAL);
       } else {
         m_MusicManager.Stop(GameMusics.SEWERS);
         m_MusicManager.Stop(GameMusics.SUBWAY);
