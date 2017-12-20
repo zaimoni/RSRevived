@@ -1560,45 +1560,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endif
 
-    // sunk from BaseAI
-    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes)
+    private ActorAction BehaviorFlee(Actor enemy, Dictionary<Point, int> damage_field, bool doRun, string[] emotes)
     {
-      // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
-      Percept target = FilterNearest(enemies);
-      bool doRun = false;	// only matters when fleeing
-      Actor enemy = target.Percepted as Actor;
-      bool decideToFlee;
-      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
-      else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
-        decideToFlee = false;
-      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
-        decideToFlee = true;
-      else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
-	    decideToFlee = false;
-      } else {
-        switch (courage) {
-          case ActorCourage.COWARD:
-            decideToFlee = true;
-            doRun = true;
-            break;
-          case ActorCourage.CAUTIOUS:
-          case ActorCourage.COURAGEOUS:
-            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(m_Actor, enemy);
-            break;
-          default:
-            throw new ArgumentOutOfRangeException("unhandled courage");
-        }
-      }
-      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
-        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
-      }
-
+      var game = RogueForm.Game;
       ActorAction tmpAction = null;
-
-      if (decideToFlee) {
-        if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
-          game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
+      if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(EMOTE_FLEE_CHANCE))
+        game.DoEmote(m_Actor, string.Format("{0} {1}!", (object) emotes[0], (object) enemy.Name));
         // All OrderableAI instances currently can both use map objects, and barricade
         // there is an inventory check requirement on barricading as well
         // due to preconditions it is mutually exclusive that a door be closable or barricadable
@@ -1657,7 +1624,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX or run for the exit here
-        tmpAction = BehaviorWalkAwayFrom(enemies.Select(p => p.Location.Position));
+        tmpAction = BehaviorWalkAwayFrom(m_Actor.Controller.enemies_in_FOV.Keys);
         if (null != tmpAction) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
@@ -1666,10 +1633,50 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (enemy.IsAdjacentToEnemy) {  // yes, any enemy...not just me
           if (m_Actor.Model.Abilities.CanTalk && game.Rules.RollChance(50))
             game.DoEmote(m_Actor, emotes[1]);
-          return BehaviorMeleeAttack(target.Percepted as Actor);
+          return BehaviorMeleeAttack(enemy);
         }
         return null;
-      } // if (decldeToFlee)
+    }
+
+    // sunk from BaseAI
+    protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes)
+    {
+      // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
+      Percept target = FilterNearest(enemies);
+      bool doRun = false;	// only matters when fleeing
+      Actor enemy = target.Percepted as Actor;
+      bool decideToFlee;
+      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
+      else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
+        decideToFlee = false;
+      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+        decideToFlee = true;
+      else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
+	    decideToFlee = false;
+      } else {
+        switch (courage) {
+          case ActorCourage.COWARD:
+            decideToFlee = true;
+            doRun = true;
+            break;
+          case ActorCourage.CAUTIOUS:
+          case ActorCourage.COURAGEOUS:
+            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
+            doRun = !HasSpeedAdvantage(m_Actor, enemy);
+            break;
+          default:
+            throw new ArgumentOutOfRangeException("unhandled courage");
+        }
+      }
+      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
+      }
+
+      ActorAction tmpAction = null;
+      if (decideToFlee) {
+        tmpAction = BehaviorFlee(enemy, damage_field, doRun, emotes);
+        if (null != tmpAction) return tmpAction;
+      }
 
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed) {
