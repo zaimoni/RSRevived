@@ -979,8 +979,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
-      // == failed for traps
-      if (null != immediate_threat && (damage_field?.ContainsKey(m_Actor.Location.Position) ?? false)) throw new InvalidOperationException("null != immediate_threat && (damage_field?.ContainsKey(m_Actor.Location.Position) ?? false)");
 #endif
 
       // migrated from CivilianAI::SelectAction
@@ -1533,7 +1531,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
-#if PROTOTYPE
     private HashSet<Point> AlliesNeedLoFvs(Actor enemy)
     {
       var friends = m_Actor.Controller.friends_in_FOV;
@@ -1558,9 +1555,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return (0 < ret.Count ? ret : null);
     }
-#endif
 
-    private ActorAction BehaviorFlee(Actor enemy, Dictionary<Point, int> damage_field, bool doRun, string[] emotes)
+    private ActorAction BehaviorFlee(Actor enemy, Dictionary<Point, int> damage_field, HashSet<Point> LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueForm.Game;
       ActorAction tmpAction = null;
@@ -1569,11 +1565,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // All OrderableAI instances currently can both use map objects, and barricade
         // there is an inventory check requirement on barricading as well
         // due to preconditions it is mutually exclusive that a door be closable or barricadable
+        // however, we do not want to obstruct line of fire of allies
         {
         bool could_barricade = m_Actor.CouldBarricade();
         Dictionary<Point,DoorWindow> close_doors = new Dictionary<Point,DoorWindow>();
         Dictionary<Point,DoorWindow> barricade_doors = new Dictionary<Point,DoorWindow>();
         foreach(Point pt in Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir)) {
+          if (LoF_reserve?.Contains(pt) ?? false) continue;
           DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(pt) as DoorWindow;
           if (null == door) continue;
           if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
@@ -1643,54 +1641,57 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       Percept target = FilterNearest(enemies);
-      bool doRun = false;	// only matters when fleeing
+      List<Point> legal_steps = m_Actor.LegalSteps; // XXX should be passing this in instead
       Actor enemy = target.Percepted as Actor;
-      bool decideToFlee;
-      if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
-      else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
-        decideToFlee = false;
-      else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
-        decideToFlee = true;
-      else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
-	    decideToFlee = false;
-      } else {
-        switch (courage) {
-          case ActorCourage.COWARD:
-            decideToFlee = true;
-            doRun = true;
-            break;
-          case ActorCourage.CAUTIOUS:
-          case ActorCourage.COURAGEOUS:
-            decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
-            doRun = !HasSpeedAdvantage(m_Actor, enemy);
-            break;
-          default:
-            throw new ArgumentOutOfRangeException("unhandled courage");
+
+      bool doRun = false;	// only matters when fleeing
+      bool decideToFlee = (null != legal_steps);
+      if (decideToFlee) {
+        if (enemy.HasEquipedRangedWeapon()) decideToFlee = false;
+        else if (m_Actor.Model.Abilities.IsLawEnforcer && enemy.MurdersCounter > 0)
+          decideToFlee = false;
+        else if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, enemy.Location))
+          decideToFlee = true;
+        else if (m_Actor.Leader != null && ActorCourage.COURAGEOUS == courage) {
+	      decideToFlee = false;
+        } else {
+          switch (courage) {
+            case ActorCourage.COWARD:
+              decideToFlee = true;
+              doRun = true;
+              break;
+            case ActorCourage.CAUTIOUS:
+            case ActorCourage.COURAGEOUS:
+              decideToFlee = WantToEvadeMelee(m_Actor, courage, enemy);
+              doRun = !HasSpeedAdvantage(m_Actor, enemy);
+              break;
+            default:
+              throw new ArgumentOutOfRangeException("unhandled courage");
+          }
+        }
+        if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
+          decideToFlee = true;    // but do not run as otherwise we won't build up stamina
         }
       }
-      if (!decideToFlee && WillTireAfterAttack(m_Actor)) {
-        decideToFlee = true;    // but do not run as otherwise we won't build up stamina
-      }
 
+      var LoF_reserve = AlliesNeedLoFvs(enemy);
       ActorAction tmpAction = null;
       if (decideToFlee) {
-        tmpAction = BehaviorFlee(enemy, damage_field, doRun, emotes);
+        tmpAction = BehaviorFlee(enemy, damage_field, LoF_reserve, doRun, emotes);
         if (null != tmpAction) return tmpAction;
       }
 
       // redo the pause check
-      if (m_Actor.Speed > enemy.Speed) {
-        int dist = Rules.GridDistance(m_Actor.Location,target.Location);
-        if (2==dist) {
+      if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, target.Location)) {
           if (   !m_Actor.WillActAgainBefore(enemy)
               || !m_Actor.RunIsFreeMove)
             return new ActionWait(m_Actor);
-          List<Point> legal_steps = m_Actor.LegalSteps;
           if (null != legal_steps) {
             // cannot close at normal speed safely; run-hit may be ok
             Dictionary<Point,ActorAction> dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
             List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position)
+              && !(LoF_reserve?.Contains(pt) ?? false)
               && (dash_attack[pt] = Rules.IsBumpableFor(m_Actor,new Location(m_Actor.Location.Map,pt))) is ActionMoveStep
               && RunIfAdvisable(pt)).ToList();
             ReserveSTA(0,0,0,0);  // baseline
@@ -1699,7 +1700,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.IsRunning = true;
             return dash_attack[attack_possible[game.Rules.Roll(0,attack_possible.Count)]];
           }
-        }
       }
 
       // charge
