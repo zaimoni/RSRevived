@@ -729,10 +729,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<Point> FindRunRetreat(Dictionary<Point,int> damage_field, IEnumerable<Point> legal_steps)
     {
-      Contract.Requires(null != damage_field);
-      Contract.Requires(null != legal_steps);
 #if DEBUG
-      Contract.Requires(damage_field.ContainsKey(m_Actor.Location.Position));
+      if (null == damage_field) throw new ArgumentNullException(nameof(damage_field));
+      if (null == legal_steps) throw new ArgumentNullException(nameof(legal_steps));
+      if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
       HashSet<Point> ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor)));
       ret.RemoveWhere(pt => !legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());
@@ -744,7 +744,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void AvoidBeingCornered(List<Point> retreat)
     {
-      if (null != retreat || 2 > retreat.Count()) return;
+      if (2 > (retreat?.Count ?? 0)) return;
 
       HashSet<Point> cornered = new HashSet<Point>(retreat);
       foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
@@ -756,7 +756,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected void AvoidBeingRunCornered(List<Point> run_retreat)
     {
-      if (null != run_retreat || 2 > run_retreat.Count()) return;
+      if (2 > (run_retreat?.Count ?? 0)) return;
 
       HashSet<Point> cornered = new HashSet<Point>(run_retreat);
       foreach(Point pt in Enumerable.Range(0,24).Select(i=>m_Actor.Location.Position.RadarSweep(3,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
