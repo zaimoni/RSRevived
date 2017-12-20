@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public const LOSSensor.SensingFilter VISION_SEES = LOSSensor.SensingFilter.ACTORS;
 
-    private readonly MemorizedSensor m_LOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
+    private readonly MemorizedSensor m_MemLOSSensor = new MemorizedSensor(new LOSSensor(VISION_SEES), LOS_MEMORY);
     private readonly SmellSensor m_LivingSmellSensor = new SmellSensor(Odor.LIVING);
     private readonly SmellSensor m_MasterSmellSensor = new SmellSensor(Odor.UNDEAD_MASTER);
 
@@ -34,21 +34,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override void OptimizeBeforeSaving()
     {
-      m_LOSSensor.Forget(m_Actor);
+      m_MemLOSSensor.Forget(m_Actor);
     }
 
     public override List<Percept> UpdateSensors()
     {
-      List<Percept> perceptList = m_LOSSensor.Sense(m_Actor);
+      List<Percept> perceptList = m_MemLOSSensor.Sense(m_Actor);
       perceptList.AddRange(m_LivingSmellSensor.Sense(m_Actor));
       perceptList.AddRange(m_MasterSmellSensor.Sense(m_Actor));
       return perceptList;
     }
 
-    public override HashSet<Point> FOV { get { return (m_LOSSensor.Sensor as LOSSensor).FOV; } }
-    public override Dictionary<Point,Actor> friends_in_FOV { get { return (m_LOSSensor.Sensor as LOSSensor).friends; } }
-    public override Dictionary<Point,Actor> enemies_in_FOV { get { return (m_LOSSensor.Sensor as LOSSensor).enemies; } }
-    protected override void SensorsOwnedBy(Actor actor) { (m_LOSSensor.Sensor as LOSSensor).OwnedBy(actor); }
+    public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }
+    public override Dictionary<Point,Actor> friends_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).friends; } }
+    public override Dictionary<Point,Actor> enemies_in_FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).enemies; } }
+    protected override void SensorsOwnedBy(Actor actor) { (m_MemLOSSensor.Sensor as LOSSensor).OwnedBy(actor); }
 
     protected override ActorAction SelectAction(RogueGame game)
     {
