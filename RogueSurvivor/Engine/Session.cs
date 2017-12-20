@@ -97,8 +97,6 @@ namespace djack.RogueSurvivor.Engine
       m_PoliceItemMemory = (Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>) info.GetValue("m_PoliceItemMemory", typeof(Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int>));
       m_PoliceThreatTracking = (ThreatTracking) info.GetValue("m_PoliceThreatTracking", typeof(ThreatTracking));
       m_PoliceInvestigate = (LocationSet) info.GetValue("m_PoliceInvestigate", typeof(LocationSet));
-
-      if (1 <= Session.Get.ScriptStage_PoliceCHARrelations) Gameplay.GameFactions.ThePolice.AddEnemy(Gameplay.GameFactions.TheCHARCorporation);
     }
 
     void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)

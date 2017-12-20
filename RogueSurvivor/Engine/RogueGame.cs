@@ -7599,7 +7599,7 @@ namespace djack.RogueSurvivor.Engine
         // XXX should require a policeman to read the CHAR Guard Manual for this effect?
         // XXX alternately: if a policeman reads the CHAR Guard Manual before contact w/CHAR HQ is re-established this becomes irreversible?
         Session.Get.ScriptStage_PoliceCHARrelations = 1;
-        GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);
+//      GameFactions.ThePolice.AddEnemy(GameFactions.TheCHARCorporation);   // works here, but parallel when loading the game doesn't
         DamnCHARtoPoliceInvestigation();
       }
     }

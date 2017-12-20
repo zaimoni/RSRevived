@@ -46,6 +46,10 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsEnemyOf(Faction other)
     {
+      if (1 <= Engine.Session.Get.ScriptStage_PoliceCHARrelations) {
+        if (Gameplay.GameFactions.ThePolice==this && Gameplay.GameFactions.TheCHARCorporation==other) return true;
+        if (Gameplay.GameFactions.TheCHARCorporation == this && Gameplay.GameFactions.ThePolice == other) return true;
+      }
       return other!=this && m_Enemies.Contains(other);
     }
   }
