@@ -707,7 +707,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor==a) return true;
       if (!(a.Controller is OrderableAI) && !(a.Controller is PlayerController)) return false;
       if (a.IsSleeping) return false;
-      if (a.Location.Map == m_Actor.Location.Map && a.Controller.FOV.Contains(m_Actor.Location.Position) && m_Actor.Controller.FOV.Contains(a.Location.Position)) return true;
+      if (a.Location.Map == m_Actor.Location.Map && a.Controller.CanSee(m_Actor.Location) && m_Actor.Controller.CanSee(a.Location)) return true;
       if (a.HasActivePoliceRadio && m_Actor.HasActivePoliceRadio) return true;
       if (a.HasActiveArmyRadio && m_Actor.HasActiveArmyRadio) return true;
       if (null!=a.GetEquippedCellPhone() && null!=m_Actor.GetEquippedCellPhone()) return true;
@@ -1723,8 +1723,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (other == null || other.IsDead) return null;
 	  if (other.Location.Map == m_Actor.Location.Map) {
-        if (   FOV.Contains(other.Location.Position)
-            && Rules.GridDistance(m_Actor.Location.Position, other.Location.Position) <= maxDist
+        if (   CanSee(other.Location)
+            && Rules.GridDistance(m_Actor.Location, other.Location) <= maxDist
             && null != m_Actor.MinStepPathTo(m_Actor.Location.Map, m_Actor.Location.Position, other.Location.Position))
             return new ActionWait(m_Actor);
 	  }

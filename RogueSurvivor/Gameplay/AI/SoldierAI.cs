@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private string LeaderText_NotLeavingBehind(Actor target)
     {
       if (target.IsSleeping) return "patiently waits for {0} to wake up.";
-      else if (FOV.Contains(target.Location.Position)) return "{0}! Don't lag behind!";
+      else if (CanSee(target.Location)) return "{0}! Don't lag behind!";
       else return "Where the hell is {0}?";
     }
 

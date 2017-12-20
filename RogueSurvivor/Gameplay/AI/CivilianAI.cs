@@ -127,7 +127,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private string LeaderText_NotLeavingBehind(Actor target)
     {
       if (target.IsSleeping) return "patiently waits for {0} to wake up.";
-      else if (FOV.Contains(target.Location.Position)) return "Come on {0}! Hurry up!";
+      else if (CanSee(target.Location)) return "Come on {0}! Hurry up!";
       else return "Where the hell is {0}?";
     }
 
@@ -293,7 +293,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (null != tmpAction) return tmpAction;
 
-      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && FOV.Contains(m_Actor.Leader.Location.Position);
+      bool hasVisibleLeader = (m_Actor.HasLeader && !DontFollowLeader) && CanSee(m_Actor.Leader.Location);
       bool isLeaderFighting = (m_Actor.HasLeader && !DontFollowLeader) && m_Actor.Leader.IsAdjacentToEnemy;
       bool assistLeader = hasVisibleLeader && isLeaderFighting && !m_Actor.IsTired;
 

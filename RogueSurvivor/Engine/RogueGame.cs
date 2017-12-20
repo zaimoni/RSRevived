@@ -4893,7 +4893,7 @@ namespace djack.RogueSurvivor.Engine
       foreach (Actor follower in player.Followers) {
         actorArray[index1] = follower;
         pointSetArray[index1] = LOS.ComputeFOVFor(follower);
-        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_Player.Controller.FOV.Contains(follower.Location.Position);
+        bool flag1 = pointSetArray[index1].Contains(player.Location.Position) && m_Player.Controller.CanSee(follower.Location);
         bool flag2 = AreLinkedByPhone(player, follower);
         flagArray[index1] = flag1 || flag2;
         ++index1;
@@ -11072,9 +11072,7 @@ namespace djack.RogueSurvivor.Engine
       survey.DoForEach(pt => {
         Actor player = map.GetActorAtExt(pt);
         if (!player?.IsPlayer ?? true) return;
-        Location? test = player.Location.Map.Denormalize(new Location(map,position));
-        if (null == test) return;
-        if (!player.Controller.FOV.Contains(test.Value.Position)) return;
+        if (!player.Controller.CanSee(new Location(map, position))) return;
         players.Add(player);
       });
       if (0 >= players.Count) return false;

@@ -21,6 +21,11 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   {
     private Actor m_Actor;
     private readonly SensingFilter Filters;
+    // Actor caches for AI pruposes
+    private Map _view_map;
+    private Dictionary<Point,Actor> _friends;
+    private Dictionary<Point,Actor> _enemies;
+
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
 
@@ -36,12 +41,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     private void _seeActors(List<Percept> perceptList)
     {
+      _enemies = null;
+      _friends = null;
       foreach (Point pt in FOV) {
         Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
         if (null==actorAt) continue;
         if (actorAt==m_Actor) continue;
         if (actorAt.IsDead) continue;
         perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
+        if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[pt] = actorAt;
+        else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[pt] = actorAt;
       }
     }
 
@@ -93,6 +102,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public List<Percept> Sense(Actor actor)
     {
       m_Actor = actor;
+      _view_map = m_Actor.Location.Map;
       HashSet<Point> m_FOV = FOV;
       actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);
       List<Percept> perceptList = new List<Percept>();

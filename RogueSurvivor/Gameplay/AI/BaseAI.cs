@@ -778,8 +778,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
       if (other == null || other.IsDead) return null;
-      int num = Rules.GridDistance(m_Actor.Location.Position, other.Location.Position);
-      if (FOV.Contains(other.Location.Position) && num <= maxDist) return new ActionWait(m_Actor);
+      int num = Rules.GridDistance(m_Actor.Location, other.Location);
+      if (CanSee(other.Location) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {
         Exit exitAt = m_Actor.Location.Exit;
         if (exitAt != null && exitAt.ToMap == other.Location.Map && m_Actor.CanUseExit(m_Actor.Location.Position))
