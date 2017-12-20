@@ -311,7 +311,19 @@ namespace djack.RogueSurvivor.Data
     {
       List<_T_> tList = null;
       foreach (Item mItem in m_Items) {
-        if (mItem is _T_) (tList ?? (tList = new List<_T_>())).Add(mItem as _T_);
+        if (mItem is _T_ it) (tList ?? (tList = new List<_T_>())).Add(it);
+      }
+      return tList;
+    }
+
+    public List<_T_> GetItemsByType<_T_>(Predicate<_T_> test) where _T_ : Item
+    {
+#if DEBUG
+      if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+      List<_T_> tList = null;
+      foreach (Item mItem in m_Items) {
+        if (mItem is _T_ it && test(it)) (tList ?? (tList = new List<_T_>())).Add(it);
       }
       return tList;
     }

@@ -571,9 +571,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (2 <= legal_steps.Count) {
         int min_dist = goals.Values.Min();
         int near_scale = goals.Count+1;
-#if DEBUG
-        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, near_scale.ToString());
-#endif
         Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
         foreach(Point pt in legal_steps) {
           efficiency[pt] = 0;
@@ -586,9 +583,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
               efficiency[pt] += delta;
             }
           }
-#if DEBUG
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, pt.X.ToString()+","+pt.Y.ToString()+": "+efficiency[pt].ToString());
-#endif
         }
         int fast_approach = efficiency.Values.Max();
         efficiency.OnlyIf(val=>fast_approach==val);
@@ -629,7 +623,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected List<ItemRangedWeapon> GetAvailableRangedWeapons()
     {
-      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>()?.Where(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)));
+      IEnumerable<ItemRangedWeapon> tmp_rw = ((!Directives.CanFireWeapons || m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) ? null : m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => 0 < rw.Ammo || null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)));
       return (null!=tmp_rw && tmp_rw.Any() ? tmp_rw.ToList() : null);
     }
 
@@ -923,28 +917,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 1000 * rw_attack.Range + rw_attack.DamageValue;
     }
 
-    [Pure]
-    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo(Predicate<Item> fn=null)
+    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
+      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
+        if (0 < rw.Ammo) return true;
+        var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
+        return null != ammo;
+      });
+      if (null == rws) return null;
+      if (1==rws.Count) return rws[0];
       ItemRangedWeapon obj1 = null;
       int num1 = 0;
-      IEnumerable<ItemRangedWeapon> rws = m_Actor.Inventory.Items.Select(it=>it as ItemRangedWeapon).Where(w=>null!=w);
-      if (null!=fn) rws = rws.Where(w=>fn(w));
       foreach (ItemRangedWeapon w in rws) {
-        bool flag = false;
-        if (w.Ammo > 0) flag = true;
-        else {
-          IEnumerable<ItemAmmo> ammos = m_Actor.Inventory.Items.Select(it=>it as ItemAmmo).Where(ammo=>null!=ammo && ammo.AmmoType==w.AmmoType);
-          if (null!=fn) ammos = ammos.Where(ammo=>fn(ammo));
-          flag = ammos.Any();
-        }
-        if (flag) {
-          int num2 = ScoreRangedWeapon(w);
-          if (num2 > num1) {
-            obj1 = w;
-            num1 = num2;
-          }
+        int num2 = ScoreRangedWeapon(w);
+        if (num2 > num1) {
+          obj1 = w;
+          num1 = num2;
         }
       }
       return obj1;
@@ -988,10 +977,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // forked from BaseAI::BehaviorEquipWeapon
     protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
     {
-      Contract.Requires((null==available_ranged_weapons)==(null==GetBestRangedWeaponWithAmmo()));
 #if DEBUG
+      if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
       // == failed for traps
-      Contract.Requires(null==immediate_threat || (null!=damage_field && damage_field.ContainsKey(m_Actor.Location.Position)));
+      if (null != immediate_threat && (damage_field?.ContainsKey(m_Actor.Location.Position) ?? false)) throw new InvalidOperationException("null != immediate_threat && (damage_field?.ContainsKey(m_Actor.Location.Position) ?? false)");
 #endif
 
       // migrated from CivilianAI::SelectAction
@@ -1544,9 +1533,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
     }
 
+#if PROTOTYPE
+    private HashSet<Point> AlliesNeedLoFvs(Actor enemy)
+    {
+      var friends = m_Actor.Controller.friends_in_FOV;
+      if (null == friends) return null;
+      var ret = new HashSet<Point>();
+      var LoF = new List<Point>();
+      foreach(var friend_where in friends) {
+        var rw = (friend_where.Value.Controller as OrderableAI)?.GetBestRangedWeaponWithAmmo();
+        if (null == rw) continue;
+        if (!friend_where.Value.IsEnemyOf(enemy)) continue;
+        // XXX not quite right (should use best reloadable weapon)
+        if (friend_where.Value.CanFireAt(enemy,LoF)) {
+          ret.UnionWith(LoF);
+          continue;
+        }
+        int range = rw.Model.Attack.Range;
+        // XXX not quite right (visibiblity range check omitted)
+        if (LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,friend_where.Key), enemy.Location.Position, range, friend_where.Value, LoF)) {
+          ret.UnionWith(LoF);
+          continue;
+        }
+      }
+      return (0 < ret.Count ? ret : null);
+    }
+#endif
+
     // sunk from BaseAI
     protected ActorAction BehaviorFightOrFlee(RogueGame game, List<Percept> enemies, Dictionary<Point, int> damage_field, ActorCourage courage, string[] emotes)
     {
+      // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
       Percept target = FilterNearest(enemies);
       bool doRun = false;	// only matters when fleeing
       Actor enemy = target.Percepted as Actor;

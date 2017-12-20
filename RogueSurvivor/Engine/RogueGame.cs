@@ -7148,11 +7148,11 @@ namespace djack.RogueSurvivor.Engine
 	  Session.Get.PoliceTrackingThroughExitSpawn(actor);
 #endif
       if (map.IsTrapCoveringMapObjectAt(position)) return;
-      List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>();
+      List<ItemTrap> trapsAt = actor.Location.Items?.GetItemsByType<ItemTrap>(trap => trap.IsActivated);
       if (null == trapsAt) return;
       List<ItemTrap> trapList = null;
       foreach (ItemTrap trap in trapsAt) {
-        if (trap.IsActivated && TryTriggerTrap(trap, actor)) {
+        if (TryTriggerTrap(trap, actor)) {
           (trapList ?? (trapList = new List<ItemTrap>())).Add(trap);
         }
       }

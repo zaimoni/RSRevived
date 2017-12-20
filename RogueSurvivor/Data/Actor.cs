@@ -715,6 +715,11 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
+    public bool CanFireAt(Actor target, List<Point> LoF)
+    {
+      return string.IsNullOrEmpty(ReasonCantFireAt(target, LoF));
+    }
+
     public bool CanFireAt(Actor target)
     {
       return string.IsNullOrEmpty(ReasonCantFireAt(target, null));
