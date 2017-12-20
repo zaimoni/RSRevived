@@ -2760,19 +2760,29 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
-      // XXX while auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
+      // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
+      // Inline the functional part instead.
       if (m_DiceRoller.RollChance(50)) {
-        numberedName.Inventory.AddAll(MakeItemPistol());
+        var it = MakeItemPistol();
+        numberedName.Inventory.AddAll(it);
         numberedName.Inventory.AddAll(MakeItemLightPistolAmmo());
+        it.Equip();
+        numberedName.OnEquipItem(it);
       } else {
-        numberedName.Inventory.AddAll(MakeItemShotgun());
+        var it = MakeItemShotgun();
+        numberedName.Inventory.AddAll(it);
         numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
+        it.Equip();
+        numberedName.OnEquipItem(it);
       }
       numberedName.Inventory.AddAll(MakeItemTruncheon());
       numberedName.Inventory.AddAll(MakeItemFlashlight());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
-        numberedName.Inventory.AddAll(m_DiceRoller.RollChance(80) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor());
+        var it = m_DiceRoller.RollChance(80) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor();
+        numberedName.Inventory.AddAll(it);
+        it.Equip();
+        numberedName.OnEquipItem(it);
       }
       if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
         numberedName.Controller = new PlayerController();
