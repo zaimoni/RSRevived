@@ -4471,51 +4471,42 @@ namespace djack.RogueSurvivor.Engine
     {
       if (player.Model.Abilities.IsUndead) {
         AddMessage(MakeErrorMessage("Undeads can't have personal enemies."));
-      } else {
-        Map map = player.Location.Map;
-        List<Actor> actorList = new List<Actor>();
-        foreach (Point position in m_Player.Controller.FOV) {
-          Actor actorAt = map.GetActorAtExt(position);
-          if (actorAt != null && actorAt!=player)
-            actorList.Add(actorAt);
-        }
-        if (actorList.Count == 0) {
-          AddMessage(MakeErrorMessage("No visible actors to mark."));
-          RedrawPlayScreen();
-        } else {
-          bool flag1 = true;
-          int index = 0;
-          do {
-            Actor target = actorList[index];
-            ClearOverlays();
-            AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
-            AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
-            RedrawPlayScreen();
-            KeyEventArgs key = m_UI.UI_WaitKey();
-            if (key.KeyCode == Keys.Escape) flag1 = false;
-            else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
-            else if (key.KeyCode == Keys.E) {
-              bool flag2 = true;
-              if (target.Leader == player) {
-                AddMessage(MakeErrorMessage("Can't make a follower your enemy."));
-                flag2 = false;
-              } else if (player.Leader == target) {
-                AddMessage(MakeErrorMessage("Can't make your leader your enemy."));
-                flag2 = false;
-              } else if (m_Player.IsEnemyOf(target)) {
-                AddMessage(MakeErrorMessage("Already enemies."));
-                flag2 = false;
-              }
-              if (flag2) {
-                AddMessage(new Data.Message(string.Format("{0} is now a personal enemy.", target.TheName), Session.Get.WorldTime.TurnCounter, Color.Orange));
-                DoMakeAggression(player, target);
-              }
-            }
-          }
-          while (flag1);
-          ClearOverlays();
-        }
+        return;
       }
+      var non_enemies = player.Controller.friends_in_FOV;
+      if (null == non_enemies) {
+        AddMessage(MakeErrorMessage("No visible non-enemy actors to mark."));
+        RedrawPlayScreen();
+        return;
+      }
+      var actorList = non_enemies.Values.ToList();
+      Map map = player.Location.Map;
+      int index = 0;
+      do {
+        Actor target = actorList[index];
+        ClearOverlays();
+        AddOverlay(new OverlayPopup(MARK_ENEMIES_MODE, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+        AddOverlay(new OverlayImage(MapToScreen(target.Location), GameImages.ICON_TARGET));
+        RedrawPlayScreen();
+        KeyEventArgs key = m_UI.UI_WaitKey();
+        if (key.KeyCode == Keys.Escape) break;
+        else if (key.KeyCode == Keys.T) index = (index + 1) % actorList.Count;
+        else if (key.KeyCode == Keys.E) {
+          if (target.Leader == player) {
+            AddMessage(MakeErrorMessage("Can't make a follower your enemy."));
+            continue;
+          } else if (player.Leader == target) {
+            AddMessage(MakeErrorMessage("Can't make your leader your enemy."));
+            continue;
+          } else if (m_Player.IsEnemyOf(target)) {
+            AddMessage(MakeErrorMessage("Already enemies."));
+            continue;
+          }
+          AddMessage(new Data.Message(string.Format("{0} is now a personal enemy.", target.TheName), Session.Get.WorldTime.TurnCounter, Color.Orange));
+          DoMakeAggression(player, target);
+        }
+      } while(true);
+      ClearOverlays();
     }
 
     private bool HandlePlayerThrowGrenade(Actor player)
@@ -12296,11 +12287,8 @@ namespace djack.RogueSurvivor.Engine
         Session.Get.Scoring.AddVisit(Session.Get.WorldTime.TurnCounter, player.Location.Map);
         Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
       }
-      foreach (Point position in m_Player.Controller.FOV) {
-        Actor actorAt = player.Location.Map.GetActorAt(position);
-        if (actorAt != null && actorAt != player)
-          Session.Get.Scoring.AddSighting(actorAt.Model.ID, Session.Get.WorldTime.TurnCounter);
-      }
+      if (null != m_Player.Controller.friends_in_FOV) foreach(var x in m_Player.Controller.friends_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID, Session.Get.WorldTime.TurnCounter);
+      if (null != m_Player.Controller.enemies_in_FOV) foreach(var x in m_Player.Controller.enemies_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID, Session.Get.WorldTime.TurnCounter);
     }
 
     private void HandleReincarnation()
@@ -12512,23 +12500,18 @@ namespace djack.RogueSurvivor.Engine
           if (it.IsEquipped) return new ActionUnequipItem(actor, it);
           return new ActionDropItem(actor, it);
         case 4:
-          foreach(Point pt in actor.Controller.FOV) {
-            Actor actor1 = actor.Location.Map.GetActorAtExt(pt);
-            if (null == actor1) continue;
-            if (actor1 == actor) continue;
-            if (actor.IsEnemyOf(actor1)) continue;
-            if (m_Rules.RollChance(50)) {
-              if (actor.HasLeader) {
-                actor.Leader.RemoveFollower(actor);
-                actor.TrustInLeader = 0;
-              }
-              DoMakeAggression(actor, actor1);
-              return new ActionSay(actor, actor1, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);    // this takes a turn unconditionally for game balance.
+          if (null == actor.Controller.friends_in_FOV) return null;
+          foreach(var x in actor.Controller.friends_in_FOV) {
+            if (!m_Rules.RollChance(50)) continue;
+            if (actor.HasLeader) {
+              actor.Leader.RemoveFollower(actor);
+              actor.TrustInLeader = 0;
             }
+            DoMakeAggression(actor, x.Value);
+            return new ActionSay(actor, x.Value, "YOU ARE ONE OF THEM!!", RogueGame.Sayflags.IS_IMPORTANT);    // this takes a turn unconditionally for game balance.
           }
           return null;
-        default:
-          return null;
+        default: return null;
       }
     }
 

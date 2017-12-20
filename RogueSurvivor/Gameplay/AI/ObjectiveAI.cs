@@ -128,18 +128,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == m_Actor) return;
       if (null == m_Actor.Location.Map) return;    // Duckman
-      HashSet<Point> tmpFOV = FOV;  // virtual function call may be time-expensive so cache
-      if (null == tmpFOV) return;
+      var enemies = m_Actor.Controller.enemies_in_FOV;
+      if (null == enemies) return;
       Map map = m_Actor.Location.Map;
-      foreach(Point tmp in tmpFOV) {
-        if (tmp == m_Actor.Location.Position) continue;
-        Actor a = map.GetActorAt(tmp);
-        if (null == a) continue;
-        if (!m_Actor.IsEnemyOf(a)) continue;
+      foreach(var where_enemy in enemies) {
+        Actor a = where_enemy.Value;
         int a_turns = m_Actor.HowManyTimesOtherActs(1,a);
         int a_turns_bak = a_turns;
         if (0 >= a_turns) continue; // morally if (!a.CanActNextTurn) continue;
-        if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location, a.Location) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
+        if (0==a.CurrentRangedAttack.Range && 1 == Rules.GridDistance(m_Actor.Location.Position, where_enemy.Key) && m_Actor.Speed>a.Speed) slow_melee_threat.Add(a);
         // calculate melee damage field now
         Dictionary<Point,int> melee_damage_field = new Dictionary<Point,int>();
         int a_max_dam = a.MeleeAttack(m_Actor).DamageValue;
