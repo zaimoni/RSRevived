@@ -4424,9 +4424,8 @@ namespace djack.RogueSurvivor.Engine
         RedrawPlayScreen();
         return false;
       }
-      HashSet<Point> fovFor = LOS.ComputeFOVFor(player);
-      List<Actor> enemiesInFov = player.GetEnemiesInFov(fovFor);
-      if (enemiesInFov == null || enemiesInFov.Count == 0) {
+      List<Actor> enemiesInFov = player.GetEnemiesInFov(player.Controller.FOV);
+      if (0 >= (enemiesInFov?.Count ?? 0)) {
         AddMessage(MakeErrorMessage("No targets to fire at."));
         RedrawPlayScreen();
         return false;
