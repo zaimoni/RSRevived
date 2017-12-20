@@ -20,14 +20,13 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
   internal class LOSSensor : Sensor
   {
     private Actor m_Actor;
-    private readonly SensingFilter m_Filters;
+    private readonly SensingFilter Filters;
 
     public HashSet<Point> FOV { get { return LOS.ComputeFOVFor(m_Actor); } }
-    public SensingFilter Filters { get { return m_Filters; } }
 
     public LOSSensor(SensingFilter filters)
     {
-      m_Filters = filters;
+      Filters = filters;
     }
 
     public void OwnedBy(Actor actor)
@@ -97,17 +96,17 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       HashSet<Point> m_FOV = FOV;
       actor.InterestingLocs?.Seen(actor.Location.Map,m_FOV);
       List<Percept> perceptList = new List<Percept>();
-      if ((m_Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
+      if ((Filters & SensingFilter.ACTORS) != SensingFilter.NONE) {
         ThreatTracking threats = actor.Threats;
         if (null != threats) _seeActors(perceptList,threats);
         else _seeActors(perceptList);
       }
-      if ((m_Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
+      if ((Filters & SensingFilter.ITEMS) != SensingFilter.NONE) {
         Zaimoni.Data.Ary2Dictionary<Location, Gameplay.GameItems.IDs, int> items = actor.Controller.ItemMemory;
         if (null != items) _seeItems(perceptList, items);
         else _seeItems(perceptList);
       }
-      if ((m_Filters & SensingFilter.CORPSES) != SensingFilter.NONE) {
+      if ((Filters & SensingFilter.CORPSES) != SensingFilter.NONE) {
         foreach (Point position in m_FOV) {
           List<Corpse> corpsesAt = actor.Location.Map.GetCorpsesAtExt(position.X, position.Y);
           if (corpsesAt != null)
