@@ -340,24 +340,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    public ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
+    protected ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals)
     {
       Actor leader = m_Actor.LiveLeader;
-      ItemRangedWeapon leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
-      Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
-      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
-      List<Point> leaderLoF = null;
-      if (checkLeaderLoF) {
-        leaderLoF = new List<Point>(1);
-        LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
-      }
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
         if (null != leader) {
           num -= (float)Rules.StdDistance(location, leader.Location);
-          if (checkLeaderLoF && leaderLoF.Contains(location.Position)) --num;
         }
         return num;
       }, (a, b) => a > b);

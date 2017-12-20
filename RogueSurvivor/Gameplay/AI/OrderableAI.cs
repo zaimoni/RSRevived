@@ -164,7 +164,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tmp.Any()) return true;
         tmp = tmp.Intersect(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
-        ret = (m_Actor.Controller as BaseAI).BehaviorWalkAwayFrom(tmp);
+        ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);
         return true;
       }
 
@@ -1556,6 +1556,31 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (0 < ret.Count ? ret : null);
     }
 
+    public ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals, HashSet<Point> LoF_reserve)
+    {
+      Actor leader = m_Actor.LiveLeader;
+      ItemRangedWeapon leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
+      Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
+      bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
+      List<Point> leaderLoF = null;
+      if (checkLeaderLoF) {
+        leaderLoF = new List<Point>(1);
+        LOS.CanTraceFireLine(leader.Location, actor.Location, leader_rw.Model.Attack.Range, leaderLoF);
+      }
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+        Location location = m_Actor.Location + dir;
+        if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
+        float num = SafetyFrom(location.Position, goals);
+        if (null != leader) {
+          num -= (float)Rules.StdDistance(location, leader.Location);
+          if (leaderLoF?.Contains(location.Position) ?? false) --num;
+          if (LoF_reserve?.Contains(location.Position) ?? false) --num;
+        }
+        return num;
+      }, (a, b) => a > b);
+      return ((choiceEval != null) ? new ActionBump(m_Actor, choiceEval.Choice) : null);
+    }
+
     private ActorAction BehaviorFlee(Actor enemy, Dictionary<Point, int> damage_field, HashSet<Point> LoF_reserve, bool doRun, string[] emotes)
     {
       var game = RogueForm.Game;
@@ -1622,7 +1647,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         // XXX or run for the exit here
-        tmpAction = BehaviorWalkAwayFrom(m_Actor.Controller.enemies_in_FOV.Keys);
+        tmpAction = (null!= m_Actor.Controller.enemies_in_FOV ? BehaviorWalkAwayFrom(m_Actor.Controller.enemies_in_FOV.Keys, LoF_reserve) : null);
         if (null != tmpAction) {
           if (doRun) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING;
