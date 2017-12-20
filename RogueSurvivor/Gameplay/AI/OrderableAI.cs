@@ -911,34 +911,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected static int ScoreRangedWeapon(ItemRangedWeapon w)
-    {
-      Attack rw_attack = w.Model.Attack;
-      return 1000 * rw_attack.Range + rw_attack.DamageValue;
-    }
-
-    protected ItemRangedWeapon GetBestRangedWeaponWithAmmo()
-    {
-      if (m_Actor.Inventory.IsEmpty) return null;
-      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
-        if (0 < rw.Ammo) return true;
-        var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
-        return null != ammo;
-      });
-      if (null == rws) return null;
-      if (1==rws.Count) return rws[0];
-      ItemRangedWeapon obj1 = null;
-      int num1 = 0;
-      foreach (ItemRangedWeapon w in rws) {
-        int num2 = ScoreRangedWeapon(w);
-        if (num2 > num1) {
-          obj1 = w;
-          num1 = num2;
-        }
-      }
-      return obj1;
-    }
-
     private ActorAction BehaviorMeleeSnipe(Actor en, Attack tmp_attack, bool one_on_one)
     {
       if (en.HitPoints>tmp_attack.DamageValue/2) return null;
@@ -1538,7 +1510,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var ret = new HashSet<Point>();
       var LoF = new List<Point>();
       foreach(var friend_where in friends) {
-        var rw = (friend_where.Value.Controller as OrderableAI)?.GetBestRangedWeaponWithAmmo();
+        var rw = (friend_where.Value.Controller as ObjectiveAI)?.GetBestRangedWeaponWithAmmo();
         if (null == rw) continue;
         if (!friend_where.Value.IsEnemyOf(enemy)) continue;
         // XXX not quite right (should use best reloadable weapon)
@@ -1548,7 +1520,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         int range = rw.Model.Attack.Range;
         // XXX not quite right (visibiblity range check omitted)
-        if (LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,friend_where.Key), enemy.Location.Position, range, friend_where.Value, LoF)) {
+        if (LOS.CanTraceViewLine(new Location(m_Actor.Location.Map,friend_where.Key), enemy.Location, range, LoF)) {
           ret.UnionWith(LoF);
           continue;
         }
@@ -1571,10 +1543,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Location location = m_Actor.Location + dir;
         if (!IsValidFleeingAction(Rules.IsBumpableFor(m_Actor, location))) return float.NaN;
         float num = SafetyFrom(location.Position, goals);
+        if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         if (null != leader) {
           num -= (float)Rules.StdDistance(location, leader.Location);
           if (leaderLoF?.Contains(location.Position) ?? false) --num;
-          if (LoF_reserve?.Contains(location.Position) ?? false) --num;
         }
         return num;
       }, (a, b) => a > b);

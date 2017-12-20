@@ -496,10 +496,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		  if (!f.IsEnemyOf(e)) continue;
 		  if (f.CurrentRangedAttack.Range<Rules.GridDistance(f.Location,e.Location)) continue;
 		  List<Point> line = new List<Point>();
-	      LOS.CanTraceFireLine(f.Location, e.Location, f.CurrentRangedAttack.Range, line);
-		  foreach(Point pt in line) {
-		    tmp.Add(pt);
-		  }
+	      LOS.CanTraceViewLine(f.Location, e.Location, f.CurrentRangedAttack.Range, line);
+          tmp.UnionWith(line);
 		}
 	  }
 	  return (0<tmp.Count ? tmp : null);
@@ -651,8 +649,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // src are legal steps
     protected ActorAction DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2, List<Percept> enemies, List<Percept> friends)
 	{
-	  Contract.Requires(null != src);
-	  Contract.Requires(null != src_r2);
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+      if (null == src_r2) throw new ArgumentNullException(nameof(src_r2));
+#endif
 	  List<Point> tmp = src.ToList();
 	  List<Point> tmp2 = src_r2.ToList();
 

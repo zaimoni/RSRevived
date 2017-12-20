@@ -222,23 +222,23 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange = int.MaxValue)
+    public static bool CanTraceViewLine(Location fromLocation, Point toPosition, int maxRange = int.MaxValue, List<Point> line=null)
     {
       Map map = fromLocation.Map;
       Point goal = toPosition;
 #if ANGBAND
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
+      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y),line);
 #else
       return LOS.AsymetricBresenhamTrace(maxRange, map, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (List<Point>)null, (Func<int, int, bool>)((x, y) => map.IsTransparent(x, y) || x == goal.X && y == goal.Y));
 #endif
     }
 
-    public static bool CanTraceViewLine(Location from, Location to, int maxRange)
+    public static bool CanTraceViewLine(Location from, Location to, int maxRange, List<Point> line = null)
     {
       if (from.Map == to.Map) return CanTraceViewLine(from, to.Position, maxRange);
       Location? test = from.Map.Denormalize(to);
       if (null == test) return false;
-      return CanTraceViewLine(from, test.Value.Position, maxRange);
+      return CanTraceViewLine(from, test.Value.Position, maxRange, line);
     }
 
     public static bool CanTraceHypotheticalFireLine(Location fromLocation, Point toPosition, int maxRange, Actor shooter, List<Point> line=null)
@@ -246,7 +246,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = fromLocation.Map;
       Point start = fromLocation.Position;
       Point goal = toPosition;
-      return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
+            return LOS.AngbandlikeTrace(maxRange, fromLocation.Position.X, fromLocation.Position.Y, toPosition.X, toPosition.Y, (Func<int, int, bool>)((x, y) =>
             {
 				if (x == start.X && y == start.Y) return true;
 				if (x == goal.X && y == goal.Y) return true;
@@ -255,6 +255,12 @@ namespace djack.RogueSurvivor.Engine
             }), line);
     }
 
+    public static bool CanTraceHypotheticalFireLine(Location from, Location to, int maxRange, Actor shooter, List<Point> line=null)
+    {
+      Location? test = from.Map.Denormalize(to);
+      if (null == test) return false;
+      return CanTraceHypotheticalFireLine(from, test.Value.Position, maxRange, shooter, line);
+    }
 
     public static bool CanTraceFireLine(Location fromLocation, Point toPosition, int maxRange, List<Point> line=null)
     {

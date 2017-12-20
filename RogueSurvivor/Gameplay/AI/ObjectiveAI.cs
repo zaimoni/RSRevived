@@ -977,6 +977,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
+    protected static int ScoreRangedWeapon(ItemRangedWeapon w)
+    {
+      Attack rw_attack = w.Model.Attack;
+      return 1000 * rw_attack.Range + rw_attack.DamageValue;
+    }
+
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
+    public ItemRangedWeapon GetBestRangedWeaponWithAmmo()
+    {
+      if (m_Actor.Inventory.IsEmpty) return null;
+      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>(rw => {
+        if (0 < rw.Ammo) return true;
+        var ammo = m_Actor.Inventory.GetItemsByType < ItemAmmo >(am => am.AmmoType==rw.AmmoType);
+        return null != ammo;
+      });
+      if (null == rws) return null;
+      if (1==rws.Count) return rws[0];
+      ItemRangedWeapon obj1 = null;
+      int num1 = 0;
+      foreach (ItemRangedWeapon w in rws) {
+        int num2 = ScoreRangedWeapon(w);
+        if (num2 > num1) {
+          obj1 = w;
+          num1 = num2;
+        }
+      }
+      return obj1;
+    }
+
   }
 }
