@@ -3572,11 +3572,16 @@ namespace djack.RogueSurvivor.Engine
         Gameplay.GameItems.IDs item_type = item_classes[index];
         Dictionary<Location, int> catalog = m_Player.Controller.WhereIs(item_type);
         List<string> tmp = new List<string>();
+        // for the same map, try to be useful by putting the "nearest" items first
+        var distances = new Dictionary<string, int>();
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
           if (loc_qty.Key.Map != Session.Get.CurrentMap) continue;
-          tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
+          string msg = loc_qty.Key.ToString() + ": " + loc_qty.Value.ToString();
+          tmp.Add(msg);
+          distances[msg] = Rules.GridDistance(m_Player.Location,loc_qty.Key);
         }
+        tmp.Sort((lhs,rhs) => distances[lhs].CompareTo(distances[rhs]));
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
           if (loc_qty.Key.Map.District != Session.Get.CurrentMap.District) continue;
