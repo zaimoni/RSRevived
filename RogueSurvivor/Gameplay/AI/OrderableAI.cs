@@ -2180,8 +2180,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
       }
+      { // scoping brace
+      int current_distance = Rules.GridDistance(m_Actor.Location, loc);
+      List<Point> legal_steps = m_Actor.LegalSteps;
+      var costs = new Dictionary<Point,int>();
+      var vis_costs = new Dictionary<Point,int>();
+      foreach(Point pt in legal_steps) {
+        Location test = new Location(m_Actor.Location.Map,pt);
+        int dist = Rules.GridDistance(test,loc);
+        if (dist >= current_distance) continue;
+        costs[pt] = dist;
+        // this particular heuristic breaks badly if it loses sight of its target
+        if (!LOS.ComputeFOVFor(m_Actor,test).Contains(loc.Position)) continue;
+        vis_costs[pt] = dist;
+      }
 
-      return BehaviorIntelligentBumpToward(loc);
+      ActorAction tmpAction = DecideMove(vis_costs.Keys);
+      if (null != tmpAction) {
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+      tmpAction = DecideMove(costs.Keys);
+      if (null != tmpAction) {
+        if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+      } // end scoping brace
+      return null;
     }
 
     protected ActorAction BehaviorFindTrade(List<Percept> friends, List<Item> TradeableItems)
