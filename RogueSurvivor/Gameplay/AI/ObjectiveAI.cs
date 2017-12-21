@@ -275,8 +275,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      // reload weapons before dropping ammo
+      { // scoping brace
+      if (it is ItemAmmo ammo) {
+        foreach(Item obj in m_Actor.Inventory.Items) {
+          if (   obj is ItemRangedWeapon rw 
+              && rw.AmmoType==ammo.AmmoType 
+              && rw.Ammo < rw.Model.MaxAmmo) {
+            RogueForm.Game.DoEquipItem(m_Actor,rw);
+            return new ActionUseItem(m_Actor, ammo);
+          }
+        }
+      }
+      } // end scoping brace
+
+
       if (m_Actor.CanUnequip(it)) RogueForm.Game.DoUnequipItem(m_Actor,it);
-//    MarkItemAsTaboo(it,WorldTime.TURNS_PER_HOUR+Session.Get.CurrentMap.LocalTime.TurnCounter);    // XXX can be called from simulation thread
 
       List<Point> has_container = new List<Point>();
       foreach(Point pos in Direction.COMPASS.Select(dir => m_Actor.Location.Position+dir)) {
@@ -578,14 +592,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // uninteresting ammo
       ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
 //    ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
-      if (null != tmpAmmo) {
-        ItemRangedWeapon tmpRw = m_Actor.GetCompatibleRangedWeapon(tmpAmmo);
-        if (null != tmpRw && tmpRw.Ammo >= tmpRw.Model.MaxAmmo) { // inline a key part of the CanUse check here; stack overflow otherwise
-          tmpAmmo = inv.GetBestDestackable(tmpAmmo) as ItemAmmo;
-          if (null != tmpAmmo) return new ActionUseItem(m_Actor, tmpAmmo);
-        }
-        return BehaviorDropItem(tmpAmmo);
-      }
+      if (null != tmpAmmo) return BehaviorDropItem(tmpAmmo);
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
       ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
@@ -601,7 +608,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ItemModel model = Models.Items[(int)x];
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
-            if (m_Actor.CanUse(ammo)) return new ActionUseItem(m_Actor, ammo);    // completeness; should not trigger due to above
             return BehaviorDropItem(ammo);
           }
         }
@@ -612,14 +618,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
-        if (null != test) {
-            if (m_Actor.CanUse(test)) return new ActionUseItem(m_Actor, test);    // completeness; should not trigger due to above
-            return BehaviorDropItem(test);
-        }
+        return BehaviorDropItem(test);
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
       if (it is ItemAmmo && 1<=m_Actor.Count(it.Model)) return null;
+      if (it is ItemAmmo && AmmoAtLimit) return null;
 
       // if inventory is full and the problem is ranged weapon at this point, ignore if we already have one
       if (it is ItemRangedWeapon && 1<= inv.CountType<ItemRangedWeapon>()) return null;
@@ -693,14 +697,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsInterestingItem(ItemAmmo am)
     {
-      if (m_Actor.GetCompatibleRangedWeapon(am) == null) {
+      ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+      if (null == rw) {
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
         if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
       } else {
         if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return false;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
       }
-      if (AmmoAtLimit) return false;
       return _InterestingItemPostprocess(am);
     }
 
@@ -778,6 +782,60 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (RogueForm.Game.Rules.RollChance(Rules.ActorCharismaticTradeChance(speaker))) return true;
       return IsInterestingItem(offeredItem);
     }
+
+#if PROTOTYPE
+    private Dictionary<Point, Inventory> GetAccessibleInventories()
+    {
+      Dictionary<Point,Inventory> ground_inv = new Dictionary<Point, Inventory>();
+      Inventory inv = m_Actor.Location.Items;
+      if (null!=inv) ground_inv[m_Actor.Location.Position] = inv;
+      foreach(var dir in Direction.COMPASS) {
+        Point pt = m_Actor.Location.Position + dir;
+        inv = m_Actor.Location.Map.GetItemsAtExt(pt);
+        if (null == inv) continue;
+        MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAtExt(pt.X,pt.Y);
+        if (null == mapObjectAt) continue;
+        if (!mapObjectAt.IsContainer) continue; // XXX this is scheduled for revision
+        ground_inv[pt] = inv;
+      }
+      return ground_inv;
+    }
+#endif
+
+    // we are having some problems with breaking an action loop that requires reloading a weapon to make ammo gettable, when already at ammo limit
+    // the logic is there but it's not being reached.
+    // issue w/recovery logic and ammo
+    protected ActorAction InventoryStackTactics(Location loc)
+    {
+      if (m_Actor.Inventory.IsEmpty) return null;
+#if PROTOTYPE
+      Dictionary<Point,Inventory> ground_inv = GetAccessibleInventories();
+      if (0 >= ground_inv.Count) return null;
+#endif
+      
+      // The index case.
+      {
+      var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
+      if (0 < (rws?.Count ?? 0)) {
+        foreach(var rw in rws) {
+          if (rw.Ammo < rw.Model.MaxAmmo) {
+            // usually want to reload this even if we had to drop ammo as a recovery option
+            int i = Objectives.Count;
+            while(0<i) {
+              if (Objectives[--i] is Goal_DoNotPickup dnp) {
+                if (dnp.Avoid != (GameItems.IDs)((int)(rw.AmmoType)+(int)(GameItems.IDs.AMMO_LIGHT_PISTOL))) continue;
+                Objectives.RemoveAt(i);
+              }
+            }
+          }
+        }
+      }
+      }
+
+      return null;
+    }
+
+    protected ActorAction InventoryStackTactics() { return InventoryStackTactics(m_Actor.Location); }
 
     /// <remark>Intentionally asymmetric.  Call this twice to get proper coverage.
     /// Will ultimately end up in ObjectiveAI when AI state needed.</remark>

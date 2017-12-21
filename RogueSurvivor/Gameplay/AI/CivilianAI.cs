@@ -441,6 +441,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // XXX this should lose to same-map threat hunting at close ETA
+      tmpAction = InventoryStackTactics();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "inventory management failsafe triggered");
+#endif
+      if (null != tmpAction) return tmpAction;
+
+      // XXX this should lose to same-map threat hunting at close ETA
       if (null == enemies && Directives.CanTakeItems) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "checking for items to take");

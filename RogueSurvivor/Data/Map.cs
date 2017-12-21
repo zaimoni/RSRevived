@@ -1259,6 +1259,11 @@ retry:
 #endif
     }
 
+    public Inventory GetItemsAtExt(Point pt)
+    {
+      return GetItemsAtExt(pt.X,pt.Y);
+    }
+
     public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
     {
       Inventory itemsAt = GetItemsAt(pos);

@@ -31,16 +31,12 @@ namespace djack.RogueSurvivor.Engine.Actions
       m_Position = loc.Position;
       m_Item = it;
 #if DEBUG
-      Inventory itemsAt = actor.Location.Map.GetItemsAtExt(loc.Position.X,loc.Position.Y);
+      Inventory itemsAt = actor.Location.Map.GetItemsAtExt(loc.Position);
       if (null == itemsAt || !itemsAt.Contains(it)) throw new InvalidOperationException("tried to take "+it.ToString()+" from stack that didn't have it");
 #endif
     }
 
-    public Item Item {
-      get {
-        return m_Item;
-      }
-    }
+    public Item Item { get { return m_Item; } }
 
     // just because it was ok at construction time doesn't mean it's ok now (also used for containers)
     public override bool IsLegal()
@@ -86,7 +82,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     private void init()
     {
-      if (null != m_Item && (m_Actor.Location.Map.GetItemsAtExt(m_pos.Value.X, m_pos.Value.Y)?.Contains(m_Item) ?? false)) return;
+      if (null != m_Item && (m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)?.Contains(m_Item) ?? false)) return;
       Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
       ItemModel model = Models.Items[(int)m_ID];
       m_Item = itemsAt?.GetFirstByModel(model);
@@ -96,7 +92,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       }
       foreach(Direction dir in Direction.COMPASS) {
         Point pt = m_Actor.Location.Position+dir;
-        itemsAt = m_Actor.Location.Map.GetItemsAtExt(pt.X,pt.Y);
+        itemsAt = m_Actor.Location.Map.GetItemsAtExt(pt);
         if (null == itemsAt) continue;
         MapObject obj = m_Actor.Location.Map.GetMapObjectAtExt(pt.X,pt.Y);
         if (!obj?.IsContainer ?? false) continue;

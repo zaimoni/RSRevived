@@ -4203,7 +4203,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
         // RS revived: Trading with inventory.  XXX NPCs aren't up to this yet
-        Inventory ground_inv = player.Location.Map.GetItemsAtExt(point.X,point.Y);
+        Inventory ground_inv = player.Location.Map.GetItemsAtExt(point);
         if (0 >= (inv?.CountItems ?? 0)) ground_inv = null;
         else if (direction != Direction.NEUTRAL) {
           MapObject obj = player.Location.Map.GetMapObjectAtExt(point.X,point.Y);
@@ -8003,7 +8003,7 @@ namespace djack.RogueSurvivor.Engine
         } else
           AddMessage(new Data.Message(string.Format("{0} is hit for no damage.", actorAt.Name), map.LocalTime.TurnCounter, Color.White));
       }
-      Inventory itemsAt = location.Map.GetItemsAtExt(location.Position.X,location.Position.Y);
+      Inventory itemsAt = location.Map.GetItemsAtExt(location.Position);
       if (itemsAt != null) {
         ExplosionChainReaction(itemsAt, location);
         int chance = num1;
