@@ -9131,8 +9131,9 @@ namespace djack.RogueSurvivor.Engine
       deadGuy.Location.Map.Remove(deadGuy);
       if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty) {
         // the implicit police radio goes explicit on death, as a generic item
-        if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID && m_Rules.RollChance(Rules.VICTIM_DROP_GENERIC_ITEM_CHANCE)) {
-          deadGuy.Location.Map.DropItemAt(BaseMapGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
+        if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID) {
+          Item it = BaseMapGenerator.MakeItemPoliceRadio();
+          if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Map.DropItemAt(BaseMapGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
         }
         Item[] objArray = deadGuy.Inventory.Items.ToArray();
         foreach (Item it in objArray) {

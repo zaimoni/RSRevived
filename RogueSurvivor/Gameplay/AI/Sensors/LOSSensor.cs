@@ -31,7 +31,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     public Dictionary<Point,Actor> friends { get { return _friends; } } // reference-return
     public Dictionary<Point, Actor> enemies { get { return _enemies; } } // reference-return
 
-        public LOSSensor(SensingFilter filters)
+    public LOSSensor(SensingFilter filters)
     {
       Filters = filters;
     }
@@ -58,6 +58,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     private void _seeActors(List<Percept> perceptList, ThreatTracking threats)
     {
+        _enemies = null;
+        _friends = null;
         HashSet<Point> has_threat = (null==threats ? null : new HashSet<Point>());
         foreach (Point pt in FOV) {
           Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
@@ -65,6 +67,8 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           if (actorAt== m_Actor) continue;
           if (actorAt.IsDead) continue;
           perceptList.Add(new Percept(actorAt, m_Actor.Location.Map.LocalTime.TurnCounter, actorAt.Location));
+          if (m_Actor.IsEnemyOf(actorAt)) (_enemies ?? (_enemies = new Dictionary<Point,Actor>()))[pt] = actorAt;
+          else (_friends ?? (_friends = new Dictionary<Point,Actor>()))[pt] = actorAt;
           if (!m_Actor.IsEnemyOf(actorAt)) continue;
           threats.Sighted(actorAt, actorAt.Location); // XXX change target for cross-district vision
           has_threat.Add(pt);
