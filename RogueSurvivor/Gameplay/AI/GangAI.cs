@@ -225,7 +225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> percepts3 = percepts_all.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
-          if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
+          if (IsOccupiedByOther(p.Location)) return true; // blocked
           return null == BehaviorWouldGrabFromStack(p.Location, p.Percepted as Inventory);
         });
         if (percepts3 != null) {

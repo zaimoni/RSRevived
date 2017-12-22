@@ -2167,6 +2167,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         may_take = true;
 
       if (may_take) {
+#if DEBUG
+        if (m_Actor.IsDebuggingTarget) throw new InvalidOperationException(may_take.ToString());
+#endif
         tmp = new ActionTakeItem(m_Actor, loc, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
@@ -2182,17 +2185,26 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       { // scoping brace
       int current_distance = Rules.GridDistance(m_Actor.Location, loc);
+      Location? denorm = m_Actor.Location.Map.Denormalize(loc);
       List<Point> legal_steps = m_Actor.LegalSteps;
       var costs = new Dictionary<Point,int>();
       var vis_costs = new Dictionary<Point,int>();
-      foreach(Point pt in legal_steps) {
+      if (legal_steps.Contains(denorm.Value.Position)) {
+        Point pt = denorm.Value.Position;
         Location test = new Location(m_Actor.Location.Map,pt);
-        int dist = Rules.GridDistance(test,loc);
-        if (dist >= current_distance) continue;
-        costs[pt] = dist;
+        costs[pt] = 1;
         // this particular heuristic breaks badly if it loses sight of its target
-        if (!LOS.ComputeFOVFor(m_Actor,test).Contains(loc.Position)) continue;
-        vis_costs[pt] = dist;
+        if (LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) vis_costs[pt] = 1;
+      } else {
+        foreach(Point pt in legal_steps) {
+          Location test = new Location(m_Actor.Location.Map,pt);
+          int dist = Rules.GridDistance(test,loc);
+          if (dist >= current_distance) continue;
+          costs[pt] = dist;
+          // this particular heuristic breaks badly if it loses sight of its target
+          if (!LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) continue;
+          vis_costs[pt] = dist;
+        }
       }
 
       ActorAction tmpAction = DecideMove(vis_costs.Keys);

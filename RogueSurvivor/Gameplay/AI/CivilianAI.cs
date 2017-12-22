@@ -457,7 +457,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         List<Percept> perceptList2 = percepts1.FilterT<Inventory>().FilterOut(p =>
         {
           if (p.Turn != map.LocalTime.TurnCounter) return true; // not in sight
-          if (IsOccupiedByOther(map, p.Location.Position)) return true; // blocked
+          if (IsOccupiedByOther(p.Location)) return true; // blocked
           if (!m_Actor.MayTakeFromStackAt(p.Location.Position)) {    // something wrong, e.g. iron gates in way
             if (!imStarvingOrCourageous && map.TrapsMaxDamageAt(p.Location.Position) >= m_Actor.HitPoints) return true;  // destination deathtrapped
             // check for iron gates, etc in way

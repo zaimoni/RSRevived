@@ -1179,9 +1179,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected bool IsOccupiedByOther(Map map, Point position)
+    protected bool IsOccupiedByOther(Location loc)  // percept locations are normalized
     {
-      Actor actorAt = map.GetActorAt(position);
+      Actor actorAt = loc.Actor;
       if (actorAt != null) return actorAt != m_Actor;
       return false;
     }
