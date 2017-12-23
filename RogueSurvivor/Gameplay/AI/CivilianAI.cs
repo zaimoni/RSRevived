@@ -440,6 +440,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
+      if (m_Actor.Model.Abilities.HasSanity) {  // not logically civilian-specific, but needs a rework anyway
+        if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
+          tmpAction = BehaviorUseEntertainment();
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using entertainment");
+#endif
+          if (null != tmpAction)  return tmpAction;
+        }
+      }
+
       // XXX this should lose to same-map threat hunting at close ETA
       tmpAction = InventoryStackTactics();
 #if TRACE_SELECTACTION
@@ -550,16 +560,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         m_Actor.Activity = Activity.IDLE;
         return tmpAction;
-      }
-
-      if (m_Actor.Model.Abilities.HasSanity) {  // not logically civilian-specific, but needs a rework anyway
-        if (m_Actor.Sanity < 3*m_Actor.MaxSanity/4) {
-          tmpAction = BehaviorUseEntertainment();
-#if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "using entertainment");
-#endif
-          if (null != tmpAction)  return tmpAction;
-        }
       }
 
       // XXX if we have item memory, check whether "critical items" have a known location.  If so, head for them (floodfill pathfinding)
