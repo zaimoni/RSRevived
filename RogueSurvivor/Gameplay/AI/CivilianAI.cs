@@ -497,8 +497,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
           Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+"has abandoned getting the items at "+ percept.Location.Position);
 #endif
+#if DEBUG
           ActorAction failed = BehaviorWouldGrabFromStack(percept.Location, percept.Percepted as Inventory);
           throw new InvalidOperationException("Prescreen for avoidng taboo tile marking failed: "+failed.ToString()+" "+failed.IsLegal().ToString());
+#endif
         }
         if (Directives.CanTrade) {
           List<Item> TradeableItems = GetTradeableItems();

@@ -2205,6 +2205,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) continue;
           vis_costs[pt] = dist;
         }
+        // above fails if a direct diagonal path is blocked.
+        if (0 >= costs.Count) {
+          foreach(Point pt in legal_steps) {
+            Location test = new Location(m_Actor.Location.Map,pt);
+            int dist = Rules.GridDistance(test,loc);
+            if (dist == current_distance) continue;
+            costs[pt] = dist;
+            // this particular heuristic breaks badly if it loses sight of its target
+            if (!LOS.ComputeFOVFor(m_Actor,test).Contains(denorm.Value.Position)) continue;
+            vis_costs[pt] = dist;
+          }
+        }
       }
 
       ActorAction tmpAction = DecideMove(vis_costs.Keys);
