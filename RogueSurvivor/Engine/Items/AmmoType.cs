@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Items
     HEAVY_RIFLE = 3,
     SHOTGUN = 4,
     BOLT = 5,
-//  _COUNT = 6,
+    _COUNT
   }
 
   static internal class ExtensionAmmoType

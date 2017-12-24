@@ -1264,6 +1264,24 @@ retry:
       return GetItemsAtExt(pt.X,pt.Y);
     }
 
+    public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
+    {
+      Dictionary<Point,Inventory> ground_inv = new Dictionary<Point, Inventory>();
+      Inventory inv = GetItemsAtExt(pt);
+      if (null!=inv) ground_inv[pt] = inv;
+      foreach(var dir in Direction.COMPASS) {
+        Point adjacent = pt + dir;
+        inv = GetItemsAtExt(adjacent);
+        if (null == inv) continue;
+        MapObject mapObjectAt = GetMapObjectAtExt(adjacent.X, adjacent.Y);
+        if (null == mapObjectAt) continue;
+        if (!mapObjectAt.IsContainer) continue; // XXX this is scheduled for revision
+        ground_inv[adjacent] = inv;
+      }
+      return ground_inv;
+    }
+
+
     public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
     {
       Inventory itemsAt = GetItemsAt(pos);

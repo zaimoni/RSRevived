@@ -8196,6 +8196,23 @@ namespace djack.RogueSurvivor.Engine
       target.AddAll(itSpeaker);
     }
 
+    public void DoTradeWithContainer(Actor actor, Point pos, Item give, Item take)
+    {
+      Inventory dest = actor.Location.Map.GetItemsAtExt(pos);
+
+      bool flag1 = ForceVisibleToPlayer(actor);   // constant true (see above)
+      if (flag1)
+        AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
+
+      actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (give.IsEquipped) DoUnequipItem(actor, give);
+      actor.Inventory.RemoveAllQuantity(give);
+      dest.RemoveAllQuantity(take);
+      actor.Inventory.AddAll(take);
+      dest.AddAll(give);
+    }
+
+
     /// <remark>speaker's item is Key of trade; target's item is Value</remark>
     private void DoTrade(Actor speaker, KeyValuePair<Item, Item>? trade, Actor target, bool doesTargetCheckForInterestInOffer)
     {

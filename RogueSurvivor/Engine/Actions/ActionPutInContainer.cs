@@ -1,5 +1,5 @@
-﻿using System.Drawing;
-using System.Diagnostics.Contracts;
+﻿using System;
+using System.Drawing;
 using djack.RogueSurvivor.Data;
 
 namespace djack.RogueSurvivor.Engine.Actions
@@ -14,7 +14,9 @@ namespace djack.RogueSurvivor.Engine.Actions
         public ActionPutInContainer(Actor actor, Item it, Point position)
         : base(actor)
         {
-            Contract.Requires(null != it);
+#if DEBUG
+            if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
             m_Item = it;
             m_Position = position;
             actor.Activity = Activity.IDLE;

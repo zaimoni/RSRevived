@@ -7,6 +7,7 @@
 using djack.RogueSurvivor.Data;
 using System;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -83,22 +84,15 @@ namespace djack.RogueSurvivor.Engine.Actions
     private void init()
     {
       if (null != m_Item && (m_Actor.Location.Map.GetItemsAtExt(m_pos.Value)?.Contains(m_Item) ?? false)) return;
-      Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
+      Dictionary<Point,Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+      if (0 > (stacks?.Count ?? 0)) return;
+
       ItemModel model = Models.Items[(int)m_ID];
-      m_Item = itemsAt?.GetFirstByModel(model);
-      if (null != m_Item) {
-        m_pos = m_Actor.Location.Position;
-        return;
-      }
-      foreach(Direction dir in Direction.COMPASS) {
-        Point pt = m_Actor.Location.Position+dir;
-        itemsAt = m_Actor.Location.Map.GetItemsAtExt(pt);
-        if (null == itemsAt) continue;
-        MapObject obj = m_Actor.Location.Map.GetMapObjectAtExt(pt.X,pt.Y);
-        if (!obj?.IsContainer ?? false) continue;
-        m_Item = itemsAt.GetFirstByModel(model);
+
+      foreach(var x in stacks) {
+        m_Item = x.Value.GetFirstByModel(model);
         if (null != m_Item) {
-          m_pos = pt;
+          m_pos = x.Key;
           return;
         }
       }

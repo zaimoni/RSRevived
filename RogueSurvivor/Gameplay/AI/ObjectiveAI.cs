@@ -15,6 +15,7 @@ using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInConta
 using ActionTake = djack.RogueSurvivor.Engine.Actions.ActionTake;
 using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
 using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
+using ActionTradeWithContainer = djack.RogueSurvivor.Engine.Actions.ActionTradeWithContainer;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -263,9 +264,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
+    private ActorAction _PrefilterDrop(Item it)
+    {
+      // use stimulants before dropping them
+      if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
+        if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
+          int need = m_Actor.MaxSleep - m_Actor.SleepPoints;
+          int num4 = Rules.ActorMedicineEffect(m_Actor, stim2.SleepBoost);
+          if (num4 <= need &&  m_Actor.CanUse(stim2)) return new ActionUseItem(m_Actor, stim2);
+        }
+      }
+
+      // reload weapons before dropping ammo
+      { // scoping brace
+      if (it is ItemAmmo ammo) {
+        foreach(Item obj in m_Actor.Inventory.Items) {
+          if (   obj is ItemRangedWeapon rw 
+              && rw.AmmoType==ammo.AmmoType 
+              && rw.Ammo < rw.Model.MaxAmmo) {
+            RogueForm.Game.DoEquipItem(m_Actor,rw);
+            return new ActionUseItem(m_Actor, ammo);
+          }
+        }
+      }
+      } // end scoping brace
+      return null;
+    }
+
     protected ActorAction BehaviorDropItem(Item it)
     {
       if (it == null) return null;
+      ActorAction tmp = _PrefilterDrop(it);
+      if (null != tmp) return tmp;
+
       // use stimulants before dropping them
       if (GameItems.IDs.MEDICINE_PILLS_SLP == it.Model.ID) {
         if (m_Actor.Inventory.GetBestDestackable(it) is ItemMedicine stim2) {
@@ -370,7 +401,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorMakeRoomFor(Item it)
+    private ActorAction _BehaviorDropOrExchange(Item give, Item take, Point? position)
+    {
+      ActorAction tmp = _PrefilterDrop(give);
+      if (null != tmp) return tmp;
+      if (null != position) return new ActionTradeWithContainer(m_Actor,give,take,position.Value);
+      return BehaviorDropItem(give);
+    }
+
+    protected ActorAction BehaviorMakeRoomFor(Item it, Point? position=null)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -383,15 +422,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // not-best body armor can be dropped
       if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
         ItemBodyArmor armor = m_Actor.GetWorstBodyArmor();
-        if (null != armor) return BehaviorDropItem(armor);
+        if (null != armor) return _BehaviorDropOrExchange(armor,it,position);
       }
 
       { // not-best melee weapon can be dropped
         List<ItemMeleeWeapon> melee = inv.GetItemsByType<ItemMeleeWeapon>();
         if (null != melee) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-          if (2<=melee.Count) return BehaviorDropItem(weapon);
-          if (it is ItemMeleeWeapon && weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating) return BehaviorDropItem(weapon);
+          if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, position);
+          if (it is ItemMeleeWeapon && weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating) return _BehaviorDropOrExchange(weapon, it, position);
         }
       }
 
@@ -450,10 +489,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (null != drop) {
             List<ActorAction> recover = new List<ActorAction>(3);
-            // 3a) drop target without triggering the no-pickup schema
-            recover.Add(new ActionDropItem(m_Actor,drop));
-            // 3b) pick up ammo
-            recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            if (null != position) {
+              ActorAction tmp = _PrefilterDrop(drop);
+              if (null != tmp) return tmp;
+
+              // 3a) drop target without triggering the no-pickup schema
+              recover.Add(new ActionTradeWithContainer(m_Actor,drop,it,position.Value));
+            } else {
+              // 3a) drop target without triggering the no-pickup schema
+              recover.Add(new ActionDropItem(m_Actor,drop));
+              // 3b) pick up ammo
+              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
             recover.Add(new ActionUse(m_Actor, it.Model.ID));
             return new ActionChain(m_Actor,recover);
@@ -479,10 +526,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
           if (null != drop) {
             List<ActorAction> recover = new List<ActorAction>(3);
-            // 3a) drop target without triggering the no-pickup schema
-            recover.Add(new ActionDropItem(m_Actor,drop));
-            // 3b) pick up ammo
-            recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            if (null != position) {
+              ActorAction tmp = _PrefilterDrop(drop);
+              if (null != tmp) return tmp;
+
+              // 3a) drop target without triggering the no-pickup schema
+              recover.Add(new ActionTradeWithContainer(m_Actor,drop,it,position.Value));
+            } else {
+              // 3a) drop target without triggering the no-pickup schema
+              recover.Add(new ActionDropItem(m_Actor,drop));
+              // 3b) pick up ammo
+              recover.Add(new ActionTake(m_Actor,it.Model.ID));
+            }
             // 3c) use ammo just picked up : arguably ActionUseItem; use ActionUse(Actor actor, Gameplay.GameItems.IDs it)
             recover.Add(new ActionUse(m_Actor, it.Model.ID));
             return new ActionChain(m_Actor,recover);
@@ -500,6 +555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
           if (null != drop) {
+            if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
             List<ActorAction> recover = new List<ActorAction>(2);
             // 3a) drop target without triggering the no-pickup schema
             recover.Add(new ActionDropItem(m_Actor,drop));
@@ -524,7 +580,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null != armor && armor.Rating < (it as ItemBodyArmor).Rating) {
-          return BehaviorDropItem(armor);
+          return _BehaviorDropOrExchange(armor, it, position);
         }
       }
 
@@ -534,7 +590,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ItemModel model = Models.Items[(int)x];
         if (2>m_Actor.Count(model)) continue;
         Item tmp = m_Actor.Inventory.GetBestDestackable(model);
-        if (null != tmp) return BehaviorDropItem(tmp);
+        if (null != tmp) return _BehaviorDropOrExchange(tmp, it, position);
+
       }
 
       // trackers (mainly because AI can't use properly), but cell phones are trackers
@@ -547,39 +604,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // ditch an unwanted tracker if possible
       ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
-      if (null != tmpTracker) return BehaviorDropItem(tmpTracker);
+      if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, position);
 
       // ahem...food glut, of all things
       ItemFood tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter));
-      if (null != tmpFood) return BehaviorDropItem(tmpFood);
+      if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
       tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsExpiredAt(m_Actor.Location.Map.LocalTime.TurnCounter));
-      if (null != tmpFood) return BehaviorDropItem(tmpFood);
+      if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
       tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f));
-      if (null != tmpFood) return BehaviorDropItem(tmpFood);
+      if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemSprayScent) return null;
       ItemSprayScent tmpSprayScent = inv.GetFirstMatching<ItemSprayScent>();
-      if (null != tmpSprayScent) return BehaviorDropItem(tmpSprayScent);
+      if (null != tmpSprayScent) return _BehaviorDropOrExchange(tmpSprayScent, it, position);
 
       if (it is ItemBarricadeMaterial) return null;
       ItemBarricadeMaterial tmpBarricade = inv.GetFirstMatching<ItemBarricadeMaterial>();
-      if (null != tmpBarricade) return BehaviorDropItem(tmpBarricade);
+      if (null != tmpBarricade) return _BehaviorDropOrExchange(tmpBarricade, it, position);
 
       if (it is ItemEntertainment) return null;
       ItemEntertainment tmpEntertainment = inv.GetFirstMatching<ItemEntertainment>();
-      if (null != tmpEntertainment) return BehaviorDropItem(tmpEntertainment);
+      if (null != tmpEntertainment) return _BehaviorDropOrExchange(tmpEntertainment, it, position);
 
       if (it is ItemTrap) return null;
       ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>();
-      if (null != tmpTrap) return BehaviorDropItem(tmpTrap);
+      if (null != tmpTrap) return _BehaviorDropOrExchange(tmpTrap, it, position);
 
       if (it is ItemLight) return null;
       if (it is ItemMedicine) return null;
 
       // ditch unimportant items
       ItemMedicine tmpMedicine = inv.GetFirstMatching<ItemMedicine>();
-      if (null != tmpMedicine) return BehaviorDropItem(tmpMedicine);
+      if (null != tmpMedicine) return _BehaviorDropOrExchange(tmpMedicine, it, position);
 
       // least charged flashlight goes
       List<ItemLight> lights = inv.GetItemsByType<ItemLight>();
@@ -592,13 +649,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // uninteresting ammo
       ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => null == m_Actor.GetCompatibleRangedWeapon(ammo));  // not quite the full check here.  Problematic if no ranged weapons at all.
 //    ItemAmmo tmpAmmo = inv.GetFirstMatching<ItemAmmo>(ammo => !IsInterestingItem(ammo));  // full check, triggers infinite recursion
-      if (null != tmpAmmo) return BehaviorDropItem(tmpAmmo);
+      if (null != tmpAmmo) return _BehaviorDropOrExchange(tmpAmmo, it, position);
 
       // ranged weapon with zero ammo is ok to drop for something other than its own ammo
       ItemRangedWeapon tmpRw2 = inv.GetFirstMatching<ItemRangedWeapon>(rw => 0 >= rw.Ammo);
       if (null != tmpRw2) {
          bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
-         if (!reloadable) return BehaviorDropItem(tmpRw2);
+         if (!reloadable) return _BehaviorDropOrExchange(tmpRw2, it, position);
       }
 
 
@@ -608,7 +665,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ItemModel model = Models.Items[(int)x];
           if (2<=m_Actor.Count(model)) {
             ItemAmmo ammo = inv.GetBestDestackable(model) as ItemAmmo;
-            return BehaviorDropItem(ammo);
+            return _BehaviorDropOrExchange(ammo, it, position);
           }
         }
         // if we have two clips of any type, trading the smaller one for a melee weapon or food is ok
@@ -618,7 +675,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
              if (null == test || test.Quantity>ammo.Quantity) test = ammo;
           }
         }
-        return BehaviorDropItem(test);
+        return _BehaviorDropOrExchange(test, it, position);
       }
 
       // if inventory is full and the problem is ammo at this point, ignore if we already have a full clip
@@ -631,12 +688,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // grenades next
       if (it is ItemGrenade) return null;
       ItemGrenade tmpGrenade = inv.GetFirstMatching<ItemGrenade>();
-      if (null != tmpGrenade) return BehaviorDropItem(tmpGrenade);
+      if (null != tmpGrenade) return _BehaviorDropOrExchange(tmpGrenade, it, position);
 
       // important trackers go for ammo
       if (it is ItemAmmo) {
         ItemTracker discardTracker = inv.GetFirstMatching<ItemTracker>();
-        if (null != discardTracker) return BehaviorDropItem(discardTracker);
+        if (null != discardTracker) return _BehaviorDropOrExchange(discardTracker, it, position);
       }
 
 #if DEBUG
@@ -783,24 +840,53 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return IsInterestingItem(offeredItem);
     }
 
-#if PROTOTYPE
-    private Dictionary<Point, Inventory> GetAccessibleInventories()
+    private void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon> rws, Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
     {
-      Dictionary<Point,Inventory> ground_inv = new Dictionary<Point, Inventory>();
-      Inventory inv = m_Actor.Location.Items;
-      if (null!=inv) ground_inv[m_Actor.Location.Position] = inv;
-      foreach(var dir in Direction.COMPASS) {
-        Point pt = m_Actor.Location.Position + dir;
-        inv = m_Actor.Location.Map.GetItemsAtExt(pt);
-        if (null == inv) continue;
-        MapObject mapObjectAt = m_Actor.Location.Map.GetMapObjectAtExt(pt.X,pt.Y);
-        if (null == mapObjectAt) continue;
-        if (!mapObjectAt.IsContainer) continue; // XXX this is scheduled for revision
-        ground_inv[pt] = inv;
-      }
-      return ground_inv;
+        if (!rws?.Any() ?? true) return;
+
+        best_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
+        reload_empty_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
+        discard_empty_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
+        reload_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
+        bool keep_empty = false;
+        bool keep_reload = false;
+        
+        foreach(var rw in rws) {
+          // note that "better" ranged weapons taking the same ammo have larger clips
+          if (0==rw.Ammo) {
+            if (null == reload_empty_rw[pt][(int)rw.AmmoType]) reload_empty_rw[pt][(int)rw.AmmoType] = rw;
+            else if (reload_empty_rw[pt][(int)rw.AmmoType].Model.MaxAmmo < rw.Model.MaxAmmo) reload_empty_rw[pt][(int)rw.AmmoType] = rw;
+            if (null == discard_empty_rw[pt][(int)rw.AmmoType]) discard_empty_rw[pt][(int)rw.AmmoType] = rw;
+            else if (discard_empty_rw[pt][(int)rw.AmmoType].Model.MaxAmmo > rw.Model.MaxAmmo) discard_empty_rw[pt][(int)rw.AmmoType] = rw;
+            keep_empty = true;
+          }
+          if (rw.Model.MaxAmmo > rw.Ammo) {
+            if (null == reload_rw[pt][(int)rw.AmmoType]) reload_rw[pt][(int)rw.AmmoType] = rw;
+            else if (reload_rw[pt][(int)rw.AmmoType].Model.MaxAmmo < rw.Model.MaxAmmo) reload_rw[pt][(int)rw.AmmoType] = rw;
+            else if ((reload_rw[pt][(int)rw.AmmoType].Model.MaxAmmo - reload_rw[pt][(int)rw.AmmoType].Ammo) < (rw.Model.MaxAmmo-rw.Ammo)) reload_rw[pt][(int)rw.AmmoType] = rw;
+            keep_reload = true;
+          }
+          if (null == best_rw[pt][(int)rw.AmmoType]) {
+            best_rw[pt][(int)rw.AmmoType] = rw;
+            continue;
+          }
+          if (best_rw[pt][(int)rw.AmmoType].Ammo < rw.Ammo) {
+            best_rw[pt][(int)rw.AmmoType] = rw;
+            continue;
+          }
+          if (best_rw[pt][(int)rw.AmmoType].Model.MaxAmmo < rw.Model.MaxAmmo) {
+            best_rw[pt][(int)rw.AmmoType] = rw;
+            continue;
+          }
+        }
+        if (!keep_empty) {
+          reload_empty_rw.Remove(pt);
+          discard_empty_rw.Remove(pt);
+        }
+        if (!keep_reload) {
+          reload_rw.Remove(pt);
+        }
     }
-#endif
 
     // we are having some problems with breaking an action loop that requires reloading a weapon to make ammo gettable, when already at ammo limit
     // the logic is there but it's not being reached.
@@ -808,13 +894,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction InventoryStackTactics(Location loc)
     {
       if (m_Actor.Inventory.IsEmpty) return null;
-#if PROTOTYPE
-      Dictionary<Point,Inventory> ground_inv = GetAccessibleInventories();
-      if (0 >= ground_inv.Count) return null;
-#endif
-      
+
       // The index case.
-      {
       var rws = m_Actor.Inventory.GetItemsByType<ItemRangedWeapon>();
       if (0 < (rws?.Count ?? 0)) {
         foreach(var rw in rws) {
@@ -830,7 +911,56 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
+
+#if DEBUG
+      Dictionary<Point,Inventory> ground_inv = loc.Map.GetAccessibleInventories(loc.Position);
+      if (0 >= ground_inv.Count) return null;
+
+      // set up pattern-matching for ranged weapons
+      Point viewpoint_inventory = new Point(int.MaxValue,int.MaxValue); // intentionally chosen to be impossible, as a flag
+      var best_rw = new Dictionary<Point, ItemRangedWeapon[]>();
+      var reload_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
+      var discard_empty_rw = new Dictionary<Point, ItemRangedWeapon[]>();
+      var reload_rw = new Dictionary<Point, ItemRangedWeapon[]>();
+
+      _InterpretRangedWeapons(rws, viewpoint_inventory, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
+
+      if (reload_rw.ContainsKey(viewpoint_inventory)) {
+        // prepare to analyze ranged weapon swaps.
+        foreach(var x in ground_inv) {
+          var ground_rws = x.Value.GetItemsByType<ItemRangedWeapon>();
+          _InterpretRangedWeapons(ground_rws, x.Key, best_rw, reload_empty_rw, discard_empty_rw, reload_rw);
+        }
+
+        if (discard_empty_rw.ContainsKey(viewpoint_inventory)) {
+          // we should not have been able to reload this i.e. no ammo.
+          Point? dest = null;
+          ItemRangedWeapon test = null;
+          ItemRangedWeapon src = null;
+          int i = (int)AmmoType._COUNT;
+          while(0 <= --i) {
+            if (null == discard_empty_rw[viewpoint_inventory][i]) continue;
+            foreach(var where_inv in best_rw) {
+              if (where_inv.Key == viewpoint_inventory) continue;
+              if (null == where_inv.Value[i]) continue;
+              if (null == test) {
+                dest = where_inv.Key;
+                src = discard_empty_rw[viewpoint_inventory][i];
+                test = where_inv.Value[i];
+                continue;
+              }
+              if (test.Ammo < where_inv.Value[i].Ammo && test.Model.MaxAmmo <= where_inv.Value[i].Model.MaxAmmo) {
+                dest = where_inv.Key;
+                src = discard_empty_rw[viewpoint_inventory][i];
+                test = where_inv.Value[i];
+                continue;
+              }
+            }
+          }
+          if (null != test) return new ActionTradeWithContainer(m_Actor,src,test,dest.Value);
+        }
       }
+#endif
 
       return null;
     }

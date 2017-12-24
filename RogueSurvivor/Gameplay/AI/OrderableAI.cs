@@ -2152,7 +2152,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // but if we cannot take it, ignore anyway
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
-      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
       if (cant_get && null == recover) return null;
 
       // the get item checks do not validate that inventory is not full
@@ -2167,9 +2167,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         may_take = true;
 
       if (may_take) {
-#if DEBUG
-        if (m_Actor.IsDebuggingTarget) throw new InvalidOperationException(may_take.ToString());
-#endif
         tmp = new ActionTakeItem(m_Actor, loc, obj);
         if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
           if (null == recover) return null;
