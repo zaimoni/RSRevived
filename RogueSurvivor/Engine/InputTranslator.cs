@@ -19,10 +19,11 @@ namespace djack.RogueSurvivor.Engine
       if (key.KeyData == (cityInfo | Keys.Shift)) return PlayerCommand.ITEM_INFO;
       if (key.KeyData == (cityInfo | Keys.Shift | Keys.Control)) return PlayerCommand.FACTION_INFO;
 
-      if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
+      Keys orders = RogueGame.KeyBindings.Get(PlayerCommand.ORDER_MODE);
+      if (key.KeyData == (orders | Keys.Shift)) return PlayerCommand.OPTIONS_MODE;
+      if (key.KeyData == (orders | Keys.Control)) return PlayerCommand.ALLIES_INFO;
 
-      // allow configuring this when we want to break format : V.0.10.0
-      if (key.KeyData == (Keys.O | Keys.Control)) return PlayerCommand.ALLIES_INFO;
+      if (key.KeyData == (Keys.A | Keys.Control)) return PlayerCommand.ABANDON_PC;  // debugging/cheat command
 
       PlayerCommand playerCommand = RogueGame.KeyBindings.Get(key.KeyData);
       if (playerCommand != PlayerCommand.NONE)

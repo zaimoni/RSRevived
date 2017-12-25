@@ -1665,7 +1665,7 @@ namespace djack.RogueSurvivor.Engine
       // need to maintain: label to command mapping
       // then generate current keybindings
       // then read off position from reference array
-      // screen layout may fail with more than 51 entries; at 50 entries currently
+      // screen layout may fail with more than 51 entries; at 49 entries currently
       KeyValuePair<string, PlayerCommand>[] command_labels = new KeyValuePair<string, PlayerCommand>[] {
           new KeyValuePair< string,PlayerCommand >("Move N", PlayerCommand.MOVE_N),
           new KeyValuePair< string,PlayerCommand >("Move NE", PlayerCommand.MOVE_NE),
@@ -1703,7 +1703,6 @@ namespace djack.RogueSurvivor.Engine
           new KeyValuePair< string,PlayerCommand >("Load Game", PlayerCommand.LOAD_GAME),
           new KeyValuePair< string,PlayerCommand >("Mark Enemies", PlayerCommand.MARK_ENEMIES_MODE),
           new KeyValuePair< string,PlayerCommand >("Messages Log", PlayerCommand.MESSAGE_LOG),
-          new KeyValuePair< string,PlayerCommand >("Options", PlayerCommand.OPTIONS_MODE),
           new KeyValuePair< string,PlayerCommand >("Order", PlayerCommand.ORDER_MODE),
           new KeyValuePair< string,PlayerCommand >("Push", PlayerCommand.PUSH_MODE),
           new KeyValuePair< string,PlayerCommand >("Quit Game", PlayerCommand.QUIT_GAME),

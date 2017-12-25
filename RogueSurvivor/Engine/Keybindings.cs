@@ -64,7 +64,6 @@ namespace djack.RogueSurvivor.Engine
             Set(PlayerCommand.MOVE_SE, Keys.NumPad3);
             Set(PlayerCommand.MOVE_SW, Keys.NumPad1);
             Set(PlayerCommand.MOVE_W, Keys.NumPad4);
-            Set(PlayerCommand.OPTIONS_MODE, Keys.O | Keys.Shift);
             Set(PlayerCommand.ORDER_MODE, Keys.O);
             Set(PlayerCommand.PUSH_MODE, Keys.P);
             Set(PlayerCommand.QUIT_GAME, Keys.Q | Keys.Shift);
@@ -103,19 +102,32 @@ namespace djack.RogueSurvivor.Engine
       m_KeyToCommand[key] = command;
     }
 
+    private bool _CheckForAnchorHardCodedConflict(Keys x)
+    {
+      // anchor keybinding cannot have any modifier keys as they block the anchored commands
+      if ((x & Keys.Control) != Keys.None) return true;
+      if ((x & Keys.Shift) != Keys.None) return true;
+      if ((x & Keys.Alt) != Keys.None) return true;
+      // no other explicit keybinding may alias a modifier to an anchor keybinding.
+      // Just reserve all seven possible modifier sets.  This is a UI function so speed doesn't matter
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Control)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Shift)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt | Keys.Control)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt | Keys.Shift)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Control | Keys.Shift)) > 0) return true;
+      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt | Keys.Control | Keys.Shift)) > 0) return true;
+      return false;
+    }
+
     public bool CheckForConflict()
     {
       foreach (Keys key1 in  m_CommandToKeyData.Values) {
         if (m_KeyToCommand.Keys.Count(k => k == key1) > 1) return true;
       }
 
-      Keys cityInfo = RogueGame.KeyBindings.Get(PlayerCommand.CITY_INFO);
-      if ((cityInfo | Keys.Control) == cityInfo) return true;   // hard-coded to cheat map
-      if ((cityInfo | Keys.Shift) == cityInfo) return true; // hard-coded to item info
-      if ((cityInfo | Keys.Shift | Keys.Control) == cityInfo) return true;   // hard-coded to ....
-      if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Control)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Shift)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (cityInfo | Keys.Shift | Keys.Control)) > 0) return true;
+      if (_CheckForAnchorHardCodedConflict(RogueGame.KeyBindings.Get(PlayerCommand.CITY_INFO))) return true;
+      if (_CheckForAnchorHardCodedConflict(RogueGame.KeyBindings.Get(PlayerCommand.ORDER_MODE))) return true;
 
       return false;
     }
