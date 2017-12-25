@@ -1493,8 +1493,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX there is some common post-processing we want done regardless of the exact path.  This abuse of try-catch-finally probably is a speed hit.
       try {
         if (null != tmpAction) return tmpAction;
-        if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location))
-          return (ActorAction)BehaviorUseMedecine(0, 1, 0, 0, 0) ?? new ActionWait(m_Actor);
+        if (m_Actor.IsTired && Rules.IsAdjacent(m_Actor.Location, target.Location)) {
+          var tmp = m_Actor.BestMeleeAttack(actor);
+#if DEBUG
+          tmpAction = DoctrineRecoverSTA(Actor.STAMINA_MIN_FOR_ACTIVITY + Rules.STAMINA_COST_MELEE_ATTACK + tmp.StaminaPenalty);
+          if (null == tmpAction) throw new ArgumentNullException(nameof(tmpAction));
+          return tmpAction;
+#else
+          return DoctrineRecoverSTA(Actor.STAMINA_MIN_FOR_ACTIVITY + Rules.STAMINA_COST_MELEE_ATTACK + tmp.StaminaPenalty);
+#endif
+        }
         tmpAction = BehaviorHeadFor(target.Location);
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();

@@ -16,6 +16,7 @@ using ActionTake = djack.RogueSurvivor.Engine.Actions.ActionTake;
 using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
 using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
 using ActionTradeWithContainer = djack.RogueSurvivor.Engine.Actions.ActionTradeWithContainer;
+using ActionWait = djack.RogueSurvivor.Engine.Actions.ActionWait;
 
 namespace djack.RogueSurvivor.Gameplay.AI
 {
@@ -1169,6 +1170,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Attack rw_attack = w.Model.Attack;
       return 1000 * rw_attack.Range + rw_attack.DamageValue;
+    }
+
+    // conceptual difference between "doctrine" and "behavior" is that doctrine doesn't have contextual validity checks
+    // that is, a null action return is defined to mean the doctrine is invalid
+    public ActorAction DoctrineRecoverSTA(int targetSTA)
+    {
+       if (m_Actor.MaxSTA < targetSTA) targetSTA = m_Actor.MaxSTA;
+       if (m_Actor.StaminaPoints >= targetSTA) return null;
+       if (   m_Actor.StaminaPoints < targetSTA - 4
+           && m_Actor.CanActNextTurn) {
+         Item stim = m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)GameItems.IDs.MEDICINE_PILLS_STA]);
+         if (null != stim) return new ActionUseItem(m_Actor,stim);
+       }
+       return new ActionWait(m_Actor);
     }
 
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)
