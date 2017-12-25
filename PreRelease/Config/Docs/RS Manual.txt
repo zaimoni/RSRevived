@@ -593,6 +593,11 @@ Give orders or directives to your followers.
 See the Followers section for more details.
 
 
+> ORDER PC  (Ctrl-Shift-[Order]; default Ctrl-Shift-O)
+Give orders or directives to yourself.  Only immediately relevant orders will appear.  
+See the Followers section for more details
+
+
 > SHOUTING  (default S)
 Make a lot of noise.
 Useful to try to wake up nearby sleepers.
@@ -928,6 +933,16 @@ The idea here is to train a lot of civilians to make them stronger, which will i
 Take followers for a short time, care for them like you would do for Companions and when strong enough release them.
 Having a bunch of strong gun-toting civilians running around is bad news for Zombies and good news for you.
 
+
+ORDERS FOR YOURSELF
+
+These don't do anything you cannot do manually; they request optimal action sequences for the specified objectives.
+
+Rest in Place
+Brace for pushing car in place
+
+Both of these orders will try to bring your stamina up to the implied threshold (not-tired and least turns missed after pushing car, respectively)
+They *will* use in-inventory green stimulants when that doesn't cause a missed turn.
 
 
 <SECTION>

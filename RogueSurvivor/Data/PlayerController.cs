@@ -12,6 +12,8 @@ using System.Linq;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
+using Goal_RecoverSTA = djack.RogueSurvivor.Gameplay.AI.Goal_RecoverSTA;
+using ItemMedicine = djack.RogueSurvivor.Engine.Items.ItemMedicine;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -102,6 +104,8 @@ namespace djack.RogueSurvivor.Data
       throw new InvalidOperationException("do not call PlayerController.SelectAction()");
     }
 
+    public bool AutoPilotIsOn { get { return 0 > Objectives.Count;  } }
+
     // This is too dangerous to provide a member function for in ObjectiveAI.
     // We duplicate this code fragment from CivilianAI::SelectAction and siblings to support a reasonable replacement 
     // for the wait command (which has been removed as a cause of 1-keystroke deaths)
@@ -122,6 +126,58 @@ namespace djack.RogueSurvivor.Data
         }
       }
       return null;
+    }
+
+    public List<string> GetValidSelfOrders()
+    { 
+      var ret = new List<string>();
+      if (m_Actor.IsTired && null == enemies_in_FOV) ret.Add("Rest in place");
+      ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
+      if (null != stim) {
+        MapObject car = null;
+        foreach(Direction dir in Direction.COMPASS) {
+          Point pt = m_Actor.Location.Position + dir;
+          MapObject tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt.X,pt.Y);
+          if (null == tmp) continue;
+          switch(tmp.ID) {
+          case MapObject.IDs.CAR1:
+          case MapObject.IDs.CAR2:
+          case MapObject.IDs.CAR3:
+          case MapObject.IDs.CAR4:
+            car = tmp;
+            break;
+          default: continue;
+          }
+          break;
+        }
+        if (null != car) {
+          int threshold = m_Actor.MaxSTA-(Rules.ActorMedicineEffect(m_Actor, stim.StaminaBoost))+2;
+          if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
+          if (m_Actor.StaminaPoints < threshold && null == enemies_in_FOV) ret.Add("Brace for pushing car in place");
+        }
+      }
+      return ret;
+    }
+
+    public bool InterpretSelfOrder(int i, List<string> orders)
+    {
+      switch(orders[i])
+      {
+      case "Rest in place":
+        Objectives.Add(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor,Actor.STAMINA_MIN_FOR_ACTIVITY));
+        return true;
+      case "Brace for pushing car in place":
+        {
+        ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
+        if (null == stim) return false; // actually invariant failure
+        int threshold = m_Actor.MaxSTA-(Rules.ActorMedicineEffect(m_Actor, stim.StaminaBoost))+2;
+        // currently all wrecked cars have weight 100
+        if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
+        Objectives.Add(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
+        }
+        return true;
+      default: return false;  // automatic failure
+      }
     }
 
     public override bool IsInterestingTradeItem(Actor speaker, Item offeredItem)

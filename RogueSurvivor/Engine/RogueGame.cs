@@ -3038,6 +3038,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.ORDER_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerOrderMode(player);
                 break;
+              case PlayerCommand.ORDER_PC_MODE:
+                flag1 = !TryPlayerInsanity() && !HandlePlayerOrderPCMode(player);
+                break;
               case PlayerCommand.PUSH_MODE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerPush(player);
                 break;
@@ -4872,6 +4875,21 @@ namespace djack.RogueSurvivor.Engine
       }
       reason = "";
       return true;
+    }
+
+    private bool HandlePlayerOrderPCMode(Actor player) {
+      // check for meaningful tasks to automate
+      var orders = (player.Controller as PlayerController).GetValidSelfOrders();
+      if (0 >= orders.Count) {
+        AddMessage(MakeErrorMessage("No applicable orders for yourself."));
+        return false;
+      }
+
+      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]);
+      Predicate<int> details = index => (player.Controller as PlayerController).InterpretSelfOrder(index,orders);
+
+      PagedMenu("Orders for yourself:", orders.Count, label, details);    // breaks down if MAX_MESSAGES exceeds 10
+      return (player.Controller as PlayerController).AutoPilotIsOn;
     }
 
     private bool HandlePlayerOrderMode(Actor player)

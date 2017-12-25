@@ -66,5 +66,6 @@ namespace djack.RogueSurvivor.Engine
     ABANDON_PC,
     ALLIES_INFO,
     FACTION_INFO,
+    ORDER_PC_MODE
    }
 }

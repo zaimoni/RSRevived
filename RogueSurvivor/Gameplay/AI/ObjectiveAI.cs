@@ -21,6 +21,30 @@ using ActionWait = djack.RogueSurvivor.Engine.Actions.ActionWait;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
+  internal class Goal_RecoverSTA : Objective
+  {
+    public readonly int targetSTA;
+
+    public Goal_RecoverSTA(int t0, Actor who, int target)
+    : base(t0,who)
+    {
+      targetSTA = target;
+    }
+
+    public override bool UrgentAction(out ActorAction ret)
+    {
+      ret = null;
+      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+        _isExpired = true;
+        return true;
+      }
+      ret = (m_Actor.Controller as ObjectiveAI).DoctrineRecoverSTA(targetSTA);
+      if (null == ret) _isExpired = true;
+      return true;
+    }
+  }
+
+  [Serializable]
   internal abstract class ObjectiveAI : BaseAI
   {
     readonly protected List<Objective> Objectives = new List<Objective>();

@@ -1740,6 +1740,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool CanActNextTurn {
       get {
+        if (CanActThisTurn) return 0 < m_ActionPoints + Speed - Rules.BASE_ACTION_COST;
         return 0 < m_ActionPoints + Speed;
       }
     }

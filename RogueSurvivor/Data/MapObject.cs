@@ -14,6 +14,8 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class MapObject
   {
+    public const int CAR_WEIGHT = 100;
+
     private IDs m_ID;
     private Flags m_Flags;
     private int m_JumpLevel;
@@ -204,10 +206,10 @@ namespace djack.RogueSurvivor.Data
         case IDs.FRIDGE: return 10;
         case IDs.WARDROBE: return 10;   // all wardrobes should have same weight
         case IDs.HOSPITAL_WARDROBE: return 10;
-        case IDs.CAR1: return 100;  // all cars should have same weight
-        case IDs.CAR2: return 100;
-        case IDs.CAR3: return 100;
-        case IDs.CAR4: return 100;
+        case IDs.CAR1: return CAR_WEIGHT;  // all cars should have same weight
+        case IDs.CAR2: return CAR_WEIGHT;
+        case IDs.CAR3: return CAR_WEIGHT;
+        case IDs.CAR4: return CAR_WEIGHT;
         case IDs.SHOP_SHELF: return 6;
         case IDs.JUNK: return 6;
         case IDs.BARRELS: return 10;
