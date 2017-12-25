@@ -90,6 +90,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       m_Exploration.Update(m_Actor.Location);
 
+      // New objectives system
+      if (0<Objectives.Count) {
+        ActorAction goal_action = null;
+        foreach(Objective o in new List<Objective>(Objectives)) {
+          if (o.IsExpired) Objectives.Remove(o);
+          else if (o.UrgentAction(out goal_action)) {
+            if (null==goal_action) Objectives.Remove(o);
+#if DEBUG
+            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+#else
+            else if (!goal_action.IsLegal()) Objectives.Remove(o);
+#endif
+            else return goal_action;
+          }
+        }
+      }
+
       List<Percept> old_enemies = FilterEnemies(percepts_all);
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
 
@@ -179,23 +196,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != old_enemies) {
         tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies));
         if (null != tmpAction) return tmpAction;
-      }
-
-      // the new objectives system should trigger after all enemies-handling behavior
-      if (0<Objectives.Count) {
-        ActorAction goal_action = null;
-        foreach(Objective o in new List<Objective>(Objectives)) {
-          if (o.IsExpired) Objectives.Remove(o);
-          else if (o.UrgentAction(out goal_action)) {
-            if (null==goal_action) Objectives.Remove(o);
-#if DEBUG
-            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
-#else
-            else if (!goal_action.IsLegal()) Objectives.Remove(o);
-#endif
-            else return goal_action;
-          }
-        }
       }
 
       if (null == old_enemies && WantToSleepNow) {

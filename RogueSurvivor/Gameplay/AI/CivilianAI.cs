@@ -173,6 +173,33 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       ExpireTaboos();
 
+      // New objectives system
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
+#endif
+      if (0<Objectives.Count) {
+        ActorAction goal_action = null;
+        foreach(Objective o in new List<Objective>(Objectives)) {
+          if (o.IsExpired) Objectives.Remove(o);
+          else if (o.UrgentAction(out goal_action)) {
+            if (null==goal_action) Objectives.Remove(o);
+#if DEBUG
+            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
+#else
+            else if (!goal_action.IsLegal()) Objectives.Remove(o);
+#endif
+#if TRACE_SELECTACTION
+            else {
+              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task: "+o.ToString());
+              return goal_action;
+            }
+#else
+            else return goal_action;
+#endif
+          }
+        }
+      }
+
       List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == enemies ? "null == enemies" : enemies.Count.ToString()+" enemies"));
@@ -382,32 +409,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       }
 
-      // the new objectives system should trigger after all enemies-handling behavior
-#if TRACE_SELECTACTION
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
-#endif
-      if (0<Objectives.Count) {
-        ActorAction goal_action = null;
-        foreach(Objective o in new List<Objective>(Objectives)) {
-          if (o.IsExpired) Objectives.Remove(o);
-          else if (o.UrgentAction(out goal_action)) {
-            if (null==goal_action) Objectives.Remove(o);
-#if DEBUG
-            else if (!goal_action.IsLegal()) throw new InvalidOperationException("result of UrgentAction should be legal");
-#else
-            else if (!goal_action.IsLegal()) Objectives.Remove(o);
-#endif
-#if TRACE_SELECTACTION
-            else {
-              if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "returning to task: "+o.ToString());
-              return goal_action;
-            }
-#else
-            else return goal_action;
-#endif
-          }
-        }
-      }
 
       tmpAction = BehaviorDropUselessItem();    // inventory normalization should normally be a no-op
 #if TRACE_SELECTACTION

@@ -52,7 +52,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       protected Objective(int t0, Actor who)
       {
-         Contract.Requires(null != who);
+#if DEBUG
+         if (null == who) throw new ArgumentNullException(nameof(who));
+#endif
          turn = t0;
          m_Actor = who;
       }
@@ -82,6 +84,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
+        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
         if (Intent.IsLegal()) ret = Intent;
         _isExpired = true;
         return true;
@@ -164,6 +167,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!tmp.Any()) return true;
         tmp = tmp.Intersect(m_Actor.Controller.FOV);
         if (!tmp.Any()) return true;
+        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
         ret = (m_Actor.Controller as OrderableAI).BehaviorWalkAwayFrom(tmp,null);
         return true;
       }
@@ -199,6 +203,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           return true;
         }
 
+        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
         ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => new HashSet<Point>(_locs.Where(loc => loc.Map==m).Select(loc => loc.Position)));
         if (null == ret) return false;
         if (!ret.IsLegal()) return false;
@@ -224,6 +229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           _isExpired = true;
           return true;
         }
+        if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
         if (Rules.IsAdjacent(m_Actor.Location,_dest.Location)) {
           ret = new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
           return true;
