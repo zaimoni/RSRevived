@@ -995,6 +995,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(var where_inv in best_rw) {
               if (where_inv.Key == viewpoint_inventory) continue;
               if (null == where_inv.Value[i]) continue;
+              if (reload_rw[viewpoint_inventory][i].Ammo >= where_inv.Value[i].Ammo) continue;
+              if (reload_rw[viewpoint_inventory][i].Model.MaxAmmo > where_inv.Value[i].Model.MaxAmmo) continue;
               if (null == test) {
                 dest = where_inv.Key;
                 src = reload_rw[viewpoint_inventory][i];

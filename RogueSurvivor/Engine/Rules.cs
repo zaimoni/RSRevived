@@ -677,10 +677,13 @@ namespace djack.RogueSurvivor.Engine
     // These two somewhat counter-intuitively consider "same location" as adjacent
     public static bool IsAdjacent(Location a, Location b)
     {
-      
       if (a.Map != b.Map) {
         Location? test = a.Map.Denormalize(b);
-        if (null == test) return false;
+        if (null == test) {
+          Exit exit = a.Exit;
+          if (null != exit && exit.Location==b) return true;
+          return false;
+        }
         b = test.Value;
       }
       return Rules.IsAdjacent(a.Position, b.Position);
