@@ -937,7 +937,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-#if DEBUG
       Dictionary<Point,Inventory> ground_inv = loc.Map.GetAccessibleInventories(loc.Position);
       if (0 >= ground_inv.Count) return null;
 
@@ -984,8 +983,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
           if (null != test) return new ActionTradeWithContainer(m_Actor,src,test,dest.Value);
         }
+
+        // optimization
+        {
+          Point? dest = null;
+          ItemRangedWeapon test = null;
+          ItemRangedWeapon src = null;
+          int i = (int)AmmoType._COUNT;
+          while(0 <= --i) {
+            if (null == reload_rw[viewpoint_inventory][i]) continue;
+            foreach(var where_inv in best_rw) {
+              if (where_inv.Key == viewpoint_inventory) continue;
+              if (null == where_inv.Value[i]) continue;
+              if (null == test) {
+                dest = where_inv.Key;
+                src = reload_rw[viewpoint_inventory][i];
+                test = where_inv.Value[i];
+                continue;
+              }
+              if (test.Ammo < where_inv.Value[i].Ammo && test.Model.MaxAmmo <= where_inv.Value[i].Model.MaxAmmo) {
+                dest = where_inv.Key;
+                src = reload_rw[viewpoint_inventory][i];
+                test = where_inv.Value[i];
+                continue;
+              }
+            }
+          }
+          if (null != test) return new ActionTradeWithContainer(m_Actor,src,test,dest.Value);
+        }
       }
-#endif
 
       return null;
     }

@@ -84,9 +84,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       public override bool UrgentAction(out ActorAction ret)
       {
         ret = null;
+        if (!Intent.IsLegal()) {
+          _isExpired = true;
+          return true;
+        }
+        // XXX need some sense of what a combat action is
         if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+       _isExpired = true;
         if (Intent.IsLegal()) ret = Intent;
-        _isExpired = true;
         return true;
       }
     }
@@ -1695,7 +1700,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, target.Location)) {
           if (   !m_Actor.WillActAgainBefore(enemy)
-              || !m_Actor.RunIsFreeMove)
+              || !m_Actor.RunIsFreeMove)    // XXX assumes eneumy wants to close
             return new ActionWait(m_Actor);
           if (null != legal_steps) {
             // cannot close at normal speed safely; run-hit may be ok
