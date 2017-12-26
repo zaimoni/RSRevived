@@ -531,7 +531,10 @@ namespace djack.RogueSurvivor.Data
 
     public int MurdersCounter {
       get {
-        return m_MurdersCounter;
+        // Even if this were not an apocalypse, law enforcement should get some slack in interpreting intent, etc.
+        int planning_to_murder = 0;
+        if (IsHungry) planning_to_murder = m_AggressorOf?.Count(a=> null != a?.Inventory.GetItemsByType<ItemFood>()) ?? 0;
+        return m_MurdersCounter+planning_to_murder;
       }
       set { // nominates chunk of RogueGame::KillActor as member function
         m_MurdersCounter = value;
