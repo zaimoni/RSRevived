@@ -4702,7 +4702,7 @@ namespace djack.RogueSurvivor.Engine
           Point point = player.Location.Position + direction;
           if (player.Location.Map.IsValid(point)) {
             Actor actorAt = player.Location.Map.GetActorAt(point);
-            MapObject mapObjectAt = player.Location.Map.GetMapObjectAt(point);
+            MapObject mapObjectAt = player.Location.Map.GetMapObjectAtExt(point.X,point.Y);
             string reason;
             if (actorAt != null) {
               if (player.CanShove(actorAt, out reason)) {

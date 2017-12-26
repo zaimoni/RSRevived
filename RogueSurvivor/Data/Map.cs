@@ -1151,14 +1151,20 @@ retry:
     {
 #if DEBUG
       if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
-      if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
-      if (!GetTileModelAt(position).IsWalkable) throw new ArgumentOutOfRangeException(nameof(position),position, "!GetTileModelAt(position).IsWalkable");
+      if (!IsValid(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsValid(position)");
+      if (!GetTileModelAtExt(position).IsWalkable) throw new ArgumentOutOfRangeException(nameof(position),position, "!GetTileModelAt(position).IsWalkable");
 #endif
-      MapObject mapObjectAt = GetMapObjectAt(position);
+      MapObject mapObjectAt = GetMapObjectAtExt(position.X,position.Y);
       if (mapObjectAt == mapObj) return;
 #if DEBUG
-      if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAt(position)");
+      if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAtExt(position)");
 #endif
+      if (!IsInBounds(position)) {
+        // cross-map push or similar
+        Location? test = Normalize(position);
+        test.Value.Map.PlaceAt(mapObj,test.Value.Position);
+        return;
+      }
       // cf Map::PlaceAt(Actor,Position)
       if (null != mapObj.Location.Map && HasMapObject(mapObj))
         m_aux_MapObjectsByPosition.Remove(mapObj.Location.Position);
