@@ -12,6 +12,8 @@ using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ActionChain = djack.RogueSurvivor.Engine.Actions.ActionChain;
 using ActionDropItem = djack.RogueSurvivor.Engine.Actions.ActionDropItem;
 using ActionPutInContainer = djack.RogueSurvivor.Engine.Actions.ActionPutInContainer;
+using ActionRechargeItemBattery = djack.RogueSurvivor.Engine.Actions.ActionRechargeItemBattery;
+using ActionSwitchPowerGenerator = djack.RogueSurvivor.Engine.Actions.ActionSwitchPowerGenerator;
 using ActionTake = djack.RogueSurvivor.Engine.Actions.ActionTake;
 using ActionUseItem = djack.RogueSurvivor.Engine.Actions.ActionUseItem;
 using ActionUse = djack.RogueSurvivor.Engine.Actions.ActionUse;
@@ -40,6 +42,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       ret = (m_Actor.Controller as ObjectiveAI).DoctrineRecoverSTA(targetSTA);
       if (null == ret) _isExpired = true;
+      return true;
+    }
+  }
+
+  [Serializable]
+  internal class Goal_RechargeAll : Objective
+  {
+    public Goal_RechargeAll(int t0, Actor who)
+    : base(t0,who)
+    {
+    }
+
+    public override bool UrgentAction(out ActorAction ret)
+    {
+      ret = null;
+      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+        _isExpired = true;
+        return true;
+      }
+      {
+      var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>();
+      if (0 < (lights?.Count ?? 0)) {
+        foreach(var x in lights) {
+          ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(x);
+          if (null != ret) return true;
+        }
+      }
+      }
+      {
+      var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => GameItems.IDs.TRACKER_POLICE_RADIO!=it.Model.ID);
+      if (0 < (trackers?.Count ?? 0)) {
+        foreach(var x in trackers) {
+          ret = (m_Actor.Controller as ObjectiveAI)?.DoctrineRechargeToFull(x);
+          if (null != ret) return true;
+        }
+      }
+      }
+
+      _isExpired = true;
       return true;
     }
   }
@@ -1236,6 +1277,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
          if (null != stim) return new ActionUseItem(m_Actor,stim);
        }
        return new ActionWait(m_Actor);
+    }
+
+    public ActorAction DoctrineRechargeToFull(Item it)
+    {
+      BatteryPowered obj = it as BatteryPowered;
+#if DEBUG
+      if (null == obj) throw new ArgumentNullException(nameof(obj));
+#endif
+      if (obj.MaxBatteries-1 <= obj.Batteries) return null;
+      var generators = m_Actor.Location.Map.PowerGenerators.Get.Where(power => Rules.IsAdjacent(m_Actor.Location,power.Location)).ToList();
+      if (0 >= generators.Count) return null;
+      var generators_on = generators.Where(power => power.IsOn).ToList();
+      if (0 >= generators_on.Count) return new ActionSwitchPowerGenerator(m_Actor,generators[0]);
+      if (!it.IsEquipped) RogueForm.Game.DoEquipItem(m_Actor,it);
+      if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
+      return new ActionRechargeItemBattery(m_Actor,it);
     }
 
     // XXX should also have concept of hoardable item (suitable for transporting to a safehouse)

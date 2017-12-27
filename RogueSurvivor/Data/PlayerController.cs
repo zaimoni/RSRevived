@@ -12,8 +12,11 @@ using System.Linq;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
+using Goal_RechargeAll = djack.RogueSurvivor.Gameplay.AI.Goal_RechargeAll;
 using Goal_RecoverSTA = djack.RogueSurvivor.Gameplay.AI.Goal_RecoverSTA;
+using ItemLight = djack.RogueSurvivor.Engine.Items.ItemLight;
 using ItemMedicine = djack.RogueSurvivor.Engine.Items.ItemMedicine;
+using ItemTracker = djack.RogueSurvivor.Engine.Items.ItemTracker;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -131,7 +134,11 @@ namespace djack.RogueSurvivor.Data
     public List<string> GetValidSelfOrders()
     { 
       var ret = new List<string>();
+      bool in_combat = (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0));
+
+      if (!in_combat) {
       if (m_Actor.IsTired && null == enemies_in_FOV) ret.Add("Rest in place");
+
       ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_STA]) as ItemMedicine);
       if (null != stim) {
         MapObject car = null;
@@ -156,6 +163,15 @@ namespace djack.RogueSurvivor.Data
           if (m_Actor.StaminaPoints < threshold && null == enemies_in_FOV) ret.Add("Brace for pushing car in place");
         }
       }
+
+      var generators = m_Actor.Location.Map.PowerGenerators.Get.Where(power => Rules.IsAdjacent(m_Actor.Location,power.Location)).ToList();
+      if (0 < generators.Count) {
+        var lights = m_Actor?.Inventory.GetItemsByType<ItemLight>(it => it.MaxBatteries-1>it.Batteries);
+        var trackers = m_Actor?.Inventory.GetItemsByType<ItemTracker>(it => Gameplay.GameItems.IDs.TRACKER_POLICE_RADIO != it.Model.ID && it.MaxBatteries - 1 > it.Batteries);
+        if (0 < (lights?.Count ?? 0) || 0 < (trackers?.Count ?? 0)) ret.Add("Recharge everything to full");
+      }
+
+      } // if (!in_combat)
       return ret;
     }
 
@@ -175,6 +191,9 @@ namespace djack.RogueSurvivor.Data
         if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
         Objectives.Add(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
         }
+        return true;
+      case "Recharge everything to full":
+        Objectives.Add(new Goal_RechargeAll(Session.Get.WorldTime.TurnCounter, m_Actor));
         return true;
       default: return false;  // automatic failure
       }

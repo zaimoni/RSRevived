@@ -1702,7 +1702,9 @@ namespace djack.RogueSurvivor.Data
 
 	private string ReasonCantRecharge(Item it)
 	{
-	  Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
       if (!it.IsEquipped || !Inventory.Contains(it)) return "item not equipped";
       if (!(it is BatteryPowered)) return "not a battery powered item";
