@@ -3127,7 +3127,7 @@ namespace djack.RogueSurvivor.Engine
       while (flag1);
       player.Controller.UpdateSensors();
       ComputeViewRect(player.Location.Position);
-      (player.Controller as PlayerController).UpdatePrevLocation();
+      (player.Controller as PlayerController)?.UpdatePrevLocation();    // abandon PC results in null here
       Session.Get.LastTurnPlayerActed = Session.Get.WorldTime.TurnCounter;
     }
 
@@ -4209,7 +4209,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-        // RS revived: Trading with inventory.  XXX NPCs aren't up to this yet
+        // RS revived: Trading with inventory.
         Inventory ground_inv = player.Location.Map.GetItemsAtExt(point);
         if (0 >= (inv?.CountItems ?? 0)) ground_inv = null;
         else if (direction != Direction.NEUTRAL) {
@@ -8342,7 +8342,7 @@ namespace djack.RogueSurvivor.Engine
       List<Item> objList = speaker.GetInterestingTradeableItems(buyer); // player as speaker would trivialize
       if (objList == null || 0>=objList.Count) return null;
       // following is AI-only
-      IEnumerable<Item> tmp = objList.Where(it=>itSpeaker.Model.ID != it.Model.ID);
+      IEnumerable<Item> tmp = (speaker.IsPlayer ? objList : objList.Where(it=>itSpeaker.Model.ID != it.Model.ID));
       // XXX disallow clearly non-mutual advantage trades
       switch(itSpeaker.Model.ID)
       {
