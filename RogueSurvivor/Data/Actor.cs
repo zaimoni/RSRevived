@@ -2315,8 +2315,10 @@ namespace djack.RogueSurvivor.Data
 
     public ItemMeleeWeapon GetWorstMeleeWeapon()
     {
-      if (null == Inventory) return null;
-      return Inventory.Items.Select(it=>it as ItemMeleeWeapon).Where(w=>null!=w).Minimize(w=>w.Model.Attack.Rating);
+      var melee = Inventory?.GetItemsByType<ItemMeleeWeapon>();
+      if (null == melee) return null;
+      if (1 == melee.Count) return melee[0];
+      return melee.Where(w=> !w.IsEquipped).Minimize(w=>w.Model.Attack.Rating);
     }
 
     public ItemBodyArmor GetBestBodyArmor(Predicate<ItemBodyArmor> fn=null)
