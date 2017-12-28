@@ -2885,6 +2885,11 @@ namespace djack.RogueSurvivor.Engine
 
       bool flag1 = true;
       do {
+        if (m_Player!=player) {
+          m_Player = player;
+          SetCurrentMap(player.Location.Map);  // multi-PC support
+          ComputeViewRect(player.Location.Position);
+        }
         m_UI.UI_SetCursor(null);
         if (s_Options.IsAdvisorEnabled && HasAdvisorAnyHintToGive())
           AddOverlay(new OverlayPopup(new string[1] { string.Format("HINT AVAILABLE PRESS <{0}>", s_KeyBindings.Get(PlayerCommand.ADVISOR).ToString()) }, Color.White, Color.White, Color.Black, MapToScreen(m_Player.Location.Position.X - 3, m_Player.Location.Position.Y - 1)));
