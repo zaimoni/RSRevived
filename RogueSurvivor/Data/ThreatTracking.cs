@@ -158,11 +158,21 @@ namespace djack.RogueSurvivor.Data
 
         public void RecordTaint(Actor a, Map m, IEnumerable<Point> pts)
         {
+          var local = new List<Point>(pts.Count());
+          var other = new List<Point>(pts.Count());
+          foreach(Point pt in pts) {
+            (m.IsInBounds(pt) ? local : other).Add(pt);
+          }
 		  lock(_threats) {
 		    if (!_threats.ContainsKey(a)) _threats[a] = new Dictionary<Map, HashSet<Point>>();
 		    if (!_threats[a].ContainsKey(m)) _threats[a][m] = new HashSet<Point>();
-            _threats[a][m].UnionWith(pts);
+            _threats[a][m].UnionWith(local);
 		  }
+          foreach(Point pt in other) {
+            Location? test = m.Normalize(pt);
+            if (null == test) continue;
+            RecordTaint(a,test.Value.Map,test.Value.Position);
+          }
         }
 
 
