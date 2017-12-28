@@ -782,24 +782,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, Point otherPosition, int minDist, int maxDist)
-    {
-      if (other == null || other.IsDead) return null;
-      int num = 0;
-      Point p;
-      do {
-        p = otherPosition;
-        p.X += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
-        p.Y += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
-        m_Actor.Location.Map.TrimToBounds(ref p);
-      }
-      while (Rules.GridDistance(p, otherPosition) < minDist && ++num < 100);
-      ActorAction a = BehaviorIntelligentBumpToward(p);
-      if (a == null || !IsValidMoveTowardGoalAction(a) || !a.IsLegal()) return null;
-      if (other.IsRunning) RunIfPossible();
-      return a;
-    }
-
     protected ActorAction BehaviorTrackScent(List<Percept> scents)
     {
       if (0 >= (scents?.Count ?? 0)) return null;

@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -81,7 +80,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != actorAction) {
           m_Actor.Activity = Activity.FOLLOWING_ORDER;
           return actorAction;
-          }
+        }
 
         SetOrder(null);
       }
@@ -247,8 +246,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.HasLeader && !DontFollowLeader) {
-        Point position = m_Actor.Leader.Location.Position;
-        tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, position, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
+        tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;

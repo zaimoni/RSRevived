@@ -1733,12 +1733,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       Map a_map = m_Actor.Location.Map;
 	  if (dest.Map != a_map) {
-        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) return null;
         HashSet<Map> exit_maps = a_map.PathTo(dest.Map, out HashSet<Exit> valid_exits);
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          exit_maps.RemoveWhere(m=> m!=m.District.EntryMap);
+          valid_exits.RemoveWhere(exit => !exit_maps.Contains(exit.ToMap));
+        }
+        if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          Exit exitAt = m_Actor.Location.Exit;
+          if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
+            return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
+        }
 
-	    Exit exitAt = m_Actor.Location.Exit;
-        if (exitAt != null && exit_maps.Contains(exitAt.ToMap))
-          return BehaviorUseExit(BaseAI.UseExitFlags.BREAK_BLOCKING_OBJECTS | BaseAI.UseExitFlags.ATTACK_BLOCKING_ENEMIES);
         var goals = a_map.ExitLocations(valid_exits);
         if (null == goals) return null;
 	    navigate.GoalDistance(goals, m_Actor.Location.Position);
@@ -1758,6 +1763,32 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       return tmp3;
 	}
+
+    protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
+    {
+      if (other == null || other.IsDead) return null;
+      Point otherPosition = other.Location.Position;
+      int num = 0;
+      Location loc;
+      do {
+        Point p = otherPosition;
+        p.X += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
+        p.Y += game.Rules.Roll(minDist, maxDist + 1) - game.Rules.Roll(minDist, maxDist + 1);
+        loc = new Location(other.Location.Map,p);
+        if (100 < ++num) return null;
+        if (loc == m_Actor.Location) return new ActionWait(m_Actor);    // XXX check what BehaviorIntelligentBumpToward does
+        if (!loc.IsWalkableFor(m_Actor)) continue;
+      }
+      while(Rules.GridDistance(loc,other.Location) < minDist);
+
+	  ActorAction actorAction = BehaviorPathTo(loc);
+      if (!actorAction?.IsLegal() ?? true) return null;
+      if (actorAction is ActionMoveStep tmp) {
+        if (Rules.GridDistance(m_Actor.Location, tmp.dest) > maxDist)
+           m_Actor.IsRunning = RunIfAdvisable(tmp.dest.Position);
+	  }
+      return actorAction;
+    }
 
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
