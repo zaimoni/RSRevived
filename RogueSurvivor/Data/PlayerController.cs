@@ -5,15 +5,13 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Engine;
+using djack.RogueSurvivor.Gameplay.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
-using ObjectiveAI = djack.RogueSurvivor.Gameplay.AI.ObjectiveAI;
-using Goal_RechargeAll = djack.RogueSurvivor.Gameplay.AI.Goal_RechargeAll;
-using Goal_RecoverSTA = djack.RogueSurvivor.Gameplay.AI.Goal_RecoverSTA;
 using ItemLight = djack.RogueSurvivor.Engine.Items.ItemLight;
 using ItemMedicine = djack.RogueSurvivor.Engine.Items.ItemMedicine;
 using ItemTracker = djack.RogueSurvivor.Engine.Items.ItemTracker;
@@ -171,6 +169,8 @@ namespace djack.RogueSurvivor.Data
         if (0 < (lights?.Count ?? 0) || 0 < (trackers?.Count ?? 0)) ret.Add("Recharge everything to full");
       }
 
+      if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
+
       } // if (!in_combat)
       return ret;
     }
@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Data
       switch(orders[i])
       {
       case "Rest in place":
-        Objectives.Add(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor,Actor.STAMINA_MIN_FOR_ACTIVITY));
+        Objectives.Insert(0,new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor,Actor.STAMINA_MIN_FOR_ACTIVITY));
         return true;
       case "Brace for pushing car in place":
         {
@@ -189,11 +189,14 @@ namespace djack.RogueSurvivor.Data
         int threshold = m_Actor.MaxSTA-(Rules.ActorMedicineEffect(m_Actor, stim.StaminaBoost))+2;
         // currently all wrecked cars have weight 100
         if (Actor.STAMINA_MIN_FOR_ACTIVITY+MapObject.CAR_WEIGHT < threshold) threshold = Actor.STAMINA_MIN_FOR_ACTIVITY + MapObject.CAR_WEIGHT;   // no-op at 30 turns/hour, but not at 900 turns/hour
-        Objectives.Add(new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
+        Objectives.Insert(0,new Goal_RecoverSTA(Session.Get.WorldTime.TurnCounter,m_Actor, threshold));
         }
         return true;
       case "Recharge everything to full":
-        Objectives.Add(new Goal_RechargeAll(Session.Get.WorldTime.TurnCounter, m_Actor));
+        Objectives.Insert(0,new Goal_RechargeAll(Session.Get.WorldTime.TurnCounter, m_Actor));
+        return true;
+      case "Rest rather than lose turn when tired":
+        Objectives.Insert(0,new Goal_RestRatherThanLoseturnWhenTired(Session.Get.WorldTime.TurnCounter, m_Actor));
         return true;
       default: return false;  // automatic failure
       }

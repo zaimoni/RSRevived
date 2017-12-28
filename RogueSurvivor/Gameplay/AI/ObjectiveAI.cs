@@ -23,6 +23,28 @@ using ActionWait = djack.RogueSurvivor.Engine.Actions.ActionWait;
 namespace djack.RogueSurvivor.Gameplay.AI
 {
   [Serializable]
+  internal class Goal_RestRatherThanLoseturnWhenTired : Objective
+  {
+    public Goal_RestRatherThanLoseturnWhenTired(int t0, Actor who)
+    : base(t0,who)
+    {
+    }
+
+    public override bool UrgentAction(out ActorAction ret)
+    {
+      ret = null;
+      if (!m_Actor.IsTired) {
+        _isExpired = true;
+        return true;
+      }
+      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) return false;
+      if (m_Actor.CanActNextTurn) return false;
+      ret = new ActionWait(m_Actor);
+      return true;
+    }
+  }
+
+  [Serializable]
   internal class Goal_RecoverSTA : Objective
   {
     public readonly int targetSTA;

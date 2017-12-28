@@ -1462,7 +1462,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // need an after-action "hint" to the target on where/who to go to
       if (!m_Actor.WillActAgainBefore(target1)) {
         int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1,target1)-(m_Actor.IsBefore(target1) ? 1 : 0);
-        (target1.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
+        (target1.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, target1, m_Actor));    // AI disallowed from leading player so fine
       }
       return BehaviorIntelligentBumpToward(target1.Location);
     }
@@ -1601,7 +1601,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int i = game.Rules.Roll(0, close_doors.Count);
           foreach(DoorWindow door in close_doors.Values) {
             if (0 >= i--) {
-              Objectives.Add(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
+              Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
               return new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
             }
           }
@@ -1609,7 +1609,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           int i = game.Rules.Roll(0, barricade_doors.Count);
           foreach(DoorWindow door in barricade_doors.Values) {
             if (0 >= i--) {
-              Objectives.Add(new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
+              Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
               return new ActionBarricadeDoor(m_Actor, door);
             }
           }
@@ -2225,7 +2225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (obj.Model.ID == drop.Item.Model.ID) return null;
             Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
           }
-          Objectives.Add(new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
+          Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
           return recover;
         }
         return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
@@ -2320,7 +2320,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
               // need an after-action "hint" to the target on where/who to go to
               if (!m_Actor.WillActAgainBefore(actor)) {
                 int t0 = Session.Get.WorldTime.TurnCounter+m_Actor.HowManyTimesOtherActs(1, actor) -(m_Actor.IsBefore(actor) ? 1 : 0);
-                (actor.Controller as OrderableAI)?.Objectives.Add(new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
+                (actor.Controller as OrderableAI)?.Objectives.Insert(0,new Goal_HintPathToActor(t0, actor, m_Actor));    // AI disallowed from initiating trades with player so fine
               }
               return tmpAction;
             }
