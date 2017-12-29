@@ -175,6 +175,7 @@ namespace djack.RogueSurvivor.Engine
 
         int knightmove_parity = 0;
         int numerator = 0;  // denominator is need range
+        var knight_moves = new List<int>();
         do  {
             numerator += 2*alt_count;
             if (numerator>needRange)
@@ -197,6 +198,11 @@ namespace djack.RogueSurvivor.Engine
                 start += tmp;
                 if (!fn(start.X, start.Y)) knightmove_parity = -1;
                 start -= tmp;
+                foreach(int fix_me in knight_moves) {
+                  // earlier steps must be revised
+                  line[fix_me] -= tmp;
+                  line[fix_me] += alt_step;
+                }
                 }
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
@@ -204,6 +210,7 @@ namespace djack.RogueSurvivor.Engine
                 if (!fn(start.X, start.Y)) knightmove_parity = 1;
                 start -= alt_step;
                 }
+            if (0==knightmove_parity && null!=line) knight_moves.Add(line.Count);
             if (-1==knightmove_parity)
                 {
                 start += alt_step;
@@ -212,7 +219,7 @@ namespace djack.RogueSurvivor.Engine
                 line?.Add(new Point(start.X, start.Y));
                 continue;
                 }
-            knightmove_parity = 1;
+//          knightmove_parity = 1;  // do not *commit* to knight move parity here (unnecessary asymmetry, interferes with cover/stealth mechanics), 0 should mean both options are legal
             start += tmp;
             if (!fn(start.X, start.Y)) return false;
             line?.Add(new Point(start.X, start.Y));
