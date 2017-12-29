@@ -7369,7 +7369,7 @@ namespace djack.RogueSurvivor.Engine
 #if SPEEDY_GONZALES
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
 #else
-      if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
+      if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
 #endif
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
