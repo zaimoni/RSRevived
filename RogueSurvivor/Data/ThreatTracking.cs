@@ -96,7 +96,7 @@ namespace djack.RogueSurvivor.Data
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
             }
             view.Height += view.Top;
-            view.X = 0;
+            view.Y = 0;
           };
           if (map.Height < view.Bottom) {
             int new_height = map.Height-view.Top;
@@ -111,7 +111,13 @@ namespace djack.RogueSurvivor.Data
             foreach (var x in _threats) {
               if (!x.Value.ContainsKey(map)) continue;
               tmp.UnionWith(x.Value[map]);
+#if PROTOTYPE
+              tmp.RemoveWhere(pt => !view.Contains(pt));
+#endif
             }
+#if PROTOTYPE
+            if (tmp.Any(pt => !view.Contains(pt))) throw new InvalidOperationException("trace");
+#endif
 //            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
 //            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
 //            if (map.Width>view.Right) tmp.RemoveWhere(pt => pt.X >= view.Right);
@@ -339,7 +345,7 @@ namespace djack.RogueSurvivor.Data
               foreach(Point pt in tmp) ret.Add(new Point(pt.X,pt.Y-map.Height));
             }
             view.Height += view.Top;
-            view.X = 0;
+            view.Y = 0;
           };
           if (map.Height < view.Bottom) {
             int new_height = map.Height-view.Top;
@@ -353,6 +359,10 @@ namespace djack.RogueSurvivor.Data
             HashSet<Point> tmp = new HashSet<Point>();
             if (!_locs.TryGetValue(map,out HashSet<Point> tmp2)) return ret;
             tmp.UnionWith(tmp2);    // want a value copy here
+#if PROTOTYPE
+            tmp.RemoveWhere(pt => !view.Contains(pt));
+            if (tmp.Any(pt => !view.Contains(pt))) throw new InvalidOperationException("trace");
+#endif
 
 //            if (0<view.Left) tmp.RemoveWhere(pt => pt.X<view.Left);
 //            if (0<view.Top) tmp.RemoveWhere(pt => pt.Y<view.Top);
