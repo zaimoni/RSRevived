@@ -562,7 +562,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
-        if ("(YOU) Cop Joseph Gates"==Name) return true;
+        if ("Cop Guy Lee"==Name) return true;
         return false;
       }
     }
@@ -2358,7 +2358,7 @@ namespace djack.RogueSurvivor.Data
       return GetCompatibleRangedWeapon(Models.Items[(int)am] as ItemAmmoModel);
     }
 
-    public bool HasEnoughFoodFor(int nutritionNeed)
+    public bool HasEnoughFoodFor(int nutritionNeed, ItemFood exclude=null)
     {
       if (!Model.Abilities.HasToEat) return true;
       if (null == Inventory || Inventory.IsEmpty) return false;
@@ -2369,6 +2369,7 @@ namespace djack.RogueSurvivor.Data
       int num = m_FoodPoints-FOOD_HUNGRY_LEVEL;
       if (num >= nutritionNeed) return true;
       foreach (ItemFood tmpFood in tmp) {
+        if (exclude==tmpFood) continue;
         num += tmpFood.NutritionAt(turnCounter)*tmpFood.Quantity;
         if (num >= nutritionNeed) return true;
       }

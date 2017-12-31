@@ -747,7 +747,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!m_Actor.Model.Abilities.HasToEat) return true;
             if (m_Actor.IsHungry) return false;
             // only should trade away food that doesn't drop below threshold
-            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2 + food.Nutrition))
+            if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food))
               return food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
             return true;
             }

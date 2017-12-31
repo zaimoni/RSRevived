@@ -639,6 +639,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           Item drop = inv.GetFirst<ItemFood>();
           if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
           if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();
+          if (null == drop) drop = inv.GetFirst<ItemSprayScent>();
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
@@ -695,12 +696,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, position);
 
       // ahem...food glut, of all things
-      ItemFood tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter));
-      if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
-      tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsExpiredAt(m_Actor.Location.Map.LocalTime.TurnCounter));
-      if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
-      tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f));
-      if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
+      if (   !(it is ItemEntertainment)
+          && !(it is ItemBarricadeMaterial)
+          && !(it is ItemSprayScent)
+          && it.Model != GameItems.PILLS_SAN
+          && it.Model != GameItems.PILLS_ANTIVIRAL
+          && it.Model != GameItems.PILLS_STA) {
+        ItemFood tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+        if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
+        tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsExpiredAt(m_Actor.Location.Map.LocalTime.TurnCounter));
+        if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
+        tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f));
+        if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
+      }
 
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemSprayScent) return null;
@@ -855,8 +863,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsInterestingItem(ItemFood food)
     {
-      if (m_Actor.Inventory.Contains(food)) return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2 + food.Nutrition*food.Quantity);
-      return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2);
+      return !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food);
     }
 
     public bool IsInterestingItem(Item it)
@@ -869,12 +876,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (ItemIsUseless(it)) return false;
 
       // note that CHAR guards and soldiers don't need to eat like civilians, so they would not be interested in food
-      if (it is ItemFood) {
+      if (it is ItemFood food) {
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return true;
-        if (!m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2))
-          return !(it as ItemFood).IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
-        return false;
+        if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return false;
+        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter);
       }
 
       if (it is ItemRangedWeapon rw) {

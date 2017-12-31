@@ -7369,6 +7369,7 @@ namespace djack.RogueSurvivor.Engine
 #if SPEEDY_GONZALES
       if (!actor.IsPlayer) actor.SpendActionPoints(Rules.BASE_ACTION_COST);
 #else
+      bool run_was_free_move = actor.IsRunning && actor.RunIsFreeMove;
       if (null == exitAt.ToMap.NextActorToAct || actor.Location.Map.District!=exitAt.ToMap.District) actor.SpendActionPoints(actor.IsRunning ? Rules.BASE_ACTION_COST/2 : Rules.BASE_ACTION_COST);
 #endif
       if (ForceVisibleToPlayer(actor))
@@ -7390,7 +7391,7 @@ namespace djack.RogueSurvivor.Engine
       if (isPlayer) {
         if (map.District != exitAt.ToMap.District) {
           Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Entered district {0}.", exitAt.ToMap.District.Name));
-          actor.ActionPoints += actor.Speed;
+          if (!run_was_free_move) actor.ActionPoints += actor.Speed;
         }
         SetCurrentMap(exitAt.ToMap);
       }
