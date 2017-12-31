@@ -183,32 +183,32 @@ namespace djack.RogueSurvivor.Engine
                 start += alt_step;
                 numerator -= 2*needRange;
                 if (!fn(start.X, start.Y)) return false;
-                line?.Add(new Point(start.X, start.Y));
+                line?.Add(start);
                 continue;
                 }
             else if (numerator < needRange)
                 {
                 start += tmp;
                 if (!fn(start.X, start.Y)) return false;
-                line?.Add(new Point(start.X, start.Y));
+                line?.Add(start);
                 continue;
                 };
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
-                start += tmp;
-                if (!fn(start.X, start.Y)) knightmove_parity = -1;
-                start -= tmp;
-                foreach(int fix_me in knight_moves) {
-                  // earlier steps must be revised
-                  line[fix_me] -= tmp;
-                  line[fix_me] += alt_step;
+                Point test = start+tmp;
+                if (!fn(test.X, test.Y)) {
+                  knightmove_parity = -1;
+                  foreach(int fix_me in knight_moves) {
+                    // earlier steps must be revised
+                    line[fix_me] -= tmp;
+                    line[fix_me] += alt_step;
+                  }
                 }
                 }
             if (0==knightmove_parity)
                 {   // chess knight's move paradox: for distance 2, we have +/1 +/2
-                start += alt_step;
-                if (!fn(start.X, start.Y)) knightmove_parity = 1;
-                start -= alt_step;
+                Point test = start+alt_step;
+                if (!fn(test.X, test.Y)) knightmove_parity = 1;
                 }
             if (0==knightmove_parity && null!=line) knight_moves.Add(line.Count);
             if (-1==knightmove_parity)
@@ -216,13 +216,13 @@ namespace djack.RogueSurvivor.Engine
                 start += alt_step;
                 numerator -= 2 * needRange;
                 if (!fn(start.X, start.Y)) return false;
-                line?.Add(new Point(start.X, start.Y));
+                line?.Add(start);
                 continue;
                 }
 //          knightmove_parity = 1;  // do not *commit* to knight move parity here (unnecessary asymmetry, interferes with cover/stealth mechanics), 0 should mean both options are legal
             start += tmp;
             if (!fn(start.X, start.Y)) return false;
-            line?.Add(new Point(start.X, start.Y));
+            line?.Add(start);
             }
         while (++i < actualRange);
         return start.X == xTo && start.Y == yTo;
