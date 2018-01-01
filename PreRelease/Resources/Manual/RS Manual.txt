@@ -593,6 +593,11 @@ Give orders or directives to your followers.
 See the Followers section for more details.
 
 
+> ORDER PC  (Ctrl-Shift-[Order]; default Ctrl-Shift-O)
+Give orders or directives to yourself.  Only immediately relevant orders will appear.  
+See the Followers section for more details
+
+
 > SHOUTING  (default S)
 Make a lot of noise.
 Useful to try to wake up nearby sleepers.
@@ -656,7 +661,7 @@ The game doesn't enforce permadeath, after your death you can reload your last s
 Saving and especially loading can take some time, please be patient or consider lowering some game options.
 
 
-> (System) OPTIONS & KEYBINDINGS  (default Shift-O, Shift-K)
+> (System) OPTIONS & KEYBINDINGS  (Shift-[Orders] default Shift-O; default Shift-K)
 You can set some game options and redefine most of the keys.
 Your options and keys preferences are automatically saved between games.
 Options are applied immediatly but some take effect only when starting a new game.
@@ -929,6 +934,25 @@ Take followers for a short time, care for them like you would do for Companions 
 Having a bunch of strong gun-toting civilians running around is bad news for Zombies and good news for you.
 
 
+ORDERS FOR YOURSELF
+
+These don't do anything you cannot do manually; they request optimal action sequences for the specified objectives.
+
+All currently implemented self-orders are non-combat (if there is an enemy in sight, they will get out of the way if not instantly expire)
+
+> Rest in Place
+> Brace for pushing car in place
+
+Both of these orders will try to bring your stamina up to the implied threshold (not-tired and least turns missed after pushing car, respectively)
+They *will* use in-inventory green stimulants when that doesn't cause a missed turn.
+
+> Recharge everything to full
+
+Recharges everything rechargable to full.  Must be next to a generator or else.
+
+> Rest rather than lose turn when tired
+
+Effect is occassionally pre-empting a turn but otherwise allowing normal action.  This is a stamina recovery micro-optimmization.
 
 <SECTION>
 8. FRIENDS & FOES
@@ -978,31 +1002,31 @@ You might encounter some other people. Friendly or hostile, it is for you to fin
 OPTIONS
 -------
 
-> "Music"
+> "Gfx - Music"
 Enable or disable game musics.
 Musics are not essential for gameplay.
 If you can't hear music, try the configuration program.
 
 
-> "Animations Delay"
+> "Gfx - Animations Delay"
 Enable or disable pauses when showing actions or events on the map.
 Disable for a faster interface.
 
 
-> "Show Minimap"
+> "Gfx - Show Minimap"
 Display or hide the minimap.
 
 
-> "Show tags on minimap"
+> "Gfx - Show tags on minimap"
 Show or hide tags (painted by the tag action) on the minimap as small yellow dots.
 
 
-> "Enable advisor"
+> "Help - Enable advisor"
 Enable or disable the advisor hint system.
 The advisor helps you learn the game for the living side.
 
 
-> "Combat Assistant"
+> "Help - Combat Assistant"
 Helps you fighting slow enemies.
 When enabled draws a colored indicator on your enemies :
 - green  : you will be able to act again before this enemy does.
@@ -1013,112 +1037,67 @@ In practice when next to an enemy :
 - the yellow indicator means the enemy can retaliate one time if you hit him now.
 - the red indicator means the enemy can retaliate more than one time if you hit him now.
 
-> "City Size"
+> "Map - City Size"
 Size of the city map. The city is a square grid of districts.
 Larger city is more fun but it rapidly increases game saves size and loading time.
 
-
-> "District Map Size"
+> "Map - District Map Size"
 How large are the District maps.
 Larger maps means more buildings and more items, but it increase game saves size and loading time.
 
-
-> "Max Civilians"
-Maximum number of civilians on a map.
-More civilians makes the game easier, but slows the game down.
-
-
-> "Max Undeads"
-Maximum number of undeads on a map.
-More undeads makes the game more challenging, but slows the game down.
-
-
-> "Day 0 Undeads"
-Percent of max undeads spawned when the game starts.
-
-
-> "Invasion Daily Increase"
-The zombies invasion increase in size each day, to fill up to Max Undeads on a map.
-Controls the percentage of Max Undeads that is added at each invasion.
-
-
-> "Zombification Chance"
-Some undeads have the ability to their their living victims into zombies after killing them.
-This option control the chances of such zombifications occuring.
-Changing this value has a large impact on game difficulty.
-
-
-> "NPCs can starve to death"
-Allow or disallow NPCs (non player characters, mostly other civilians) to starve to death like the player.
-Disabling means they will never die from hunger.
-
-
-> "Starved Zombification"
-If NPCs can starve to death, chances of turning into a zombie.
-
-
-> "Districts Simulation"
-Simulate what happened in the district you are entering while you were not there.
-The game tells you it is simulating the district and you have to wait until the simulation is completed.
-You can set the amount of simulation performed. Higher percentages simulate in more details but is slower to process.
-You can abort the simulation by keeping ESC pressed.
-You can disable this option if you don't care about this feature and want to change district without having to wait.
-It's an important part of the gameplay and you should keep it enabled if possible, though it is not necessary.
-
-
-> "Simulate when Sleeping"
-Enable or disable simulation of adjacent districts when you are sleeping.
-Enable it if you change district often and don't mind sleeping lagging a bit.
-This is useful if you intend to travel in the city as it will speed up changing districts.
-
-
-> "Reveal Starting District"
+> "Map - Reveal Starting District"
 Starts the game with knowing parts of the district map.
 
 
-> "Allow undeads evolution"
-Allow undeads to evolve into more powerful beings.
-Disabling this option makes the game much easier for the livings.
-
-
-> "Max Reincarnations"
-Number of times you can reincarnate in a game.
-Set it to 0 to disable reincarnation altogether.
-
-
-> "Can Reincarnate as Rat"
-Enable possibility to reincarnate as a zombie rat.
-
-
-> "Can Reincarnate to Sewers"
-Enable the possibility to reincarnate in an avatar located in the sewers.
-
-
-> "Civilians only Reinc."
-When reincarnating, restrict living avatar choices to civilians.
-Disable this if you want to experiment playing as all other kinds of livings actors.
-You will then be able to reincarnate as a cop, a biker, a soldier etc...
-Obviously some actors are more easy to play than simple civilians and some are much harder.
-
-
-> "Permadeath"
+> "Death - Permadeath"
 Short for Permanent Death.
 Deletes your saved game when your character dies. 
 Gives a x2 scoring bonus.
 Provides an extra excitement knowing you can't reload your way out of tricky situations.
 
-
-> "Death Screenshot"
+> "Death - Death Screenshot"
 Automatically takes a screenshot of your death.
 
 
-> "Aggressive Hungry Civilians"
+> "Living - Max Civilians"
+Maximum number of civilians on a map.
+More civilians makes the game easier, but slows the game down.
+
+> "Living - Zombification Chance"
+Some undeads have the ability to their their living victims into zombies after killing them.
+This option control the chances of such zombifications occuring.
+Changing this value has a large impact on game difficulty.
+
+> "Living - Aggressive Hungry Civilians"
 Allow hungry civilians to attack other people for food.
 Hungry civilians without food will charge at actors who carry food or are standing on food.
 They stop being aggressive if they can get food, so you are not forced to fight them.
 Enabling the option lead to great chaos as bands of survivors can quickly turn into a raging hungry mob.
 Don't be surprise if you see civilians fighting each other. Survival of the fittest!
 Disabling this makes survivor life much easier and undead harder.
+
+> "Living - NPCs can starve to death"
+Allow or disallow NPCs (non player characters, mostly other civilians) to starve to death like the player.
+Disabling means they will never die from hunger.
+
+> "Living - Starved Zombification"
+If NPCs can starve to death, chances of turning into a zombie.
+
+
+> "Undead - Max Undeads"
+Maximum number of undeads on a map.
+More undeads makes the game more challenging, but slows the game down.
+
+> "Undead - Allow undeads evolution"
+Allow undeads to evolve into more powerful beings.
+Disabling this option makes the game much easier for the livings.
+
+> "Undead - Day 0 Undeads"
+Percent of max undeads spawned when the game starts.
+
+> "Undead - Invasion Daily Increase"
+The zombies invasion increase in size each day, to fill up to Max Undeads on a map.
+Controls the percentage of Max Undeads that is added at each invasion.
 
 
 > "Event - National Guard"
@@ -1130,7 +1109,6 @@ Obviously this makes the living game much easier.
 Remember the NG only show up between certain dates and conditions.
 Changing the option value won't change that fact.
 
-
 > "Event - Supplies Drop"
 Affect how likely the supplies drop event happens.
 The higher the option, the more often supples are dropped.
@@ -1138,6 +1116,22 @@ A value of zero entirely disable the supplies drop event.
 A high values does not mean the event will always fire.
 Obviously this makes the living game much easier.
 
+
+> "Reinc - Max Reincarnations"
+Number of times you can reincarnate in a game.
+Set it to 0 to disable reincarnation altogether.
+
+> "Reinc - Civilians only Reinc."
+When reincarnating, restrict living avatar choices to civilians.
+Disable this if you want to experiment playing as all other kinds of livings actors.
+You will then be able to reincarnate as a cop, a biker, a soldier etc...
+Obviously some actors are more easy to play than simple civilians and some are much harder.
+
+> "Reinc - Can Reincarnate as Rat"
+Enable possibility to reincarnate as a zombie rat.
+
+> "Reinc - Can Reincarnate to Sewers"
+Enable the possibility to reincarnate in an avatar located in the sewers.
 
 
 HINTS
