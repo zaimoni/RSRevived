@@ -938,12 +938,21 @@ ORDERS FOR YOURSELF
 
 These don't do anything you cannot do manually; they request optimal action sequences for the specified objectives.
 
-Rest in Place
-Brace for pushing car in place
+All currently implemented self-orders are non-combat (if there is an enemy in sight, they will get out of the way if not instantly expire)
+
+> Rest in Place
+> Brace for pushing car in place
 
 Both of these orders will try to bring your stamina up to the implied threshold (not-tired and least turns missed after pushing car, respectively)
 They *will* use in-inventory green stimulants when that doesn't cause a missed turn.
 
+> Recharge everything to full
+
+Recharges everything rechargable to full.  Must be next to a generator or else.
+
+> Rest rather than lose turn when tired
+
+Effect is occassionally pre-empting a turn but otherwise allowing normal action.  This is a stamina recovery micro-optimmization.
 
 <SECTION>
 8. FRIENDS & FOES
