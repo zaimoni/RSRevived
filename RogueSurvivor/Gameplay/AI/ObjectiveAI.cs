@@ -643,6 +643,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SAN);
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_ANTIVIRAL);
           if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_STA);
+          if (m_Actor.IsHungry) {
+            if (null == drop) drop = inv.GetFirstByModel(GameItems.PILLS_SLP);
+            if (null == drop) drop = inv.GetFirst<ItemGrenade>();
+            if (null == drop) drop = inv.GetFirst<ItemAmmo>();
+            if (null == drop) drop = inv.GetFirst<Item>(obj => !(obj is ItemRangedWeapon) && !(obj is ItemAmmo));
+          }
           if (null != drop) {
             if (null != position) return _BehaviorDropOrExchange(drop,it,position.Value);
             List<ActorAction> recover = new List<ActorAction>(2);
