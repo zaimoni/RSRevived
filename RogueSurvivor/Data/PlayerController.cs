@@ -142,7 +142,7 @@ namespace djack.RogueSurvivor.Data
         MapObject car = null;
         foreach(Direction dir in Direction.COMPASS) {
           Point pt = m_Actor.Location.Position + dir;
-          MapObject tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt.X,pt.Y);
+          MapObject tmp = m_Actor.Location.Map.GetMapObjectAtExt(pt);
           if (null == tmp) continue;
           switch(tmp.ID) {
           case MapObject.IDs.CAR1:

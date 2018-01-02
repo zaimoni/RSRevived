@@ -413,7 +413,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Point> has_container = new List<Point>();
       foreach(Point pos in Direction.COMPASS.Select(dir => m_Actor.Location.Position+dir)) {
-        MapObject container = m_Actor.Location.Map.GetMapObjectAtExt(pos.X,pos.Y);
+        MapObject container = m_Actor.Location.Map.GetMapObjectAtExt(pos);
         if (!container?.IsContainer ?? true) continue;
         Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(pos);
         if (null != itemsAt)

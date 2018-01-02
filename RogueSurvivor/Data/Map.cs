@@ -60,6 +60,10 @@ namespace djack.RogueSurvivor.Data
     public readonly Dataflow<Map,Point,Exit> AI_exits;
     [NonSerialized]
     public readonly NonSerializedCache<Map, Map, HashSet<Map>> destination_maps;
+    [NonSerialized]
+    public readonly Dataflow<Map,Point,Exit> entrymap_exits;
+    [NonSerialized]
+    public readonly NonSerializedCache<Map, Map, HashSet<Map>> entrymap_destination_maps;
 
     public bool IsSecret { get; private set; }
 
@@ -128,6 +132,7 @@ namespace djack.RogueSurvivor.Data
     }
     
     private static Dictionary<Point,Exit> _FindAIexits(Map m) { return m.GetExits(exit => exit.IsAnAIExit); }
+    private static Dictionary<Point,Exit> _Find_entrymap_exits(Map m) { return m.GetExits(exit => exit.ToMap==exit.ToMap.District.EntryMap); }
 
     public Map(int seed, string name, District d, int width, int height, Lighting light=Lighting.OUTSIDE, bool secret=false)
     {
@@ -152,6 +157,8 @@ namespace djack.RogueSurvivor.Data
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
+      entrymap_exits = new Dataflow<Map, Point, Exit>(this, _Find_entrymap_exits);
+      entrymap_destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(entrymap_exits.Get.Values.Select(exit => exit.ToMap)));
     }
 
 #region Implement ISerializable
@@ -181,6 +188,8 @@ namespace djack.RogueSurvivor.Data
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
+      entrymap_exits = new Dataflow<Map, Point, Exit>(this, _Find_entrymap_exits);
+      entrymap_destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(entrymap_exits.Get.Values.Select(exit => exit.ToMap)));
       ReconstructAuxiliaryFields();
     }
 
@@ -676,7 +685,7 @@ namespace djack.RogueSurvivor.Data
         if (   move.Value is Engine.Actions.ActionBashDoor
             || move.Value is Engine.Actions.ActionBreak)
             {
-    	    MapObject tmp = GetMapObjectAtExt(move.Key.X, move.Key.Y);
+    	    MapObject tmp = GetMapObjectAtExt(move.Key);
 		    int cost = 1;
             if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina          
             else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
@@ -1129,6 +1138,18 @@ retry:
 #endif
     }
 
+    public MapObject GetMapObjectAtExt(Point pt)
+    {
+#if NO_PEACE_WALLS
+      if (IsInBounds(pt)) return GetMapObjectAt(pt);
+      Location? test = Normalize(pt);
+      if (null==test) return null;
+      return test.Value.Map.GetMapObjectAt(test.Value.Position);
+#else
+      return GetMapObjectAt(new Point(x, y));
+#endif
+    }
+
     public bool HasMapObjectAt(Point position)
     {
       return m_aux_MapObjectsByPosition.ContainsKey(position);
@@ -1154,7 +1175,7 @@ retry:
       if (!IsValid(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsValid(position)");
       if (!GetTileModelAtExt(position).IsWalkable) throw new ArgumentOutOfRangeException(nameof(position),position, "!GetTileModelAt(position).IsWalkable");
 #endif
-      MapObject mapObjectAt = GetMapObjectAtExt(position.X,position.Y);
+      MapObject mapObjectAt = GetMapObjectAtExt(position);
       if (mapObjectAt == mapObj) return;
 #if DEBUG
       if (null != mapObjectAt) throw new ArgumentOutOfRangeException(nameof(position), position, "null != GetMapObjectAtExt(position)");
@@ -1279,7 +1300,7 @@ retry:
         Point adjacent = pt + dir;
         inv = GetItemsAtExt(adjacent);
         if (null == inv) continue;
-        MapObject mapObjectAt = GetMapObjectAtExt(adjacent.X, adjacent.Y);
+        MapObject mapObjectAt = GetMapObjectAtExt(adjacent);
         if (null == mapObjectAt) continue;
         if (!mapObjectAt.IsContainer) continue; // XXX this is scheduled for revision
         ground_inv[adjacent] = inv;

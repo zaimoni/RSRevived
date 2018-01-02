@@ -426,7 +426,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Map map = m_Actor.Location.Map;
       Dictionary<Point,DoorWindow> doors = map.FindAdjacent(m_Actor.Location.Position, (m,pt) => {
-        DoorWindow doorWindow = m.GetMapObjectAtExt(pt.X,pt.Y) as DoorWindow;
+        DoorWindow doorWindow = m.GetMapObjectAtExt(pt) as DoorWindow;
         return ((doorWindow?.IsBarricaded ?? false) ? doorWindow : null);
       });
       if (0 >= doors.Count) return null;
@@ -459,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
       Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
-        MapObject o = m.GetMapObjectAtExt(pt.X,pt.Y);
+        MapObject o = m.GetMapObjectAtExt(pt);
         if (o?.IsWalkable ?? true) return null;
         return (m_Actor.CanPush(o) ? o : null);
       });
@@ -473,7 +473,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.AbleToPush) return null;
       Map map = m_Actor.Location.Map;
       Dictionary<Point,MapObject> objs = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
-        MapObject o = m.GetMapObjectAtExt(pt.X,pt.Y);
+        MapObject o = m.GetMapObjectAtExt(pt);
         if (null == o) return null;
         if (o.IsWalkable) return null;
         if (o.IsJumpable) return null;
@@ -1018,7 +1018,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region 3 If can tire, prefer not jumping.
       float jumpPenalty = 0.0f;
       if (m_Actor.Model.Abilities.CanTire && m_Actor.Model.Abilities.CanJump) {
-        MapObject mapObjectAt = map.GetMapObjectAtExt(from.X,from.Y);
+        MapObject mapObjectAt = map.GetMapObjectAtExt(from);
         if (mapObjectAt != null && mapObjectAt.IsJumpable) jumpPenalty = 0.1f;
       }
 #endregion

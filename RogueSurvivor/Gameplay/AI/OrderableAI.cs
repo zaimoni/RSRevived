@@ -1957,12 +1957,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return HasAnyInterestingItem(inv.Items);
     }
 
-    protected bool RHSMoreInteresting(Item lhs, Item rhs)
+    private bool RHSMoreInteresting(Item lhs, Item rhs)
     {
 #if DEBUG
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
-      if (!IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);  // lhs may be from inventory
+      if (!IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);  // historically, lhs may be from inventory
 #endif
       if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
@@ -2130,20 +2130,39 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #region ground inventory stacks
     private List<Item> InterestingItems(IEnumerable<Item> Items)
     {
-      if (Items == null) return null;
+#if DEBUG
+      if (null == Items) throw new ArgumentNullException(nameof(Items));
+#endif
       HashSet<GameItems.IDs> exclude = new HashSet<GameItems.IDs>(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
       IEnumerable<Item> tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
       return (tmp.Any() ? tmp.ToList() : null);
     }
 
-    public List<Item> InterestingItems(Inventory inv)
+    private List<Item> InterestingItems(Inventory inv)
     {
-      return InterestingItems(inv?.Items);
+      return InterestingItems(inv.Items);
+    }
+
+    private Item MostInterestingItemInStack(Inventory stack)
+    {
+#if DEBUG
+      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+#endif
+      List<Item> interesting = InterestingItems(stack);
+      if (null==interesting) return null;
+
+      Item obj = null;
+      foreach (Item it in interesting) {
+        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+      }
+      return obj;
     }
 
     protected ActorAction BehaviorWouldGrabFromStack(Location loc, Inventory stack)
     {
-      if (stack == null || stack.IsEmpty) return null;
+#if DEBUG
+      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+#endif
 
       MapObject mapObjectAt = (loc != m_Actor.Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null && !mapObjectAt.IsContainer && !loc.Map.IsWalkableFor(loc.Position, m_Actor)) {
@@ -2153,13 +2172,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
       }
 
-      List<Item> interesting = InterestingItems(stack);
-      if (null==interesting) return null;
-
-      Item obj = null;
-      foreach (Item it in interesting) {
-        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
-      }
+      Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
@@ -2183,13 +2196,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-      List<Item> interesting = InterestingItems(stack);
-      if (null==interesting) return null;
-
-      Item obj = null;
-      foreach (Item it in interesting) {
-        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
-      }
+      Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
@@ -2219,7 +2226,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorGrabFromStack(Location loc, Inventory stack)
     {
-      if (stack == null || stack.IsEmpty) return null;
+#if DEBUG
+      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+#endif
 
       MapObject mapObjectAt = (loc != m_Actor.Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
       if (mapObjectAt != null && !mapObjectAt.IsContainer && !loc.Map.IsWalkableFor(loc.Position, m_Actor)) {
@@ -2229,13 +2238,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
       }
 
-      List<Item> interesting = InterestingItems(stack);
-      if (null==interesting) return null;
-
-      Item obj = null;
-      foreach (Item it in interesting) {
-        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
-      }
+      Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
 
       // but if we cannot take it, ignore anyway
