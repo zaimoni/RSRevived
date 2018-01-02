@@ -2178,6 +2178,45 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
     }
 
+    protected ActorAction BehaviorBrabFromAccessibleStack(Location loc, Inventory stack)
+    {
+#if DEBUG
+      if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
+#endif
+      List<Item> interesting = InterestingItems(stack);
+      if (null==interesting) return null;
+
+      Item obj = null;
+      foreach (Item it in interesting) {
+        if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+      }
+      if (obj == null) return null;
+
+      // but if we cannot take it, ignore anyway
+      bool cant_get = !m_Actor.CanGet(obj);
+      bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
+      ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+      if (cant_get && null == recover) return null;
+
+      // the get item checks do not validate that inventory is not full
+      ActorAction tmp = null;
+      if (RogueForm.Game.Rules.RollChance(EMOTE_GRAB_ITEM_CHANCE))
+        RogueForm.Game.DoEmote(m_Actor, string.Format("{0}! Great!", (object) obj.AName));
+
+      tmp = new ActionTakeItem(m_Actor, loc, obj);
+      if (!tmp.IsLegal() && m_Actor.Inventory.IsFull) {
+        if (null == recover) return null;
+        if (!recover.IsLegal()) return null;
+        if (recover is ActionDropItem drop) {
+          if (obj.Model.ID == drop.Item.Model.ID) return null;
+          Objectives.Add(new Goal_DoNotPickup(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, drop.Item.Model.ID));
+        }
+        Objectives.Insert(0,new Goal_NextAction(m_Actor.Location.Map.LocalTime.TurnCounter+1,m_Actor,tmp));
+        return recover;
+      }
+      return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
+    }
+
     protected ActorAction BehaviorGrabFromStack(Location loc, Inventory stack)
     {
       if (stack == null || stack.IsEmpty) return null;
@@ -2769,23 +2808,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
     {
-      Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(m_Actor.Location.Position);
-      if (null != itemsAt) {
-        ActorAction tmpAction = BehaviorGrabFromStack(m_Actor.Location, itemsAt);
-        if (null != tmpAction) return tmpAction;
-      }
-      foreach(Direction dir in Direction.COMPASS) {
-        Location loc = m_Actor.Location + dir;
-        if (!loc.Map.IsInBounds(loc.Position)) {
-          Location? test = loc.Map.Normalize(loc.Position);
-          if (null == test) continue;
-          loc = test.Value;
+      Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+      if (0 < (stacks?.Count ?? 0)) {
+        foreach(var x in stacks) {
+          Location? loc = m_Actor.Location.Map.Normalize(x.Key);
+          if (null == loc) throw new ArgumentNullException(nameof(loc));
+          ActorAction tmpAction = BehaviorBrabFromAccessibleStack(loc.Value, x.Value);
+          if (null != tmpAction) return tmpAction;
         }
-        Point pt = m_Actor.Location.Position+dir;
-        itemsAt = loc.Map.GetItemsAt(loc.Position);
-        if (null == itemsAt) continue;
-        ActorAction tmpAction = BehaviorGrabFromStack(loc, itemsAt);
-        if (null != tmpAction) return tmpAction;
       }
       return BehaviorPathTo(m => WhereIs(critical, m));
     }
