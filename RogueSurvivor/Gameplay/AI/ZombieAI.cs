@@ -118,7 +118,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
       if (m_Actor.Model.Abilities.ZombieAI_Explore) {
-        tmpAction = BehaviorExplore(game, m_Exploration);
+        tmpAction = BehaviorExplore(m_Exploration);
         if (null != tmpAction) {
           m_Actor.Activity = Activity.IDLE;
           return tmpAction;

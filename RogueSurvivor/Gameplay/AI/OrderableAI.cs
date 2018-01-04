@@ -1959,6 +1959,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionWait(m_Actor);
     }
 
+    protected override ActorAction BehaviorExplore(ExplorationData exploration)
+    {
+      ActorCourage courage = Directives.Courage;
+      Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - PrevLocation.Position.X, m_Actor.Location.Position.Y - PrevLocation.Position.Y);
+      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
+      ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
+        Location loc = m_Actor.Location + dir;
+        if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
+        if (!loc.Map.IsInBounds(loc.Position)) {
+          Location? test = loc.Map.Normalize(loc.Position);
+          if (null == test) return float.NaN;
+          loc = test.Value;
+        }
+        if (exploration.HasExplored(loc)) return float.NaN;
+        Map map = loc.Map;
+        Point position = loc.Position;
+        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && map.TrapsMaxDamageAt(position) >= m_Actor.HitPoints)
+          return float.NaN;
+        int num = 0;
+        if (!exploration.HasExplored(map.GetZonesAt(position))) num += 1000;
+        /* if (!exploration.HasExplored(loc)) */ num += 500;
+        MapObject mapObjectAt = map.GetMapObjectAt(position);
+        if (mapObjectAt != null && (mapObjectAt.IsMovable || mapObjectAt is DoorWindow)) num += 100;
+        if (null != map.GetActivatedTrapAt(position)) num += -50;
+        if (map.IsInsideAtExt(position)) {
+          if (map.LocalTime.IsNight) num += 50;
+        }
+        else if (!map.LocalTime.IsNight) num += 50;
+        if (dir == prevDirection) num += 25;
+        return (float) (num + RogueForm.Game.Rules.Roll(0, 10));
+      }, (a, b) => a > b);
+      if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
+      return null;
+    }
+
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
     {
       if (Items == null) return false;

@@ -877,7 +877,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      tmpAction = BehaviorExplore(game, m_Exploration, Directives.Courage);
+      tmpAction = BehaviorExplore(m_Exploration);
       if (null != tmpAction) {
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "unguided exploration");

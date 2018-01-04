@@ -891,10 +891,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorExplore(RogueGame game, ExplorationData exploration, ActorCourage courage=ActorCourage.CAUTIOUS)
+    protected virtual ActorAction BehaviorExplore(ExplorationData exploration)
     {
       Direction prevDirection = Direction.FromVector(m_Actor.Location.Position.X - m_prevLocation.Position.X, m_Actor.Location.Position.Y - m_prevLocation.Position.Y);
-      bool imStarvingOrCourageous = m_Actor.IsStarving || ActorCourage.COURAGEOUS == courage;
       ChoiceEval<Direction> choiceEval = Choose(Direction.COMPASS, dir => {
         Location loc = m_Actor.Location + dir;
         if (!IsValidMoveTowardGoalAction(Rules.IsBumpableFor(m_Actor, loc))) return float.NaN;
@@ -906,8 +905,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (exploration.HasExplored(loc)) return float.NaN;
         Map map = loc.Map;
         Point position = loc.Position;
-        if (m_Actor.Model.Abilities.IsIntelligent && !imStarvingOrCourageous && map.TrapsMaxDamageAt(position) >= m_Actor.HitPoints)
-          return float.NaN;
         int num = 0;
         if (!exploration.HasExplored(map.GetZonesAt(position))) num += 1000;
         /* if (!exploration.HasExplored(loc)) */ num += 500;
@@ -919,7 +916,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         else if (!map.LocalTime.IsNight) num += 50;
         if (dir == prevDirection) num += 25;
-        return (float) (num + game.Rules.Roll(0, 10));
+        return (float) (num + RogueForm.Game.Rules.Roll(0, 10));
       }, (a, b) => a > b);
       if (choiceEval != null) return new ActionBump(m_Actor, choiceEval.Choice);
       return null;
