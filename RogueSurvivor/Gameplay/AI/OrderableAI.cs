@@ -1899,14 +1899,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, point1, false);
     }
 
+    // This is going into BehaviorWander so it can't be fully competent
     protected bool VetoSleepLocation(Location loc)
     {
       // the legacy tests
       if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return true;
       if (loc.Map.HasExitAtExt(loc.Position)) return true;    // both unsafe, and problematic for pathing in general
       if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return true;
+      if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return true;
       // geometric code (walls, etc)
-      if (!loc.Map.IsInsideAt(loc.Position)) return true;
+      if (!loc.Map.IsInsideAtExt(loc.Position)) return true;
       return false;
     }
 
@@ -1915,9 +1917,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanSleep()) return null;
       Map map = m_Actor.Location.Map;
       // Do not sleep next to a door/window
+      var sleep_locs = new Dictionary<Point, int>();
+      var couches = new Dictionary<Point,int>();
       if (VetoSleepLocation(m_Actor.Location)) {
-        ActorAction actorAction = BehaviorWander(loc => !VetoSleepLocation(loc));
-        if (actorAction != null) return actorAction;
+        foreach(Point pt in m_Actor.Controller.FOV) {
+          if (VetoSleepLocation(new Location(m_Actor.Location.Map,pt))) continue;
+          int dist = Rules.GridDistance(m_Actor.Location.Position, pt);
+          sleep_locs[pt] = dist;
+          if (map.GetMapObjectAt(pt)?.IsCouch ?? false) couches[pt] = dist;
+        }
+        return BehaviorEfficientlyHeadFor(0<couches.Count ? couches : sleep_locs);  // null return ok here?
       }
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (m_Actor.IsOnCouch) {
@@ -1926,10 +1935,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // head for a couch if in plain sight
-      Dictionary<Point,int> couches = new Dictionary<Point,int>();
       foreach (Point pt2 in m_Actor.Controller.FOV) {
-        if (map.HasAnyAdjacentInMap(pt2, (Predicate<Point>)(pt => map.GetMapObjectAt(pt) is DoorWindow))) continue;
-        if (map.HasActorAt(pt2)) continue;
+        if (VetoSleepLocation(new Location(m_Actor.Location.Map,pt2))) continue;
         if (map.GetMapObjectAt(pt2)?.IsCouch ?? false) {
           couches[pt2] = Rules.GridDistance(m_Actor.Location.Position, pt2);
         }
