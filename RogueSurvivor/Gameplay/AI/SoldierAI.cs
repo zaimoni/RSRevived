@@ -199,12 +199,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == old_enemies && WantToSleepNow) {
         if (m_Actor.IsInside) {
+          Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches);
+          if (0 >= sleep_locs.Count) {
+            tmpAction = BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
+            if (null != tmpAction) return tmpAction;
+          }
           tmpAction = BehaviorSecurePerimeter();
           if (null != tmpAction) {
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
-          tmpAction = BehaviorSleep(game);
+          tmpAction = BehaviorSleep(sleep_locs,couches);
           if (null != tmpAction) {
             if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
             return tmpAction;

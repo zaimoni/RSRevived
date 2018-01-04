@@ -1912,41 +1912,44 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-    protected ActorAction BehaviorSleep(RogueGame game)
+    protected Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches)
     {
+      couches = new Dictionary<Point,int>();
+      var ret = new Dictionary<Point,int>();
+      foreach(Point pt in m_Actor.Controller.FOV) {
+        if (VetoSleepLocation(new Location(m_Actor.Location.Map,pt))) continue;
+        int dist = Rules.GridDistance(m_Actor.Location.Position, pt);
+        ret[pt] = dist;
+        if (m_Actor.Location.Map.GetMapObjectAt(pt)?.IsCouch ?? false) couches[pt] = dist;
+      }
+      return ret;
+    }
+
+    protected ActorAction BehaviorSleep(Dictionary<Point,int> sleep_locs, Dictionary<Point,int> couches)
+    {
+#if DEBUG
+      if (0 >= (sleep_locs?.Count ?? 0)) throw new ArgumentNullException(nameof(sleep_locs));
+      if (null == couches) throw new ArgumentNullException(nameof(couches));
+#endif
       if (!m_Actor.CanSleep()) return null;
       Map map = m_Actor.Location.Map;
       // Do not sleep next to a door/window
-      var sleep_locs = new Dictionary<Point, int>();
-      var couches = new Dictionary<Point,int>();
       if (VetoSleepLocation(m_Actor.Location)) {
-        foreach(Point pt in m_Actor.Controller.FOV) {
-          if (VetoSleepLocation(new Location(m_Actor.Location.Map,pt))) continue;
-          int dist = Rules.GridDistance(m_Actor.Location.Position, pt);
-          sleep_locs[pt] = dist;
-          if (map.GetMapObjectAt(pt)?.IsCouch ?? false) couches[pt] = dist;
-        }
         return BehaviorEfficientlyHeadFor(0<couches.Count ? couches : sleep_locs);  // null return ok here?
       }
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
       if (m_Actor.IsOnCouch) {
-        if (it is BatteryPowered) game.DoUnequipItem(m_Actor, it);
+        if (it is BatteryPowered) RogueForm.Game.DoUnequipItem(m_Actor, it);
         return new ActionSleep(m_Actor);
       }
 
       // head for a couch if in plain sight
-      foreach (Point pt2 in m_Actor.Controller.FOV) {
-        if (VetoSleepLocation(new Location(m_Actor.Location.Map,pt2))) continue;
-        if (map.GetMapObjectAt(pt2)?.IsCouch ?? false) {
-          couches[pt2] = Rules.GridDistance(m_Actor.Location.Position, pt2);
-        }
-      }
       ActorAction tmpAction = BehaviorEfficientlyHeadFor(couches);
       if (null != tmpAction) return tmpAction;
 
       // all battery powered items other than the police radio are left hand, currently
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
-      if (it is BatteryPowered) game.DoUnequipItem(m_Actor, it);
+      if (it is BatteryPowered) RogueForm.Game.DoUnequipItem(m_Actor, it);
       return new ActionSleep(m_Actor);
     }
 

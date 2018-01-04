@@ -418,6 +418,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (m_SafeTurns >= MIN_TURNS_SAFE_TO_SLEEP && Directives.CanSleep && WantToSleepNow) {
         if (m_Actor.IsInside) {
+          Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches);
+          if (0 >= sleep_locs.Count) {
+            tmpAction = BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "deciding where to sleep");
+#endif
+            if (null != tmpAction) return tmpAction;
+          }
           tmpAction = BehaviorSecurePerimeter();
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
@@ -426,7 +434,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             m_Actor.Activity = Activity.IDLE;
             return tmpAction;
           }
-          tmpAction = BehaviorSleep(game);
+          tmpAction = BehaviorSleep(sleep_locs,couches);
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "sleeping");
