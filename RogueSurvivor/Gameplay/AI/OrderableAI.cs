@@ -1899,20 +1899,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, point1, false);
     }
 
+    protected bool VetoSleepLocation(Location loc)
+    {
+      // the legacy tests
+      if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return true;
+      if (loc.Map.HasExitAtExt(loc.Position)) return true;    // both unsafe, and problematic for pathing in general
+      if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return true;
+      // geometric code (walls, etc)
+      if (!loc.Map.IsInsideAt(loc.Position)) return true;
+      return false;
+    }
+
     protected ActorAction BehaviorSleep(RogueGame game)
     {
       if (!m_Actor.CanSleep()) return null;
       Map map = m_Actor.Location.Map;
       // Do not sleep next to a door/window
-      if (map.HasAnyAdjacentInMap(m_Actor.Location.Position, (Predicate<Point>) (pt => map.GetMapObjectAt(pt) is DoorWindow)))
-      {
-        ActorAction actorAction = BehaviorWander(loc =>
-        {
-          if (map.HasExitAt(loc.Position)) return false;    // both unsafe, and problematic for pathing in general
-          if (!(map.GetMapObjectAt(loc.Position) is DoorWindow))
-            return !map.HasAnyAdjacentInMap(loc.Position, (Predicate<Point>) (pt => loc.Map.GetMapObjectAt(pt) is DoorWindow));
-          return false;
-        });
+      if (VetoSleepLocation(m_Actor.Location)) {
+        ActorAction actorAction = BehaviorWander(loc => !VetoSleepLocation(loc));
         if (actorAction != null) return actorAction;
       }
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
