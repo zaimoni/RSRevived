@@ -2785,14 +2785,88 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
+#if PROTOTYPE
+    protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at, Map dest, List<KeyValuePair<Map, FloodfillPathfinder<Point> > > already_seen = null)
+    {
+#if DEBUG
+      if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
+      if (!(this is CivilianAI)) throw new InvalidOperationException("unhandled OrderableAI subclass");
+#endif
+      if (null!=already_seen) {
+        foreach(var x in already_seen) {
+          if (x.Key==dest) return x.Value;
+        }
+      }
+
+      FloodfillPathfinder<Point> navigate = dest.PathfindSteps(m_Actor);
+      HashSet<Point> where_to_go = targets_at(dest);
+      var escape = new HashSet<Point>();
+ 
+      if (0<where_to_go.Count) {
+        if (dest==m_Actor.Location.Map) navigate.GoalDistance(where_to_go, m_Actor.Location.Position);
+        else {
+          foreach(var x in dest.AI_exits.Get) {
+             if (dest.IsInBounds(x.Key)) escape.Add(x.Key);
+             else {
+               foreach(Direction dir in Direction.COMPASS) {
+                 Point pt = x.Key+dir;
+                 if (dest.IsInBounds(pt)) escape.Add(pt);
+               }
+             }
+           }
+          navigate.GoalDistance(where_to_go,escape);
+       }
+      }
+      var next_seen = new List<KeyValuePair<Map, FloodfillPathfinder<Point>>> { new KeyValuePair<Map, FloodfillPathfinder<Point>>(dest, navigate) };
+      if (null != already_seen) next_seen.AddRange(already_seen);
+
+      Dictionary<Point,Exit> valid_exits = dest.AI_exits.Get;
+      valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
+        if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
+          if (exit.ToMap != exit.ToMap.District.EntryMap) return false; // allow cross-district exits
+        }
+        if (already_seen?.Any(x => x.Key==exit.ToMap) ?? false) return false;   // debar recursion
+        MapObject mapObjectAt = exit.Location.MapObject;
+        if (null == mapObjectAt) return true;
+        if (mapObjectAt.IsCouch) return true;   // XXX probably not if someone's sleeping on it
+        if (!mapObjectAt.IsJumpable) return false;
+        return m_Actor.CanJump;
+      });
+      if (0 >= valid_exits.Count) {
+        already_seen?.Clear();
+        already_seen?.AddRange(next_seen);
+        return navigate;
+      }
+      foreach(var loc_exit in valid_exits) {
+        FloodfillPathfinder<Point> remote_navigate = PathfinderFor(targets_at, loc_exit.Value.ToMap, next_seen);
+        if (null == remote_navigate) throw new ArgumentNullException(nameof(remote_navigate));
+        if (!remote_navigate.Domain.Contains(loc_exit.Value.Location.Position)) continue;
+        int cost = remote_navigate.Cost(loc_exit.Value.Location.Position);
+        if (int.MaxValue == cost) continue;   // should be same as not in domain, but evidently not.
+        if (dest==m_Actor.Location.Map) navigate.ReviseGoalDistance(loc_exit.Key, cost+1,m_Actor.Location.Position);   // works even for denormalized coordinates as long as they're adjacent to real coordinates
+        else navigate.ReviseGoalDistance(loc_exit.Key, cost + 1, escape);
+      }
+
+      already_seen?.Clear();
+      already_seen?.AddRange(next_seen);
+      if (dest == m_Actor.Location.Map && !navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+      return navigate;
+    }
+#endif
+
     protected FloodfillPathfinder<Point> PathfinderFor(Func<Map, HashSet<Point>> targets_at)
     {
 #if DEBUG
       if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
+      if (!(this is CivilianAI)) throw new InvalidOperationException("unhandled OrderableAI subclass");
 #endif
+#if PROTOTYPE
+      return PathfinderFor(targets_at,m_Actor.Location.Map);
+#else
       FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       HashSet<Point> where_to_go = targets_at(m_Actor.Location.Map);
       if (0<where_to_go.Count) navigate.GoalDistance(where_to_go, m_Actor.Location.Position);
+      // have to debar GangAI/SoldierAI/CHARGuardAI until this is fixed
       if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
         if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
         return navigate;
@@ -2833,6 +2907,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
       return navigate;
+#endif
     }
 
     protected ActorAction BehaviorPathTo(FloodfillPathfinder<Point> navigate)

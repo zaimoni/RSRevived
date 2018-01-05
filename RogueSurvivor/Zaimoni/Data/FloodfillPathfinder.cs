@@ -169,6 +169,16 @@ namespace Zaimoni.Data
             }
         }
 
+        public void ReviseGoalDistance(T pos, int new_cost, IEnumerable<T> start)
+        {
+            if (_map.ContainsKey(pos) && _map[pos] <= new_cost) return;   // alternate route not useful
+            foreach(T x in start) {
+              int max_cost = Cost(x);
+              if (max_cost <= new_cost) continue;   // we assume the _forward cost function is not pathological i.e. all costs positive
+              ReviseGoalDistance(pos, new_cost, x);  // XXX performance: refactor rather than recurse
+            }
+        }
+
         public IEnumerable<T> Domain { get { return _map.Keys; } }
 
         public int Cost(T pos)
