@@ -2534,8 +2534,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName("Patient");
+      GiveNameToActor(m_DiceRoller, numberedName, "Patient");
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_PATIENT_UNIFORM);
       return numberedName;
@@ -2545,8 +2544,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = GameActors.FemaleCivilian.CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName("Nurse");
+      GiveNameToActor(m_DiceRoller, numberedName, "Nurse");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC);
@@ -2558,8 +2556,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = GameActors.MaleCivilian.CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName("Doctor");
+      GiveNameToActor(m_DiceRoller, numberedName, "Doctor");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_DOCTOR_UNIFORM);
       GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
@@ -2752,8 +2749,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = GameActors.Policeman.CreateNumberedName(GameFactions.ThePolice, spawnTime);
       DressPolice(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName("Cop");
+      GiveNameToActor(m_DiceRoller, numberedName, "Cop");
       // Notable skills
       // martial arts 1 makes the starting baton useless
       // XXX probably should be used as a trade good rather than dropped ASAP
@@ -2845,8 +2841,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = GameActors.CHARGuard.CreateNumberedName(GameFactions.TheCHARCorporation, spawnTime);
       DressCHARGuard(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName("Gd.");
+      GiveNameToActor(m_DiceRoller, numberedName, "Gd.");
       numberedName.Inventory.AddAll(MakeItemShotgun());
       numberedName.Inventory.AddAll(MakeItemShotgunAmmo());
       numberedName.Inventory.AddAll(MakeItemCHARLightBodyArmor());
@@ -2857,8 +2852,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = GameActors.NationalGuard.CreateNumberedName(GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName(rankName);
+      GiveNameToActor(m_DiceRoller, numberedName, rankName);
       numberedName.Inventory.AddAll(MakeItemArmyRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyPistol());
@@ -2910,8 +2904,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     {
       Actor numberedName = GameActors.BlackOps.CreateNumberedName(GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
-      GiveNameToActor(m_DiceRoller, numberedName);
-      numberedName.PrefixName(rankName);
+      GiveNameToActor(m_DiceRoller, numberedName, rankName);
       numberedName.Inventory.AddAll(MakeItemPrecisionRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyPistol());
