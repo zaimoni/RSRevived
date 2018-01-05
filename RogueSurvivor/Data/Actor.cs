@@ -2455,12 +2455,14 @@ namespace djack.RogueSurvivor.Data
     // prevents sinking IsInterestingTradeItem and IsTradeableItem below ActorController (these must work for both OrderableAI and PlayerController)
     public List<Item> GetInterestingTradeableItems(Actor buyer) // called from RogueGame::PickItemToTrade so forced to be public no matter where
     {
-      Contract.Requires(Model.Abilities.CanTrade);
-      Contract.Requires(buyer.Model.Abilities.CanTrade);
+#if DEBUG
+      if (!Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
+      if (!buyer.Model.Abilities.CanTrade) throw new InvalidOperationException("cannot trade");
+#endif
 
 #if OBSOLETE
 #else
-      if (buyer.IsPlayer) return Inventory.Items.ToList();
+      if (buyer.IsPlayer && IsPlayer) return Inventory.Items.ToList();
 #endif
 
       // IsInterestingTradeItem includes a charisma check i.e. RNG invocation, so cannot use .Any() prescreen safely

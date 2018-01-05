@@ -239,6 +239,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
           ret = new ActionWait(m_Actor);    // XXX should try to optimize ActionWait to any constructive non-movement action
           return true;
         }
+        Location? test = m_Actor.Location.Map.Denormalize(_dest.Location);
+        if (null!=test && m_Actor.Controller.FOV.Contains(test.Value.Position)) {
+          var goals = new Dictionary<Point, int>();
+          goals[test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location);
+          ActorAction tmp = (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
+          if (tmp?.IsLegal() ?? false) {
+            ret = tmp;
+            return true;
+          }
+        }
 
         IEnumerable<Point> dest_pts = Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor));
         ret = (m_Actor.Controller as OrderableAI).BehaviorPathTo(m => (m == m_Actor.Location.Map ? new HashSet<Point>(dest_pts) : new HashSet<Point>()));
@@ -573,7 +583,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // this assumes conditions like "everything is in FOV" so that a floodfill pathfinding is not needed.
     // we also assume no enemies in sight.
-    ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
+    public ActorAction BehaviorEfficientlyHeadFor(Dictionary<Point,int> goals)
     {
       if (0>=goals.Count) return null;
       List<Point> legal_steps = m_Actor.LegalSteps;
@@ -2789,7 +2799,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 #if DEBUG
       if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
-      if (!(this is CivilianAI)) throw new InvalidOperationException("unhandled OrderableAI subclass");
 #endif
       if (null == navigate) navigate = dest.PathfindLocSteps(m_Actor);
       if (null == goals) goals = new List<Location>();
