@@ -168,6 +168,35 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new Dictionary<Point,int>(PlannedMoves[m_Actor.Location.Position]);
     }
 
+    private Dictionary<Point, int> DowngradeApproach(Dictionary<Location,int> src)
+    {
+      var ret = new Dictionary<Point,int>();
+      foreach(var x in src) {
+        Location? test = x.Key.Map.Denormalize(x.Key);
+        if (null == test) continue;
+        ret[test.Value.Position] = x.Value;
+      }
+      return ret;
+    }
+
+    protected Dictionary<Location, int> PlanApproach(Zaimoni.Data.FloodfillPathfinder<Location> navigate)
+    {
+      PlannedMoves.Clear();
+      var dest = navigate.Approach(m_Actor.Location);
+      if (0 < dest.Count) {
+        var approach = DowngradeApproach(dest);
+        if (0<approach.Count) PlannedMoves[m_Actor.Location.Position] = approach;
+        foreach(var x in dest) {
+          Location? test = x.Key.Map.Denormalize(x.Key);
+          if (null == test) continue;
+          var test2 = navigate.Approach(x.Key);
+          approach = DowngradeApproach(test2);
+          if (0<approach.Count) PlannedMoves[test.Value.Position] = approach;
+        }
+      }
+      return dest;
+    }
+
     protected ActorAction PlanApproachFailover(Zaimoni.Data.FloodfillPathfinder<Point> navigate)
     {
       List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
@@ -189,18 +218,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction PlanApproachFailover(Zaimoni.Data.FloodfillPathfinder<Location> navigate)
     {
-      List<Location> legal_steps = m_Actor.OnePathRange(m_Actor.Location);
+      Dictionary<Location,ActorAction> legal_steps = m_Actor.OnePathRange(m_Actor.Location);
       if (null != legal_steps) {
         var costs = new Dictionary<Location,int>();
-        foreach(Location loc in legal_steps) {
-          costs[loc] = navigate.Cost(loc);
+        foreach(var loc_action in legal_steps) {
+          costs[loc_action.Key] = navigate.Cost(loc_action.Key);
         }
         int min_cost = costs.Values.Min();
         if (int.MaxValue == min_cost) return null;
         costs.OnlyIf(val => val <= min_cost);
         if (0<costs.Count) {
           var dests = costs.Keys.ToList();
-          return Rules.IsPathableFor(m_Actor,RogueForm.Game.Rules.Choose(dests));
+          return legal_steps[RogueForm.Game.Rules.Choose(dests)];
         }
       }
       return null;

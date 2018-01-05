@@ -1375,19 +1375,30 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public List<Location> OnePathRange(Location loc)
+    public Dictionary<Location,ActorAction> OnePathRange(Location loc)
     {
-      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>loc.Position+dir).Where(pt=>null!=Rules.IsPathableFor(this,new Location(loc.Map,pt)));
-      var ret = new List<Location>();
-      foreach(Point pt in tmp) ret.Add(loc.Map.Normalize(pt).Value);
+      var ret = new Dictionary<Location,ActorAction>();
+      foreach(Direction dir in Direction.COMPASS) {
+        Location test = loc+dir;
+        ActorAction tmp = Rules.IsPathableFor(this,test);
+        if (null == tmp) continue;
+        Location? test2 = test.Map.Normalize(test.Position);
+        if (null == test2) throw new ArgumentNullException(nameof(test2));
+        ret[test2.Value] = tmp;
+      }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
-        ret.Add(exit.Location);
-        // simulate Exit::ReasonIsBlocked
-        MapObject mapObjectAt = exit.Location.MapObject;
-        if (   null != mapObjectAt
-            && !mapObjectAt.IsCouch) {
-          if (!mapObjectAt.IsJumpable || !CanJump) ret.Remove(exit.Location);
+        ActionUseExit tmp = new ActionUseExit(this, loc.Position);
+        if (loc == Location) {
+          if (tmp.IsLegal()) ret[exit.Location] = tmp;
+        } else {
+          ret[exit.Location] = tmp;
+          // simulate Exit::ReasonIsBlocked
+          MapObject mapObjectAt = exit.Location.MapObject;
+          if (   null != mapObjectAt
+              && !mapObjectAt.IsCouch) {
+            if (!mapObjectAt.IsJumpable || !CanJump) ret.Remove(exit.Location);
+          }
         }
       }
       return 0 < ret.Count ? ret : null;

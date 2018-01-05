@@ -2240,7 +2240,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
     }
 
-    protected ActorAction BehaviorBrabFromAccessibleStack(Location loc, Inventory stack)
+    protected ActorAction BehaviorGrabFromAccessibleStack(Location loc, Inventory stack)
     {
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
@@ -2909,9 +2909,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
       if (0 < (stacks?.Count ?? 0)) {
         foreach(var x in stacks) {
-          Location? loc = m_Actor.Location.Map.Normalize(x.Key);
+          Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
           if (null == loc) throw new ArgumentNullException(nameof(loc));
-          ActorAction tmpAction = BehaviorBrabFromAccessibleStack(loc.Value, x.Value);
+          ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
           if (null != tmpAction) return tmpAction;
         }
       }
