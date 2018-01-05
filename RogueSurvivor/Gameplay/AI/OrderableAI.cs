@@ -861,7 +861,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != retreat) {
         // need stamina to melee: slow retreat ok
         if (WillTireAfterAttack(m_Actor)) {
-	      tmpAction = DecideMove(retreat, enemies, friends);
+	      tmpAction = DecideMove(retreat);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
             return tmpAction;
@@ -869,7 +869,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         // have slow enemies nearby
         if (null != slow_melee_threat) {
-	      tmpAction = DecideMove(retreat, enemies, friends);
+	      tmpAction = DecideMove(retreat);
           if (null != tmpAction) {
             m_Actor.Activity = Activity.FLEEING;
             return tmpAction;
@@ -958,7 +958,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Percept> friends, HashSet<Actor> immediate_threat)
+    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, HashSet<Actor> immediate_threat)
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
@@ -1033,7 +1033,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		if (null != percepts2) {
 		  IEnumerable<Point> tmp = legal_steps.Where(p=>null!=FilterContrafactualFireTargets(percepts2,p));
 		  if (tmp.Any()) {
-	        tmpAction = DecideMove(tmp, enemies, friends);
+	        tmpAction = DecideMove(tmp);
             if (null != tmpAction) {
               m_Actor.Activity = Activity.FIGHTING;
               if (tmpAction is ActionMoveStep test) m_Actor.IsRunning = RunIfAdvisable(test.dest.Position);

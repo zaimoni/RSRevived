@@ -484,19 +484,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (tmp.IsLegal() ? tmp : null);
     }
 
-	static protected HashSet<Point> FriendsLoF(List<Percept> enemies, List<Percept> friends)
+	protected HashSet<Point> FriendsLoF()
 	{
-	  if (null == enemies) return null;
-	  if (null == friends) return null;
-	  IEnumerable<Actor> friends2 = friends.Select(p=>p.Percepted as Actor).Where(a=> a.HasEquipedRangedWeapon());
-	  if (!friends2.Any()) return null;
+      Dictionary<Point,Actor> enemies = enemies_in_FOV;
+      Dictionary<Point,Actor> friends = friends_in_FOV;
+	  if (0 >= (enemies?.Count)) return null;
+	  if (0 >= (friends?.Count)) return null;
 	  HashSet<Point> tmp = new HashSet<Point>();
-	  foreach(Actor f in friends2) {
-	    foreach(Actor e in enemies.Select(p => p.Percepted as Actor)) {
-		  if (!f.IsEnemyOf(e)) continue;
-		  if (f.CurrentRangedAttack.Range<Rules.GridDistance(f.Location,e.Location)) continue;
+	  foreach(var f in friends) {
+        if (!f.Value.HasEquipedRangedWeapon()) continue;
+	    foreach(var e in enemies) {
+		  if (!f.Value.IsEnemyOf(e.Value)) continue;
+		  if (f.Value.CurrentRangedAttack.Range<Rules.GridDistance(f.Value.Location,e.Value.Location)) continue;
 		  List<Point> line = new List<Point>();
-	      LOS.CanTraceViewLine(f.Location, e.Location, f.CurrentRangedAttack.Range, line);
+	      LOS.CanTraceViewLine(f.Value.Location, e.Value.Location, f.Value.CurrentRangedAttack.Range, line);
           tmp.UnionWith(line);
 		}
 	  }
@@ -564,7 +565,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return taint_exposed.Keys.ToList();
     }
 
-    protected ActorAction DecideMove(IEnumerable<Point> src, List<Percept> enemies=null, List<Percept> friends=null)
+    protected ActorAction DecideMove(IEnumerable<Point> src)
 	{
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));
@@ -572,7 +573,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  List<Point> tmp = src.ToList();
 
 	  // do not get in the way of allies' line of fire
-	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
+	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF());
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
@@ -750,7 +751,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  List<Point> tmp2 = src_r2.ToList();
 
 	  // do not get in the way of allies' line of fire
-	  if (2 <= tmp2.Count) tmp2 = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
+	  if (2 <= tmp2.Count) tmp2 = DecideMove_Avoid(tmp, FriendsLoF());
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
