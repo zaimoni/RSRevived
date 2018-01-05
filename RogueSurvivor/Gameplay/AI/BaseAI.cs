@@ -488,8 +488,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	{
       Dictionary<Point,Actor> enemies = enemies_in_FOV;
       Dictionary<Point,Actor> friends = friends_in_FOV;
-	  if (0 >= (enemies?.Count)) return null;
-	  if (0 >= (friends?.Count)) return null;
+	  if (0 >= (enemies?.Count ?? 0)) return null;
+	  if (0 >= (friends?.Count ?? 0)) return null;
 	  HashSet<Point> tmp = new HashSet<Point>();
 	  foreach(var f in friends) {
         if (!f.Value.HasEquipedRangedWeapon()) continue;
@@ -527,6 +527,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? ok.ToList() : src);
     }
 
+    private List<Location> DecideMove_Avoid(List<Location> src, IEnumerable<Point> avoid)
+    {
+      if (null == avoid) return src;
+      List<Location> ok = new List<Location>();
+      foreach(Location loc in src) {
+        Location? test = m_Actor.Location.Map.Denormalize(loc);
+        if (null != test && avoid.Contains(test.Value.Position)) continue;  // null is expected for using a same-district exit
+        ok.Add(loc);
+      }
+	  int new_dest = ok.Count;
+      return ((0 < new_dest && new_dest < src.Count) ? ok : src);
+    }
+
+
     private List<Point> DecideMove_NoJump(List<Point> src)
     {
       IEnumerable<Point> no_jump = src.Where(pt=> {
@@ -559,6 +573,29 @@ namespace djack.RogueSurvivor.Gameplay.AI
           HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[pt]);
           tmp2.IntersectWith(tainted);
           taint_exposed[pt] = tmp2.Count;
+        }
+        int max_taint_exposed = dests.Select(pt=>taint_exposed[pt]).Max();
+        taint_exposed.OnlyIf(val=>max_taint_exposed==val);
+        return taint_exposed.Keys.ToList();
+    }
+
+    private List<Location> DecideMove_maximize_visibility(List<Location> dests, HashSet<Point> tainted, HashSet<Point> new_los, Dictionary<Point,HashSet<Point>> hypothetical_los) {
+        tainted.IntersectWith(new_los);
+        if (0>=tainted.Count) return dests;
+        var taint_exposed = new Dictionary<Location,int>();
+        foreach(Location loc in dests) {
+          Location? test = m_Actor.Location.Map.Denormalize(loc);
+          if (null == test) {   // assume same-district exit use...don't really want to do this when other targets are close
+            taint_exposed[loc] = 0;
+            continue;
+          }
+          if (!hypothetical_los.ContainsKey(test.Value.Position)) {
+            taint_exposed[loc] = 0;
+            continue;
+          }
+          HashSet<Point> tmp2 = new HashSet<Point>(hypothetical_los[test.Value.Position]);
+          tmp2.IntersectWith(tainted);
+          taint_exposed[loc] = tmp2.Count;
         }
         int max_taint_exposed = dests.Select(pt=>taint_exposed[pt]).Max();
         taint_exposed.OnlyIf(val=>max_taint_exposed==val);
@@ -642,8 +679,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return null;
 	}
 
-#if PROTOTYPE
-    protected ActorAction DecideMove(Dictionary<Location,int> src, List<Percept> enemies=null, List<Percept> friends=null)
+#if DEBUG
+    protected ActorAction DecideMove(Dictionary<Location,int> src)
 	{
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));
@@ -652,7 +689,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  List<Location> tmp = src.Keys.ToList();
 
 	  // do not get in the way of allies' line of fire
-	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
+	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF());
 
       // XXX if we have priority-see locations, maximize that
       // XXX if we have threat tracking, maximize threat cleared
