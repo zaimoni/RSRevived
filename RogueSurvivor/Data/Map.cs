@@ -666,6 +666,37 @@ namespace djack.RogueSurvivor.Data
 	  return (0<ret.Count ? ret.ToList() : null);
 	}
 
+    Dictionary<Location,int> OneStepForPathfinder(Location loc, Actor a, Dictionary<Location,ActorAction> already)
+	{
+	  var ret = new Dictionary<Location, int>();
+      Dictionary<Location, ActorAction> moves = a.OnePath(loc, already);
+      foreach(var move in moves) {
+        if (move.Value is Engine.Actions.ActionLeaveMap) continue; // not really in bounds
+        if (move.Value is Engine.Actions.ActionShove) {    // impolite so penalize just more than walking around
+            ret[move.Key] = 4;
+            continue;
+        }
+        if (   move.Value is Engine.Actions.ActionOpenDoor  // extra turn
+            || move.Value is Engine.Actions.ActionPush)  // assume non-optimal
+            {
+            ret[move.Key] = 2;
+            continue;
+            }
+        if (   move.Value is Engine.Actions.ActionBashDoor
+            || move.Value is Engine.Actions.ActionBreak)
+            {
+    	    MapObject tmp = move.Key.Map.GetMapObjectAtExt(move.Key.Position);
+		    int cost = 1;
+            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina          
+            else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
+            ret[move.Key] = cost;
+		    continue;
+            }
+        ret[move.Key] = 1;  // normal case
+      }
+	  return ret;
+	}
+
     Dictionary<Point,int> OneStepForPathfinder(Point pt, Actor a, Dictionary<Point,ActorAction> already)
 	{
 	  var ret = new Dictionary<Point, int>();
@@ -696,6 +727,21 @@ namespace djack.RogueSurvivor.Data
       }
 	  return ret;
 	}
+
+	public Zaimoni.Data.FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
+	{
+      var already = new Dictionary<Location,ActorAction>();
+      Func<Location, Dictionary<Location,int>> fn = (loc=>OneStepForPathfinder(loc, actor, already));
+	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, (loc=> loc.Map.IsInBounds(loc.Position)));
+      FloodfillPathfinder<Location> ret = new FloodfillPathfinder<Location>(m_StepPather);
+      Rect.DoForEach(pt=>ret.Blacklist(new Location(this, pt)),pt=> {
+        if (pt == actor.Location.Position && this == actor.Location.Map) return false;
+        if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
+        if (GetMapObjectAt(pt)?.IsContainer ?? true) return false;
+        return true;
+      });
+      return ret;
+    }
 
     // Default pather.  Recovery options would include allowing chat, and allowing pushing.
 	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps(Actor actor)

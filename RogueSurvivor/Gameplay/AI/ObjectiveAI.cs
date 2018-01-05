@@ -173,7 +173,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
       if (null != legal_steps) {
         var costs = new Dictionary<Point,int>();
-        foreach(Point pt in m_Actor.OnePathRange(m_Actor.Location.Map, m_Actor.Location.Position)) {
+        foreach(Point pt in legal_steps) {
           costs[pt] = navigate.Cost(pt);
         }
         int min_cost = costs.Values.Min();
@@ -182,6 +182,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0<costs.Count) {
           var dests = costs.Keys.ToList();
           return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,dests[RogueForm.Game.Rules.Roll(0,dests.Count)]));
+        }
+      }
+      return null;
+    }
+
+    protected ActorAction PlanApproachFailover(Zaimoni.Data.FloodfillPathfinder<Location> navigate)
+    {
+      List<Location> legal_steps = m_Actor.OnePathRange(m_Actor.Location);
+      if (null != legal_steps) {
+        var costs = new Dictionary<Location,int>();
+        foreach(Location loc in legal_steps) {
+          costs[loc] = navigate.Cost(loc);
+        }
+        int min_cost = costs.Values.Min();
+        if (int.MaxValue == min_cost) return null;
+        costs.OnlyIf(val => val <= min_cost);
+        if (0<costs.Count) {
+          var dests = costs.Keys.ToList();
+          return Rules.IsPathableFor(m_Actor,RogueForm.Game.Rules.Choose(dests));
         }
       }
       return null;

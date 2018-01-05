@@ -17,6 +17,7 @@ using Zaimoni.Data;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 using LOS = djack.RogueSurvivor.Engine.LOS;
 using Rules = djack.RogueSurvivor.Engine.Rules;
+using ActionUseExit = djack.RogueSurvivor.Engine.Actions.ActionUseExit;
 using Skills = djack.RogueSurvivor.Gameplay.Skills;
 using PowerGenerator = djack.RogueSurvivor.Engine.MapObjects.PowerGenerator;
 using Fortification = djack.RogueSurvivor.Engine.MapObjects.Fortification;
@@ -1374,10 +1375,61 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
+    public List<Location> OnePathRange(Location loc)
+    {
+      IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>loc.Position+dir).Where(pt=>null!=Rules.IsPathableFor(this,new Location(loc.Map,pt)));
+      var ret = new List<Location>();
+      foreach(Point pt in tmp) ret.Add(loc.Map.Normalize(pt).Value);
+      Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      if (null != exit) {
+        ret.Add(exit.Location);
+        // simulate Exit::ReasonIsBlocked
+        MapObject mapObjectAt = exit.Location.MapObject;
+        if (   null != mapObjectAt
+            && !mapObjectAt.IsCouch) {
+          if (!mapObjectAt.IsJumpable || !CanJump) ret.Remove(exit.Location);
+        }
+      }
+      return 0 < ret.Count ? ret : null;
+    }
+
     public List<Point> OnePathRange(Map m, Point p)
     {
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>p+dir).Where(pt=>null!=Rules.IsPathableFor(this,new Location(m,pt)));
       return tmp.Any() ? tmp.ToList() : null;
+    }
+
+    public Dictionary<Location,ActorAction> OnePath(Location loc, Dictionary<Location, ActorAction> already)
+    {
+      var ret = new Dictionary<Location, ActorAction>(9);
+      foreach(Direction dir in Direction.COMPASS) {
+        Location dest = loc+dir;
+        if (null == dest.Map.Normalize(dest.Position)) continue;
+        if (already.ContainsKey(dest)) {
+          ret[dest] = already[dest];
+          continue;
+        }
+        if (Location==dest) {
+          ret[dest] = new Engine.Actions.ActionMoveStep(this, dest.Position);
+          continue;
+        }
+        ActorAction tmp = Rules.IsPathableFor(this, dest);
+        if (null == tmp) {
+          if (dest.Map.GetMapObjectAt(dest.Position)?.IsContainer ?? false) tmp = new Engine.Actions.ActionMoveStep(this, dest.Position); // XXX wrong no matter what
+        }
+        if (null != tmp) ret[dest] = tmp;
+      }
+      Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
+      if (null != exit) {
+        ret[exit.Location] = new ActionUseExit(this, loc.Position);
+        // simulate Exit::ReasonIsBlocked
+        MapObject mapObjectAt = exit.Location.MapObject;
+        if (   null != mapObjectAt
+            && !mapObjectAt.IsCouch) {
+          if (!mapObjectAt.IsJumpable || !CanJump) ret.Remove(exit.Location);
+        }
+      }
+      return ret;
     }
 
     public Dictionary<Point,ActorAction> OnePath(Map m, Point p, Dictionary<Point, ActorAction> already)
@@ -1390,9 +1442,6 @@ namespace djack.RogueSurvivor.Data
           continue;
         }
         if (Location==(new Location(m,pt))) {
-          ret[pt] = new Engine.Actions.ActionShove(this, this, Direction.N);
-        }
-        if (pt == Location.Position) {
           ret[pt] = new Engine.Actions.ActionMoveStep(this, pt);
           continue;
         }
