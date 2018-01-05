@@ -2488,7 +2488,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor == null) return;
 
       for (int index = 0; index < NATGUARD_SQUAD_SIZE-1; ++index) {
-        Actor other = SpawnNewNatGuardTrooper(map, actor.Location.Position);
+        Actor other = SpawnNewNatGuardTrooper(actor);
         if (other != null) actor.AddFollower(other);
       }
 
@@ -2587,7 +2587,7 @@ namespace djack.RogueSurvivor.Engine
       Actor actor = SpawnNewBikerLeader(map, gangId);
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
-        Actor other = SpawnNewBiker(map, gangId, actor.Location.Position);
+        Actor other = SpawnNewBiker(actor);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(map, RaidType.BIKERS, actor.Location.Position);
@@ -2616,7 +2616,7 @@ namespace djack.RogueSurvivor.Engine
       Actor actor = SpawnNewGangstaLeader(map, gangId);
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {
-        Actor other = SpawnNewGangsta(map, gangId, actor.Location.Position);
+        Actor other = SpawnNewGangsta(actor);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(map, RaidType.GANGSTA, actor.Location.Position);
@@ -2644,7 +2644,7 @@ namespace djack.RogueSurvivor.Engine
       Actor actor = SpawnNewBlackOpsLeader(map);
       if (actor == null) return;
       for (int index = 0; index < BLACKOPS_RAID_SIZE-1; ++index) {
-        Actor other = SpawnNewBlackOpsTrooper(map, actor.Location.Position);
+        Actor other = SpawnNewBlackOpsTrooper(actor);
         if (other != null) actor.AddFollower(other);
       }
       NotifyOrderablesAI(map, RaidType.BLACKOPS, actor.Location.Position);
@@ -2800,14 +2800,14 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER) ? armyNationalGuard : null);
     }
 
-    private Actor SpawnNewNatGuardTrooper(Map map, Point leaderPos)
+    private Actor SpawnNewNatGuardTrooper(Actor leader)
     {
-      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(map.LocalTime.TurnCounter, "Pvt");
+      Actor armyNationalGuard = m_TownGenerator.CreateNewArmyNationalGuard(leader.Location.Map.LocalTime.TurnCounter, "Pvt", leader.Followers);
       if (m_Rules.RollChance(50))
         armyNationalGuard.Inventory.AddAll(BaseMapGenerator.MakeItemCombatKnife());
       else
         armyNationalGuard.Inventory.AddAll(m_TownGenerator.MakeItemGrenade());
-      return (SpawnActorNear(map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? armyNationalGuard : null);
+      return (SpawnActorNear(leader.Location.Map, armyNationalGuard, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? armyNationalGuard : null);
     }
 
     private Actor SpawnNewBikerLeader(Map map, GameGangs.IDs gangId)
@@ -2819,47 +2819,47 @@ namespace djack.RogueSurvivor.Engine
       return (SpawnActorOnMapBorder(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER) ? newBikerMan : null);
     }
 
-    private Actor SpawnNewBiker(Map map, GameGangs.IDs gangId, Point leaderPos)
+    private Actor SpawnNewBiker(Actor leader)
     {
-      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(map.LocalTime.TurnCounter, gangId);
+      Actor newBikerMan = m_TownGenerator.CreateNewBikerMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID, leader.Followers);
       newBikerMan.StartingSkill(Skills.IDs.TOUGH);
       newBikerMan.StartingSkill(Skills.IDs.STRONG);
-      return (SpawnActorNear(map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? newBikerMan : null);
+      return (SpawnActorNear(leader.Location.Map, newBikerMan, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? newBikerMan : null);
     }
 
     private Actor SpawnNewGangstaLeader(Map map, GameGangs.IDs gangId)
     {
       Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
       newGangstaMan.StartingSkill(Skills.IDs.LEADERSHIP);
-      newGangstaMan.StartingSkill(Skills.IDs._FIRST,3);
+      newGangstaMan.StartingSkill(Skills.IDs.AGILE,3);
       newGangstaMan.StartingSkill(Skills.IDs.FIREARMS);
       return (SpawnActorOnMapBorder(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER) ? newGangstaMan : null);
     }
 
-    private Actor SpawnNewGangsta(Map map, GameGangs.IDs gangId, Point leaderPos)
+    private Actor SpawnNewGangsta(Actor leader)
     {
-      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(map.LocalTime.TurnCounter, gangId);
-      newGangstaMan.StartingSkill(Skills.IDs._FIRST);
-      return (SpawnActorNear(map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? newGangstaMan : null);
+      Actor newGangstaMan = m_TownGenerator.CreateNewGangstaMan(leader.Location.Map.LocalTime.TurnCounter, leader.GangID, leader.Followers);
+      newGangstaMan.StartingSkill(Skills.IDs.AGILE);
+      return (SpawnActorNear(leader.Location.Map, newGangstaMan, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? newGangstaMan : null);
     }
 
     private Actor SpawnNewBlackOpsLeader(Map map)
     {
       Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Officer");
       newBlackOps.StartingSkill(Skills.IDs.LEADERSHIP);
-      newBlackOps.StartingSkill(Skills.IDs._FIRST,3);
+      newBlackOps.StartingSkill(Skills.IDs.AGILE,3);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS,3);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
       return (SpawnActorOnMapBorder(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER) ? newBlackOps : null);
     }
 
-    private Actor SpawnNewBlackOpsTrooper(Map map, Point leaderPos)
+    private Actor SpawnNewBlackOpsTrooper(Actor leader)
     {
-      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(map.LocalTime.TurnCounter, "Agent");
-      newBlackOps.StartingSkill(Skills.IDs._FIRST);
+      Actor newBlackOps = m_TownGenerator.CreateNewBlackOps(leader.Location.Map.LocalTime.TurnCounter, "Agent", leader.Followers);
+      newBlackOps.StartingSkill(Skills.IDs.AGILE);
       newBlackOps.StartingSkill(Skills.IDs.FIREARMS);
       newBlackOps.StartingSkill(Skills.IDs.TOUGH);
-      return (SpawnActorNear(map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leaderPos, 3) ? newBlackOps : null);
+      return (SpawnActorNear(leader.Location.Map, newBlackOps, SPAWN_DISTANCE_TO_PLAYER, leader.Location.Position, 3) ? newBlackOps : null);
     }
 
     public void StopTheWorld()
@@ -6996,7 +6996,7 @@ namespace djack.RogueSurvivor.Engine
     static private string DescribeSkillShort(Skills.IDs id)
     {
       switch (id) {
-        case Skills.IDs._FIRST:
+        case Skills.IDs.AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF", Actor.SKILL_AGILE_ATK_BONUS, Rules.SKILL_AGILE_DEF_BONUS);
         case Skills.IDs.AWAKE:
           return string.Format("+{0}% max SLP, +{1}% SLP sleeping regen ", (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_BONUS), (int)(100.0 * (double)Actor.SKILL_AWAKE_SLEEP_REGEN_BONUS));
@@ -9835,10 +9835,8 @@ namespace djack.RogueSurvivor.Engine
       {
         switch (skID)
         {
-          case Skills.IDs._FIRST:
-            return 2;
-          case Skills.IDs.AWAKE:
-            return !actor.Model.Abilities.HasToSleep ? 0 : 3;
+          case Skills.IDs.AGILE: return 2;
+          case Skills.IDs.AWAKE: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
           case Skills.IDs.BOWS:
             if (actor.Inventory != null)
             {
@@ -9849,10 +9847,8 @@ namespace djack.RogueSurvivor.Engine
               }
             }
             return 0;
-          case Skills.IDs.CARPENTRY:
-            return 1;
-          case Skills.IDs.CHARISMATIC:
-            return actor.CountFollowers <= 0 ? 0 : 1;
+          case Skills.IDs.CARPENTRY: return 1;
+          case Skills.IDs.CHARISMATIC: return actor.CountFollowers <= 0 ? 0 : 1;
           case Skills.IDs.FIREARMS:
             if (actor.Inventory != null)
             {
@@ -9863,20 +9859,13 @@ namespace djack.RogueSurvivor.Engine
               }
             }
             return 0;
-          case Skills.IDs.HARDY:
-            return !actor.Model.Abilities.HasToSleep ? 0 : 3;
-          case Skills.IDs.HAULER:
-            return 3;
-          case Skills.IDs.HIGH_STAMINA:
-            return 2;
-          case Skills.IDs.LEADERSHIP:
-            return !actor.HasLeader ? 1 : 0;    // only because of lack of chain of command
-          case Skills.IDs.LIGHT_EATER:
-            return !actor.Model.Abilities.HasToEat ? 0 : 3;
-          case Skills.IDs.LIGHT_FEET:
-            return 2;
-          case Skills.IDs.LIGHT_SLEEPER:
-            return !actor.Model.Abilities.HasToSleep ? 0 : 2;
+          case Skills.IDs.HARDY: return !actor.Model.Abilities.HasToSleep ? 0 : 3;
+          case Skills.IDs.HAULER: return 3;
+          case Skills.IDs.HIGH_STAMINA: return 2;
+          case Skills.IDs.LEADERSHIP: return !actor.HasLeader ? 1 : 0;    // only because of lack of chain of command
+          case Skills.IDs.LIGHT_EATER: return !actor.Model.Abilities.HasToEat ? 0 : 3;
+          case Skills.IDs.LIGHT_FEET: return 2;
+          case Skills.IDs.LIGHT_SLEEPER: return !actor.Model.Abilities.HasToSleep ? 0 : 2;
           case Skills.IDs.MARTIAL_ARTS:
             if (actor.Inventory != null)
             {
@@ -9887,20 +9876,13 @@ namespace djack.RogueSurvivor.Engine
               }
             }
             return 2;
-          case Skills.IDs.MEDIC:
-            return 1;
-          case Skills.IDs.NECROLOGY:
-            return 0;
-          case Skills.IDs.STRONG:
-            return 2;
-          case Skills.IDs.STRONG_PSYCHE:
-            return !actor.Model.Abilities.HasSanity ? 0 : 3;
-          case Skills.IDs.TOUGH:
-            return 3;
-          case Skills.IDs.UNSUSPICIOUS:
-            return actor.MurdersCounter <= 0 || actor.Model.Abilities.IsLawEnforcer ? 0 : 1;
-          default:
-            return 0;
+          case Skills.IDs.MEDIC: return 1;
+          case Skills.IDs.NECROLOGY: return 0;
+          case Skills.IDs.STRONG: return 2;
+          case Skills.IDs.STRONG_PSYCHE: return !actor.Model.Abilities.HasSanity ? 0 : 3;
+          case Skills.IDs.TOUGH: return 3;
+          case Skills.IDs.UNSUSPICIOUS: return actor.MurdersCounter <= 0 || actor.Model.Abilities.IsLawEnforcer ? 0 : 1;
+          default: return 0;
         }
       }
     }
@@ -11787,7 +11769,7 @@ namespace djack.RogueSurvivor.Engine
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_SANTAMAN);
       named.StartingSkill(Skills.IDs.HAULER,3);
       named.StartingSkill(Skills.IDs.HARDY,5);
-      named.StartingSkill(Skills.IDs.AWAKE,5);
+      named.StartingSkill(Skills.IDs.AGILE,5);
       named.StartingSkill(Skills.IDs.FIREARMS,5);
       named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN));
       named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());

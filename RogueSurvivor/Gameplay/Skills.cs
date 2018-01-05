@@ -245,7 +245,7 @@ namespace djack.RogueSurvivor.Gameplay
     public static IDs? Zombify(this IDs skill)
     {
       switch (skill) {
-        case IDs._FIRST: return IDs._FIRST_UNDEAD;
+        case IDs.AGILE: return IDs.Z_AGILE;
         case IDs.LIGHT_EATER: return IDs.Z_LIGHT_EATER;
         case IDs.LIGHT_FEET: return IDs.Z_LIGHT_FEET;
         case IDs.MEDIC: return IDs.Z_INFECTOR;

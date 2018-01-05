@@ -2522,7 +2522,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
       named.StartingSkill(Skills.IDs.TOUGH,3);
       named.StartingSkill(Skills.IDs.STRONG,3);
-      named.StartingSkill(Skills.IDs._FIRST,3);
+      named.StartingSkill(Skills.IDs.AGILE,3);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Inventory.AddAll(MakeItemJasonMyersAxe());
       map.PlaceAt(named, new Point(map.Width / 2, map.Height / 2));
@@ -2848,11 +2848,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return numberedName;
     }
 
-    public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName)
+    public Actor CreateNewArmyNationalGuard(int spawnTime, string rankName, IEnumerable<Actor> already_here=null)
     {
       Actor numberedName = GameActors.NationalGuard.CreateNumberedName(GameFactions.TheArmy, spawnTime);
       DressArmy(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
+      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName, rankName);
       numberedName.Inventory.AddAll(MakeItemArmyRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyPistol());
@@ -2873,12 +2874,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return numberedName;
     }
 
-    public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId)
+    public Actor CreateNewBikerMan(int spawnTime, GameGangs.IDs gangId, IEnumerable<Actor> already_here=null)
     {
       Actor numberedName = GameActors.BikerMan.CreateNumberedName(GameFactions.TheBikers, spawnTime);
       numberedName.GangID = gangId;
       DressBiker(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
+      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : MakeItemBaseballBat());
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
       int count = new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY;
@@ -2887,12 +2889,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return numberedName;
     }
 
-    public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId)
+    public Actor CreateNewGangstaMan(int spawnTime, GameGangs.IDs gangId, IEnumerable<Actor> already_here = null)
     {
       Actor numberedName = GameActors.GangstaMan.CreateNumberedName(GameFactions.TheGangstas, spawnTime);
       numberedName.GangID = gangId;
       DressGangsta(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName);
+      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
+      // Gangsters don't seem very prepared: no reserve ammo
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : (Item)MakeItemBaseballBat());
       int count = new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY;
       if (count > 0)
@@ -2900,11 +2904,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return numberedName;
     }
 
-    public Actor CreateNewBlackOps(int spawnTime, string rankName)
+    public Actor CreateNewBlackOps(int spawnTime, string rankName, IEnumerable<Actor> already_here=null)
     {
       Actor numberedName = GameActors.BlackOps.CreateNumberedName(GameFactions.TheBlackOps, spawnTime);
       DressBlackOps(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, rankName);
+      while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName, rankName);
       numberedName.Inventory.AddAll(MakeItemPrecisionRifle());
       numberedName.Inventory.AddAll(MakeItemHeavyRifleAmmo());
       numberedName.Inventory.AddAll(MakeItemArmyPistol());
