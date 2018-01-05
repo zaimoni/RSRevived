@@ -530,7 +530,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       IEnumerable<Point> no_jump = src.Where(pt=> {
         MapObject tmp2 = m_Actor.Location.Map.GetMapObjectAt(pt);
-        return null==tmp2 || !tmp2.IsJumpable;
+          return !tmp2?.IsJumpable ?? true;
+      });
+	  int new_dest = no_jump.Count();
+      return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
+    }
+
+    private List<Location> DecideMove_NoJump(List<Location> src)
+    {
+      IEnumerable<Location> no_jump = src.Where(loc=> {
+        MapObject tmp2 = loc.MapObject;
+        return !tmp2?.IsJumpable ?? true;
       });
 	  int new_dest = no_jump.Count();
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
@@ -630,6 +640,89 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0<secondary.Count) return secondary[RogueForm.Game.Rules.Roll(0,secondary.Count)];
 	  return null;
 	}
+
+#if PROTOTYPE
+    protected ActorAction DecideMove(Dictionary<Location,int> src, List<Percept> enemies=null, List<Percept> friends=null)
+	{
+#if DEBUG
+      if (null == src) throw new ArgumentNullException(nameof(src));
+#endif
+      var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // other half
+	  List<Location> tmp = src.Keys.ToList();
+
+	  // do not get in the way of allies' line of fire
+	  if (2 <= tmp.Count) tmp = DecideMove_Avoid(tmp, FriendsLoF(enemies, friends));
+
+      // XXX if we have priority-see locations, maximize that
+      // XXX if we have threat tracking, maximize threat cleared
+      // XXX if we have item memory, maximize "update"
+	  bool want_LOS_heuristics = false;
+	  ThreatTracking threats = m_Actor.Threats;
+	  if (null != threats) want_LOS_heuristics = true;
+	  LocationSet sights_to_see = m_Actor.InterestingLocs;
+	  if (null != sights_to_see) want_LOS_heuristics = true;
+
+	  Dictionary<Point,HashSet<Point>> hypothetical_los = ((want_LOS_heuristics && 2 <= tmp.Count) ? new Dictionary<Point,HashSet<Point>>() : null);
+      HashSet<Point> new_los = new HashSet<Point>();
+	  if (null != hypothetical_los) {
+	    // only need points newly in FOV that aren't currently
+	    foreach(var x in tmp) {
+          if (legal_steps[x] is ActionUseExit) continue;
+          Location? test = m_Actor.Location.Map.Denormalize(x);
+          if (null == test) throw new ArgumentNullException(nameof(test));
+	      hypothetical_los[test.Value.Position] = new HashSet<Point>(LOS.ComputeFOVFor(m_Actor, test.Value).Except(FOV));
+          new_los.UnionWith(hypothetical_los[test.Value.Position]);
+	    }
+	  }
+      // only need to check if new locations seen
+      if (0 >= new_los.Count) {
+        threats = null;
+        sights_to_see = null;
+      }
+
+      int tmp_LOSrange = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather) + 1;
+      Rectangle view = new Rectangle(m_Actor.Location.Position.X - tmp_LOSrange, m_Actor.Location.Position.Y - tmp_LOSrange, 2*tmp_LOSrange+1,2*tmp_LOSrange+1);
+
+      if (null != threats && 2<=tmp.Count) {
+        tmp = DecideMove_maximize_visibility(tmp, threats.ThreatWhere(m_Actor.Location.Map, view), new_los, hypothetical_los);
+	  }
+	  if (null != sights_to_see && 2<=tmp.Count) {
+        HashSet<Point> inspect = sights_to_see.In(m_Actor.Location.Map, view);
+        if (null!=inspect) tmp = DecideMove_maximize_visibility(tmp, inspect, new_los, hypothetical_los);
+	  }
+
+      // weakly prefer not to jump
+      if (2 <= tmp.Count)  tmp = DecideMove_NoJump(tmp);
+	  var secondary = new List<ActorAction>();
+	  while(0<tmp.Count) {
+	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
+		ActorAction ret = (legal_steps.ContainsKey(tmp[i]) ? legal_steps[tmp[i]] : null);
+        if (!ret?.IsLegal() ?? true) {    // not really an option
+		  tmp.RemoveAt(i);
+          continue;
+        }
+        if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
+           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
+           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+             // non-moving shove...would rather not spend the stamina if there is a better option
+             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
+       		 tmp.RemoveAt(i);
+             continue;
+           }
+           if (   null == ok_dests // shove is rude
+               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+                {
+                secondary.Add(ret);
+    		    tmp.RemoveAt(i);
+                continue;
+                }
+        }
+		return ret;
+	  }
+      if (0<secondary.Count) return secondary[RogueForm.Game.Rules.Roll(0,secondary.Count)];
+	  return null;
+	}
+#endif
 
     // direct move cost adapter; note reference copy of parameter
     protected ActorAction DecideMove(Dictionary<Point,int> dests)

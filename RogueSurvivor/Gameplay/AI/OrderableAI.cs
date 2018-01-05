@@ -2867,7 +2867,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == navigate) return null;
       if (!navigate.Domain.Contains(m_Actor.Location)) return null;
 #if PROTOTYPE
-      ActorAction ret = DecideMove(PlanApproach(navigate));
+      ActorAction ret = DecideMove(navigate.Approach(m_Actor.Location));
       if (null == ret) ret = PlanApproachFailover(navigate);
 #else
       ActorAction ret = PlanApproachFailover(navigate);
