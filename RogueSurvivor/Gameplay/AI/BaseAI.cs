@@ -679,12 +679,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  return null;
 	}
 
-#if DEBUG
     protected ActorAction DecideMove(Dictionary<Location,int> src)
 	{
-#if DEBUG
-      if (null == src) throw new ArgumentNullException(nameof(src));
-#endif
+      if (null == src) return null; // does happen
       var legal_steps = m_Actor.OnePathRange(m_Actor.Location); // other half
 	  List<Location> tmp = src.Keys.ToList();
 
@@ -760,7 +757,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (0<secondary.Count) return secondary[RogueForm.Game.Rules.Roll(0,secondary.Count)];
 	  return null;
 	}
-#endif
 
     // direct move cost adapter; note reference copy of parameter
     protected ActorAction DecideMove(Dictionary<Point,int> dests)

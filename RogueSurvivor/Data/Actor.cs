@@ -1382,9 +1382,12 @@ namespace djack.RogueSurvivor.Data
         Location test = loc+dir;
         ActorAction tmp = Rules.IsPathableFor(this,test);
         if (null == tmp) continue;
-        Location? test2 = test.Map.Normalize(test.Position);
-        if (null == test2) throw new ArgumentNullException(nameof(test2));
-        ret[test2.Value] = tmp;
+        if (!test.Map.IsInBounds(test.Position)) {
+          Location? test2 = test.Map.Normalize(test.Position);
+          if (null == test2) throw new ArgumentNullException(nameof(test2));
+          test = test2.Value;
+        }
+        ret[test] = tmp;
       }
       Exit exit = Model.Abilities.AI_CanUseAIExits ? loc.Exit : null;
       if (null != exit) {
