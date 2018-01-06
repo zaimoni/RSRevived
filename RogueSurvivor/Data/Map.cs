@@ -1310,8 +1310,12 @@ retry:
     public Inventory GetItemsAt(Point position)
     {
       if (!IsInBounds(position)) return null;
-      if (m_GroundItemsByPosition.TryGetValue(position, out Inventory inventory))
+      if (m_GroundItemsByPosition.TryGetValue(position, out Inventory inventory)) {
+#if DEBUG
+        if (inventory?.IsEmpty ?? true) throw new ArgumentNullException(nameof(inventory));
+#endif
         return inventory;
+      }
       return null;
     }
 

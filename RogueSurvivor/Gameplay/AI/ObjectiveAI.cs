@@ -502,8 +502,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
+    // Would be the lowest priority level of an item, except that it conflates "useless to everyone" and "useless to me"
     public bool ItemIsUseless(Item it)
     {
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
 	  if (it.IsForbiddenToAI) return true;
 	  if (it is ItemSprayPaint) return true;
 	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return true;
@@ -520,12 +524,125 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID && !m_Actor.WantCellPhone) return true;
 
       if (it is ItemFood && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
-      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Gangsters
+      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Bikers
         if (it is ItemRangedWeapon || it is ItemAmmo) return true;
       }
 
       return false;
     }
+
+#if PROTOTYPE
+    // XXX should be an enumeration
+    // 0: useless
+    // 1: insurance
+    // 2: want
+    // 3: need
+    protected int ItemRatingCode(Item it, Location? loc=null)
+    {
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
+      if (ItemIsUseless(it)) return 0;
+      bool is_in_inventory = m_Actor.Inventory.Contains(it);
+
+      {
+      if (it is ItemTracker tracker) {
+        List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
+        if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
+        if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+        // AI does not yet use z-trackers or blackops trackers correctly; possible only threat-aware AIs use them
+        if (is_in_inventory) return ok_trackers.Contains(it.Model.ID) ? 2 : 1;
+        if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj.Model == it.Model)) return 0;
+        return ok_trackers.Contains(it.Model.ID) ? 2 : 1;
+      }
+
+      if (it is ItemBarricadeMaterial) return 1;
+      if (it is ItemTrap) return 1;
+      if (it is ItemEntertainment) {
+        if (!m_Actor.Model.Abilities.HasSanity) return 0;
+        if (m_Actor.IsDisturbed) return 3;
+        if (m_Actor.Sanity < 3 * m_Actor.MaxSanity / 4) return 2;   // gateway expression for using entertainment
+        return 1;
+      }
+      {
+      if (it is ItemLight light) {
+        if (is_in_inventory) return 2;
+        if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
+        return 2;   // historically low priority but ideal kit has one
+      }
+      }
+      // XXX note that sleep and stamina have special uses for sufficiently good AI
+      if (it is ItemMedicine) {
+        if (is_in_inventory) return 1;
+        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
+        return 1;
+      }
+      {
+      if (it is ItemBodyArmor armor) {
+        ItemBodyArmor best = m_Actor.GetBestBodyArmor();
+        if (null == best) return 3;
+        if (best == armor) return 3;
+        return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
+      }
+      }
+      {
+      if (it is ItemMeleeWeapon melee) {
+        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+        if (m_Actor.MeleeWeaponAttack(melee.Model).Rating <= martial_arts.Rating) return 0;
+
+        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        if (2<= melee_count && !is_in_inventory) {
+          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
+          return weapon.Model.Attack.Rating < melee.Model.Attack.Rating ? 2 : 0;
+        }
+        if (1<= melee_count && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
+          ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
+          if (null == weapon) return 2;  // martial arts invalidates starting baton for police
+          return weapon.Model.Attack.Rating < melee.Model.Attack.Rating ? 2 : 0;
+        }
+        return 2;
+      }
+      }
+      {
+      if (it is ItemFood food) {
+//      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
+        if (m_Actor.IsHungry) return 3;
+        // XXX if the preemptive eat behavior would trigger, that is 3
+        if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 0;
+        if (is_in_inventory) return 2;
+        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 1 : 0;
+      }
+      }
+
+      { // similar to IsInterestingItem(ItemAmmo)
+      if (it is ItemAmmo am) {
+        ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
+        if (null == rw) return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
+        if (is_in_inventory) return 2;
+        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return 0;
+        if (AmmoAtLimit) return 0;
+        return 2;
+      }
+      }
+      { // similar to IsInterestingItem(rw)
+      if (it is ItemRangedWeapon rw) {
+        if (is_in_inventory) return 0<rw.Ammo ? 3 : 1;
+        if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
+        if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+        if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
+        if (0 >= m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo) && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 3;
+        // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+        // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
+        if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo)) return 0;
+        if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
+        if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 0;
+        return 3;
+      }
+      }
+      return 1;
+    }
+    }
+#endif
 
     protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
     {

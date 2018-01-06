@@ -82,6 +82,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       foreach (Point position in FOV) {
         Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(position);
         if (null==itemsAt) continue;
+#if DEBUG
+        if (itemsAt.IsEmpty) throw new InvalidOperationException("empty inventory return");
+#endif
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, new Location(m_Actor.Location.Map, position)));
       }
     }
@@ -100,6 +103,9 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
           items.Set(tmp,null,tmp.Map.LocalTime.TurnCounter);
           continue;
         }
+#if DEBUG
+        if (itemsAt.IsEmpty) throw new InvalidOperationException("empty inventory return");
+#endif
         perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, tmp));
         items.Set(tmp, new HashSet<Gameplay.GameItems.IDs>(itemsAt.Items.Select(x => x.Model.ID)), tmp.Map.LocalTime.TurnCounter);
       }
