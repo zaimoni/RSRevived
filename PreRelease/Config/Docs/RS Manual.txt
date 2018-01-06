@@ -954,6 +954,10 @@ Recharges everything rechargable to full.  Must be next to a generator or else.
 
 Effect is occassionally pre-empting a turn but otherwise allowing normal action.  This is a stamina recovery micro-optimmization.
 
+> Medicate Sleep
+
+Use the blue SLP pills as long as they're in inventory and no wastage.
+
 <SECTION>
 8. FRIENDS & FOES
 -----------------

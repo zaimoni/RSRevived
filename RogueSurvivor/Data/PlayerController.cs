@@ -171,6 +171,9 @@ namespace djack.RogueSurvivor.Data
 
       if (m_Actor.IsTired) ret.Add("Rest rather than lose turn when tired");
 
+      Objective test = new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor);
+      ActorAction testAction = null;
+      if (test.UrgentAction(out testAction) && null!=testAction) ret.Add("Medicate sleep");
       } // if (!in_combat)
       return ret;
     }
@@ -197,6 +200,9 @@ namespace djack.RogueSurvivor.Data
         return true;
       case "Rest rather than lose turn when tired":
         Objectives.Insert(0,new Goal_RestRatherThanLoseturnWhenTired(Session.Get.WorldTime.TurnCounter, m_Actor));
+        return true;
+      case "Medicate sleep":
+        Objectives.Insert(0,new Goal_MedicateSLP(Session.Get.WorldTime.TurnCounter, m_Actor));
         return true;
       default: return false;  // automatic failure
       }

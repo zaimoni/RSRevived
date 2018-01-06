@@ -69,6 +69,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
   }
 
   [Serializable]
+  internal class Goal_MedicateSLP : Objective
+  {
+    public Goal_MedicateSLP(int t0, Actor who)
+    : base(t0,who)
+    {
+    }
+
+    public override bool UrgentAction(out ActorAction ret)
+    {
+      ret = null;
+      if (0 < (m_Actor.Controller.enemies_in_FOV?.Count ?? 0)) {
+        _isExpired = true;
+        return true;
+      }
+      ret = (m_Actor.Controller as ObjectiveAI).DoctrineMedicateSLP();
+      if (null == ret) _isExpired = true;
+      return true;
+    }
+  }
+
+  [Serializable]
   internal class Goal_RechargeAll : Objective
   {
     public Goal_RechargeAll(int t0, Actor who)
@@ -1360,6 +1381,16 @@ namespace djack.RogueSurvivor.Gameplay.AI
          if (null != stim) return new ActionUseItem(m_Actor,stim);
        }
        return new ActionWait(m_Actor);
+    }
+
+    public ActorAction DoctrineMedicateSLP()
+    {
+       ItemMedicine stim = (m_Actor?.Inventory.GetBestDestackable(Models.Items[(int)Gameplay.GameItems.IDs.MEDICINE_PILLS_SLP]) as ItemMedicine);
+       if (null == stim) return null;
+       int threshold = m_Actor.MaxSleep-(Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost));
+       if (m_Actor.SleepPoints > threshold) return null;
+       if (!m_Actor.CanActNextTurn) return new ActionWait(m_Actor);
+       return new ActionUseItem(m_Actor,stim);
     }
 
     public ActorAction DoctrineRechargeToFull(Item it)
