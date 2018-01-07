@@ -8188,8 +8188,7 @@ namespace djack.RogueSurvivor.Engine
       Item trade = PickItemToTrade(target, speaker, itSpeaker);
       if (null == trade) return;
 
-      if (flag1)
-        AddMessage(MakeMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
+      if (flag1) AddMessage(MakeMessage(speaker, string.Format("swaps {0} for {1}.", trade.AName, itSpeaker.AName)));
 
       AddOverlay(new OverlayPopup(TRADE_MODE_TEXT, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, Point.Empty));
       RedrawPlayScreen();
@@ -8215,24 +8214,23 @@ namespace djack.RogueSurvivor.Engine
 #endif
       speaker.Inventory.RemoveAllQuantity(itSpeaker);
       target.RemoveAllQuantity(trade);
-      speaker.Inventory.AddAll(trade);
-      target.AddAll(itSpeaker);
+      target.AddAsMuchAsPossible(itSpeaker);
+      speaker.Inventory.AddAsMuchAsPossible(trade);
     }
 
     public void DoTradeWithContainer(Actor actor, Point pos, Item give, Item take)
     {
       Inventory dest = actor.Location.Map.GetItemsAtExt(pos);
 
-      bool flag1 = ForceVisibleToPlayer(actor);   // constant true (see above)
-      if (flag1)
-        AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
+      bool flag1 = ForceVisibleToPlayer(actor);
+      if (flag1) AddMessage(MakeMessage(actor, string.Format("swaps {0} for {1}.", give.AName, take.AName)));
 
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       if (give.IsEquipped) DoUnequipItem(actor, give);
       actor.Inventory.RemoveAllQuantity(give);
       dest.RemoveAllQuantity(take);
-      actor.Inventory.AddAll(take);
-      dest.AddAll(give);
+      dest.AddAsMuchAsPossible(give);   // mitigate plausible multi-threading issue with stack targeting, but do not actually commit to locks
+      actor.Inventory.AddAsMuchAsPossible(take);
     }
 
 
