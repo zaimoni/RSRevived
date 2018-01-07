@@ -2222,14 +2222,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-
-      MapObject mapObjectAt = (loc != m_Actor.Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
-      if (mapObjectAt != null && !mapObjectAt.IsContainer && !loc.Map.IsWalkableFor(loc.Position, m_Actor)) {
-        // Cf. Actor::CanOpen
-        if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
-        // Cf. Actor::CanPush; closed door/window is not pushable but can be handled
-        else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
-      }
+      if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) return null;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;
@@ -2288,14 +2281,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (stack?.IsEmpty ?? true) throw new ArgumentNullException(nameof(stack));
 #endif
-
-      MapObject mapObjectAt = (loc != m_Actor.Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
-      if (mapObjectAt != null && !mapObjectAt.IsContainer && !loc.Map.IsWalkableFor(loc.Position, m_Actor)) {
-        // Cf. Actor::CanOpen
-        if (mapObjectAt is DoorWindow doorWindow && doorWindow.IsBarricaded) return null;
-        // Cf. Actor::CanPush; closed door is not pushable but can be handled
-        else if (!mapObjectAt.IsMovable) return null; // would have to handle OnFire if that could happen
-      }
+      if (m_Actor.StackIsBlocked(loc, out MapObject mapObjectAt)) return null;
 
       Item obj = MostInterestingItemInStack(stack);
       if (obj == null) return null;

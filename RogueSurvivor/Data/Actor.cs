@@ -2634,11 +2634,25 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantGet(it));
     }
 
-    public bool MayTakeFromStackAt(Point pos)
+    public bool MayTakeFromStackAt(Location loc)
     {
-      if (Location.Position == pos) return true;
-      if (!Rules.IsAdjacent(Location.Position,pos)) return false;
-      return Location.Map.GetMapObjectAt(pos)?.IsContainer ?? false;
+      if (Location == loc) return true;
+      if (!Rules.IsAdjacent(Location,loc)) return false;
+      // currently all containers are not-walkable for UI reasons.
+      return loc.Map.GetMapObjectAt(loc.Position)?.IsContainer ?? false;
+    }
+
+    public bool StackIsBlocked(Location loc, out MapObject obj)
+    {
+      obj = (loc != Location ? loc.Map.GetMapObjectAt(loc.Position) : null);    // XXX this check should affect BehaviorResupply
+      if (null == obj) return false;
+      if (!obj.IsContainer && !loc.IsWalkableFor(this)) {
+        // Cf. Actor::CanOpen
+        if (obj is DoorWindow doorWindow && doorWindow.IsBarricaded) return true;
+        // Cf. Actor::CanPush; closed door/window is not pushable but can be handled
+        else if (!obj.IsMovable) return true; // would have to handle OnFire if that could happen
+      }
+      return false;
     }
 
     private string ReasonCantGiveTo(Actor target, Item gift)
@@ -2669,7 +2683,7 @@ namespace djack.RogueSurvivor.Data
     private string ReasonCantGetFromContainer(Point position)
     {
       MapObject mapObjectAt = Location.Map.GetMapObjectAt(position);
-      if (mapObjectAt == null || !mapObjectAt.IsContainer) return "object is not a container";
+      if (!mapObjectAt?.IsContainer ?? true) return "object is not a container";
       Inventory itemsAt = Location.Map.GetItemsAt(position);
       if (itemsAt == null) return "nothing to take there";
 	  // XXX should be "can't get any of the items in the container"

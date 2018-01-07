@@ -1345,11 +1345,11 @@ retry:
     {
       Dictionary<Point,Inventory> ground_inv = new Dictionary<Point, Inventory>();
       Inventory inv = GetItemsAtExt(pt);
-      if (null!=inv) ground_inv[pt] = inv;
+      if (!inv?.IsEmpty ?? false) ground_inv[pt] = inv;
       foreach(var dir in Direction.COMPASS) {
         Point adjacent = pt + dir;
         inv = GetItemsAtExt(adjacent);
-        if (null == inv) continue;
+        if (inv?.IsEmpty ?? true) continue;
         MapObject mapObjectAt = GetMapObjectAtExt(adjacent);
         if (null == mapObjectAt) continue;
         if (!mapObjectAt.IsContainer) continue; // XXX this is scheduled for revision
