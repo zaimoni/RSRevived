@@ -512,11 +512,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
         if (Directives.CanTrade) {
-          List<Item> TradeableItems = GetTradeableItems();
-          if (null != TradeableItems) {
-            tmpAction = BehaviorFindTrade(friends, TradeableItems);
-            if (null != tmpAction) return tmpAction;
-          }
+          tmpAction = BehaviorFindTrade(friends);
+          if (null != tmpAction) return tmpAction;
         }
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "have checked for items to take");

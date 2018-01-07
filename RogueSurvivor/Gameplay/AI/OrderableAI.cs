@@ -6,6 +6,7 @@
 
 // #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
 // #define TRACE_NAVIGATE
+#define INTEGRITY_CHECK_ITEM_RETURN_CODE
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -2006,13 +2007,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
     {
-      if (Items == null) return false;
+#if DEBUG
+      if (0 >= (Items?.Count() ?? 0)) throw new ArgumentNullException(nameof(Items));
+#endif
       return Items.Any(it => IsInterestingItem(it));
     }
 
     public bool HasAnyInterestingItem(Inventory inv)
     {
-      if (inv == null) return false;
+#if DEBUG
+      if (inv?.IsEmpty ?? true) throw new ArgumentNullException(nameof(inv));
+#endif
       return HasAnyInterestingItem(inv.Items);
     }
 
@@ -2211,8 +2216,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null==interesting) return null;
 
       Item obj = null;
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
+      int obj_code = 0; // no item at all, is uninteresting
+#endif
       foreach (Item it in interesting) {
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
+        if (null == obj) {
+          obj = it;
+          obj_code = ItemRatingCode(it);
+        } else {
+           bool rhs_more_interesting = RHSMoreInteresting(obj, it);
+           int it_code = ItemRatingCode(it);
+           if (rhs_more_interesting && obj_code>it_code) throw new InvalidOperationException("more interesting item has lower rating");
+           if (!rhs_more_interesting && obj_code<it_code) throw new InvalidOperationException("more interesting item has lower rating");
+           if (rhs_more_interesting) {
+             obj = it;
+             obj_code = it_code;
+           }
+        }
+#else
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
+#endif
       }
       return obj;
     }
@@ -2231,7 +2255,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj) : null);
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
+      if (cant_get && null == recover) {
+        int obj_code = ItemRatingCode(obj);
+        foreach(Item it in m_Actor.Inventory.Items) {
+          int it_code = ItemRatingCode(it);
+          if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
+        }
+        return null;
+      }
+#else
       if (cant_get && null == recover) return null;
+#endif
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = new ActionTakeItem(m_Actor, loc, obj);
@@ -2255,7 +2290,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
+      if (cant_get && null == recover) {
+        int obj_code = ItemRatingCode(obj);
+        foreach(Item it in m_Actor.Inventory.Items) {
+          int it_code = ItemRatingCode(it);
+          if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
+        }
+        return null;
+      }
+#else
       if (cant_get && null == recover) return null;
+#endif
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
@@ -2290,7 +2336,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       bool cant_get = !m_Actor.CanGet(obj);
       bool need_recover = !m_Actor.CanGet(obj) && m_Actor.Inventory.IsFull;
       ActorAction recover = (need_recover ? BehaviorMakeRoomFor(obj, loc.Position) : null);
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
+      if (cant_get && null == recover) {
+        int obj_code = ItemRatingCode(obj);
+        foreach(Item it in m_Actor.Inventory.Items) {
+          int it_code = ItemRatingCode(it);
+          if (obj_code > it_code) throw new InvalidOperationException("passing up more important item than what is in inventory");
+        }
+        return null;
+      }
+#else
       if (cant_get && null == recover) return null;
+#endif
 
       // the get item checks do not validate that inventory is not full
       ActorAction tmp = null;
@@ -2369,11 +2426,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected ActorAction BehaviorFindTrade(List<Percept> friends, List<Item> TradeableItems)
+    protected ActorAction BehaviorFindTrade(List<Percept> friends)
     {
 #if DEBUG
         if (!m_Actor.Model.Abilities.CanTrade) throw new InvalidOperationException("must want to trade");
 #endif
+        var TradeableItems = GetTradeableItems();
+        if (0>=(TradeableItems?.Count ?? 0)) return null;
         Map map = m_Actor.Location.Map;
 
         List<Percept> percepts2 = friends.FilterOut(p => {
