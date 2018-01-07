@@ -1343,10 +1343,20 @@ namespace djack.RogueSurvivor.Data
       return tmp.Any() ? tmp.ToList() : null;
     }
 
-    public List<List<Point> > MinStepPathTo(Map m, Point src, Point dest)
+    public List<List<Point> > MinStepPathTo(Location origin, Location target)
     {
+      if (origin==target) return null;
+
+      if (origin.Map!=target.Map) {
+        Location? test = origin.Map.Denormalize(target);
+        if (null == test) return null;
+        target = test.Value;
+      }
+
+      Map m = origin.Map;
+      Point src = origin.Position;
+      Point dest = target.Position;
       List<List<Point> > ret = new List<List<Point> >();
-      if (dest==src) return null;
       List<Point> tmp = FastestStepTo(m,src,dest);
       if (null == tmp) return null;
       ret.Add(tmp);

@@ -480,7 +480,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (!m_Actor.MayTakeFromStackAt(p.Location)) {    // something wrong, e.g. iron gates in way
             if (!imStarvingOrCourageous && map.TrapsMaxDamageAt(p.Location.Position) >= m_Actor.HitPoints) return true;  // destination deathtrapped
             // check for iron gates, etc in way
-            List<List<Point> > path = m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position);
+            List<List<Point> > path = m_Actor.MinStepPathTo(m_Actor.Location, p.Location);
             if (null == path) return true;
             List<Point> test = path[0].Where(pt => null != Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, pt))).ToList();
             if (0 >= test.Count) return true;

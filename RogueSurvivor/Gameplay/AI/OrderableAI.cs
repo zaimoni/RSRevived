@@ -1807,7 +1807,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (other.Location.Map == m_Actor.Location.Map) {
         if (   CanSee(other.Location)
             && Rules.GridDistance(m_Actor.Location, other.Location) <= maxDist
-            && null != m_Actor.MinStepPathTo(m_Actor.Location.Map, m_Actor.Location.Position, other.Location.Position))
+            && null != m_Actor.MinStepPathTo(m_Actor.Location, other.Location))
             return new ActionWait(m_Actor);
 	  }
 	  ActorAction actorAction = BehaviorPathTo(other.Location);
@@ -2441,7 +2441,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (actor.IsPlayer) return true;
           if (IsActorTabooTrade(actor)) return true;
           if (!m_Actor.CanTradeWith(actor)) return true;
-          if (null==m_Actor.MinStepPathTo(map, m_Actor.Location.Position, p.Location.Position)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
+          if (null==m_Actor.MinStepPathTo(m_Actor.Location, p.Location)) return true;    // something wrong, e.g. iron gates in way.  Usual case is police visiting jail.
           if (1 == TradeableItems.Count) {
             List<Item> other_TradeableItems = (actor.Controller as OrderableAI).GetTradeableItems();
             if (null == other_TradeableItems) return true;
