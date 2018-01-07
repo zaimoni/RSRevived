@@ -686,6 +686,85 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return BehaviorDropItem(give);
     }
 
+    protected bool RHSMoreInteresting(Item lhs, Item rhs)
+    {
+#if DEBUG
+      if (null == lhs) throw new ArgumentNullException(nameof(lhs));
+      if (null == rhs) throw new ArgumentNullException(nameof(rhs));
+      if (!IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);  // historically, lhs may be from inventory
+#endif
+      if (lhs.Model.ID == rhs.Model.ID) {
+        if (lhs.Quantity < rhs.Quantity) return true;
+        if (lhs.Quantity > rhs.Quantity) return false;
+        if (lhs is BatteryPowered)
+          {
+          return ((lhs as BatteryPowered).Batteries < (rhs as BatteryPowered).Batteries);
+          }
+        else if (lhs is ItemFood && (lhs as ItemFood).IsPerishable)
+          { // complicated
+          int need = m_Actor.MaxFood - m_Actor.FoodPoints;
+          int lhs_nutrition = (lhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+          int rhs_nutrition = (rhs as ItemFood).NutritionAt(m_Actor.Location.Map.LocalTime.TurnCounter);
+          if (lhs_nutrition==rhs_nutrition) return false;
+          if (need < lhs_nutrition && need >= rhs_nutrition) return true;
+          if (need < rhs_nutrition && need >= lhs_nutrition) return false;
+          return lhs_nutrition < rhs_nutrition;
+          }
+        else if (lhs is ItemRangedWeapon)
+          {
+          return ((lhs as ItemRangedWeapon).Ammo < (rhs as ItemRangedWeapon).Ammo);
+          }
+        return false;
+      }
+
+      // if food is interesting, it will dominate non-food
+      if (rhs is ItemFood) return !(lhs is ItemFood);
+      else if (lhs is ItemFood) return false;
+
+      // ranged weapons
+      if (rhs is ItemRangedWeapon) return !(lhs is ItemRangedWeapon);
+      else if (lhs is ItemRangedWeapon) return false;
+
+      if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
+      else if (lhs is ItemAmmo) return false;
+
+      if (rhs is ItemMeleeWeapon)
+        {
+        if (!(lhs is ItemMeleeWeapon)) return false;
+        return (lhs.Model as ItemMeleeWeaponModel).Attack.Rating < (rhs.Model as ItemMeleeWeaponModel).Attack.Rating;
+        }
+      else if (lhs is ItemMeleeWeapon) return false;
+
+      if (rhs is ItemBodyArmor)
+        {
+        if (!(lhs is ItemBodyArmor)) return false;
+        return (lhs as ItemBodyArmor).Rating < (rhs as ItemBodyArmor).Rating;
+        }
+      else if (lhs is ItemBodyArmor) return false;
+
+      if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
+      else if (lhs is ItemGrenade) return false;
+
+      // XXX note that sleep and stamina have special uses for sufficiently good AI
+      bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
+      if ((rhs is ItemLight) || (rhs is ItemTrap) || (rhs is ItemMedicine) || (rhs is ItemEntertainment) || (rhs is ItemBarricadeMaterial)) return !lhs_low_priority;
+      else if (lhs_low_priority) return false;
+
+      List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
+      if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
+      if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
+
+      if (rhs is ItemTracker)
+        {
+        if (!(lhs is ItemTracker)) return false;
+        if (ok_trackers.Contains(lhs.Model.ID)) return false;
+        return ok_trackers.Contains(rhs.Model.ID);
+        }
+      else if (lhs is ItemTracker) return false;
+
+      return false;
+    }
+
     protected ActorAction BehaviorMakeRoomFor(Item it, Point? position=null)
     {
 #if DEBUG
@@ -922,7 +1001,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemTrap tmpTrap = inv.GetFirstMatching<ItemTrap>();
       if (null != tmpTrap) return _BehaviorDropOrExchange(tmpTrap, it, position);
 
-      if (it is ItemLight) return null;
+      if (it is ItemLight) {
+        int it_rating = ItemRatingCode(it);
+        if (1 >= it_rating) return null;
+        var targets = m_Actor.Inventory.Items.Where(obj => 1>=ItemRatingCode(obj)).ToList();
+        if (0 >= targets.Count) return null;
+        Item worst = null;
+        foreach(Item test in targets) {
+          if (null == worst) worst = test;
+          else if (RHSMoreInteresting(test,worst)) worst = test;
+        }
+        return _BehaviorDropOrExchange(worst, it, position);
+      }
+
       if (it is ItemMedicine) return null;
 
       // ditch unimportant items
@@ -948,7 +1039,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
          bool reloadable = (it is ItemAmmo ? (it as ItemAmmo).AmmoType==tmpRw2.AmmoType : false);
          if (!reloadable) return _BehaviorDropOrExchange(tmpRw2, it, position);
       }
-
 
       // if we have 2 clips of an ammo type, trading one for a melee weapon or food is ok
       if (it is ItemMeleeWeapon || it is ItemFood) {
