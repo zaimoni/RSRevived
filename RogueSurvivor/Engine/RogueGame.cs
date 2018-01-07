@@ -8015,7 +8015,7 @@ namespace djack.RogueSurvivor.Engine
       int num1 = blast.DamageAt(distanceFromBlast);
       if (num1 <= 0) return 0;
       Map map = location.Map;
-      Actor actorAt =  location.Map.GetActorAtExt(location.Position.X,location.Position.Y);
+      Actor actorAt =  location.Map.GetActorAtExt(location.Position);
       if (actorAt != null) {
         ExplosionChainReaction(actorAt.Inventory, location);
         int dmg = num1 - (actorAt.CurrentDefence.Protection_Hit + actorAt.CurrentDefence.Protection_Shot) / 2;
@@ -8073,7 +8073,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private void ExplosionChainReaction(Inventory inv, Location location)
     {
-      if (inv == null || inv.IsEmpty) return;
+      if (inv?.IsEmpty ?? true) return;
       List<ItemExplosive> itemExplosiveList = null;
       List<ItemPrimedExplosive> itemPrimedExplosiveList = null;
       foreach (Item obj in inv.Items) {
@@ -8098,7 +8098,7 @@ namespace djack.RogueSurvivor.Engine
       }
       if (itemPrimedExplosiveList == null) return;
       foreach (Item it in itemPrimedExplosiveList)
-        location.Map.DropItemAt(it, location.Position);
+        location.Map.DropItemAtExt(it, location.Position);
     }
 
     public void DoChat(Actor speaker, Actor target)
