@@ -610,7 +610,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX if the preemptive eat behavior would trigger, that is 3
         if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 0;
         if (is_in_inventory) return 2;
-        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 2 : 0;   // XXX prefer 1 but have to cope with current RHSIsMoreInterestingThan
+        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 2 : 0;   // XXX prefer 1 but have to cope with current RHSMoreInterestingThan
       }
       }
 
@@ -641,6 +641,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return 3;
       }
       }
+      {
+      if (it is ItemGrenade grenade) {
+        if (is_in_inventory) return 2;
+        if (m_Actor.Inventory.IsFull) return 1;
+        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(grenade, 1)) return 1;
+        return 2;
+      }
+      }
+
       return 1;
     }
     }
@@ -742,6 +751,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
       else if (lhs is ItemGrenade) return false;
+
+      // this isn't yet considered correct enough to be a top-level prescreen.
+      // Working around priority issues with trackers, lights, and entertainment
+      int lhs_code = ItemRatingCode(lhs);
+      int rhs_code = ItemRatingCode(rhs);
+      if (lhs_code>rhs_code) return false;
+      if (lhs_code<rhs_code) return true;
+
+      // light and entertainment have been revised to possibly higher priority (context-sensitive)
+      // traps and barricade material are guaranteed insurance policy status
+      // medicine currently is, but that's an AI flaw
 
       // XXX note that sleep and stamina have special uses for sufficiently good AI
       bool lhs_low_priority = (lhs is ItemLight) || (lhs is ItemTrap) || (lhs is ItemMedicine) || (lhs is ItemEntertainment) || (lhs is ItemBarricadeMaterial);
