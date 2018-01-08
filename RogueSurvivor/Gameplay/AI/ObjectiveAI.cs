@@ -581,7 +581,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
       if (it is ItemBodyArmor armor) {
         ItemBodyArmor best = m_Actor.GetBestBodyArmor();
-        if (null == best) return 3;
+        if (null == best) return 2; // want 3, but RHSMoreInteresting that says 2
         if (best == armor) return 3;
         return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
@@ -735,6 +735,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
       else if (lhs is ItemAmmo) return false;
 
+      // this isn't yet considered correct enough to be a top-level prescreen.
+      // priority issues: melee weapons/armor
+      // priority issues: trackers, lights, and entertainment
+      int lhs_code = ItemRatingCode(lhs);
+      int rhs_code = ItemRatingCode(rhs);
+      if (lhs_code>rhs_code) return false;
+      if (lhs_code<rhs_code) return true;
+
       if (rhs is ItemMeleeWeapon rhs_melee)
         {
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
@@ -773,13 +781,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
       else if (lhs is ItemGrenade) return false;
-
-      // this isn't yet considered correct enough to be a top-level prescreen.
-      // Working around priority issues with trackers, lights, and entertainment
-      int lhs_code = ItemRatingCode(lhs);
-      int rhs_code = ItemRatingCode(rhs);
-      if (lhs_code>rhs_code) return false;
-      if (lhs_code<rhs_code) return true;
 
       // light and entertainment have been revised to possibly higher priority (context-sensitive)
       // traps and barricade material are guaranteed insurance policy status
