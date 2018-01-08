@@ -563,7 +563,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
-        if ("Cop Guy Lee"==Name) return true;
+        if ("Lucy Lambert"==Name) return true;
         return false;
       }
     }
@@ -2354,7 +2354,8 @@ namespace djack.RogueSurvivor.Data
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return 0;
       int num = 0;
-      foreach (object obj in m_Inventory.Items) {
+      foreach (Item obj in m_Inventory.Items) {
+        if (obj.IsUseless) continue;
         if (obj.GetType() == tt) ++num;
       }
       return num;
@@ -2372,6 +2373,14 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
+    {
+      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (it.Model.IsStackable)
+        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
+      return CountItemsOfSameType(it.GetType()) >= n;
+    }
+
+    public bool HasAtLeastFullStackOfItemModel(Item it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       if (it.Model.IsStackable)

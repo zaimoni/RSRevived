@@ -231,6 +231,7 @@ namespace djack.RogueSurvivor.Data
     {
       int num = 0;
       foreach (Item mItem in m_Items) {
+        if (mItem.IsUseless) continue;
         if (mItem.Model == model) num++;
       }
       return num;

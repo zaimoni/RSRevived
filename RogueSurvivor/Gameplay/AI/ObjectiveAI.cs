@@ -533,7 +533,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
-#if INTEGRITY_CHECK_ITEM_RETURN_CODE
     // XXX should be an enumeration
     // 0: useless
     // 1: insurance
@@ -645,7 +644,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 1;
     }
     }
-#endif
 
     protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
     {
@@ -774,6 +772,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
 #endif
       Inventory inv = m_Actor.Inventory;
+      { // drop useless item doesn't always happen in a timely fashion
+      var useless = inv.Items.Where(obj => ItemIsUseless(obj)).ToList();
+      if (0<useless.Count) return _BehaviorDropOrExchange(useless[0], it, position);
+      }
+
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
@@ -823,6 +826,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int num4 = Rules.ActorMedicineEffect(m_Actor, stim.SleepBoost);
         if (num4*stim.Quantity <= need && m_Actor.CanUse(stim)) return new ActionUseItem(m_Actor, stim);
       }
+      }
+
+      int it_rating = ItemRatingCode(it);
+      if (1<it_rating) {
+        // traps and barricading materials are both never better than insurance
+        var barricade = m_Actor.Inventory.GetItemsByType<ItemBarricadeMaterial>();
+        if (2<=(barricade?.Count ?? 0)) return _BehaviorDropOrExchange(barricade[0], it, position);
       }
 
       if (it is ItemAmmo am) {
@@ -1002,7 +1012,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpTrap) return _BehaviorDropOrExchange(tmpTrap, it, position);
 
       if (it is ItemLight) {
-        int it_rating = ItemRatingCode(it);
         if (1 >= it_rating) return null;
         var targets = m_Actor.Inventory.Items.Where(obj => 1>=ItemRatingCode(obj)).ToList();
         if (0 >= targets.Count) return null;
@@ -1198,7 +1207,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // No specific heuristic.
-      if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
+      if (it is ItemTracker) {
+        if (1<=m_Actor.Inventory.Count(it.Model)) return false;
+      } else {
+        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
+      }
       return _InterestingItemPostprocess(it);
     }
 
