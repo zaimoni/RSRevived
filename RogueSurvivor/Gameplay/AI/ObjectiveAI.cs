@@ -610,7 +610,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX if the preemptive eat behavior would trigger, that is 3
         if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 0;
         if (is_in_inventory) return 2;
-        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 1 : 0;
+        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 2 : 0;   // XXX prefer 1 but have to cope with current RHSIsMoreInterestingThan
       }
       }
 
