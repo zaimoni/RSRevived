@@ -610,7 +610,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // XXX if the preemptive eat behavior would trigger, that is 3
         if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 0;
         if (is_in_inventory) return 2;
-        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 2 : 0;   // XXX prefer 1 but have to cope with current RHSMoreInterestingThan
+        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 2 : 0;   // XXX prefer 1 but have to cope with current RHSMoreInteresting
       }
       }
 
@@ -735,12 +735,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
       else if (lhs is ItemAmmo) return false;
 
-      if (rhs is ItemMeleeWeapon)
+      if (rhs is ItemMeleeWeapon rhs_melee)
         {
-        if (!(lhs is ItemMeleeWeapon)) return false;
-        return (lhs.Model as ItemMeleeWeaponModel).Attack.Rating < (rhs.Model as ItemMeleeWeaponModel).Attack.Rating;
+        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+        if (m_Actor.MeleeWeaponAttack(rhs_melee.Model).Rating <= martial_arts.Rating) return false;
+        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
+        if (null == best) return true;
+        if (best.Model.Attack.Rating < rhs_melee.Model.Attack.Rating) return true;
+        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        if (2<=melee_count) {
+          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          return worst.Model.Attack.Rating < rhs_melee.Model.Attack.Rating;
         }
-      else if (lhs is ItemMeleeWeapon) return false;
+        if (lhs is ItemMeleeWeapon lhs_melee) return lhs_melee.Model.Attack.Rating < rhs_melee.Model.Attack.Rating;
+        return false;
+        }
+      else if (lhs is ItemMeleeWeapon lhs_melee) {
+        Attack martial_arts = m_Actor.UnarmedMeleeAttack();
+        if (m_Actor.MeleeWeaponAttack(lhs_melee.Model).Rating <= martial_arts.Rating) return true;
+        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
+        if (null == best) return false;
+        if (best.Model.Attack.Rating < lhs_melee.Model.Attack.Rating) return false;
+        int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+        if (2<=melee_count) {
+          ItemMeleeWeapon worst = m_Actor.GetWorstMeleeWeapon();
+          return worst.Model.Attack.Rating >= lhs_melee.Model.Attack.Rating;
+        }
+        return true;
+      }
 
       if (rhs is ItemBodyArmor)
         {
