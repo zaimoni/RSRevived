@@ -724,6 +724,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return false;
       }
 
+      // Top-level prescreen.  Resolves following priority issues in smoke testing
+      // * food/ranged weapons/ammo
+      // * melee weapons/armor
+      // * trackers, lights, and entertainment
+      int lhs_code = ItemRatingCode(lhs);
+      int rhs_code = ItemRatingCode(rhs);
+      if (lhs_code>rhs_code) return false;
+      if (lhs_code<rhs_code) return true;
+
       // if food is interesting, it will dominate non-food
       if (rhs is ItemFood) return !(lhs is ItemFood);
       else if (lhs is ItemFood) return false;
@@ -734,14 +743,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (rhs is ItemAmmo) return !(lhs is ItemAmmo);
       else if (lhs is ItemAmmo) return false;
-
-      // this isn't yet considered correct enough to be a top-level prescreen.
-      // priority issues: melee weapons/armor
-      // priority issues: trackers, lights, and entertainment
-      int lhs_code = ItemRatingCode(lhs);
-      int rhs_code = ItemRatingCode(rhs);
-      if (lhs_code>rhs_code) return false;
-      if (lhs_code<rhs_code) return true;
 
       if (rhs is ItemMeleeWeapon rhs_melee)
         {

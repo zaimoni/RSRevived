@@ -2137,27 +2137,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null==interesting) return null;
 
       Item obj = null;
-#if INTEGRITY_CHECK_ITEM_RETURN_CODE
-      int obj_code = 0; // no item at all, is uninteresting
-#endif
       foreach (Item it in interesting) {
-#if INTEGRITY_CHECK_ITEM_RETURN_CODE
-        if (null == obj) {
-          obj = it;
-          obj_code = ItemRatingCode(it);
-        } else {
-           bool rhs_more_interesting = RHSMoreInteresting(obj, it);
-           int it_code = ItemRatingCode(it);
-           if (rhs_more_interesting && obj_code>it_code) throw new InvalidOperationException("more interesting item has lower rating");
-           if (!rhs_more_interesting && obj_code<it_code) throw new InvalidOperationException("more interesting item has lower rating");
-           if (rhs_more_interesting) {
-             obj = it;
-             obj_code = it_code;
-           }
-        }
-#else
         if (null == obj || RHSMoreInteresting(obj, it)) obj = it;
-#endif
       }
       return obj;
     }
