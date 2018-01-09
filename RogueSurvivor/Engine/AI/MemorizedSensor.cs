@@ -38,11 +38,17 @@ namespace djack.RogueSurvivor.Engine.AI
 
     public void Forget(Actor actor)
     {
-      IEnumerable<Percept> tmp = m_Percepts.Where(p=>p.GetAge(actor.Location.Map.LocalTime.TurnCounter) <= m_Persistance).Where(p=>
-        {
-            Actor a = p.Percepted as Actor;
-            return a == null || (!a.IsDead && a.Location.Map == actor.Location.Map);
-        });
+      var tmp = new List<Percept>(m_Percepts.Count);
+      foreach(var p in m_Percepts) {
+        if (p.GetAge(actor.Location.Map.LocalTime.TurnCounter)>m_Persistance) continue;
+        if (p.Percepted is Actor a) {
+          if (a.IsDead) continue;
+          if (a.Location.Map != actor.Location.Map) continue;   // XXX valid for RS Alpha 6, invalid for RS Revived; want to verify other changes first
+        }
+        if (p.Percepted is Inventory inv) {
+          if (inv.IsEmpty) continue;
+        }
+      }
       m_Percepts = tmp.ToList();
     }
 
@@ -50,7 +56,7 @@ namespace djack.RogueSurvivor.Engine.AI
     {
       Forget(actor);
 
-      HashSet<Percept> tmp = new HashSet<Percept>(m_Sensor.Sense(actor));
+      var tmp = new HashSet<Percept>(m_Sensor.Sense(actor));   // time is m_Actor.Location.Map.LocalTime.TurnCounter
       foreach (Percept percept in tmp.ToList()) { 
         foreach (Percept mPercept in m_Percepts) {
           if (mPercept.Percepted == percept.Percepted) {
