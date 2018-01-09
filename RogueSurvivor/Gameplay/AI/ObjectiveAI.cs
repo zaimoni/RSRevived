@@ -621,6 +621,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (is_in_inventory) return 2;
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
         if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return 0;
+        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model,am2=>am.Quantity<am.Model.MaxQuantity)) return 2;
         if (AmmoAtLimit) return 0;
         return 2;
       }
@@ -698,7 +699,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == lhs) throw new ArgumentNullException(nameof(lhs));
       if (null == rhs) throw new ArgumentNullException(nameof(rhs));
-      if (!IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);  // historically, lhs may be from inventory
+      if (!m_Actor.Inventory.Contains(lhs) && !IsInterestingItem(lhs)) throw new InvalidOperationException(lhs.ToString()+" not interesting to "+m_Actor.Name);
+      if (!m_Actor.Inventory.Contains(rhs) && !IsInterestingItem(rhs)) throw new InvalidOperationException(rhs.ToString()+" not interesting to "+m_Actor.Name);
 #endif
       if (lhs.Model.ID == rhs.Model.ID) {
         if (lhs.Quantity < rhs.Quantity) return true;
@@ -807,6 +809,19 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return false;
     }
 
+    protected T GetWorst<T>(IEnumerable<T> src) where T:Item
+    {
+#if DEBUG
+      if (0 >= (src?.Count() ?? 0)) return null;
+#endif
+      T worst = null;
+      foreach(T test in src) {
+        if (null == worst) worst = test;
+        else if (RHSMoreInteresting(test,worst)) worst = test;
+      }
+      return worst;
+    }
+
     protected ActorAction BehaviorMakeRoomFor(Item it, Point? position=null)
     {
 #if DEBUG
@@ -820,7 +835,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var useless = inv.Items.Where(obj => ItemIsUseless(obj)).ToList();
       if (0<useless.Count) return _BehaviorDropOrExchange(useless[0], it, position);
       }
-
 
       // not-best body armor can be dropped
       if (2<=m_Actor.CountQuantityOf<ItemBodyArmor>()) {
@@ -874,9 +888,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       int it_rating = ItemRatingCode(it);
       if (1<it_rating) {
-        // traps and barricading materials are both never better than insurance
-        var barricade = m_Actor.Inventory.GetItemsByType<ItemBarricadeMaterial>();
-        if (2<=(barricade?.Count ?? 0)) return _BehaviorDropOrExchange(barricade[0], it, position);
+        // generally, find a less-critical item to drop
+        int i = 0;
+        while(++i < it_rating) {
+          Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode(obj) == i));
+          if (null == worst) continue;
+          return _BehaviorDropOrExchange(worst, it, position);
+        }
       }
 
       if (it is ItemAmmo am) {
@@ -1057,13 +1075,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (it is ItemLight) {
         if (1 >= it_rating) return null;
-        var targets = m_Actor.Inventory.Items.Where(obj => 1>=ItemRatingCode(obj)).ToList();
-        if (0 >= targets.Count) return null;
-        Item worst = null;
-        foreach(Item test in targets) {
-          if (null == worst) worst = test;
-          else if (RHSMoreInteresting(test,worst)) worst = test;
-        }
+        Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => 1 >= ItemRatingCode(obj)));
+        if (null == worst) return null;
         return _BehaviorDropOrExchange(worst, it, position);
       }
 
