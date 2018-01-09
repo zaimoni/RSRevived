@@ -2277,9 +2277,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (tmp.IsLegal() ? tmp : null);    // in case this is the biker/trap pickup crash [cairo123]
       }
       { // scoping brace
+      List<Point> legal_steps = m_Actor.LegalSteps;
+      if (null == legal_steps) return null;
       int current_distance = Rules.GridDistance(m_Actor.Location, loc);
       Location? denorm = m_Actor.Location.Map.Denormalize(loc);
-      List<Point> legal_steps = m_Actor.LegalSteps;
       var costs = new Dictionary<Point,int>();
       var vis_costs = new Dictionary<Point,int>();
       if (legal_steps.Contains(denorm.Value.Position)) {
