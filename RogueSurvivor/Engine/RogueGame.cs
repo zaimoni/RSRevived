@@ -8215,6 +8215,7 @@ namespace djack.RogueSurvivor.Engine
       speaker.Inventory.RemoveAllQuantity(itSpeaker);
       target.RemoveAllQuantity(trade);
       target.AddAsMuchAsPossible(itSpeaker);
+      if (trade is ItemTrap trap) trap.IsActivated = false;
       speaker.Inventory.AddAsMuchAsPossible(trade);
     }
 
@@ -8490,7 +8491,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Map map = actor.Location.Map;
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (it is ItemTrap) (it as ItemTrap).IsActivated = false;
+      if (it is ItemTrap trap) trap.IsActivated = false;
       int quantity = it.Quantity;
       int quantityAdded = actor.Inventory.AddAsMuchAsPossible(it);
       if (quantityAdded == quantity) map.RemoveItemAt(it, position);
@@ -8518,7 +8519,7 @@ namespace djack.RogueSurvivor.Engine
         ModifyActorTrustInLeader(actor, Rules.TRUST_GIVE_ITEM_ORDER_PENALTY, true);
       }
 
-      if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
+      if (gift is ItemTrap trap) trap.IsActivated = false;
       int quantity = gift.Quantity;
       int quantityAdded = target.Inventory.AddAsMuchAsPossible(gift);
       if (quantityAdded==quantity)
@@ -8538,7 +8539,7 @@ namespace djack.RogueSurvivor.Engine
     public void DoPutItemInContainer(Actor actor, Point dest, Item gift)
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
-      if (gift is ItemTrap) (gift as ItemTrap).IsActivated = false;
+      if (gift is ItemTrap trap) trap.IsActivated = false;
       actor.Location.Map.DropItemAt(gift, dest);
       actor.Inventory.RemoveAllQuantity(gift);
 
