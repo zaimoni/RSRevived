@@ -1838,7 +1838,7 @@ retry:
             } else {
               if (tmp_obj is Engine.MapObjects.DoorWindow tmp_door) {
                 if (tmp_door.IsBarricaded) {
-                  ascii_map[y][x] = "+"; // no good icon...pretend it's a closed door
+                  ascii_map[y][x] = large_fortification_symbol; // no good icon...pretend it's a large fortification since it would have to be torn down to be passed through
                 } else if (tmp_door.IsClosed) {
                   ascii_map[y][x] = "+"; // typical closed door
                 } else if (tmp_door.IsOpen) {
