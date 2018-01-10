@@ -607,17 +607,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemFood food) {
 //      if (!m_Actor.Model.Abilities.HasToEat) return false;    // redundant; for documentation
         if (m_Actor.IsHungry) return 3;
+        if (food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter)) return 0;
         // XXX if the preemptive eat behavior would trigger, that is 3
-        if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 0;
-        if (is_in_inventory) return 2;
-        return !food.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter) ? 2 : 0;   // XXX prefer 1 but have to cope with current RHSMoreInteresting
+        if (m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2, food)) return 1;
+        return 2;
       }
       }
 
       { // similar to IsInterestingItem(ItemAmmo)
       if (it is ItemAmmo am) {
         ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
-        if (null == rw) return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
+        if (null == rw) {
+          if (is_in_inventory) return 1;
+          return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
+        }
         if (is_in_inventory) return 2;
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
@@ -887,6 +890,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       int it_rating = ItemRatingCode(it);
+      if (1==it_rating && it is ItemMeleeWeapon) return null;   // break action loop here
       if (1<it_rating) {
         // generally, find a less-critical item to drop
         int i = 0;
