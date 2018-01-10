@@ -1428,7 +1428,11 @@ namespace djack.RogueSurvivor.Data
       var ret = new Dictionary<Location, ActorAction>(9);
       foreach(Direction dir in Direction.COMPASS) {
         Location dest = loc+dir;
-        if (null == dest.Map.Normalize(dest.Position)) continue;
+        if (!dest.Map.IsInBounds(dest.Position)) {
+          Location? test = dest.Map.Normalize(dest.Position);
+          if (null == test) continue;
+          dest = test.Value;
+        }
         if (already.ContainsKey(dest)) {
           ret[dest] = already[dest];
           continue;
