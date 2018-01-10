@@ -1210,6 +1210,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
         if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
       } else {
+        if (rw.Model.MaxAmmo>rw.Ammo) return true;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) return false;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
       }
