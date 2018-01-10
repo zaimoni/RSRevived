@@ -575,7 +575,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // XXX note that sleep and stamina have special uses for sufficiently good AI
       if (it is ItemMedicine) {
         if (is_in_inventory) return 1;
-        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
+        if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
         return 1;
       }
       {
@@ -620,7 +620,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == rw) return 0 < m_Actor.Inventory.Count(am.Model) ? 0 : 1;
         if (is_in_inventory) return 2;
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
-        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return 0;
+        if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model,am2=>am.Quantity<am.Model.MaxQuantity)) return 2;
         if (AmmoAtLimit) return 0;
         return 2;
@@ -646,7 +646,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemGrenade grenade) {
         if (is_in_inventory) return 2;
         if (m_Actor.Inventory.IsFull) return 1;
-        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(grenade, 1)) return 1;
+        if (m_Actor.HasAtLeastFullStackOf(grenade, 1)) return 1;
         return 2;
       }
       }
@@ -1206,7 +1206,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 < m_Actor.Inventory.CountType<ItemRangedWeapon>()) return false;  // XXX
         if (0 < m_Actor.Inventory.Count(am.Model)) return false;    // only need one clip to prime AI to look for empty ranged weapons
       } else {
-        if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(am, 2)) return false;
+        if (m_Actor.HasAtLeastFullStackOf(am, 2)) return false;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model, it => it.Quantity < it.Model.MaxQuantity)) return true;   // topping off clip is ok
       }
       return _InterestingItemPostprocess(am);
@@ -1236,18 +1236,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 //      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) return false;    // redundant; for documentation
         return IsInterestingItem(am);
       }
-      if (it is ItemMeleeWeapon) {
+      if (it is ItemMeleeWeapon melee) {
         Attack martial_arts = m_Actor.UnarmedMeleeAttack();
         if (m_Actor.MeleeWeaponAttack(it.Model as ItemMeleeWeaponModel).Rating <= martial_arts.Rating) return false;
-
+        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
+        if (null == best) return true;
+        if (best.Model.Attack.Rating < melee.Model.Attack.Rating) return true;
         int melee_count = m_Actor.CountQuantityOf<ItemMeleeWeapon>(); // XXX possibly obsolete
+#if DEBUG
+        if (0 >= melee_count) throw new InvalidOperationException("inconstent return values");
+#endif        
         if (2<= melee_count) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-          return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
-        }
-        if (1<= melee_count && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
-          ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-          if (null == weapon) return true;  // martial arts invalidates starting baton for police
           return weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating;
         }
         return true;
@@ -1255,7 +1255,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemMedicine) {
         // XXX easy to action-loop if inventory full
         // this plausibly should actually check inventory-clearing options
-        if (!m_Actor.Inventory.IsFull) return !m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+        if (!m_Actor.Inventory.IsFull) return !m_Actor.HasAtLeastFullStackOf(it, 2);
       }
       if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
@@ -1266,8 +1266,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // No specific heuristic.
       if (it is ItemTracker) {
         if (1<=m_Actor.Inventory.Count(it.Model)) return false;
-      } else {
+      } else if (it is ItemLight) {
         if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
+      } else {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
       }
       return _InterestingItemPostprocess(it);
     }

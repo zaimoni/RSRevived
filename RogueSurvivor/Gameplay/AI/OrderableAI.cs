@@ -772,7 +772,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (it is ItemAmmo am)
             {
             if (m_Actor.GetCompatibleRangedWeapon(am) == null) return true;
-            return m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 2);
+            return m_Actor.HasAtLeastFullStackOf(it, 2);
             }
         if (it is ItemMeleeWeapon)
             {

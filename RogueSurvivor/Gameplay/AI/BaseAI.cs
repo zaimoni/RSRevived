@@ -702,6 +702,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  if (null != hypothetical_los) {
 	    // only need points newly in FOV that aren't currently
 	    foreach(var x in tmp) {
+          if (!legal_steps.ContainsKey(x)) continue;
           if (legal_steps[x] is ActionUseExit) continue;
           Location? test = m_Actor.Location.Map.Denormalize(x);
           if (null == test) throw new ArgumentNullException(nameof(test));
