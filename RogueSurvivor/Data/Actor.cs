@@ -2797,8 +2797,15 @@ namespace djack.RogueSurvivor.Data
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);
       Skill skill = Sheet.SkillTable.GetSkill(id);
-      if (id == Skills.IDs.HAULER && Inventory != null)
-        Inventory.MaxCapacity = MaxInv;
+      switch(id)
+      {
+      case Skills.IDs.HAULER: if (null != m_Inventory) Inventory.MaxCapacity = MaxInv;
+        break;
+      case Skills.IDs.TOUGH: m_HitPoints += Actor.SKILL_TOUGH_HP_BONUS;
+        break;
+      case Skills.IDs.Z_TOUGH: m_HitPoints += Actor.SKILL_ZTOUGH_HP_BONUS;
+        break;
+      }
       return skill;
     }
 
