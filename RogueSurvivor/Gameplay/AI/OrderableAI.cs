@@ -2743,12 +2743,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(Func<Map, HashSet<Point>> targets_at, Map dest, FloodfillPathfinder<Location> navigate = null, List<Map> already_seen=null, List<Location> goals=null)
+    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen = null, List<Location> goals = null)
     {
-#if DEBUG
-      if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
-#endif
-      if (null == navigate) navigate = dest.PathfindLocSteps(m_Actor);
       if (null == goals) goals = new List<Location>();
       HashSet<Point> where_to_go = targets_at(dest);
       if (0 < where_to_go.Count) {
@@ -2760,8 +2756,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       foreach(Map m in dest.destination_maps.Get) {
         if (already_seen.Contains(m)) continue;
-        PathfinderFor(targets_at,m,navigate,already_seen,goals);
+        Goals(targets_at,m,already_seen,goals);
       }
+      return goals;
+    }
+
+    protected FloodfillPathfinder<Location> PathfinderFor(Func<Map, HashSet<Point>> targets_at, Map dest)
+    {
+#if DEBUG
+      if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
+#endif
+      var navigate = dest.PathfindLocSteps(m_Actor);
+      var goals = Goals(targets_at, dest);
 
       navigate.GoalDistance(goals, m_Actor.Location);
       return navigate;
