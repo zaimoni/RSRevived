@@ -581,7 +581,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       {
       if (it is ItemBodyArmor armor) {
         ItemBodyArmor best = m_Actor.GetBestBodyArmor();
-        if (null == best) return 2; // want 3, but RHSMoreInteresting that says 2
+        if (null == best) return 2; // want 3, but RHSMoreInteresting  says 2
         if (best == armor) return 3;
         return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
@@ -632,16 +632,36 @@ namespace djack.RogueSurvivor.Gameplay.AI
       { // similar to IsInterestingItem(rw)
       if (it is ItemRangedWeapon rw) {
         if (is_in_inventory) return 0<rw.Ammo ? 3 : 1;
-        if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
-        if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+/*
+      if (!m_Actor.Inventory.Contains(rw)) {
+        if (0< rws_w_ammo) {
+          if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+          if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType && 0 < it.Ammo)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+        } else {
+          if (null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return true;   
+        }
+        if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
+      }
+      // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
+      // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
+      if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return false;
+      if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return false;
+      if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
+
+ *  */
+        int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo);
+        if (0 < rws_w_ammo) {
+          if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 < obj.Ammo)) return 0;    // XXX
+          if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+        }
         if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
-        if (0 >= m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo) && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 3;
+        if (0 >= rws_w_ammo && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 3;
         // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-        if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo)) return 0;
-        if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(obj => 0 < obj.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
+        if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return 0;
+        if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
         if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 0;
-        if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => 0<obj.Ammo)) return 2;
+        if (0< rws_w_ammo) return 2;
         return 3;
       }
       }
@@ -893,6 +913,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (1==it_rating && it is ItemMeleeWeapon) return null;   // break action loop here
       if (1<it_rating) {
         // generally, find a less-critical item to drop
+        // this is excpected to correctly handle the food glut case (item rating 1)
         int i = 0;
         while(++i < it_rating) {
           Item worst = GetWorst(m_Actor.Inventory.Items.Where(obj => ItemRatingCode(obj) == i));
@@ -1045,21 +1066,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemTracker tmpTracker = inv.GetFirstMatching<ItemTracker>(it2 => !ok_trackers.Contains(it2.Model.ID));
       if (null != tmpTracker) return _BehaviorDropOrExchange(tmpTracker, it, position);
 
-      // ahem...food glut, of all things
-      if (   !(it is ItemEntertainment)
-          && !(it is ItemBarricadeMaterial)
-          && !(it is ItemSprayScent)
-          && it.Model != GameItems.PILLS_SAN
-          && it.Model != GameItems.PILLS_ANTIVIRAL
-          && it.Model != GameItems.PILLS_STA) {
-        ItemFood tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsSpoiledAt(m_Actor.Location.Map.LocalTime.TurnCounter));
-        if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
-        tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f) && f.IsExpiredAt(m_Actor.Location.Map.LocalTime.TurnCounter));
-        if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
-        tmpFood = inv.GetFirst<ItemFood>(f => !IsInterestingItem(f));
-        if (null != tmpFood) return _BehaviorDropOrExchange(tmpFood, it, position);
-      }
-
       // these lose to everything other than trackers.  Note that we should drop a light to get a more charged light -- if we're right on top of it.
       if (it is ItemSprayScent) return null;
       ItemSprayScent tmpSprayScent = inv.GetFirstMatching<ItemSprayScent>();
@@ -1172,16 +1178,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public bool IsInterestingItem(ItemRangedWeapon rw)
     {
+      int rws_w_ammo = m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo);
       if (!m_Actor.Inventory.Contains(rw)) {
-        if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
-        if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+        if (0< rws_w_ammo) {
+          if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 < it.Ammo)) return false;    // XXX
+          if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(it => it.AmmoType==rw.AmmoType && 0 < it.Ammo)) return false; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
+        } else {
+          if (null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return true;   
+        }
         if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw.Model, it => 0 == it.Ammo)) return true;  // this replacement is ok; implies not having ammo
-        if (0 >= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo) && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return true;
       }
       // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
       // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
-      if (m_Actor.Inventory.MaxCapacity-5 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)) return false;
-      if (m_Actor.Inventory.MaxCapacity-4 <= m_Actor.Inventory.CountType<ItemRangedWeapon>(it => 0 < it.Ammo)+ m_Actor.Inventory.CountType<ItemAmmo>()) return false;
+      if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return false;
+      if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return false;
       if (0 >= rw.Ammo && null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return false;
       return _InterestingItemPostprocess(rw);
     }
