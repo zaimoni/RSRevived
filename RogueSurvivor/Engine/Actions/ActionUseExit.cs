@@ -13,6 +13,9 @@ namespace djack.RogueSurvivor.Engine.Actions
   {
     private readonly Point m_ExitPoint;
 
+    public Exit Exit { get { return m_Actor.Location.Map.GetExitAt(m_ExitPoint); } }
+    public bool IsBlocked { get { return !string.IsNullOrEmpty(Exit.ReasonIsBlocked(m_Actor)); } }
+
     public ActionUseExit(Actor actor, Point exitPoint)
       : base(actor)
     {

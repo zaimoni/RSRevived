@@ -563,7 +563,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsDebuggingTarget {
       get {
-        if ("Lucy Lambert"==Name) return true;
         return false;
       }
     }
@@ -1403,7 +1402,7 @@ namespace djack.RogueSurvivor.Data
       if (null != exit) {
         ActionUseExit tmp = new ActionUseExit(this, loc.Position);
         if (loc == Location) {
-          if (tmp.IsLegal()) ret[exit.Location] = tmp;
+          if (tmp.IsLegal() && !tmp.IsBlocked) ret[exit.Location] = tmp;
         } else {
           ret[exit.Location] = tmp;
           // simulate Exit::ReasonIsBlocked

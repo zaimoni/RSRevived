@@ -1861,8 +1861,11 @@ namespace djack.RogueSurvivor.Engine
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "Map: "+map.Name);
 #endif
+#if TEST_MULTITHREAD_ERROR_HANDLING
+      if (map.IsSecret) { map.LocalTime.TurnCounter++; return; } // use turn overflow crash to test multi-threading error handling
+#else
       if (map.IsSecret) return; // undiscovered CHAR base is in stasis
-//    if (map.IsSecret) { map.LocalTime.TurnCounter++; return; } // use turn overflow crash to test multi-threading error handling
+#endif
 
       Actor nextActorToAct = map.NextActorToAct;
       if (nextActorToAct == null) return;

@@ -737,6 +737,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 		  tmp.RemoveAt(i);
           continue;
         }
+        if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
+		  tmp.RemoveAt(i);
+          continue;
+        };
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
            if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
