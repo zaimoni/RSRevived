@@ -9490,17 +9490,18 @@ namespace djack.RogueSurvivor.Engine
       }
       textFile.Append(" ");
       textFile.Append("> FOLLOWERS");
-      if (Session.Get.Scoring.FollowersWhendDied == null || Session.Get.Scoring.FollowersWhendDied.Count == 0) {
+      { // scoping brace
+      int count_followers = Session.Get.Scoring.FollowersWhendDied?.Count ?? 0;
+      if (0 >= count_followers) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
         StringBuilder stringBuilder = new StringBuilder(string.Format("{0} was leading", str1));
         bool flag = true;
         int num = 0;
-        int count = Session.Get.Scoring.FollowersWhendDied.Count;
         foreach (Actor actor in Session.Get.Scoring.FollowersWhendDied) {
           if (flag) stringBuilder.Append(" ");
-          else if (num == count) stringBuilder.Append(".");
-          else if (num == count - 1) stringBuilder.Append(" and ");
+          else if (num == count_followers) stringBuilder.Append(".");
+          else if (num == count_followers - 1) stringBuilder.Append(" and ");
           else stringBuilder.Append(", ");
           stringBuilder.Append(actor.TheName);
           ++num;
@@ -9516,6 +9517,7 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
+      } // scoping brace
       textFile.Append(" ");
       textFile.Append("> EVENTS");
       if (Session.Get.Scoring.HasNoEvents) {
@@ -12462,11 +12464,13 @@ namespace djack.RogueSurvivor.Engine
     {
       switch (reincMode) {
         case GameOptions.ReincMode.RANDOM_FOLLOWER:
-          if (Session.Get.Scoring.FollowersWhendDied == null) {
+          { // scoping brace
+          int count_followers = Session.Get.Scoring.FollowersWhendDied?.Count ?? 0;
+          if (0 >= count_followers) {
             matchingActors = 0;
             return null;
           }
-          List<Actor> actorList1 = new List<Actor>(Session.Get.Scoring.FollowersWhendDied.Count);
+          var actorList1 = new List<Actor>(count_followers);
           foreach (Actor a in Session.Get.Scoring.FollowersWhendDied) {
             if (IsSuitableReincarnation(a, true))
               actorList1.Add(a);
@@ -12474,6 +12478,7 @@ namespace djack.RogueSurvivor.Engine
           matchingActors = actorList1.Count;
           if (actorList1.Count == 0) return null;
           return actorList1[m_Rules.Roll(0, actorList1.Count)];
+          } // scoping brace
         case GameOptions.ReincMode.KILLER:
           Actor killer = Session.Get.Scoring.Killer;
           if (IsSuitableReincarnation(killer, true) || IsSuitableReincarnation(killer, false)) {

@@ -46,23 +46,12 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public int StartScoringTurn {
-      get {
-        return m_StartScoringTurn;
-      }
-    }
-
-    public int ReincarnationNumber {
-      get {
-        return m_ReincarnationNumber;
-      }
-    }
-
+    public int StartScoringTurn { get { return m_StartScoringTurn; } }
+    public int ReincarnationNumber { get { return m_ReincarnationNumber; } }
     public IEnumerable<Scoring.GameEventData> Events { get { return m_Events; } }
     public bool HasNoEvents { get { return m_Events.Count == 0; } }
     public IEnumerable<Scoring.KillData> Kills { get { return m_Kills.Values; } }
     public bool HasNoKills { get { return m_Kills.Count == 0; } }
-    public IEnumerable<int> Sightings { get { return (IEnumerable<int>) m_Sightings; } }
     public List<Actor> FollowersWhendDied { get { return m_FollowersWhenDied; } }
     public Actor Killer { get { return m_Killer; } }
     public Actor ZombifiedPlayer { get { return m_ZombifiedPlayer; } }
