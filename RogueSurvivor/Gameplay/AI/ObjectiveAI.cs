@@ -557,10 +557,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (ok_trackers.Contains(it.Model.ID) && null != m_Actor.LiveLeader) ? 2 : 1;
       }
 
-      if (it is ItemBarricadeMaterial) return 1;
-      if (it is ItemTrap) return 1;
+      if (it is ItemBarricadeMaterial) {
+        if (!is_in_inventory && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+        return 1;
+      }
+      if (it is ItemTrap) {
+        if (!is_in_inventory && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+        return 1;
+      }
+      if (it is ItemSprayScent) {
+        if (!is_in_inventory && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
+        return 1;
+      }
       if (it is ItemEntertainment) {
         if (!m_Actor.Model.Abilities.HasSanity) return 0;
+        if (!is_in_inventory && m_Actor.HasAtLeastFullStackOf(it, 1)) return 0;
         if (m_Actor.IsDisturbed) return 3;
         if (m_Actor.Sanity < 3 * m_Actor.MaxSanity / 4) return 2;   // gateway expression for using entertainment
         return 1;
@@ -1267,11 +1278,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         return true;
       }
-      if (it is ItemMedicine) {
-        // XXX easy to action-loop if inventory full
-        // this plausibly should actually check inventory-clearing options
-        if (!m_Actor.Inventory.IsFull) return !m_Actor.HasAtLeastFullStackOf(it, 2);
-      }
       if (it is ItemBodyArmor) {
         ItemBodyArmor armor = m_Actor.GetBestBodyArmor();
         if (null == armor) return true;
@@ -1283,9 +1289,28 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (1<=m_Actor.Inventory.Count(it.Model)) return false;
       } else if (it is ItemLight) {
         if (m_Actor.HasAtLeastFullStackOfItemTypeOrModel(it, 1)) return false;
+      } else if (it is ItemMedicine) {
+        // XXX easy to action-loop if inventory full
+        if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return false;
+#if DEBUG
+      } else if (it is ItemEntertainment) {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+      } else if (it is ItemBarricadeMaterial) {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+      } else if (it is ItemSprayScent) {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+      } else if (it is ItemTrap) {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+      } else if (it is ItemGrenade) {
+        if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+      } else {
+        throw new InvalidOperationException("coverage hole");
+#else
       } else {
         if (m_Actor.HasAtLeastFullStackOf(it, 1)) return false;
+#endif
       }
+
       return _InterestingItemPostprocess(it);
     }
 
