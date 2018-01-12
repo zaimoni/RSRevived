@@ -89,40 +89,32 @@ namespace djack.RogueSurvivor.Engine
 
     public Scoring()
     {
-      InitAchievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.CHAR_BROKE_INTO_OFFICE, "Broke into a CHAR Office", "Did not broke into XXX", new string[1]{
         "Now try not to die too soon..."
       }, GameMusics.HEYTHERE, 1000));
-      InitAchievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.CHAR_FOUND_UNDERGROUND_FACILITY, "Found the CHAR Underground Facility", "Did not found XXX", new string[1]{
         "Now, where is the light switch?..."
       }, GameMusics.CHAR_UNDERGROUND_FACILITY, 2000));
-      InitAchievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.CHAR_POWER_UNDERGROUND_FACILITY, "Powered the CHAR Underground Facility", "Did not XXX the XXX", new string[5]{
         "Personal message from the game developper : ",
         "Sorry, the rest of the plot is missing.",
         "For now its a dead end.",
         "Enjoy the rest of the game.",
         "See you in a next game version :)"
       }, GameMusics.CHAR_UNDERGROUND_FACILITY, 3000));
-            InitAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING, new Achievement(Achievement.IDs.KILLED_THE_SEWERS_THING, "Killed The Sewers Thing", "Did not kill the XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.KILLED_THE_SEWERS_THING, "Killed The Sewers Thing", "Did not kill the XXX", new string[1] {
         "One less Thing to worry about!"
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs.REACHED_DAY_07, new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_07, "Reached Day 7", "Did not reach XXX", new string[1] {
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs.REACHED_DAY_14, new Achievement(Achievement.IDs.REACHED_DAY_14, "Reached Day 14", "Did not reach XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_14, "Reached Day 14", "Did not reach XXX", new string[1]{
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs.REACHED_DAY_21, new Achievement(Achievement.IDs.REACHED_DAY_21, "Reached Day 21", "Did not reach XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_21, "Reached Day 21", "Did not reach XXX", new string[1]{
         "Keep staying alive!"
       }, GameMusics.HEYTHERE, 1000));
-            InitAchievement(Achievement.IDs.REACHED_DAY_28, new Achievement(Achievement.IDs.REACHED_DAY_28, "Reached Day 28", "Did not reach XXX", new string[1]
-      {
+      InitAchievement(new Achievement(Achievement.IDs.REACHED_DAY_28, "Reached Day 28", "Did not reach XXX", new string[1] {
         "Is this the end?"
       }, GameMusics.HEYTHERE, 1000));
     }
@@ -156,42 +148,26 @@ namespace djack.RogueSurvivor.Engine
 
     public Achievement GetAchievement(Achievement.IDs id)
     {
-      Contract.Ensures(null!=Contract.Result<Achievement>());
       return Achievements[(int) id];
     }
 
-    private void InitAchievement(Achievement.IDs id, Achievement a)
+    private void InitAchievement(Achievement a)
     {
-      Achievements[(int) id] = a;
+      Achievements[(int) a.ID] = a;
     }
 
     public static float ComputeDifficultyRating(GameOptions options, DifficultySide side, int reincarnationNumber)
     {
       float num1 = 1f;
-      if (!options.RevealStartingDistrict)
-        num1 += 0.1f;
-      if (!options.NPCCanStarveToDeath)
-      {
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num1 -= 0.1f;
-        else
-          num1 += 0.1f;
-      }
-      if (options.NatGuardFactor != GameOptions.DEFAULT_NATGUARD_FACTOR)
-      {
+      if (!options.RevealStartingDistrict) num1 += 0.1f;
+      if (!options.NPCCanStarveToDeath) num1 += (DifficultySide.FOR_SURVIVOR==side ? -0.1f : 0.1f);
+      if (options.NatGuardFactor != GameOptions.DEFAULT_NATGUARD_FACTOR) {
         float num2 = (float) (options.NatGuardFactor - GameOptions.DEFAULT_NATGUARD_FACTOR) / (float)GameOptions.DEFAULT_NATGUARD_FACTOR;
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num1 -= 0.5f * num2;
-        else
-          num1 += 0.5f * num2;
+        num1 += 0.5f*(DifficultySide.FOR_SURVIVOR==side ? -num2 : num2);
       }
-      if (options.SuppliesDropFactor != GameOptions.DEFAULT_SUPPLIESDROP_FACTOR)
-      {
+      if (options.SuppliesDropFactor != GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) {
         float num2 = (float) (options.SuppliesDropFactor - GameOptions.DEFAULT_SUPPLIESDROP_FACTOR) / (float)GameOptions.DEFAULT_SUPPLIESDROP_FACTOR;
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num1 -= 0.5f * num2;
-        else
-          num1 += 0.5f * num2;
+        num1 += 0.5f*(DifficultySide.FOR_SURVIVOR==side ? -num2 : num2);
       }
       if (options.ZombifiedsUpgradeDays != GameOptions.ZupDays.THREE)
       {
@@ -220,10 +196,7 @@ namespace djack.RogueSurvivor.Engine
             num2 = -0.5f;
             break;
         }
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num1 += num2;
-        else
-          num1 -= num2;
+        num1 += 0.5f*(DifficultySide.FOR_SURVIVOR==side ? num2 : -num2);
       }
       float num3 = (float) Math.Sqrt(GameOptions.DEFAULT_MAX_UNDEADS+ GameOptions.DEFAULT_MAX_CIVILIANS) / (GameOptions.DEFAULT_CITY_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE * GameOptions.DEFAULT_DISTRICT_SIZE);
       float num4 = ((float) Math.Sqrt((double) (options.MaxCivilians + options.MaxUndeads)) / (float) (options.CitySize * options.DistrictSize * options.DistrictSize) - num3) / num3;
@@ -240,45 +213,15 @@ namespace djack.RogueSurvivor.Engine
       if (!options.NPCCanStarveToDeath)
         num14 = -1f;
       float num15 = side != DifficultySide.FOR_SURVIVOR ? num10 - (float) (0.3 * (double) num12 + 0.2 * (double) num14) : num10 + (float) (0.3 * (double) num12 + 0.2 * (double) num14);
-      if (!options.AllowUndeadsEvolution && Session.Get.HasEvolution)
-      {
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num15 *= 0.5f;
-        else
-          num15 *= 2f;
-      }
-      if (options.IsCombatAssistantOn)
-        num15 *= 0.75f;
-      if (options.IsPermadeathOn)
-        num15 *= 2f;
-      if (!options.IsAggressiveHungryCiviliansOn)
-      {
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num15 *= 0.5f;
-        else
-          num15 *= 2f;
-      }
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.RatsUpgrade)
-      {
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num15 *= 1.1f;
-        else
-          num15 *= 0.9f;
-      }
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.SkeletonsUpgrade)
-      {
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num15 *= 1.2f;
-        else
-          num15 *= 0.8f;
-      }
-      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.ShamblersUpgrade)
-      {
-        if (side == DifficultySide.FOR_SURVIVOR)
-          num15 *= 1.25f;
-        else
-          num15 *= 0.75f;
-      }
+
+      if (!options.AllowUndeadsEvolution && Session.Get.HasEvolution) num15 *= (DifficultySide.FOR_SURVIVOR==side ? 0.5f : 2f);
+      if (options.IsCombatAssistantOn) num15 *= 0.75f;
+      if (options.IsPermadeathOn) num15 *= 2f;
+      if (!options.IsAggressiveHungryCiviliansOn) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 0.5f : 2f);
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.RatsUpgrade) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 1.1f : 0.9f);
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.SkeletonsUpgrade) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 1.2f : 0.8f);
+      if (GameMode.GM_VINTAGE != Session.Get.GameMode && options.ShamblersUpgrade) num15 *= (DifficultySide.FOR_SURVIVOR == side ? 1.25f : 0.75f);
+
       return Math.Max(num15 / (float) (1 + reincarnationNumber), 0.0f);
     }
 
@@ -288,7 +231,7 @@ namespace djack.RogueSurvivor.Engine
       if (m_Kills.TryGetValue(id, out KillData killData)) {
         ++killData.Amount;
       } else {
-        m_Kills.Add(id, new Scoring.KillData(id, turn));
+        m_Kills.Add(id, new KillData(id, turn));
         AddEvent(turn, string.Format("Killed first {0}.", Models.Actors[(int)id].Name));
       }
       m_KillPoints += Models.Actors[(int)id].ScoreValue;
@@ -296,9 +239,10 @@ namespace djack.RogueSurvivor.Engine
       m_KillPoints += SCORE_BONUS_FOR_KILLING_LIVING_AS_UNDEAD;
     }
 
-    public void AddSighting(GameActors.IDs actorModelID, int turn)
+    public void AddSighting(GameActors.IDs actorModelID)
     {
       if (m_Sightings.Contains(actorModelID)) return;
+      int turn = Session.Get.WorldTime.TurnCounter;
       m_Sightings.Add(actorModelID);
       AddEvent(turn, string.Format("Sighted first {0}.", Models.Actors[(int)actorModelID].Name));
     }
@@ -315,8 +259,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddVisit(int turn, Map map)
     {
-      lock (m_VisitedMaps)
-                m_VisitedMaps.Add(map);
+      lock (m_VisitedMaps) m_VisitedMaps.Add(map);
     }
 
     public void SetKiller(Actor k)
@@ -336,8 +279,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddEvent(int turn, string text)
     {
-      lock (m_Events)
-        m_Events.Add(new GameEventData(turn, text));
+      lock (m_Events) m_Events.Add(new GameEventData(turn, text));
     }
 
     [Serializable]

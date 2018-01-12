@@ -12322,8 +12322,8 @@ namespace djack.RogueSurvivor.Engine
         Session.Get.Scoring.AddVisit(Session.Get.WorldTime.TurnCounter, player.Location.Map);
         Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("Visited {0}.", player.Location.Map.Name));
       }
-      if (null != m_Player.Controller.friends_in_FOV) foreach(var x in m_Player.Controller.friends_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID, Session.Get.WorldTime.TurnCounter);
-      if (null != m_Player.Controller.enemies_in_FOV) foreach(var x in m_Player.Controller.enemies_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID, Session.Get.WorldTime.TurnCounter);
+      if (null != m_Player.Controller.friends_in_FOV) foreach(var x in m_Player.Controller.friends_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID);
+      if (null != m_Player.Controller.enemies_in_FOV) foreach(var x in m_Player.Controller.enemies_in_FOV) Session.Get.Scoring.AddSighting(x.Value.Model.ID);
     }
 
     private void HandleReincarnation()

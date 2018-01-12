@@ -8,6 +8,7 @@ using System;
 
 namespace djack.RogueSurvivor.Engine
 {
+  // \todo NEXT SAVEFILE BREAK: eliminate get/set pairs
   [Serializable]
   internal class Achievement
   {
