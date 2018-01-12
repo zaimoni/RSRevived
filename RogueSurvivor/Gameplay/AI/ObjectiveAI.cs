@@ -637,7 +637,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model,am2=>am.Quantity<am.Model.MaxQuantity)) return 2;
-        if (AmmoAtLimit) return 0;
+#if PROTOTYPE
+        if (AmmoAtLimit) return 0;  // doesn't completely work yet
+#endif
         return 2;
       }
       }
