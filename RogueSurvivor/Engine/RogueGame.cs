@@ -9179,6 +9179,7 @@ namespace djack.RogueSurvivor.Engine
         }
         Item[] objArray = deadGuy.Inventory.Items.ToArray();
         foreach (Item it in objArray) {
+          if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
         }

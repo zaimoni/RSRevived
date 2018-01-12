@@ -1388,8 +1388,15 @@ retry:
         int quantity = it.Quantity;
         int quantityAdded = itemsAt.AddAsMuchAsPossible(it);
         if (quantityAdded >= quantity) return;
-        itemsAt.RemoveAllQuantity(itemsAt.BottomItem);
-        /* quantityAdded += */ itemsAt.AddAsMuchAsPossible(it);
+        // ensure that legendary artifacts don't disappear (yes, could infinite-loop but there aren't that many artifacts)
+        Item crushed = itemsAt.BottomItem;
+        itemsAt.RemoveAllQuantity(crushed);
+        while(crushed.Model.IsUnbreakable || crushed.IsUnique) {
+          itemsAt.AddAll(crushed);
+          crushed = itemsAt.BottomItem;
+          itemsAt.RemoveAllQuantity(crushed);
+        }
+        itemsAt.AddAsMuchAsPossible(it);
       }
       else
         itemsAt.AddAll(it);
