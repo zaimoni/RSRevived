@@ -11227,7 +11227,9 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
       RedrawPlayScreen();
       m_UI.UI_Repaint();
+#if OBSOLETE
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "<Loaded game>");
+#endif
       return true;
     }
 

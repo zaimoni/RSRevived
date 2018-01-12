@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine
   {
     private readonly Dictionary<GameActors.IDs, Scoring.KillData> m_Kills = new Dictionary<GameActors.IDs, Scoring.KillData>();
     private readonly HashSet<GameActors.IDs> m_Sightings = new HashSet<GameActors.IDs>();
-    private readonly List<Scoring.GameEventData> m_Events = new List<Scoring.GameEventData>();
+    private readonly List<GameEventData> m_Events = new List<GameEventData>();
     private readonly HashSet<Map> m_VisitedMaps = new HashSet<Map>();
     private float m_DifficultyRating = 1f;
     public const int MAX_ACHIEVEMENTS = 8;
@@ -84,6 +84,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    // \todo NEXT SAVEFILE BREAK: rewrite as pure getter
     public int CompletedAchievementsCount { get; set; } // RogueGame: 1 write access, but could pay CPU to re-implement as a pure getter
 
     public Scoring()
@@ -288,7 +289,7 @@ namespace djack.RogueSurvivor.Engine
         ++killData.Amount;
       } else {
         m_Kills.Add(id, new Scoring.KillData(id, turn));
-        m_Events.Add(new Scoring.GameEventData(turn, string.Format("Killed first {0}.", (object) Models.Actors[(int)id].Name)));
+        AddEvent(turn, string.Format("Killed first {0}.", Models.Actors[(int)id].Name));
       }
       m_KillPoints += Models.Actors[(int)id].ScoreValue;
       if (m_Side != DifficultySide.FOR_UNDEAD || Models.Actors[(int)id].Abilities.IsUndead) return;
@@ -299,7 +300,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (m_Sightings.Contains(actorModelID)) return;
       m_Sightings.Add(actorModelID);
-      m_Events.Add(new Scoring.GameEventData(turn, string.Format("Sighted first {0}.", (object) Models.Actors[(int)actorModelID].Name)));
+      AddEvent(turn, string.Format("Sighted first {0}.", Models.Actors[(int)actorModelID].Name));
     }
 
     public bool HasSighted(GameActors.IDs actorModelID)
@@ -330,15 +331,13 @@ namespace djack.RogueSurvivor.Engine
 
     public void AddFollowerWhenDied(Actor fo)
     {
-      if (m_FollowersWhenDied == null)
-                m_FollowersWhenDied = new List<Actor>();
-            m_FollowersWhenDied.Add(fo);
+      (m_FollowersWhenDied ?? (m_FollowersWhenDied = new List<Actor>())).Add(fo);
     }
 
     public void AddEvent(int turn, string text)
     {
       lock (m_Events)
-        m_Events.Add(new Scoring.GameEventData(turn, text));
+        m_Events.Add(new GameEventData(turn, text));
     }
 
     [Serializable]
