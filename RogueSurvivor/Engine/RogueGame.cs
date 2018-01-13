@@ -3017,6 +3017,9 @@ namespace djack.RogueSurvivor.Engine
               case PlayerCommand.BUILD_SMALL_FORTIFICATION:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerBuildFortification(player, false);
                 break;
+              case PlayerCommand.CLEAR_WAYPOINT:
+                HandlePlayerClearWaypoint(player);
+                break;
               case PlayerCommand.CLOSE_DOOR:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerCloseDoor(player);
                 break;
@@ -3054,6 +3057,9 @@ namespace djack.RogueSurvivor.Engine
                 break;
               case PlayerCommand.REVIVE_CORPSE:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerReviveCorpse(player, point);
+                break;
+              case PlayerCommand.SET_WAYPOINT:
+                HandlePlayerSetWaypoint(player);
                 break;
               case PlayerCommand.SHOUT:
                 flag1 = !TryPlayerInsanity() && !HandlePlayerShout(player, null);
@@ -10313,6 +10319,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorSprite(Actor actor, Point screen, Color tint)
     {
+#if DEBUG
+      if (null == actor) throw new ArgumentNullException(nameof(actor));
+#endif
       int x = screen.X;
       int y = screen.Y;
       if (actor.Leader != null && actor.Leader == m_Player) {
@@ -10521,7 +10530,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawItemsStack(Inventory inventory, Point screen, Color tint)
     {
-      if (inventory == null) return;
+#if DEBUG
+      if (0>=(inventory?.CountItems ?? 0)) throw new ArgumentNullException(nameof(inventory));
+#endif
       foreach (Item it in inventory.Items)
         DrawItem(it, screen.X, screen.Y, tint);
     }
@@ -11044,6 +11055,7 @@ namespace djack.RogueSurvivor.Engine
       Location viewpoint = origin;
       ClearOverlays();
       AddOverlay(new OverlayPopup(new string[1]{ "FAR LOOK MODE - movement keys ok; RETURN confirms, ESC cancels" }, MODE_TEXTCOLOR, MODE_BORDERCOLOR, MODE_FILLCOLOR, new Point(0, 0)));
+      RedrawPlayScreen();
 
       do {
         WaitKeyOrMouse(out KeyEventArgs key, out Point point, out MouseButtons? mouseButtons);
@@ -11084,6 +11096,22 @@ namespace djack.RogueSurvivor.Engine
           PanViewportTo(viewpoint);
         }
       } while(true);
+    }
+
+    private void HandlePlayerSetWaypoint(Actor player)
+    {
+      Location? target = DoPlayerFarLook();
+      if (null == target) return;
+      // build out implementation here -- minimap and viewport have to respond appropriately
+      // try a green tint
+    }
+
+    private void HandlePlayerClearWaypoint(Actor player)
+    {
+      // build out implementation here
+      // should be a standard menu once the objective system is built out
+      // for now, forward to set way point
+      HandlePlayerSetWaypoint(player);
     }
 
     private bool ForceVisibleToPlayer(Map map, Point position)

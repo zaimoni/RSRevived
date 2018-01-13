@@ -89,15 +89,40 @@ namespace djack.RogueSurvivor.UI
       base.OnCreateControl();
     }
 
+/*
+* https://docs.microsoft.com/en-us/dotnet/framework/wpf/advanced/windows-forms-and-wpf-interoperability-input-architecture
+* Because the default HwndSource implementation of the TranslateChar method returns false, WM_CHAR messages are processed using the following logic: 
+* The Control.IsInputChar method is overridden to ensure that all WM_CHAR messages are forwarded to hosted elements. 
+* If the ALT key is pressed, the message is WM_SYSCHAR. Windows Forms does not preprocess this message through the IsInputChar method. Therefore, the ProcessMnemonic method is overridden to query the WPF AccessKeyManager for a registered accelerator. If a registered accelerator is found, AccessKeyManager processes it. 
+* If the ALT key is not pressed, the WPF InputManager class processes the unhandled input. If the input is an accelerator, the AccessKeyManager processes it. The PostProcessInput event is handled for WM_CHAR messages that were not processed.  * 
+ */
+    // That is, per above no alt keys ever reach here
     protected override void OnKeyDown(KeyEventArgs e)
     {
-      base.OnKeyDown(e);
+      base.OnKeyDown(e);    // must be called first to allow seeing *any* keypresses?
       m_RogueForm.UI_PostKey(e);
     }
 
     protected override bool IsInputKey(Keys keyData)
     {
       return true;
+    }
+
+    // this intercepts all keys regardless of ALT status by itself
+    protected override bool ProcessMnemonic(char inputChar)
+    {
+      Keys mod = Control.ModifierKeys;
+      if (Keys.None==(mod & Keys.Alt)) return false;    // normal processing works fine if ALT isn't involved
+      switch(inputChar)
+      {
+      case 'i': // sees ALT-SHIFT-I
+      case 'I':
+        m_RogueForm.UI_PostKey(new KeyEventArgs(Keys.I | mod));
+        return true;
+      // should be able to do ALT-CTRL-I
+      // not sure about ALT-CTRL-SHIFT-I
+      }
+      return false;
     }
 
     protected override void OnMouseMove(MouseEventArgs e)

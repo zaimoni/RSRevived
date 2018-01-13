@@ -29,6 +29,7 @@ namespace djack.RogueSurvivor.Engine
 
     public UniqueActor TheSewersThing { get; set; }
 
+    // \todo NEXT SAVEFILE BREAK: Father Time, with a legendary scythe.
     public UniqueActor[] ToArray()
     {
       return new UniqueActor[8]

@@ -18,6 +18,9 @@ namespace djack.RogueSurvivor.Engine
       }
       if (key.KeyData == (cityInfo | Keys.Shift)) return PlayerCommand.ITEM_INFO;
       if (key.KeyData == (cityInfo | Keys.Shift | Keys.Control)) return PlayerCommand.FACTION_INFO;
+      // ALT-I does not go through reliably, even with the alt bypass in GDIPlusGameCanvas
+      if (key.KeyData == (cityInfo | Keys.Alt | Keys.Shift)) return PlayerCommand.SET_WAYPOINT;
+      if (key.KeyData == (cityInfo | Keys.Alt | Keys.Control)) return PlayerCommand.CLEAR_WAYPOINT;
 
       Keys orders = RogueGame.KeyBindings.Get(PlayerCommand.ORDER_MODE);
       if (key.KeyData == (orders | Keys.Shift)) return PlayerCommand.OPTIONS_MODE;

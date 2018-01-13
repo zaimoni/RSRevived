@@ -637,6 +637,12 @@ Various items related to your current faction.  Police are much more "helpful".
 1) [unimplemented] Overview (how things look from your faction's point of view)
 2) Personal enemies (tracks both who has aggressed you, and who you have aggressed).
 
+> SET WAYPOINT (Alt-[City Info], default Alt-I)
+Designate a location as a waypoint.  This is done via a far-look command; to just far-look, cancel setting the waypoint with Escape.
+
+> CLEAR WAYPOINT (Alt-Shift-[City Info], default Alt-Shift-I)
+Clear a previously designated waypoint.
+
 > ALLIES OVERVIEW (hard-coded Ctrl-O)
 Basic overview of your allies.  Always includes followers.  Police get a review of all other police in the district as well.
 
