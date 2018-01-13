@@ -10010,7 +10010,7 @@ namespace djack.RogueSurvivor.Engine
                 // We have one spare line of text in the location panel, should it be needed
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
                 m_UI.UI_DrawString(Color.White, Session.Get.CurrentMap.Name, LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y, new Color?());
-                m_UI.UI_DrawString(Color.White, LocationText(Session.Get.CurrentMap, m_Player), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+LINE_SPACING, new Color?());
+                m_UI.UI_DrawString(Color.White, LocationText(), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", Session.Get.WorldTime.Day), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR, DescribeDayPhase(Session.Get.WorldTime.Phase), LOCATIONPANEL_TEXT_X_COL2, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
@@ -10037,11 +10037,11 @@ namespace djack.RogueSurvivor.Engine
             };  // lock(m_UI)
     }
 
-    static private string LocationText(Map map, Actor actor)
+    private string LocationText()
     {
-      if (map == null || actor == null) return "";
-      StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", actor.Location.Position.X, actor.Location.Position.Y));
-      List<Zone> zonesAt = map.GetZonesAt(actor.Location.Position);
+      Location loc = new Location(Session.Get.CurrentMap,new Point(m_MapViewRect.Left+HALF_VIEW_WIDTH,m_MapViewRect.Top+HALF_VIEW_HEIGHT));
+      StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
+      List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
       if (null == zonesAt) return stringBuilder.ToString();
       foreach (Zone zone in zonesAt)
         stringBuilder.Append(string.Format("{0} ", zone.Name));
