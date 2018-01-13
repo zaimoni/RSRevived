@@ -11083,7 +11083,8 @@ namespace djack.RogueSurvivor.Engine
             case PlayerCommand.MOVE_SW:
             case PlayerCommand.MOVE_W:
             case PlayerCommand.MOVE_NW:
-              tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.COMPASS[(int)(command)-(int)(PlayerCommand.MOVE_N)]);
+              tmp = viewpoint + Direction.COMPASS[(int)(command) - (int)(PlayerCommand.MOVE_N)];
+              if (!tmp.Value.Map.IsInBounds(tmp.Value.Position)) tmp = viewpoint.Map.Normalize(viewpoint.Position+Direction.COMPASS[(int)(command)-(int)(PlayerCommand.MOVE_N)]);
               break;
             case PlayerCommand.USE_EXIT:
               tmp = viewpoint.Exit?.Location;
