@@ -7126,6 +7126,10 @@ namespace djack.RogueSurvivor.Engine
       }
       Location location = actor.Location;
       if (location.Map != newLocation.Map) throw new NotImplementedException("DoMoveActor : illegal to change map.");
+	  // committed to move now
+#if ENABLE_THREAT_TRACKING
+	  actor.Moved();
+#endif
       newLocation.Place(actor);
       Corpse draggedCorpse = actor.DraggedCorpse;
       if (draggedCorpse != null) {
@@ -7156,10 +7160,6 @@ namespace djack.RogueSurvivor.Engine
         actor.SpendStaminaPoints(Rules.STAMINA_COST_MOVE_DRAGGED_CORPSE);
       actor.SpendActionPoints(actionCost);
 
-	  // committed to move now
-#if ENABLE_THREAT_TRACKING
-	  actor.Moved();
-#endif
       if (actor.GetEquippedItem(DollPart.HIP_HOLSTER) is ItemTracker tracker) tracker.Batteries += 2;  // police radio recharge
 
       if (actor.ActionPoints >= Rules.BASE_ACTION_COST) actor.DropScent();
