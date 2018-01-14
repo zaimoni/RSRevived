@@ -597,10 +597,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (!string.IsNullOrWhiteSpace(prefix)) actor.PrefixName(prefix);
     }
 
-    static protected void GiveRandomSkillsToActor(DiceRoller roller, Actor actor, int count)
+    protected void GiveRandomSkillsToActor(Actor actor, int count)
     {
-      for (int index = 0; index < count; ++index)
-        GiveRandomSkillToActor(roller, actor);
+      while(0 < count--) GiveRandomSkillToActor(m_DiceRoller, actor);
     }
 
     static protected void GiveRandomSkillToActor(DiceRoller roller, Actor actor)

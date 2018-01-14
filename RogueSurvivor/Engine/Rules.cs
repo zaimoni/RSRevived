@@ -133,6 +133,8 @@ namespace djack.RogueSurvivor.Engine
     private const float CORPSE_DECAY_PER_TURN = 0.005555556f;   // 1/180 per turn
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
+    // \todo NEXT SAVEFILE BREAK? relocate m_DiceRoller to Session from Rules
+    // we can auto-detect when the library locking fails.
     private readonly DiceRoller m_DiceRoller;
 
     public DiceRoller DiceRoller {

@@ -2535,7 +2535,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor numberedName = (m_DiceRoller.Roll(0, 2) == 0 ? GameActors.MaleCivilian : GameActors.FemaleCivilian).CreateNumberedName(GameFactions.TheCivilians, spawnTime);
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Patient");
-      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      GiveRandomSkillsToActor(numberedName, 1);
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_PATIENT_UNIFORM);
       return numberedName;
     }
@@ -2546,7 +2546,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Nurse");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_NURSE_UNIFORM);
-      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC);
       numberedName.Inventory.AddAll(MakeItemBandages());
       return numberedName;
@@ -2558,7 +2558,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       SkinNakedHuman(m_DiceRoller, numberedName);
       GiveNameToActor(m_DiceRoller, numberedName, "Doctor");
       numberedName.Doll.AddDecoration(DollPart.TORSO, GameImages.HOSPITAL_DOCTOR_UNIFORM);
-      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.MEDIC,3);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       numberedName.Inventory.AddAll(MakeItemMedikit());
@@ -2676,8 +2676,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           GiveRandomItemToActor(m_DiceRoller, actor, spawnTime);
       } else
         actor = CreateNewCivilian(spawnTime, itemsToCarry, 1);
-      int count = 1 + new WorldTime(spawnTime).Day;
-      GiveRandomSkillsToActor(m_DiceRoller, actor, count);
+      GiveRandomSkillsToActor(actor, 1 + new WorldTime(spawnTime).Day);
       return actor;
     }
 
@@ -2717,8 +2716,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           break;
       }
       numberedName.Inventory.AddAll(MakeItemArmyBodyArmor());
-      int count = 3 + new WorldTime(spawnTime).Day;
-      GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+      GiveRandomSkillsToActor(numberedName, 3 + new WorldTime(spawnTime).Day);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);
       return numberedName;
     }
@@ -2737,7 +2735,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       GiveNameToActor(m_DiceRoller, numberedName);
       for (int index = 0; index < itemsToCarry; ++index)
         GiveRandomItemToActor(m_DiceRoller, numberedName, spawnTime);
-      GiveRandomSkillsToActor(m_DiceRoller, numberedName, skills);
+      GiveRandomSkillsToActor(numberedName, skills);
       numberedName.CreateCivilianDeductFoodSleep(m_Rules);
       if (m_PC_names?.Contains(numberedName.UnmodifiedName) ?? false) {
         numberedName.Controller = new PlayerController();
@@ -2753,7 +2751,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // Notable skills
       // martial arts 1 makes the starting baton useless
       // XXX probably should be used as a trade good rather than dropped ASAP
-      GiveRandomSkillsToActor(m_DiceRoller, numberedName, 1);
+      GiveRandomSkillsToActor(numberedName, 1);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
       numberedName.StartingSkill(Skills.IDs.LEADERSHIP);
       // While auto-equip here would be nice, it is unclear that RogueForm.Game.DoEquipItem is safe to call here.
@@ -2868,9 +2866,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // Maximum acceptable fat % 23%, discharged at 26%
       numberedName.StartingSkill(Skills.IDs.CARPENTRY);
       numberedName.StartingSkill(Skills.IDs.FIREARMS);
-      int count = new WorldTime(spawnTime).Day - RogueGame.NATGUARD_DAY;
-      if (count > 0)
-        GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+      GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.NATGUARD_DAY);
       return numberedName;
     }
 
@@ -2883,9 +2879,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? MakeItemCrowbar() : MakeItemBaseballBat());
       numberedName.Inventory.AddAll(MakeItemBikerGangJacket(gangId));
-      int count = new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY;
-      if (count > 0)
-        GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+      GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.BIKERS_RAID_DAY);
       return numberedName;
     }
 
@@ -2898,9 +2892,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       while(already_here?.Any(a => a.Name==numberedName.Name) ?? false) GiveNameToActor(m_DiceRoller, numberedName);
       // Gangsters don't seem very prepared: no reserve ammo
       numberedName.Inventory.AddAll(m_DiceRoller.RollChance(50) ? (Item)MakeItemRandomPistol() : (Item)MakeItemBaseballBat());
-      int count = new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY;
-      if (count > 0)
-        GiveRandomSkillsToActor(m_DiceRoller, numberedName, count);
+      GiveRandomSkillsToActor(numberedName, new WorldTime(spawnTime).Day - RogueGame.GANGSTAS_RAID_DAY);
       return numberedName;
     }
 
