@@ -1789,7 +1789,6 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private void AdvancePlay(District district, RogueGame.SimFlags sim)
     {
-      bool isNight1 = Session.Get.WorldTime.IsNight;
       DayPhase phase1 = Session.Get.WorldTime.Phase;
 #if DATAFLOW_TRACE
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "District: "+district.Name);
@@ -1818,18 +1817,16 @@ namespace djack.RogueSurvivor.Engine
       // XXX message generation wrappers do not have access to map time, only world time
       // XXX this set of messages must execute only once
       // XXX the displayed turn on the message must agree with the displayed turn on the screen
-      // XXX thus, displayed turn on screen for non-first PC districts is greater than the map time by one
-      if (district == Session.Get.CurrentMap.District && Session.Get.CurrentMap.LocalTime.TurnCounter > Session.Get.WorldTime.TurnCounter) {
-        bool isNight2 = Session.Get.WorldTime.IsNight;
+      if (Session.Get.World.Last == district) {
         DayPhase phase2 = Session.Get.WorldTime.Phase;
-        if (isNight1 && !isNight2) {
+        if (Session.Get.WorldTime.IsDawn) {
           AddMessage(new Data.Message("The sun is rising again for you...", Session.Get.WorldTime.TurnCounter, DAY_COLOR));
           OnNewDay();
-        } else if (!isNight1 && isNight2) {
+        } else if (Session.Get.WorldTime.IsDusk) {
           AddMessage(new Data.Message("Night is falling upon you...", Session.Get.WorldTime.TurnCounter, NIGHT_COLOR));
           OnNewNight();
         } else if (phase1 != phase2)
-          AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), Session.Get.WorldTime.TurnCounter, isNight2 ? NIGHT_COLOR : DAY_COLOR));
+          AddMessage(new Data.Message(string.Format("Time passes, it is now {0}...", DescribeDayPhase(phase2)), Session.Get.WorldTime.TurnCounter, Session.Get.WorldTime.IsNight ? NIGHT_COLOR : DAY_COLOR));
       }
 
       if (CheckForEvent_ZombieInvasion(district.EntryMap)) FireEvent_ZombieInvasion(district.EntryMap);

@@ -51,6 +51,11 @@ namespace djack.RogueSurvivor.Data
     public bool IsStrikeOfMidnight { get { return IsStrikeOfHour(0); } }
     public bool IsStrikeOfMidday { get { return IsStrikeOfHour(12); } }
 
+    // These two are correct only on the equator.  Providing thin-wrappers so
+    // it is easy to bulk them out to account for latitude (after optimizing the game to be playable at 900 turns/hour)
+    public bool IsDawn { get { return IsStrikeOfHour(6); } }
+    public bool IsDusk { get { return IsStrikeOfHour(18); } }
+
     static WorldTime()
     {
       int hour=0;

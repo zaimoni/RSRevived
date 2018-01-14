@@ -46,6 +46,10 @@ namespace djack.RogueSurvivor.Data
         m_DistrictsGrid[x, y] = value;
       }
     }
+
+    // unsure that city/game world will be a square of districts indefinitely so use this wrapper
+    /// <returns>The last district in the turn sequencing order</returns>
+    public District Last { get { return m_DistrictsGrid[m_Size-1, m_Size-1]; } }
     
     // cannot return IEnumerable<District>, but this does not error
     public void DoForAllDistricts(Action<District> op)
@@ -426,7 +430,7 @@ retry:
         if (null != tmp_E) ScheduleForAdvancePlay(tmp_E);
         if (null != tmp_SW) ScheduleForAdvancePlay(tmp_SW);
 #if NOSKEW_SCHEDULER
-		if (m_Size-1== d.WorldPosition.X && m_Size - 1 == d.WorldPosition.Y) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
+		if (Last == d) ScheduleForAdvancePlay(m_DistrictsGrid[0, 0]);
 #else
         if (null != tmp_NW) ScheduleForAdvancePlay(tmp_NW);	// XXX causes global vs. local time skew
 #endif
