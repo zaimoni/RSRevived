@@ -505,31 +505,43 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }
 
+    public bool ItemIsUseless(ItemModel it)
+    {
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
+	  if (it.IsForbiddenToAI) return true;
+	  if (it is ItemSprayPaintModel) return true;
+      if (it is ItemGrenadePrimedModel) return true;    // XXX want a general primed explosive model test
+
+      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
+      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.ID && !(m_Actor.Controller is CivilianAI) && !(m_Actor.Controller is SoldierAI)) return true;
+
+      // only civilians use stench killer
+      if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.ID && !(m_Actor.Controller is CivilianAI)) return true;
+
+      // police have implicit police trackers
+      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.ID && !m_Actor.WantPoliceRadio) return true;
+      if (GameItems.IDs.TRACKER_CELL_PHONE == it.ID && !m_Actor.WantCellPhone) return true;
+
+      if (it is ItemFoodModel && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
+      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Bikers
+        if (it is ItemRangedWeaponModel || it is ItemAmmoModel) return true;
+      }
+
+      return false;
+    }
+
     // Would be the lowest priority level of an item, except that it conflates "useless to everyone" and "useless to me"
     public bool ItemIsUseless(Item it)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
-	  if (it.IsForbiddenToAI) return true;
-	  if (it is ItemSprayPaint) return true;
-	  if (it is ItemTrap && (it as ItemTrap).IsActivated) return true;
+      if (ItemIsUseless(it.Model)) return true;
+
+      if (it is ItemTrap && (it as ItemTrap).IsActivated) return true;
       if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return true;
-
-      // only soldiers and civilians use grenades (CHAR guards are disallowed as a balance issue)
-      if (GameItems.IDs.EXPLOSIVE_GRENADE == it.Model.ID && !(m_Actor.Controller is CivilianAI) && !(m_Actor.Controller is SoldierAI)) return true;
-
-      // only civilians use stench killer
-      if (GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is CivilianAI)) return true;
-
-      // police have implicit police trackers
-      if (GameItems.IDs.TRACKER_POLICE_RADIO == it.Model.ID && !m_Actor.WantPoliceRadio) return true;
-      if (GameItems.IDs.TRACKER_CELL_PHONE == it.Model.ID && !m_Actor.WantCellPhone) return true;
-
-      if (it is ItemFood && !m_Actor.Model.Abilities.HasToEat) return true; // Soldiers and CHAR guards.  There might be a serum for this.
-      if (m_Actor.Model.Abilities.AI_NotInterestedInRangedWeapons) {    // Bikers
-        if (it is ItemRangedWeapon || it is ItemAmmo) return true;
-      }
 
       return false;
     }
