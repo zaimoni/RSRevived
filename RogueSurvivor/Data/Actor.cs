@@ -2343,11 +2343,6 @@ namespace djack.RogueSurvivor.Data
       return m_Inventory?.Count(model) ?? 0;
     }
 
-    public int CountItemsQuantityOfModel(ItemModel model)
-    {
-      return m_Inventory?.CountQuantityOf(model) ?? 0;
-    }
-
     public int CountQuantityOf<_T_>() where _T_ : Item
     {
       return m_Inventory?.CountQuantityOf<_T_>() ?? 0;
@@ -2378,24 +2373,23 @@ namespace djack.RogueSurvivor.Data
     public bool HasAtLeastFullStackOfItemTypeOrModel(Item it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      if (it.Model.IsStackable)
-        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
+      if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
-    public bool HasAtLeastFullStackOf(Item it, int n)
+    public bool HasAtLeastFullStackOf(ItemModel it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      if (it.Model.IsStackable)
-        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
-      return m_Inventory.Count(it.Model) >= n;
+      if (it.IsStackable) return m_Inventory.CountQuantityOf(it) >= n * it.StackingLimit;
+      return m_Inventory.Count(it) >= n;
     }
+
+    public bool HasAtLeastFullStackOf(Item it, int n) { return HasAtLeastFullStackOf(it.Model, n); }
 
     public bool HasAtLeastFullStackOfItemModel(Item it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      if (it.Model.IsStackable)
-        return CountItemsQuantityOfModel(it.Model) >= n * it.Model.StackingLimit;
+      if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
       return CountItemsOfSameType(it.GetType()) >= n;
     }
 
@@ -2403,7 +2397,7 @@ namespace djack.RogueSurvivor.Data
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       ItemModel model = Models.Items[(int)it];
-      if (model.IsStackable) return CountItemsQuantityOfModel(model) >= n * model.StackingLimit;
+      if (model.IsStackable) return m_Inventory.CountQuantityOf(model) >= n * model.StackingLimit;
       return Count(model) >= n; // XXX assumes each model goes with a specific item type
     }
 
@@ -2430,7 +2424,7 @@ namespace djack.RogueSurvivor.Data
     }
 
     // we prefer to return weapons that need reloading.
-    private ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmoModel am)
+    public ItemRangedWeapon GetCompatibleRangedWeapon(ItemAmmoModel am)
     {
 #if DEBUG
       if (null == am) throw new ArgumentNullException(nameof(am));
