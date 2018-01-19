@@ -2391,7 +2391,7 @@ namespace djack.RogueSurvivor.Data
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
       ItemModel model = Models.Items[(int)it];
       if (model.IsStackable) return m_Inventory.CountQuantityOf(model) >= n * model.StackingLimit;
-      return Count(model) >= n; // XXX assumes each model goes with a specific item type
+      return m_Inventory.Count(model) >= n; // XXX assumes each model goes with a specific item type
     }
 
     public ItemMeleeWeapon GetWorstMeleeWeapon()
