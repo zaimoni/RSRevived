@@ -139,7 +139,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       BehaviorEquipBodyArmor();
 
       // start item juggling
-      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight(game) && !BehaviorEquipStenchKiller(game)) {
+      if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight() && !BehaviorEquipStenchKiller(game)) {
         BehaviorUnequipLeftItem(game);
       }
       // end item juggling check

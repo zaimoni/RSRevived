@@ -2323,16 +2323,6 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public _T_ GetFirstMatching<_T_>() where _T_ : Item // needed as null vacuum
-    {
-      return m_Inventory?.GetFirstMatching<_T_>();
-    }
-
-    public _T_ GetFirstMatching<_T_>(Predicate<_T_> fn) where _T_ : Item
-    {
-      return m_Inventory?.GetFirstMatching<_T_>(fn);
-    }
-
     public bool HasItemOfModel(ItemModel model)
     {
       return m_Inventory?.HasModel(model) ?? false;

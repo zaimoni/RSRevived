@@ -1241,14 +1241,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>true if and only if light should be equipped</returns>
-    protected bool BehaviorEquipLight(RogueGame game)
+    protected bool BehaviorEquipLight()
     {
       if (!NeedsLight()) return false;
       ItemLight tmp = GetEquippedLight();
-      if (null != tmp && !tmp.IsUseless) return true;
-      tmp = m_Actor.GetFirstMatching<ItemLight>(it => !it.IsUseless);
+      if (!tmp?.IsUseless ?? false) return true;
+      tmp = m_Actor.Inventory.GetFirstMatching<ItemLight>(it => !it.IsUseless);
       if (tmp != null && m_Actor.CanEquip(tmp)) {
-        game.DoEquipItem(m_Actor, tmp);
+        RogueForm.Game.DoEquipItem(m_Actor, tmp);
         return true;
       }
       return false;
@@ -1264,7 +1264,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         game.DoUnequipItem(m_Actor, equippedCellPhone);
       }
       if (!wantCellPhone) return false;
-      ItemTracker firstTracker = m_Actor.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
+      ItemTracker firstTracker = m_Actor.Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
       if (firstTracker != null && m_Actor.CanEquip(firstTracker)) {
         game.DoEquipItem(m_Actor, firstTracker);
         return true;
@@ -1275,9 +1275,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     /// <returns>null, or a legal ActionThrowGrenade</returns>
     protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies)
     {
-      if (enemies == null || enemies.Count == 0) return null;
-      if (enemies.Count < 3) return null;
-      ItemGrenade firstGrenade = m_Actor.GetFirstMatching<ItemGrenade>();
+      if (3 > (enemies?.Count ?? 0)) return null;
+      ItemGrenade firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
       if (firstGrenade == null) return null;
       ItemGrenadeModel itemGrenadeModel = firstGrenade.Model;
       int maxRange = m_Actor.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
