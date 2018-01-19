@@ -2386,13 +2386,6 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAtLeastFullStackOf(Item it, int n) { return HasAtLeastFullStackOf(it.Model, n); }
 
-    public bool HasAtLeastFullStackOfItemModel(Item it, int n)
-    {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
-      if (it.Model.IsStackable) return m_Inventory.CountQuantityOf(it.Model) >= n * it.Model.StackingLimit;
-      return CountItemsOfSameType(it.GetType()) >= n;
-    }
-
     public bool HasAtLeastFullStackOf(Gameplay.GameItems.IDs it, int n)
     {
       if (null == m_Inventory || m_Inventory.IsEmpty) return false;
