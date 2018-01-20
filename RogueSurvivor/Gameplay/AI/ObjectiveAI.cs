@@ -648,7 +648,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (is_in_inventory) return 2;
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
-        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model,am2=>am.Quantity<am.Model.MaxQuantity)) return 2;
+        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am.Model,am2=>am2.Quantity<am.Model.MaxQuantity)) return 2;
 #if PROTOTYPE
         if (AmmoAtLimit) return 0;  // doesn't completely work yet
 #endif
@@ -688,6 +688,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
 #if PROTOTYPE
+    // this variant should only be used on targets not in inventory
     protected int ItemRatingCode(ItemModel it)
     {
 #if DEBUG
@@ -743,7 +744,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemBodyArmorModel armor) {
         ItemBodyArmor best = m_Actor.GetBestBodyArmor();
         if (null == best) return 2; // want 3, but RHSMoreInteresting  says 2
-        if (best == armor) return 3;
         return best.Rating < armor.Rating ? 2 : 0; // dropping inferior armor specifically handled in BehaviorMakeRoomFor so don't have to postprocess here
       }
       }
@@ -783,7 +783,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (is_in_inventory) return 2;
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
-        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am,am2=>am.Quantity<am.MaxQuantity)) return 2;
+        if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am,am2=>am2.Quantity<am.MaxQuantity)) return 2;
 #if PROTOTYPE
         if (AmmoAtLimit) return 0;  // doesn't completely work yet
 #endif
