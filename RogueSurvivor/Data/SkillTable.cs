@@ -9,6 +9,7 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
+  // \todo NEXT SAVEFILE BREAK?  We don't seem to be getting anything from the Skill class.  Eliminate completely to conserve object ids in the savefile.
   [Serializable]
   internal class SkillTable
   {

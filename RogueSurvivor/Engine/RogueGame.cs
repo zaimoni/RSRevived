@@ -9433,12 +9433,7 @@ namespace djack.RogueSurvivor.Engine
       textFile.Append(string.Format("- {0} base points for achievements.", Session.Get.Scoring.AchievementPoints));
       textFile.Append(" ");
       textFile.Append("> ACHIEVEMENTS");
-      foreach (Achievement achievement in Session.Get.Scoring.Achievements) {
-        if (achievement.IsDone)
-          textFile.Append(string.Format("- {0} for {1} points!", achievement.Name, achievement.ScoreValue));
-        else
-          textFile.Append(string.Format("- Fail : {0}.", achievement.TeaseName));
-      }
+      Session.Get.Scoring.DescribeAchievements(textFile);
       if (Session.Get.Scoring.CompletedAchievementsCount == 0) {
         textFile.Append("Didn't achieve anything notable. And then died.");
         textFile.Append(string.Format("(unlock all the {0} achievements to win this game version)", 8));
@@ -12161,7 +12156,6 @@ namespace djack.RogueSurvivor.Engine
     private void ShowNewAchievement(Achievement.IDs id)
     {
       Session.Get.Scoring.SetCompletedAchievement(id);
-      ++Session.Get.Scoring.CompletedAchievementsCount;
       Achievement achievement = Session.Get.Scoring.GetAchievement(id);
       string musicId = achievement.MusicID;
       string name = achievement.Name;

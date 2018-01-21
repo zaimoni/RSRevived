@@ -7,8 +7,8 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
+using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -30,7 +30,7 @@ namespace djack.RogueSurvivor.Engine
     private int m_KillPoints;
     private DifficultySide m_Side;
 
-    public readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
+    private readonly Achievement[] Achievements = new Achievement[(int) Achievement.IDs._COUNT];
     public Skills.IDs StartingSkill;    // RogueGame: 1 write access
     public int TurnsSurvived;   // RogueGame: 3 write access
     public string DeathReason;  // RogueGame: 1 write access
@@ -58,16 +58,7 @@ namespace djack.RogueSurvivor.Engine
     public int KillPoints { get { return m_KillPoints; } }
     public int SurvivalPoints { get { return 2 * (TurnsSurvived - StartScoringTurn); } }
 
-    public int AchievementPoints {
-      get {
-        int num = 0;
-        for (int index = 0; index < 8; ++index) {
-          if (HasCompletedAchievement((Achievement.IDs) index))
-            num += GetAchievement((Achievement.IDs) index).ScoreValue;
-        }
-        return num;
-      }
-    }
+    public int AchievementPoints { get { return Achievements.Sum(x => x.IsDone ? x.ScoreValue : 0); } }
 
     public float DifficultyRating {
       get {
@@ -84,8 +75,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    // \todo NEXT SAVEFILE BREAK: rewrite as pure getter
-    public int CompletedAchievementsCount { get; set; } // RogueGame: 1 write access, but could pay CPU to re-implement as a pure getter
+    public int CompletedAchievementsCount { get { return Achievements.Count(x => x.IsDone); } }
 
     public Scoring()
     {
@@ -124,7 +114,6 @@ namespace djack.RogueSurvivor.Engine
       ++m_ReincarnationNumber;
       foreach (Achievement achievement in Achievements)
         achievement.IsDone = false;
-      CompletedAchievementsCount = 0;
       m_VisitedMaps.Clear();
       m_Events.Clear();
       m_Sightings.Clear();
@@ -154,6 +143,16 @@ namespace djack.RogueSurvivor.Engine
     private void InitAchievement(Achievement a)
     {
       Achievements[(int) a.ID] = a;
+    }
+
+    public void DescribeAchievements(TextFile textFile)
+    {
+      foreach (Achievement achievement in Achievements) {
+        if (achievement.IsDone)
+          textFile.Append(string.Format("- {0} for {1} points!", achievement.Name, achievement.ScoreValue));
+        else
+          textFile.Append(string.Format("- Fail : {0}.", achievement.TeaseName));
+      }
     }
 
     public static float ComputeDifficultyRating(GameOptions options, DifficultySide side, int reincarnationNumber)
