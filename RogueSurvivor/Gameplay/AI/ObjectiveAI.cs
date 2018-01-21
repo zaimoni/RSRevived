@@ -135,6 +135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
+    readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT];
     // \todo NEXT SAVEFILE BREAK: array of item rating codes; NPC cache for item ratings for pathing, PC method of communicating to UI what is important
     private int _STA_reserve;
     int STA_reserve { get { return _STA_reserve; } }
@@ -816,10 +817,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
     }
 
-    protected int ItemRatingCode(GameItems.IDs x)
+    private int ItemRatingCode(GameItems.IDs x)
     {
        // \todo location-based inferences
        return ItemRatingCode(Models.Items[(int)x]);
+    }
+
+    protected void ReviewItemRatings()
+    {
+      int i = (int)GameItems.IDs._COUNT;
+      while(0 < i--) {
+        ItemPriorities[i] = (sbyte)ItemRatingCode((GameItems.IDs)i);
+      }
+    }
+
+    public int RatingCode(GameItems.IDs x)
+    {
+      return ItemPriorities[(int)x];
     }
 
     protected ActorAction BehaviorDropUselessItem() // XXX would be convenient if this were fast-failing
