@@ -65,7 +65,7 @@ namespace djack.RogueSurvivor.Data
       return GetSkill(id)?.Level ?? 0;
     }
 
-    public void AddSkill(Skill sk)
+    private void AddSkill(Skill sk)
     {
 #if DEBUG
       if (null == sk) throw new ArgumentNullException(nameof(sk));
@@ -78,18 +78,16 @@ namespace djack.RogueSurvivor.Data
 
     public void AddOrIncreaseSkill(Gameplay.Skills.IDs id)
     {
-      if (m_Table == null) m_Table = new Dictionary<Gameplay.Skills.IDs, Skill>(3);
       Skill skill = GetSkill(id);
       if (skill == null) {
         skill = new Skill(id);
-        m_Table.Add(id, skill);
+        AddSkill(skill);
       }
       ++skill.Level;
     }
 
     public void DecOrRemoveSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      if (m_Table == null) return;
       Skill skill = GetSkill(id);
       if (skill == null || --skill.Level > 0) return;
       m_Table.Remove(id);
