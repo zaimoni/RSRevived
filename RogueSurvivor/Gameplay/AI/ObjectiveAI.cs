@@ -135,8 +135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
   {
     readonly protected List<Objective> Objectives = new List<Objective>();
     readonly private Dictionary<Point,Dictionary<Point, int>> PlannedMoves = new Dictionary<Point, Dictionary<Point, int>>();
-    readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT];
-    // \todo NEXT SAVEFILE BREAK: array of item rating codes; NPC cache for item ratings for pathing, PC method of communicating to UI what is important
+    readonly private sbyte[] ItemPriorities = new sbyte[(int)GameItems.IDs._COUNT]; // XXX probably should have some form of PC override
     private int _STA_reserve;
     int STA_reserve { get { return _STA_reserve; } }
 
@@ -691,7 +690,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // this variant should only be used on targets not in inventory
     // evaluations based on item location knowledge shouldn't reach here (that is,
     // there are cases working off of item model ID that do not belong here)
-    protected int ItemRatingCode(ItemModel it)
+    private int ItemRatingCode(ItemModel it)
     {
 #if DEBUG
       if (null == it) throw new ArgumentNullException(nameof(it));
@@ -1762,6 +1761,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret.Add(GameItems.IDs.MEDICINE_MEDIKIT);
         ret.Add(GameItems.IDs.MEDICINE_BANDAGES);
       }
+#if DEBUG
+      // integrity check
+      foreach(var x in ret) {
+        if (3>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoINeedNow");
+      }
+#endif
       return ret;
     }
 
@@ -1848,6 +1853,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // only civilians use stench killer
       if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
+#endif
+#if DEBUG
+      // integrity check
+      foreach(var x in ret) {
+        if (2>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoIWantNow");
+      }
 #endif
       return ret;
     }

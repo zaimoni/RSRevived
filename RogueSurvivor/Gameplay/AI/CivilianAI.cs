@@ -145,6 +145,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // end item juggling check
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
       List<Percept> percepts1 = FilterCurrent(percepts_all);
+      ReviewItemRatings();  // XXX highly inefficient when called here; should "update on demand"
 
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
