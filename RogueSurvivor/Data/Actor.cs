@@ -2769,10 +2769,9 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantDrop(it));
     }
 
-    public Skill SkillUpgrade(Skills.IDs id)
+    public void SkillUpgrade(Skills.IDs id)
     {
       Sheet.SkillTable.AddOrIncreaseSkill(id);
-      Skill skill = Sheet.SkillTable.GetSkill(id);
       switch(id)
       {
       case Skills.IDs.HAULER: if (null != m_Inventory) Inventory.MaxCapacity = MaxInv;
@@ -2782,7 +2781,6 @@ namespace djack.RogueSurvivor.Data
       case Skills.IDs.Z_TOUGH: m_HitPoints += Actor.SKILL_ZTOUGH_HP_BONUS;
         break;
       }
-      return skill;
     }
 
     // flag handling

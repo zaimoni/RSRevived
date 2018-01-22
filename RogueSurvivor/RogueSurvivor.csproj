@@ -192,7 +192,6 @@
     <Compile Include="Data\Activity.cs" />
     <Compile Include="Data\ItemModelDB.cs" />
     <Compile Include="Data\Verb.cs" />
-    <Compile Include="Data\Skill.cs" />
     <Compile Include="Data\SkillTable.cs" />
     <Compile Include="Data\Faction.cs" />
     <Compile Include="Data\DistrictKind.cs" />

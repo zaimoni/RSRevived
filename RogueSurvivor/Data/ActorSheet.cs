@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -66,7 +65,9 @@ namespace djack.RogueSurvivor.Data
 
     public ActorSheet(ActorSheet copyFrom)
     {
-      Contract.Requires(null!=copyFrom);
+#if DEBUG
+      if (null == copyFrom) throw new ArgumentNullException(nameof(copyFrom));
+#endif
       BaseHitPoints = copyFrom.BaseHitPoints;
       BaseStaminaPoints = copyFrom.BaseStaminaPoints;
       BaseFoodPoints = copyFrom.BaseFoodPoints;
@@ -78,7 +79,7 @@ namespace djack.RogueSurvivor.Data
       BaseAudioRange = copyFrom.BaseAudioRange;
       BaseSmellRating = copyFrom.BaseSmellRating;
       BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
-      if (null != copyFrom.SkillTable.Skills) m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
+      if (0 < copyFrom.SkillTable.CountSkills) m_SkillTable = new SkillTable(copyFrom.SkillTable);
     }
   }
 }

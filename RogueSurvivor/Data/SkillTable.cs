@@ -9,23 +9,20 @@ using System.Collections.Generic;
 
 namespace djack.RogueSurvivor.Data
 {
-  // \todo NEXT SAVEFILE BREAK?  We don't seem to be getting anything from the Skill class.  Eliminate completely to conserve object ids in the savefile.
   [Serializable]
   internal class SkillTable
   {
-    private Dictionary<Gameplay.Skills.IDs, Skill> m_Table;
+    private Dictionary<Gameplay.Skills.IDs, sbyte> m_Table;
 
-    public IEnumerable<Skill> Skills { get { return m_Table?.Values; } }
+    public IEnumerable<KeyValuePair<Gameplay.Skills.IDs,sbyte>> Skills { get { return m_Table; } }
 
     public int[] SkillsList
     {
       get {
-        if (m_Table == null) return null;
-        int[] numArray = new int[CountSkills];
-        int num = 0;
-        foreach (Skill skill in m_Table.Values)
-          numArray[num++] = (int)skill.ID;
-        return numArray;
+        if (0 >= CountSkills) return null;
+        var ret = new List<int>();
+        foreach(var x in m_Table) ret.Add((int)x.Key);
+        return ret.ToArray();
       }
     }
 
@@ -33,10 +30,9 @@ namespace djack.RogueSurvivor.Data
 
     public int CountTotalSkillLevels {
       get {
-        if (null==m_Table) return 0;
+        if (0 >= CountSkills) return 0;
         int num = 0;
-        foreach (Skill skill in m_Table.Values)
-          num += skill.Level;
+        foreach(var x in m_Table) num += x.Value;
         return num;
       }
     }
@@ -45,52 +41,32 @@ namespace djack.RogueSurvivor.Data
     {
     }
 
-    public SkillTable(IEnumerable<Skill> startingSkills)
+    public SkillTable(SkillTable src)
     {
 #if DEBUG
-      if (null == startingSkills) throw new ArgumentNullException(nameof(startingSkills));
+      if (null == src) throw new ArgumentNullException(nameof(src));
 #endif
-      foreach (Skill startingSkill in startingSkills)
-        AddSkill(startingSkill);
-    }
-
-    public Skill GetSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
-    {
-      if (m_Table == null) return null;
-      if (m_Table.TryGetValue(id, out Skill skill)) return skill;
-      return null;
+      if (0<src.CountSkills) m_Table = new Dictionary<Gameplay.Skills.IDs, sbyte>(src.m_Table);
     }
 
     public int GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
-      return GetSkill(id)?.Level ?? 0;
-    }
-
-    private void AddSkill(Skill sk)
-    {
-#if DEBUG
-      if (null == sk) throw new ArgumentNullException(nameof(sk));
-#endif
-      if (m_Table == null) m_Table = new Dictionary<Gameplay.Skills.IDs, Skill>(3);
-      if (m_Table.ContainsKey(sk.ID)) throw new ArgumentException("skill of same ID already in table");
-      if (m_Table.ContainsValue(sk)) throw new ArgumentException("skill already in table");
-      m_Table.Add(sk.ID, sk);
+      if (null == m_Table) return 0;
+      if (m_Table.TryGetValue(id, out sbyte skill)) return skill;
+      return 0;
     }
 
     public void AddOrIncreaseSkill(Gameplay.Skills.IDs id)
     {
-      Skill skill = GetSkill(id);
-      if (skill == null) {
-        skill = new Skill(id);
-        AddSkill(skill);
-      }
-      ++skill.Level;
+      if (null == m_Table) m_Table = new Dictionary<Gameplay.Skills.IDs, sbyte>(3);
+      if (!m_Table.ContainsKey(id)) m_Table[id] = 1;
+      else ++m_Table[id];
     }
 
-    public void DecOrRemoveSkill(djack.RogueSurvivor.Gameplay.Skills.IDs id)
+    public void DecOrRemoveSkill(Gameplay.Skills.IDs id)
     {
-      Skill skill = GetSkill(id);
-      if (skill == null || --skill.Level > 0) return;
+      if (!m_Table?.ContainsKey(id) ?? true) return;
+      if (0 < --m_Table[id]) return;
       m_Table.Remove(id);
       if (0 >= m_Table.Count) m_Table = null;
     }
