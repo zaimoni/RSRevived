@@ -13,6 +13,7 @@ namespace Zaimoni.Data
 
         static Noun()
         {
+            irregular_plural["knife"] = "knives";
             irregular_plural["man"] = "men";
             irregular_plural["woman"] = "women";
             irregular_feminine["man"] = "woman";

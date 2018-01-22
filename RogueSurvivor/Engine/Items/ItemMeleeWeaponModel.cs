@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -12,8 +13,8 @@ namespace djack.RogueSurvivor.Engine.Items
   {
     public bool IsFragile { get; set; }
 
-    public ItemMeleeWeaponModel(string aName, string theNames, string imageID, Attack attack, string flavor, bool is_artifact = false)
-      : base(aName, is_artifact ? aName : theNames, imageID, attack, flavor, is_artifact)
+    public ItemMeleeWeaponModel(string aName, string imageID, Attack attack, string flavor, bool is_artifact = false)
+      : base(aName, is_artifact ? aName : aName.Plural(true), imageID, attack, flavor, is_artifact)
     {
     }
 
