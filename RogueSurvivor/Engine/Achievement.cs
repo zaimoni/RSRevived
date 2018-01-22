@@ -8,25 +8,18 @@ using System;
 
 namespace djack.RogueSurvivor.Engine
 {
-  // \todo NEXT SAVEFILE BREAK: eliminate get/set pairs
   [Serializable]
   internal class Achievement
   {
-    public Achievement.IDs ID { get; private set; }
+    public readonly IDs ID;
+    public readonly string Name;
+    public readonly string TeaseName;
+    public readonly string[] Text;
+    public readonly string MusicID;
+    public readonly int ScoreValue;
+    public bool IsDone;
 
-    public string Name { get; private set; }
-
-    public string TeaseName { get; private set; }
-
-    public string[] Text { get; private set; }
-
-    public string MusicID { get; private set; }
-
-    public int ScoreValue { get; private set; }
-
-    public bool IsDone { get; set; }
-
-    public Achievement(Achievement.IDs id, string name, string teaseName, string[] text, string musicID, int scoreValue)
+    public Achievement(IDs id, string name, string teaseName, string[] text, string musicID, int scoreValue)
     {
             ID = id;
             Name = name;
