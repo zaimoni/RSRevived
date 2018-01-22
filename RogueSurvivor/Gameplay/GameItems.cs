@@ -91,6 +91,7 @@ namespace djack.RogueSurvivor.Gameplay
     private GameItems.MeleeWeaponData DATA_MELEE_IMPROVISED_CLUB;
     private GameItems.MeleeWeaponData DATA_MELEE_IMPROVISED_SPEAR;
     private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA;
+    private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE;
     private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_BIGBEAR_BAT;
     private GameItems.MeleeWeaponData DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD;
     private GameItems.RangedWeaponData DATA_RANGED_ARMY_PISTOL;
@@ -288,6 +289,12 @@ namespace djack.RogueSurvivor.Gameplay
     static public ItemMeleeWeaponModel UNIQUE_FAMU_FATARU_KATANA {
       get {
         return m_Models[(int)IDs.UNIQUE_FAMU_FATARU_KATANA] as ItemMeleeWeaponModel;
+      }
+    }
+
+    static public ItemMeleeWeaponModel UNIQUE_FATHER_TIME_SCYTHE {
+      get {
+        return m_Models[(int)IDs.UNIQUE_FATHER_TIME_SCYTHE] as ItemMeleeWeaponModel;
       }
     }
 
@@ -682,6 +689,7 @@ namespace djack.RogueSurvivor.Gameplay
       _setModel(IDs.UNIQUE_FAMU_FATARU_KATANA, new ItemMeleeWeaponModel(DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA.NAME, DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA.PLURAL, GameImages.ITEM_FAMU_FATARU_KATANA, new Attack(AttackKind.PHYSICAL, SLASH, DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA.ATK, DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA.DMG, DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA.STA), DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA.FLAVOR, true));
       _setModel(IDs.UNIQUE_BIGBEAR_BAT, new ItemMeleeWeaponModel(DATA_MELEE_UNIQUE_BIGBEAR_BAT.NAME, DATA_MELEE_UNIQUE_BIGBEAR_BAT.PLURAL, GameImages.ITEM_BIGBEAR_BAT, new Attack(AttackKind.PHYSICAL, SMASH, DATA_MELEE_UNIQUE_BIGBEAR_BAT.ATK, DATA_MELEE_UNIQUE_BIGBEAR_BAT.DMG, DATA_MELEE_UNIQUE_BIGBEAR_BAT.STA), DATA_MELEE_UNIQUE_BIGBEAR_BAT.FLAVOR, true));
       _setModel(IDs.UNIQUE_ROGUEDJACK_KEYBOARD, new ItemMeleeWeaponModel(DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.NAME, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.PLURAL, GameImages.ITEM_ROGUEDJACK_KEYBOARD, new Attack(AttackKind.PHYSICAL, RogueGame.VERB_BASH, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.ATK, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.DMG, DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.STA), DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD.FLAVOR, true));
+      _setModel(IDs.UNIQUE_FATHER_TIME_SCYTHE, new ItemMeleeWeaponModel(DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.NAME, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.PLURAL, GameImages.ITEM_FAMU_FATARU_KATANA /* XXX \todo should be GameImages.ITEM_FATHER_TIME_SCYTHE */, new Attack(AttackKind.PHYSICAL, SLASH, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.ATK, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.DMG, DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.STA), DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE.FLAVOR, true));
 
       // ranged weapons
       _setModel(IDs.RANGED_ARMY_PISTOL, new ItemRangedWeaponModel(DATA_RANGED_ARMY_PISTOL.NAME, DATA_RANGED_ARMY_PISTOL.FLAVOR, GameImages.ITEM_ARMY_PISTOL, new Attack(AttackKind.FIREARM, SHOOT, DATA_RANGED_ARMY_PISTOL.ATK, DATA_RANGED_ARMY_PISTOL.DMG, 0, DATA_RANGED_ARMY_PISTOL.RANGE), DATA_RANGED_ARMY_PISTOL.MAXAMMO, AmmoType.HEAVY_PISTOL, DATA_RANGED_ARMY_PISTOL.FLAVOR));
@@ -839,7 +847,7 @@ namespace djack.RogueSurvivor.Gameplay
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "melee weapons items", MeleeWeaponData.COUNT_FIELDS, new Func<CSVLine, MeleeWeaponData>(MeleeWeaponData.FromCSVLine), new IDs[16]
+      LoadDataFromCSV(ui, path, "melee weapons items", MeleeWeaponData.COUNT_FIELDS, new Func<CSVLine, MeleeWeaponData>(MeleeWeaponData.FromCSVLine), new IDs[]
       {
         IDs.MELEE_BASEBALLBAT,
         IDs.MELEE_COMBAT_KNIFE,
@@ -856,7 +864,8 @@ namespace djack.RogueSurvivor.Gameplay
         IDs.MELEE_SMALL_HAMMER,
         IDs.UNIQUE_FAMU_FATARU_KATANA,
         IDs.UNIQUE_BIGBEAR_BAT,
-        IDs.UNIQUE_ROGUEDJACK_KEYBOARD
+        IDs.UNIQUE_ROGUEDJACK_KEYBOARD,
+        IDs.UNIQUE_FATHER_TIME_SCYTHE
       }, out MeleeWeaponData[] data);
       DATA_MELEE_BASEBALLBAT = data[0];
       DATA_MELEE_COMBAT_KNIFE = data[1];
@@ -874,6 +883,7 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_MELEE_UNIQUE_FAMU_FATARU_KATANA = data[13];
       DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
       DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
+      DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE = data[16];
       return true;
     }
 
@@ -1132,6 +1142,7 @@ namespace djack.RogueSurvivor.Gameplay
       UNIQUE_SANTAMAN_SHOTGUN = 67,
       UNIQUE_HANS_VON_HANZ_PISTOL = 68,
       ENT_CHAR_GUARD_MANUAL = 69,
+      UNIQUE_FATHER_TIME_SCYTHE = 70,
       _COUNT    // default this to guarantee correct value
     }
 
