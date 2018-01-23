@@ -796,30 +796,19 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantMeleeAttack(target));
     }
 
-    public Attack HypotheticalMeleeAttack(Attack baseAttack, Actor target = null)
-    {
-      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
-      if (GetEquippedWeapon() == null)
-      {
-        num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-        num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-      }
-      if (target != null && target.Model.Abilities.IsUndead)
-        num4 += DamageBonusVsUndeads;
-      float num5 = (float)baseAttack.HitValue + (float) num3;
-      if (IsExhausted) num5 /= 2f;
-      else if (IsSleepy) num5 *= 0.75f;
-      return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num5, baseAttack.DamageValue + num4, baseAttack.StaminaPenalty);
-    }
-
     public Attack MeleeWeaponAttack(ItemMeleeWeaponModel model, Actor target = null)
     {
       Attack baseAttack = model.BaseMeleeAttack(Sheet);
-      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
-      if (target != null && target.Model.Abilities.IsUndead)
-        num4 += DamageBonusVsUndeads;
+      int num3 = SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      if (model.IsMartialArts) {
+        int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        if (0!=skill) {
+          num3 += SKILL_MARTIAL_ARTS_ATK_BONUS * skill;
+          num4 += SKILL_MARTIAL_ARTS_DMG_BONUS * skill;
+        }
+      }
+      if (target?.Model.Abilities.IsUndead ?? false) num4 += DamageBonusVsUndeads;
       float num5 = (float)baseAttack.HitValue + (float) num3;
       if (IsExhausted) num5 /= 2f;
       else if (IsSleepy) num5 *= 0.75f;
@@ -828,10 +817,10 @@ namespace djack.RogueSurvivor.Data
 
     public Attack UnarmedMeleeAttack(Actor target=null)
     {
-      int num3 = Actor.SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + Actor.SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
-      int num4 = Actor.SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + Actor.SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
-      num3 += Actor.SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-      num4 += Actor.SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+      int num3 = SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
+      int num4 = SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
+      num3 += SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+      num4 += SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
       if (target != null && target.Model.Abilities.IsUndead)
         num4 += DamageBonusVsUndeads;
       Attack baseAttack = Model.StartingSheet.UnarmedAttack;
@@ -851,7 +840,7 @@ namespace djack.RogueSurvivor.Data
       int num1 = 0;
       ItemMeleeWeapon itemMeleeWeapon1 = null;
       foreach (ItemMeleeWeapon obj in tmp) {
-        int num2 = MeleeWeaponAttack(obj.Model).Rating;    // XXX should disallow martial arts bonus
+        int num2 = MeleeWeaponAttack(obj.Model).Rating;
         if (num2 <= martial_arts_rating || num2 <= num1) continue;
         num1 = num2;
         itemMeleeWeapon1 = obj;
@@ -861,13 +850,17 @@ namespace djack.RogueSurvivor.Data
 
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
-    public Attack MeleeAttack(Actor target = null) { return HypotheticalMeleeAttack(CurrentMeleeAttack, target); }
+    public Attack MeleeAttack(Actor target = null) {
+      ItemMeleeWeapon tmp_melee = GetEquippedWeapon() as ItemMeleeWeapon;
+      if (null!=tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
+      return UnarmedMeleeAttack(target);
+    }
 
     public Attack BestMeleeAttack(Actor target = null)
     {
       ItemMeleeWeapon tmp_melee = GetBestMeleeWeapon();
-      Attack base_melee_attack = (null!=tmp_melee ? tmp_melee.Model.BaseMeleeAttack(Sheet) : CurrentMeleeAttack);
-      return HypotheticalMeleeAttack(base_melee_attack, target);
+      if (null!=tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
+      return UnarmedMeleeAttack(target);
     }
 
     public Attack HypotheticalRangedAttack(Attack baseAttack, int distance, Actor target = null)

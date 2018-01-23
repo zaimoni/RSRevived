@@ -985,7 +985,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             foreach(Percept p in enemies) {
               if (!Rules.IsAdjacent(p.Location.Position,m_Actor.Location.Position)) break;
               Actor en = p.Percepted as Actor;
-              tmpAction = BehaviorMeleeSnipe(en, m_Actor.HypotheticalMeleeAttack(tmp_melee.Model.BaseMeleeAttack(m_Actor.Sheet), en),null==immediate_threat || (1==immediate_threat.Count && immediate_threat.Contains(en)));
+              tmpAction = BehaviorMeleeSnipe(en, m_Actor.MeleeWeaponAttack(tmp_melee.Model, en),null==immediate_threat || (1==immediate_threat.Count && immediate_threat.Contains(en)));
               if (null != tmpAction) {
                 if (!tmp_melee.IsEquipped) game.DoEquipItem(m_Actor, tmp_melee);
                 return tmpAction;

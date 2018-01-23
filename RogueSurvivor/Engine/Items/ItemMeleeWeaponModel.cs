@@ -21,5 +21,12 @@ namespace djack.RogueSurvivor.Engine.Items
     public Attack BaseMeleeAttack(ActorSheet Sheet) {
       return new Attack(Attack.Kind, Attack.Verb, Attack.HitValue + Sheet.UnarmedAttack.HitValue, Attack.DamageValue + Sheet.UnarmedAttack.DamageValue, Attack.StaminaPenalty);
     }
+
+    public bool IsMartialArts {
+      get {
+        if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE==ID) return true;
+        return false;
+      }
+    }
   }
 }

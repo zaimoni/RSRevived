@@ -6787,6 +6787,7 @@ namespace djack.RogueSurvivor.Engine
       };
       if (w is ItemMeleeWeapon melee) {
         if (melee.IsFragile) stringList.Add("Breaks easily.");
+        if (melee.Model.IsMartialArts) stringList.Add("Uses martial arts.");
       } else if (w is ItemRangedWeapon rw) {
         ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
         if (rangedWeaponModel.IsFireArm)
