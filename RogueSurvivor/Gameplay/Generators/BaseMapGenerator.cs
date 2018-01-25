@@ -836,11 +836,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       return new ItemMeleeWeapon(GameItems.SMALL_HAMMER);
     }
 
-    static public ItemMeleeWeapon MakeItemJasonMyersAxe()
-    {
-      return new ItemMeleeWeapon(GameItems.UNIQUE_JASON_MYERS_AXE);
-    }
-
     static public ItemMeleeWeapon MakeItemShovel()
     {
       return new ItemMeleeWeapon(GameItems.SHOVEL);

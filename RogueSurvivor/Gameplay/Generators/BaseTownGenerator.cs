@@ -2512,16 +2512,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (pt.X == room.Left || !map.IsWalkable(pt) || CountAdjWalls(map, pt) < 3) return;
         map.PlaceAt(MakeObjPowerGenerator(), pt);
       }));
-      Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", false, 0);
-      named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
-      named.StartingSkill(Skills.IDs.TOUGH,3);
-      named.StartingSkill(Skills.IDs.STRONG,3);
-      named.StartingSkill(Skills.IDs.AGILE,3);
-      named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
-      named.Inventory.AddAll(MakeItemJasonMyersAxe());
-      map.PlaceAt(named, new Point(map.Width / 2, map.Height / 2));
-      Session.Get.UniqueActors.JasonMyers = new UniqueActor(named,true,false,GameMusics.INSANE);
+      Session.Get.UniqueActors.init_JasonMyers();
+      map.PlaceAt(Session.Get.UniqueActors.JasonMyers.TheActor, new Point(map.Width / 2, map.Height / 2));
       return map;
     }
 

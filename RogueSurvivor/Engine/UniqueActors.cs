@@ -24,7 +24,7 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor Duckman { get; private set; }
     public UniqueActor FamuFataru { get; private set; }
     public UniqueActor HansVonHanz { get; private set; }
-    public UniqueActor JasonMyers { get; set; }
+    public UniqueActor JasonMyers { get; private set; }
     public UniqueActor PoliceStationPrisonner { get; private set; }
     public UniqueActor Roguedjack { get; private set; }
     public UniqueActor Santaman { get; private set; }
@@ -55,6 +55,22 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
         newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
+    }
+
+    public void init_JasonMyers()
+    {
+#if DEBUG
+      if (null != JasonMyers) throw new InvalidOperationException("only call UniqueActors::init_JasonMyers once");
+#endif
+      Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
+      named.StartingSkill(Skills.IDs.TOUGH,3);
+      named.StartingSkill(Skills.IDs.STRONG,3);
+      named.StartingSkill(Skills.IDs.AGILE,3);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_JASON_MYERS_AXE));
+      JasonMyers = new UniqueActor(named, true, false, GameMusics.INSANE);
     }
 
     public void init_BigBear(BaseTownGenerator tgen)
