@@ -12,13 +12,14 @@ using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenera
 using DollPart = djack.RogueSurvivor.Data.DollPart;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 
+// Note that game-specific content was already here in RS alpha 9 (the identities of the unique actors)
 namespace djack.RogueSurvivor.Engine
 {
   [Serializable]
   internal class UniqueActors
   {
     public UniqueActor BigBear { get; set; }
-    public UniqueActor Duckman { get; set; }
+    public UniqueActor Duckman { get; private set; }
     public UniqueActor FamuFataru { get; set; }
     public UniqueActor HansVonHanz { get; private set; }
     public UniqueActor JasonMyers { get; set; }
@@ -28,10 +29,10 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor TheSewersThing { get; set; }
 
     // \todo NEXT SAVEFILE BREAK: Father Time, with a legendary scythe.
+    // This must be a value copy anyway (i.e. we gain almost nothing from having the authoritative storage be an array rather than auto properties)
     public UniqueActor[] ToArray()
     {
-      return new UniqueActor[8]
-      {
+      return new UniqueActor[] {
         BigBear,
         Duckman,
         FamuFataru,
@@ -50,6 +51,26 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
         newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
+    }
+
+    public void init_Duckman(BaseTownGenerator tgen)
+    {
+      if (null != Duckman) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_DUCKMAN);
+      named.StartingSkill(Skills.IDs.CHARISMATIC,5);
+      named.StartingSkill(Skills.IDs.LEADERSHIP);
+      named.StartingSkill(Skills.IDs.STRONG,5);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
+      named.StartingSkill(Skills.IDs.MARTIAL_ARTS,5);
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      Duckman = new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
     }
 
     public void init_HansVonHanz(BaseTownGenerator tgen)
