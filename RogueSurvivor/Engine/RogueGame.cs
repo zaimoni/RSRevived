@@ -11547,7 +11547,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueActors.Santaman = CreateUniqueSantaman();
       Session.Get.UniqueActors.Roguedjack = CreateUniqueRoguedjack();
       Session.Get.UniqueActors.Duckman = CreateUniqueDuckman();
-      Session.Get.UniqueActors.HansVonHanz = CreateUniqueHansVonHanz();
+      Session.Get.UniqueActors.init_HansVonHanz(m_TownGenerator);
       Session.Get.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
@@ -11845,24 +11845,6 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
-    }
-
-    private UniqueActor CreateUniqueHansVonHanz()
-    {
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", false, 0);
-      named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_HANS_VON_HANZ);
-      named.StartingSkill(Skills.IDs.HAULER,3);
-      named.StartingSkill(Skills.IDs.FIREARMS,5);
-      named.StartingSkill(Skills.IDs.LEADERSHIP,5);
-      named.StartingSkill(Skills.IDs.NECROLOGY,5);
-      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_HANS_VON_HANZ_PISTOL));
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true,GameMusics.HANS_VON_HANZ_THEME_SONG, "You hear a man barking orders in German.");
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
