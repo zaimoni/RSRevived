@@ -2257,13 +2257,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       foreach(Rectangle r in rectangleList) {
         Point dest = new Point(r.Left + 1, r.Top + 1);
         Actor newCivilian = CreateNewCivilian(0, 0, 1);
-        if (JAILS_WIDTH-3 == dest.X) {
-          // a political prisoner
-          newCivilian.Name = "The Prisoner Who Should Not Be";
-          for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
-            newCivilian.Inventory.AddAll(MakeItemArmyRation());
-          Session.Get.UniqueActors.PoliceStationPrisonner = new UniqueActor(newCivilian,true);
-        } else {
+        if (JAILS_WIDTH-3 == dest.X) Session.Get.UniqueActors.init_Prisoner(newCivilian);   // a political prisoner
+        else {
           // being held with cause, at least as understood before the z-apocalypse
           newCivilian.Inventory.AddAll(MakeItemGroceries());
         }

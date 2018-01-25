@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Engine
 
     public UniqueActor JasonMyers { get; set; }
 
-    public UniqueActor PoliceStationPrisonner { get; set; }
+    public UniqueActor PoliceStationPrisonner { get; private set; }
 
     public UniqueActor Roguedjack { get; set; }
 
@@ -43,6 +43,15 @@ namespace djack.RogueSurvivor.Engine
         Santaman,
         TheSewersThing
       };
+    }
+
+    public void init_Prisoner(Data.Actor newCivilian)
+    {
+      if (null != PoliceStationPrisonner) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
+      newCivilian.Name = "The Prisoner Who Should Not Be";
+      for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
+        newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
+      PoliceStationPrisonner = new UniqueActor(newCivilian,true);
     }
   }
 }

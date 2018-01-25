@@ -11490,7 +11490,7 @@ namespace djack.RogueSurvivor.Engine
       return GetUserHiScorePath() + "hiscores.txt";
     }
 
-    private void GenerateWorld(bool isVerbose)
+    private void GenerateWorld(bool isVerbose)  // XXX morally part of the World constructor, but we want the World constructor to not know about game-specific content
     {
       if (isVerbose) {
         m_UI.UI_Clear(Color.Black);
