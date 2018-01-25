@@ -11542,7 +11542,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Repaint();
       }
       Session.Get.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
-      Session.Get.UniqueActors.BigBear = CreateUniqueBigBear();
+      Session.Get.UniqueActors.init_BigBear(m_TownGenerator);
       Session.Get.UniqueActors.init_FamuFataru(m_TownGenerator);
       Session.Get.UniqueActors.init_Santaman(m_TownGenerator);
       Session.Get.UniqueActors.init_Roguedjack(m_TownGenerator);
@@ -11754,24 +11754,6 @@ namespace djack.RogueSurvivor.Engine
           "- Do not let other people interact with it!"
         }));
       return new UniqueActor(named,true);
-    }
-
-    private UniqueActor CreateUniqueBigBear()
-    {
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", false, 0);
-      named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_BIG_BEAR);
-      named.StartingSkill(Skills.IDs.HAULER,3);
-      named.StartingSkill(Skills.IDs.HARDY,5);
-      named.StartingSkill(Skills.IDs.STRONG,5);
-      named.StartingSkill(Skills.IDs.TOUGH,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT));
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)

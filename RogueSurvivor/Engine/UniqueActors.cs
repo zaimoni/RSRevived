@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Engine
   [Serializable]
   internal class UniqueActors
   {
-    public UniqueActor BigBear { get; set; }
+    public UniqueActor BigBear { get; private set; }
     public UniqueActor Duckman { get; private set; }
     public UniqueActor FamuFataru { get; private set; }
     public UniqueActor HansVonHanz { get; private set; }
@@ -57,10 +57,31 @@ namespace djack.RogueSurvivor.Engine
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
     }
 
+    public void init_BigBear(BaseTownGenerator tgen)
+    {
+#if DEBUG
+      if (null != BigBear) throw new InvalidOperationException("only call UniqueActors::init_BigBear once");
+#endif
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_BIG_BEAR);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs.STRONG,5);
+      named.StartingSkill(Skills.IDs.TOUGH,5);
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_BIGBEAR_BAT));
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      BigBear = new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
+    }
+
     public void init_FamuFataru(BaseTownGenerator tgen)
     {
 #if DEBUG
-      if (null != FamuFataru) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
+      if (null != FamuFataru) throw new InvalidOperationException("only call UniqueActors::init_FamuFataru once");
 #endif
       Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
       named.IsUnique = true;
