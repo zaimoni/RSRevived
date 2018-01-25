@@ -10,6 +10,7 @@ using djack.RogueSurvivor.Gameplay;
 using Actor = djack.RogueSurvivor.Data.Actor;
 using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenerator;
 using DollPart = djack.RogueSurvivor.Data.DollPart;
+using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
 
 // Note that game-specific content was already here in RS alpha 9 (the identities of the unique actors)
@@ -24,7 +25,7 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor HansVonHanz { get; private set; }
     public UniqueActor JasonMyers { get; set; }
     public UniqueActor PoliceStationPrisonner { get; private set; }
-    public UniqueActor Roguedjack { get; set; }
+    public UniqueActor Roguedjack { get; private set; }
     public UniqueActor Santaman { get; set; }
     public UniqueActor TheSewersThing { get; set; }
 
@@ -52,6 +53,26 @@ namespace djack.RogueSurvivor.Engine
         newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
     }
+
+    public void init_Roguedjack(BaseTownGenerator tgen)
+    {
+      if (null != Roguedjack) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_ROGUEDJACK);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs.LEADERSHIP,5);
+      named.StartingSkill(Skills.IDs.CHARISMATIC,5);
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD));
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      Roguedjack = new UniqueActor(named,false,true, GameMusics.ROGUEDJACK_THEME_SONG, "You hear a man shouting in French.");
+    }
+
 
     public void init_Duckman(BaseTownGenerator tgen)
     {

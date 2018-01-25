@@ -11545,7 +11545,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueActors.BigBear = CreateUniqueBigBear();
       Session.Get.UniqueActors.FamuFataru = CreateUniqueFamuFataru();
       Session.Get.UniqueActors.Santaman = CreateUniqueSantaman();
-      Session.Get.UniqueActors.Roguedjack = CreateUniqueRoguedjack();
+      Session.Get.UniqueActors.init_Roguedjack(m_TownGenerator);
       Session.Get.UniqueActors.init_Duckman(m_TownGenerator);
       Session.Get.UniqueActors.init_HansVonHanz(m_TownGenerator);
       Session.Get.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
@@ -11808,24 +11808,6 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
-    }
-
-    private UniqueActor CreateUniqueRoguedjack()
-    {
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
-      named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_ROGUEDJACK);
-      named.StartingSkill(Skills.IDs.HAULER,3);
-      named.StartingSkill(Skills.IDs.HARDY,5);
-      named.StartingSkill(Skills.IDs.LEADERSHIP,5);
-      named.StartingSkill(Skills.IDs.CHARISMATIC,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_ROGUEDJACK_KEYBOARD));
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, GameMusics.ROGUEDJACK_THEME_SONG, "You hear a man shouting in French.");
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
