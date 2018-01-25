@@ -11544,7 +11544,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
       Session.Get.UniqueActors.BigBear = CreateUniqueBigBear();
       Session.Get.UniqueActors.FamuFataru = CreateUniqueFamuFataru();
-      Session.Get.UniqueActors.Santaman = CreateUniqueSantaman();
+      Session.Get.UniqueActors.init_Santaman(m_TownGenerator);
       Session.Get.UniqueActors.init_Roguedjack(m_TownGenerator);
       Session.Get.UniqueActors.init_Duckman(m_TownGenerator);
       Session.Get.UniqueActors.init_HansVonHanz(m_TownGenerator);
@@ -11790,24 +11790,6 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
-    }
-
-    private UniqueActor CreateUniqueSantaman()
-    {
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", false, 0);
-      named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_SANTAMAN);
-      named.StartingSkill(Skills.IDs.HAULER,3);
-      named.StartingSkill(Skills.IDs.HARDY,5);
-      named.StartingSkill(Skills.IDs.AGILE,5);
-      named.StartingSkill(Skills.IDs.FIREARMS,5);
-      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN));
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)

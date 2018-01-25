@@ -8,6 +8,7 @@ using System;
 using djack.RogueSurvivor.Gameplay;
 
 using Actor = djack.RogueSurvivor.Data.Actor;
+using BaseMapGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseMapGenerator;
 using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenerator;
 using DollPart = djack.RogueSurvivor.Data.DollPart;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
@@ -26,7 +27,7 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor JasonMyers { get; set; }
     public UniqueActor PoliceStationPrisonner { get; private set; }
     public UniqueActor Roguedjack { get; private set; }
-    public UniqueActor Santaman { get; set; }
+    public UniqueActor Santaman { get; private set; }
     public UniqueActor TheSewersThing { get; set; }
 
     // \todo NEXT SAVEFILE BREAK: Father Time, with a legendary scythe.
@@ -47,16 +48,41 @@ namespace djack.RogueSurvivor.Engine
 
     public void init_Prisoner(Actor newCivilian)
     {
+#if DEBUG
       if (null != PoliceStationPrisonner) throw new InvalidOperationException("only call UniqueActors::init_Prisoner once");
+#endif
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
         newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
     }
 
+    public void init_Santaman(BaseTownGenerator tgen)
+    {
+#if DEBUG
+      if (null != Santaman) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
+#endif
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_SANTAMAN);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs.AGILE,5);
+      named.StartingSkill(Skills.IDs.FIREARMS,5);
+      named.Inventory.AddAll(new ItemRangedWeapon(GameItems.UNIQUE_SANTAMAN_SHOTGUN));
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemShotgunAmmo());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      Santaman = new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
+    }
+
     public void init_Roguedjack(BaseTownGenerator tgen)
     {
+#if DEBUG
       if (null != Roguedjack) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
+#endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_ROGUEDJACK);
@@ -76,7 +102,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void init_Duckman(BaseTownGenerator tgen)
     {
+#if DEBUG
       if (null != Duckman) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
+#endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_DUCKMAN);
@@ -96,7 +124,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void init_HansVonHanz(BaseTownGenerator tgen)
     {
+#if DEBUG
       if (null != HansVonHanz) throw new InvalidOperationException("only call UniqueActors::init_HanzVonHanz once");
+#endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", false, 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_HANS_VON_HANZ);
