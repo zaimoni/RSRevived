@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine
   {
     public UniqueActor BigBear { get; set; }
     public UniqueActor Duckman { get; private set; }
-    public UniqueActor FamuFataru { get; set; }
+    public UniqueActor FamuFataru { get; private set; }
     public UniqueActor HansVonHanz { get; private set; }
     public UniqueActor JasonMyers { get; set; }
     public UniqueActor PoliceStationPrisonner { get; private set; }
@@ -55,6 +55,27 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
         newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
+    }
+
+    public void init_FamuFataru(BaseTownGenerator tgen)
+    {
+#if DEBUG
+      if (null != FamuFataru) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
+#endif
+      Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.HARDY,5);
+      named.StartingSkill(Skills.IDs._FIRST,5);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      named.Inventory.AddAll(tgen.MakeItemCannedFood());
+      FamuFataru = new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
     }
 
     public void init_Santaman(BaseTownGenerator tgen)

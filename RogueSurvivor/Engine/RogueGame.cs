@@ -11543,7 +11543,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Session.Get.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
       Session.Get.UniqueActors.BigBear = CreateUniqueBigBear();
-      Session.Get.UniqueActors.FamuFataru = CreateUniqueFamuFataru();
+      Session.Get.UniqueActors.init_FamuFataru(m_TownGenerator);
       Session.Get.UniqueActors.init_Santaman(m_TownGenerator);
       Session.Get.UniqueActors.init_Roguedjack(m_TownGenerator);
       Session.Get.UniqueActors.init_Duckman(m_TownGenerator);
@@ -11772,24 +11772,6 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
       return new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
-    }
-
-    private UniqueActor CreateUniqueFamuFataru()
-    {
-      Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
-      named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);
-      named.StartingSkill(Skills.IDs.HAULER,3);
-      named.StartingSkill(Skills.IDs.HARDY,5);
-      named.StartingSkill(Skills.IDs._FIRST,5);
-      named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
-      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      named.Inventory.AddAll(m_TownGenerator.MakeItemCannedFood());
-      return new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)
