@@ -26,12 +26,13 @@ namespace djack.RogueSurvivor.Engine
     public UniqueActor BigBear { get; private set; }
     public UniqueActor Duckman { get; private set; }
     public UniqueActor FamuFataru { get; private set; }
+    public UniqueActor FatherTime { get; private set; }
     public UniqueActor HansVonHanz { get; private set; }
     public UniqueActor JasonMyers { get; private set; }
     public UniqueActor PoliceStationPrisonner { get; private set; }
     public UniqueActor Roguedjack { get; private set; }
     public UniqueActor Santaman { get; private set; }
-    public UniqueActor TheSewersThing { get; set; }
+    public UniqueActor TheSewersThing { get; private set; }
 
     // \todo NEXT SAVEFILE BREAK: Father Time, with a legendary scythe.
     // This must be a value copy anyway (i.e. we gain almost nothing from having the authoritative storage be an array rather than auto properties)
@@ -41,6 +42,7 @@ namespace djack.RogueSurvivor.Engine
         BigBear,
         Duckman,
         FamuFataru,
+        FatherTime,
         HansVonHanz,
         PoliceStationPrisonner,
         Roguedjack,
@@ -49,6 +51,7 @@ namespace djack.RogueSurvivor.Engine
       };
     }
 
+    // Bound uniques.  These uniques are generated at the same time as their map.
     public void init_Prisoner(Actor newCivilian)
     {
 #if DEBUG
@@ -56,7 +59,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       newCivilian.Name = "The Prisoner Who Should Not Be";
       for (int index = 0; index < newCivilian.Inventory.MaxCapacity; ++index)
-        newCivilian.Inventory.AddAll(Gameplay.Generators.BaseMapGenerator.MakeItemArmyRation());
+        newCivilian.Inventory.AddAll(BaseMapGenerator.MakeItemArmyRation());
       PoliceStationPrisonner = new UniqueActor(newCivilian,true);
     }
 
@@ -76,7 +79,28 @@ namespace djack.RogueSurvivor.Engine
       JasonMyers = new UniqueActor(named, true, false, GameMusics.INSANE);
     }
 
-    public void init_SewersThing(BaseTownGenerator tgen)
+    // Free/unbound uniques.  These are not assigned to a specific map at the time the map is generated.
+
+    // VAPORWARE: Father Time's day job was running a martial arts dojo.  Make him a shop owner for one.
+    // VAPORWARE: Father Time is elderly.  However, he's not deconditioned so shouldn't be using a standard elderly civilian model
+    private void init_FatherTime(BaseTownGenerator tgen)    // unused parameter...haven't decided on full item complement yet.
+    {
+#if DEBUG
+      if (null != FatherTime) throw new InvalidOperationException("only call UniqueActors::init_FatherTime once");
+#endif
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", false, 0);
+      named.IsUnique = true;
+      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);    // XXX \todo GameImages.ACTOR_FATHER_TIME
+      named.StartingSkill(Skills.IDs.HAULER,3);
+      named.StartingSkill(Skills.IDs.MARTIAL_ARTS, 5);  // to get the most out of his scythe
+      named.StartingSkill(Skills.IDs.AGILE, 5);
+      named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
+      named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FATHER_TIME_SCYTHE));
+      named.Inventory.AddAll(BaseMapGenerator.MakeItemArmyRation());    // Doesn't want to be a target, so only one ration
+      FatherTime = new UniqueActor(named,false,true,null, "You hear new year's music.");  // XXX \todo GameMusics.FATHER_TIME_THEME_SONG (Auld Lang Syne?)
+    }
+
+    private void init_SewersThing(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != TheSewersThing) throw new InvalidOperationException("only call UniqueActors::init_SewersThing once");
@@ -101,7 +125,7 @@ namespace djack.RogueSurvivor.Engine
       TheSewersThing = new UniqueActor(named,true);
     }
 
-    public void init_BigBear(BaseTownGenerator tgen)
+    private void init_BigBear(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != BigBear) throw new InvalidOperationException("only call UniqueActors::init_BigBear once");
@@ -122,7 +146,7 @@ namespace djack.RogueSurvivor.Engine
       BigBear = new UniqueActor(named,false,true, GameMusics.BIGBEAR_THEME_SONG, "You hear an angry man shouting 'FOOLS!'");
     }
 
-    public void init_FamuFataru(BaseTownGenerator tgen)
+    private void init_FamuFataru(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != FamuFataru) throw new InvalidOperationException("only call UniqueActors::init_FamuFataru once");
@@ -132,7 +156,7 @@ namespace djack.RogueSurvivor.Engine
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);
       named.StartingSkill(Skills.IDs.HAULER,3);
       named.StartingSkill(Skills.IDs.HARDY,5);
-      named.StartingSkill(Skills.IDs._FIRST,5);
+      named.StartingSkill(Skills.IDs.AGILE,5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
@@ -143,7 +167,7 @@ namespace djack.RogueSurvivor.Engine
       FamuFataru = new UniqueActor(named,false,true, GameMusics.FAMU_FATARU_THEME_SONG, "You hear a woman laughing.");
     }
 
-    public void init_Santaman(BaseTownGenerator tgen)
+    private void init_Santaman(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != Santaman) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
@@ -164,7 +188,7 @@ namespace djack.RogueSurvivor.Engine
       Santaman = new UniqueActor(named,false,true, GameMusics.SANTAMAN_THEME_SONG, "You hear christmas music and drunken vomiting.");
     }
 
-    public void init_Roguedjack(BaseTownGenerator tgen)
+    private void init_Roguedjack(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != Roguedjack) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
@@ -186,7 +210,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
 
-    public void init_Duckman(BaseTownGenerator tgen)
+    private void init_Duckman(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != Duckman) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
@@ -208,7 +232,7 @@ namespace djack.RogueSurvivor.Engine
       Duckman = new UniqueActor(named,false,true, GameMusics.DUCKMAN_THEME_SONG, "You hear loud demented QUACKS.");
     }
 
-    public void init_HansVonHanz(BaseTownGenerator tgen)
+    private void init_HansVonHanz(BaseTownGenerator tgen)
     {
 #if DEBUG
       if (null != HansVonHanz) throw new InvalidOperationException("only call UniqueActors::init_HanzVonHanz once");
@@ -227,6 +251,18 @@ namespace djack.RogueSurvivor.Engine
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       HansVonHanz = new UniqueActor(named,false,true,GameMusics.HANS_VON_HANZ_THEME_SONG, "You hear a man barking orders in German.");
+    }
+
+    public void init_UnboundUniques(BaseTownGenerator tgen)
+    {
+      init_SewersThing(tgen);
+      init_BigBear(tgen);
+      init_FamuFataru(tgen);
+      init_Santaman(tgen);
+      init_Roguedjack(tgen);
+      init_Duckman(tgen);
+      init_HansVonHanz(tgen);
+      init_FatherTime(tgen);
     }
   }
 }

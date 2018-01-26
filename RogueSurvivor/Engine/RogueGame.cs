@@ -11542,13 +11542,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
-      Session.Get.UniqueActors.init_SewersThing(m_TownGenerator);
-      Session.Get.UniqueActors.init_BigBear(m_TownGenerator);
-      Session.Get.UniqueActors.init_FamuFataru(m_TownGenerator);
-      Session.Get.UniqueActors.init_Santaman(m_TownGenerator);
-      Session.Get.UniqueActors.init_Roguedjack(m_TownGenerator);
-      Session.Get.UniqueActors.init_Duckman(m_TownGenerator);
-      Session.Get.UniqueActors.init_HansVonHanz(m_TownGenerator);
+      Session.Get.UniqueActors.init_UnboundUniques(m_TownGenerator);
       Session.Get.UniqueItems.TheSubwayWorkerBadge = SpawnUniqueSubwayWorkerBadge(world);
       for (int x1 = 0; x1 < world.Size; ++x1) {
         for (int y1 = 0; y1 < world.Size; ++y1) {
