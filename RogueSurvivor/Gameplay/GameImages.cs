@@ -331,6 +331,7 @@ namespace djack.RogueSurvivor.Gameplay
     public const string ITEM_COMBAT_KNIFE = "Items\\item_combat_knife";
     public const string ITEM_EMPTY_CAN = "Items\\item_empty_can";
     public const string ITEM_FAMU_FATARU_KATANA = "Items\\item_famu_fataru_katana";
+    public const string ITEM_FATHER_TIME_SCYTHE = "Items\\item_father_time_scythe";
     public const string ITEM_FLASHLIGHT = "Items\\item_flashlight";
     public const string ITEM_FLASHLIGHT_OUT = "Items\\item_flashlight_out";
     public const string ITEM_FREE_ANGELS_JACKET = "Items\\item_free_angels_jacket";

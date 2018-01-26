@@ -81,7 +81,7 @@ namespace djack.RogueSurvivor.Engine
 
     // Free/unbound uniques.  These are not assigned to a specific map at the time the map is generated.
 
-    // VAPORWARE: Father Time's day job was running a martial arts dojo.  Make him a shop owner for one.
+    // VAPORWARE: Father Time's day job was running a martial arts dojo.  Make him a shop owner for one; would change his status to a bound unique.
     // VAPORWARE: Father Time is elderly.  However, he's not deconditioned so shouldn't be using a standard elderly civilian model
     private void init_FatherTime(BaseTownGenerator tgen)    // unused parameter...haven't decided on full item complement yet.
     {
@@ -90,7 +90,8 @@ namespace djack.RogueSurvivor.Engine
 #endif
       Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", false, 0);
       named.IsUnique = true;
-      named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);    // XXX \todo GameImages.ACTOR_FATHER_TIME
+      tgen.DressCivilian(named);
+//    named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);    // XXX \todo GameImages.ACTOR_FATHER_TIME
       named.StartingSkill(Skills.IDs.HAULER,3);
       named.StartingSkill(Skills.IDs.MARTIAL_ARTS, 5);  // to get the most out of his scythe
       named.StartingSkill(Skills.IDs.AGILE, 5);
