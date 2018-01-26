@@ -11510,6 +11510,7 @@ namespace djack.RogueSurvivor.Engine
         for (int y = 0; y < world.Size; ++y)
           pointList.Add(new Point(x, y));
       }
+      // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
       Point policeStationDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
       pointList.Remove(policeStationDistrictPos);
       Point hospitalDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
@@ -11541,7 +11542,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "Generating unique actors...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
-      Session.Get.UniqueActors.TheSewersThing = SpawnUniqueSewersThing(world);
+      Session.Get.UniqueActors.init_SewersThing(m_TownGenerator);
       Session.Get.UniqueActors.init_BigBear(m_TownGenerator);
       Session.Get.UniqueActors.init_FamuFataru(m_TownGenerator);
       Session.Get.UniqueActors.init_Santaman(m_TownGenerator);
@@ -11732,28 +11733,6 @@ namespace djack.RogueSurvivor.Engine
     static private void GenerateExit(Map fromMap, Point from, Map toMap, Point to)
     {
       fromMap.SetExitAt(from, new Exit(toMap, to));
-    }
-
-    private UniqueActor SpawnUniqueSewersThing(World world)
-    {
-      Map map = world[m_Rules.Roll(0, world.Size), m_Rules.Roll(0, world.Size)].SewersMap;
-      Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", false, 0);
-      DiceRoller roller = new DiceRoller(map.Seed);
-      if (!MapGenerator.ActorPlace(roller, map, named)) throw new InvalidOperationException("could not spawn unique The Sewers Thing");
-      Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
-      if (zoneByPartialName != null)
-        MapGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
-           return map.IsWalkable(pt.X, pt.Y) && !map.HasActorAt(pt) && !map.HasItemsAt(pt);
-        }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[7] {
-          "TO SEWER WORKERS :",
-          "- It lives here.",
-          "- Do not disturb.",
-          "- Approach with caution.",
-          "- Watch your back.",
-          "- In case of emergency, take refuge here.",
-          "- Do not let other people interact with it!"
-        }));
-      return new UniqueActor(named,true);
     }
 
     private UniqueItem SpawnUniqueSubwayWorkerBadge(World world)

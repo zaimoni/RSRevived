@@ -13,6 +13,9 @@ using BaseTownGenerator = djack.RogueSurvivor.Gameplay.Generators.BaseTownGenera
 using DollPart = djack.RogueSurvivor.Data.DollPart;
 using ItemMeleeWeapon = djack.RogueSurvivor.Engine.Items.ItemMeleeWeapon;
 using ItemRangedWeapon = djack.RogueSurvivor.Engine.Items.ItemRangedWeapon;
+using Map = djack.RogueSurvivor.Data.Map;
+using World = djack.RogueSurvivor.Data.World;
+using Zone = djack.RogueSurvivor.Data.Zone;
 
 // Note that game-specific content was already here in RS alpha 9 (the identities of the unique actors)
 namespace djack.RogueSurvivor.Engine
@@ -71,6 +74,31 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,3);
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_JASON_MYERS_AXE));
       JasonMyers = new UniqueActor(named, true, false, GameMusics.INSANE);
+    }
+
+    public void init_SewersThing(BaseTownGenerator tgen)
+    {
+#if DEBUG
+      if (null != TheSewersThing) throw new InvalidOperationException("only call UniqueActors::init_SewersThing once");
+#endif
+      Map map = tgen.RandomDistrictInCity().SewersMap;
+      Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", false, 0);
+      DiceRoller roller = new DiceRoller(map.Seed);
+      if (!MapGenerator.ActorPlace(roller, map, named)) throw new InvalidOperationException("could not spawn unique The Sewers Thing");
+      Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
+      if (zoneByPartialName != null)
+        MapGenerator.MapObjectPlaceInGoodPosition(map, zoneByPartialName.Bounds, pt => {
+           return map.IsWalkable(pt.X, pt.Y) && !map.HasActorAt(pt) && !map.HasItemsAt(pt) && !map.HasExitAt(pt);
+        }, roller, pt => BaseMapGenerator.MakeObjBoard(GameImages.OBJ_BOARD, new string[] {
+          "TO SEWER WORKERS :",
+          "- It lives here.",
+          "- Do not disturb.",
+          "- Approach with caution.",
+          "- Watch your back.",
+          "- In case of emergency, take refuge here.",
+          "- Do not let other people interact with it!"
+        }));
+      TheSewersThing = new UniqueActor(named,true);
     }
 
     public void init_BigBear(BaseTownGenerator tgen)

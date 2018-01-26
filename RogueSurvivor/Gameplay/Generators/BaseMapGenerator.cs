@@ -1096,5 +1096,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     }
 
     // start RNG-dependent map generation utilities
+
+    // currently, the world map only has in-city districts.  This is not guaranteed indefinitely for Rogue Survivor Revived; it would be "interesting" for
+    // * VAPORWARE: a working gas station to be needed for Bikers/Gangsters to stage raids
+    // * VAPORWARE: a working national guard base to be needed for one or both of patrols and supply drops
+    public District RandomDistrictInCity() {
+      World world = Session.Get.World;
+      return world[m_Rules.Roll(0, world.Size), m_Rules.Roll(0, world.Size)];
+    }
   }
 }
