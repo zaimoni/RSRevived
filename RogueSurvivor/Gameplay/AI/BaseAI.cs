@@ -17,7 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -357,13 +356,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionMeleeAttack BehaviorMeleeAttack(Actor target)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       return (m_Actor.CanMeleeAttack(target) ? new ActionMeleeAttack(m_Actor, target) : null);
     }
 
     protected ActionRangedAttack BehaviorRangedAttack(Actor target)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (m_Actor.CanFireAt(target)) {
         m_Actor.Activity = Activity.FIGHTING;
         m_Actor.TargetActor = target;
