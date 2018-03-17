@@ -25,6 +25,7 @@ namespace djack.RogueSurvivor.Engine.Items
     public bool IsMartialArts {
       get {
         if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE==ID) return true;
+        if (Gameplay.GameItems.IDs.UNIQUE_FAMU_FATARU_KATANA==ID) return true;
         return false;
       }
     }

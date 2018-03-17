@@ -12,7 +12,7 @@
 "MELEE_IMPROVISED_CLUB","improvised club",0,3,0,3,1,"Improvised bashing."
 "MELEE_IMPROVISED_SPEAR","improvised spear",2,2,0,2,1,"Improvised piercing."
 "MELEE_SMALL_HAMMER","small hammer",2,3,0,3,0,"(small)Hammer time!"
-"UNIQUE_FAMU_FATARU_KATANA","Famu Fataru katana",20,12,2,1,0,"Watashi wa no teki o kiru."
+"UNIQUE_FAMU_FATARU_KATANA","Famu Fataru katana",5,10,2,1,0,"Watashi wa no teki o kiru."
 "UNIQUE_BIGBEAR_BAT","Big Bear bat",8,14,1,1,0,"Smash the fools in the head."
 "UNIQUE_ROGUEDJACK_KEYBOARD","Roguedjack keyboard",30,6,1,1,0,"Le Basher De Bugs."
 "UNIQUE_FATHER_TIME_SCYTHE","Father Time scythe",2,6,1,1,0,"Harvests more than just grain."

@@ -159,6 +159,7 @@ namespace djack.RogueSurvivor.Engine
       named.StartingSkill(Skills.IDs.HARDY,5);
       named.StartingSkill(Skills.IDs.AGILE,5);
       named.StartingSkill(Skills.IDs.HIGH_STAMINA,5);
+      named.StartingSkill(Skills.IDs.MARTIAL_ARTS,5);   // otherwise katana isn't awesome
       named.Inventory.AddAll(new ItemMeleeWeapon(GameItems.UNIQUE_FAMU_FATARU_KATANA));
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
       named.Inventory.AddAll(tgen.MakeItemCannedFood());
