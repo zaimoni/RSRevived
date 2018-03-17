@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 #define XDISTRICT_PATHING
+#define B_MOVIE_MARTIAL_ARTS
 
 using djack.RogueSurvivor.Engine.Items;
 using System;
@@ -656,7 +657,9 @@ namespace djack.RogueSurvivor.Data
     // strictly speaking, 1 step is allowed but we do not check LoF here
     private string ReasonCouldntFireAt(Actor target)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
       if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
@@ -702,7 +705,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantFireAt(Actor target, List<Point> LoF)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       LoF?.Clear();
       ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
@@ -732,7 +737,9 @@ namespace djack.RogueSurvivor.Data
     // very hypothetical -- lack of ranged weapon validity checks
     private string ReasonCantFireAt(Actor target, int range, List<Point> LoF)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       LoF?.Clear();
       if (range < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (!LOS.CanTraceFireLine(Location, target.Location, range, LoF)) return "no line of fire";
@@ -755,7 +762,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantContrafactualFireAt(Actor target, Point p)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (CurrentRangedAttack.Range < Rules.GridDistance(p, target.Location.Position)) return "out of range";
       if (!LOS.CanTraceHypotheticalFireLine(new Location(Location.Map,p), target.Location.Position, CurrentRangedAttack.Range, this)) return "no line of fire";
       return "";
@@ -774,12 +783,32 @@ namespace djack.RogueSurvivor.Data
 	  return string.IsNullOrEmpty(ReasonCantContrafactualFireAt(target, p));
 	}
 
+#if B_MOVIE_MARTIAL_ARTS
+    public int UsingPolearmInBMovie {
+      get {
+        if (IsRunning) return 0;
+        if (GetEquippedWeapon() is ItemMeleeWeapon melee && melee.Model.IsMartialArts) {
+          if (Gameplay.GameItems.IDs.UNIQUE_FATHER_TIME_SCYTHE != melee.Model.ID) return 0; // Cf Tai Chi for why the scythe can be weaponized
+          return Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+        }
+        return 0;
+      }
+    }
+#endif
+
     public string ReasonCantMeleeAttack(Actor target)
     {
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
+#if B_MOVIE_MARTIAL_ARTS
+      bool in_range = Rules.IsAdjacent(Location, target.Location);
+      // even martial arts 1 unlocks extended range.
+      if (!in_range && 0<UsingPolearmInBMovie && 2==Rules.GridDistance(Location,target.Location)) in_range = true;
+      if (!in_range) return "not adjacent";
+#else
       if (!Rules.IsAdjacent(Location, target.Location)) return "not adjacent";
+#endif
       if (StaminaPoints < STAMINA_MIN_FOR_ACTIVITY) return "not enough stamina to attack";
       if (target.IsDead) return "already dead!";
       return "";
@@ -1302,6 +1331,29 @@ namespace djack.RogueSurvivor.Data
       get {
         return WouldBeAdjacentToEnemy(Location.Map,Location.Position);
       }
+    }
+
+    public Dictionary<Point,Actor> GetMoveBlockingActors(Point pt)
+    {
+      var ret = new Dictionary<Point,Actor>();
+      if (pt == Location.Position) return ret;
+      Actor a = Location.Map.GetActorAtExt(pt);
+      if (null!=a) ret[pt] = a;
+      if (!Rules.IsAdjacent(pt,Location.Position)) return ret;
+#if B_MOVIE_MARTIAL_ARTS
+      if (0 < UsingPolearmInBMovie) {
+        // Polearms actually have range 2 (cf. Dungeon Crawl Stone Soup).
+        // this would look much more reasonable at Angband space-time scale of 900 turns per hour, than the historical 30 turns/hour
+        foreach(Direction d in Direction.COMPASS) {
+          Point pt2 = pt+d;
+          if (2!=Rules.GridDistance(Location.Position,pt2)) continue;
+          a = Location.Map.GetActorAtExt(pt2);
+          if (null==a || !IsEnemyOf(a)) continue;          // Only hostiles may block movement at range 2.
+          ret[pt2] = a;
+        }
+      }
+#endif
+      return ret;
     }
 
     public bool IsBefore(Actor other)

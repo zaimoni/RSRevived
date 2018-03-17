@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define POLICE_NO_QUESTIONS_ASKED
+#define B_MOVIE_MARTIAL_ARTS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -293,16 +294,36 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
-      Actor actorAt = map.GetActorAtExt(point);
-      if (actorAt != null) {
+      var actors_in_way = actor.GetMoveBlockingActors(point);
+      if (actors_in_way.TryGetValue(point,out Actor actorAt)) {
         if (actor.IsEnemyOf(actorAt)) {
           return (actor.CanMeleeAttack(actorAt, out reason) ? new ActionMeleeAttack(actor, actorAt) : null);
         }
+#if B_MOVIE_MARTIAL_ARTS
+        if (1<actors_in_way.Count) {
+          Actor target = null;
+          foreach(var pt_actor in actors_in_way) {
+            if (pt_actor.Value == actorAt) continue;
+            if (!actor.CanMeleeAttack(pt_actor.Value,out reason)) continue;
+            if (null == target || target.HitPoints>pt_actor.Value.HitPoints) target = pt_actor.Value;
+          }
+          return (null!=target ? new ActionMeleeAttack(actor, target) : null);
+        }
+#endif
 		// player as leader should be able to switch with player as follower
 		// NPCs shouldn't be leading players anyway
         if ((actor.IsPlayer || !actorAt.IsPlayer) && actor.CanSwitchPlaceWith(actorAt, out reason))
           return new ActionSwitchPlace(actor, actorAt);
         return (actor.CanChatWith(actorAt, out reason) ? new ActionChat(actor, actorAt) : null);
+#if B_MOVIE_MARTIAL_ARTS
+      } else if (0<actors_in_way.Count) {   // range-2 issue.  Identify weakest enemy.
+        Actor target = null;
+        foreach(var pt_actor in actors_in_way) {
+          if (!actor.CanMeleeAttack(pt_actor.Value,out reason)) continue;
+          if (null == target || target.HitPoints>pt_actor.Value.HitPoints) target = pt_actor.Value;
+        }
+        return (null!=target ? new ActionMeleeAttack(actor, target) : null);
+#endif
       }
       if (!map.IsInBounds(x, y)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
@@ -395,6 +416,7 @@ namespace djack.RogueSurvivor.Engine
         }
       }
 
+      // unclear whether B_MOVIE_MARTIAL_ARTS requires pathfinding changes or not; changes would go here
       if (!map.IsInBounds(x, y)) {
 	    return (actor.CanLeaveMap(point, out reason) ? new ActionLeaveMap(actor, point) : null);
       }
