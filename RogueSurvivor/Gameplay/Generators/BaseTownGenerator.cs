@@ -2801,12 +2801,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       named.ActionPoints = 0;
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         List<string> decorations = deadVictim.Doll.GetDecorations(part);
-        if (decorations != null) {
-          foreach (string imageID in decorations)
-            named.Doll.AddDecoration(part, imageID);
-        }
+        if (null == decorations) continue;
+        foreach (string imageID in decorations) named.Doll.AddDecoration(part, imageID);
       }
-      named.Doll.AddDecoration(DollPart.TORSO, "Actors\\Decoration\\bloodied");
+      named.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
       return named;
     }
 

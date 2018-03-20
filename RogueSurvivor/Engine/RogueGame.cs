@@ -4054,7 +4054,7 @@ namespace djack.RogueSurvivor.Engine
         if (m_Rules.RollChance(chance)) {
           corpse.DeadGuy.IsDead = false;
           corpse.DeadGuy.HitPoints = Rules.CorpseReviveHPs(actor, corpse);
-          corpse.DeadGuy.Doll.RemoveDecoration("Actors\\Decoration\\bloodied");
+          corpse.DeadGuy.Doll.RemoveDecoration(GameImages.BLOODIED);
           corpse.DeadGuy.Activity = Activity.IDLE;
           corpse.DeadGuy.TargetActor = null;
           map.Remove(corpse);
@@ -9933,22 +9933,24 @@ namespace djack.RogueSurvivor.Engine
 
     private Actor Zombify(Actor zombifier, Actor deadVictim, bool isStartingGame)
     {
+#if DEBUG
+      if (null == deadVictim) throw new ArgumentNullException(nameof(deadVictim));
+      if (isStartingGame && null!=zombifier) throw new InvalidOperationException(nameof(isStartingGame)+" && null!="+nameof(zombifier));
+#endif
       Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
       if (!isStartingGame) deadVictim.Location.Place(actor);
       if (deadVictim == m_Player || deadVictim.IsPlayer) Session.Get.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
-      if (skillTable != null && skillTable.CountSkills > 0) {
+      if (0 < (skillTable?.CountSkills ?? 0)) {
         int countSkills = skillTable.CountSkills;
         int num = skillTable.CountTotalSkillLevels / 2;
         for (int index = 0; index < num; ++index) {
-          Skills.IDs? nullable = ((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]).Zombify();
-          if (nullable.HasValue)
-            actor.SkillUpgrade(nullable.Value);
+          Skills.IDs? sk = ((Skills.IDs) skillTable.SkillsList[m_Rules.Roll(0, countSkills)]).Zombify();
+          if (null != sk) actor.SkillUpgrade(sk.Value);
         }
         actor.RecomputeStartingStats();
       }
-      if (!isStartingGame)
-        SeeingCauseInsanity(actor, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", deadVictim.Name));
+      if (!isStartingGame) SeeingCauseInsanity(actor, Rules.SANITY_HIT_ZOMBIFY, string.Format("{0} turning into a zombie", deadVictim.Name));
       return actor;
     }
 
