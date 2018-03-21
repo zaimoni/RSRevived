@@ -734,6 +734,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       // XXX note that sleep and stamina have special uses for sufficiently good AI
       if (it is ItemMedicineModel) {
+        int needHP = m_Actor.MaxHPs- m_Actor.HitPoints;
+        if (GameItems.IDs.MEDICINE_MEDIKIT == it.ID || GameItems.IDs.MEDICINE_BANDAGES == it.ID) {
+          if (needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.MEDIKIT.Healing)) return 3;    // second aid
+        }
+
+        if (GameItems.IDs.MEDICINE_BANDAGES == it.ID && needHP >= Rules.ActorMedicineEffect(m_Actor, GameItems.BANDAGE.Healing)) {
+          return 2; // first aid
+        }
+
         if (m_Actor.HasAtLeastFullStackOf(it, m_Actor.Inventory.IsFull ? 1 : 2)) return 0;
         return 1;
       }
