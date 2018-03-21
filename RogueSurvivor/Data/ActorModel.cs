@@ -100,11 +100,10 @@ namespace djack.RogueSurvivor.Data
       return actor;
     }
 
-    public Actor CreateNamed(Faction faction, string properName, bool isPluralName, int spawnTime)
+    public Actor CreateNamed(Faction faction, string properName, int spawnTime)
     {
       Actor actor = Create(faction, spawnTime, properName);
       actor.IsProperName = true;
-      actor.IsPluralName = isPluralName;
       return actor;
     }
   }

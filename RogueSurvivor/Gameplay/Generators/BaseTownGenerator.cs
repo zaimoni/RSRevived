@@ -2797,7 +2797,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public static Actor MakeZombified(Actor zombifier, Actor deadVictim, int turn)
     {
       string properName = string.Format("{0}'s zombie", (object) deadVictim.UnmodifiedName);
-      Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, deadVictim.IsPluralName, turn);
+      Actor named = (deadVictim.Doll.Body.IsMale ? GameActors.MaleZombified : GameActors.FemaleZombified).CreateNamed(zombifier == null ? GameFactions.TheUndeads : zombifier.Faction, properName, turn);
       named.ActionPoints = 0;
       for (DollPart part = DollPart._FIRST; part < DollPart._COUNT; ++part) {
         List<string> decorations = deadVictim.Doll.GetDecorations(part);

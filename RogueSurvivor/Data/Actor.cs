@@ -182,15 +182,20 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+    // while a general noun interface would have to allow detection of singular vs plural naming, this would matter only for e.g. a swarm of rats.
+#if OBSOLETE
     public bool IsPluralName
     {
       get {
         return GetFlag(Actor.Flags.IS_PLURAL_NAME);
       }
-      set {
+      private set {
         SetFlag(Actor.Flags.IS_PLURAL_NAME, value);
       }
     }
+#else
+    public readonly bool IsPluralName = false;
+#endif
 
     public string TheName
     {
@@ -300,13 +305,7 @@ namespace djack.RogueSurvivor.Data
     public int PreviousSleepPoints { get { return m_previousSleepPoints; } }
     public int Sanity { get { return m_Sanity; } }
     public int PreviousSanity { get { return m_previousSanity; } }
-
-    public ActorSheet Sheet {
-      get {
-        Contract.Ensures(null!=Contract.Result<ActorSheet>());
-        return m_Sheet;
-      }
-    }
+    public ActorSheet Sheet { get { return m_Sheet; } }
 
     public int ActionPoints {
       get {

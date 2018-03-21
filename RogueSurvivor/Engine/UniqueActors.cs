@@ -68,7 +68,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != JasonMyers) throw new InvalidOperationException("only call UniqueActors::init_JasonMyers once");
 #endif
-      Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", false, 0);
+      Actor named = GameActors.JasonMyers.CreateNamed(GameFactions.ThePsychopaths, "Jason Myers", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_JASON_MYERS);
       named.StartingSkill(Skills.IDs.TOUGH,3);
@@ -88,7 +88,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != FatherTime) throw new InvalidOperationException("only call UniqueActors::init_FatherTime once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Father Time", 0);
       named.IsUnique = true;
       tgen.DressCivilian(named);
 //    named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);    // XXX \todo GameImages.ACTOR_FATHER_TIME
@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Engine
       if (null != TheSewersThing) throw new InvalidOperationException("only call UniqueActors::init_SewersThing once");
 #endif
       Map map = tgen.RandomDistrictInCity().SewersMap;
-      Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", false, 0);
+      Actor named = GameActors.SewersThing.CreateNamed(GameFactions.TheUndeads, "The Sewers Thing", 0);
       DiceRoller roller = new DiceRoller(map.Seed);
       if (!MapGenerator.ActorPlace(roller, map, named)) throw new InvalidOperationException("could not spawn unique The Sewers Thing");
       Zone zoneByPartialName = map.GetZoneByPartialName("Sewers Maintenance");
@@ -131,7 +131,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != BigBear) throw new InvalidOperationException("only call UniqueActors::init_BigBear once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Big Bear", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_BIG_BEAR);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -152,7 +152,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != FamuFataru) throw new InvalidOperationException("only call UniqueActors::init_FamuFataru once");
 #endif
-      Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", false, 0);
+      Actor named = GameActors.FemaleCivilian.CreateNamed(GameFactions.TheCivilians, "Famu Fataru", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_FAMU_FATARU);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -174,7 +174,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != Santaman) throw new InvalidOperationException("only call UniqueActors::init_Santaman once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Santaman", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_SANTAMAN);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -195,7 +195,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != Roguedjack) throw new InvalidOperationException("only call UniqueActors::init_Roguedjack once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Roguedjack", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_ROGUEDJACK);
       named.StartingSkill(Skills.IDs.HAULER,3);
@@ -217,7 +217,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != Duckman) throw new InvalidOperationException("only call UniqueActors::init_Duckman once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Duckman", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_DUCKMAN);
       named.StartingSkill(Skills.IDs.CHARISMATIC,5);
@@ -239,7 +239,7 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null != HansVonHanz) throw new InvalidOperationException("only call UniqueActors::init_HanzVonHanz once");
 #endif
-      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", false, 0);
+      Actor named = GameActors.MaleCivilian.CreateNamed(GameFactions.TheCivilians, "Hans von Hanz", 0);
       named.IsUnique = true;
       named.Doll.AddDecoration(DollPart.SKIN, GameImages.ACTOR_HANS_VON_HANZ);
       named.StartingSkill(Skills.IDs.HAULER,3);
