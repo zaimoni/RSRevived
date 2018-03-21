@@ -340,9 +340,9 @@ namespace djack.RogueSurvivor.Engine
     private readonly GameItems m_GameItems;
     private Thread m_SimThread;
 
-    public static Actor Player { get { return m_Player; } }
+    private static Actor Player { get { return m_Player; } }
     public static Map CurrentMap { get { return m_CurrentMap; } }
-    public static Rectangle MapViewRect { get { return m_MapViewRect; } }
+    private static Rectangle MapViewRect { get { return m_MapViewRect; } }
     public Rules Rules { get { return m_Rules; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
@@ -354,18 +354,19 @@ namespace djack.RogueSurvivor.Engine
 #if DEAD_FUNC
     public IRogueUI UI { get { return m_UI; } }
     public GameItems GameItems { get { return m_GameItems; } }
-    public Actor Player { get { return m_Player; } }
 #endif
 
 #region Session save/load assistants
     static public void Load(SerializationInfo info, StreamingContext context)
     {
-      m_CurrentMap = (Map) info.GetValue("CurrentMap",typeof(Map));
+      m_Player = (Actor) info.GetValue("m_Player",typeof(Actor));
+      m_CurrentMap = m_Player.Location.Map;
+      ComputeViewRect(m_Player.Location.Position);
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
     {
-      info.AddValue("CurrentMap",m_CurrentMap,typeof(Map));
+      info.AddValue("m_Player",Player,typeof(Actor));
     }
 
     static public void Reset()  // very severe access control issue...should be called only from Session::Reset()
