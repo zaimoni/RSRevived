@@ -211,7 +211,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static int _Average(int x, int y) { return x+y/2; }
 
-    public DenormalizedProbability<int> SkillProbabilityDistribution(int skillValue)
+    public static DenormalizedProbability<int> SkillProbabilityDistribution(int skillValue)
     {
       if (0 >= skillValue) return ConstantDistribution<int>.Get(0);
       DenormalizedProbability<int> sk_prob = UniformDistribution.Get(0,skillValue);

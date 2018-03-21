@@ -3799,10 +3799,6 @@ namespace djack.RogueSurvivor.Engine
       if (IsVisibleToPlayer(CurrentMap, pt)) {
         Point screen = MapToScreen(pt);
         string[] lines = DescribeStuffAt(CurrentMap, pt);
-        if (null == lines) {
-          Location? test = CurrentMap.Normalize(pt);
-          if (null != test) lines = DescribeStuffAt(test.Value.Map, test.Value.Position);
-        }
         if (lines != null) {
           Point screenPos = new Point(screen.X + TILE_SIZE, screen.Y);
           AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
@@ -6359,8 +6355,15 @@ namespace djack.RogueSurvivor.Engine
       return false;
     }
 
-    private string[] DescribeStuffAt(Map map, Point mapPos)
+    static private string[] DescribeStuffAt(Map map, Point mapPos)
     {
+      if (!map.IsInBounds(mapPos)) {
+          Location? test = map.Normalize(mapPos);
+          if (null == test) return null;
+          map = test.Value.Map;
+          mapPos = test.Value.Position;
+      }
+
       Actor actorAt = map.GetActorAt(mapPos);
       if (actorAt != null) return DescribeActor(actorAt);
       MapObject mapObjectAt = map.GetMapObjectAt(mapPos);
@@ -6372,7 +6375,7 @@ namespace djack.RogueSurvivor.Engine
       return null;
     }
 
-    private string[] DescribeActor(Actor actor)
+    static private string[] DescribeActor(Actor actor)
     {
       List<string> stringList = new List<string>(10);
       if (actor.Faction != null) {
@@ -6444,21 +6447,21 @@ namespace djack.RogueSurvivor.Engine
       if (Player.IsEnemyOf(actor)) {
       Attack m_p_attack = Player.MeleeAttack(actor);
       Defence a_defense = Rules.ActorDefence(actor, actor.CurrentDefence);
-      float melee_p_hit = m_Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
+      float melee_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_p_attack.HitValue));
       stringList.Add("% hit: "+melee_p_hit.ToString());
       Attack m_a_attack = actor.MeleeAttack(Player);
       Defence p_defense = Rules.ActorDefence(Player, Player.CurrentDefence);
-      float melee_a_hit = m_Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(m_a_attack.HitValue));
+      float melee_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(m_a_attack.HitValue));
       stringList.Add("% be hit: "+melee_a_hit.ToString());
 //       Attack attack = attacker.RangedAttack(distance, defender);
       if (0<Player.CurrentRangedAttack.Range) {
         Attack r_p_attack = Player.RangedAttack(Rules.GridDistance(Player.Location,actor.Location), actor);
-        float ranged_p_hit = m_Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(r_p_attack.HitValue));
+        float ranged_p_hit = Rules.SkillProbabilityDistribution(a_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_p_attack.HitValue));
         stringList.Add("% shot: "+ranged_p_hit.ToString());
       }
       if (0<actor.CurrentRangedAttack.Range) {
         Attack r_a_attack = actor.RangedAttack(Rules.GridDistance(Player.Location,actor.Location), Player);
-        float ranged_a_hit = m_Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(m_Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
+        float ranged_a_hit = Rules.SkillProbabilityDistribution(p_defense.Value).LessThan(Rules.SkillProbabilityDistribution(r_a_attack.HitValue));
         stringList.Add("% be shot: "+ranged_a_hit.ToString());
       }
       } // m_Player.IsEnemyOf(actor)
