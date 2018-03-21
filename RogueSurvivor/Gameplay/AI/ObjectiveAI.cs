@@ -772,9 +772,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       { // similar to IsInterestingItem(ItemAmmo)
       if (it is ItemAmmoModel am) {
         ItemRangedWeapon rw = m_Actor.GetCompatibleRangedWeapon(am);
-        if (null == rw) {
-          return 0 < m_Actor.Inventory.Count(am) ? 0 : 1;
-        }
+        if (null == rw) return 0 < m_Actor.Inventory.Count(am) ? 0 : 1;
+
+        if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw) && !AmmoAtLimit) return 3;
+
         if (rw.Ammo < rw.Model.MaxAmmo) return 2;
         if (m_Actor.HasAtLeastFullStackOf(am, 2)) return 0;
         if (null != m_Actor.Inventory.GetFirstByModel<ItemAmmo>(am,am2=>am2.Quantity<am.MaxQuantity)) return 2;
@@ -791,15 +792,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw, obj => 0 < obj.Ammo)) return 0;    // XXX
           if (null != m_Actor.Inventory.GetFirst<ItemRangedWeapon>(obj => obj.AmmoType==rw.AmmoType && 0 < obj.Ammo)) return 0; // XXX ... more detailed handling in order; blocks upgrading from sniper rifle to army rifle, etc.
         }
-/*
-        if (0 < rw.Ammo && null != m_Actor.Inventory.GetFirstByModel<ItemRangedWeapon>(rw, obj => 0 == obj.Ammo)) return 3;  // this replacement is ok; implies not having ammo
-*/
-        if (0 >= rws_w_ammo && null != m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 3;
+        ItemAmmo am = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
+        if (0 >= rws_w_ammo && null != am) return 3;
+        if (!AmmoAtLimit && null != am) return 3;
         // ideal non-ranged slots: armor, flashlight, melee weapon, 1 other
         // of the ranged slots, must reserve one for a ranged weapon and one for ammo; the others are "wild, biased for ammo"
         if (m_Actor.Inventory.MaxCapacity-5 <= rws_w_ammo) return 0;
         if (m_Actor.Inventory.MaxCapacity-4 <= rws_w_ammo + m_Actor.Inventory.CountType<ItemAmmo>()) return 0;
-        if (/* 0 >= rw.Ammo && */ null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) return 0;  // XXX assume no ammo because information not available at this level
+        if (/* 0 >= rw.Ammo && */ null == am) return 0;  // XXX assume no ammo because information not available at this level
         if (0< rws_w_ammo) return 2;
         return 3;
       }
@@ -1713,11 +1713,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmp_rw) {
           if (!AmmoAtLimit) {
             foreach(ItemRangedWeapon rw in tmp_rw) {
-              if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) {
-                if (rw.Ammo < rw.Model.MaxAmmo || !AmmoAtLimit) {
-                  ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
-                }
-              }
+              if (null == m_Actor.Inventory.GetCompatibleAmmoItem(rw)) ret.Add((GameItems.IDs)((int)rw.AmmoType + (int)GameItems.IDs.AMMO_LIGHT_PISTOL));    // Validity explicitly tested for in GameItems::CreateModels
             }
           }
         }
@@ -1808,20 +1804,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(GameItems.IDs melee in GameItems.melee) {
         ItemMeleeWeaponModel model = Models.Items[(int)melee] as ItemMeleeWeaponModel;
         if (m_Actor.MeleeWeaponAttack(model).Rating <= martial_arts.Rating) continue;
-        if (2<=m_Actor.CountQuantityOf<ItemMeleeWeapon>()) {
-          ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
-          if (weapon.Model.Attack.Rating < model.Attack.Rating) ret.Add(melee);
-          continue;
-        }
-        if (1<= m_Actor.CountQuantityOf<ItemMeleeWeapon>() && 1>= m_Actor.Inventory.MaxCapacity- m_Actor.Inventory.CountItems) {
-          ItemMeleeWeapon weapon = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
-          if (null == weapon) {  // martial arts invalidates starting baton for police
-            ret.Add(melee);
-            continue;
-          };
-          if (weapon.Model.Attack.Rating < model.Attack.Rating) ret.Add(melee);
-          continue;
-        }
+        ItemMeleeWeapon best = m_Actor.GetBestMeleeWeapon();    // rely on OrderableAI doing the right thing
+        if (null != best && best.Model.Attack.Rating >= model.Attack.Rating) continue;  // martial arts invalidates starting baton for police
         ret.Add(melee);
       }
       } // end scoping brace
