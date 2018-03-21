@@ -24,6 +24,7 @@ using djack.RogueSurvivor.Gameplay;
 using djack.RogueSurvivor.Gameplay.AI;
 using djack.RogueSurvivor.Gameplay.Generators;
 using System;
+using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Drawing;
@@ -350,6 +351,17 @@ namespace djack.RogueSurvivor.Engine
     public GameItems GameItems { get { return m_GameItems; } }
     public Actor Player { get { return m_Player; } }
 #endif
+
+#region Session save/load assistants
+    static public void Load(SerializationInfo info, StreamingContext context)
+    {
+    }
+
+    static public void Save(SerializationInfo info, StreamingContext context)
+    {
+    }
+#endregion
+
 
     public RogueGame(IRogueUI UI)
     {
@@ -9996,10 +10008,10 @@ namespace djack.RogueSurvivor.Engine
                 DrawMap(Session.Get.CurrentMap);
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, MINIMAP_Y- MINITILE_SIZE, CANVAS_WIDTH, MINIMAP_Y - MINITILE_SIZE);
                 if (0 >= Map.UsesCrossDistrictView(Session.Get.CurrentMap)) {
-                    DrawMiniMap(Session.Get.CurrentMap, Session.Get.CurrentMap.Rect);
+                    DrawMiniMap(Session.Get.CurrentMap.Rect);
                 } else {
                     Rectangle view = new Rectangle(m_Player.Location.Position.X-MINIMAP_RADIUS, m_Player.Location.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
-                    DrawMiniMap(Session.Get.CurrentMap, view);
+                    DrawMiniMap(view);
                 }
                 m_UI.UI_DrawLine(Color.DarkGray, MESSAGES_X, MESSAGES_Y, CANVAS_WIDTH, MESSAGES_Y);
                 DrawMessages();
@@ -10609,9 +10621,10 @@ namespace djack.RogueSurvivor.Engine
     }
 
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public void DrawMiniMap(Map map, Rectangle view)
+    private void DrawMiniMap(Rectangle view)
     {
       if (null == m_Player) return;   // fail-safe.
+      Map map = Session.Get.CurrentMap;
 	  ThreatTracking threats = m_Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = m_Player.InterestingLocs;
 
