@@ -89,6 +89,7 @@ namespace djack.RogueSurvivor.Engine
       PlayerKnows_TheSewersThingLocation = info.GetBoolean("PlayerKnows_TheSewersThingLocation");
       CHARUndergroundFacility_Activated = info.GetBoolean("CHARUndergroundFacility_Activated");
       m_CommandLineOptions = (System.Collections.ObjectModel.ReadOnlyDictionary<string, string>) info.GetValue("CommandLineOptions", typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
+      ActorModel.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
       CurrentMap = (Map) info.GetValue("CurrentMap",typeof(Map));
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
@@ -114,6 +115,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("PlayerKnows_TheSewersThingLocation",PlayerKnows_TheSewersThingLocation);
       info.AddValue("CHARUndergroundFacility_Activated",CHARUndergroundFacility_Activated);
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
+      ActorModel.Save(info,context);
       info.AddValue("World",World,typeof(World));
       info.AddValue("CurrentMap",CurrentMap,typeof(Map));
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));

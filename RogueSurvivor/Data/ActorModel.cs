@@ -5,11 +5,14 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
+using System.Runtime.Serialization;
 
 namespace djack.RogueSurvivor.Data
 {
   internal class ActorModel
   {
+    static private ulong[] _createdCounts = new ulong[(int)Gameplay.GameActors.IDs._COUNT];
+
     public Gameplay.GameActors.IDs ID { get; set; }
     public readonly string ImageID;
     public readonly DollBody DollBody;
@@ -18,9 +21,26 @@ namespace djack.RogueSurvivor.Data
     public readonly ActorSheet StartingSheet;
     public readonly Abilities Abilities;
     public readonly Type DefaultController;
-    public int CreatedCount { get; private set; }   // XXX resets on restart; needs to be where it can reach the savefile
     public readonly int ScoreValue;
     public readonly string FlavorDescription;
+
+    // backward-compatible aliasing
+    private ulong CreatedCount {
+      get { return _createdCounts[(int)ID]; }
+      set { _createdCounts[(int)ID] = value; }
+    }
+
+#region Session save/load assistants
+    static public void Load(SerializationInfo info, StreamingContext context)
+    {
+      _createdCounts = (ulong[]) info.GetValue("GameActors_createdCounts", typeof(ulong[]));
+    }
+
+    static public void Save(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("GameActors_createdCounts", _createdCounts);
+    }
+#endregion
 
     public ActorModel(string imageID, string name, string pluralName, int scoreValue, string flavor, DollBody body, Abilities abilities, ActorSheet startingSheet, Type defaultController)
     {
@@ -50,7 +70,6 @@ namespace djack.RogueSurvivor.Data
       DefaultController = defaultController;
       ScoreValue = scoreValue;
       FlavorDescription = flavor;
-      CreatedCount = 0;
     }
 
     private Actor Create(Faction faction, int spawnTime, string properName="")
