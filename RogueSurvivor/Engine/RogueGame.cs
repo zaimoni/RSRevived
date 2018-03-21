@@ -322,9 +322,10 @@ namespace djack.RogueSurvivor.Engine
     private readonly MessageManager m_MessageManager;
     private bool m_HasLoadedGame;
 
+    // We're a singleton anyway...do these three as static
     private Actor m_Player;
     private static Map m_CurrentMap;    // we're a singleton anyway
-    private Rectangle m_MapViewRect;    // morally anchored to Session.Get.CurrentMap
+    private static Rectangle m_MapViewRect;    // morally anchored to m_CurrentMap
 
     private static GameOptions s_Options;
     private static Keybindings s_KeyBindings;
@@ -340,6 +341,7 @@ namespace djack.RogueSurvivor.Engine
     private Thread m_SimThread;
 
     public static Map CurrentMap { get { return m_CurrentMap; } }
+    public static Rectangle MapViewRect { get { return m_MapViewRect; } }
     public Rules Rules { get { return m_Rules; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
@@ -9976,24 +9978,24 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // These are closely coordinated with Session.Get.CurrentMap
-    private void ComputeViewRect(Point mapCenter)
+    private static void ComputeViewRect(Point mapCenter)
     {
       int x = mapCenter.X - HALF_VIEW_WIDTH;
       int y = mapCenter.Y - HALF_VIEW_HEIGHT;
       m_MapViewRect = new Rectangle(x, y, 1+2* HALF_VIEW_WIDTH, 1 + 2 * HALF_VIEW_HEIGHT);
     }
 
-    private bool IsInViewRect(Point mapPosition)
+    private static bool IsInViewRect(Point mapPosition)
     {
-      return m_MapViewRect.Contains(mapPosition);
+      return MapViewRect.Contains(mapPosition);
     }
 
-    private bool IsInViewRect(Location loc)
+    private static bool IsInViewRect(Location loc)
     {
-      if (loc.Map == CurrentMap) return m_MapViewRect.Contains(loc.Position);
+      if (loc.Map == CurrentMap) return MapViewRect.Contains(loc.Position);
       Location? tmp = CurrentMap.Denormalize(loc);
       if (null == tmp) return false;
-      return m_MapViewRect.Contains(tmp.Value.Position);
+      return MapViewRect.Contains(tmp.Value.Position);
     }
 
     static private ColorString WeatherStatusText()
@@ -10054,9 +10056,9 @@ namespace djack.RogueSurvivor.Engine
             };  // lock(m_UI)
     }
 
-    private string LocationText()
+    private static string LocationText()
     {
-      Location loc = new Location(CurrentMap,new Point(m_MapViewRect.Left+HALF_VIEW_WIDTH,m_MapViewRect.Top+HALF_VIEW_HEIGHT));
+      Location loc = new Location(CurrentMap,new Point(MapViewRect.Left+HALF_VIEW_WIDTH,MapViewRect.Top+HALF_VIEW_HEIGHT));
       StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
       List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
       if (null == zonesAt) return stringBuilder.ToString();
@@ -10097,10 +10099,10 @@ namespace djack.RogueSurvivor.Engine
     {
       Color tint = Color.White; // disabled changing brightness bad for the eyes TintForDayPhase(m_Session.WorldTime.Phase);
 #if NO_PEACE_WALLS
-      int num1 = m_MapViewRect.Left;
-      int num2 = m_MapViewRect.Right;
-      int num3 = m_MapViewRect.Top;
-      int num4 = m_MapViewRect.Bottom;
+      int num1 = MapViewRect.Left;
+      int num2 = MapViewRect.Right;
+      int num3 = MapViewRect.Top;
+      int num4 = MapViewRect.Bottom;
 #else
       int num1 = Math.Max(-1, m_MapViewRect.Left);
       int num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
@@ -10124,8 +10126,8 @@ namespace djack.RogueSurvivor.Engine
       LocationSet sights_to_see = m_Player.InterestingLocs;
 
       // as drawing is slow, we should be able to get away with thrashing the garbage collector here
-      HashSet<Point> tainted = threats?.ThreatWhere(map, m_MapViewRect) ?? new HashSet<Point>();
-      HashSet<Point> tourism = sights_to_see?.In(map, m_MapViewRect) ?? new HashSet<Point>();
+      HashSet<Point> tainted = threats?.ThreatWhere(map, MapViewRect) ?? new HashSet<Point>();
+      HashSet<Point> tourism = sights_to_see?.In(map, MapViewRect) ?? new HashSet<Point>();
 
       Point point = new Point();
       bool isUndead = m_Player.Model.Abilities.IsUndead;
@@ -10661,7 +10663,7 @@ namespace djack.RogueSurvivor.Engine
 #endregion
         m_UI.UI_DrawMinimap(MINIMAP_X, MINIMAP_Y);
       }
-      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + (m_MapViewRect.Left-view.Left) * MINITILE_SIZE, MINIMAP_Y + (m_MapViewRect.Top-view.Top) * MINITILE_SIZE, m_MapViewRect.Width * MINITILE_SIZE, m_MapViewRect.Height * MINITILE_SIZE));
+      m_UI.UI_DrawRect(Color.White, new Rectangle(MINIMAP_X + (MapViewRect.Left-view.Left) * MINITILE_SIZE, MINIMAP_Y + (MapViewRect.Top-view.Top) * MINITILE_SIZE, MapViewRect.Width * MINITILE_SIZE, MapViewRect.Height * MINITILE_SIZE));
       if (s_Options.ShowPlayerTagsOnMinimap) {
         view.DoForEach(pt => {
                 Tile tileAt = map.GetTileAtExt(pt);
@@ -10979,17 +10981,17 @@ namespace djack.RogueSurvivor.Engine
       lock(m_Overlays) { m_Overlays.Clear(); }
     }
 
-    private Point MapToScreen(int x, int y)
+    private static Point MapToScreen(int x, int y)
     {
-      return new Point((x - m_MapViewRect.Left) * TILE_SIZE, (y - m_MapViewRect.Top) * TILE_SIZE);
+      return new Point((x - MapViewRect.Left) * TILE_SIZE, (y - MapViewRect.Top) * TILE_SIZE);
     }
 
-    private Point MapToScreen(Point mapPosition)
+    private static Point MapToScreen(Point mapPosition)
     {
       return MapToScreen(mapPosition.X, mapPosition.Y);
     }
 
-    public Point MapToScreen(Location loc)
+    public static Point MapToScreen(Location loc)
     {
       if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
       Location? tmp = CurrentMap.Denormalize(loc);
@@ -10999,14 +11001,16 @@ namespace djack.RogueSurvivor.Engine
       return MapToScreen(tmp.Value.Position);
     }
 
-    private Point ScreenToMap(Point screenPosition)
+#if DEAD_FUNC
+    private static Point ScreenToMap(Point screenPosition)
     {
       return ScreenToMap(screenPosition.X, screenPosition.Y);
     }
+#endif
 
-    private Point ScreenToMap(int gx, int gy)
+    private static Point ScreenToMap(int gx, int gy)
     {
-      return new Point(m_MapViewRect.Left + gx / TILE_SIZE, m_MapViewRect.Top + gy / TILE_SIZE);
+      return new Point(MapViewRect.Left + gx / TILE_SIZE, MapViewRect.Top + gy / TILE_SIZE);
     }
 
     private Point MouseToMap(Point mousePosition)
