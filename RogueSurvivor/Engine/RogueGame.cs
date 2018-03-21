@@ -323,6 +323,7 @@ namespace djack.RogueSurvivor.Engine
     private bool m_HasLoadedGame;
 
     private Actor m_Player;
+    private static Map m_CurrentMap;    // we're a singleton anyway
     private Rectangle m_MapViewRect;    // morally anchored to Session.Get.CurrentMap
 
     private static GameOptions s_Options;
@@ -338,6 +339,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly GameItems m_GameItems;
     private Thread m_SimThread;
 
+    public static Map CurrentMap { get { return m_CurrentMap; } }
     public Rules Rules { get { return m_Rules; } }
     public bool IsGameRunning { get { return m_IsGameRunning; } }
     public static GameOptions Options { get { return s_Options; } }
@@ -355,10 +357,17 @@ namespace djack.RogueSurvivor.Engine
 #region Session save/load assistants
     static public void Load(SerializationInfo info, StreamingContext context)
     {
+      m_CurrentMap = (Map) info.GetValue("CurrentMap",typeof(Map));
     }
 
     static public void Save(SerializationInfo info, StreamingContext context)
     {
+      info.AddValue("CurrentMap",m_CurrentMap,typeof(Map));
+    }
+
+    static public void Reset()  // very severe access control issue...should be called only from Session::Reset()
+    {
+      m_CurrentMap = null;
     }
 #endregion
 
@@ -1773,7 +1782,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void FindPlayer()
     {
-       Actor tmp = Session.Get.CurrentMap.FindPlayer;
+       Actor tmp = CurrentMap.FindPlayer;
        if (null != tmp) {
          m_Player = tmp;
          m_Player.Controller.UpdateSensors();
@@ -1782,7 +1791,7 @@ namespace djack.RogueSurvivor.Engine
          return;
        }
        // check all maps in current district
-       tmp = Session.Get.CurrentMap.District.FindPlayer(Session.Get.CurrentMap);
+       tmp = CurrentMap.District.FindPlayer(CurrentMap);
        if (null != tmp) {
          m_Player = tmp;
          return;
@@ -1813,7 +1822,7 @@ namespace djack.RogueSurvivor.Engine
         // not processing secret maps used to be a micro-optimization; now a hang bug
         while(!current.IsSecret && null != current.NextActorToAct) {
           AdvancePlay(current, sim);
-          if (district == Session.Get.CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
+          if (district == CurrentMap.District) { // Bay12/jorgene0: do not let simulation thread process reincarnation
             if (0>=Session.Get.World.PlayerCount) HandleReincarnation();
           }
           if (!m_IsGameRunning || m_HasLoadedGame || (IsPCdistrict && 0>=Session.Get.World.PlayerCount)) return;
@@ -3459,7 +3468,7 @@ namespace djack.RogueSurvivor.Engine
       for (int index1 = 0; index1 < Session.Get.World.Size; ++index1) {
         for (int index2 = 0; index2 < Session.Get.World.Size; ++index2) {
           District district = Session.Get.World[index2, index1];
-          char ch = district == Session.Get.CurrentMap.District ? '*' : (Session.Get.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
+          char ch = district == CurrentMap.District ? '*' : (Session.Get.Scoring.HasVisited(district.EntryMap) ? '-' : '?');
           Color color = HandleCityInfo_DistrictToColor(district.Kind);
           string str = HandleCityInfo_DistrictToCode(district.Kind);
           string text = "".PadLeft(5,ch);
@@ -3601,7 +3610,7 @@ namespace djack.RogueSurvivor.Engine
         var distances = new Dictionary<string, int>();
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
-          if (loc_qty.Key.Map != Session.Get.CurrentMap) continue;
+          if (loc_qty.Key.Map != CurrentMap) continue;
           string msg = loc_qty.Key.ToString() + ": " + loc_qty.Value.ToString();
           tmp.Add(msg);
           distances[msg] = Rules.GridDistance(m_Player.Location,loc_qty.Key);
@@ -3609,13 +3618,13 @@ namespace djack.RogueSurvivor.Engine
         tmp.Sort((lhs,rhs) => distances[lhs].CompareTo(distances[rhs]));
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
-          if (loc_qty.Key.Map.District != Session.Get.CurrentMap.District) continue;
-          if (loc_qty.Key.Map == Session.Get.CurrentMap) continue;
+          if (loc_qty.Key.Map.District != CurrentMap.District) continue;
+          if (loc_qty.Key.Map == CurrentMap) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
         foreach(var loc_qty in catalog) {
           if (SHOW_SPECIAL_DIALOGUE_LINE_LIMIT <= tmp.Count) break;
-          if (loc_qty.Key.Map.District == Session.Get.CurrentMap.District) continue;
+          if (loc_qty.Key.Map.District == CurrentMap.District) continue;
           tmp.Add(loc_qty.Key.ToString()+": "+loc_qty.Value.ToString());
         }
         ShowSpecialDialogue(m_Player,tmp.ToArray());
@@ -3787,20 +3796,20 @@ namespace djack.RogueSurvivor.Engine
     {
       Point pt = MouseToMap(mousePos);
       if (!IsInViewRect(pt)) return false;
-      if (!Session.Get.CurrentMap.IsValid(pt)) return true;
+      if (!CurrentMap.IsValid(pt)) return true;
       ClearOverlays();
-      if (IsVisibleToPlayer(Session.Get.CurrentMap, pt)) {
+      if (IsVisibleToPlayer(CurrentMap, pt)) {
         Point screen = MapToScreen(pt);
-        string[] lines = DescribeStuffAt(Session.Get.CurrentMap, pt);
+        string[] lines = DescribeStuffAt(CurrentMap, pt);
         if (null == lines) {
-          Location? test = Session.Get.CurrentMap.Normalize(pt);
+          Location? test = CurrentMap.Normalize(pt);
           if (null != test) lines = DescribeStuffAt(test.Value.Map, test.Value.Position);
         }
         if (lines != null) {
           Point screenPos = new Point(screen.X + TILE_SIZE, screen.Y);
           AddOverlay(new OverlayPopup(lines, Color.White, Color.White, POPUP_FILLCOLOR, screenPos));
           if (s_Options.ShowTargets) {
-            Actor actorAt = Session.Get.CurrentMap.GetActorAt(pt);
+            Actor actorAt = CurrentMap.GetActorAt(pt);
             if (actorAt != null)
               DrawActorTargets(actorAt);
           }
@@ -9981,15 +9990,15 @@ namespace djack.RogueSurvivor.Engine
 
     private bool IsInViewRect(Location loc)
     {
-      if (loc.Map == Session.Get.CurrentMap) return m_MapViewRect.Contains(loc.Position);
-      Location? tmp = Session.Get.CurrentMap.Denormalize(loc);
+      if (loc.Map == CurrentMap) return m_MapViewRect.Contains(loc.Position);
+      Location? tmp = CurrentMap.Denormalize(loc);
       if (null == tmp) return false;
       return m_MapViewRect.Contains(tmp.Value.Position);
     }
 
     static private ColorString WeatherStatusText()
     {
-      switch(Session.Get.CurrentMap.Lighting)
+      switch(CurrentMap.Lighting)
       {
         case Lighting.DARKNESS: return new ColorString(Color.Blue,"Darkness");
         case Lighting.OUTSIDE: return new ColorString(WeatherColor(Session.Get.World.Weather),DescribeWeather(Session.Get.World.Weather));
@@ -10005,10 +10014,10 @@ namespace djack.RogueSurvivor.Engine
             lock (m_UI) {
                 m_UI.UI_Clear(Color.Black);
                 m_UI.UI_DrawLine(Color.DarkGray, RIGHTPANEL_X, RIGHTPANEL_Y, LOCATIONPANEL_X, LOCATIONPANEL_Y);
-                DrawMap(Session.Get.CurrentMap);
+                DrawMap(CurrentMap);
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, MINIMAP_Y- MINITILE_SIZE, CANVAS_WIDTH, MINIMAP_Y - MINITILE_SIZE);
-                if (0 >= Map.UsesCrossDistrictView(Session.Get.CurrentMap)) {
-                    DrawMiniMap(Session.Get.CurrentMap.Rect);
+                if (0 >= Map.UsesCrossDistrictView(CurrentMap)) {
+                    DrawMiniMap(CurrentMap.Rect);
                 } else {
                     Rectangle view = new Rectangle(m_Player.Location.Position.X-MINIMAP_RADIUS, m_Player.Location.Position.Y-MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS, 1+2*MINIMAP_RADIUS);
                     DrawMiniMap(view);
@@ -10017,7 +10026,7 @@ namespace djack.RogueSurvivor.Engine
                 DrawMessages();
                 // We have one spare line of text in the location panel, should it be needed
                 m_UI.UI_DrawLine(Color.DarkGray, LOCATIONPANEL_X, LOCATIONPANEL_Y, LOCATIONPANEL_X, CANVAS_HEIGHT);
-                m_UI.UI_DrawString(Color.White, Session.Get.CurrentMap.Name, LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y, new Color?());
+                m_UI.UI_DrawString(Color.White, CurrentMap.Name, LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y, new Color?());
                 m_UI.UI_DrawString(Color.White, LocationText(), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Day  {0}", Session.Get.WorldTime.Day), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING, new Color?());
                 m_UI.UI_DrawString(Color.White, string.Format("Hour {0}", Session.Get.WorldTime.Hour), LOCATIONPANEL_TEXT_X, LOCATIONPANEL_TEXT_Y+2*LINE_SPACING+BOLD_LINE_SPACING, new Color?());
@@ -10047,7 +10056,7 @@ namespace djack.RogueSurvivor.Engine
 
     private string LocationText()
     {
-      Location loc = new Location(Session.Get.CurrentMap,new Point(m_MapViewRect.Left+HALF_VIEW_WIDTH,m_MapViewRect.Top+HALF_VIEW_HEIGHT));
+      Location loc = new Location(CurrentMap,new Point(m_MapViewRect.Left+HALF_VIEW_WIDTH,m_MapViewRect.Top+HALF_VIEW_HEIGHT));
       StringBuilder stringBuilder = new StringBuilder(string.Format("({0},{1}) ", loc.Position.X, loc.Position.Y));
       List<Zone> zonesAt = loc.Map.GetZonesAt(loc.Position);
       if (null == zonesAt) return stringBuilder.ToString();
@@ -10624,7 +10633,7 @@ namespace djack.RogueSurvivor.Engine
     private void DrawMiniMap(Rectangle view)
     {
       if (null == m_Player) return;   // fail-safe.
-      Map map = Session.Get.CurrentMap;
+      Map map = CurrentMap;
 	  ThreatTracking threats = m_Player.Threats;    // these two should agree on whether they're null or not
       LocationSet sights_to_see = m_Player.InterestingLocs;
 
@@ -10982,8 +10991,8 @@ namespace djack.RogueSurvivor.Engine
 
     public Point MapToScreen(Location loc)
     {
-      if (loc.Map == Session.Get.CurrentMap) return MapToScreen(loc.Position);
-      Location? tmp = Session.Get.CurrentMap.Denormalize(loc);
+      if (loc.Map == CurrentMap) return MapToScreen(loc.Position);
+      Location? tmp = CurrentMap.Denormalize(loc);
 #if DEBUG
       if (null == tmp) throw new ArgumentNullException(nameof(tmp));
 #endif
@@ -11046,7 +11055,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void PanViewportTo(Location loc)
     {
-      Session.Get.CurrentMap = loc.Map;
+      m_CurrentMap = loc.Map;
       ComputeViewRect(loc.Position);
       RedrawPlayScreen();
     }
@@ -11142,8 +11151,8 @@ namespace djack.RogueSurvivor.Engine
         PanViewportTo(players[0]);
         return true;
       }
-      if (Session.Get.CurrentMap != map) {
-        Location? tmp = Session.Get.CurrentMap.Denormalize(new Location(map,position));
+      if (CurrentMap != map) {
+        Location? tmp = CurrentMap.Denormalize(new Location(map,position));
         if (null == tmp) return false;
         return ForceVisibleToPlayer(tmp.Value);
       }
@@ -11868,7 +11877,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void RefreshPlayer()
     {
-      Actor tmp = Session.Get.CurrentMap.Players.Get.FirstOrDefault();
+      Actor tmp = CurrentMap.Players.Get.FirstOrDefault();
       if (null == tmp) return;
       m_Player = tmp;
       ComputeViewRect(m_Player.Location.Position);
@@ -11876,7 +11885,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void SetCurrentMap(Map map)
     {
-      Session.Get.CurrentMap = map;
+      m_CurrentMap = map;
       if (map == map.District.SewersMap) {
         m_MusicManager.Stop(GameMusics.SUBWAY);
         m_MusicManager.Stop(GameMusics.HOSPITAL);
@@ -12296,7 +12305,7 @@ namespace djack.RogueSurvivor.Engine
       if (newPlayerAvatar.Activity != Activity.SLEEPING) newPlayerAvatar.Activity = Activity.IDLE;
       newPlayerAvatar.PrepareForPlayerControl();
       m_Player = newPlayerAvatar;
-      Session.Get.CurrentMap = newPlayerAvatar.Location.Map;
+      m_CurrentMap = newPlayerAvatar.Location.Map;
       Session.Get.Scoring.StartNewLife(Session.Get.WorldTime.TurnCounter);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("(reincarnation {0})", Session.Get.Scoring.ReincarnationNumber));
       Session.Get.Scoring.Side = m_Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
@@ -12356,7 +12365,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool IsSuitableReincarnation(Actor a, bool asLiving)
     {
-      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != Session.Get.CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
+      if (a == null || a.IsDead || a.IsPlayer || a.Location.Map.District != CurrentMap.District || (a.Location.Map == Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap || a == Session.Get.UniqueActors.PoliceStationPrisonner.TheActor || a.Location.Map == a.Location.Map.District.SewersMap))
         return false;
       if (asLiving)
         return !a.Model.Abilities.IsUndead && (!s_Options.IsLivingReincRestricted || a.Faction == GameFactions.TheCivilians);
@@ -12404,7 +12413,7 @@ namespace djack.RogueSurvivor.Engine
           bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50);
           List<Actor> actorList2 = new List<Actor>();
           // prior implementation iterated through all districts even though IsSuitableReincarnation requires m_Session.CurrentMap.District
-          foreach (Map map in Session.Get.CurrentMap.District.Maps) {
+          foreach (Map map in CurrentMap.District.Maps) {
             foreach (Actor actor in map.Actors) {
               if (IsSuitableReincarnation(actor, asLiving))
                 actorList2.Add(actor);

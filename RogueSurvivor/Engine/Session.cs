@@ -39,9 +39,6 @@ namespace djack.RogueSurvivor.Engine
 
     public GameMode GameMode;
     public int LastTurnPlayerActed;
-    // CurrentMap is properly a private member of RogueGame (with public getter), but it historically must be in the savefile.
-    // A naive attempt to relocate crashes in RogueGame::RefreshPlayer.
-    public Map CurrentMap;
     public bool PlayerKnows_CHARUndergroundFacilityLocation;
     public bool PlayerKnows_TheSewersThingLocation;
     public bool CHARUndergroundFacility_Activated;
@@ -91,7 +88,7 @@ namespace djack.RogueSurvivor.Engine
       m_CommandLineOptions = (System.Collections.ObjectModel.ReadOnlyDictionary<string, string>) info.GetValue("CommandLineOptions", typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
-      CurrentMap = (Map) info.GetValue("CurrentMap",typeof(Map));
+      RogueGame.Load(info, context);
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
       UniqueItems = (UniqueItems) info.GetValue("UniqueItems",typeof(UniqueItems));
       UniqueMaps = (UniqueMaps) info.GetValue("UniqueMaps",typeof(UniqueMaps));
@@ -117,7 +114,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Save(info,context);
       info.AddValue("World",World,typeof(World));
-      info.AddValue("CurrentMap",CurrentMap,typeof(Map));
+      RogueGame.Save(info, context);
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
       info.AddValue("UniqueItems",UniqueItems,typeof(UniqueItems));
       info.AddValue("UniqueMaps",UniqueMaps,typeof(UniqueMaps));
@@ -130,7 +127,7 @@ namespace djack.RogueSurvivor.Engine
     public void Reset()
     {
       Seed = (0 == COMMAND_LINE_SEED ? (int) DateTime.UtcNow.TimeOfDay.Ticks : COMMAND_LINE_SEED);
-      CurrentMap = null;
+      RogueGame.Reset();
       m_Scoring = new Scoring();
       World = new World(RogueGame.Options.CitySize);
       LastTurnPlayerActed = 0;

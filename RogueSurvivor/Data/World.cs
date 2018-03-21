@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Data
       dest.WriteLine("-->\n</style>");
       dest.WriteLine("</head><body>");
 
-      District viewpoint = Engine.Session.Get.CurrentMap.District;
+      District viewpoint = Engine.RogueGame.CurrentMap.District;
       viewpoint.DaimonMap(dest);
       int x = 0;
       int y = 0;
