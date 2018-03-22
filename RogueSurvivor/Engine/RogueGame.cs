@@ -7830,18 +7830,24 @@ namespace djack.RogueSurvivor.Engine
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
-      int distance = Rules.GridDistance(attacker.Location, defender.Location);
-      Attack attack = attacker.RangedAttack(distance, defender);
-      Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
-      attacker.SpendStaminaPoints(attack.StaminaPenalty);
-      if (attack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
+      // stamina pental is simply copied through from the base ranged attack (calculated below)
+      attacker.SpendStaminaPoints(attacker.CurrentRangedAttack.StaminaPenalty);
+      if (attacker.CurrentRangedAttack.Kind == AttackKind.FIREARM && (m_Rules.RollChance(Session.Get.World.Weather.IsRain() ? Rules.FIREARM_JAM_CHANCE_RAIN : Rules.FIREARM_JAM_CHANCE_NO_RAIN) && ForceVisibleToPlayer(attacker)))
       {
         AddMessage(MakeMessage(attacker, " : weapon jam!"));
       } else {
+        int distance = Rules.GridDistance(attacker.Location, defender.Location);
         ItemRangedWeapon itemRangedWeapon = attacker.GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null) throw new InvalidOperationException("DoSingleRangedAttack but no equipped ranged weapon");
         --itemRangedWeapon.Ammo;
+        // RS Alpha 9 considered glass objects perfect ablative armor for the target, but didn't inform the AI accordingly
+#if OBSOLETE
         if (DoCheckFireThrough(attacker, LoF)) return;
+#else
+        if (DoCheckFireThrough(attacker, LoF)) ++distance;  // XXX \todo distance penalty should be worse the further the object is from the target
+#endif
+        Attack attack = attacker.RangedAttack(distance, defender);
+        Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
         int num1 = (int)(accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
         int num2 = m_Rules.RollSkill(defence.Value);
         bool see_defender = ForceVisibleToPlayer(defender.Location);

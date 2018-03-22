@@ -7,10 +7,12 @@ REVIVED 0.10.0 CHANGES
 * key configuration files are not backward compatible.
 * even more AI overhaul.
 * Closing the door behind you is now a free action.
+* Windows and glass doors are no longer perfect ablative armor
 * The CHAR Guard Manual is very interesting (0% boredom rate), but dry reading (only restores as much sanity as a magazine per reading).
 ** It is also informative in other ways
 * map generation radically altered.
 ** survivalist weapon caches more usable (ammo is matched to ranged weapons in cache)
+** The SWAT team starting at the police station on Day 0 Turn 0 has pre-looted the offices.
 * It is rarely possible to see where a living is planning to move next.  (If you are about to shove him, you will see this.)
 * player-player trading is now possible.  A similar implementation is used for player-NPC trading (no more roulette, if the target doesn't
   want to give up anything you want, you will know immediately)
