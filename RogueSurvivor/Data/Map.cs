@@ -1043,6 +1043,8 @@ retry:
       m_ActorsList.Remove(actor);
       m_ActorsList.Insert(0, actor);
       m_iCheckNextActorIndex = 0;
+      if (actor.IsPlayer) Players.Recalc();
+      if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
     }
 
     public void Remove(Actor actor)
@@ -1371,6 +1373,16 @@ retry:
       return null;
     }
 
+    // Clairvoyant.  Useful for fine-tuning map generation and little else
+    private KeyValuePair<Point, Inventory>? GetInventoryHaving(Gameplay.GameItems.IDs id)
+    {
+      if (District.Maps.Contains(this)) throw new InvalidOperationException("do not use GetInventoryHaving except during map generation");
+      foreach (KeyValuePair<Point, Inventory> keyValuePair in m_GroundItemsByPosition) {
+        if (keyValuePair.Value.Has(id)) return keyValuePair;
+      }
+      return null;
+    }
+
     public void DropItemAt(Item it, Point position)
     {
 #if DEBUG
@@ -1433,6 +1445,43 @@ retry:
 #endif
       itemsAt.RemoveAllQuantity(it);
       if (itemsAt.IsEmpty) m_GroundItemsByPosition.Remove(position);
+    }
+
+    // Clairvoyant.
+    public bool TakeItemType(Gameplay.GameItems.IDs id, Inventory dest)
+    {
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+      var src = GetInventoryHaving(id);
+      if (null == src) return false;
+      Item it = src.Value.Value.GetFirst(id);
+      if (null == it) return false;
+      src.Value.Value.RemoveAllQuantity(it);
+      dest.AddAsMuchAsPossible(it);
+      if (src.Value.Value.IsEmpty) m_GroundItemsByPosition.Remove(src.Value.Key);
+      return true;
+    }
+
+    // Clairvoyant.
+    public bool SwapItemTypes(Gameplay.GameItems.IDs want, Gameplay.GameItems.IDs donate, Inventory dest)
+    {
+#if DEBUG
+      if (null == dest) throw new ArgumentNullException(nameof(dest));
+#endif
+      Item giving = dest.GetFirst(donate);
+      if (null == giving) return TakeItemType(want, dest);
+
+      var src = GetInventoryHaving(want);
+      if (null == src) return false;
+      Item it = src.Value.Value.GetFirst(want);
+      if (null == it) return false;
+
+      src.Value.Value.RemoveAllQuantity(it);
+      dest.RemoveAllQuantity(giving);
+      src.Value.Value.AddAsMuchAsPossible(giving);
+      dest.AddAsMuchAsPossible(it);
+      return true;
     }
 
     public void RemoveItemAtExt(Item it, Point position)

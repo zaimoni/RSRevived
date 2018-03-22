@@ -2223,9 +2223,155 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         if (pt.Y % 2 == 1 || !map.IsWalkable(pt) || CountAdjWalls(map, pt) != 3) return;
         map.PlaceAt(MakeObjIronBench(), pt);
       });
+
+#if OBSOLETE
       for (int index = 0; index < 5; ++index) {
         ActorPlace(m_DiceRoller, map, CreateNewPoliceman(0));
       }
+#else
+      Point[] ideal = new Point[5] { new Point(17, 2), new Point(16, 2), new Point(15, 2), new Point(14, 2), new Point(13, 2) };
+
+      for (int index = 0; index < 5; ++index) {
+        map.PlaceAt(CreateNewPoliceman(0), ideal[index]);
+      }
+      
+      // XXX AI by default would "stock up" before charging out to the surface.
+      // The simplest way to "override" is to say that these are SWAT reserves, so they have already "stocked up"
+      // \todo while here, sort the turn order -- nearest to stairs up should go first
+
+      // sort leadership 2 up front to increase plausibility of their getting backup guns
+      var impressive_cops = map.Police.Get.Where(a=> 2<=a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)).ToList();
+      if (0<impressive_cops.Count) {
+        foreach(Actor cop in impressive_cops) map.MoveActorToFirstPosition(cop);
+      }
+
+      // armor tuneup
+      foreach(Actor cop in map.Police.Get) {
+        if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_RIOT)) continue;
+        if (map.SwapItemTypes(GameItems.IDs.ARMOR_POLICE_RIOT, GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory)) continue;
+        if (cop.Inventory.Has(GameItems.IDs.ARMOR_POLICE_JACKET)) continue;
+        map.TakeItemType(GameItems.IDs.ARMOR_POLICE_JACKET, cop.Inventory);
+      }
+
+      // if we have a truncheon, we can use it -- get a second one
+      foreach(Actor cop in map.Police.Get) {
+        if (!cop.Inventory.Has(GameItems.IDs.MELEE_TRUNCHEON)) continue;
+        map.TakeItemType(GameItems.IDs.MELEE_TRUNCHEON, cop.Inventory);
+      }
+
+      // should be at inventory 4 (martial arts) or 5 (normal) now
+      // arm for bear
+      // first, try to get a backup gun and clip
+      foreach(Actor cop in map.Police.Get) {
+        if (cop.Inventory.Has(GameItems.IDs.RANGED_PISTOL)) {
+          if (!map.TakeItemType(GameItems.IDs.RANGED_SHOTGUN, cop.Inventory)) continue;
+          if (!map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory)) continue;
+        } else /* if (a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN)) */ {
+          if (!map.TakeItemType(GameItems.IDs.RANGED_PISTOL, cop.Inventory)) continue;
+          if (!map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory)) continue;
+        }
+      }
+
+      // then try to top off ammo
+      foreach(Actor cop in map.Police.Get) {
+        if (cop.Inventory.IsFull) continue;
+        if (!cop.Inventory.Has(GameItems.IDs.AMMO_LIGHT_PISTOL)) {
+          // shotgunner, failed to get full backup
+          map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          continue;
+        } else if (!cop.Inventory.Has(GameItems.IDs.AMMO_SHOTGUN)) {
+          // pistol; failed to get full backup
+          map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          continue;
+        } else {
+          // full kit and still has a slot open.  Prefer pistol ammo
+          map.TakeItemType(GameItems.IDs.AMMO_LIGHT_PISTOL, cop.Inventory);
+          if (cop.Inventory.IsFull) continue;
+          map.TakeItemType(GameItems.IDs.AMMO_SHOTGUN, cop.Inventory);
+          continue;
+        }
+      }
+
+      // now, to set up the marching order
+      var leaders = new List<Actor>();
+      var followers = new List<Actor>();
+      var typical = map.Police.Get.ToList();
+
+      Actor DraftLeader(List<Actor> pool) {
+        // first: leadership + backup weapons
+        Actor awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        if (null != awesome) return awesome;
+
+        // leadership+pistol
+        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        if (null != awesome) return awesome;
+
+        // leadership+shotgun
+        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN) && 2 <= a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP));
+        if (null != awesome) return awesome;
+
+        // backup weapons
+        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL) && a.Inventory.Has(GameItems.IDs.RANGED_SHOTGUN));
+        if (null != awesome) return awesome;
+
+        // pistol
+        awesome = pool.FirstOrDefault(a => a.Inventory.Has(GameItems.IDs.RANGED_PISTOL));
+        if (null != awesome) return awesome;
+
+        // shotgun
+        return pool.FirstOrDefault();
+      }
+
+      void Draft(List<Actor> dest, List<Actor> pool) {
+        Actor leader = DraftLeader(pool);
+        dest.Add(leader);
+        pool.Remove(leader);
+      }
+
+      // draft 2 leaders and assign the rest to followers
+      Draft(leaders,typical);
+      Draft(leaders,typical);
+      Draft(followers,typical);
+      Draft(followers,typical);
+      Draft(followers,typical);
+     
+      // identify type of deployment
+      if (2 <= leaders[0].Sheet.SkillTable.GetSkillLevel(Skills.IDs.LEADERSHIP)) {
+        // 3-2.
+        map.MoveActorToFirstPosition(followers[0]);
+        map.MoveActorToFirstPosition(leaders[1]);
+        leaders[1].AddFollower(followers[0]);
+        followers.RemoveAt(0);
+        leaders.RemoveAt(1);
+        map.MoveActorToFirstPosition(followers[1]);
+        map.MoveActorToFirstPosition(followers[0]);
+        map.MoveActorToFirstPosition(leaders[0]);        
+        leaders[0].AddFollower(followers[0]);
+        leaders[0].AddFollower(followers[1]);
+
+        ideal = new Point[5] { new Point(1,1), new Point(2,1), new Point(2,2), new Point(2,5), new Point(1,5) };
+      } else {
+        // 2-2-1
+        map.MoveActorToFirstPosition(followers[0]);
+        followers.RemoveAt(0);
+        map.MoveActorToFirstPosition(followers[0]);
+        map.MoveActorToFirstPosition(leaders[1]);
+        leaders[1].AddFollower(followers[0]);
+        followers.RemoveAt(0);
+        leaders.RemoveAt(1);
+        map.MoveActorToFirstPosition(followers[0]);
+        map.MoveActorToFirstPosition(leaders[0]);
+        leaders[0].AddFollower(followers[0]);
+
+        ideal = new Point[5] { new Point(1,1), new Point(2,1), new Point(2,5), new Point(1,5), new Point(2,9) };
+      }
+
+      typical = map.Police.Get.ToList();
+      for (int index = 0; index < 5; ++index) {
+        map.PlaceAt(typical[index], ideal[index]);
+      }
+#endif
+
       DoForEachTile(map.Rect, pt => { Session.Get.ForcePoliceKnown(new Location(map, pt)); });
       return map;
     }
@@ -2756,7 +2902,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         it.Equip();
         numberedName.OnEquipItem(it);
       }
-      numberedName.Inventory.AddAll(MakeItemTruncheon());
+      // do not issue truncheon if martial arts would nerf it
+      if (0 >= numberedName.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS)) numberedName.Inventory.AddAll(MakeItemTruncheon());
       numberedName.Inventory.AddAll(MakeItemFlashlight());
 //    numberedName.Inventory.AddAll(MakeItemPoliceRadio()); // class prop, implicit for police
       if (m_DiceRoller.RollChance(50)) {
