@@ -7826,7 +7826,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, float accuracyFactor)
+    private void DoSingleRangedAttack(Actor attacker, Actor defender, List<Point> LoF, double accuracyFactor)
     {
       attacker.Activity = Activity.FIGHTING;
       attacker.TargetActor = defender;
@@ -7848,7 +7848,11 @@ namespace djack.RogueSurvivor.Engine
 #endif
         Attack attack = attacker.RangedAttack(distance, defender);
         Defence defence = Rules.ActorDefence(defender, defender.CurrentDefence);
+#if OBSOLETE
         int num1 = (int)(accuracyFactor * (double)m_Rules.RollSkill(attack.HitValue));
+#else
+        int num1 = m_Rules.RollSkill((int)(accuracyFactor * attack.HitValue));
+#endif
         int num2 = m_Rules.RollSkill(defence.Value);
         bool see_defender = ForceVisibleToPlayer(defender.Location);
         bool see_attacker = see_defender ? IsVisibleToPlayer(attacker.Location) : ForceVisibleToPlayer(attacker.Location);
