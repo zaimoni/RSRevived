@@ -2789,11 +2789,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       valid_exits.OnlyIf(exit => {  // simulate Exit::ReasonIsBlocked
-        MapObject mapObjectAt = exit.Location.MapObject;
-        if (null == mapObjectAt) return true;
-        if (mapObjectAt.IsCouch) return true;   // XXX probably not if someone's sleeping on it
-        if (!mapObjectAt.IsJumpable) return false;
-        return m_Actor.CanJump;
+#if DEBUG
+        int blocked = exit.Location.IsBlockedForPathing;
+        switch(blocked)
+#else
+        switch(exit.Location.IsBlockedForPathing)
+#endif
+        {
+        case 2: return false;
+        case 1: return m_Actor.CanJump;
+#if DEBUG
+        case 0: return true;    // not if someone is sleeping on a couch
+        default: throw new InvalidOperationException("exit.Location.IsBlockedForPathing out of range: "+blocked.ToString());
+#else
+        default: return true;
+#endif
+        }
       });
       Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
       foreach(Map m in m_Actor.Location.Map.destination_maps.Get) {

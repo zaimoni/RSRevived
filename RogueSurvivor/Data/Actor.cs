@@ -1450,10 +1450,12 @@ namespace djack.RogueSurvivor.Data
         } else {
           ret[exit.Location] = tmp;
           // simulate Exit::ReasonIsBlocked
-          MapObject mapObjectAt = exit.Location.MapObject;
-          if (   null != mapObjectAt
-              && !mapObjectAt.IsCouch) {
-            if (!mapObjectAt.IsJumpable || !CanJump) ret.Remove(exit.Location);
+          switch(exit.Location.IsBlockedForPathing) {
+          case 0: break;
+          case 1: if (!CanJump) ret.Remove(exit.Location);
+            break;
+          default: ret.Remove(exit.Location);
+            break;
           }
         }
       }
@@ -1494,10 +1496,12 @@ namespace djack.RogueSurvivor.Data
       if (null != exit) {
         ret[exit.Location] = new ActionUseExit(this, loc.Position);
         // simulate Exit::ReasonIsBlocked
-        MapObject mapObjectAt = exit.Location.MapObject;
-        if (   null != mapObjectAt
-            && !mapObjectAt.IsCouch) {
-          if (!mapObjectAt.IsJumpable || !CanJump) ret.Remove(exit.Location);
+        switch(exit.Location.IsBlockedForPathing) {
+        case 0: break;
+        case 1: if (!CanJump) ret.Remove(exit.Location);
+          break;
+        default: ret.Remove(exit.Location);
+          break;
         }
       }
       return ret;

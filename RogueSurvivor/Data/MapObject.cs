@@ -65,47 +65,13 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsMaterialTransparent {
-      get {
-        return GetFlag(Flags.IS_MATERIAL_TRANSPARENT);
-      }
-    }
-
-    virtual public bool IsWalkable {
-      get {
-        return GetFlag(Flags.IS_WALKABLE);
-      }
-    }
-
-    public int JumpLevel {
-      get {
-        return m_JumpLevel;
-      }
-    }
-
-    public bool IsJumpable {
-      get {
-        return m_JumpLevel > 0;
-      }
-    }
-
-    public bool IsContainer {
-      get {
-        return GetFlag(Flags.IS_CONTAINER);
-      }
-    }
-
-    public bool IsCouch {
-      get {
-        return GetFlag(Flags.IS_COUCH);
-      }
-    }
-
-    public bool IsBreakable {
-      get {
-        return m_BreakState == Break.BREAKABLE;
-      }
-    }
+    public bool IsMaterialTransparent { get { return GetFlag(Flags.IS_MATERIAL_TRANSPARENT); } }
+    virtual public bool IsWalkable { get { return GetFlag(Flags.IS_WALKABLE); } }
+    public int JumpLevel { get { return m_JumpLevel; } }
+    public bool IsJumpable { get { return m_JumpLevel > 0; } }
+    public bool IsContainer { get { return GetFlag(Flags.IS_CONTAINER); } }
+    public bool IsCouch { get { return GetFlag(Flags.IS_COUCH); } }
+    public bool IsBreakable { get { return m_BreakState == Break.BREAKABLE; } }
 
     public Break BreakState {
       get {
@@ -187,6 +153,16 @@ namespace djack.RogueSurvivor.Data
         return m_MaxHitPoints;
       }
     }
+
+#if PROTOTYPE
+    public bool IsLivingPathable {
+      get { 
+        if (IsCouch) return true;
+        if (IsJumpable) return true;
+        return false;
+      }
+    }
+#endif
 
     // This section of private switch statements arguably could designate properties of a MapObjectModel class.
     private static byte _ID_Weight(IDs x)

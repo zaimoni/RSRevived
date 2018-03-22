@@ -1700,6 +1700,50 @@ retry:
       return mapObjectAt != null && !mapObjectAt.IsWalkable && !mapObjectAt.IsJumpable;
     }
 
+    /// <returns>0 not blocked, 1 jumping required, 2 blocked (for livings)</returns>
+    public int IsBlockedForPathing(Point pt)
+    {
+      // blockers are:
+      // walls (hard) !map.GetTileModelAt(pt).IsWalkable
+      // non-enterable objects (hard)
+      // jumpable objects (soft) map.GetMapObjectAt(pt)
+      if (!GetTileModelAtExt(pt)?.IsWalkable ?? true) return 2;
+      MapObject obj = GetMapObjectAtExt(pt);
+      if (null == obj) return 0;
+      if (obj.IsCouch) return 0;
+      if (obj.IsJumpable) return 1;
+      return 2;
+    }
+
+    /// <returns>0 not blocked, 1 jumping required both ways, 2 one wall one jump, 3 two walls (for livings)</returns>
+    private int IsPathingChokepoint(Point x0, Point x1)
+    {
+      int x0_blocked = IsBlockedForPathing(x0);
+      if (0== x0_blocked) return 0;
+      int blocked = x0_blocked*IsBlockedForPathing(x1);
+      // range is: 0,1,2,4; want to return 0...3
+      return 4==blocked ? 3 : blocked;
+    }
+
+    /// <returns>worst blockage status code of IsBlockedForPathing</returns>
+    public int CreatesPathingChokepoint(Point pt)
+    {
+      int block_N = IsBlockedForPathing(pt+Direction.N);
+      int block_S = IsBlockedForPathing(pt+Direction.S);
+      if (2==block_N && 2==block_S) return 2;
+      int block_W = IsBlockedForPathing(pt+Direction.W);
+      int block_E = IsBlockedForPathing(pt+Direction.E);
+      if (2==block_W && 2==block_E) return 2;
+      if (1==block_N*block_S) return 1;
+      if (1==block_W*block_E) return 1;
+      // would return 0 here when testing for *is* a pathing chokepoint
+      if (1==block_N && 0<IsBlockedForPathing(pt+Direction.N+Direction.N)) return 1;
+      if (1==block_S && 0<IsBlockedForPathing(pt+Direction.S+Direction.S)) return 1;
+      if (1==block_W && 0<IsBlockedForPathing(pt+Direction.W+Direction.W)) return 1;
+      if (1==block_E && 0<IsBlockedForPathing(pt+Direction.E+Direction.E)) return 1;
+      return 0;
+    }
+
     public Dictionary<Point,Direction> ValidDirections(Point pos, Func<Map, Point, bool> testFn)
     {
 #if DEBUG
@@ -1810,6 +1854,7 @@ retry:
           const string closed_gate = "<span class='lfort'>&#x2630;</span>";    // unicode: misc symbols (I Ching heaven)
           const string iron_fence = "<span class='lfort'>&#x2632;</span>";    // unicode: misc symbols (I Ching fire)
           const string open_gate = "<span class='lfort'>&#x2637;</span>";    // unicode: misc symbols (I Ching earth)
+          const string chair = "<span class='chair'>&#x2441;</span>";    // unicode: OCR chair
           MapObject tmp_obj = GetMapObjectAt(x,y);  // micro-optimization target (one Point temporary involved)
           if (null!=tmp_obj) {
             if (tmp_obj.IsCouch) {
@@ -1838,6 +1883,12 @@ retry:
               ascii_map[y][x] = iron_fence;
             } else if (MapObject.IDs.IRON_GATE_OPEN == tmp_obj.ID) {
               ascii_map[y][x] = open_gate;
+            } else if (MapObject.IDs.CHAIR == tmp_obj.ID) {
+              ascii_map[y][x] = chair;
+            } else if (MapObject.IDs.CHAR_CHAIR == tmp_obj.ID) {
+              ascii_map[y][x] = chair;
+            } else if (MapObject.IDs.HOSPITAL_CHAIR == tmp_obj.ID) {
+              ascii_map[y][x] = chair;
             } else if (tmp_obj.IsTransparent && !tmp_obj.IsWalkable) {
               ascii_map[y][x] = "|"; // gate; iron wall
             } else {

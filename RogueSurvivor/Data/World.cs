@@ -104,6 +104,7 @@ namespace djack.RogueSurvivor.Data
       dest.WriteLine(".inv {font-size:11px}");
       dest.WriteLine(".car {font-size:7px}");
       dest.WriteLine(".lfort {font-size:11px}");
+      dest.WriteLine(".chair {font-size:17px}");
       dest.WriteLine("-->\n</style>");
       dest.WriteLine("</head><body>");
 

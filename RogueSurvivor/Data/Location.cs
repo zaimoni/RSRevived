@@ -71,6 +71,7 @@ namespace djack.RogueSurvivor.Data
     public bool IsWalkableFor(Actor actor, out string reason) { return m_Map.IsWalkableFor(m_Position, actor, out reason); }
     public Inventory Items { get { return m_Map.GetItemsAt(m_Position); } }
     public Exit Exit { get { return m_Map.GetExitAt(m_Position); } }
+    public int IsBlockedForPathing { get { return m_Map.IsBlockedForPathing(m_Position); } }
 
     public override int GetHashCode()
     {

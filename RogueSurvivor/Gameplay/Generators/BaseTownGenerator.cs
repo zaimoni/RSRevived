@@ -2196,7 +2196,6 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           map.AddZone(MakeUniqueZone("security", rect3));
           continue;
         }
-        // \todo try to leave a non-jumping path to the doors
         TileFill(map, GameTiles.FLOOR_PLANKS, rect2);
         TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
         PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_PLANKS, MakeObjWoodenDoor());    // \todo if this door is on the main hallway (x coordinate 3) need to exclude fleeing prisoners
@@ -2207,15 +2206,16 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           map.PlaceAt(power, new Point(6,1)); // close, but not so close that using it keeps the door from auto-locking
           continue;
         }
-        // \todo genenrator goes in the office with left-top 3,0
+        // Try to leave a non-jumping path to the doors
+        // \todo this is optimizable, but level generation is only done once
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
           return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
         }, m_DiceRoller, pt => MakeObjTable(GameImages.OBJ_TABLE));
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
+          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0 && 0 == map.CreatesPathingChokepoint(pt);
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
+          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0 && 0 == map.CreatesPathingChokepoint(pt);
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         map.AddZone(MakeUniqueZone("office", rect3));
       }
