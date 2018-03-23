@@ -9147,6 +9147,10 @@ namespace djack.RogueSurvivor.Engine
       Actor m_Player_bak = Player;    // ForceVisibleToPlayer calls below can change this
 
       deadGuy.IsDead = true;
+      // we could fold next two lines into above
+      if (deadGuy.IsPlayer) deadGuy.Location.Map.Players.Recalc();
+      if ((int)Gameplay.GameFactions.IDs.ThePolice == deadGuy.Faction.ID) deadGuy.Location.Map.Police.Recalc();
+
       bool isMurder = Rules.IsMurder(killer, deadGuy);  // record this before it's invalidated (in POLICE_NO_QUESTIONS_ASKED build)
 	  deadGuy.Killed(reason);
       DoStopDragCorpse(deadGuy);
@@ -9183,10 +9187,8 @@ namespace djack.RogueSurvivor.Engine
       }
       if (deadGuy == m_Player_bak) {
         m_Player = m_Player_bak;
-        Player.Location.Map.Players.Recalc();
         if (0 >= Session.Get.World.PlayerCount) PlayerDied(killer, reason);
       }
-      if ((int)Gameplay.GameFactions.IDs.ThePolice == deadGuy.Faction.ID) deadGuy.Location.Map.Police.Recalc();
       deadGuy.RemoveAllFollowers();
       if (deadGuy.Leader != null) {
         if (deadGuy.Leader.IsPlayer) {
