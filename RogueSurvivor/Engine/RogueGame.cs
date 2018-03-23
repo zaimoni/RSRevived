@@ -3660,7 +3660,8 @@ namespace djack.RogueSurvivor.Engine
         List<Gameplay.GameItems.IDs> items = (a.Controller as ObjectiveAI).WhatHaveISeen();
 
         HashSet<GameItems.IDs> critical = (a.Controller as ObjectiveAI).WhatDoINeedNow();
-        critical.IntersectWith(items);
+        if (null != items) critical.IntersectWith(items);
+        else critical.Clear();
 ;       if (0<critical.Count) {
           string msg = "need now:";
           foreach(GameItems.IDs x in critical) {
@@ -3673,7 +3674,8 @@ namespace djack.RogueSurvivor.Engine
           tmp.Add(msg);
         } else {
           critical = (a.Controller as ObjectiveAI).WhatDoIWantNow();
-          critical.IntersectWith(items);
+          if (null != items) critical.IntersectWith(items);
+          else critical.Clear();
           if (0<critical.Count) {
             string msg = "want now:";
             foreach(GameItems.IDs x in critical) {

@@ -1558,7 +1558,7 @@ retry:
 
     public void Destroy(Corpse c)
     {
-      c?.DraggedBy.StopDraggingCorpse();
+      c.DraggedBy?.StopDraggingCorpse();
       Remove(c);
     }
 
