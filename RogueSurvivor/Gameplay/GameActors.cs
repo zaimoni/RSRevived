@@ -406,6 +406,9 @@ to transform from MALE_CIVILIAN to POLICEMAN:
 	{
 	  internal static GameActors.IDs NextUndeadEvolution(this GameActors.IDs from)
 	  {
+#if DEBUG
+        if (!RogueGame.Options.AllowUndeadsEvolution || !Session.Get.HasEvolution) throw new InvalidOperationException("game options disallow undead evolution");
+#endif
         switch (from) {
           case GameActors.IDs.UNDEAD_SKELETON: return GameActors.IDs.UNDEAD_RED_EYED_SKELETON;
           case GameActors.IDs.UNDEAD_RED_EYED_SKELETON: return GameActors.IDs.UNDEAD_RED_SKELETON;

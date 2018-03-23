@@ -2013,10 +2013,12 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       int width = underground.Width;
       for (int index1 = 0; index1 < width; ++index1) {
         Actor newUndead = CreateNewUndead(0);
-        while (true) {
-          GameActors.IDs index2 = newUndead.Model.ID.NextUndeadEvolution();
-          if (index2 == newUndead.Model.ID) break;
-          newUndead.Model = m_Game.GameActors[index2];
+        if (RogueGame.Options.AllowUndeadsEvolution && Session.Get.HasEvolution) {
+          while (true) {
+            GameActors.IDs index2 = newUndead.Model.ID.NextUndeadEvolution();
+            if (index2 == newUndead.Model.ID) break;
+            newUndead.Model = m_Game.GameActors[index2];
+          }
         }
         ActorPlace(m_DiceRoller, underground, newUndead, actor_ok_here);
       }
