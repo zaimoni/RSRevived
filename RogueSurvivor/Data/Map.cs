@@ -785,7 +785,24 @@ retry:
         goto retry;
       }
 
-      
+      // special area navigation
+      {
+      KeyValuePair<Map,Map>? src_alt = Engine.Session.Get.UniqueMaps.NavigatePoliceStation(this);
+      KeyValuePair<Map,Map>? dest_alt = Engine.Session.Get.UniqueMaps.NavigatePoliceStation(dest);
+      if (null != src_alt && null == dest_alt) {
+        dest = src_alt.Value.Key;
+        goto retry;
+      }
+      }
+      {
+      KeyValuePair<Map,Map>? src_alt = Engine.Session.Get.UniqueMaps.NavigateHospital(this);
+      KeyValuePair<Map,Map>? dest_alt = Engine.Session.Get.UniqueMaps.NavigateHospital(dest);
+      if (null != src_alt && null == dest_alt) {
+        dest = src_alt.Value.Key;
+        goto retry;
+      }
+      }
+
       if (dest.District != District) {
         int dest_extended = UsesCrossDistrictView(dest);
         if (0 == dest_extended) {
