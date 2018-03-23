@@ -894,13 +894,21 @@ namespace djack.RogueSurvivor.Gameplay
     public static Image Get(string imageID)
     {
       if (s_Images.TryGetValue(imageID, out Image image)) return image;
+#if DEBUG
+      throw new InvalidOperationException("missing image '"+imageID+"'");
+#else
       return s_Images["undef"];
+#endif
     }
 
     public static Image GetGrayLevel(string imageID)
     {
       if (s_GrayLevelImages.TryGetValue(imageID, out Image image)) return image;
+#if DEBUG
+      throw new InvalidOperationException("missing image '"+imageID+"'");
+#else
       return s_GrayLevelImages["undef"];
+#endif
     }
   }
 }
