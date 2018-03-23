@@ -22,7 +22,7 @@ namespace djack.RogueSurvivor.Engine.Actions
 
     public override bool IsLegal()
     {
-      return RogueForm.Game.Rules.CanActorEatCorpse(m_Actor, m_Target, out m_FailReason);
+      return m_Actor.CanEatCorpse(out m_FailReason);
     }
 
     public override void Perform()

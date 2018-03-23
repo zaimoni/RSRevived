@@ -569,19 +569,6 @@ namespace djack.RogueSurvivor.Engine
       return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
-    public bool CanActorEatCorpse(Actor actor, Corpse corpse, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (corpse == null) throw new ArgumentNullException("corpse");
-      if (!actor.CanEatCorpse)
-      {
-        reason = "not starving or insane";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorButcherCorpse(Actor actor, Corpse corpse)
     {
       return CanActorButcherCorpse(actor, corpse, out string reason);

@@ -2218,10 +2218,19 @@ namespace djack.RogueSurvivor.Data
       m_FoodPoints = Math.Min(m_FoodPoints + f, MaxRot);
     }
 
-    public bool CanEatCorpse {
-      get {
-        return Model.Abilities.IsUndead || IsStarving || IsInsane;
-      }
+    private string ReasonCantEatCorpse()
+    {
+      if (!Model.Abilities.IsUndead && !IsStarving && !IsInsane) return "not starving or insane";
+      return "";
+    }
+
+    public bool CanEatCorpse(out string reason) {
+      reason = ReasonCantEatCorpse();
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanEatCorpse() {
+      return string.IsNullOrEmpty(ReasonCantEatCorpse());
     }
 
     // sleep

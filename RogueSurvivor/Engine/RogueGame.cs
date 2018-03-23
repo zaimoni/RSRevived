@@ -3922,7 +3922,7 @@ namespace djack.RogueSurvivor.Engine
       bool OnRMBCorpse(Corpse c)
       {
         if (Player.Model.Abilities.IsUndead) {
-          if (m_Rules.CanActorEatCorpse(Player, c, out string reason)) { // currently automatically succeeds, other than null checks
+          if (Player.CanEatCorpse(out string reason)) { // currently automatically succeeds
             DoEatCorpse(Player, c);
             return true;
           }
@@ -3988,7 +3988,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
       if (corpse == null) return false;
-      if (!m_Rules.CanActorEatCorpse(player, corpse, out string reason)) {
+      if (!player.CanEatCorpse(out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", corpse.DeadGuy.Name, reason)));
         return false;
       }
