@@ -10488,8 +10488,7 @@ namespace djack.RogueSurvivor.Engine
       }
       int rot = c.RotLevel;
       if (0 >= rot) return;
-      string str = "rot" + rot + "_";
-      string imageID = str + 1 + Session.Get.WorldTime.TurnCounter % 2;
+      string imageID = "rot" + rot + "_" + Session.Get.WorldTime.TurnCounter % 2;
       int num3 = Session.Get.WorldTime.TurnCounter % 5 - 2;
       int num4 = Session.Get.WorldTime.TurnCounter / 3 % 5 - 2;
       m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
