@@ -316,6 +316,10 @@ namespace djack.RogueSurvivor.Engine
     public const int MESSAGE_NPC_SLEEP_SNORE_CHANCE = 10;
     private const int WEATHER_CHANGE_CHANCE = 33;
     private const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;   // XXX dead now that exit generation is on NO_PEACE_WALLS
+
+#if DEBUG
+    public static bool IsDebugging = false;
+#endif
     private readonly IRogueUI m_UI; // this cannot be static.
     private Rules m_Rules;
     private HiScoreTable m_HiScoreTable;

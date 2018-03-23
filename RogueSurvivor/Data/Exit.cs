@@ -44,5 +44,10 @@ namespace djack.RogueSurvivor.Data
       if (mapObjectAt != null && (!mapObjectAt.IsJumpable || (null!=actor && !actor.CanJump)) && !mapObjectAt.IsCouch) return string.Format("{0} is blocking your way.", mapObjectAt.AName);
       return "";
     }
+
+    public override string ToString()
+    {
+      return "Exit; destination "+m_Location.ToString();
+    }
   }
 }

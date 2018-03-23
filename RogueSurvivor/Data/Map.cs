@@ -772,7 +772,9 @@ retry:
         return exit_maps;
       }
       exit_maps.RemoveWhere(m=> 1==m.destination_maps.Get.Count);
+      exits.RemoveWhere(e => !exit_maps.Contains(e.ToMap));
       if (1>=exit_maps.Count) return exit_maps;
+
 	  HashSet<Map> dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
       if (1 == dest_exit_maps.Count) {
         dest = dest_exit_maps.ToList()[0];
@@ -789,7 +791,7 @@ retry:
       {
       KeyValuePair<Map,Map>? src_alt = Engine.Session.Get.UniqueMaps.NavigatePoliceStation(this);
       KeyValuePair<Map,Map>? dest_alt = Engine.Session.Get.UniqueMaps.NavigatePoliceStation(dest);
-      if (null != src_alt && null == dest_alt) {
+      if (null != src_alt && null == dest_alt) {    // probably dead code
         dest = src_alt.Value.Key;
         goto retry;
       }

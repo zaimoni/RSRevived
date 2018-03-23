@@ -7,6 +7,7 @@
 // #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
 // #define TRACE_NAVIGATE
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
+// #define TRACE_BEHAVIORPATHTO
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -1743,7 +1744,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       Map a_map = m_Actor.Location.Map;
 	  if (dest.Map != a_map) {
+#if TRACE_BEHAVIORPATHTO
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "in BehaviorPathTo; "+ m_Actor.Model.Abilities.AI_CanUseAIExits.ToString());
+#endif
         HashSet<Map> exit_maps = a_map.PathTo(dest.Map, out HashSet<Exit> valid_exits);
+#if TRACE_BEHAVIORPATHTO
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "valid_exits: "+ valid_exits.to_s());
+#endif
         if (!m_Actor.Model.Abilities.AI_CanUseAIExits) {
           exit_maps.RemoveWhere(m=> m!=m.District.EntryMap);
           valid_exits.RemoveWhere(exit => !exit_maps.Contains(exit.ToMap));
@@ -1755,12 +1762,21 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 
         var goals = a_map.ExitLocations(valid_exits);
+#if TRACE_BEHAVIORPATHTO
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null==goals ? "null" : goals.ToString()));
+#endif
         if (null == goals) return null;
 	    navigate.GoalDistance(goals, m_Actor.Location.Position);
 	  } else {
 	    navigate.GoalDistance(dest.Position, m_Actor.Location.Position);
 	  }
+#if TRACE_BEHAVIORPATHTO
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "In domain: "+ navigate.Domain.Contains(m_Actor.Location.Position).ToString());
+#endif
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
+#if TRACE_BEHAVIORPATHTO
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "apparent range: "+ dist.ToString() + " <=> " + navigate.Cost(m_Actor.Location.Position).ToString());
+#endif
       if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
       // XXX telepathy: do not block an exit which has a non-enemy at the other destination
       ActorAction tmp3 = DecideMove(PlanApproach(navigate));   // only called when no enemies in sight anyway
