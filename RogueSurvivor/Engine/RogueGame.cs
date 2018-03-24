@@ -3929,7 +3929,7 @@ namespace djack.RogueSurvivor.Engine
           AddMessage(MakeErrorMessage(string.Format("Cannot eat {0} corpse : {1}.", c.DeadGuy.Name, reason)));
           return false;
         }
-        if (m_Rules.CanActorButcherCorpse(Player, c, out string reason1)) {
+        if (Player.CanButcher(c, out string reason1)) {
           DoButcherCorpse(Player, c);
           return true;
         }

@@ -569,32 +569,12 @@ namespace djack.RogueSurvivor.Engine
       return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
-    public bool CanActorButcherCorpse(Actor actor, Corpse corpse)
-    {
-      return CanActorButcherCorpse(actor, corpse, out string reason);
-    }
-
-    public bool CanActorButcherCorpse(Actor actor, Corpse corpse, out string reason)
-    {
-      if (actor == null) throw new ArgumentNullException("actor");
-      if (corpse == null) throw new ArgumentNullException("corpse");
-      if (actor.IsTired) {
-        reason = "tired";
-        return false;
-      }
-      if (corpse.Position != actor.Location.Position || !actor.Location.Map.Has(corpse)) {
-        reason = "not in same location";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorStartDragCorpse(Actor actor, Corpse corpse)
     {
       return CanActorStartDragCorpse(actor, corpse, out string reason);
     }
 
+    // XXX \todo AI needs to learn how to drag corpses
     public bool CanActorStartDragCorpse(Actor actor, Corpse corpse, out string reason)
     {
       if (actor == null)

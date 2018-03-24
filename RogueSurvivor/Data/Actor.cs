@@ -2233,6 +2233,27 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantEatCorpse());
     }
 
+    private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
+    {
+      if (corpse == null) throw new ArgumentNullException(nameof(corpse));
+      if (IsTired) return "tired";
+      if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
+      return "";
+    }
+
+    public bool CanButcher(Corpse corpse, out string reason)
+    {
+      reason = ReasonCantButcher(corpse);
+      return string.IsNullOrEmpty(reason);
+    }
+
+#if DEAD_FUNC
+    public bool CanButcher(Corpse corpse)
+    {
+      return string.IsNullOrEmpty(ReasonCantButcher(corpse));
+    }
+#endif
+
     // sleep
     public int TurnsUntilSleepy {
       get {
