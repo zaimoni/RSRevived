@@ -2235,7 +2235,7 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
     {
-      if (corpse == null) throw new ArgumentNullException(nameof(corpse));
+      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
       if (IsTired) return "tired";
       if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
       return "";
@@ -2253,6 +2253,27 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(ReasonCantButcher(corpse));
     }
 #endif
+
+    private string ReasonCantStartDrag(Corpse corpse)
+    {
+      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
+      if (corpse.IsDragged) return "corpse is already being dragged";
+      if (IsTired) return "tired";
+      if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
+      if (null != DraggedCorpse) return "already dragging a corpse";
+      return "";
+    }
+
+    public bool CanStartDrag(Corpse corpse, out string reason) // XXX \todo AI needs to learn how to drag corpses
+    {
+      reason = ReasonCantStartDrag(corpse);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanStartDrag(Corpse corpse)
+    {
+      return string.IsNullOrEmpty(ReasonCantStartDrag(corpse));
+    }
 
     // sleep
     public int TurnsUntilSleepy {

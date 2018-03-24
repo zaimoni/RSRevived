@@ -3947,7 +3947,7 @@ namespace djack.RogueSurvivor.Engine
          AddMessage(MakeErrorMessage(string.Format("Cannot stop dragging {0} corpse : {1}.", c.DeadGuy.Name, reason)));
          return false;
        }
-       if (m_Rules.CanActorStartDragCorpse(Player, c, out string reason1)) {
+       if (Player.CanStartDrag(c, out string reason1)) {
          DoStartDragCorpse(Player, c);
          return false;
        }
