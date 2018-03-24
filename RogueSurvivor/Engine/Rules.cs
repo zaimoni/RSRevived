@@ -569,26 +569,6 @@ namespace djack.RogueSurvivor.Engine
       return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
-    public bool CanActorStopDragCorpse(Actor actor, Corpse corpse)
-    {
-      return CanActorStopDragCorpse(actor, corpse, out string reason);
-    }
-
-    public bool CanActorStopDragCorpse(Actor actor, Corpse corpse, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (corpse == null)
-        throw new ArgumentNullException("corpse");
-      if (corpse.DraggedBy != actor)
-      {
-        reason = "not dragging this corpse";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     public bool CanActorReviveCorpse(Actor actor, Corpse corpse)
     {
       return CanActorReviveCorpse(actor, corpse, out string reason);

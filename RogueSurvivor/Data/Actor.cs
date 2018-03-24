@@ -2235,7 +2235,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantButcher(Corpse corpse) // XXX \todo enable AI for this
     {
+#if DEBUG
       if (null == corpse) throw new ArgumentNullException(nameof(corpse));
+#endif
       if (IsTired) return "tired";
       if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
       return "";
@@ -2256,7 +2258,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantStartDrag(Corpse corpse)
     {
+#if DEBUG
       if (null == corpse) throw new ArgumentNullException(nameof(corpse));
+#endif
       if (corpse.IsDragged) return "corpse is already being dragged";
       if (IsTired) return "tired";
       if (corpse.Position != Location.Position || !Location.Map.Has(corpse)) return "not in same location";
@@ -2270,10 +2274,34 @@ namespace djack.RogueSurvivor.Data
       return string.IsNullOrEmpty(reason);
     }
 
+#if DEAD_FUNC
     public bool CanStartDrag(Corpse corpse)
     {
       return string.IsNullOrEmpty(ReasonCantStartDrag(corpse));
     }
+#endif
+
+    private string ReasonCantStopDrag(Corpse corpse)
+    {
+#if DEBUG
+      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
+#endif
+      if (this != corpse.DraggedBy) return "not dragging this corpse";
+      return "";
+    }
+
+    public bool CanStopDrag(Corpse corpse, out string reason) // XXX \todo AI needs to learn how to drag corpses
+    {
+      reason = ReasonCantStopDrag(corpse);
+      return string.IsNullOrEmpty(reason);
+    }
+
+#if DEAD_FUNC
+    public bool CanStopDrag(Corpse corpse)
+    {
+      return string.IsNullOrEmpty(ReasonCantStopDrag(corpse));
+    }
+#endif
 
     // sleep
     public int TurnsUntilSleepy {

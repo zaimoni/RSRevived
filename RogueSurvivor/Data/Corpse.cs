@@ -20,24 +20,21 @@ namespace djack.RogueSurvivor.Data
     public readonly int MaxHitPoints;
     public readonly float Rotation;
     public readonly float Scale; // currently not used properly
-    public Actor DraggedBy;
+    public Actor DraggedBy = null;
 
-    public bool IsDragged {
-      get {
-        return DraggedBy != null && !DraggedBy.IsDead;
-      }
-    }
+    public bool IsDragged { get { return !DraggedBy?.IsDead ?? false; } }
 
     public Corpse(Actor deadGuy, float rotation, float scale=1f)
     {
-	  Contract.Requires(null != deadGuy);
+#if DEBUG
+      if (null == deadGuy) throw new ArgumentNullException(nameof(deadGuy));
+#endif
       DeadGuy = deadGuy;
       Turn = deadGuy.Location.Map.LocalTime.TurnCounter;
       HitPoints = (float)deadGuy.MaxHPs;
       MaxHitPoints = deadGuy.MaxHPs;
       Rotation = rotation;
       Scale = Math.Max(0.0f, Math.Min(1f, scale));
-      DraggedBy = null;
     }
 
     public int FreshnessPercent {

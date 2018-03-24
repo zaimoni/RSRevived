@@ -3940,7 +3940,7 @@ namespace djack.RogueSurvivor.Engine
      bool OnLMBCorpse(Corpse c)
      {
        if (c.IsDragged) {
-         if (m_Rules.CanActorStopDragCorpse(Player, c, out string reason)) {
+         if (Player.CanStopDrag(c, out string reason)) {
            DoStopDragCorpse(Player);
            return false;
          }
