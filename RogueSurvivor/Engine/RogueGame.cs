@@ -4000,7 +4000,7 @@ namespace djack.RogueSurvivor.Engine
     {
       Corpse corpse = MouseToCorpse(mousePos, out Point corpsePos);
       if (corpse == null) return false;
-      if (!m_Rules.CanActorReviveCorpse(player, corpse, out string reason)) {
+      if (!player.CanRevive(corpse, out string reason)) {
         AddMessage(MakeErrorMessage(string.Format("Cannot revive {0} : {1}.", corpse.DeadGuy.Name, reason)));
         return false;
       }

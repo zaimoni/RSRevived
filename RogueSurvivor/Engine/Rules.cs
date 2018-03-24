@@ -569,46 +569,6 @@ namespace djack.RogueSurvivor.Engine
       return a.CurrentMeleeAttack.DamageValue / 2 + Rules.SKILL_NECROLOGY_CORPSE_BONUS * a.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
     }
 
-    public bool CanActorReviveCorpse(Actor actor, Corpse corpse)
-    {
-      return CanActorReviveCorpse(actor, corpse, out string reason);
-    }
-
-    public bool CanActorReviveCorpse(Actor actor, Corpse corpse, out string reason)
-    {
-      if (actor == null)
-        throw new ArgumentNullException("actor");
-      if (corpse == null)
-        throw new ArgumentNullException("corpse");
-      if (actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0)
-      {
-        reason = "lack medic skill";
-        return false;
-      }
-      if (corpse.Position != actor.Location.Position)
-      {
-        reason = "not there";
-        return false;
-      }
-      if (corpse.RotLevel > 0)
-      {
-        reason = "corpse not fresh";
-        return false;
-      }
-      if (corpse.IsDragged)
-      {
-        reason = "dragged corpse";
-        return false;
-      }
-      if (!actor.Inventory.Has(GameItems.IDs.MEDICINE_MEDIKIT))
-      {
-        reason = "no medikit";
-        return false;
-      }
-      reason = "";
-      return true;
-    }
-
     // These two somewhat counter-intuitively consider "same location" as adjacent
     public static bool IsAdjacent(Location a, Location b)
     {
@@ -824,7 +784,7 @@ namespace djack.RogueSurvivor.Engine
 
     public int CorpseReviveChance(Actor actor, Corpse corpse)
     {
-      if (!CanActorReviveCorpse(actor, corpse)) return 0;
+      if (!actor.CanRevive(corpse)) return 0;
       return corpse.FreshnessPercent / 2 + actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) * Rules.SKILL_MEDIC_REVIVE_BONUS;
     }
 

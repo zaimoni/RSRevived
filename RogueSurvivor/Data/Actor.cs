@@ -2303,6 +2303,30 @@ namespace djack.RogueSurvivor.Data
     }
 #endif
 
+    private string ReasonCantRevive(Corpse corpse)
+    {
+#if DEBUG
+      if (null == corpse) throw new ArgumentNullException(nameof(corpse));
+#endif
+      if (0 == Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC)) return "lack medic skill";
+      if (corpse.Position != Location.Position) return "not there";
+      if (corpse.RotLevel > 0) return "corpse not fresh";
+      if (corpse.IsDragged) return "dragged corpse";
+      if (!Inventory.Has(Gameplay.GameItems.IDs.MEDICINE_MEDIKIT)) return "no medikit";
+      return "";
+    }
+
+    public bool CanRevive(Corpse corpse, out string reason)
+    {
+      reason = ReasonCantRevive(corpse);
+      return string.IsNullOrEmpty(reason);
+    }
+
+    public bool CanRevive(Corpse corpse)
+    {
+      return string.IsNullOrEmpty(ReasonCantRevive(corpse));
+    }
+
     // sleep
     public int TurnsUntilSleepy {
       get {

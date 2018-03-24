@@ -2111,7 +2111,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Percept> corpsePercepts = percepts.FilterT<List<Corpse>>().Filter(p =>
       {
         foreach (Corpse corpse in p.Percepted as List<Corpse>) {
-          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
+          if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return true;
         }
         return false;
@@ -2120,7 +2120,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Percept percept = FilterNearest(corpsePercepts);
 	  if (m_Actor.Location.Position==percept.Location.Position) {
         foreach (Corpse corpse in (percept.Percepted as List<Corpse>)) {
-          if (game.Rules.CanActorReviveCorpse(m_Actor, corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
+          if (m_Actor.CanRevive(corpse) && !m_Actor.IsEnemyOf(corpse.DeadGuy))
             return new ActionReviveCorpse(m_Actor, corpse);
         }
 	  }
