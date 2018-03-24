@@ -10488,7 +10488,7 @@ namespace djack.RogueSurvivor.Engine
       }
       int rot = c.RotLevel;
       if (0 >= rot) return;
-      string imageID = "rot" + rot + "_" + Session.Get.WorldTime.TurnCounter % 2;
+      string imageID = "rot" + rot + "_" + (1+Session.Get.WorldTime.TurnCounter % 2);
       int num3 = Session.Get.WorldTime.TurnCounter % 5 - 2;
       int num4 = Session.Get.WorldTime.TurnCounter / 3 % 5 - 2;
       m_UI.UI_DrawImage(imageID, gx + num3, gy + num4);
@@ -10498,9 +10498,9 @@ namespace djack.RogueSurvivor.Engine
     {
       int num2 = list == null ? 0 : list.Count;
       if (num2 > 0) title = title + " : " + num2;
-      gy -= 14;
+      gy -= BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       int gx1 = gx;
       int gy1 = gy;
       for (int index = 0; index < slots; ++index) {
