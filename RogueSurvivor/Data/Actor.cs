@@ -12,7 +12,6 @@ using System;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
@@ -1121,7 +1120,9 @@ namespace djack.RogueSurvivor.Data
     // leadership/follower handling
     public void AddFollower(Actor other)
     {
-      Contract.Requires(null != other);
+#if DEBUG
+      if (null == other) throw new ArgumentNullException(nameof(other));
+#endif
       if (m_Followers != null && m_Followers.Contains(other)) throw new ArgumentException("other is already a follower");
       if (m_Followers == null) m_Followers = new List<Actor>(1);
       m_Followers.Add(other);
@@ -1131,7 +1132,9 @@ namespace djack.RogueSurvivor.Data
 
     public void RemoveFollower(Actor other)
     {
-      Contract.Requires(null != other);
+#if DEBUG
+      if (null == other) throw new ArgumentNullException(nameof(other));
+#endif
       if (m_Followers == null) throw new InvalidOperationException("no followers");
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
@@ -1150,7 +1153,9 @@ namespace djack.RogueSurvivor.Data
 
     public void SetTrustIn(Actor other, int trust)
     {
-	  Contract.Requires(null != other);
+#if DEBUG
+      if (null == other) throw new ArgumentNullException(nameof(other));
+#endif
       if (null == m_TrustDict) m_TrustDict = new Dictionary<Actor,int>();
       m_TrustDict[other] = trust;
     }
@@ -1543,7 +1548,9 @@ namespace djack.RogueSurvivor.Data
 
     public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
     {
-      Contract.Requires(0<now.Count());
+#if DEBUG
+      if (0 >= now.Count()) throw new InvalidOperationException("0 >= now.Count() : do not step into nowhere");
+#endif
       HashSet<Point> ret = new HashSet<Point>();
       foreach(Point pt in now) {
         List<Point> tmp = OneStepRange(m,pt);
@@ -1588,7 +1595,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantPush(MapObject mapObj)
     {
-      Contract.Requires(null != mapObj);
+#if DEBUG
+      if (null == mapObj) throw new ArgumentNullException(nameof(mapObj));
+#endif
       if (!AbleToPush) return "cannot push objects";
       if (IsTired) return "tired";
       if (!mapObj.IsMovable) return "cannot be moved";
@@ -1611,7 +1620,9 @@ namespace djack.RogueSurvivor.Data
     // currently other is unused, but that is not an invariant
     private string ReasonCantShove(Actor other)
     {
-      Contract.Requires(null != other);
+#if DEBUG
+      if (null == other) throw new ArgumentNullException(nameof(other));
+#endif
       if (!AbleToPush) return "cannot shove people";
       if (IsTired) return "tired";
       return "";
@@ -1680,7 +1691,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantBarricade(DoorWindow door)
     {
-      Contract.Requires(null != door);
+#if DEBUG
+      if (null == door) throw new ArgumentNullException(nameof(door));
+#endif
       if (!door.CanBarricade(out string reason)) return reason;
       return ReasonCouldntBarricade();
     }
@@ -1744,7 +1757,9 @@ namespace djack.RogueSurvivor.Data
 
 	private string ReasonCantOpen(DoorWindow door)
 	{
-	  Contract.Requires(null != door);
+#if DEBUG
+      if (null == door) throw new ArgumentNullException(nameof(door));
+#endif
       if (!Model.Abilities.CanUseMapObjects) return "no ability to open";
 	  if (door.BarricadePoints > 0) return "is barricaded";
       if (!door.IsClosed) return "not closed";
@@ -1816,7 +1831,9 @@ namespace djack.RogueSurvivor.Data
     // E.g., non-CHAR power generators might actually *need fuel*
     private string ReasonCantSwitch(PowerGenerator powGen)
 	{
-	  Contract.Requires(null != powGen);
+#if DEBUG
+      if (null == powGen) throw new ArgumentNullException(nameof(powGen));
+#endif
       if (!Model.Abilities.CanUseMapObjects) return "cannot use map objects";
       if (IsSleeping) return "is sleeping";
       return "";
@@ -1905,7 +1922,9 @@ namespace djack.RogueSurvivor.Data
     // n is the number of our actions
     public int HowManyTimesOtherActs(int n,Actor other)
     {   // n=1:
-      Contract.Requires(1<=n);
+#if DEBUG
+      if (1 > n) throw new InvalidOperationException("not useful to check how many times other can act before this action");
+#endif
       int my_ap = m_ActionPoints;
       int my_actions = 0;
       while(0 < my_ap) { // assuming this never gets very large

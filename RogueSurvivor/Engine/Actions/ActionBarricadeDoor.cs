@@ -6,7 +6,7 @@
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
-using System.Diagnostics.Contracts;
+using System;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -17,7 +17,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionBarricadeDoor(Actor actor, DoorWindow door)
       : base(actor)
     {
-      Contract.Requires(null != door);
+#if DEBUG
+      if (null == door) throw new ArgumentNullException(nameof(door));
+#endif
       m_Door = door;
     }
 

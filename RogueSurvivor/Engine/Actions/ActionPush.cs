@@ -5,8 +5,8 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using System;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -19,7 +19,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionPush(Actor actor, MapObject pushObj, Direction pushDir)
       : base(actor)
     {
-      Contract.Requires(null != pushObj);
+#if DEBUG
+      if (null == pushObj) throw new ArgumentNullException(nameof(pushObj));
+#endif
       m_Object = pushObj;
       m_Direction = pushDir;
       m_To = pushObj.Location.Position + pushDir;
