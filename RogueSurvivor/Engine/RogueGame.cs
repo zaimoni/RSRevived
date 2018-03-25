@@ -11355,7 +11355,7 @@ namespace djack.RogueSurvivor.Engine
     {
 #if DEBUG
       if (null == entries) throw new ArgumentNullException(nameof(entries));
-      if (null!=entries && entries.Length != values.Length) throw new InvalidOperationException("null!=entries && entries.Length != values.Length");
+      if (null != values && entries.Length != values.Length) throw new InvalidOperationException("null!=entries && entries.Length != values.Length");
 #endif
       int gx1 = gx + rightPadding;
       Color color = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
@@ -12206,8 +12206,9 @@ namespace djack.RogueSurvivor.Engine
                 Session.Get.PlayerKnows_CHARUndergroundFacilityLocation = true;
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Learned the location of the CHAR Underground Facility.");
                 KillActor(null, theActor, "transformation");
+                map.TryRemoveCorpseOf(theActor);
                 Actor local_8 = Zombify(null, theActor, false);
-                local_8.Model = GameActors.ZombiePrince;
+                if (Session.Get.HasAllZombies) local_8.Model =  GameActors.ZombiePrince;
                 local_8.ActionPoints = 0;   // this was warned, player should get the first move
                 Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, string.Format("{0} turned into a {1}!", theActor.Name, local_8.Model.Name));
                 m_MusicManager.Play(GameMusics.FIGHT);
