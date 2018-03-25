@@ -9296,7 +9296,7 @@ namespace djack.RogueSurvivor.Engine
       deadGuy.Location.Map.Remove(deadGuy);
 
       // achievement: killing the Sewers Thing
-      if (Player == killer || Player == killer.Leader) {
+      if (Player == killer || Player == killer?.Leader) {
         if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
       }
 
