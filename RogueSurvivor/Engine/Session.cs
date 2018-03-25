@@ -189,7 +189,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(Session session, string filepath, Session.SaveFormat format)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       session.World.OptimizeBeforeSaving();
       switch (format)
       {
@@ -207,7 +209,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool Load(string filepath, Session.SaveFormat format)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       switch (format)
       {
         case Session.SaveFormat.FORMAT_BIN:
@@ -223,8 +227,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveBin(Session session, string filepath)
     {
-      Contract.Requires(null != session);
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (null == session) throw new ArgumentNullException(nameof(session));
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
 	  filepath.BinarySerialize(session);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
@@ -232,7 +238,9 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadBin(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
 #if DEBUG
 #else
@@ -253,8 +261,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveSoap(Session session, string filepath)
     {
-      Contract.Requires(null != session);
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (null == session) throw new ArgumentNullException(nameof(session));
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
 	  filepath.BinarySerialize(session);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session... done!");
@@ -262,7 +272,9 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadSoap(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
       try {
         using (Stream stream = filepath.CreateStream(false)) {
@@ -279,8 +291,10 @@ namespace djack.RogueSurvivor.Engine
 
     private static void SaveXml(Session session, string filepath)
     {
-      Contract.Requires(null != session);
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (null == session) throw new ArgumentNullException(nameof(session));
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving session...");
       using (Stream stream = filepath.CreateStream(true)) {
         new XmlSerializer(typeof (Session)).Serialize(stream, (object) session);
@@ -291,7 +305,9 @@ namespace djack.RogueSurvivor.Engine
 
     private static bool LoadXml(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading session...");
       try {
         using (Stream stream = filepath.CreateStream(false)) {
@@ -309,7 +325,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static bool Delete(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "deleting saved game...");
       bool flag = false;
       try {

@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -34,7 +33,9 @@ namespace djack.RogueSurvivor.Engine
 
     public bool Load(string fileName)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(fileName));
+#if DEBUG
+      if (string.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
+#endif
       try {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading text file {0}...", (object) fileName));
 		using (StreamReader streamReader = File.OpenText(fileName)) {
@@ -52,7 +53,9 @@ namespace djack.RogueSurvivor.Engine
 
     public bool Save(string fileName)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(fileName));
+#if DEBUG
+      if (string.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
+#endif
       try {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Saving text file {0}...", (object) fileName));
         File.WriteAllLines(fileName, m_RawLines.ToArray());

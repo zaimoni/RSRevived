@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
@@ -1416,7 +1415,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionShout BehaviorWarnFriends(List<Percept> friends, Actor nearestEnemy)
     {
-      Contract.Requires(null != nearestEnemy);
+#if DEBUG
+      if (null == nearestEnemy) throw new ArgumentNullException(nameof(nearestEnemy));
+#endif
       if (Rules.IsAdjacent(m_Actor.Location, nearestEnemy.Location)) return null;
       if (m_Actor.HasLeader && m_Actor.Leader.IsSleeping) return new ActionShout(m_Actor);
       foreach (Percept friend in friends) {
@@ -1838,7 +1839,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // belongs with CivilianAI, or possibly OrderableAI but NatGuard may not have access to the crime listings
     protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts)
     {
-      Contract.Requires(m_Actor.Model.Abilities.IsLawEnforcer);
+#if DEBUG
+      if (!m_Actor.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("!m_Actor.Model.Abilities.IsLawEnforcer");
+#endif
       if (percepts == null) return null;
       List<Percept> percepts1 = percepts.FilterT<Actor>(a => 0< a.MurdersCounter && !m_Actor.IsEnemyOf(a));
       if (null == percepts1) return null;
@@ -2443,11 +2446,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // to the other non-follower allies
     protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
     {
-      Contract.Requires(0<tainted.Count());
 #if DEBUG
-      Contract.Requires(!tainted.Contains(m_Actor.Location.Position));  // propagated up from FloodfillPathfinder::GoalDistance
-#else
-      if (tainted.Contains(m_Actor.Location.Position)) return null;
+      if (0 >= (tainted?.Count() ?? 0)) throw new ArgumentNullException(nameof(tainted));
+      if (tainted.Contains(m_Actor.Location.Position)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
 #endif
 
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);

@@ -17,25 +17,20 @@ namespace djack.RogueSurvivor.Engine
 
     public CSVField this[int field, int line] {
       get {
-        Contract.Requires(0<=field);
-        Contract.Requires(0<=line);
-        Contract.Ensures(null != Contract.Result<CSVField>());
+#if DEBUG
+        if (0 > field) throw new InvalidOperationException("0 > field");
+        if (0 > line) throw new InvalidOperationException("0 > line");
+        if (m_Lines.Count <= line) throw new InvalidOperationException("m_Lines.Count <= line");
+        if (null == m_Lines[line][field]) throw new ArgumentNullException("m_Lines[line][field]");
+#endif
         return m_Lines[line][field];
       }
     }
 
-    public IEnumerable<CSVLine> Lines {
-      get {
-        Contract.Ensures(null != Contract.Result<IEnumerable<CSVLine>>());
-        return m_Lines;
-      }
-    }
-
-    public int CountLines {
-      get {
-        return m_Lines.Count;
-      }
-    }
+    public IEnumerable<CSVLine> Lines { get { return m_Lines; } }
+#if DEAD_FUNC
+    public int CountLines { get { return m_Lines.Count; } }
+#endif
 
     public CSVTable(int nbFields)
     {
