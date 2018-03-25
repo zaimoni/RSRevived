@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -134,8 +133,10 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(Keybindings kb, string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
-	  Contract.Requires(null != kb);
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+      if (null == kb) throw new ArgumentNullException(nameof(kb));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings...");
 	  filepath.BinarySerialize(kb);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving keybindings... done!");
@@ -143,7 +144,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static Keybindings Load(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
       Keybindings keybindings;
       try {

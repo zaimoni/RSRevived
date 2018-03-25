@@ -4,8 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -15,11 +15,7 @@ namespace djack.RogueSurvivor.Data
     private Flags m_Flags;
     private Location m_Location;
 
-    public TileModel Model {
-      get {
-        return Models.Tiles[m_ModelID];
-      }
-    }
+    public TileModel Model { get { return Models.Tiles[m_ModelID]; } }
 
     public bool IsInside {
       get {
@@ -56,7 +52,9 @@ namespace djack.RogueSurvivor.Data
 
     public Tile(int modelID, bool inside, Location loc)
     {
-      Contract.Requires(255>=modelID && 0<=modelID);
+#if DEBUG
+      if (0>modelID || 255<modelID) throw new InvalidOperationException("0 > modelID || 255 < modelID");
+#endif
       m_ModelID = (byte)modelID;
       IsInside = inside;
       m_Location = loc;

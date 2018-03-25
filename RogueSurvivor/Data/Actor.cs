@@ -2728,7 +2728,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantUseItem(Item it)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
       if (it is ItemWeapon) return "to use a weapon, equip it";
       if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
@@ -2863,7 +2865,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantEquip(Item it)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       if (!Model.Abilities.CanUseItems) return "no ability to use items";
       if (!it.Model.IsEquipable) return "this item cannot be equipped";
       return "";
@@ -2882,7 +2886,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantUnequip(Item it)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       if (!it.IsEquipped) return "not equipped";
       Inventory inventory = Inventory;
       if (inventory == null || !inventory.Contains(it)) return "not in inventory";
@@ -2902,7 +2908,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantDrop(Item it)
     {
-      Contract.Requires(null != it);
+#if DEBUG
+      if (null == it) throw new ArgumentNullException(nameof(it));
+#endif
       if (it.IsEquipped) return "unequip first";
       Inventory inventory = Inventory;
       if (inventory == null || !inventory.Contains(it)) return "not in inventory";

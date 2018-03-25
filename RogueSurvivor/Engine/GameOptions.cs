@@ -7,7 +7,6 @@
 // #define STABLE_SIM_OPTIONAL
 
 using System;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -95,19 +94,14 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public int MusicVolume
-    {
-      get
-      {
+    public int MusicVolume {
+      get {
         return m_MusicVolume;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 100)
-          value = 100;
-                m_MusicVolume = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        m_MusicVolume = value;
       }
     }
 
@@ -171,131 +165,93 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public int CitySize
-    {
-      get
-      {
+    public int CitySize {
+      get {
         return m_CitySize;
       }
-      set
-      {
-        if (value < 3)
-          value = 3;
-        if (value > 6)
-          value = 6;
-                m_CitySize = value;
+      set {
+        if (value < 3) value = 3;
+        if (value > 6) value = 6;
+        m_CitySize = value;
       }
     }
 
-    public int MaxCivilians
-    {
-      get
-      {
+    public int MaxCivilians {
+      get {
         return m_MaxCivilians;
       }
-      set
-      {
-        if (value < 10)
-          value = 10;
-        if (value > 75)
-          value = 75;
-                m_MaxCivilians = value;
+      set {
+        if (value < 10) value = 10;
+        if (value > 75) value = 75;
+        m_MaxCivilians = value;
       }
     }
 
-    public int MaxDogs
-    {
-      get
-      {
+    public int MaxDogs {
+      get {
         return m_MaxDogs;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 75)
-          value = 75;
-                m_MaxDogs = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 75) value = 75;
+        m_MaxDogs = value;
       }
     }
 
-    public int MaxUndeads
-    {
-      get
-      {
+    public int MaxUndeads {
+      get {
         return m_MaxUndeads;
       }
-      set
-      {
-        if (value < 10)
-          value = 10;
-        if (value > 200)
-          value = 200;
-                m_MaxUndeads = value;
+      set {
+        if (value < 10) value = 10;
+        if (value > 200) value = 200;
+        m_MaxUndeads = value;
       }
     }
 
-    public int SpawnSkeletonChance
-    {
-      get
-      {
+    public int SpawnSkeletonChance {
+      get {
         return m_SpawnSkeletonChance;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 100)
-          value = 100;
-                m_SpawnSkeletonChance = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        m_SpawnSkeletonChance = value;
       }
     }
 
-    public int SpawnZombieChance
-    {
-      get
-      {
+    public int SpawnZombieChance {
+      get {
         return m_SpawnZombieChance;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 100)
-          value = 100;
-                m_SpawnZombieChance = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        m_SpawnZombieChance = value;
       }
     }
 
-    public int SpawnZombieMasterChance
-    {
-      get
-      {
+    public int SpawnZombieMasterChance {
+      get {
         return m_SpawnZombieMasterChance;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 100)
-          value = 100;
-                m_SpawnZombieMasterChance = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        m_SpawnZombieMasterChance = value;
       }
     }
 
     public int DistrictSize
     {
-      get
-      {
+      get {
         return m_DistrictSize;
       }
-      set
-      {
-        if (value < 30)
-          value = 30;
+      set {
+        if (value < 30) value = 30;
         if (value > RogueGame.MAP_MAX_HEIGHT || value > RogueGame.MAP_MAX_WIDTH)
           value = Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH);
-                m_DistrictSize = value;
+        m_DistrictSize = value;
       }
     }
 
@@ -313,17 +269,13 @@ namespace djack.RogueSurvivor.Engine
 
     public int ZombificationChance
     {
-      get
-      {
+      get {
         return m_ZombificationChance;
       }
-      set
-      {
-        if (value < 10)
-          value = 10;
-        if (value > 100)
-          value = 100;
-                m_ZombificationChance = value;
+      set {
+        if (value < 10) value = 10;
+        if (value > 100) value = 100;
+        m_ZombificationChance = value;
       }
     }
 
@@ -353,65 +305,48 @@ namespace djack.RogueSurvivor.Engine
 
     public int DayZeroUndeadsPercent
     {
-      get
-      {
+      get {
         return m_DayZeroUndeadsPercent;
       }
-      set
-      {
-        if (value < 10)
-          value = 10;
-        if (value > 100)
-          value = 100;
-                m_DayZeroUndeadsPercent = value;
+      set {
+        if (value < 10) value = 10;
+        if (value > 100) value = 100;
+        m_DayZeroUndeadsPercent = value;
       }
     }
 
     public int ZombieInvasionDailyIncrease
     {
-      get
-      {
+      get {
         return m_ZombieInvasionDailyIncrease;
       }
-      set
-      {
-        if (value < 1)
-          value = 1;
-        if (value > 20)
-          value = 20;
-                m_ZombieInvasionDailyIncrease = value;
+      set {
+        if (value < 1) value = 1;
+        if (value > 20) value = 20;
+        m_ZombieInvasionDailyIncrease = value;
       }
     }
 
     public int StarvedZombificationChance
     {
-      get
-      {
+      get {
         return m_StarvedZombificationChance;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 100)
-          value = 100;
-                m_StarvedZombificationChance = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 100) value = 100;
+        m_StarvedZombificationChance = value;
       }
     }
 
-    public int MaxReincarnations
-    {
-      get
-      {
+    public int MaxReincarnations {
+      get {
         return m_MaxReincarnations;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 7)
-          value = 7;
-                m_MaxReincarnations = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 7) value = 7;
+        m_MaxReincarnations = value;
       }
     }
 
@@ -487,35 +422,25 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    public int NatGuardFactor
-    {
-      get
-      {
+    public int NatGuardFactor {
+      get {
         return m_NatGuardFactor;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 200)
-          value = 200;
-                m_NatGuardFactor = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 200) value = 200;
+        m_NatGuardFactor = value;
       }
     }
 
-    public int SuppliesDropFactor
-    {
-      get
-      {
+    public int SuppliesDropFactor {
+      get {
         return m_SuppliesDropFactor;
       }
-      set
-      {
-        if (value < 0)
-          value = 0;
-        if (value > 200)
-          value = 200;
-                m_SuppliesDropFactor = value;
+      set {
+        if (value < 0) value = 0;
+        if (value > 200) value = 200;
+        m_SuppliesDropFactor = value;
       }
     }
 
@@ -927,7 +852,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(GameOptions options, string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options...");
 	  filepath.BinarySerialize(options);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving options... done!");
@@ -935,7 +862,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static GameOptions Load(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
       GameOptions gameOptions;
       try {

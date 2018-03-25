@@ -24,7 +24,6 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemBodyArmor(ItemBodyArmorModel model)
       : base(model)
     {
-      Contract.Requires(null != model);
     }
 
     public bool IsHostileForCops()

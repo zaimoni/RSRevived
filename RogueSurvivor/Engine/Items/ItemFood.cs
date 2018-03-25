@@ -6,7 +6,6 @@
 
 using djack.RogueSurvivor.Data;
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
@@ -55,7 +54,9 @@ namespace djack.RogueSurvivor.Engine.Items
     public ItemFood(ItemFoodModel model, int bestBefore)
       : base(model)
     {
-      Contract.Requires(0<=bestBefore);
+#if DEBUG
+      if (0 > bestBefore) throw new InvalidOperationException("expired in past");
+#endif
       Nutrition = model.Nutrition;
       BestBefore = new WorldTime(bestBefore);
       IsPerishable = true;

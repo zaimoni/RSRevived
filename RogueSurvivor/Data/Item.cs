@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 using Point = System.Drawing.Point;
 
@@ -18,14 +17,7 @@ namespace djack.RogueSurvivor.Data
     private int m_Quantity;
     public DollPart EquippedPart { get; private set; }
 
-    public ItemModel Model {
-      get {
-        Contract.Requires(null!=Models.Items);
-        Contract.Ensures(null!=Contract.Result<ItemModel>());
-        return Models.Items[m_ModelID];
-      }
-    }
-
+    public ItemModel Model { get { return Models.Items[m_ModelID]; } }
     public virtual string ImageID { get { return Model.ImageID; } }
 
     public string TheName {
@@ -71,11 +63,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public bool IsEquipped {
-      get {
-        return EquippedPart != DollPart.NONE;
-      }
-    }
+    public bool IsEquipped { get { return EquippedPart != DollPart.NONE; } }
 
     public void Equip()
     {   
@@ -94,7 +82,9 @@ namespace djack.RogueSurvivor.Data
 
     public Item(ItemModel model)
     {
-      Contract.Requires(null!=model);
+#if DEBUG
+      if (null == model) throw new ArgumentNullException(nameof(model));
+#endif
       m_ModelID = (int) model.ID;
       m_Quantity = 1;
       EquippedPart = DollPart.NONE;

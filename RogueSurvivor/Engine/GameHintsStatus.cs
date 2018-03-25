@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -47,7 +46,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static void Save(GameHintsStatus hints, string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints...");
 	  filepath.BinarySerialize(hints);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hints... done!");
@@ -55,7 +56,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static GameHintsStatus Load(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
