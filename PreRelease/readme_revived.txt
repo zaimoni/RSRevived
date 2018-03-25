@@ -17,6 +17,8 @@ REVIVED 0.10.0 CHANGES
 * player-player trading is now possible.  A similar implementation is used for player-NPC trading (no more roulette, if the target doesn't
   want to give up anything you want, you will know immediately)
 * new (stub) command: Faction Info (default Shift-Ctrl-I).  See the main manual for details.
+* new (stub) command: Set Waypoint (default Alt-Shift-I).  Use this to far-look (move the viewpoint without actually moving).
+  See the main manual for details.
 * Items will survive better if the method of death isn't particularly destructive to them.  (A slightly weaker version 
   of the change in Still Alive).
 ** the historical resistance of food and ammo to destruction has been retained.  Armor will survive better

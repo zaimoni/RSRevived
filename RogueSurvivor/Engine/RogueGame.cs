@@ -10107,6 +10107,7 @@ namespace djack.RogueSurvivor.Engine
       int num2 = MapViewRect.Right;
       int num3 = MapViewRect.Top;
       int num4 = MapViewRect.Bottom;
+      Point view_center = new Point(num1+HALF_VIEW_WIDTH,num3+HALF_VIEW_HEIGHT);
 #else
       int num1 = Math.Max(-1, m_MapViewRect.Left);
       int num2 = Math.Min(map.Width + 1, m_MapViewRect.Right);
@@ -10237,6 +10238,11 @@ namespace djack.RogueSurvivor.Engine
           if (player && imageID != null && (tile != null && !tile.IsInside))
 #endif
             m_UI.UI_DrawImage(imageID, screen.X, screen.Y);
+#if NO_PEACE_WALLS
+          if (view_center.X==x && view_center.Y==y && (map!=Player.Location.Map || view_center!=Player.Location.Position)) {
+            m_UI.UI_DrawImage(GameImages.ITEM_SLOT, screen.X, screen.Y, tint);    // XXX overload this
+          }
+#endif
         }
       }
     }

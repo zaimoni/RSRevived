@@ -592,6 +592,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.HasLeader && !DontFollowLeader) {
+        // \todo interposition target for pathing hints, etc. from leader
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
         tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
         if (null != tmpAction) {

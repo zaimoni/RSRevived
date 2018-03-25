@@ -639,7 +639,7 @@ Various items related to your current faction.  Police are much more "helpful".
 
 > SET WAYPOINT (Alt-Shift-[City Info], default Alt-Shift-I)
 Designate a location as a waypoint.  This is done via a far-look command; to just far-look, cancel setting the waypoint with Escape.
-* The actual designation is VAPORWARE.  Far-look works as advertised
+* The actual designation is VAPORWARE.  Far-look works as advertised with usual movement keys (1-9 and X)
 
 > CLEAR WAYPOINT (Alt-Shift-Ctrl-[City Info], default Alt-Shift-Ctrl-I) [VAPORWARE]
 Clear a previously designated waypoint.
