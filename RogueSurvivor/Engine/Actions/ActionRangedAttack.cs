@@ -5,9 +5,9 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using djack.RogueSurvivor.Data;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Actions
 {
@@ -20,7 +20,9 @@ namespace djack.RogueSurvivor.Engine.Actions
     public ActionRangedAttack(Actor actor, Actor target, FireMode mode=FireMode.DEFAULT)
       : base(actor)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       m_Target = target;
       m_Mode = mode;
     }

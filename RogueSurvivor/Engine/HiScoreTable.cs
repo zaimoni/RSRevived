@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -20,17 +19,17 @@ namespace djack.RogueSurvivor.Engine
 
     public int Count { get { return m_Table.Count; } }
 
-    public HiScore this[int index]
-    {
-      get
-      {
+    public HiScore this[int index] {
+      get {
         return Get(index);
       }
     }
 
     public HiScoreTable(int maxEntries)
     {
-	  Contract.Requires(0 < maxEntries);
+#if DEBUG
+      if (0 >= maxEntries) throw new InvalidOperationException("0 >= maxEntries");
+#endif
       m_Table = new List<HiScore>(maxEntries);
       m_MaxEntries = maxEntries;
     }
@@ -67,14 +66,18 @@ namespace djack.RogueSurvivor.Engine
 
     public HiScore Get(int index)
     {
-	  Contract.Requires(0 <= index && index < Count);
+#if DEBUG
+      if (0 > index || Count <= index) throw new InvalidOperationException("0 > index || Count <= index");
+#endif
       return m_Table[index];
     }
 
     public static void Save(HiScoreTable table, string filepath)
     {
-	  Contract.Requires(null != table);
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (null == table) throw new ArgumentNullException(nameof(table));
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table...");
 	  filepath.BinarySerialize(table);
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "saving hiscore table... done!");
@@ -82,7 +85,9 @@ namespace djack.RogueSurvivor.Engine
 
     public static HiScoreTable Load(string filepath)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(filepath));
+#if DEBUG
+      if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
+#endif
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hiscore table...");
       HiScoreTable hiScoreTable;
       try {

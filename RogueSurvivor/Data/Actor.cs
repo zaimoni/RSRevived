@@ -131,7 +131,9 @@ namespace djack.RogueSurvivor.Data
         return Models.Actors[(int)m_ModelID];
       }
       set { // this must be public due to undead evolution
-	    Contract.Requires(null!=value);
+#if DEBUG
+        if (null == value) throw new ArgumentNullException(nameof(value));
+#endif
         m_ModelID = value.ID;
         OnModelSet();
       }
@@ -403,7 +405,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantTakeLeadOf(Actor target)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (target.Model.Abilities.IsUndead) return "undead";
       if (IsEnemyOf(target)) return "enemy";
       if (target.IsSleeping) return "sleeping";
@@ -473,7 +477,9 @@ namespace djack.RogueSurvivor.Data
 
 	private string ReasonCantChatWith(Actor target)
 	{
-	  Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (!Model.Abilities.CanTalk) return "can't talk";
       if (!target.Model.Abilities.CanTalk) return string.Format("{0} can't talk", target.TheName);
       if (IsSleeping) return "sleeping";
@@ -496,7 +502,9 @@ namespace djack.RogueSurvivor.Data
 
 	private string ReasonCantSwitchPlaceWith(Actor target)
 	{
-	  Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (target.Leader != this) return "not your follower";
       if (target.IsSleeping) return "sleeping";
       return "";
@@ -684,7 +692,9 @@ namespace djack.RogueSurvivor.Data
     // this one is very hypothetical -- note absence of ranged weapon validity checks
     private string ReasonCouldntFireAt(Actor target, int range)
     {
-      Contract.Requires(null != target);
+#if DEBUG
+      if (null == target) throw new ArgumentNullException(nameof(target));
+#endif
       if (range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (target.IsDead) return "already dead!";
       return "";

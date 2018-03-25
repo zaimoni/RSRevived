@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-using System.Diagnostics.Contracts;
+using System;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -14,26 +14,28 @@ namespace djack.RogueSurvivor.Engine
 
     public CSVField this[int field] {
       get {
-        Contract.Requires(0 <= field);
-        Contract.Ensures(null != Contract.Result<CSVField>());
+#if DEBUG
+        if (0 > field) throw new InvalidOperationException("0 > field");
+        if (null == m_Fields[field]) throw new InvalidOperationException("m_Fields[field]");
+#endif
         return m_Fields[field];
       }
       set {
-        Contract.Requires(0 <= field);
-        Contract.Requires(null != value);
+#if DEBUG
+        if (0 > field) throw new InvalidOperationException("0 > field");
+        if (null == value) throw new InvalidOperationException(nameof(value));
+#endif
         m_Fields[field] = value;
       }
     }
 
-    public int FieldsCount {
-      get {
-        return m_Fields.Length;
-      }
-    }
+    public int FieldsCount { get { return m_Fields.Length; } }
 
     public CSVLine(int nbFields)
     {
-      Contract.Requires(1 <= nbFields);
+#if DEBUG
+      if (1 > nbFields) throw new InvalidOperationException("1 > nbFields");
+#endif
       m_Fields = new CSVField[nbFields];
     }
   }

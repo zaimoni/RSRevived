@@ -3204,8 +3204,9 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleAbandonPC(Actor player)
     {
-      Contract.Requires(null!=player);
-      Contract.Requires(player.IsPlayer);
+#if DEBUG
+      if (player?.IsPlayer ?? true) throw new InvalidOperationException("Cannot abandon NPC");
+#endif
       AddMessage(MakeYesNoMessage("REALLY ABANDON "+player.UnmodifiedName+" TO FATE"));
       RedrawPlayScreen();
       bool flag = WaitYesOrNo();
@@ -8041,7 +8042,9 @@ namespace djack.RogueSurvivor.Engine
 
     private int ApplyExplosionDamage(Location location, int distanceFromBlast, BlastAttack blast)
     {
-      Contract.Requires(!blast.CanDestroyWalls);    // not implemented
+#if DEBUG
+      if (blast.CanDestroyWalls) throw new InvalidOperationException("need to implement explosives destroying walls");
+#endif
       int num1 = blast.DamageAt(distanceFromBlast);
       if (num1 <= 0) return 0;
       Map map = location.Map;
@@ -11226,7 +11229,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoSaveGame(string saveName)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(saveName));
+#if DEBUG
+      if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
+#endif
       ClearMessages();
       AddMessage(new Data.Message("SAVING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
@@ -11244,7 +11249,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DoLoadGame(string saveName)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(saveName));
+#if DEBUG
+      if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
+#endif
       ClearMessages();
       AddMessage(new Data.Message("LOADING GAME, PLEASE WAIT...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
@@ -11257,7 +11264,9 @@ namespace djack.RogueSurvivor.Engine
 
     private void DeleteSavedGame(string saveName)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(saveName));
+#if DEBUG
+      if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
+#endif
       if (!Session.Delete(saveName)) return;
       AddMessage(new Data.Message("PERMADEATH : SAVE GAME DELETED!", Session.Get.WorldTime.TurnCounter, Color.Red));
     }
@@ -11265,7 +11274,9 @@ namespace djack.RogueSurvivor.Engine
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     private bool LoadGame(string saveName)
     {
-	  Contract.Requires(!string.IsNullOrEmpty(saveName));
+#if DEBUG
+      if (string.IsNullOrEmpty(saveName)) throw new ArgumentNullException(nameof(saveName));
+#endif
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       // command line option --PC requests converting an NPC to a PC
       if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC();
@@ -11342,8 +11353,10 @@ namespace djack.RogueSurvivor.Engine
 
     private void DrawMenuOrOptions(int currentChoice, Color entriesColor, string[] entries, Color valuesColor, string[] values, int gx, ref int gy, int rightPadding = 256)
     {
-      Contract.Requires(null != entries);
-      Contract.Requires(null == values || entries.Length == values.Length);
+#if DEBUG
+      if (null == entries) throw new ArgumentNullException(nameof(entries));
+      if (null!=entries && entries.Length != values.Length) throw new InvalidOperationException("null!=entries && entries.Length != values.Length");
+#endif
       int gx1 = gx + rightPadding;
       Color color = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
       for (int index = 0; index < entries.Length; ++index) {
