@@ -2023,7 +2023,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ActorAction tmpAction = null;
       Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches, out Dictionary<Point,int> doors);
       if (0 >= sleep_locs.Count) {
-         // we probably should be using full pathing to the nearest valid location anyway
+         // \todo we probably should be using full pathing to the nearest valid location anyway
          return BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
       }
 

@@ -1141,7 +1141,7 @@ namespace djack.RogueSurvivor.Engine
 
     private Skills.IDs? HandleNewCharacterSkill(DiceRoller roller)
     {
-      Skills.IDs[] idsArray = Enumerable.Range(0, 1 + (int)Skills.IDs._LAST_LIVING).Select(id => (Skills.IDs)id).ToArray();
+      Skills.IDs[] idsArray = Enumerable.Range(0, (int)Skills.IDs_aux._LIVING_COUNT).Select(id => (Skills.IDs)id).ToArray();
       string[] entries = (new string[] { "*Random*" }).Concat(idsArray.Select(id => Skills.Name(id))).ToArray();
       string[] values = (new string[] { "(picks a skill at random for you)" }).Concat(idsArray.Select(id => string.Format("{0} max - {1}", Skills.MaxSkillLevel(id), DescribeSkillShort(id)))).ToArray();
 
@@ -7054,7 +7054,7 @@ namespace djack.RogueSurvivor.Engine
           return string.Format("+{0} HP", Actor.SKILL_TOUGH_HP_BONUS);
         case Skills.IDs.UNSUSPICIOUS:
           return string.Format("+{0}% unnoticed by law enforcers and gangs", Rules.SKILL_UNSUSPICIOUS_BONUS);
-        case Skills.IDs._FIRST_UNDEAD:
+        case Skills.IDs.Z_AGILE:
           return string.Format("+{0} melee ATK, +{1} DEF, can jump", Actor.SKILL_ZAGILE_ATK_BONUS, Rules.SKILL_ZAGILE_DEF_BONUS);
         case Skills.IDs.Z_EATER:
           return string.Format("+{0}% hp regen", (int)(100.0 * (double)Rules.SKILL_ZEATER_REGEN_BONUS));
@@ -9844,7 +9844,7 @@ namespace djack.RogueSurvivor.Engine
       {
         switch (skID)
         {
-          case Skills.IDs._FIRST_UNDEAD:
+          case Skills.IDs.Z_AGILE:
           case Skills.IDs.Z_STRONG:
           case Skills.IDs.Z_TOUGH:
           case Skills.IDs.Z_TRACKER:

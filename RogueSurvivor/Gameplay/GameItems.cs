@@ -809,7 +809,7 @@ namespace djack.RogueSurvivor.Gameplay
 #endif
       LoadDataFromCSV(ui, path, "medicine items", MedecineData.COUNT_FIELDS, new Func<CSVLine, MedecineData>(MedecineData.FromCSVLine), new IDs[6]
       {
-        IDs._FIRST,
+        IDs.MEDICINE_BANDAGES,
         IDs.MEDICINE_MEDIKIT,
         IDs.MEDICINE_PILLS_SLP,
         IDs.MEDICINE_PILLS_STA,
@@ -1071,7 +1071,6 @@ namespace djack.RogueSurvivor.Gameplay
 
     public enum IDs
     {
-      _FIRST = 0,
       MEDICINE_BANDAGES = 0,
       MEDICINE_MEDIKIT = 1,
       MEDICINE_PILLS_STA = 2,

@@ -161,7 +161,7 @@ namespace djack.RogueSurvivor.Data
       m_IsInside = new byte[width*height-1/8+1];
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
-      UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList, _countUndead);
+      UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList, _countUndead); // XXX ... could eliminate this by rewriting end-of-turn event simulation
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));

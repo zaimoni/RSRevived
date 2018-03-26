@@ -17,9 +17,9 @@ namespace djack.RogueSurvivor.Gameplay
   internal static class Skills
   {
     private readonly static string[] s_Names = new string[(int) IDs._COUNT];
-    public readonly static IDs[] UNDEAD_SKILLS = new IDs[(int)IDs._COUNT - (int)IDs._LAST_LIVING-1]  // \todo adjust this naming when breaking savefile format?
+    public readonly static IDs[] UNDEAD_SKILLS = new IDs[(int)IDs._COUNT - (int)IDs_aux._FIRST_UNDEAD]  // \todo adjust this naming when breaking savefile format?
     {
-      IDs._FIRST_UNDEAD,
+      IDs.Z_AGILE,
       IDs.Z_EATER,
       IDs.Z_GRAB,
       IDs.Z_INFECTOR,
@@ -47,12 +47,12 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Skills.IDs RollLiving(DiceRoller roller)
     {
-      return (Skills.IDs) roller.Roll(0, (int)Skills.IDs._LAST_LIVING+1);
+      return (Skills.IDs) roller.Roll(0, (int)Skills.IDs_aux._LIVING_COUNT+1);
     }
 
     public static Skills.IDs RollUndead(DiceRoller roller)
     {
-      return (Skills.IDs) roller.Roll((int)Skills.IDs._FIRST_UNDEAD, (int)Skills.IDs._COUNT);
+      return (Skills.IDs) roller.Roll((int)Skills.IDs_aux._FIRST_UNDEAD, (int)Skills.IDs._COUNT);
     }
 
     private static void Notify(IRogueUI ui, string what, string stage)
@@ -95,7 +95,7 @@ namespace djack.RogueSurvivor.Gameplay
 #endif
       Skills.LoadDataFromCSV<Skills.SkillData>(ui, path, "skills", SkillData.COUNT_FIELDS, new Func<CSVLine, SkillData>(Skills.SkillData.FromCSVLine), new Skills.IDs[(int)Skills.IDs._COUNT]
       {
-        Skills.IDs._FIRST,
+        Skills.IDs.AGILE,
         Skills.IDs.AWAKE,
         Skills.IDs.BOWS,
         Skills.IDs.CARPENTRY,
@@ -115,7 +115,7 @@ namespace djack.RogueSurvivor.Gameplay
         Skills.IDs.STRONG_PSYCHE,
         Skills.IDs.TOUGH,
         Skills.IDs.UNSUSPICIOUS,
-        Skills.IDs._FIRST_UNDEAD,
+        Skills.IDs.Z_AGILE,
         Skills.IDs.Z_EATER,
         Skills.IDs.Z_GRAB,
         Skills.IDs.Z_INFECTOR,
@@ -206,8 +206,6 @@ namespace djack.RogueSurvivor.Gameplay
     public enum IDs
     {
       AGILE = 0,
-      _FIRST_LIVING = 0,
-      _FIRST = 0,
       AWAKE = 1,
       BOWS = 2,
       CARPENTRY = 3,
@@ -227,8 +225,6 @@ namespace djack.RogueSurvivor.Gameplay
       STRONG_PSYCHE = 17,
       TOUGH = 18,
       UNSUSPICIOUS = 19,
-      _LAST_LIVING = 19,
-      _FIRST_UNDEAD = 20,
       Z_AGILE = 20,
       Z_EATER = 21,
       Z_GRAB = 22,
@@ -238,9 +234,14 @@ namespace djack.RogueSurvivor.Gameplay
       Z_STRONG = 26,
       Z_TOUGH = 27,
       Z_TRACKER = 28,
-      _LAST_UNDEAD = 28,
       _COUNT = 29,
     }
+
+    public enum IDs_aux {
+      _LIVING_COUNT = IDs.Z_AGILE,
+      _FIRST_UNDEAD = IDs.Z_AGILE,
+    }
+        
 
     public static IDs? Zombify(this IDs skill)
     {

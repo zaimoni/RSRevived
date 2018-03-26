@@ -1,5 +1,5 @@
 "ID","NAME","VALUE1","VALUE2","VALUE3","VALUE4"
-"_FIRST_LIVING","Agile",2,4,0,0
+"AGILE","Agile",2,4,0,0
 "AWAKE","Awake",0.10,0.17,0,0
 "BOWS","Bows",10,4,0,0
 "CARPENTRY","Carpentry",0.15,1,0,0
@@ -19,7 +19,7 @@
 "STRONG_PSYCHE","Strong Psyche",0.15,0.15,0,0
 "TOUGH","Tough",6,0,0,0
 "UNSUSPICIOUS","Unsuspicious",15,0,0,0
-"_FIRST_UNDEAD","Z-Agile",1,2,0,0
+"Z_AGILE","Z-Agile",1,2,0,0
 "Z_EATER","Z-Eater",0.15,0,0,0
 "Z_GRAB","Z-Grab",2,0,0,0
 "Z_INFECTOR","Z-Infector",0.15,0,0,0

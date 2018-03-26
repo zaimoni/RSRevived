@@ -134,7 +134,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       const Abilities.Flags STD_SANE = Abilities.Flags.HAS_SANITY | Abilities.Flags.HAS_TO_SLEEP | Abilities.Flags.IS_INTELLIGENT;
 
       Func<CSVLine, ActorData> parse_fn = CSV => new ActorData(CSV);
-      ActorData DATA_SKELETON = toTable.GetDataFor(parse_fn, IDs._FIRST);
+      ActorData DATA_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_SKELETON);
       ActorData DATA_RED_EYED_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_RED_EYED_SKELETON);
       ActorData DATA_RED_SKELETON = toTable.GetDataFor(parse_fn, IDs.UNDEAD_RED_SKELETON);
       ActorData DATA_ZOMBIE = toTable.GetDataFor(parse_fn, IDs.UNDEAD_ZOMBIE);
@@ -330,7 +330,6 @@ to transform from MALE_CIVILIAN to POLICEMAN:
 
     public enum IDs
     {
-      _FIRST = 0,
       UNDEAD_SKELETON = 0,
       UNDEAD_RED_EYED_SKELETON = 1,
       UNDEAD_RED_SKELETON = 2,
