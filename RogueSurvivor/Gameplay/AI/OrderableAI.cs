@@ -1958,19 +1958,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 1;
     }
 
-    // This is going into BehaviorWander so it can't be fully competent
-    protected bool VetoSleepLocation(Location loc)
-    {
-      int rating = SleepLocationRating(loc);
-      return 0>=rating;
-    }
-
     private Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches)
     {
       couches = new Dictionary<Point,int>();
       var ret = new Dictionary<Point,int>();
       foreach(Point pt in m_Actor.Controller.FOV) {
-        if (VetoSleepLocation(new Location(m_Actor.Location.Map,pt))) continue;
+        if (0>=SleepLocationRating(new Location(m_Actor.Location.Map,pt))) continue;
         int dist = Rules.GridDistance(m_Actor.Location.Position, pt);
         ret[pt] = dist;
         if (m_Actor.Location.Map.GetMapObjectAt(pt)?.IsCouch ?? false) couches[pt] = dist;
@@ -1987,7 +1980,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!m_Actor.CanSleep()) return null;
       Map map = m_Actor.Location.Map;
       // Do not sleep next to a door/window
-      if (VetoSleepLocation(m_Actor.Location)) {
+      if (0>=SleepLocationRating(m_Actor.Location)) {
         return BehaviorEfficientlyHeadFor(0<couches.Count ? couches : sleep_locs);  // null return ok here?
       }
       Item it = m_Actor.GetEquippedItem(DollPart.LEFT_HAND);
