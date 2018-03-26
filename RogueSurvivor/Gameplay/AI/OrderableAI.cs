@@ -2008,9 +2008,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorNavigateToSleep()
     {
+      if (!m_Actor.IsInside) {
+        // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
+        // ignore barricaded doors on residences (they have lots of doors.  Do not respect those in shops.
+        // \todo replace by more reasonable foreach loop
+        IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
+        return BehaviorHeadFor(see_inside);
+      }
+
       ActorAction tmpAction = null;
-      if (m_Actor.IsInside) {
-        Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches);
+      Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches);
+      // \todo trigger secure perimeter if we have appropriate squares whose viewability is not blocked by doors
         if (0 >= sleep_locs.Count) {
           tmpAction = BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
           if (null != tmpAction) return tmpAction;
@@ -2026,11 +2034,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return tmpAction;
           }
         }
-      } else {
-        IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
-        tmpAction = BehaviorHeadFor(see_inside);
-        if (null != tmpAction) return tmpAction;
-      }
       return null;
     }
 
