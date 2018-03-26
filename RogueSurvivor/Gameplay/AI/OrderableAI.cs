@@ -1932,9 +1932,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected int SleepLocationRating(Location loc)
     { 
       // the legacy tests
+      if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return 0;
       if (loc.Map.HasExitAtExt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
-      if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return 0;  // contextual
       if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
 
       // geometric code (walls, etc)
@@ -1958,12 +1958,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 1;
     }
 
-    private Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches)
+    private Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches, out Dictionary<Point,int> doors)
     {
       couches = new Dictionary<Point,int>();
+      doors = new Dictionary<Point, int>();
       var ret = new Dictionary<Point,int>();
       foreach(Point pt in m_Actor.Controller.FOV) {
-        if (0>=SleepLocationRating(new Location(m_Actor.Location.Map,pt))) continue;
+        int rating = SleepLocationRating(new Location(m_Actor.Location.Map, pt));
+        if (-1 == rating) {
+          // use the same delta-encoding system that Map::Normalize does
+          int delta = 0;
+          if (m_Actor.Location.Position.X<pt.X) delta += 1;
+          else if (m_Actor.Location.Position.X > pt.X) delta -= 1;
+          if (m_Actor.Location.Position.Y < pt.Y) delta += 3;
+          else if (m_Actor.Location.Position.Y > pt.Y) delta -= 3;
+          doors[pt] = delta;
+        }
+        if ( 0 >= rating) continue;
         int dist = Rules.GridDistance(m_Actor.Location.Position, pt);
         ret[pt] = dist;
         if (m_Actor.Location.Map.GetMapObjectAt(pt)?.IsCouch ?? false) couches[pt] = dist;
@@ -2003,30 +2014,88 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (!m_Actor.IsInside) {
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
-        // ignore barricaded doors on residences (they have lots of doors.  Do not respect those in shops.
+        // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or the sewer maintenance.
         // \todo replace by more reasonable foreach loop
         IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
         return BehaviorHeadFor(see_inside);
       }
 
       ActorAction tmpAction = null;
-      Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches);
+      Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches, out Dictionary<Point,int> doors);
+      if (0 >= sleep_locs.Count) {
+         // we probably should be using full pathing to the nearest valid location anyway
+         return BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
+      }
+
       // \todo trigger secure perimeter if we have appropriate squares whose viewability is not blocked by doors
-        if (0 >= sleep_locs.Count) {
-          tmpAction = BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
-          if (null != tmpAction) return tmpAction;
-        } else {
-          tmpAction = BehaviorSecurePerimeter();
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
+      if (0<doors.Count) {
+        var beyond_door_sleep_locs = new Dictionary<Point,int>();
+        var in_bounds = new HashSet<Point>(sleep_locs.Keys);
+
+        foreach(var pos_type in doors) {
+          foreach(Point pt in in_bounds.ToList()) {
+            // beyond-X
+            switch(pos_type.Value)
+            {
+            case -4:
+            case -1:
+            case  2:
+               if (pos_type.Key.X>pt.X) {
+                 beyond_door_sleep_locs[pt] = sleep_locs[pt];
+                 in_bounds.Remove(pt);
+                 continue;
+               }
+               break;
+              break;
+            case -2:
+            case  1:
+            case  4:
+               if (pos_type.Key.X<pt.X) {
+                 beyond_door_sleep_locs[pt] = sleep_locs[pt];
+                 in_bounds.Remove(pt);
+                 continue;
+               }
+              break;
+            }
+            // beyond-Y
+            switch(pos_type.Value)
+            {
+            case -4:
+            case -3:
+            case -2:
+               if (pos_type.Key.Y>pt.Y) {
+                 beyond_door_sleep_locs[pt] = sleep_locs[pt];
+                 in_bounds.Remove(pt);
+               }
+               break;
+            case 2:
+            case 3:
+            case 4:
+               if (pos_type.Key.Y<pt.Y) {
+                 beyond_door_sleep_locs[pt] = sleep_locs[pt];
+                 in_bounds.Remove(pt);
+               }
+               break;
+            }
           }
-          tmpAction = BehaviorSleep(sleep_locs,couches);
-          if (null != tmpAction) {
-            if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
-            return tmpAction;
-          }
+//        if (0 >= in_bounds.Count) break;  // unclear whether micro-optimization or micro-pessimization
         }
+        if (0 < beyond_door_sleep_locs.Count) {
+          if (0 >= in_bounds.Count) return BehaviorEfficientlyHeadFor(beyond_door_sleep_locs);
+          sleep_locs.OnlyIf(pt => in_bounds.Contains(pt));
+        }
+      }
+
+      tmpAction = BehaviorSecurePerimeter();
+      if (null != tmpAction) {
+        m_Actor.Activity = Activity.IDLE;
+        return tmpAction;
+      }
+      tmpAction = BehaviorSleep(sleep_locs,couches);
+      if (null != tmpAction) {
+        if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
+        return tmpAction;
+      }
       return null;
     }
 
