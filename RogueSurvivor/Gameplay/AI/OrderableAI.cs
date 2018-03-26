@@ -1378,7 +1378,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionCloseDoor(m_Actor, door, true);
     }
 
-    protected ActorAction BehaviorSecurePerimeter()
+    private ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
       Dictionary<Point,int> want_to_resolve = new Dictionary<Point,int>();
@@ -1965,7 +1965,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0>=rating;
     }
 
-    protected Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches)
+    private Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches)
     {
       couches = new Dictionary<Point,int>();
       var ret = new Dictionary<Point,int>();
@@ -1978,7 +1978,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ret;
     }
 
-    protected ActorAction BehaviorSleep(Dictionary<Point,int> sleep_locs, Dictionary<Point,int> couches)
+    private ActorAction BehaviorSleep(Dictionary<Point,int> sleep_locs, Dictionary<Point,int> couches)
     {
 #if DEBUG
       if (0 >= (sleep_locs?.Count ?? 0)) throw new ArgumentNullException(nameof(sleep_locs));
@@ -2004,6 +2004,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the police radio is DollPart.HIP_HOLSTER, *but* it recharges on movement faster than it drains
       if (it is BatteryPowered) RogueForm.Game.DoUnequipItem(m_Actor, it);
       return new ActionSleep(m_Actor);
+    }
+
+    protected ActorAction BehaviorNavigateToSleep()
+    {
+      ActorAction tmpAction = null;
+      if (m_Actor.IsInside) {
+        Dictionary<Point, int> sleep_locs = GetSleepLocsInLOS(out Dictionary<Point,int> couches);
+        if (0 >= sleep_locs.Count) {
+          tmpAction = BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
+          if (null != tmpAction) return tmpAction;
+        } else {
+          tmpAction = BehaviorSecurePerimeter();
+          if (null != tmpAction) {
+            m_Actor.Activity = Activity.IDLE;
+            return tmpAction;
+          }
+          tmpAction = BehaviorSleep(sleep_locs,couches);
+          if (null != tmpAction) {
+            if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
+            return tmpAction;
+          }
+        }
+      } else {
+        IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
+        tmpAction = BehaviorHeadFor(see_inside);
+        if (null != tmpAction) return tmpAction;
+      }
+      return null;
     }
 
     protected ActorAction BehaviorRestIfTired()
