@@ -5,7 +5,6 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Data
 {
@@ -72,10 +71,12 @@ namespace djack.RogueSurvivor.Data
 
     public Abilities(Flags in_flags)
     {
-      Contract.Requires((Flags.NONE != (in_flags & Flags.HAS_INVENTORY)) || (Flags.NONE == (in_flags & Flags.CAN_TRADE)));
-      Contract.Requires((Flags.NONE != (in_flags & Flags.UNDEAD)) || (Flags.NONE == (in_flags & Flags.UNDEAD_MASTER)));
-      Contract.Requires((Flags.NONE != (in_flags & Flags.CAN_JUMP)) || (Flags.NONE == (in_flags & Flags.CAN_JUMP_STUMBLE)));
-      Contract.Requires((Flags.NONE != (in_flags & Flags.CAN_USE_MAP_OBJECTS)) || (Flags.NONE == (in_flags & Flags.CAN_BARRICADE)));
+#if DEBUG
+      if ((Flags.NONE == (in_flags & Flags.HAS_INVENTORY)) && (Flags.NONE != (in_flags & Flags.CAN_TRADE))) throw new InvalidOperationException("must have inventory to trade");
+      if ((Flags.NONE == (in_flags & Flags.UNDEAD)) && (Flags.NONE != (in_flags & Flags.UNDEAD_MASTER))) throw new InvalidOperationException("undead master is undead");
+      if ((Flags.NONE == (in_flags & Flags.CAN_JUMP)) && (Flags.NONE != (in_flags & Flags.CAN_JUMP_STUMBLE))) throw new InvalidOperationException("can only clumsily jump if can jump");
+      if ((Flags.NONE == (in_flags & Flags.CAN_USE_MAP_OBJECTS)) && (Flags.NONE != (in_flags & Flags.CAN_BARRICADE))) throw new InvalidOperationException("hard to barricade without using map objects");
+#endif
       m_Flags = in_flags;
     }
 

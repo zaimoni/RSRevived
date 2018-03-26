@@ -2363,18 +2363,6 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
-    static private int CountLivings(Map map)
-    {
-      Contract.Requires(null != map);
-      return map.Actors.Count(a => !a.Model.Abilities.IsUndead);
-    }
-
-    static private int CountFaction(Map map, Faction f)
-    {
-      Contract.Requires(null != map);
-      return map.Actors.Count(a => a.Faction == f);
-    }
-
     static private int CountUndeads(Map map)
     {
       Contract.Requires(null != map);
@@ -2383,7 +2371,6 @@ namespace djack.RogueSurvivor.Engine
 
     static private int CountFoodItemsNutrition(Map map)
     {
-      Contract.Requires(null != map);
       int num1 = 0;
       Func<ItemFood,int> nutrition = (food => food.NutritionAt(map.LocalTime.TurnCounter));
       foreach (Inventory groundInventory in map.GroundInventories) {
@@ -2500,10 +2487,24 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_NationalGuard(Map map)
     {
-      if (s_Options.NatGuardFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+#endif
+      if (0 == s_Options.NatGuardFactor || map.LocalTime.IsNight || (map.LocalTime.Day < NATGUARD_DAY || map.LocalTime.Day >= NATGUARD_END_DAY) || !m_Rules.RollChance(NATGUARD_INTERVENTION_CHANCE))
         return false;
-      int num = CountLivings(map) + CountFaction(map, GameFactions.TheArmy);
-      return (float)CountUndeads(map) / (float)num * (s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
+      // yes, each national guardsman is double-counted
+      int NationalGuardForceFactor()
+      {
+        int ret = 0;
+        foreach(Actor a in map.Actors) {
+          if (a.Model.Abilities.IsUndead) continue;
+          ret += GameFactions.TheArmy == a.Faction ? 2 : 1;
+        }
+        return ret;
+      }
+
+//    return (float)CountUndeads(map) / (float)NationalGuardForceFactor() * (s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
+      return (double)(CountUndeads(map)* s_Options.NatGuardFactor)/(double)(100* NationalGuardForceFactor()) >= NATGUARD_INTERVENTION_FACTOR;
     }
 
     private void FireEvent_NationalGuard(Map map)
@@ -2532,10 +2533,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool CheckForEvent_ArmySupplies(Map map)
     {
+#if DEBUG
+      if (null == map) throw new ArgumentNullException(nameof(map));
+#endif
       if (s_Options.SuppliesDropFactor == 0 || map.LocalTime.IsNight || (map.LocalTime.Day < ARMY_SUPPLIES_DAY || !m_Rules.RollChance(ARMY_SUPPLIES_CHANCE)))
         return false;
-      int num = 1 + map.Actors.Count(a =>
-      {
+      int num = 1 + map.Actors.Count(a => {
         if (!a.Model.Abilities.IsUndead && a.Model.Abilities.HasToEat)
           return a.Faction == GameFactions.TheCivilians;
         return false;

@@ -2014,7 +2014,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (!m_Actor.IsInside) {
         // XXX this is stymied by closed, opaque doors which logically have inside squares near them; also ex-doorways
-        // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or the sewer maintenance.
+        // ignore barricaded doors on residences (they have lots of doors).  Do not respect those in shops, subways, or (vintage) the sewer maintenance.
         // \todo replace by more reasonable foreach loop
         IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
         return BehaviorHeadFor(see_inside);
