@@ -203,16 +203,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (0 >= sleep_locs.Count) {
             tmpAction = BehaviorWander(loc => loc.Map.IsInsideAtExt(loc.Position)); // XXX explore behavior would be better but that needs fixing
             if (null != tmpAction) return tmpAction;
-          }
-          tmpAction = BehaviorSecurePerimeter();
-          if (null != tmpAction) {
-            m_Actor.Activity = Activity.IDLE;
-            return tmpAction;
-          }
-          tmpAction = BehaviorSleep(sleep_locs,couches);
-          if (null != tmpAction) {
-            if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
-            return tmpAction;
+          } else {
+            tmpAction = BehaviorSecurePerimeter();
+            if (null != tmpAction) {
+              m_Actor.Activity = Activity.IDLE;
+              return tmpAction;
+            }
+            tmpAction = BehaviorSleep(sleep_locs,couches);
+            if (null != tmpAction) {
+              if (tmpAction is ActionSleep) m_Actor.Activity = Activity.SLEEPING;
+              return tmpAction;
+            }
           }
         } else {
           IEnumerable<Location> see_inside = FOV.Where(pt => m_Actor.Location.Map.GetTileAtExt(pt.X,pt.Y).IsInside).Select(pt2 => new Location(m_Actor.Location.Map,pt2));
