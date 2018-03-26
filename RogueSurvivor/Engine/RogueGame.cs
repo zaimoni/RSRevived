@@ -26,7 +26,6 @@ using djack.RogueSurvivor.Gameplay.Generators;
 using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -2363,12 +2362,6 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message(string.Format("({0} trust with {1})", mod, a.TheName), Session.Get.WorldTime.TurnCounter, Color.White));
     }
 
-    static private int CountUndeads(Map map)
-    {
-      Contract.Requires(null != map);
-      return map.Actors.Count(a => a.Model.Abilities.IsUndead);
-    }
-
     static private int CountFoodItemsNutrition(Map map)
     {
       int num1 = 0;
@@ -2388,7 +2381,8 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool CheckForEvent_ZombieInvasion(Map map)
     {
-      return map.LocalTime.IsStrikeOfMidnight && CountUndeads(map) < s_Options.MaxUndeads;
+      map.UndeadCount.Recalc();
+      return map.LocalTime.IsStrikeOfMidnight && map.UndeadCount.Get < s_Options.MaxUndeads;
     }
 
     private void FireEvent_ZombieInvasion(Map map)
@@ -2397,21 +2391,20 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(new Data.Message("It is Midnight! Zombies are invading!", Session.Get.WorldTime.TurnCounter, Color.Crimson));
         RedrawPlayScreen();
       }
-      int num1 = CountUndeads(map);
-      int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)s_Options.MaxUndeads) - num1;
+      int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)s_Options.MaxUndeads) - map.UndeadCount.Get;
       for (int index = 0; index < num2; ++index)
         SpawnNewUndead(map, map.LocalTime.Day);
     }
 
     private bool CheckForEvent_SewersInvasion(Map map)
     {
-      return Session.Get.HasZombiesInSewers && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && CountUndeads(map) < s_Options.MaxUndeads/2;
+      map.UndeadCount.Recalc();
+      return Session.Get.HasZombiesInSewers && m_Rules.RollChance(SEWERS_INVASION_CHANCE) && map.UndeadCount.Get < s_Options.MaxUndeads/2;
     }
 
     private void FireEvent_SewersInvasion(Map map)
     {
-      int num1 = CountUndeads(map);
-      int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)(s_Options.MaxUndeads / 2)) - num1;
+      int num2 = 1 + (int)(Math.Min(1f, (float)(map.LocalTime.Day * s_Options.ZombieInvasionDailyIncrease + s_Options.DayZeroUndeadsPercent) / 100f) * (double)(s_Options.MaxUndeads / 2)) - map.UndeadCount.Get;
       for (int index = 0; index < num2; ++index)
         SpawnNewSewersUndead(map);
     }
@@ -2503,8 +2496,9 @@ namespace djack.RogueSurvivor.Engine
         return ret;
       }
 
+      map.UndeadCount.Recalc();
 //    return (float)CountUndeads(map) / (float)NationalGuardForceFactor() * (s_Options.NatGuardFactor / 100.0) >= NATGUARD_INTERVENTION_FACTOR;
-      return (double)(CountUndeads(map)* s_Options.NatGuardFactor)/(double)(100* NationalGuardForceFactor()) >= NATGUARD_INTERVENTION_FACTOR;
+      return (double)(map.UndeadCount.Get* s_Options.NatGuardFactor)/(double)(100* NationalGuardForceFactor()) >= NATGUARD_INTERVENTION_FACTOR;
     }
 
     private void FireEvent_NationalGuard(Map map)

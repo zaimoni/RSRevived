@@ -55,6 +55,8 @@ namespace djack.RogueSurvivor.Data
     [NonSerialized]
     public readonly NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>> Police;
     [NonSerialized]
+    public readonly Dataflow<List<Actor>,int> UndeadCount;
+    [NonSerialized]
     public readonly NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>> PowerGenerators;
     [NonSerialized]
     public readonly Dataflow<Map,Point,Exit> AI_exits;
@@ -126,6 +128,11 @@ namespace djack.RogueSurvivor.Data
       return new ReadOnlyCollection<Actor>(src.Where(a => (int)Gameplay.GameFactions.IDs.ThePolice == a.Faction.ID && !a.IsDead).ToList());
     }
 
+    private static int _countUndead(IEnumerable<Actor> src)
+    {
+      return src.Count(a => a.Model.Abilities.IsUndead);
+    }
+
     private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(IEnumerable<MapObject> src)
     {
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList());
@@ -154,6 +161,7 @@ namespace djack.RogueSurvivor.Data
       m_IsInside = new byte[width*height-1/8+1];
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
+      UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList, _countUndead);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
@@ -185,6 +193,7 @@ namespace djack.RogueSurvivor.Data
       m_Decorations = (Dictionary<Point, HashSet<string>>) info.GetValue("m_Decorations", typeof(Dictionary<Point, HashSet<string>>));
       Players = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPlayers);
       Police = new NonSerializedCache<List<Actor>, Actor, ReadOnlyCollection<Actor>>(m_ActorsList, _findPolice);
+      UndeadCount = new Dataflow<List<Actor>, int>(m_ActorsList,_countUndead);
       PowerGenerators = new NonSerializedCache<List<MapObject>, Engine.MapObjects.PowerGenerator, ReadOnlyCollection<Engine.MapObjects.PowerGenerator>>(m_MapObjectsList, _findPowerGenerators);
       AI_exits = new Dataflow<Map, Point, Exit>(this, _FindAIexits);
       destination_maps = new NonSerializedCache<Map, Map, HashSet<Map>>(this,m=>new HashSet<Map>(AI_exits.Get.Values.Select(exit => exit.ToMap).Where(map => !map.IsSecret)));
