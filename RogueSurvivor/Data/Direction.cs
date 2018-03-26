@@ -45,24 +45,21 @@ namespace djack.RogueSurvivor.Data
       Direction.W
     };
 #endif
-    private readonly int m_Index;
+    public readonly sbyte Index;
     private readonly string m_Name;
-    private readonly Point m_Vector;
-    private readonly PointF m_NormalizedVector;
-
-    public Point Vector { get { return m_Vector; } }
-    public PointF NormalizedVector { get { return m_NormalizedVector; } }
+    public readonly Point Vector;
+    private readonly PointF NormalizedVector;
 
     private Direction(int index, string name, Point vector)
     {
-      m_Index = index;
+      Index = (sbyte)index;
       m_Name = name;
-      m_Vector = vector;
+      Vector = vector;
       float num = (float) Math.Sqrt((double) (vector.X * vector.X + vector.Y * vector.Y));
       if (num != 0.0f)
-        m_NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
+        NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
       else
-        m_NormalizedVector = PointF.Empty;
+        NormalizedVector = PointF.Empty;
     }
 
     public static Point operator +(Point lhs, Direction rhs)
@@ -224,20 +221,22 @@ diagonalExit:
       return dir ?? N;
     }
 
+#if DEAD_FUNC
     public static Direction Right(Direction d)
     {
-      return COMPASS[(d.m_Index + 1) % 8];
+      return COMPASS[(d.Index + 1) % 8];
     }
 
     public static Direction Left(Direction d)
     {
-      return COMPASS[(d.m_Index - 1) % 8];
+      return COMPASS[(d.Index - 1) % 8];
     }
 
     public static Direction Opposite(Direction d)
     {
-      return COMPASS[(d.m_Index + 4) % 8];
+      return COMPASS[(d.Index + 4) % 8];
     }
+#endif
 
     public override string ToString()
     {

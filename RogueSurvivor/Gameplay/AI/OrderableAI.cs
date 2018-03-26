@@ -1928,17 +1928,41 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, point1, false);
     }
 
+    /// <returns>0 for disallowed, 1 for allowed, 2+ for "better".</returns>
+    protected int SleepLocationRating(Location loc)
+    { 
+      // the legacy tests
+      if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return 0;
+      if (loc.Map.HasExitAtExt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
+      if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return 0;  // contextual
+      if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
+
+      // geometric code (walls, etc)
+      if (!loc.Map.IsInsideAtExt(loc.Position)) return 0;
+      if (!loc.Map.GetTileModelAtExt(loc.Position).IsWalkable) return 0;
+      // we don't want to sleep next to anything that looks like an ex-door
+      bool[] walls = Direction.COMPASS.Select(dir => loc.Map.GetTileModelAtExt(loc.Position+dir).IsWalkable).ToArray();
+
+      // reference code...likely not optimal, but easy to verify
+      if (walls[Direction.N.Index] && walls[Direction.S.Index]) return 0;
+      if (walls[Direction.W.Index] && walls[Direction.E.Index]) return 0;
+      if (walls[Direction.N.Index] && walls[Direction.NW.Index] != walls[Direction.NE.Index]) return 0;
+      if (walls[Direction.S.Index] && walls[Direction.SW.Index] != walls[Direction.SE.Index]) return 0;
+      if (walls[Direction.W.Index] && walls[Direction.NW.Index] != walls[Direction.SW.Index]) return 0;
+      if (walls[Direction.E.Index] && walls[Direction.NE.Index] != walls[Direction.SE.Index]) return 0;
+
+      // contextual code.  Context-free version would return int.MaxValue to request this.  static value would asusmed "passed"
+      // XXX \todo if the LOS has a non-broken door then we're on the wrong side.  We should be pathing to it, but *not* securing the perimter.
+      // XXX \todo treat already-sleeping as "somewhat like a wall"...want to be very sure it is possible to leave without waking anyone up
+      // more geometric code (approval rather than veto)
+      return 1;
+    }
+
     // This is going into BehaviorWander so it can't be fully competent
     protected bool VetoSleepLocation(Location loc)
     {
-      // the legacy tests
-      if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return true;
-      if (loc.Map.HasExitAtExt(loc.Position)) return true;    // both unsafe, and problematic for pathing in general
-      if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return true;
-      if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return true;
-      // geometric code (walls, etc)
-      if (!loc.Map.IsInsideAtExt(loc.Position)) return true;
-      return false;
+      int rating = SleepLocationRating(loc);
+      return 0>=rating;
     }
 
     protected Dictionary<Point, int> GetSleepLocsInLOS(out Dictionary<Point, int> couches)
