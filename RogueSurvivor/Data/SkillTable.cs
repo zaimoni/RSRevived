@@ -52,8 +52,8 @@ namespace djack.RogueSurvivor.Data
     public int GetSkillLevel(djack.RogueSurvivor.Gameplay.Skills.IDs id)
     {
       if (null == m_Table) return 0;
-      if (m_Table.TryGetValue(id, out sbyte skill)) return skill;
-      return 0;
+      m_Table.TryGetValue(id, out sbyte skill); // default(sbyte) is 0: ok
+      return skill;
     }
 
     public void AddOrIncreaseSkill(Gameplay.Skills.IDs id)

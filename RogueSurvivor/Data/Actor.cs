@@ -57,20 +57,20 @@ namespace djack.RogueSurvivor.Data
     private const float FIRING_WHEN_STA_TIRED = 0.75f;
     private const float FIRING_WHEN_STA_NOT_FULL = 0.9f;
 
-    public static float SKILL_AWAKE_SLEEP_BONUS = 0.1f;
-    public static float SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17f;    // XXX 0.17f makes this useful at L1
+    public static double SKILL_AWAKE_SLEEP_BONUS = 0.1;
+    public static double SKILL_AWAKE_SLEEP_REGEN_BONUS = 0.17;    // XXX 0.17f makes this useful at L1
     public static int SKILL_CARPENTRY_LEVEL3_BUILD_BONUS = 1;
     public static int SKILL_HAULER_INV_BONUS = 1;
     public static int SKILL_HIGH_STAMINA_STA_BONUS = 5;
     public static int SKILL_LEADERSHIP_FOLLOWER_BONUS = 1;
-    public static float SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
+    public static double SKILL_LIGHT_EATER_FOOD_BONUS = 0.2f;
     public static float SKILL_LIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_NECROLOGY_UNDEAD_BONUS = 2;
     public static int SKILL_STRONG_THROW_BONUS = 1;
     public static int SKILL_TOUGH_HP_BONUS = 3;
     public static float SKILL_ZLIGHT_EATER_MAXFOOD_BONUS = 0.15f;
     public static int SKILL_ZTOUGH_HP_BONUS = 4;
-    public static float SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
+    public static double SKILL_ZTRACKER_SMELL_BONUS = 0.1f;
 
     public static int SKILL_AGILE_ATK_BONUS = 2;
     public static int SKILL_BOWS_ATK_BONUS = 5;
@@ -856,10 +856,14 @@ namespace djack.RogueSurvivor.Data
     {
       int num3 = SKILL_AGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AGILE) + SKILL_ZAGILE_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_AGILE);
       int num4 = SKILL_STRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.STRONG) + SKILL_ZSTRONG_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_STRONG);
-      num3 += SKILL_MARTIAL_ARTS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-      num4 += SKILL_MARTIAL_ARTS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
-      if (target != null && target.Model.Abilities.IsUndead)
-        num4 += DamageBonusVsUndeads;
+      {
+      int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.MARTIAL_ARTS);
+      if (0 != skill) {
+        num3 += SKILL_MARTIAL_ARTS_ATK_BONUS * skill;
+        num4 += SKILL_MARTIAL_ARTS_DMG_BONUS * skill;
+      }
+      }
+      if (target?.Model.Abilities.IsUndead ?? false) num4 += DamageBonusVsUndeads;
       Attack baseAttack = Model.StartingSheet.UnarmedAttack;
       float num5 = (float)baseAttack.HitValue + (float) num3;
       if (IsExhausted) num5 /= 2f;
@@ -904,30 +908,36 @@ namespace djack.RogueSurvivor.Data
     {
       int num1 = 0;
       int num2 = 0;
-      switch (baseAttack.Kind)
-      {
+      switch (baseAttack.Kind) {
         case AttackKind.FIREARM:
-          num1 = SKILL_FIREARMS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
-          num2 = SKILL_FIREARMS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          {
+          int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.FIREARMS);
+          if (0 != skill) {
+            num1 = SKILL_FIREARMS_ATK_BONUS * skill;
+            num2 = SKILL_FIREARMS_DMG_BONUS * skill;
+          }
+          }
           break;
         case AttackKind.BOW:
-          num1 = SKILL_BOWS_ATK_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
-          num2 = SKILL_BOWS_DMG_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          {
+          int skill = Sheet.SkillTable.GetSkillLevel(Skills.IDs.BOWS);
+          if (0 != skill) {
+            num1 = SKILL_BOWS_ATK_BONUS * skill;
+            num2 = SKILL_BOWS_DMG_BONUS * skill;
+          }
+          }
           break;
       }
-      if (target != null && target.Model.Abilities.IsUndead)
-        num2 += DamageBonusVsUndeads;
+      if (target?.Model.Abilities.IsUndead ?? false) num2 += DamageBonusVsUndeads;
+
       int efficientRange = baseAttack.EfficientRange;
-      if (distance != efficientRange) {
-        num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
-      }
+      if (distance != efficientRange) num1 += (efficientRange - distance) * FIRE_DISTANCE_VS_RANGE_MODIFIER;
+
       float num4 = (float) (baseAttack.HitValue + num1);
       if (IsExhausted) num4 /= 2f;
       else if (IsSleepy) num4 *= 0.75f;
-      if (IsTired)
-        num4 *= FIRING_WHEN_STA_TIRED;
-      else if (StaminaPoints < MaxSTA)
-        num4 *= FIRING_WHEN_STA_NOT_FULL;
+      if (IsTired) num4 *= FIRING_WHEN_STA_TIRED;
+      else if (StaminaPoints < MaxSTA) num4 *= FIRING_WHEN_STA_NOT_FULL;
       return new Attack(baseAttack.Kind, baseAttack.Verb, (int) num4, baseAttack.DamageValue + num2, baseAttack.StaminaPenalty, baseAttack.Range);
     }
 
@@ -2384,7 +2394,7 @@ namespace djack.RogueSurvivor.Data
       const int SLEEP_COUCH_SLEEPING_REGEN = 6;
       const int SLEEP_NOCOUCH_SLEEPING_REGEN = 4;
       int num1 = isOnCouch ? SLEEP_COUCH_SLEEPING_REGEN : SLEEP_NOCOUCH_SLEEPING_REGEN;
-      int num2 = (int) ((double) num1 * (double) SKILL_AWAKE_SLEEP_REGEN_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
+      int num2 = (int) (/* (double) */ SKILL_AWAKE_SLEEP_REGEN_BONUS * /* (int) */(num1*Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE)));
       return num1 + num2;
     }
 
@@ -2444,7 +2454,7 @@ namespace djack.RogueSurvivor.Data
 
     public int MaxSleep {
       get {
-        int num = (int) ((double) Sheet.BaseSleepPoints * (double) SKILL_AWAKE_SLEEP_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE));
+        int num = (int) (/* (double) */ SKILL_AWAKE_SLEEP_BONUS * /* (int) */ (Sheet.BaseSleepPoints * Sheet.SkillTable.GetSkillLevel(Skills.IDs.AWAKE)));
         return Sheet.BaseSleepPoints + num;
       }
     }
@@ -2498,8 +2508,7 @@ namespace djack.RogueSurvivor.Data
     // use this to prevent accidental overwriting of MaxCapacity by bugs.
     public int MaxInv {
       get {
-        int num = SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
-        return Sheet.BaseInventoryCapacity + num;
+        return Sheet.BaseInventoryCapacity + SKILL_HAULER_INV_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.HAULER);
       }
     }
 
@@ -2628,8 +2637,7 @@ namespace djack.RogueSurvivor.Data
 
     public int ItemNutritionValue(int baseValue)
     {
-      int num = (int) ((double) baseValue * (double) SKILL_LIGHT_EATER_FOOD_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER));
-      return baseValue + num;
+      return baseValue + (int)(/* (double) */ SKILL_LIGHT_EATER_FOOD_BONUS * /* (int) */ (baseValue * Sheet.SkillTable.GetSkillLevel(Skills.IDs.LIGHT_EATER)));
     }
 
     public int BiteNutritionValue(int baseValue)
@@ -3104,9 +3112,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     // smell
-    public float Smell {
+    public double Smell {
       get {
-        return (float) (1.0 + (double) SKILL_ZTRACKER_SMELL_BONUS * (double) Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Model.StartingSheet.BaseSmellRating;
+        return (1.0 + SKILL_ZTRACKER_SMELL_BONUS * Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_TRACKER)) * Model.StartingSheet.BaseSmellRating;
       }
     }
 
@@ -3114,7 +3122,7 @@ namespace djack.RogueSurvivor.Data
       get {
         if (IsSleeping) return -1;
         // Even a skill level of 1 will give a ZM a raw negative smell threshold.
-        return Math.Max(1,(OdorScent.MAX_STRENGTH+1) - (int) ((double)Smell * OdorScent.MAX_STRENGTH));
+        return Math.Max(1,(OdorScent.MAX_STRENGTH+1) - (int) (Smell * OdorScent.MAX_STRENGTH));
       }
     }
 
