@@ -8,19 +8,20 @@ using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Drawing;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
 {
-    internal abstract class MapGenerator
+  internal abstract class MapGenerator
   {
-    protected readonly Rules m_Rules;
+    protected readonly Rules m_Rules;   // all uses of this alias of the global Rules object RogueForm.Game.Rules are legitimate
 
     protected MapGenerator(Rules rules)
     {
-	  Contract.Requires(null != rules);
+#if DEBUG
+      if (null == rules) throw new ArgumentNullException(nameof(rules));
+#endif
       m_Rules = rules;
     }
 

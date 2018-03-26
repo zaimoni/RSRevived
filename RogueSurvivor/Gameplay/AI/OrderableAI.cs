@@ -2046,7 +2046,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                  continue;
                }
                break;
-              break;
             case -2:
             case  1:
             case  4:

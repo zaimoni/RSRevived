@@ -12,7 +12,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Soap;
 using System.Xml.Serialization;
-using System.Diagnostics.Contracts;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -169,21 +168,31 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    // we have conflicting implementation imperatives here.
+    // access control wants m_Event_Raids to be a private static member of District.  However, it is not 
+    // a natural singleton (one per savegame) so it probably belongs with the World object.
+    // At that point, keeping it in Session eliminates a use of the Load/Save helper idiom.
     public bool HasRaidHappened(RaidType raid, District district)
     {
-      Contract.Requires(null != district);
+#if DEBUG
+      if (null == district) throw new ArgumentNullException(nameof(district));
+#endif
       return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] > -1;
     }
 
     public int LastRaidTime(RaidType raid, District district)
     {
-      Contract.Requires(null != district);
+#if DEBUG
+      if (null == district) throw new ArgumentNullException(nameof(district));
+#endif
       return m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y];
     }
 
     public void SetLastRaidTime(RaidType raid, District district, int turnCounter)
     {
-      Contract.Requires(null != district);
+#if DEBUG
+      if (null == district) throw new ArgumentNullException(nameof(district));
+#endif
       m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
     }
 
