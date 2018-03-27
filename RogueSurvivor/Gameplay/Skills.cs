@@ -50,9 +50,9 @@ namespace djack.RogueSurvivor.Gameplay
       return (Skills.IDs) roller.Roll(0, (int)Skills.IDs_aux._LIVING_COUNT+1);
     }
 
-    public static Skills.IDs RollUndead(DiceRoller roller)
+    public static IDs RollUndead(DiceRoller roller)
     {
-      return (Skills.IDs) roller.Roll((int)Skills.IDs_aux._FIRST_UNDEAD, (int)Skills.IDs._COUNT);
+      return roller.Choose(UNDEAD_SKILLS);
     }
 
     private static void Notify(IRogueUI ui, string what, string stage)
