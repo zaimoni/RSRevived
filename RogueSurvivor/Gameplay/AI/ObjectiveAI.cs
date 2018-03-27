@@ -192,7 +192,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new Dictionary<Point,int>(PlannedMoves[m_Actor.Location.Position]);
     }
 
-    private Dictionary<Point, int> DowngradeApproach(Dictionary<Location,int> src)
+    private static Dictionary<Point, int> DowngradeApproach(Dictionary<Location,int> src)
     {
       var ret = new Dictionary<Point,int>();
       foreach(var x in src) {
@@ -1545,7 +1545,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return IsInterestingItem(offeredItem);
     }
 
-    private void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon> rws, Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
+    private static void _InterpretRangedWeapons(IEnumerable<ItemRangedWeapon> rws, Point pt, Dictionary<Point, ItemRangedWeapon[]> best_rw, Dictionary<Point, ItemRangedWeapon[]> reload_empty_rw, Dictionary<Point, ItemRangedWeapon[]> discard_empty_rw, Dictionary<Point, ItemRangedWeapon[]> reload_rw)
     {
         if (!rws?.Any() ?? true) return;
 

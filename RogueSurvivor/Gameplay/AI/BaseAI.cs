@@ -554,7 +554,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return ((0 < new_dest && new_dest < src.Count) ? no_jump.ToList() : src);
     }
 
-    private List<Location> DecideMove_NoJump(List<Location> src)
+    private static List<Location> DecideMove_NoJump(List<Location> src)
     {
       IEnumerable<Location> no_jump = src.Where(loc=> {
         MapObject tmp2 = loc.MapObject;

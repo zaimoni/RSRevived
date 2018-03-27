@@ -1318,7 +1318,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    private string MakeCentricLocationDirection(Location from, Location to)
+    private static string MakeCentricLocationDirection(Location from, Location to)
     {
       if (from.Map != to.Map) return string.Format("in {0}", (object) to.Map.Name);
       Point position1 = from.Position;
@@ -1886,7 +1886,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return new ActionBuildFortification(m_Actor, point1, true);
     }
 
-    protected bool IsDoorwayOrCorridor(Map map, Point pos)
+    protected static bool IsDoorwayOrCorridor(Map map, Point pos)
     { // all of these can use IsInBounds
       if (!map.GetTileModelAt(pos).IsWalkable) return false;
       Point p5 = pos + Direction.NE;

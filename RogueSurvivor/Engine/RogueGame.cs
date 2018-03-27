@@ -454,12 +454,12 @@ namespace djack.RogueSurvivor.Engine
       });
     }
 
-    private Data.Message MakeErrorMessage(string text)
+    private static Data.Message MakeErrorMessage(string text)
     {
       return new Data.Message(text, Session.Get.WorldTime.TurnCounter, Color.Red);
     }
 
-    private Data.Message MakeYesNoMessage(string question)
+    private static Data.Message MakeYesNoMessage(string question)
     {
       return new Data.Message(string.Format("{0}? Y to confirm, N to cancel", question), Session.Get.WorldTime.TurnCounter, Color.Yellow);
     }
@@ -474,7 +474,7 @@ namespace djack.RogueSurvivor.Engine
       return IsVisibleToPlayer(mapObj) ? mapObj.TheName : "something";
     }
 
-    private Data.Message MakeMessage(Actor actor, string doWhat)
+    private static Data.Message MakeMessage(Actor actor, string doWhat)
     {
       return MakeMessage(actor, doWhat, OTHER_ACTION_COLOR);
     }
@@ -488,7 +488,7 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : color);
     }
 
-    private Data.Message MakeMessage(Actor actor, string doWhat, Actor target)
+    private static Data.Message MakeMessage(Actor actor, string doWhat, Actor target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
@@ -505,7 +505,7 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, (actor.IsPlayer || target.IsPlayer) ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    private Data.Message MakeMessage(Actor actor, string doWhat, MapObject target)
+    private static Data.Message MakeMessage(Actor actor, string doWhat, MapObject target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
@@ -522,7 +522,7 @@ namespace djack.RogueSurvivor.Engine
       return new Data.Message(stringBuilder.ToString(), Session.Get.WorldTime.TurnCounter, actor.IsPlayer ? PLAYER_ACTION_COLOR : OTHER_ACTION_COLOR);
     }
 
-    private Data.Message MakeMessage(Actor actor, string doWhat, Item target)
+    private static Data.Message MakeMessage(Actor actor, string doWhat, Item target)
     {
       return MakeMessage(actor, doWhat, target, ".");
     }
@@ -7582,7 +7582,7 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
-    private void DamnCHARtoPoliceInvestigation()
+    private static void DamnCHARtoPoliceInvestigation()
     {
 #region 1) examine the underground base
       Map m = Session.Get.UniqueMaps.CHARUndergroundFacility.TheMap;
@@ -7678,7 +7678,7 @@ namespace djack.RogueSurvivor.Engine
     }
 
     // fn is the UI message
-    private void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Func<Actor, bool> pred)
+    private static void MakeEnemyOfTargetFactionInDistrict(Actor aggressor, Actor target, Action<Actor> fn, Func<Actor, bool> pred)
     {
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
@@ -11470,7 +11470,7 @@ namespace djack.RogueSurvivor.Engine
       return RogueGame.GetUserScreenshotsPath() + shotname + "." + m_UI.UI_ScreenshotExtension();
     }
 
-    private bool CreateDirectory(string path)
+    private static bool CreateDirectory(string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -12718,7 +12718,7 @@ namespace djack.RogueSurvivor.Engine
       return string.Format("{0} - {1}, a {2} - {3}", info, a.TheName, a.Model.Name, a.Location.Map.Name);
     }
 
-    private string[] CompileDistrictFunFacts(District d)
+    static private string[] CompileDistrictFunFacts(District d)
     {
       List<string> stringList = new List<string>();
       List<Actor> actorList1 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, a => {

@@ -23,7 +23,7 @@ namespace djack.RogueSurvivor.Engine
       Volume = 100;
     }
 
-    private string FullName(string fileName)
+    private static string FullName(string fileName)
     {
       return fileName + ".wav";
     }
