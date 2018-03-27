@@ -150,6 +150,9 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading keybindings...");
       Keybindings keybindings;
       try {
+#if LINUX
+        filepath = filepath.Replace("\\", "/");
+#endif
 	    keybindings = filepath.BinaryDeserialize<Keybindings>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load keybindings (first run?), using defaults.");

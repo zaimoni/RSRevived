@@ -868,6 +868,9 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading options...");
       GameOptions gameOptions;
       try {
+#if LINUX
+        filepath = filepath.Replace("\\", "/");
+#endif
 	    gameOptions = filepath.BinaryDeserialize<GameOptions>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load options (no custom options?).");

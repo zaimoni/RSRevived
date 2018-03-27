@@ -836,6 +836,9 @@ namespace djack.RogueSurvivor.Gameplay
     {
       string filename = "Resources\\Images\\" + id + ".png";
       try {
+#if LINUX
+        filename = filename.Replace("\\", "/");
+#endif
         Bitmap img = new Bitmap(filename);
         s_Images.Add(id, img);
         s_GrayLevelImages.Add(id, GameImages.MakeGrayLevel(img));

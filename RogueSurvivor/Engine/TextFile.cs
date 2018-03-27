@@ -36,6 +36,9 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (string.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
 #endif
+#if LINUX
+      filename = filename.Replace("\\", "/");
+#endif
       try {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, string.Format("Loading text file {0}...", (object) fileName));
 		using (StreamReader streamReader = File.OpenText(fileName)) {

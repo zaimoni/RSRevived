@@ -62,6 +62,9 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, "loading hints...");
       GameHintsStatus gameHintsStatus;
       try {
+#if LINUX
+        filepath = filepath.Replace("\\", "/");
+#endif
 	    gameHintsStatus = filepath.BinaryDeserialize<GameHintsStatus>();
       } catch (Exception ex) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, "failed to load hints (first run?).");

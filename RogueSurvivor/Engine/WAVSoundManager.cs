@@ -28,10 +28,9 @@ namespace djack.RogueSurvivor.Engine
       return fileName + ".wav";
     }
 
-
     public bool Load(string musicname, string filename)
     {
-      filename = FullName(filename);
+      filename = FullName(filename);    // LINUX define handled at GameMusics
       Logger.WriteLine(Logger.Stage.INIT_SOUND, string.Format("loading music {0} file {1}", (object) musicname, (object) filename));
       try {
         SoundPlayer tmp = new SoundPlayer(filename);

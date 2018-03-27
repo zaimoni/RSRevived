@@ -196,41 +196,41 @@ namespace djack.RogueSurvivor.Engine
       m_Event_Raids[(int) raid, district.WorldPosition.X, district.WorldPosition.Y] = turnCounter;
     }
 
-    public static void Save(Session session, string filepath, Session.SaveFormat format)
+    public static void Save(Session session, string filepath, SaveFormat format)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
+#if LINUX
+      filename = filename.Replace("\\", "/");
+#endif
       session.World.OptimizeBeforeSaving();
-      switch (format)
-      {
-        case Session.SaveFormat.FORMAT_BIN:
-          Session.SaveBin(session, filepath);
+      switch (format) {
+        case SaveFormat.FORMAT_BIN:
+          SaveBin(session, filepath);
           break;
-        case Session.SaveFormat.FORMAT_SOAP:
-          Session.SaveSoap(session, filepath);
+        case SaveFormat.FORMAT_SOAP:
+          SaveSoap(session, filepath);
           break;
-        case Session.SaveFormat.FORMAT_XML:
-          Session.SaveXml(session, filepath);
+        case SaveFormat.FORMAT_XML:
+          SaveXml(session, filepath);
           break;
       }
     }
 
-    public static bool Load(string filepath, Session.SaveFormat format)
+    public static bool Load(string filepath, SaveFormat format)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(filepath)) throw new ArgumentNullException(nameof(filepath));
 #endif
-      switch (format)
-      {
-        case Session.SaveFormat.FORMAT_BIN:
-          return Session.LoadBin(filepath);
-        case Session.SaveFormat.FORMAT_SOAP:
-          return Session.LoadSoap(filepath);
-        case Session.SaveFormat.FORMAT_XML:
-          return Session.LoadXml(filepath);
-        default:
-          return false;
+#if LINUX
+      filepath = filepath.Replace("\\", "/");
+#endif
+      switch (format) {
+        case SaveFormat.FORMAT_BIN: return LoadBin(filepath);
+        case SaveFormat.FORMAT_SOAP: return LoadSoap(filepath);
+        case SaveFormat.FORMAT_XML: return LoadXml(filepath);
+        default: return false;
       }
     }
 
