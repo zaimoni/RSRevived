@@ -185,8 +185,9 @@ namespace djack.RogueSurvivor.Data
         public void Sighted(Actor a, Location loc)
         {
           lock(_threats) {
-            _threats[a] = new Dictionary<Map, HashSet<Point>>(1);
-            _threats[a][loc.Map] = new HashSet<Point> { loc.Position };
+            _threats[a] = new Dictionary<Map, HashSet<Point>>(1) {
+              [loc.Map] = new HashSet<Point> { loc.Position }
+            };
           }
         }
 

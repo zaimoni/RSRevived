@@ -354,37 +354,27 @@ namespace djack.RogueSurvivor.Engine
 
     private static IFormatter CreateSoapFormatter()
     {
-      return (IFormatter) new SoapFormatter();
+      return new SoapFormatter();
     }
 
     // game mode support
     public static string DescGameMode(GameMode mode)
     {
-      switch (mode)
-      {
-        case GameMode.GM_STANDARD:
-          return "STD - Standard Game";
-        case GameMode.GM_CORPSES_INFECTION:
-          return "C&I - Corpses & Infection";
-        case GameMode.GM_VINTAGE:
-          return "VTG - Vintage Zombies";
-        default:
-          throw new ArgumentOutOfRangeException("mode",(int)mode,"unhandled game mode");
+      switch (mode) {
+        case GameMode.GM_STANDARD: return "STD - Standard Game";
+        case GameMode.GM_CORPSES_INFECTION: return "C&I - Corpses & Infection";
+        case GameMode.GM_VINTAGE: return "VTG - Vintage Zombies";
+        default: throw new ArgumentOutOfRangeException(nameof(mode),(int)mode,"unhandled game mode");
       }
     }
 
     public static string DescShortGameMode(GameMode mode)
     {
-      switch (mode)
-      {
-        case GameMode.GM_STANDARD:
-          return "STD";
-        case GameMode.GM_CORPSES_INFECTION:
-          return "C&I";
-        case GameMode.GM_VINTAGE:
-          return "VTG";
-        default:
-          throw new ArgumentOutOfRangeException("mode",(int)mode,"unhandled game mode");
+      switch (mode) {
+        case GameMode.GM_STANDARD: return "STD";
+        case GameMode.GM_CORPSES_INFECTION: return "C&I";
+        case GameMode.GM_VINTAGE: return "VTG";
+        default: throw new ArgumentOutOfRangeException(nameof(mode),(int)mode,"unhandled game mode");
       }
     }
 

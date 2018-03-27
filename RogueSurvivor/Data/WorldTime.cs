@@ -120,14 +120,14 @@ namespace djack.RogueSurvivor.Data
       : this(src.TurnCounter)
     {
 #if DEBUG
-      if (null==src) throw new ArgumentNullException("src");
+      if (null==src) throw new ArgumentNullException(nameof(src));
 #endif
     }
 
     public WorldTime(int turnCounter=0)
     {
 #if DEBUG
-      if (0 > turnCounter) throw new ArgumentOutOfRangeException("turnCounter",turnCounter, "0 > turnCounter");
+      if (0 > turnCounter) throw new ArgumentOutOfRangeException(nameof(turnCounter),turnCounter, "0 > turnCounter");
 #endif
       TurnCounter = turnCounter;
     }
@@ -170,10 +170,10 @@ namespace djack.RogueSurvivor.Data
     public static int Turn(int day,int hour)
     {
 #if DEBUG
-      if (0>day) throw new ArgumentOutOfRangeException("day",day, "0>day");
-      if (int.MaxValue / TURNS_PER_DAY < day) throw new ArgumentOutOfRangeException("day",day, "(int.MaxValue / TURNS_PER_DAY < day");
-      if (0>hour) throw new ArgumentOutOfRangeException("hour", hour, "0>hour");
-      if ((int.MaxValue - (TURNS_PER_DAY * day)) / TURNS_PER_HOUR < hour) throw new ArgumentOutOfRangeException("hour", hour, "(int.MaxValue - (TURNS_PER_DAY * day)) / TURNS_PER_HOUR < hour");
+      if (0>day) throw new ArgumentOutOfRangeException(nameof(day),day, "0>day");
+      if (int.MaxValue / TURNS_PER_DAY < day) throw new ArgumentOutOfRangeException(nameof(day), day, "(int.MaxValue / TURNS_PER_DAY < day");
+      if (0>hour) throw new ArgumentOutOfRangeException(nameof(hour), hour, "0>hour");
+      if ((int.MaxValue - (TURNS_PER_DAY * day)) / TURNS_PER_HOUR < hour) throw new ArgumentOutOfRangeException(nameof(hour), hour, "(int.MaxValue - (TURNS_PER_DAY * day)) / TURNS_PER_HOUR < hour");
 #endif
       return TURNS_PER_DAY*day + TURNS_PER_HOUR*hour;
     }

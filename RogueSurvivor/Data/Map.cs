@@ -137,7 +137,7 @@ namespace djack.RogueSurvivor.Data
     {
       return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList());
     }
-    
+
     private static Dictionary<Point,Exit> _FindAIexits(Map m) { return m.GetExits(exit => exit.IsAnAIExit); }
     private static Dictionary<Point,Exit> _Find_entrymap_exits(Map m) { return m.GetExits(exit => exit.ToMap==exit.ToMap.District.EntryMap); }
 
@@ -694,7 +694,7 @@ namespace djack.RogueSurvivor.Data
             {
     	    MapObject tmp = move.Key.Map.GetMapObjectAtExt(move.Key.Position);
 		    int cost = 1;
-            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina          
+            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
             else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
             ret[move.Key] = cost;
 		    continue;
@@ -725,7 +725,7 @@ namespace djack.RogueSurvivor.Data
             {
     	    MapObject tmp = GetMapObjectAtExt(move.Key);
 		    int cost = 1;
-            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina          
+            if (tmp is DoorWindow door && 0<door.BarricadePoints) cost += (door.BarricadePoints+7)/8;	// handwave time cost for fully rested unarmed woman with infinite stamina
             else cost += (tmp.HitPoints+7)/8;	// time cost to break, as per barricade
             ret[move.Key] = cost;
 		    continue;
@@ -859,7 +859,7 @@ retry:
           if (abs_x_delta<abs_y_delta) {
             dest = Engine.Session.Get.World[District.WorldPosition.X, District.WorldPosition.Y + sgn_y_delta].EntryMap;
             goto retry;
-          } else if (abs_x_delta > abs_y_delta) { 
+          } else if (abs_x_delta > abs_y_delta) {
             dest = Engine.Session.Get.World[District.WorldPosition.X + sgn_x_delta, District.WorldPosition.Y].EntryMap;
             goto retry;
           } else if (2 <= abs_x_delta) {

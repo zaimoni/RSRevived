@@ -38,8 +38,7 @@ namespace djack.RogueSurvivor.Engine
     {
 	  m_Table.Clear();
       for (int index = 0; index < m_MaxEntries; ++index)
-        m_Table.Add(new HiScore()
-        {
+        m_Table.Add(new HiScore{
           Death = "no death",
           DifficultyPercent = 0,
           KillPoints = 0,

@@ -33,10 +33,10 @@ namespace djack.RogueSurvivor.Engine
 
     public static HiScore FromScoring(string name, Scoring sc, string skillsDescription)
     {
-      if (sc == null)
-        throw new ArgumentNullException("scoring");
-      return new HiScore()
-      {
+#if DEBUG
+      if (null == sc) throw new ArgumentNullException(nameof(sc));
+#endif
+      return new HiScore{
         AchievementPoints = sc.AchievementPoints,
         Death = sc.DeathReason,
         DifficultyPercent = (int) (100.0 * (double) sc.DifficultyRating),

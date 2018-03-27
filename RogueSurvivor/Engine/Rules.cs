@@ -463,8 +463,7 @@ namespace djack.RogueSurvivor.Engine
              else if (2<=candidates_2.Count()) candidates = candidates_2.ToList();
              if (null == candidates && candidates_1.Any()) {
                test = (null != self_block ? candidates_1.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_1);
-               if (test.Any()) candidates = test.ToList();
-               else candidates = candidates_1.ToList();
+               candidates = test.Any() ? test.ToList() : candidates_1.ToList();
              } else candidates = candidates_2.ToList();
              // end function target
 
@@ -476,8 +475,7 @@ namespace djack.RogueSurvivor.Engine
       }
       MapObject mapObjectAt = map.GetMapObjectAt(point);
       if (mapObjectAt != null) {
-        DoorWindow door = mapObjectAt as DoorWindow;
-        if (door != null) {
+        if (mapObjectAt is DoorWindow door) {
           if (door.BarricadePoints > 0) {
             // pathfinding livings will break barricaded doors (they'll prefer to go around it)
             if (actor.CanBash(door, out reason)) return new ActionBashDoor(actor, door);
@@ -520,8 +518,7 @@ namespace djack.RogueSurvivor.Engine
                else if (2<=candidates_2.Count()) candidates = candidates_2.ToList();
                if (null == candidates && candidates_1.Any()) {
                  test = (null != self_block ? candidates_1.Where(pt => !self_block.ContainsKey(pt.Key)) : candidates_1);
-                 if (test.Any()) candidates = test.ToList();
-                 else candidates = candidates_1.ToList();
+                 candidates = test.Any() ? test.ToList() : candidates_1.ToList();
                } else candidates = candidates_2.ToList();
                // end function target
 

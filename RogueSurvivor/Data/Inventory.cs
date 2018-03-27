@@ -368,11 +368,11 @@ namespace djack.RogueSurvivor.Data
 
     public override string ToString()
     {
-      string ret = "inv/"+m_Items.Count.ToString();
-      foreach (Item obj in m_Items) {
-        ret += "\n"+obj.ToString();
-      }
-      return ret;
+      var ret = new List<string>(1 + m_Items.Count) {
+        "inv/"+m_Items.Count.ToString()
+      };
+      foreach (Item obj in m_Items) ret.Add(obj.ToString());
+      return string.Join("\n",ret);
     }
   }
 }

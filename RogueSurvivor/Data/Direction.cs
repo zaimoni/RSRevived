@@ -56,10 +56,7 @@ namespace djack.RogueSurvivor.Data
       m_Name = name;
       Vector = vector;
       float num = (float) Math.Sqrt((double) (vector.X * vector.X + vector.Y * vector.Y));
-      if (num != 0.0f)
-        NormalizedVector = new PointF((float) vector.X / num, (float) vector.Y / num);
-      else
-        NormalizedVector = PointF.Empty;
+      NormalizedVector = num != 0.0f ? new PointF((float)vector.X / num, (float)vector.Y / num) : PointF.Empty;
     }
 
     public static Point operator +(Point lhs, Direction rhs)

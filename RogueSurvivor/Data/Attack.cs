@@ -29,7 +29,9 @@ namespace djack.RogueSurvivor.Data
 
     public Attack(AttackKind kind, Verb verb, int hitValue, int damageValue, int staminaPenalty = 0, int range = 0)
     {
-      if (verb == null) throw new ArgumentNullException("verb");
+#if DEBUG
+      if (null == verb) throw new ArgumentNullException(nameof(verb));
+#endif
       Kind = kind;
       Verb = verb;
       HitValue = hitValue;

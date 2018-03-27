@@ -892,8 +892,7 @@ namespace djack.RogueSurvivor.Data
     // ultimately these two will be thin wrappers, as CurrentMeleeAttack/CurrentRangedAttack are themselves mathematical functions
     // of the equipped weapon which OrderableAI *will* want to vary when choosing an appropriate weapon
     public Attack MeleeAttack(Actor target = null) {
-      ItemMeleeWeapon tmp_melee = GetEquippedWeapon() as ItemMeleeWeapon;
-      if (null!=tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
+      if (GetEquippedWeapon() is ItemMeleeWeapon tmp_melee) return MeleeWeaponAttack(tmp_melee.Model, target);
       return UnarmedMeleeAttack(target);
     }
 
@@ -1196,8 +1195,8 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public IEnumerable<Actor> Aggressing { get { return null != m_AggressorOf ? m_AggressorOf : new List<Actor>(); } }
-    public IEnumerable<Actor> Aggressors { get { return null != m_SelfDefenceFrom ? m_SelfDefenceFrom : new List<Actor>(); } }
+    public IEnumerable<Actor> Aggressing { get { return m_AggressorOf ?? new List<Actor>(); } }
+    public IEnumerable<Actor> Aggressors { get { return m_SelfDefenceFrom ?? new List<Actor>(); } }
 
     public void MarkAsAgressorOf(Actor other)
     {
@@ -1247,7 +1246,7 @@ namespace djack.RogueSurvivor.Data
         foreach(Actor other in m_AggressorOf) other.RemoveSelfDefenceFrom(this);
         m_AggressorOf = null;
       }
-      if (null != m_SelfDefenceFrom) { 
+      if (null != m_SelfDefenceFrom) {
         foreach(Actor other in m_SelfDefenceFrom) other.RemoveAggressorOf(this);
         m_SelfDefenceFrom = null;
       }

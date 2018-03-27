@@ -21,12 +21,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
-    public StateMapObject(string hiddenImageID)
+    protected StateMapObject(string hiddenImageID)
       : base(hiddenImageID)
     {
     }
 
-    public StateMapObject(string hiddenImageID, int hitPoints, Fire burnable)
+    protected StateMapObject(string hiddenImageID, int hitPoints, Fire burnable)
       : base(hiddenImageID, hitPoints, burnable)
     {
     }

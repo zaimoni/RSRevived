@@ -242,8 +242,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
         Location? test = m_Actor.Location.Map.Denormalize(_dest.Location);
         if (null!=test && m_Actor.Controller.FOV.Contains(test.Value.Position)) {
-          var goals = new Dictionary<Point, int>();
-          goals[test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location);
+          var goals = new Dictionary<Point, int>{
+            [test.Value.Position] = Rules.GridDistance(test.Value, m_Actor.Location)
+          };
           ActorAction tmp = (m_Actor.Controller as OrderableAI).BehaviorEfficientlyHeadFor(goals);
           if (tmp?.IsLegal() ?? false) {
             ret = tmp;
@@ -1930,7 +1931,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     /// <returns>0 for disallowed, 1 for allowed, 2+ for "better".</returns>
     protected int SleepLocationRating(Location loc)
-    { 
+    {
       // the legacy tests
       if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return 0;

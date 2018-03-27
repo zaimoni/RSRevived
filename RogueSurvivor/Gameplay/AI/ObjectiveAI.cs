@@ -439,8 +439,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       { // scoping brace
       if (it is ItemAmmo ammo) {
         foreach(Item obj in m_Actor.Inventory.Items) {
-          if (   obj is ItemRangedWeapon rw 
-              && rw.AmmoType==ammo.AmmoType 
+          if (   obj is ItemRangedWeapon rw
+              && rw.AmmoType==ammo.AmmoType
               && rw.Ammo < rw.Model.MaxAmmo) {
             RogueForm.Game.DoEquipItem(m_Actor,rw);
             return new ActionUseItem(m_Actor, ammo);
@@ -1555,7 +1555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         reload_rw[pt] = new ItemRangedWeapon[(int)AmmoType._COUNT];
         bool keep_empty = false;
         bool keep_reload = false;
-        
+
         foreach(var rw in rws) {
           // note that "better" ranged weapons taking the same ammo have larger clips
           if (0==rw.Ammo) {

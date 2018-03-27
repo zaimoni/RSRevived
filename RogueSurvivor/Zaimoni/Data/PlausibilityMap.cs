@@ -25,7 +25,7 @@ namespace Zaimoni.Data
         public PlausbilityMap(Func<T, Dictionary<T, int>> Forward, int TargetCount)
         {
 #if DEBUG
-            if (null == Forward) throw new ArgumentNullException("Forward");
+            if (null == Forward) throw new ArgumentNullException(nameof(Forward));
 #endif
             _map = new Dictionary<T, int>();
             _forward = Forward; // required
@@ -49,7 +49,7 @@ namespace Zaimoni.Data
         // apply an invasion or similar
         public void AddThreat(HashSet<T> SpawnZone, int TargetCount)
         {
-            if (int.MaxValue / CERTAIN < TargetCount) throw new ArgumentOutOfRangeException("TargetCount", "too many threat to add at once");
+            if (int.MaxValue / CERTAIN < TargetCount) throw new ArgumentOutOfRangeException(nameof(TargetCount), "too many threat to add at once");
             if (TargetCount > SpawnZone.Count) throw new InvalidOperationException("more threat than places to spawn in");
 
             // validate the spawn zone

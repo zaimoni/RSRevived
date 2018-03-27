@@ -10956,9 +10956,9 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawActorSkillTable(Actor actor, int gx, int gy)
     {
-      gy -= 14;
+      gy -= BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Skills", gx, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       var skills = actor.Sheet.SkillTable.Skills;
       if (skills == null) return;
       int num = 0;
@@ -11497,7 +11497,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private bool CheckCopyOfManual()
     {
-      string str1 = "Resources\\Manual\\";
+      const string str1 = "Resources\\Manual\\";
       string userDocsPath = GetUserDocsPath();
       const string str2 = "RS Manual.txt";
       bool flag = false;

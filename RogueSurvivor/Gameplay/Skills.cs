@@ -241,7 +241,6 @@ namespace djack.RogueSurvivor.Gameplay
       _LIVING_COUNT = IDs.Z_AGILE,
       _FIRST_UNDEAD = IDs.Z_AGILE,
     }
-        
 
     public static IDs? Zombify(this IDs skill)
     {
