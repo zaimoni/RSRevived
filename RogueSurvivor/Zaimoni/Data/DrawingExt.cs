@@ -275,7 +275,7 @@ namespace Zaimoni.Data
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
-      if (0 >= src.Count()) return false;
+      if (!src.Any()) return false;
       fn(src.First());
       return true;;
     }

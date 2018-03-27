@@ -76,8 +76,9 @@ namespace djack.RogueSurvivor.Data
     }
 
     public bool IsUnique { get { return Model.IsUnique; } }
+#if DEAD_FUNC
     public bool IsForbiddenToAI { get { return Model.IsForbiddenToAI; } }
-
+#endif
     public virtual bool IsUseless { get { return false; } }
 
     public Item(ItemModel model)

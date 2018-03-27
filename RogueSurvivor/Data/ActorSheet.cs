@@ -11,8 +11,6 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   internal class ActorSheet
   {
-    [NonSerialized]
-    public static readonly ActorSheet BLANK = new ActorSheet(0, 0, 0, 0, 0, Attack.BLANK, Defence.BLANK, 0, 0, 0, 0);
     private readonly SkillTable m_SkillTable = new SkillTable();
 
     public int BaseHitPoints { get; private set; } // July 31 2017: The Serializable attribute prevents converting these to readonly

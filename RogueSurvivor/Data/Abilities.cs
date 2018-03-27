@@ -10,57 +10,32 @@ namespace djack.RogueSurvivor.Data
 {
   internal class Abilities
   {
-    public static readonly Abilities NONE = new Abilities(Flags.NONE);
     private readonly Flags m_Flags;
 
     public bool IsUndead { get { return Flags.NONE!=(m_Flags & Flags.UNDEAD); } }
-
     public bool IsUndeadMaster { get { return Flags.NONE != (m_Flags & Flags.UNDEAD_MASTER); } }
-
     public bool CanZombifyKilled  { get { return Flags.NONE != (m_Flags & Flags.CAN_ZOMBIFY_KILLED); } }
-
     public bool CanTire { get { return Flags.NONE != (m_Flags & Flags.CAN_TIRE); } }
-
     public bool HasToEat { get { return Flags.NONE != (m_Flags & Flags.HAS_TO_EAT); } }
-
     public bool HasToSleep { get { return Flags.NONE != (m_Flags & Flags.HAS_TO_SLEEP); } }
-
     public bool HasSanity { get { return Flags.NONE != (m_Flags & Flags.HAS_SANITY); } }
-
     public bool CanRun { get { return Flags.NONE != (m_Flags & Flags.CAN_RUN); } }
-
     public bool CanTalk { get { return Flags.NONE != (m_Flags & Flags.CAN_TALK); } }
-
     public bool CanUseMapObjects { get { return Flags.NONE != (m_Flags & Flags.CAN_USE_MAP_OBJECTS); } }
-
     public bool CanBashDoors { get { return Flags.NONE != (m_Flags & Flags.CAN_BASH_DOORS); } }
-
     public bool CanBreakObjects { get { return Flags.NONE != (m_Flags & Flags.CAN_BREAK_OBJECTS); } }
-
     public bool CanJump { get { return Flags.NONE != (m_Flags & Flags.CAN_JUMP); } }
-
     public bool IsSmall { get { return Flags.NONE != (m_Flags & Flags.IS_SMALL); } }
-
     public bool HasInventory { get { return Flags.NONE != (m_Flags & Flags.HAS_INVENTORY); } }
-
     public bool CanUseItems { get { return Flags.NONE != (m_Flags & Flags.CAN_USE_ITEMS); } }
-
     public bool CanTrade { get { return Flags.NONE != (m_Flags & Flags.CAN_TRADE); } }
-
     public bool CanBarricade { get { return Flags.NONE != (m_Flags & Flags.CAN_BARRICADE); } }
-
     public bool CanPush { get { return Flags.NONE != (m_Flags & Flags.CAN_PUSH); } }
-
     public bool CanJumpStumble { get { return Flags.NONE != (m_Flags & Flags.CAN_JUMP_STUMBLE); } }
-
     public bool IsLawEnforcer { get { return Flags.NONE != (m_Flags & Flags.IS_LAW_ENFORCER); } }
-
     public bool IsIntelligent { get { return Flags.NONE != (m_Flags & Flags.IS_INTELLIGENT); } }
-
     public bool IsRotting { get { return Flags.NONE != (m_Flags & Flags.IS_ROTTING); } }
-
     public bool AI_CanUseAIExits { get { return Flags.NONE != (m_Flags & Flags.AI_CAN_USE_AI_EXITS); } }
-
     public bool AI_NotInterestedInRangedWeapons { get { return Flags.NONE != (m_Flags & Flags.AI_NOT_INTERESTED_IN_RANGED_WEAPONS); } }
 
 #if FAIL

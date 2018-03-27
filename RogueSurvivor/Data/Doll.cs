@@ -26,10 +26,12 @@ namespace djack.RogueSurvivor.Data
       return m_Decorations[(int) part];
     }
 
+#if DEAD_FUNC
     public int CountDecorations(DollPart part)
     {
       return GetDecorations(part)?.Count ?? 0;
     }
+#endif
 
     public void AddDecoration(DollPart part, string imageID)
     {
@@ -47,10 +49,12 @@ namespace djack.RogueSurvivor.Data
       }
     }
 
+#if DEAD_FUNC
     public void RemoveDecoration(DollPart part)
     {
       m_Decorations[(int) part] = null;
     }
+#endif
 
     public void RemoveAllDecorations()
     {

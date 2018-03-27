@@ -17,7 +17,7 @@ namespace djack.RogueSurvivor.Engine.Actions
       : base(actor)
     {
 #if DEBUG
-      if (null == (it as BatteryPowered)) throw new ArgumentNullException(nameof(it));
+      if (!(it is BatteryPowered)) throw new ArgumentNullException(nameof(it));
 #endif
       m_Item = it;
     }

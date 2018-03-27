@@ -21,7 +21,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
     public override Map Generate(int seed, string name)
     {
       Map map = base.Generate(seed, name);
-      Predicate<Point> outside_test = pt => !map.IsInsideAt(pt);
+      bool outside_test(Point pt) { return !map.IsInsideAt(pt); };
       // XXX with default 15% policeman probability and default 25 max civilians, 0 police in district is ~1.7% chance and happens noticeably often in testing
       for (int index = 0; index < RogueGame.Options.MaxCivilians; ++index) {
         if (m_DiceRoller.RollChance(Params.PolicemanChance))

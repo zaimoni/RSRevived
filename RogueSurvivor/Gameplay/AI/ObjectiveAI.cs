@@ -751,7 +751,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (it is ItemSprayScentModel) return ItemRatingCode_generic(it);
 
       {
-      if (it is ItemTrackerModel tracker) {
+      if (it is ItemTrackerModel) {
         List<GameItems.IDs> ok_trackers = new List<GameItems.IDs>();
         if (m_Actor.NeedActiveCellPhone) ok_trackers.Add(GameItems.IDs.TRACKER_CELL_PHONE);
         if (m_Actor.NeedActivePoliceRadio) ok_trackers.Add(GameItems.IDs.TRACKER_POLICE_RADIO);
@@ -768,7 +768,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return 1;
       }
       {
-      if (it is ItemLightModel light) {
+      if (it is ItemLightModel) {
         if (m_Actor.Inventory.Items.Any(obj => !obj.IsUseless && obj is ItemLight)) return 0;
         return 2;   // historically low priority but ideal kit has one
       }
@@ -1205,7 +1205,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       {
-      if (it is ItemFood food) {
+      if (it is ItemFood) {
           Item drop = inv.GetFirst<ItemFood>();
           if (null == drop) drop = inv.GetFirst<ItemEntertainment>();
           if (null == drop) drop = inv.GetFirst<ItemBarricadeMaterial>();

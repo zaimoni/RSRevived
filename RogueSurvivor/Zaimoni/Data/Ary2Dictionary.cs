@@ -64,7 +64,7 @@ namespace Zaimoni.Data
         public void Set(Key1 key, IEnumerable<Key2> keys2, Range value) {
             List<Key2> expired = new List<Key2>();
             Range val;
-            if (null == keys2 || 0==keys2.Count()) {
+            if (!keys2?.Any() ?? true) {
                 _first_second_dict.TryRemove(key,out KeyValuePair<Range, HashSet<Key2>> val3);
                 _no_entries[key] = value;
                 Remove(key);
