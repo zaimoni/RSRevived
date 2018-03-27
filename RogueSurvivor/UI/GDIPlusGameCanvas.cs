@@ -497,7 +497,6 @@ namespace djack.RogueSurvivor.UI
       private readonly Image m_Img;
       private readonly int m_X;
       private readonly int m_Y;
-      private readonly float m_Alpha;
       private readonly ImageAttributes m_ImgAttributes;
       private bool disposed;
 
@@ -506,7 +505,6 @@ namespace djack.RogueSurvivor.UI
         m_Img = img;
         m_X = x;
         m_Y = y;
-        m_Alpha = alpha;
         disposed = false;
         // relies on default-initialization to zero
         float[][] newColorMatrix = new float[5][];
@@ -571,7 +569,6 @@ namespace djack.RogueSurvivor.UI
 
     private class GfxString : IGfx
     {
-      private readonly Color m_Color;
       private readonly Font m_Font;
       private readonly string m_Text;
       private readonly int m_X;
@@ -580,7 +577,6 @@ namespace djack.RogueSurvivor.UI
 
       public GfxString(Color color, Font font, string text, int x, int y)
       {
-        m_Color = color;
         m_Font = font;
         m_Text = text;
         m_X = x;

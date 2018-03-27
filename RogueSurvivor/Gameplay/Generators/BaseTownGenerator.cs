@@ -347,7 +347,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 #endregion
 
 #region 8. Items.
-      Func<Item> sewers_stock = () => {
+      Item sewers_stock() {
         switch (m_DiceRoller.Roll(0, 3)) {
           case 0: return MakeItemBigFlashlight();
           case 1: return  MakeItemCrowbar();
@@ -1371,8 +1371,8 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       });
       int x1 = roomRect.Left + roomRect.Width / 2;
       int y1 = roomRect.Top + roomRect.Height / 2;
-      Func<int,int,bool> door_window_ok = (x, y) => !map.HasMapObjectAt(x, y) && IsAccessible(map, x, y) && 0 == CountAdjDoors(map, x, y);
-      Func<int, int, MapObject> make_door_window = (x, y) => ((!IsInside(map, x, y) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor());
+      bool door_window_ok(int x, int y) { return !map.HasMapObjectAt(x, y) && IsAccessible(map, x, y) && 0 == CountAdjDoors(map, x, y); };
+      MapObject make_door_window(int x, int y) { return ((!IsInside(map, x, y) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
 
       PlaceIf(map, x1, roomRect.Top, floor, door_window_ok, make_door_window);
       PlaceIf(map, x1, roomRect.Bottom - 1, floor, door_window_ok, make_door_window);
@@ -2009,7 +2009,9 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           }
         }
       }
-      Predicate<Point> actor_ok_here = pt => !underground.HasExitAt(pt);
+
+      bool actor_ok_here(Point pt) { return !underground.HasExitAt(pt); };
+
       int width = underground.Width;
       for (int index1 = 0; index1 < width; ++index1) {
         Actor newUndead = CreateNewUndead(0);
@@ -2169,7 +2171,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       // XXX while this permits 4 rooms vertically, access will be flaky...probably better to have 3
       MakeRoomsPlan(map, ref list, rect1, 5);
 
-      Func<Item> stock_armory = () => {
+      Item stock_armory() {
         switch (m_DiceRoller.Roll(0, 10)) {
           case 0:
           case 1: return m_DiceRoller.RollChance(50) ? MakeItemPoliceJacket() : MakeItemPoliceRiotArmor();
@@ -2714,7 +2716,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       map.PlaceAt(MakeObjNightTable(GameImages.OBJ_HOSPITAL_NIGHT_TABLE), position2);
 
       // Inefficient, but avoids polluting interface
-      Func<Item> furnish = () => {
+      Item furnish() {
         switch (m_DiceRoller.Roll(0, 3)) {
           case 0: return MakeShopPharmacyItem();
           case 1: return MakeItemGroceries();
@@ -2763,7 +2765,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     private void GiveRandomItemToActor(DiceRoller roller, Actor actor, int spawnTime)
     {
-      Func<Item> equip_this = () => {
+      Item equip_this() {
         if (new WorldTime(spawnTime).Day > Rules.GIVE_RARE_ITEM_DAY && roller.RollChance(Rules.GIVE_RARE_ITEM_CHANCE)) {
           switch (roller.Roll(0, (Session.Get.HasInfection ? 6 : 5))) {
             case 0: return MakeItemGrenade();

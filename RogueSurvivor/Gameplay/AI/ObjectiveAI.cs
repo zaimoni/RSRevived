@@ -1040,7 +1040,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected T GetWorst<T>(IEnumerable<T> src) where T:Item
     {
 #if DEBUG
-      if (0 >= (src?.Count() ?? 0)) return null;
+      if (!src?.Any() ?? true) return null;
 #endif
       T worst = null;
       foreach(T test in src) {

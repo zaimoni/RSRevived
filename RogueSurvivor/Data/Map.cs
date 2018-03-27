@@ -820,22 +820,18 @@ retry:
           dest = dest.District.EntryMap;
           goto retry;
         }
-        if (3 == dest_extended) {
-          if (dest.Exits.Any(e => e.ToMap==dest.District.EntryMap)) {
-            dest = dest.District.EntryMap;
-            goto retry;
-          }
+        if (3 == dest_extended && dest.Exits.Any(e => e.ToMap == dest.District.EntryMap)) {
+          dest = dest.District.EntryMap;
+          goto retry;
         }
         int this_extended = UsesCrossDistrictView(this);
         if (0==this_extended) {
           dest = District.EntryMap;
           goto retry;
         }
-        if (3 == this_extended) {
-          if (Exits.Any(e => e.ToMap==District.EntryMap)) {
-            dest = District.EntryMap;
-            goto retry;
-          }
+        if (3 == this_extended && Exits.Any(e => e.ToMap == District.EntryMap)) {
+          dest = District.EntryMap;
+          goto retry;
         }
         if (2==dest_extended && 2==this_extended) {
           dest = District.EntryMap;
@@ -1168,10 +1164,11 @@ retry:
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
-      Action<Actor> pan_to = a => {
+      void pan_to(Actor a) {
           RogueForm.Game.PanViewportTo(a);
           fn(a);
       };
+
       return (null == pred ? Players.Get.ActOnce(pan_to)
                            : Players.Get.ActOnce(pan_to, pred));
     }
@@ -1858,7 +1855,7 @@ retry:
 #endif
       if (!IsInBounds(position)) return null;
       IEnumerable<Point> tmp = Direction.COMPASS.Select(dir=>position+dir).Where(p=>IsInBounds(p) && predicateFn(p));
-      return (0<tmp.Count() ? new List<Point>(tmp) : null);
+      return (tmp.Any() ? tmp.ToList() : null);
     }
 
     public bool HasAnyAdjacentInMap(Point position, Predicate<Point> predicateFn)

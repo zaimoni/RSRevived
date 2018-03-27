@@ -317,7 +317,7 @@ namespace djack.RogueSurvivor.Engine
     private const int DISTRICT_EXIT_CHANCE_PER_TILE = 15;   // XXX dead now that exit generation is on NO_PEACE_WALLS
 
 #if DEBUG
-    public static bool IsDebugging = false;
+    public static bool IsDebugging;
 #endif
     private readonly IRogueUI m_UI; // this cannot be static.
     private Rules m_Rules;
@@ -1418,18 +1418,16 @@ namespace djack.RogueSurvivor.Engine
         int gx = gy = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] - Options", Session.DescGameMode(Session.Get.GameMode)), 0, gy, new Color?());
-        gy += 28;
+        gy += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 400);
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Red, "* Caution : increasing these values makes the game runs slower and saving/loading longer.", gx, gy, new Color?());
-        gy += 14;
-        gy += 14;
+        gy += 2*BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("Difficulty Rating : {0}% as survivor / {1}% as undead.", (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_SURVIVOR, 0)), (int)(100.0 * (double)Scoring.ComputeDifficultyRating(s_Options, DifficultySide.FOR_UNDEAD, 0))), gx, gy, new Color?());
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, "Difficulty used for scoring automatically decrease with each reincarnation.", gx, gy, new Color?());
-        gy += 28;
         DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
         return null;
       });
@@ -2229,12 +2227,10 @@ namespace djack.RogueSurvivor.Engine
         // lights and normal trackers
         foreach (Actor actor in map.Actors) {
           Item equippedItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
-          if (null != equippedItem && equippedItem is BatteryPowered tmp) {
-            if (0 < tmp.Batteries) {
-              --tmp.Batteries;
-               if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
-                 AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), equippedItem.TheName)));
-            }
+          if (null != equippedItem && equippedItem is BatteryPowered tmp && 0 < tmp.Batteries) {
+            --tmp.Batteries;
+             if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
+               AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), equippedItem.TheName)));
           }
         }
         // police radios
@@ -3261,7 +3257,7 @@ namespace djack.RogueSurvivor.Engine
           gy1 += BOLD_LINE_SPACING;
           int index = m_ManualLine;
           do {
-            if (!(formatedLines[index] == "<SECTION>")) {
+            if ("<SECTION>" != formatedLines[index]) {
               m_UI.UI_DrawStringBold(Color.LightGray, formatedLines[index], 0, gy1, new Color?());
               gy1 += BOLD_LINE_SPACING;
             }
@@ -3599,8 +3595,8 @@ namespace djack.RogueSurvivor.Engine
       }
       item_classes.Sort();
 
-      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, item_classes.Count, item_classes[index].ToString());
-      Predicate<int> details = index => {
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, item_classes.Count, item_classes[index].ToString()); }
+      bool details(int index) {
         Gameplay.GameItems.IDs item_type = item_classes[index];
         Dictionary<Location, int> catalog = Player.Controller.WhereIs(item_type);
         List<string> tmp = new List<string>();
@@ -3642,8 +3638,8 @@ namespace djack.RogueSurvivor.Engine
       List<Actor> allies = player_allies.ToList();
       allies.Sort((a,b)=> string.Compare(a.Name,b.Name));
 
-      Func<int,string> label = index => allies[index].Name+(allies[index].HasLeader ? "(leader "+allies[index].Leader.Name+")"  : "");
-      Predicate<int> details = index => {
+      string label(int index) { return allies[index].Name + (allies[index].HasLeader ? "(leader " + allies[index].Leader.Name + ")" : ""); }
+      bool details(int index) {
         Actor a = allies[index];
         List<string> tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
@@ -3699,8 +3695,8 @@ namespace djack.RogueSurvivor.Engine
     {
       List<string> options = new List<string> { "Status", "Enemies by aggression" };
 
-      Func<int,string> label = index => options[index];
-      Predicate<int> details = index => {
+      string label(int index) { return options[index]; };
+      bool details(int index) {
         var display = new List<string>();
         switch(index)
         {
@@ -3760,11 +3756,11 @@ namespace djack.RogueSurvivor.Engine
             {
             IEnumerable<Actor> personal_enemies = Player.Aggressing;
             IEnumerable<Actor> self_defense = Player.Aggressors;
-            if (0 < personal_enemies.Count()) {
+            if (personal_enemies.Any()) {
               display.Add("Aggressed:");
               foreach(Actor a in personal_enemies) display.Add(a.Name);
             }
-            if (0 < self_defense.Count()) {
+            if (self_defense.Any()) {
               display.Add("Defending from:");
               foreach(Actor a in self_defense) display.Add(a.Name);
             }
@@ -4515,7 +4511,6 @@ namespace djack.RogueSurvivor.Engine
         return;
       }
       var actorList = non_enemies.Values.ToList();
-      Map map = player.Location.Map;
       int index = 0;
       do {
         Actor target = actorList[index];
@@ -4913,8 +4908,8 @@ namespace djack.RogueSurvivor.Engine
         return false;
       }
 
-      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]);
-      Predicate<int> details = index => (player.Controller as PlayerController).InterpretSelfOrder(index,orders);
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, orders.Count, orders[index]); };
+      bool details(int index) { return (player.Controller as PlayerController).InterpretSelfOrder(index, orders); };
 
       PagedMenu("Orders for yourself:", orders.Count, label, details);    // breaks down if MAX_MESSAGES exceeds 10
       return (player.Controller as PlayerController).AutoPilotIsOn;
@@ -5377,7 +5372,7 @@ namespace djack.RogueSurvivor.Engine
               if (map1.GetZonesAt(map2) == null) {
                 flag3 = false;
                 reason = "no zone here";
-              } else if (!(map2 == follower.Location.Position) && !map1.IsWalkableFor(map2, follower, out reason))
+              } else if (map2 != follower.Location.Position && !map1.IsWalkableFor(map2, follower, out reason))
                 flag3 = false;
               nullable = map2;
               if (flag3) {
@@ -5501,8 +5496,8 @@ namespace djack.RogueSurvivor.Engine
       if (2 > inv.CountItems) throw new ArgumentOutOfRangeException(nameof(inv),"inventory was not a stack");
       if (1 != Rules.GridDistance(player.Location.Position,src)) throw new ArgumentOutOfRangeException(nameof(src), "("+src.X.ToString()+", "+src.Y.ToString()+") not adjacent");
 
-      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index]));
-      Predicate<int> details = index => {
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, inv.CountItems, DescribeItemShort(inv[index])); }
+      bool details(int index) {
         Item obj = inv[index];
         if (player.CanGet(obj, out string reason)) {
           DoTakeItem(player, src, obj);
@@ -5541,8 +5536,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleAdvisor(Actor player)
     {
       if (s_Hints.HasAdvisorGivenAllHints()) {
-        ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]
-        {
+        ShowAdvisorMessage("YOU KNOW THE BASICS!", new string[7]{
           "The Advisor has given you all the hints.",
           "You can disable the advisor in the options.",
           "Read the manual or discover the rest of the game by yourself.",
@@ -5558,8 +5552,7 @@ namespace djack.RogueSurvivor.Engine
             return;
           }
         }
-        ShowAdvisorMessage("No hint available.", new string[5]
-        {
+        ShowAdvisorMessage("No hint available.", new string[5]{
           "The Advisor has now new hint for you in this situation.",
           "You will see a popup when he has something to say.",
           string.Format("To REDEFINE THE KEYS : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.KEYBINDING_MODE).ToString()),
@@ -5571,8 +5564,7 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HasAdvisorAnyHintToGive()
     {
-      for (int index = 0; index < (int) AdvisorHint._COUNT; ++index)
-      {
+      for (int index = 0; index < (int) AdvisorHint._COUNT; ++index) {
         if (!s_Hints.IsAdvisorHintGiven((AdvisorHint) index) && IsAdvisorHintAppliable((AdvisorHint) index))
           return true;
       }
@@ -5672,17 +5664,9 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.GRENADE: return Player.Has<ItemGrenade>();
         case AdvisorHint.DOORWINDOW_OPEN:
-          return map.HasAnyAdjacentInMap(position, pt =>
-         {
-             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-             return null != door && Player.CanOpen(door);
-         });
+          return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt) is DoorWindow door && Player.CanOpen(door));
         case AdvisorHint.DOORWINDOW_CLOSE:
-          return map.HasAnyAdjacentInMap(position, pt =>
-         {
-             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-             return null != door && Player.CanClose(door);
-         });
+          return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt) is DoorWindow door && Player.CanClose(door));
         case AdvisorHint.OBJECT_PUSH:
           return map.HasAnyAdjacentInMap(position, pt =>
          {
@@ -5696,11 +5680,7 @@ namespace djack.RogueSurvivor.Engine
              return null != mapObjectAt && Player.CanBreak(mapObjectAt);
          });
         case AdvisorHint.BARRICADE:
-          return map.HasAnyAdjacentInMap(position, pt =>
-         {
-             DoorWindow door = map.GetMapObjectAt(pt) as DoorWindow;
-             return null != door && Player.CanBarricade(door);
-         });
+          return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt) is DoorWindow door && Player.CanBarricade(door));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(position);
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
           foreach (Direction direction in Direction.COMPASS) {
@@ -6264,7 +6244,7 @@ namespace djack.RogueSurvivor.Engine
         mousePos = m_UI.UI_GetMousePosition();
         mouseButtons = m_UI.UI_PeekMouseButtons();
       }
-      while (!(mousePos != mousePosition) && !mouseButtons.HasValue);
+      while (mousePos == mousePosition && !mouseButtons.HasValue);
       key = null;
     }
 
@@ -8425,9 +8405,10 @@ namespace djack.RogueSurvivor.Engine
 #if OBSOLETE
       return objList[m_Rules.Roll(0, objList.Count)];
 #else
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); }
+
       Item ret = null;
-      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index]));
-      Predicate<int> details = index => {
+      bool details(int index) {
         ret = objList[index];
         return true;
       };
@@ -8448,9 +8429,10 @@ namespace djack.RogueSurvivor.Engine
 #if OBSOLETE
       return objList[m_Rules.Roll(0, objList.Count)];
 #else
+      string label(int index) { return string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index])); };
+
       Item ret = null;
-      Func<int,string> label = index => string.Format("{0}/{1} {2}.", index + 1, objList.Count, DescribeItemShort(objList[index]));
-      Predicate<int> details = index => {
+      bool details(int index) {
         ret = objList[index];
         return true;
       };
@@ -8551,7 +8533,7 @@ namespace djack.RogueSurvivor.Engine
         DoEquipItem(target, gift);
 
 #if DEBUG
-      if (0< target.Inventory.Items.Intersect(actor.Inventory.Items).Count()) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + target.Name + "'s inventory: " + target.Inventory.ToString());
+      if (target.Inventory.Items.Intersect(actor.Inventory.Items).Any()) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + target.Name + "'s inventory: " + target.Inventory.ToString());
 #endif
       if (!ForceVisibleToPlayer(actor) && !ForceVisibleToPlayer(target)) return;
       AddMessage(MakeMessage(actor, string.Format("{0} {1} to", Conjugate(actor, VERB_GIVE), gift.TheName), target));
@@ -8968,7 +8950,6 @@ namespace djack.RogueSurvivor.Engine
       bool flag = ForceVisibleToPlayer(actor) || ForceVisibleToPlayer(mapObj);
       int staminaCost = mapObj.Weight;
       if (actor.CountFollowers > 0) {
-        Location location = new Location(actor.Location.Map, mapObj.Location.Position);
         IEnumerable<Actor> tmp = actor.Followers.Where(follower=>!follower.IsSleeping && (follower.Activity == Activity.IDLE || follower.Activity == Activity.FOLLOWING) && Rules.IsAdjacent(follower.Location, mapObj.Location));
         if (tmp.Any()) {
           staminaCost = mapObj.Weight / (1 + tmp.Count());
@@ -12673,8 +12654,7 @@ namespace djack.RogueSurvivor.Engine
       if (speaker.Leader != target && target.Leader != speaker) return false;
       ItemTracker itemTracker1 = speaker.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
       if (itemTracker1 == null || !itemTracker1.CanTrackFollowersOrLeader) return false;
-      ItemTracker itemTracker2 = target.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      return itemTracker2 != null && itemTracker2.CanTrackFollowersOrLeader;
+      return target.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker itemTracker2 && itemTracker2.CanTrackFollowersOrLeader;
     }
 
 #if DEAD_FUNC
@@ -12867,8 +12847,9 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+#if DEAD_FUNC
     private class OverlayLine : Overlay   // dead class
-        {
+      {
       public Point ScreenFrom { get; set; }
 
       public Point ScreenTo { get; set; }
@@ -12887,6 +12868,7 @@ namespace djack.RogueSurvivor.Engine
         ui.UI_DrawLine(Color, ScreenFrom.X, ScreenFrom.Y, ScreenTo.X, ScreenTo.Y);
       }
     }
+#endif
 
     // cf competing implementation : GameImages::MonochromeBorderTile class and image caching
     public class OverlayRect : Overlay

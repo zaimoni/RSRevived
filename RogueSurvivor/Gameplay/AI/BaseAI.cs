@@ -418,11 +418,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (string.IsNullOrEmpty(reason)) return false;
       Inventory itemsAt = map.GetItemsAt(pos);
       if (null == itemsAt) return true;
-      return 3 >= itemsAt.Items.Count(it =>
-      {
-          ItemTrap itemTrap = it as ItemTrap;
-          return null != itemTrap && itemTrap.IsActivated;
-      });
+      return 3 >= itemsAt.Items.Count(it => it is ItemTrap itemTrap && itemTrap.IsActivated);
     }
 
     protected ActorAction BehaviorAttackBarricade()
@@ -921,8 +917,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (0 >= (scents?.Count ?? 0)) return null;
       Percept percept = FilterStrongestScent(scents);
-      if (!(m_Actor.Location == percept.Location))
-        return BehaviorIntelligentBumpToward(percept.Location);
+      if (m_Actor.Location != percept.Location) return BehaviorIntelligentBumpToward(percept.Location);
       if (m_Actor.Location.Map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
         return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);
       return null;
@@ -1166,7 +1161,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
       if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
 #endif
-      if (null == listOfChoices ||  0 >= listOfChoices.Count()) return null;
+      if (!listOfChoices?.Any() ?? true) return null;
 
       Dictionary<float, List<ChoiceEval<_T_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_T_>>>();
 
@@ -1201,7 +1196,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
       if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
 #endif
-      if (null == listOfChoices ||  0 >= listOfChoices.Count()) return null;
+      if (!listOfChoices?.Any() ?? true) return null;
 
       float num = float.NaN;
       List<ChoiceEval<_T_>> candidates = new List<ChoiceEval<_T_>>();
@@ -1227,7 +1222,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == evalChoiceFn) throw new ArgumentNullException(nameof(evalChoiceFn));
       if (null == isBetterEvalThanFn) throw new ArgumentNullException(nameof(isBetterEvalThanFn));
 #endif
-      if (null == listOfChoices || 0 >= listOfChoices.Count()) return null;
+      if (!listOfChoices?.Any() ?? true) return null;
 
       Dictionary<float, List<ChoiceEval<_DATA_>>> choiceEvalDict = new Dictionary<float, List<ChoiceEval<_DATA_>>>();
 

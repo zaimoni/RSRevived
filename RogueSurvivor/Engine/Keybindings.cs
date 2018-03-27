@@ -109,13 +109,13 @@ namespace djack.RogueSurvivor.Engine
       if ((x & Keys.Alt) != Keys.None) return true;
       // no other explicit keybinding may alias a modifier to an anchor keybinding.
       // Just reserve all seven possible modifier sets.  This is a UI function so speed doesn't matter
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Control)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Shift)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt | Keys.Control)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt | Keys.Shift)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Control | Keys.Shift)) > 0) return true;
-      if (m_KeyToCommand.Keys.Count(k => k == (x | Keys.Alt | Keys.Control | Keys.Shift)) > 0) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Alt))) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Control))) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Shift))) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Alt | Keys.Control))) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Alt | Keys.Shift))) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Control | Keys.Shift))) return true;
+      if (m_KeyToCommand.Keys.Any(k => k == (x | Keys.Alt | Keys.Control | Keys.Shift))) return true;
       return false;
     }
 

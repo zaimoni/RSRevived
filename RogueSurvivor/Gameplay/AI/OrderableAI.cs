@@ -907,11 +907,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == best_weapons) {
         best_weapon_ETAs[en] = a_kill_b_in;
         return;
-      } else if (!best_weapons.ContainsKey(en)) {
-        best_weapons[en] = rw;
-        best_weapon_ETAs[en] = a_kill_b_in;
-        return;
-      } else if (best_weapon_ETAs[en]>a_kill_b_in) {
+      } else if (!best_weapons.ContainsKey(en) || best_weapon_ETAs[en] > a_kill_b_in) {
         best_weapons[en] = rw;
         best_weapon_ETAs[en] = a_kill_b_in;
         return;
@@ -1820,7 +1816,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected override ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
-      if (other == null || other.IsDead) return null;
+      if (other?.IsDead ?? true) return null;
 	  if (other.Location.Map == m_Actor.Location.Map) {
         if (   CanSee(other.Location)
             && Rules.GridDistance(m_Actor.Location, other.Location) <= maxDist
@@ -1828,7 +1824,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionWait(m_Actor);
 	  }
 	  ActorAction actorAction = BehaviorPathTo(other.Location);
-      if (actorAction == null || !actorAction.IsLegal()) return null;
+      if (!actorAction?.IsLegal() ?? true) return null;
       if (actorAction is ActionMoveStep tmp) {
         if (  Rules.GridDistance(m_Actor.Location.Position, tmp.dest.Position) > maxDist
            || other.Location.Map != m_Actor.Location.Map)
@@ -1874,10 +1870,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
         int num1 = map.CountAdjacentTo(point, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
-        int num2 = map.CountAdjacentTo(point, ptAdj => {
-          Fortification fortification = map.GetMapObjectAt(ptAdj) as Fortification;
-          return fortification != null && !fortification.IsTransparent;
-        });
+        int num2 = map.CountAdjacentTo(point, ptAdj => map.GetMapObjectAt(ptAdj) is Fortification fortification && !fortification.IsTransparent);
         return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
@@ -1990,7 +1983,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == couches) throw new ArgumentNullException(nameof(couches));
 #endif
       if (!m_Actor.CanSleep()) return null;
-      Map map = m_Actor.Location.Map;
       // Do not sleep next to a door/window
       if (0>=SleepLocationRating(m_Actor.Location)) {
         return BehaviorEfficientlyHeadFor(0<couches.Count ? couches : sleep_locs);  // null return ok here?
@@ -2143,7 +2135,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public bool HasAnyInterestingItem(IEnumerable<Item> Items)
     {
 #if DEBUG
-      if (0 >= (Items?.Count() ?? 0)) throw new ArgumentNullException(nameof(Items));
+      if (!Items?.Any() ?? true) throw new ArgumentNullException(nameof(Items));
 #endif
       return Items.Any(it => IsInterestingItem(it));
     }
@@ -2564,7 +2556,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorNavigate(IEnumerable<Point> tainted)
     {
 #if DEBUG
-      if (0 >= (tainted?.Count() ?? 0)) throw new ArgumentNullException(nameof(tainted));
+      if (!tainted?.Any() ?? true) throw new ArgumentNullException(nameof(tainted));
       if (tainted.Contains(m_Actor.Location.Position)) throw new InvalidOperationException("tainted.Contains(m_Actor.Location.Position)");
 #endif
 
@@ -2649,7 +2641,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActorAction BehaviorHastyNavigate(IEnumerable<Point> tainted)
     {
 #if DEBUG
-      if (0 >= tainted.Count()) throw new InvalidOperationException("0 >= tainted.Count()");
+      if (!tainted.Any()) throw new InvalidOperationException("0 >= tainted.Count()");
 #endif
       Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
       navigate.GoalDistance(tainted, m_Actor.Location.Position);

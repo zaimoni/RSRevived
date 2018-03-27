@@ -193,7 +193,7 @@ namespace djack.RogueSurvivor.Data
       }
     }
 #else
-    public readonly bool IsPluralName = false;
+    public readonly bool IsPluralName;
 #endif
 
     public string TheName
@@ -1556,7 +1556,7 @@ namespace djack.RogueSurvivor.Data
     public HashSet<Point> NextStepRange(Map m,HashSet<Point> past, IEnumerable<Point> now)
     {
 #if DEBUG
-      if (0 >= now.Count()) throw new InvalidOperationException("0 >= now.Count() : do not step into nowhere");
+      if (!now.Any()) throw new InvalidOperationException("!now.Any() : do not step into nowhere");
 #endif
       HashSet<Point> ret = new HashSet<Point>();
       foreach(Point pt in now) {

@@ -687,7 +687,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         if (null != tmpAction) return tmpAction;
 
-        if (null!= generators_off && 0<generators_off.Count()) {
+        if (generators_off?.Any() ?? false) {
           tmpAction = BehaviorHastyNavigate(new HashSet<Point>(generators_off.Select(gen => gen.Location.Position)));
           if (null != tmpAction) return tmpAction;
         }

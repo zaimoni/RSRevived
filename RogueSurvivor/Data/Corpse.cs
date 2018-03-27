@@ -20,7 +20,7 @@ namespace djack.RogueSurvivor.Data
     public readonly int MaxHitPoints;
     public readonly float Rotation;
     public readonly float Scale; // currently not used properly
-    public Actor DraggedBy = null;
+    public Actor DraggedBy;
 
     public bool IsDragged { get { return !DraggedBy?.IsDead ?? false; } }
 

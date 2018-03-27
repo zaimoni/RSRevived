@@ -56,13 +56,13 @@ namespace djack.RogueSurvivor.Engine.AI
   {
     internal static List<Percept_<_T_>> Filter<_T_>(this IEnumerable<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
-      if (0 == (percepts?.Count() ?? 0)) return null;
+      if (!percepts?.Any() ?? true) return null;
       IEnumerable<Percept_<_T_>> tmp = percepts.Where(p=> predicateFn(p));
       return tmp.Any() ? tmp.ToList() : null;
     }
 	internal static List<Percept_<object>> FilterT<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn=null) where _T_:class
 	{
-      if (0 == (percepts?.Count() ?? 0)) return null;
+      if (!percepts?.Any() ?? true) return null;
       IEnumerable<Percept_<object>> tmp = percepts.Where(p=>p.Percepted is _T_);
 	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
 	  return (tmp.Any() ? tmp.ToList() : null);
@@ -71,7 +71,7 @@ namespace djack.RogueSurvivor.Engine.AI
     // for completeness
 	internal static List<Percept_<_T_>> FilterCast<_T_>(this IEnumerable<Percept_<object>> percepts, Predicate<_T_> fn=null) where _T_:class
 	{
-      if (null == percepts || 0 == percepts.Count()) return null;
+      if (!percepts?.Any() ?? true) return null;
       IEnumerable<Percept_<object>> tmp = percepts.Where(p=>p.Percepted is _T_);
 	  if (null != fn) tmp = tmp.Where(p=>fn(p.Percepted as _T_));
 	  if (!tmp.Any()) return null;
@@ -84,7 +84,7 @@ namespace djack.RogueSurvivor.Engine.AI
 
     internal static Percept_<_T_> FilterFirst<_T_>(this IEnumerable<Percept_<_T_>> percepts, Predicate<Percept_<_T_>> predicateFn) where _T_:class
     {
-      if (0 == (percepts?.Count() ?? 0)) return null;
+      if (!percepts?.Any() ?? true) return null;
       foreach (Percept_<_T_> percept in percepts) {
         if (predicateFn(percept)) return percept;
       }

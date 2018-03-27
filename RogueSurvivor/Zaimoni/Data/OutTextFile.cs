@@ -12,7 +12,7 @@ namespace Zaimoni.Data
         }
 
         public void WriteLine(string src) {
-            lock (filepath) {
+            lock (this) {
                 if (null == _file) {
                     if (File.Exists(filepath)) File.Delete(filepath);
                     _file = File.CreateText(filepath);
@@ -23,7 +23,7 @@ namespace Zaimoni.Data
         }
 
         public void Close() {   // XXX C# goes inefficient with a true destructor so don't provide one
-            lock (filepath) {
+            lock (this) {
                 if (null != _file) {
                     _file.Close();
                     _file = null;
