@@ -847,7 +847,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (GetEquippedBodyArmor() != bestBodyArmor) RogueForm.Game.DoEquipItem(m_Actor, bestBodyArmor);
     }
 
-    protected ActorAction ManageMeleeRisk(List<Point> legal_steps, List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> friends, List<Percept> enemies, List<Actor> slow_melee_threat)
+    protected ActorAction ManageMeleeRisk(List<Point> legal_steps, List<Point> retreat, List<Point> run_retreat, bool safe_run_retreat, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, List<Actor> slow_melee_threat)
     {
       ActorAction tmpAction = null;
       if ((null != retreat || null != run_retreat) && null != available_ranged_weapons && null!=enemies) {
@@ -859,7 +859,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ranged weapon: fast retreat ok
         // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
         // XXX we also want to be close enough to fire at all
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
         if (null != tmpAction) {
           if (tmpAction is ActionMoveStep test) {
             if (safe_run_retreat) RunIfPossible();
@@ -970,7 +970,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // forked from BaseAI::BehaviorEquipWeapon
-    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, Dictionary<Point,int> damage_field, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, HashSet<Actor> immediate_threat)
+    protected ActorAction BehaviorEquipWeapon(RogueGame game, List<Point> legal_steps, List<ItemRangedWeapon> available_ranged_weapons, List<Percept> enemies, HashSet<Actor> immediate_threat)
     {
 #if DEBUG
       if ((null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())) throw new InvalidOperationException("(null == available_ranged_weapons) != (null == GetBestRangedWeaponWithAmmo())");
@@ -2223,7 +2223,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 #endregion
 
-    protected ActorAction BehaviorGoReviveCorpse(RogueGame game, List<Percept> percepts)
+    protected ActorAction BehaviorGoReviveCorpse(List<Percept> percepts)
     {
 	  if (!Session.Get.HasCorpses) return null;
       if (m_Actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.MEDIC) == 0) return null;

@@ -782,7 +782,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     // src_r2 is the desired destination list
     // src are legal steps
-    protected ActorAction DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2, List<Percept> enemies, List<Percept> friends)
+    protected ActorAction DecideMove(IEnumerable<Point> src, IEnumerable<Point> src_r2)
 	{
 #if DEBUG
       if (null == src) throw new ArgumentNullException(nameof(src));

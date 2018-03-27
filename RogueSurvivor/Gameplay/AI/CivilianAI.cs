@@ -260,7 +260,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // get out of the range of explosions if feasible
       if (in_blast_field) {
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
         if (null != tmpAction) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
@@ -303,7 +303,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, friends, enemies, slow_melee_threat);
+      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, enemies, slow_melee_threat);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
 #endif
@@ -317,7 +317,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, enemies, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, legal_steps, available_ranged_weapons, enemies, immediate_threat);
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
 #endif
@@ -615,7 +615,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
       }
-      tmpAction = BehaviorGoReviveCorpse(game, percepts1);  // not logically CivilianAI only
+      tmpAction = BehaviorGoReviveCorpse(percepts1);  // not logically CivilianAI only
       if (null != tmpAction) {
         m_Actor.Activity = Activity.IDLE;
 #if TRACE_SELECTACTION

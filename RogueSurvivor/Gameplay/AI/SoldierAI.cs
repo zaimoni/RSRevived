@@ -156,7 +156,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // get out of the range of explosions if feasible
       if (in_blast_field) {
-        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat, current_enemies, friends) : ((null != retreat) ? DecideMove(retreat) : null));
+        tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
         if (null != tmpAction) {
           if (tmpAction is ActionMoveStep) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
@@ -166,7 +166,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
-      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, friends, current_enemies, slow_melee_threat);
+      tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
       if (null != tmpAction) return tmpAction;
 
       if (null != current_enemies) {
@@ -174,7 +174,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != tmpAction) return tmpAction;
       }
 
-      tmpAction = BehaviorEquipWeapon(game, legal_steps, damage_field, available_ranged_weapons, current_enemies, immediate_threat);
+      tmpAction = BehaviorEquipWeapon(game, legal_steps, available_ranged_weapons, current_enemies, immediate_threat);
       if (null != tmpAction) return tmpAction;
 
       // all free actions have to be before targeting enemies
