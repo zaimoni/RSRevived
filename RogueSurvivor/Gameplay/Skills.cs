@@ -62,7 +62,7 @@ namespace djack.RogueSurvivor.Gameplay
       ui.UI_Repaint();
     }
 
-    private static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs[] idsToRead, out _DATA_TYPE_[] data)
+    private static void LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, Skills.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
 #if DEBUG
       if (null == ui) throw new ArgumentNullException(nameof(ui));
@@ -78,14 +78,13 @@ namespace djack.RogueSurvivor.Gameplay
           else stringList.Add(str);
         }
       }
-      Skills.Notify(ui, kind, "parsing CSV...");
+      Notify(ui, kind, "parsing CSV...");
       CSVTable toTable = new CSVParser().ParseToTable(stringList.ToArray(), fieldsCount);
-      Skills.Notify(ui, kind, "reading data...");
+      Notify(ui, kind, "reading data...");
       data = new _DATA_TYPE_[idsToRead.Length];
       for (int index = 0; index < idsToRead.Length; ++index)
         data[index] = toTable.GetDataFor<_DATA_TYPE_, Skills.IDs>(fn, idsToRead[index]);
-      Skills.Notify(ui, kind, "done!");
-      return true;
+      Notify(ui, kind, "done!");
     }
 
     public static bool LoadSkillsFromCSV(IRogueUI ui, string path)

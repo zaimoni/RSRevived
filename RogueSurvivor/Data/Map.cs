@@ -135,7 +135,7 @@ namespace djack.RogueSurvivor.Data
 
     private static ReadOnlyCollection<Engine.MapObjects.PowerGenerator> _findPowerGenerators(IEnumerable<MapObject> src)
     {
-      return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.Where(obj => obj is Engine.MapObjects.PowerGenerator).Select(obj => obj as Engine.MapObjects.PowerGenerator).ToList());
+      return new ReadOnlyCollection<Engine.MapObjects.PowerGenerator>(src.OfType< Engine.MapObjects.PowerGenerator >().ToList());
     }
 
     private static Dictionary<Point,Exit> _FindAIexits(Map m) { return m.GetExits(exit => exit.IsAnAIExit); }
@@ -1148,7 +1148,7 @@ retry:
     // tracking players on map
     public int PlayerCount {
       get {
-        return Players.Get.Count();
+        return Players.Get.Count;
       }
     }
 
@@ -1736,7 +1736,7 @@ retry:
           scent.Strength -= odorDecayRate;
           if (0 >= scent.Strength) discard.Add(scent);  // XXX looks like it could depend on OdorScent being class rather than struct, but if that were to matter we'd have to lock anyway.
         }
-        if (0 < discard.Count()) {
+        if (0 < discard.Count) {
           foreach(var x in discard) tmp.Value.Remove(x);
           discard.Clear();
           if (0 >= tmp.Value.Count) discard2.Add(tmp.Key);

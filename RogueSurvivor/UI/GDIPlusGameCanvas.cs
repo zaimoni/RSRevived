@@ -109,11 +109,11 @@ namespace djack.RogueSurvivor.UI
     }
 
     // this intercepts all keys regardless of ALT status by itself
-    protected override bool ProcessMnemonic(char inputChar)
+    protected override bool ProcessMnemonic(char charCode)
     {
       Keys mod = Control.ModifierKeys;
       if (Keys.None==(mod & Keys.Alt)) return false;    // normal processing works fine if ALT isn't involved
-      switch(inputChar)
+      switch(charCode)
       {
       case 'i': // sees ALT-SHIFT-I
       case 'I':

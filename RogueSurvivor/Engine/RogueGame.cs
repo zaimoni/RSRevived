@@ -330,9 +330,9 @@ namespace djack.RogueSurvivor.Engine
     private static Map m_CurrentMap;    // Formerly Session.Get.CurrentMap
     private static Rectangle m_MapViewRect;    // morally anchored to m_CurrentMap
 
-    private static GameOptions s_Options;
-    private static Keybindings s_KeyBindings;
-    private static GameHintsStatus s_Hints;
+    private static GameOptions s_Options = new GameOptions();
+    private static Keybindings s_KeyBindings = new Keybindings();
+    private static GameHintsStatus s_Hints = new GameHintsStatus();
     private readonly BaseTownGenerator m_TownGenerator;
     private bool m_PlayedIntro;
     private readonly ISoundManager m_MusicManager;
@@ -401,7 +401,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating MessageManager");
       m_MessageManager = new MessageManager(MESSAGES_SPACING, MESSAGES_FADEOUT, MESSAGES_HISTORY, MAX_MESSAGES);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Rules, options");
-      s_Options = new GameOptions();
       s_Options.ResetToDefaultValues();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));  // possibly no-op; triggers World constructor which requires options to be loaded
       BaseTownGenerator.Parameters parameters = BaseTownGenerator.DEFAULT_PARAMS;
@@ -410,8 +409,6 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating Generator");
       m_TownGenerator = new StdTownGenerator(this, parameters);
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating keys, hints.");
-      s_KeyBindings = new Keybindings();
-      s_Hints = new GameHintsStatus();
       s_Hints.ResetAllHints();
       Logger.WriteLine(Logger.Stage.INIT_MAIN, "creating dbs");
       m_GameActors = new GameActors(m_UI);
@@ -1674,7 +1671,7 @@ namespace djack.RogueSurvivor.Engine
             }
             break;
           case Keys.R:
-                  s_Options = gameOptions;
+            s_Options = gameOptions;
             break;
         }
         return null;
@@ -6177,8 +6174,7 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.GAME_SAVE_LOAD:
           title = "SAVING AND LOADING GAME";
-          body = new string[7]
-          {
+          body = new string[7] {
             "Now could be a good time to save your game.",
             "You can have only one save game active.",
             string.Format("To SAVE THE GAME : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.SAVE_GAME).ToString()),
@@ -6190,8 +6186,7 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.CITY_INFORMATION:
           title = "CITY INFORMATION";
-          body = new string[3]
-          {
+          body = new string[3] {
             "You know the layout of your town.",
             "You aso know the most notable locations.",
             string.Format("To VIEW THE CITY INFORMATION : <{0}>.",  RogueGame.s_KeyBindings.Get(PlayerCommand.CITY_INFO).ToString())
@@ -6199,34 +6194,30 @@ namespace djack.RogueSurvivor.Engine
           break;
         case AdvisorHint.CORPSE_BUTCHER:
           title = "BUTCHERING CORPSES";
-          body = new string[2]
-          {
+          body = new string[2] {
             "You can butcher a corpse.",
-            string.Format("TO BUTCHER A CORPSE : RIGHT CLICK on it in the corpse list.")
+            "TO BUTCHER A CORPSE : RIGHT CLICK on it in the corpse list."
           };
           break;
         case AdvisorHint.CORPSE_EAT:
           title = "EATING CORPSES";
-          body = new string[2]
-          {
+          body = new string[2] {
             "You can eat a corpse to regain health.",
-            string.Format("TO EAT A CORPSE : RIGHT CLICK on it in the corpse list.")
+            "TO EAT A CORPSE : RIGHT CLICK on it in the corpse list."
           };
           break;
         case AdvisorHint.CORPSE_DRAG_START:
           title = "DRAGGING CORPSES";
-          body = new string[2]
-          {
+          body = new string[2] {
             "You can drag corpses.",
-            string.Format("TO DRAG A CORPSE : LEFT CLICK on it in the corpse list.")
+            "TO DRAG A CORPSE : LEFT CLICK on it in the corpse list."
           };
           break;
         case AdvisorHint.CORPSE_DRAG_MOVE:
           title = "DRAGGING CORPSES";
-          body = new string[2]
-          {
+          body = new string[2] {
             "You can move the dragged corpse with you.",
-            string.Format("TO STOP DRAGGING THE CORPSE : LEFT CLICK on it in the corpse list.")
+            "TO STOP DRAGGING THE CORPSE : LEFT CLICK on it in the corpse list."
           };
           break;
         default:
@@ -6397,7 +6388,7 @@ namespace djack.RogueSurvivor.Engine
       if (actor.HasLeader) {
         if (actor.Leader.IsPlayer) {
           if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD)
-            stringList.Add(string.Format("Trust : BOND."));
+            stringList.Add("Trust : BOND.");
           else if (actor.TrustInLeader >= Rules.TRUST_MAX)
             stringList.Add("Trust : MAX.");
           else

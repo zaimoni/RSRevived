@@ -165,9 +165,7 @@ namespace djack.RogueSurvivor.Data
         return "(YOU) " + m_Name;
       }
       set {
-        m_Name = value;
-        if (value == null) return;
-        m_Name.Replace("(YOU) ", "");
+        m_Name = value?.Replace("(YOU) ", "");
       }
     }
 

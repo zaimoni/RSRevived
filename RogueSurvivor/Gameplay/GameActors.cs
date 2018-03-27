@@ -269,7 +269,7 @@ to transform from MALE_CIVILIAN to POLICEMAN:
           new ActorSheet(DATA_POLICEWOMAN, HUMAN_HUN, HUMAN_SLP, HUMAN_SAN, PUNCH, HUMAN_INVENTORY), typeof(CivilianAI)));
     }
 
-    private static bool LoadFromCSV(IRogueUI ui, string path)
+    private static void LoadFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path), path, "string.IsNullOrEmpty(path)");
@@ -289,7 +289,6 @@ to transform from MALE_CIVILIAN to POLICEMAN:
       Notify(ui, "reading data...");
       CreateModels(toTable);
       Notify(ui, "done!");
-      return true;
     }
 
     private static void Notify(IRogueUI ui, string stage)

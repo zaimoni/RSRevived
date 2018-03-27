@@ -2181,7 +2181,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (map.GetScentByOdorAt(Odor.PERFUME_LIVING_SUPRESSOR, pos) > 0) return false;
       if (PrevLocation.Map.IsInsideAt(PrevLocation.Position) != map.IsInsideAt(pos)) return true;
       if (map.HasExitAt(pos)) return true;
-      return null != map.GetMapObjectAt(pos) as DoorWindow;
+      return map.GetMapObjectAt(pos) is DoorWindow;
     }
 
     protected ItemSprayScent GetEquippedStenchKiller()
