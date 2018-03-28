@@ -1092,6 +1092,11 @@ retry:
           if (actor.IsPlayer) Players.Recalc();
           if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
         }
+#if DEBUG
+        foreach(var x in m_aux_ActorsByPosition) {
+          if (x.Value == actor) throw new InvalidOperationException(actor.Name+" still in position cache");
+        }
+#endif
       }
     }
 
