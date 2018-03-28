@@ -10,16 +10,6 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal class GameFactions : FactionDB
   {
-    public static readonly GameItems.IDs[] BAD_POLICE_OUTFITS = new GameItems.IDs[2]
-    {
-      GameItems.IDs.ARMOR_FREE_ANGELS_JACKET,
-      GameItems.IDs.ARMOR_HELLS_SOULS_JACKET
-    };
-    public static readonly GameItems.IDs[] GOOD_POLICE_OUTFITS = new GameItems.IDs[2]
-    {
-      GameItems.IDs.ARMOR_POLICE_JACKET,
-      GameItems.IDs.ARMOR_POLICE_RIOT
-    };
     private static readonly Faction[] m_Factions = new Faction[(int) IDs._COUNT];
 
     public Faction this[int id] {
@@ -28,7 +18,7 @@ namespace djack.RogueSurvivor.Gameplay
       }
     }
 
-    public Faction this[GameFactions.IDs id]
+    public Faction this[IDs id]
     {
       get {
         return this[(int) id];

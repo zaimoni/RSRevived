@@ -7,13 +7,21 @@
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Gameplay;
 using System;
-using System.Diagnostics.Contracts;
 
 namespace djack.RogueSurvivor.Engine.Items
 {
   [Serializable]
   internal class ItemBodyArmor : Item
   {
+    private static readonly GameItems.IDs[] BAD_POLICE_OUTFITS = new GameItems.IDs[]{
+      GameItems.IDs.ARMOR_FREE_ANGELS_JACKET,
+      GameItems.IDs.ARMOR_HELLS_SOULS_JACKET
+    };
+    private static readonly GameItems.IDs[] GOOD_POLICE_OUTFITS = new GameItems.IDs[]{
+      GameItems.IDs.ARMOR_POLICE_JACKET,
+      GameItems.IDs.ARMOR_POLICE_RIOT
+    };
+
     new public ItemBodyArmorModel Model { get {return base.Model as ItemBodyArmorModel; } }
     public int Protection_Hit { get { return Model.Protection_Hit; } }
     public int Protection_Shot { get { return Model.Protection_Shot; } }
@@ -26,24 +34,25 @@ namespace djack.RogueSurvivor.Engine.Items
     {
     }
 
+    // these four are actually functions of the body armor model.
     public bool IsHostileForCops()
     {
-      return Array.IndexOf(GameFactions.BAD_POLICE_OUTFITS, Model.ID) >= 0;
+      return 0 <= Array.IndexOf<GameItems.IDs>(BAD_POLICE_OUTFITS, Model.ID);
     }
 
     public bool IsFriendlyForCops()
     {
-      return Array.IndexOf(GameFactions.GOOD_POLICE_OUTFITS, Model.ID) >= 0;
+      return 0 <= Array.IndexOf<GameItems.IDs>(GOOD_POLICE_OUTFITS, Model.ID);
     }
 
     public bool IsHostileForBiker(GameGangs.IDs gangID)
     {
-      return Array.IndexOf(GameGangs.BAD_GANG_OUTFITS[(int) gangID], Model.ID) >= 0;
+      return 0 <= Array.IndexOf<GameItems.IDs>(GameGangs.BAD_GANG_OUTFITS[(int) gangID], Model.ID);
     }
 
     public bool IsFriendlyForBiker(GameGangs.IDs gangID)
     {
-      return Array.IndexOf(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], Model.ID) >= 0;
+      return 0 <= Array.IndexOf<GameItems.IDs>(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], Model.ID);
     }
   }
 }

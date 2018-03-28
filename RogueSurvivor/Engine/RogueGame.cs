@@ -2597,7 +2597,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_BikersRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
-      GameGangs.IDs gangId = GameGangs.BIKERS[m_Rules.Roll(0, GameGangs.BIKERS.Length)];
+      GameGangs.IDs gangId = m_Rules.DiceRoller.Choose(GameGangs.BIKERS);
       Actor actor = SpawnNewBikerLeader(map, gangId);
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
@@ -2626,7 +2626,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_GangstasRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
-      GameGangs.IDs gangId = GameGangs.GANGSTAS[m_Rules.Roll(0, GameGangs.GANGSTAS.Length)];
+      GameGangs.IDs gangId = m_Rules.DiceRoller.Choose(GameGangs.GANGSTAS);
       Actor actor = SpawnNewGangstaLeader(map, gangId);
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {

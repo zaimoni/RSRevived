@@ -45,9 +45,7 @@ namespace djack.RogueSurvivor.Engine.AI
           if (a.IsDead) continue;
           if (a.Location.Map != actor.Location.Map) continue;   // XXX valid for RS Alpha 6, invalid for RS Revived; want to verify other changes first
         }
-        if (p.Percepted is Inventory inv) {
-          if (inv.IsEmpty) continue;
-        }
+        if (p.Percepted is Inventory inv && inv.IsEmpty) continue;
       }
       m_Percepts = tmp.ToList();
     }
