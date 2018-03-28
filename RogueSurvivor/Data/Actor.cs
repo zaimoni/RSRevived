@@ -3274,7 +3274,7 @@ namespace djack.RogueSurvivor.Data
     // by hex-editing does work flawlessly at the Actor level.
     public void PrepareForPlayerControl()
     {
-      if (Leader != null) Leader.RemoveFollower(this);   // needed if leader is NPC
+      if (!Leader?.IsPlayer ?? false) Leader.RemoveFollower(this);   // needed if leader is NPC
     }
 
     // This is a backstop for bugs elsewhere.
