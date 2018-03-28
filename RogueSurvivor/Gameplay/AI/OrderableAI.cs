@@ -579,7 +579,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction ExecuteReportPosition()
     {
       SetOrder(null);
-      string text = string.Format("I'm in {0} at {1},{2}.", (object)m_Actor.Location.Map.Name, (object)m_Actor.Location.Position.X, (object)m_Actor.Location.Position.Y);
+      string text = string.Format("I'm in {0} at {1},{2}.", m_Actor.Location.Map.Name, m_Actor.Location.Position.X, m_Actor.Location.Position.Y);
       return new ActionSay(m_Actor, m_Actor.Leader, text, RogueGame.Sayflags.NONE);
     }
 
@@ -594,7 +594,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (2 <= legal_steps.Count) {
         int min_dist = goals.Values.Min();
         int near_scale = goals.Count+1;
-        Dictionary<Point,int> efficiency = new Dictionary<Point,int>();
+        var efficiency = new Dictionary<Point,int>();
         foreach(Point pt in legal_steps) {
           efficiency[pt] = 0;
           foreach(var pt_delta in goals) {
@@ -635,7 +635,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (null == dests || 2<=dests.Count) return;
 
-      Dictionary<Point,int> targets = new Dictionary<Point,int>();
+      var targets = new Dictionary<Point,int>();
       int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
       foreach(Point pt in dests) {
         targets[pt] = enemies.Count(p => LOS.CanTraceHypotheticalFireLine(new Location(m_Actor.Location.Map,pt), p.Location.Position, max_range, m_Actor));
@@ -948,7 +948,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private HashSet<Point> GetRangedAttackFromZone(List<Percept> enemies)
     {
-      HashSet<Point> ret = new HashSet<Point>();
+      var ret = new HashSet<Point>();
 //    HashSet<Point> danger = new HashSet<Point>();
       int range = m_Actor.CurrentRangedAttack.Range;
       System.Collections.ObjectModel.ReadOnlyCollection<Point> optimal_FOV = LOS.OptimalFOV(range);
@@ -957,7 +957,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (ret.Contains(pt)) continue;
 //        if (danger.Contains(pt)) continue;
           if (!m_Actor.Location.Map.IsValid(pt)) continue;
-          List<Point> LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
+          var LoF = new List<Point>();  // XXX micro-optimization?: create once, clear N rather than create N
           if (LOS.CanTraceHypotheticalFireLine(new Location(en.Location.Map,pt), en.Location.Position, range, m_Actor, LoF)) ret.UnionWith(LoF);
           // if "safe" attack possible init danger in different/earlier loop
         }
@@ -1059,7 +1059,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == en_in_range) return null; // no enemies in range, no constructive action: do somnething else
 
       // filter immediate threat by being in range
-      HashSet<Actor> immediate_threat_in_range = (null!=immediate_threat ? new HashSet<Actor>(immediate_threat) : new HashSet<Actor>());
+      var immediate_threat_in_range = (null!=immediate_threat ? new HashSet<Actor>(immediate_threat) : new HashSet<Actor>());
       if (null != immediate_threat) immediate_threat_in_range.IntersectWith(en_in_range.Select(p => p.Percepted as Actor));
 
       if (1 == available_ranged_weapons.Count) {
@@ -1071,8 +1071,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       // Get ETA stats
-      Dictionary<Actor,int> best_weapon_ETAs = new Dictionary<Actor,int>();
-      Dictionary<Actor,ItemRangedWeapon> best_weapons = new Dictionary<Actor,ItemRangedWeapon>();
+      var best_weapon_ETAs = new Dictionary<Actor,int>();
+      var best_weapons = new Dictionary<Actor,ItemRangedWeapon>();
       if (1<available_ranged_weapons.Count) {
         foreach(ItemRangedWeapon rw in available_ranged_weapons) {
           foreach(Percept p in en_in_range) {
@@ -1333,8 +1333,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       Map map = m_Actor.Location.Map;
       Dictionary<Point,Actor> friends = map.FindAdjacent(m_Actor.Location.Position,(m,pt) => {
         Actor a = m.GetActorAtExt(pt);
-        if (null == a) return null;
-        if (a.IsSleeping) return null;
+        if (a?.IsSleeping ?? true) return null;
         return (m_Actor.IsEnemyOf(a) ? null : a);
       });
       if (0 >= friends.Count) return null;
@@ -1361,7 +1360,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActionCloseDoor BehaviorCloseDoorBehindMe(Location previousLocation)
     {
-      DoorWindow door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
+      var door = previousLocation.Map.GetMapObjectAt(previousLocation.Position) as DoorWindow;
       if (null == door) return null;
       if (!m_Actor.CanClose(door)) return null;
       foreach(Direction dir in Direction.COMPASS) {
@@ -1378,9 +1377,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActorAction BehaviorSecurePerimeter()
     {
       Map map = m_Actor.Location.Map;
-      Dictionary<Point,int> want_to_resolve = new Dictionary<Point,int>();
+      var want_to_resolve = new Dictionary<Point,int>();
       foreach (Point position in m_Actor.Controller.FOV) {
-        DoorWindow door = map.GetMapObjectAt(position) as DoorWindow;
+        var door = map.GetMapObjectAt(position) as DoorWindow;
         if (null == door) continue;
         if (door.IsOpen && m_Actor.CanClose(door)) {
           if (Rules.IsAdjacent(position, m_Actor.Location.Position)) {
@@ -1421,8 +1420,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         Actor actor = friend.Percepted as Actor;
         if (actor == null) throw new ArgumentException("percept not an actor");
         if (actor != m_Actor && (actor.IsSleeping && !m_Actor.IsEnemyOf(actor)) && actor.IsEnemyOf(nearestEnemy)) {
-          string text = string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name);
-          return new ActionShout(m_Actor, text);
+          return new ActionShout(m_Actor, string.Format("Wake up {0}! {1} sighted!", actor.Name, nearestEnemy.Name));
         }
       }
       return null;
@@ -1479,7 +1477,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected ActionUseItem BehaviorUseMedecine(int factorHealing, int factorStamina, int factorSleep, int factorCure, int factorSan)
     {
       Inventory inventory = m_Actor.Inventory;
-      if (inventory == null || inventory.IsEmpty) return null;
+      if (inventory?.IsEmpty ?? true) return null;
       bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
       bool needSTA = m_Actor.IsTired;
       bool needSLP = m_Actor.WouldLikeToSleep;
@@ -1559,7 +1557,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public ActorAction BehaviorWalkAwayFrom(IEnumerable<Point> goals, HashSet<Point> LoF_reserve)
     {
       Actor leader = m_Actor.LiveLeader;
-      ItemRangedWeapon leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
+      var leader_rw = (null != leader ? leader.GetEquippedWeapon() as ItemRangedWeapon : null);
       Actor actor = (null != leader_rw ? GetNearestTargetFor(m_Actor.Leader) : null);
       bool checkLeaderLoF = actor != null && actor.Location.Map == m_Actor.Location.Map;
       List<Point> leaderLoF = null;
@@ -1593,11 +1591,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // however, we do not want to obstruct line of fire of allies
         {
         bool could_barricade = m_Actor.CouldBarricade();
-        Dictionary<Point,DoorWindow> close_doors = new Dictionary<Point,DoorWindow>();
-        Dictionary<Point,DoorWindow> barricade_doors = new Dictionary<Point,DoorWindow>();
+        var close_doors = new Dictionary<Point,DoorWindow>();
+        var barricade_doors = new Dictionary<Point,DoorWindow>();
         foreach(Point pt in Direction.COMPASS.Select(dir => m_Actor.Location.Position + dir)) {
           if (LoF_reserve?.Contains(pt) ?? false) continue;
-          DoorWindow door = m_Actor.Location.Map.GetMapObjectAt(pt) as DoorWindow;
+          var door = m_Actor.Location.Map.GetMapObjectAt(pt) as DoorWindow;
           if (null == door) continue;
           if (!IsBetween(m_Actor.Location.Position, pt, enemy.Location.Position)) continue;
           if (m_Actor.CanClose(door)) {
@@ -1713,7 +1711,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             return new ActionWait(m_Actor);
           if (null != legal_steps) {
             // cannot close at normal speed safely; run-hit may be ok
-            Dictionary<Point,ActorAction> dash_attack = new Dictionary<Point,ActorAction>();
+            var dash_attack = new Dictionary<Point,ActorAction>();
             ReserveSTA(0,1,0,0);  // reserve stamina for 1 melee attack
             List<Point> attack_possible = legal_steps.Where(pt => Rules.IsAdjacent(pt,enemy.Location.Position)
               && !(LoF_reserve?.Contains(pt) ?? false)
@@ -1851,8 +1849,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return null;
       }
       game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", (object) target.Name));
-      int chance = Rules.ActorSpotMurdererChance(m_Actor, target);
-      if (!game.Rules.RollChance(chance)) return null;
+      if (!game.Rules.RollChance(Rules.ActorSpotMurdererChance(m_Actor, target))) return null;
       game.DoMakeAggression(m_Actor, target);
       m_Actor.TargetActor = target;
       // players are special: they get to react to this first
@@ -2194,7 +2191,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorUseStenchKiller()
     {
-      ItemSprayScent itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
+      var itemSprayScent = m_Actor.GetEquippedItem(DollPart.LEFT_HAND) as ItemSprayScent;
       if (itemSprayScent == null) return null;
       if (itemSprayScent.IsUseless) return null;
       if (itemSprayScent.Model.Odor != Odor.PERFUME_LIVING_SUPRESSOR) return null;
@@ -2245,7 +2242,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if DEBUG
       if (null == Items) throw new ArgumentNullException(nameof(Items));
 #endif
-      HashSet<GameItems.IDs> exclude = new HashSet<GameItems.IDs>(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
+      var exclude = new HashSet<GameItems.IDs>(Objectives.Where(o=>o is Goal_DoNotPickup).Select(o=>(o as Goal_DoNotPickup).Avoid));
       IEnumerable<Item> tmp = Items.Where(it => !exclude.Contains(it.Model.ID) && IsInterestingItem(it));
       return (tmp.Any() ? tmp.ToList() : null);
     }
@@ -2482,7 +2479,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (percepts2 != null) {
           Actor actor = FilterNearest(percepts2).Percepted as Actor;
           if (Rules.IsAdjacent(m_Actor.Location, actor.Location)) {
-            ActorAction tmpAction = new ActionTrade(m_Actor, actor);
+            var tmpAction = new ActionTrade(m_Actor, actor);
             if (tmpAction.IsLegal()) {
               MarkActorAsRecentTrade(actor);
               RogueGame.DoSay(m_Actor, actor, string.Format("Hey {0}, let's make a deal!", (object) actor.Name), RogueGame.Sayflags.NONE);
@@ -2587,7 +2584,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
 
       Dictionary<Point, int> dest = PlanApproach(navigate);
-      Dictionary<Point, int> exposed = new Dictionary<Point,int>();
+      var exposed = new Dictionary<Point,int>();
 
       foreach(Point pt in dest.Keys) {
 #if TRACE_NAVIGATE
@@ -2623,7 +2620,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       int most_exposed = exposed.Values.Max();
       if (0<most_exposed) exposed.OnlyIf(val=>most_exposed<=val);
-      Dictionary<Point, int> costs = new Dictionary<Point,int>();
+      var costs = new Dictionary<Point,int>();
       foreach(Point pt in exposed.Keys) {
         costs[pt] = navigate.Cost(pt);
       }
@@ -2752,7 +2749,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 #endif
-      HashSet<Map> ret = new HashSet<Map>(possible_destinations);
+      var ret = new HashSet<Map>(possible_destinations);
 #if TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
       if (m_Actor.IsDebuggingTarget) {
         Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+possible_destinations.Count.ToString()+","+ret.Count.ToString());
@@ -2780,7 +2777,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
+      var possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
       // but ignore the sewers if we're not vintage
       if (Session.Get.HasZombiesInSewers) {
         possible_destinations.Remove(m_Actor.Location.Map.District.SewersMap);
@@ -2792,7 +2789,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorHeadForExit(valid_exits);    // done
 
       // try to pick something reasonable
-      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
+      var hazards = new Dictionary<Map, HashSet<Point>>();
       foreach(Map m in possible_destinations) {
         hazards[m] = threats.ThreatWhere(m);
       }
@@ -2822,14 +2819,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       // XXX probably should exclude secret maps
-      HashSet<Map> possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
+      var possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
 
       if (1==possible_destinations.Count && possible_destinations.Contains(m_Actor.Location.Map.District.EntryMap))
         return BehaviorHeadForExit(valid_exits);    // done
 
       HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
       allies.IntersectWith(allies.Where(a => !a.HasLeader));
-      HashSet<Map> covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
+      var covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
       ActorAction tmp = BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
       if (null!=tmp) return tmp;
 
@@ -2849,7 +2846,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorHeadForExit(valid_exits);
       }
 
-      HashSet<Map> entry_destinations = new HashSet<Map>(m_Actor.Location.Map.District.EntryMap.destination_maps.Get);
+      var entry_destinations = new HashSet<Map>(m_Actor.Location.Map.District.EntryMap.destination_maps.Get);
       entry_destinations.IntersectWith(possible_destinations);
       if (0<entry_destinations.Count) {
         valid_exits.OnlyIf(e=>entry_destinations.Contains(e.ToMap));
@@ -2932,7 +2929,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
       });
-      Dictionary<Map,HashSet<Point>> hazards = new Dictionary<Map, HashSet<Point>>();
+      var hazards = new Dictionary<Map, HashSet<Point>>();
       foreach(Map m in m_Actor.Location.Map.destination_maps.Get) {
         hazards[m] = targets_at(m);
       }
@@ -2944,7 +2941,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 //    veto_hazards(hazards);
       foreach(KeyValuePair<Map,HashSet<Point>> m_dests in hazards) {
-        Dictionary<Point,Exit> exits_for_m = new Dictionary<Point,Exit>(valid_exits);
+        var exits_for_m = new Dictionary<Point,Exit>(valid_exits);
         exits_for_m.OnlyIf(exit => exit.ToMap == m_dests.Key);
         List<Point> remote_dests = new List<Point>(exits_for_m.Values.Select(exit => exit.Location.Position));
         FloodfillPathfinder<Point> remote_navigate = m_dests.Key.PathfindSteps(m_Actor);
@@ -2979,7 +2976,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.Model.Abilities.AI_CanUseAIExits) {
         List<Point> legal_steps = m_Actor.OnePathRange(m_Actor.Location.Map,m_Actor.Location.Position);
         int current_cost = navigate.Cost(m_Actor.Location.Position);
-        if (null==legal_steps || !legal_steps.Any(pt => navigate.Cost(pt)<=current_cost)) {
+        if (!legal_steps?.Any(pt => navigate.Cost(pt)<=current_cost) ?? true) {
           return BehaviorUseExit(UseExitFlags.ATTACK_BLOCKING_ENEMIES | UseExitFlags.DONT_BACKTRACK);
         }
       }

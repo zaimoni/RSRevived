@@ -5742,15 +5742,15 @@ namespace djack.RogueSurvivor.Engine
           return map.LocalTime.Hour >= 12;
         case AdvisorHint.CORPSE_BUTCHER:
           if (!Player.Model.Abilities.IsUndead)
-            return map.GetCorpsesAt(position) != null;
+            return map.HasCorpsesAt(position);
           return false;
         case AdvisorHint.CORPSE_EAT:
           if (Player.Model.Abilities.IsUndead)
-            return map.GetCorpsesAt(position) != null;
+            return map.HasCorpsesAt(position);
           return false;
         case AdvisorHint.CORPSE_DRAG_START:
           if (Player.DraggedCorpse == null)
-            return map.GetCorpsesAt(position) != null;
+            return map.HasCorpsesAt(position);
           return false;
         case AdvisorHint.CORPSE_DRAG_MOVE:
           return Player.DraggedCorpse != null;
@@ -12652,7 +12652,7 @@ namespace djack.RogueSurvivor.Engine
     {
       if (speaker.Leader != target && target.Leader != speaker) return false;
       ItemTracker itemTracker1 = speaker.GetEquippedItem(DollPart.LEFT_HAND) as ItemTracker;
-      if (itemTracker1 == null || !itemTracker1.CanTrackFollowersOrLeader) return false;
+      if (!itemTracker1?.CanTrackFollowersOrLeader ?? true) return false;
       return target.GetEquippedItem(DollPart.LEFT_HAND) is ItemTracker itemTracker2 && itemTracker2.CanTrackFollowersOrLeader;
     }
 
@@ -12668,14 +12668,16 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    static private List<Actor> ListDistrictActors(District d, RogueGame.MapListFlags flags, Predicate<Actor> pred=null)
+    static private List<Actor> ListDistrictActors(District d, RogueGame.MapListFlags flags, Predicate<Actor> pred)
     {
-      List<Actor> actorList = new List<Actor>();
+#if DEBUG
+      if (null == pred) throw new ArgumentNullException(nameof(pred));
+#endif
+      var actorList = new List<Actor>();
       foreach (Map map in d.Maps) {
-        if ((flags & RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS) == RogueGame.MapListFlags.NONE || !map.IsSecret) {
+        if ((flags & MapListFlags.EXCLUDE_SECRET_MAPS) == MapListFlags.NONE || !map.IsSecret) {
           foreach (Actor actor in map.Actors) {
-            if (pred == null || pred(actor))
-              actorList.Add(actor);
+            if (pred(actor)) actorList.Add(actor);
           }
         }
       }
@@ -12690,18 +12692,16 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] CompileDistrictFunFacts(District d)
     {
-      List<string> stringList = new List<string>();
-      List<Actor> actorList1 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, a => {
+      var stringList = new List<string>();
+      List<Actor> actorList1 = ListDistrictActors(d, MapListFlags.EXCLUDE_SECRET_MAPS, a => {
         if (!a.IsDead) return !a.Model.Abilities.IsUndead;
         return false;
       });
-      List<Actor> actorList2 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS, a => {
+      List<Actor> actorList2 = ListDistrictActors(d, MapListFlags.EXCLUDE_SECRET_MAPS, a => {
         if (!a.IsDead) return a.Model.Abilities.IsUndead;
         return false;
       });
-      List<Actor> actorList3 = ListDistrictActors(d, RogueGame.MapListFlags.EXCLUDE_SECRET_MAPS);
       (Player.Model.Abilities.IsUndead ? actorList2 : actorList1).Add(Player);
-      actorList3.Add(Player);
       if (actorList1.Count > 0) {
         actorList1.Sort((a, b) => {
           if (a.SpawnTime < b.SpawnTime) return -1;

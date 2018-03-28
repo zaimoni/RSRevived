@@ -60,7 +60,7 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
     {
         _enemies = null;
         _friends = null;
-        HashSet<Point> has_threat = (null==threats ? null : new HashSet<Point>());
+        HashSet<Point> has_threat = new HashSet<Point>();
         foreach (Point pt in FOV) {
           Actor actorAt = m_Actor.Location.Map.GetActorAtExt(pt); // XXX change target for cross-district vision
           if (null==actorAt) continue;

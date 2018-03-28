@@ -180,7 +180,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     // firearms use grid i.e. L-infinity distance
     protected List<Percept_<_T_>> SortByGridDistance<_T_>(List<Percept_<_T_>> percepts) where _T_:class
     {
-      if (null == percepts || 0 == percepts.Count) return null;
+      if (0 >= (percepts?.Count ?? 0)) return null;
       if (1==percepts.Count) return percepts;
 
       List<Percept_<_T_>> perceptList = new List<Percept_<_T_>>(percepts);
@@ -409,7 +409,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       reason = "";
       bool isInside = map.IsInsideAt(pos);
-      if (!isInside && map.GetCorpsesAt(pos) != null) reason = "that corpse will serve as a bait for";
+      if (!isInside && map.HasCorpsesAt(pos)) reason = "that corpse will serve as a bait for";
       else if (m_prevLocation.Map.IsInsideAt(m_prevLocation.Position) != isInside) reason = "protecting the building with";
       else {
         if (map.GetMapObjectAt(pos) is DoorWindow) reason = "protecting the doorway with";

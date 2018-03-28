@@ -658,7 +658,7 @@ namespace djack.RogueSurvivor.Data
     // <remakr>only caller wants result in-bounds</remark>
 	public List<Point> ExitLocations(HashSet<Exit> src)
 	{
-      if (null==src || 0 >= src.Count) return null;
+      if (0 >= (src?.Count ?? 0)) return null;
 	  var ret = new HashSet<Point>();
       foreach (KeyValuePair<Point, Exit> mExit in m_Exits) {
         if (!src.Contains(mExit.Value)) continue;
@@ -1551,6 +1551,12 @@ retry:
       return GetCorpsesAt(new Point(x, y));
 #endif
     }
+
+    public bool HasCorpsesAt(Point p)
+    {
+      return m_aux_CorpsesByPosition.ContainsKey(p);
+    }
+
 
     public bool Has(Corpse c)
     {

@@ -633,9 +633,9 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCouldntThrowTo(Point pos, List<Point> LoF)
     {
-      if (LoF != null) LoF.Clear();
-      ItemGrenade itemGrenade = GetEquippedWeapon() as ItemGrenade;
-      ItemGrenadePrimed itemGrenadePrimed = GetEquippedWeapon() as ItemGrenadePrimed;
+      LoF?.Clear();
+      var itemGrenade = GetEquippedWeapon() as ItemGrenade;
+      var itemGrenadePrimed = GetEquippedWeapon() as ItemGrenadePrimed;
       if (itemGrenade == null && itemGrenadePrimed == null) return "no grenade equipped";
 
       ItemGrenadeModel itemGrenadeModel = itemGrenade == null ? itemGrenadePrimed.Model.GrenadeModel : itemGrenade.Model;
@@ -664,7 +664,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
-      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      var itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
       if (CurrentRangedAttack.Range+1 < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
@@ -715,7 +715,7 @@ namespace djack.RogueSurvivor.Data
       if (null == target) throw new ArgumentNullException(nameof(target));
 #endif
       LoF?.Clear();
-      ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
+      var itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) return "no ranged weapon equipped";
       if (CurrentRangedAttack.Range < Rules.GridDistance(Location, target.Location)) return "out of range";
       if (itemRangedWeapon.Ammo <= 0) return "no ammo left";
@@ -1002,9 +1002,7 @@ namespace djack.RogueSurvivor.Data
     public bool NeedActiveCellPhone {
       get {
         Actor leader = LiveLeader;
-        if (null != leader) {
-          return leader.HasActiveCellPhone;
-        }
+        if (null != leader) return leader.HasActiveCellPhone;
         if (0 < CountFollowers) {
           foreach(Actor fo in Followers) {
             if (fo.HasCellPhone) return true;
@@ -1146,7 +1144,7 @@ namespace djack.RogueSurvivor.Data
       m_Followers.Remove(other);
       if (m_Followers.Count == 0) m_Followers = null;
       other.m_Leader = null;
-      Gameplay.AI.OrderableAI aiController = other.Controller as Gameplay.AI.OrderableAI;
+      var aiController = other.Controller as Gameplay.AI.OrderableAI;
       if (aiController == null) return;
       aiController.Directives.Reset();
       aiController.SetOrder(null);
@@ -1300,7 +1298,7 @@ namespace djack.RogueSurvivor.Data
       if (null == fov) throw new ArgumentNullException(nameof(fov));
 #endif
       if (1 >= fov.Count) return null;  // sleeping?
-      List<Actor> actorList = new List<Actor>(fov.Count-1); // assuming ok to thrash GC
+      var actorList = new List<Actor>(fov.Count-1); // assuming ok to thrash GC
       foreach (Point position in fov) {
         Actor actorAt = Location.Map.GetActorAtExt(position.X,position.Y);
         if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) {
@@ -1335,7 +1333,7 @@ namespace djack.RogueSurvivor.Data
     // We do not handle the enemy relations here.
     public HashSet<Actor> Allies {
       get {
-        HashSet<Actor> ret = new HashSet<Actor>();
+        var ret = new HashSet<Actor>();
         // 1) police have all other police as allies.
         if ((int)Gameplay.GameFactions.IDs.ThePolice == Faction.ID) {
           foreach(Map m in Location.Map.District.Maps) ret.UnionWith(m.Police.Get);
@@ -1402,9 +1400,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool IsOnCouch {
       get {
-        MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
-        if (mapObjectAt == null) return false;
-        return mapObjectAt.IsCouch;
+        return Location.Map.GetMapObjectAt(Location.Position)?.IsCouch ?? false;
       }
     }
 
@@ -1435,7 +1431,7 @@ namespace djack.RogueSurvivor.Data
       Map m = origin.Map;
       Point src = origin.Position;
       Point dest = target.Position;
-      List<List<Point> > ret = new List<List<Point> >();
+      var ret = new List<List<Point> >();
       List<Point> tmp = FastestStepTo(m,src,dest);
       if (null == tmp) return null;
       ret.Add(tmp);
@@ -1572,7 +1568,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (!now.Any()) throw new InvalidOperationException("!now.Any() : do not step into nowhere");
 #endif
-      HashSet<Point> ret = new HashSet<Point>();
+      var ret = new HashSet<Point>();
       foreach(Point pt in now) {
         List<Point> tmp = OneStepRange(m,pt);
         if (null == tmp) continue;
@@ -1665,8 +1661,7 @@ namespace djack.RogueSurvivor.Data
       Map map = Location.Map;
       if (!map.IsInBounds(toPos)) return "out of map";  // XXX should be IsValid
       if (!map.GetTileModelAt(toPos).IsWalkable) return "blocked"; // XXX should be GetTileModelAtExt
-      MapObject mapObjectAt = map.GetMapObjectAt(toPos);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable) return "blocked by an object";
+      if (!map.GetMapObjectAt(toPos)?.IsWalkable ?? false) return "blocked by an object";
       if (map.HasActorAt(toPos)) return "blocked by someone";
       return "";
     }
@@ -2578,7 +2573,7 @@ namespace djack.RogueSurvivor.Data
 
     public bool HasAtLeastFullStackOf(Gameplay.GameItems.IDs it, int n)
     {
-      if (null == m_Inventory || m_Inventory.IsEmpty) return false;
+      if (m_Inventory?.IsEmpty ?? true) return false;
       ItemModel model = Models.Items[(int)it];
       if (model.IsStackable) return m_Inventory.CountQuantityOf(model) >= n * model.StackingLimit;
       return m_Inventory.Count(model) >= n; // XXX assumes each model goes with a specific item type
@@ -2631,7 +2626,7 @@ namespace djack.RogueSurvivor.Data
     public bool HasEnoughFoodFor(int nutritionNeed, ItemFood exclude=null)
     {
       if (!Model.Abilities.HasToEat) return true;
-      if (null == Inventory || Inventory.IsEmpty) return false;
+      if (Inventory?.IsEmpty ?? true) return false;
       List<ItemFood> tmp = Inventory.GetItemsByType<ItemFood>();
       if (null == tmp) return false;
       int turnCounter = Location.Map.LocalTime.TurnCounter;
@@ -2784,28 +2779,20 @@ namespace djack.RogueSurvivor.Data
       if (it is ItemFood && !Model.Abilities.HasToEat) return "no ability to eat";
       if (it is ItemMedicine && Model.Abilities.IsUndead) return "undeads cannot use medecine";
       if (it is ItemBarricadeMaterial) return "to use material, build a barricade";
-      if (it is ItemAmmo)
-      {
+      if (it is ItemAmmo) {
         ItemAmmo itemAmmo = it as ItemAmmo;
         ItemRangedWeapon itemRangedWeapon = GetEquippedWeapon() as ItemRangedWeapon;
         if (itemRangedWeapon == null || itemRangedWeapon.AmmoType != itemAmmo.AmmoType) return "no compatible ranged weapon equipped";
         if (itemRangedWeapon.Ammo >= itemRangedWeapon.Model.MaxAmmo) return "weapon already fully loaded";
-      }
-      else if (it is ItemSprayScent)
-      {
+      } else if (it is ItemSprayScent) {
         if (it.IsUseless) return "no spray left.";
-      }
-      else if (it is ItemTrap)
-      {
+      } else if (it is ItemTrap) {
         if (!(it as ItemTrap).Model.UseToActivate) return "does not activate manually";
-      }
-      else if (it is ItemEntertainment)
-      {
+      } else if (it is ItemEntertainment) {
         if (!Model.Abilities.IsIntelligent) return "not intelligent";
         if (IsBoredOf(it)) return "bored by this";
       }
-      Inventory inventory = Inventory;
-      if (inventory == null || !inventory.Contains(it)) return "not in inventory";
+      if (!Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }
 
@@ -2890,8 +2877,7 @@ namespace djack.RogueSurvivor.Data
 
     private string ReasonCantGetFromContainer(Point position)
     {
-      MapObject mapObjectAt = Location.Map.GetMapObjectAt(position);
-      if (!mapObjectAt?.IsContainer ?? true) return "object is not a container";
+      if (!Location.Map.GetMapObjectAt(position)?.IsContainer ?? true) return "object is not a container";
       Inventory itemsAt = Location.Map.GetItemsAt(position);
       if (itemsAt == null) return "nothing to take there";
 	  // XXX should be "can't get any of the items in the container"
@@ -2938,8 +2924,7 @@ namespace djack.RogueSurvivor.Data
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
       if (!it.IsEquipped) return "not equipped";
-      Inventory inventory = Inventory;
-      if (inventory == null || !inventory.Contains(it)) return "not in inventory";
+      if (!Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }
 
@@ -2960,8 +2945,7 @@ namespace djack.RogueSurvivor.Data
       if (null == it) throw new ArgumentNullException(nameof(it));
 #endif
       if (it.IsEquipped) return "unequip first";
-      Inventory inventory = Inventory;
-      if (inventory == null || !inventory.Contains(it)) return "not in inventory";
+      if (!Inventory?.Contains(it) ?? true) return "not in inventory";
       return "";
     }
 
@@ -3076,8 +3060,7 @@ namespace djack.RogueSurvivor.Data
       }
       if (IsExhausted) FOV -= 2;
       else if (IsSleepy) --FOV;
-      MapObject mapObjectAt = Location.Map.GetMapObjectAt(Location.Position);
-      if (mapObjectAt != null && mapObjectAt.StandOnFovBonus) FOV += FOV_BONUS_STANDING_ON_OBJECT;
+      if (Location.Map.GetMapObjectAt(Location.Position)?.StandOnFovBonus ?? false) FOV += FOV_BONUS_STANDING_ON_OBJECT;
       return Math.Max(MINIMAL_FOV, FOV);
     }
 
@@ -3090,10 +3073,7 @@ namespace djack.RogueSurvivor.Data
         int lightBonus = LightBonus;
         if (lightBonus == 0) {
           Map map = Location.Map;
-          if (map.HasAnyAdjacentInMap(Location.Position, (Predicate<System.Drawing.Point>) (pt =>
-              {
-                return 0 < (map.GetActorAt(pt)?.LightBonus ?? 0);
-              })))
+          if (map.HasAnyAdjacentInMap(Location.Position, pt => 0 < (map.GetActorAt(pt)?.LightBonus ?? 0)))
             lightBonus = 1;
         }
         FOV += lightBonus;
