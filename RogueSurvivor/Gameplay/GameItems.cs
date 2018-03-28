@@ -784,7 +784,7 @@ namespace djack.RogueSurvivor.Gameplay
       ui.UI_Repaint();
     }
 
-    private static bool LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
+    private static void LoadDataFromCSV<_DATA_TYPE_>(IRogueUI ui, string path, string kind, int fieldsCount, Func<CSVLine, _DATA_TYPE_> fn, GameItems.IDs[] idsToRead, out _DATA_TYPE_[] data)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
@@ -806,16 +806,14 @@ namespace djack.RogueSurvivor.Gameplay
       for (int index = 0; index < idsToRead.Length; ++index)
         data[index] = toTable.GetDataFor<_DATA_TYPE_, GameItems.IDs>(fn, idsToRead[index]);
       Notify(ui, kind, "done!");
-      return true;
     }
 
-    private bool LoadMedicineFromCSV(IRogueUI ui, string path)
+    private void LoadMedicineFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "medicine items", MedecineData.COUNT_FIELDS, new Func<CSVLine, MedecineData>(MedecineData.FromCSVLine), new IDs[6]
-      {
+      LoadDataFromCSV(ui, path, "medicine items", MedecineData.COUNT_FIELDS, new Func<CSVLine, MedecineData>(MedecineData.FromCSVLine), new IDs[6] {
         IDs.MEDICINE_BANDAGES,
         IDs.MEDICINE_MEDIKIT,
         IDs.MEDICINE_PILLS_SLP,
@@ -829,16 +827,14 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_MEDICINE_PILLS_STA = data[3];
       DATA_MEDICINE_PILLS_SAN = data[4];
       DATA_MEDICINE_PILLS_ANTIVIRAL = data[5];
-      return true;
     }
 
-    private bool LoadFoodFromCSV(IRogueUI ui, string path)
+    private void LoadFoodFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "food items", FoodData.COUNT_FIELDS, new Func<CSVLine, FoodData>(FoodData.FromCSVLine), new IDs[3]
-      {
+      LoadDataFromCSV(ui, path, "food items", FoodData.COUNT_FIELDS, new Func<CSVLine, FoodData>(FoodData.FromCSVLine), new IDs[3] {
         IDs.FOOD_ARMY_RATION,
         IDs.FOOD_CANNED_FOOD,
         IDs.FOOD_GROCERIES
@@ -846,16 +842,14 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_FOOD_ARMY_RATION = data[0];
       DATA_FOOD_CANNED_FOOD = data[1];
       DATA_FOOD_GROCERIES = data[2];
-      return true;
     }
 
-    private bool LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
+    private void LoadMeleeWeaponsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "melee weapons items", MeleeWeaponData.COUNT_FIELDS, new Func<CSVLine, MeleeWeaponData>(MeleeWeaponData.FromCSVLine), new IDs[]
-      {
+      LoadDataFromCSV(ui, path, "melee weapons items", MeleeWeaponData.COUNT_FIELDS, new Func<CSVLine, MeleeWeaponData>(MeleeWeaponData.FromCSVLine), new IDs[] {
         IDs.MELEE_BASEBALLBAT,
         IDs.MELEE_COMBAT_KNIFE,
         IDs.MELEE_CROWBAR,
@@ -891,16 +885,14 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_MELEE_UNIQUE_BIGBEAR_BAT = data[14];
       DATA_MELEE_UNIQUE_ROGUEDJACK_KEYBOARD = data[15];
       DATA_MELEE_UNIQUE_FATHER_TIME_SCYTHE = data[16];
-      return true;
     }
 
-    private bool LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
+    private void LoadRangedWeaponsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "ranged weapons items", RangedWeaponData.COUNT_FIELDS, new Func<CSVLine, RangedWeaponData>(RangedWeaponData.FromCSVLine), new IDs[10]
-      {
+      LoadDataFromCSV(ui, path, "ranged weapons items", RangedWeaponData.COUNT_FIELDS, new Func<CSVLine, RangedWeaponData>(RangedWeaponData.FromCSVLine), new IDs[10] {
         IDs.RANGED_ARMY_PISTOL,
         IDs.RANGED_ARMY_RIFLE,
         IDs.RANGED_HUNTING_CROSSBOW,
@@ -922,42 +914,36 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_RANGED_SHOTGUN = data[7];
       DATA_UNIQUE_SANTAMAN_SHOTGUN = data[8];
       DATA_UNIQUE_HANS_VON_HANZ_PISTOL = data[9];
-      return true;
     }
 
-    private bool LoadExplosivesFromCSV(IRogueUI ui, string path)
+    private void LoadExplosivesFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "explosives items", ExplosiveData.COUNT_FIELDS, new Func<CSVLine, ExplosiveData>(ExplosiveData.FromCSVLine), new IDs[1]
-      {
+      LoadDataFromCSV(ui, path, "explosives items", ExplosiveData.COUNT_FIELDS, new Func<CSVLine, ExplosiveData>(ExplosiveData.FromCSVLine), new IDs[1] {
         IDs.EXPLOSIVE_GRENADE
       }, out ExplosiveData[] data);
       DATA_EXPLOSIVE_GRENADE = data[0];
-      return true;
     }
 
-    private bool LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
+    private void LoadBarricadingMaterialFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "barricading items", BarricadingMaterialData.COUNT_FIELDS, new Func<CSVLine, BarricadingMaterialData>(BarricadingMaterialData.FromCSVLine), new IDs[1]
-      {
+      LoadDataFromCSV(ui, path, "barricading items", BarricadingMaterialData.COUNT_FIELDS, new Func<CSVLine, BarricadingMaterialData>(BarricadingMaterialData.FromCSVLine), new IDs[1] {
         IDs.BAR_WOODEN_PLANK
       }, out BarricadingMaterialData[] data);
       DATA_BAR_WOODEN_PLANK = data[0];
-      return true;
     }
 
-    private bool LoadArmorsFromCSV(IRogueUI ui, string path)
+    private void LoadArmorsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "armors items", ArmorData.COUNT_FIELDS, new Func<CSVLine, ArmorData>(ArmorData.FromCSVLine), new IDs[7]
-      {
+      LoadDataFromCSV(ui, path, "armors items", ArmorData.COUNT_FIELDS, new Func<CSVLine, ArmorData>(ArmorData.FromCSVLine), new IDs[7] {
         IDs.ARMOR_ARMY_BODYARMOR,
         IDs.ARMOR_CHAR_LIGHT_BODYARMOR,
         IDs.ARMOR_HELLS_SOULS_JACKET,
@@ -973,16 +959,14 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_ARMOR_POLICE_JACKET = data[4];
       DATA_ARMOR_POLICE_RIOT = data[5];
       DATA_ARMOR_HUNTER_VEST = data[6];
-      return true;
     }
 
-    private bool LoadTrackersFromCSV(IRogueUI ui, string path)
+    private void LoadTrackersFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "trackers items", TrackerData.COUNT_FIELDS, new Func<CSVLine, TrackerData>(TrackerData.FromCSVLine), new IDs[4]
-      {
+      LoadDataFromCSV(ui, path, "trackers items", TrackerData.COUNT_FIELDS, new Func<CSVLine, TrackerData>(TrackerData.FromCSVLine), new IDs[4] {
         IDs.TRACKER_BLACKOPS,
         IDs.TRACKER_CELL_PHONE,
         IDs.TRACKER_ZTRACKER,
@@ -992,16 +976,14 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_TRACKER_CELL_PHONE = data[1];
       DATA_TRACKER_ZTRACKER = data[2];
       DATA_TRACKER_POLICE_RADIO = data[3];
-      return true;
     }
 
-    private bool LoadSpraypaintsFromCSV(IRogueUI ui, string path)
+    private void LoadSpraypaintsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "spraypaint items", SprayPaintData.COUNT_FIELDS, new Func<CSVLine, SprayPaintData>(SprayPaintData.FromCSVLine), new IDs[4]
-      {
+      LoadDataFromCSV(ui, path, "spraypaint items", SprayPaintData.COUNT_FIELDS, new Func<CSVLine, SprayPaintData>(SprayPaintData.FromCSVLine), new IDs[4] {
         IDs.SPRAY_PAINT1,
         IDs.SPRAY_PAINT2,
         IDs.SPRAY_PAINT3,
@@ -1011,44 +993,38 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_SPRAY_PAINT2 = data[1];
       DATA_SPRAY_PAINT3 = data[2];
       DATA_SPRAY_PAINT4 = data[3];
-      return true;
     }
 
-    private bool LoadLightsFromCSV(IRogueUI ui, string path)
+    private void LoadLightsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "lights items", LightData.COUNT_FIELDS, new Func<CSVLine, LightData>(LightData.FromCSVLine), new IDs[2]
-      {
+      LoadDataFromCSV(ui, path, "lights items", LightData.COUNT_FIELDS, new Func<CSVLine, LightData>(LightData.FromCSVLine), new IDs[2] {
         IDs.LIGHT_FLASHLIGHT,
         IDs.LIGHT_BIG_FLASHLIGHT
       }, out LightData[] data);
       DATA_LIGHT_FLASHLIGHT = data[0];
       DATA_LIGHT_BIG_FLASHLIGHT = data[1];
-      return true;
     }
 
-    private bool LoadScentspraysFromCSV(IRogueUI ui, string path)
+    private void LoadScentspraysFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "scentsprays items", ScentSprayData.COUNT_FIELDS, new Func<CSVLine, ScentSprayData>(ScentSprayData.FromCSVLine), new IDs[1]
-      {
+      LoadDataFromCSV(ui, path, "scentsprays items", ScentSprayData.COUNT_FIELDS, new Func<CSVLine, ScentSprayData>(ScentSprayData.FromCSVLine), new IDs[1] {
         IDs.SCENT_SPRAY_STENCH_KILLER
       }, out ScentSprayData[] data);
       DATA_SCENT_SPRAY_STENCH_KILLER = data[0];
-      return true;
     }
 
-    private bool LoadTrapsFromCSV(IRogueUI ui, string path)
+    private void LoadTrapsFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "traps items", TrapData.COUNT_FIELDS, new Func<CSVLine, TrapData>(TrapData.FromCSVLine), new IDs[4]
-      {
+      LoadDataFromCSV(ui, path, "traps items", TrapData.COUNT_FIELDS, new Func<CSVLine, TrapData>(TrapData.FromCSVLine), new IDs[4]{
         IDs.TRAP_EMPTY_CAN,
         IDs.TRAP_BEAR_TRAP,
         IDs.TRAP_SPIKES,
@@ -1058,22 +1034,19 @@ namespace djack.RogueSurvivor.Gameplay
       DATA_TRAP_BEAR_TRAP = data[1];
       DATA_TRAP_SPIKES = data[2];
       DATA_TRAP_BARBED_WIRE = data[3];
-      return true;
     }
 
-    private bool LoadEntertainmentFromCSV(IRogueUI ui, string path)
+    private void LoadEntertainmentFromCSV(IRogueUI ui, string path)
     {
 #if DEBUG
       if (string.IsNullOrEmpty(path)) throw new ArgumentOutOfRangeException(nameof(path),path, "string.IsNullOrEmpty(path)");
 #endif
-      LoadDataFromCSV(ui, path, "entertainment items", EntData.COUNT_FIELDS, new Func<CSVLine, EntData>(EntData.FromCSVLine), new IDs[2]
-      {
+      LoadDataFromCSV(ui, path, "entertainment items", EntData.COUNT_FIELDS, new Func<CSVLine, EntData>(EntData.FromCSVLine), new IDs[2] {
         IDs.ENT_BOOK,
         IDs.ENT_MAGAZINE
       }, out EntData[] data);
       DATA_ENT_BOOK = data[0];
       DATA_ENT_MAGAZINE = data[1];
-      return true;
     }
 
     public enum IDs

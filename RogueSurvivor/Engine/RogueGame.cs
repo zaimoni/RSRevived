@@ -12021,7 +12021,7 @@ namespace djack.RogueSurvivor.Engine
       } catch (Exception ex) {
         if (ex is ThreadAbortException) return; // this is from the Abort() call
         using (Bugreport bugreport = new Bugreport(ex)) {
-          int num = (int) bugreport.ShowDialog();
+          bugreport.ShowDialog();   // int return value is not used
         }
         // It is exceptionally difficult to completely shut down Rogue Survivor Revived at this point.
         // RogueSurvivor.vshost.exe doesn't completely go away.

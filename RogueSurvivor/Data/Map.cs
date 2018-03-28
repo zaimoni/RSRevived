@@ -1031,11 +1031,11 @@ retry:
       if (null == actor) throw new ArgumentNullException(nameof(actor));
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
 #endif
-      Actor actorAt = GetActorAt(position);
 #if DEBUG
+      Actor actorAt = GetActorAt(position);
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
-      lock(m_aux_ActorsByPosition) {
+            lock (m_aux_ActorsByPosition) {
         // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
         if (actor.Location.Map == this && HasActor(actor)) {
 #if DEBUG

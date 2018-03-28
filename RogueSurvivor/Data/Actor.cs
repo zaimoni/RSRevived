@@ -1318,6 +1318,20 @@ namespace djack.RogueSurvivor.Data
       return (1<=actorList.Count ? actorList : null);
     }
 
+    // stripped down from above
+    public bool AnyEnemiesInFov(HashSet<Point> fov)
+    {
+#if DEBUG
+      if (null == fov) throw new ArgumentNullException(nameof(fov));
+#endif
+      if (1 >= fov.Count) return false;  // sleeping?
+      foreach (Point position in fov) {
+        Actor actorAt = Location.Map.GetActorAtExt(position);
+        if (actorAt != null && actorAt != this && IsEnemyOf(actorAt)) return true;
+      }
+      return false;
+    }
+
     // We do not handle the enemy relations here.
     public HashSet<Actor> Allies {
       get {
