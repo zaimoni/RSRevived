@@ -478,7 +478,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static Data.Message MakeMessage(Actor actor, string doWhat, Color color)
     {
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
@@ -492,7 +492,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Actor target, string phraseEnd)
     {
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
@@ -509,7 +509,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, MapObject target, string phraseEnd)
     {
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
@@ -526,7 +526,7 @@ namespace djack.RogueSurvivor.Engine
 
     private static Data.Message MakeMessage(Actor actor, string doWhat, Item target, string phraseEnd)
     {
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       stringBuilder.Append(ActorVisibleIdentity(actor));
       stringBuilder.Append(" ");
       stringBuilder.Append(doWhat);
@@ -707,7 +707,7 @@ namespace djack.RogueSurvivor.Engine
     static private void LogSaveScumStats() {
       DiceRoller tmp = new DiceRoller(Session.Get.Seed);
       string msg = "first seven RNG d100 values:";
-      List<int> tmp2 = new List<int>(7);
+      var tmp2 = new List<int>(7);
       int i = 7;
       do tmp2.Add(tmp.Roll(0, 100));
       while(0 < --i);
@@ -819,8 +819,7 @@ namespace djack.RogueSurvivor.Engine
     private void HandleMainMenu()
     {
       bool flag2 = File.Exists(GetUserSave());
-      string[] entries = new string[9]
-      {
+      string[] entries = new string[9] {
         "New Game",
         flag2 ? "Load Game" : "(Load Game)",
         "Redefine keys",
@@ -844,9 +843,9 @@ namespace djack.RogueSurvivor.Engine
         gy1 = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Main Menu", 0, gy1, new Color?());
-        gy1 += 28;
+        gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(c, Color.White, entries, Color.White, null, gx1, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select");
         DateTime now = DateTime.Now;
@@ -923,20 +922,17 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandleNewGameMode()
     {
-      string[] entries = new string[(int)GameMode_Bounds._COUNT]
-      {
+      string[] entries = new string[(int)GameMode_Bounds._COUNT] {
         Session.DescGameMode(GameMode.GM_STANDARD),
         Session.DescGameMode(GameMode.GM_CORPSES_INFECTION),
         Session.DescGameMode(GameMode.GM_VINTAGE)
       };
-      string[] values = new string[(int)GameMode_Bounds._COUNT]
-      {
+      string[] values = new string[(int)GameMode_Bounds._COUNT] {
         SetupConfig.GAME_NAME+" standard game.",
         "Don't get a cold. Keep an eye on your deceased diseased friends.",
         "The classic zombies next door."
       };
-      string[][] summaries = new string[(int)GameMode_Bounds._COUNT][]
-      {
+      string[][] summaries = new string[(int)GameMode_Bounds._COUNT][] {
         new string[] {
           "This is the standard game setting:",
           "- All the kinds of undeads.",
@@ -970,12 +966,12 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         int gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, "New Game - Choose Game Mode", gx, gy1, new Color?());
-        gy1 += 28;
+        gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
-        gy1 += 28;
+        gy1 += 2*BOLD_LINE_SPACING;
         foreach (string text in summaries[currentChoice]) {
           m_UI.UI_DrawStringBold(Color.Gray, text, gx, gy1, new Color?());
-          gy1 += 14;
+          gy1 += BOLD_LINE_SPACING;
         }
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
@@ -1000,14 +996,12 @@ namespace djack.RogueSurvivor.Engine
 
     private bool? HandleNewCharacterRace(DiceRoller roller)
     {
-      string[] entries = new string[3]
-      {
+      string[] entries = new string[3] {
         "*Random*",
         "Living",
         "Undead"
       };
-      string[] values = new string[3]
-      {
+      string[] values = new string[3] {
         "(picks a race at random for you)",
         "Try to survive.",
         "Eat brains and die again."
@@ -1019,7 +1013,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Character - Choose Race", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
-        gy1 += 28;
+        gy1 += 2*BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
@@ -1028,9 +1022,9 @@ namespace djack.RogueSurvivor.Engine
         switch (currentChoice) {
         case 0:
           bool isUndead = roller.RollChance(50);
-          int gy3 = gy1 + 42;
+          int gy3 = gy1 + 3*BOLD_LINE_SPACING;
           m_UI.UI_DrawStringBold(Color.White, string.Format("Race : {0}.", isUndead ? "Undead" : "Living"), gx, gy3, new Color?());
-          int gy4 = gy3 + 14;
+          int gy4 = gy3 + BOLD_LINE_SPACING;
           m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
           m_UI.UI_Repaint();
           if (WaitYesOrNo()) return isUndead;
@@ -1045,8 +1039,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool? HandleNewCharacterGender(DiceRoller roller)
     {
-      ActorModel maleCivilian = GameActors.MaleCivilian;
-      ActorModel femaleCivilian = GameActors.FemaleCivilian;
+      ActorSheet maleStats = GameActors.MaleCivilian.StartingSheet;
+      ActorSheet femaleStats = GameActors.FemaleCivilian.StartingSheet;
       string[] entries = new string[3] {
         "*Random*",
         "Male",
@@ -1054,8 +1048,8 @@ namespace djack.RogueSurvivor.Engine
       };
       string[] values = new string[3] {
         "(picks a gender at random for you)",
-        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  maleCivilian.StartingSheet.BaseHitPoints,  maleCivilian.StartingSheet.BaseDefence.Value,  maleCivilian.StartingSheet.UnarmedAttack.DamageValue),
-        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  femaleCivilian.StartingSheet.BaseHitPoints,  femaleCivilian.StartingSheet.BaseDefence.Value,  femaleCivilian.StartingSheet.UnarmedAttack.DamageValue)
+        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  maleStats.BaseHitPoints,  maleStats.BaseDefence.Value,  maleStats.UnarmedAttack.DamageValue),
+        string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  femaleStats.BaseHitPoints,  femaleStats.BaseDefence.Value,  femaleStats.UnarmedAttack.DamageValue)
       };
       const int gx = 0;
       int gy = 0;
@@ -1064,7 +1058,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         gy = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Living - Choose Gender", Session.DescGameMode(Session.Get.GameMode)), gx, gy, new Color?());
-        gy += 28;
+        gy += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
@@ -1073,9 +1067,9 @@ namespace djack.RogueSurvivor.Engine
         switch (currentChoice) {
           case 0:
             bool isMale = roller.RollChance(50);
-            gy += 14;
+            gy += BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.White, string.Format("Gender : {0}.", isMale ? "Male" : "Female"), gx, gy, new Color?());
-            gy += 14;
+            gy += BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy, new Color?());
             m_UI.UI_Repaint();
             if (WaitYesOrNo()) return isMale;
@@ -1113,7 +1107,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_Clear(Color.Black);
         gy1 = 0;
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New Undead - Choose Type", Session.DescGameMode(Session.Get.GameMode)), gx, gy1, new Color?());
-        gy1 += 28;
+        gy1 += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
@@ -1122,9 +1116,9 @@ namespace djack.RogueSurvivor.Engine
         switch (currentChoice) {
           case 0:
             GameActors.IDs modelID = roller.Choose(undead).ID;
-            int gy3 = gy1 + 14;
+            int gy3 = gy1 + BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.White, string.Format("Type : {0}.", GameActors[modelID].Name), gx, gy3);
-            int gy4 = gy3 + 14;
+            int gy4 = gy3 + BOLD_LINE_SPACING;
             m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4);
             m_UI.UI_Repaint();
             if (WaitYesOrNo()) return modelID;
@@ -1149,16 +1143,16 @@ namespace djack.RogueSurvivor.Engine
         gy1 = 0;
         m_UI.UI_Clear(Color.Black);
         m_UI.UI_DrawStringBold(Color.Yellow, string.Format("[{0}] New {1} Character - Choose Starting Skill", Session.DescGameMode(Session.Get.GameMode), m_CharGen.IsMale ? "Male" : "Female"), gx, gy1, new Color?());
-        gy1 += 28;
+        gy1 += 2* BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGray, values, gx, ref gy1, 256);
         DrawFootnote(Color.White, "cursor to move, ENTER to select, ESC to cancel");
         return null;
       });
       Func<int, Skills.IDs?> choice_handler = (currentChoice => {
         Skills.IDs skID = currentChoice != 0 ? (Skills.IDs) (currentChoice - 1) : Skills.RollLiving(roller);
-        int gy3 = gy1 + 14;
+        int gy3 = gy1 + BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, string.Format("Skill : {0}.", Skills.Name(skID)), gx, gy3, new Color?());
-        int gy4 = gy3 + 14;
+        int gy4 = gy3 + BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Is that OK? Y to confirm, N to cancel.", gx, gy4, new Color?());
         m_UI.UI_Repaint();
         if (WaitYesOrNo()) return skID;
@@ -1196,16 +1190,16 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleHiScores(bool saveToTextfile)
     {
-      TextFile textFile = (saveToTextfile ? new TextFile() : null);
+      var textFile = (saveToTextfile ? new TextFile() : null);
       m_UI.UI_Clear(Color.Black);
       DrawHeader();
-      int gy1 = 14;
+      int gy1 = BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.Yellow, "Hi Scores", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, "Rank | Name, Skills, Death       |  Score |Difficulty|Survival|  Kills |Achievm.|      Game Time | Playing time", 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       if (saveToTextfile) {
         textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
         textFile.Append("Hi Scores");
@@ -1214,15 +1208,15 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < m_HiScoreTable.Count; ++index) {
         Color color = index == 0 ? Color.LightYellow : (index == 1 ? Color.LightCyan : (index == 2 ? Color.LightGreen : Color.DimGray));
         m_UI.UI_DrawStringBold(color, hr, 0, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         HiScore hiScore = m_HiScoreTable[index];
         string str = string.Format("{0,3}. | {1,-25} | {2,6} |     {3,3}% | {4,6} | {5,6} | {6,6} | {7,14} | {8}", index + 1, TruncateString(hiScore.Name, 25), hiScore.TotalPoints, hiScore.DifficultyPercent, hiScore.SurvivalPoints, hiScore.KillPoints, hiScore.AchievementPoints, new WorldTime(hiScore.TurnSurvived).ToString(), TimeSpanToString(hiScore.PlayingTime));
         m_UI.UI_DrawStringBold(color, str, 0, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", hiScore.SkillsDescription), 0, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(color, string.Format("     | {0}.", hiScore.Death), 0, gy1, new Color?());
-        gy1 += 14;
+        gy1 += BOLD_LINE_SPACING;
         if (saveToTextfile) {
           textFile.Append(hr);
           textFile.Append(str);
@@ -1233,7 +1227,7 @@ namespace djack.RogueSurvivor.Engine
       string scoreTextFilePath = GetUserHiScoreTextFilePath();
       if (saveToTextfile) textFile.Save(scoreTextFilePath);
       m_UI.UI_DrawStringBold(Color.White, hr_plus, 0, gy1, new Color?());
-      gy1 += 14;
+      gy1 += BOLD_LINE_SPACING;
       if (saveToTextfile) m_UI.UI_DrawStringBold(Color.White, scoreTextFilePath, 0, gy1, new Color?());
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
@@ -1431,9 +1425,9 @@ namespace djack.RogueSurvivor.Engine
         DrawFootnote(Color.White, "cursor to move and change values, R to restore previous values, ESC to save and leave");
         return null;
       });
-      Func<int, bool?> choice_handler = (currentChoice => {
-        return null;
-      });
+
+      bool? choice_handler(int currentChoice) { return null; };
+
       Func<Keys,int,bool?> failover_handler = ((k,currentChoice) => {
         switch (k) {
           case Keys.Left:
@@ -1685,7 +1679,7 @@ namespace djack.RogueSurvivor.Engine
       // then generate current keybindings
       // then read off position from reference array
       // screen layout may fail with more than 51 entries; at 49 entries currently
-      KeyValuePair<string, PlayerCommand>[] command_labels = new KeyValuePair<string, PlayerCommand>[] {
+      var command_labels = new KeyValuePair<string, PlayerCommand>[] {
           new KeyValuePair< string,PlayerCommand >("Move N", PlayerCommand.MOVE_N),
           new KeyValuePair< string,PlayerCommand >("Move NE", PlayerCommand.MOVE_NE),
           new KeyValuePair< string,PlayerCommand >("Move E", PlayerCommand.MOVE_E),
@@ -1746,13 +1740,13 @@ namespace djack.RogueSurvivor.Engine
         gy = 0;
         m_UI.UI_Clear(Color.Black);
         DrawHeader();
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.Yellow, "Redefine keys", 0, gy, new Color?());
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
         DrawMenuOrOptions(currentChoice, Color.White, entries, Color.LightGreen, values, gx, ref gy, 256);
         if (s_KeyBindings.CheckForConflict()) {
           m_UI.UI_DrawStringBold(Color.Red, "Conflicting keys. Please redefine the keys so the commands don't overlap.", gx, gy, new Color?());
-          gy += 14;
+          gy += BOLD_LINE_SPACING;
         }
         DrawFootnote(Color.White, "cursor to move, ENTER to rebind a key, ESC to save and leave");
         return null;
@@ -1770,7 +1764,7 @@ namespace djack.RogueSurvivor.Engine
         };
         if (0>currentChoice || command_labels.Length<=currentChoice) throw new InvalidOperationException("unhandled selected");
         PlayerCommand command = command_labels[currentChoice].Value;
-        RogueGame.s_KeyBindings.Set(command, key);
+        s_KeyBindings.Set(command, key);
         return null;
       });
       do ChoiceMenu(choice_handler, setup_handler, entries.Length);
@@ -1953,8 +1947,8 @@ namespace djack.RogueSurvivor.Engine
       if ((sim & RogueGame.SimFlags.LODETAIL_TURN) == RogueGame.SimFlags.NOT_SIMULATING) {
         if (Session.Get.HasCorpses && map.CountCorpses > 0) {
 #region corpses: decide who zombify or rots.
-          List<Corpse> corpseList1 = new List<Corpse>(map.CountCorpses);
-          List<Corpse> corpseList2 = new List<Corpse>(map.CountCorpses);
+          var corpseList1 = new List<Corpse>(map.CountCorpses);
+          var corpseList2 = new List<Corpse>(map.CountCorpses);
           foreach (Corpse corpse in map.Corpses) {
             if (m_Rules.RollChance(Rules.CorpseZombifyChance(corpse, map.LocalTime, true))) {
               corpseList1.Add(corpse);
@@ -1963,7 +1957,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           if (corpseList1.Count > 0) {
-            List<Corpse> corpseList3 = new List<Corpse>(corpseList1.Count);
+            var corpseList3 = new List<Corpse>(corpseList1.Count);
             foreach (Corpse corpse in corpseList1) {
               if (!map.HasActorAt(corpse.Position)) {
                 corpseList3.Add(corpse);
@@ -2227,7 +2221,7 @@ namespace djack.RogueSurvivor.Engine
         // lights and normal trackers
         foreach (Actor actor in map.Actors) {
           Item equippedItem = actor.GetEquippedItem(DollPart.LEFT_HAND);
-          if (null != equippedItem && equippedItem is BatteryPowered tmp && 0 < tmp.Batteries) {
+          if (equippedItem is BatteryPowered tmp && 0 < tmp.Batteries) {
             --tmp.Batteries;
              if (tmp.Batteries <= 0 && ForceVisibleToPlayer(actor))
                AddMessage(MakeMessage(actor, string.Format((equippedItem is ItemLight ? ": {0} light goes off." : ": {0} goes off."), equippedItem.TheName)));
@@ -2268,8 +2262,7 @@ namespace djack.RogueSurvivor.Engine
 
                 // leave in for formal correctness.
                 Point? inventoryPosition = map.GetGroundInventoryPosition(groundInventory);
-                if (!inventoryPosition.HasValue)
-                  throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
+                if (null == inventoryPosition) throw new InvalidOperationException("explosives : GetGroundInventoryPosition returned null point");
 
                 foreach (ItemPrimedExplosive exp in tmp) {
                   if (0 >= exp.FuseTimeLeft) {
@@ -2358,7 +2351,8 @@ namespace djack.RogueSurvivor.Engine
     static private int CountFoodItemsNutrition(Map map)
     {
       int num1 = 0;
-      Func<ItemFood,int> nutrition = (food => food.NutritionAt(map.LocalTime.TurnCounter));
+      int nutrition(ItemFood food) { return food.NutritionAt(map.LocalTime.TurnCounter); };
+
       foreach (Inventory groundInventory in map.GroundInventories) {
         List<ItemFood> tmp = groundInventory.GetItemsByType<ItemFood>();
         if (null == tmp) continue;
@@ -2446,9 +2440,8 @@ namespace djack.RogueSurvivor.Engine
           if (a.IsWithRefugees && !a.IsSpawned) return !a.TheActor.IsDead;
           return false;
         });
-        if (local_6 == null || local_6.Length <= 0) return;
-        int local_7 = m_Rules.Roll(0, local_6.Length);
-        FireEvent_UniqueActorArrive(district.EntryMap, local_6[local_7]);
+        if (0 >= (local_6?.Length ?? 0)) return;
+        FireEvent_UniqueActorArrive(district.EntryMap, m_Rules.DiceRoller.Choose(local_6));
       }
     }
 
@@ -2597,8 +2590,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_BikersRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.BIKERS, map.District, map.LocalTime.TurnCounter);
-      GameGangs.IDs gangId = m_Rules.DiceRoller.Choose(GameGangs.BIKERS);
-      Actor actor = SpawnNewBikerLeader(map, gangId);
+      Actor actor = SpawnNewBikerLeader(map, m_Rules.DiceRoller.Choose(GameGangs.BIKERS));
       if (actor == null) return;
       for (int index = 0; index < BIKERS_RAID_SIZE-1; ++index) {
         Actor other = SpawnNewBiker(actor);
@@ -2626,8 +2618,7 @@ namespace djack.RogueSurvivor.Engine
     private void FireEvent_GangstasRaid(Map map)
     {
       Session.Get.SetLastRaidTime(RaidType.GANGSTA, map.District, map.LocalTime.TurnCounter);
-      GameGangs.IDs gangId = m_Rules.DiceRoller.Choose(GameGangs.GANGSTAS);
-      Actor actor = SpawnNewGangstaLeader(map, gangId);
+      Actor actor = SpawnNewGangstaLeader(map, m_Rules.DiceRoller.Choose(GameGangs.GANGSTAS));
       if (actor == null) return;
       for (int index = 0; index < GANGSTAS_RAID_SIZE-1; ++index) {
         Actor other = SpawnNewGangsta(actor);
@@ -3221,19 +3212,15 @@ namespace djack.RogueSurvivor.Engine
       AddMessage(new Data.Message("Taking screenshot...", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
       string screenshot = DoTakeScreenshot();
-      if (screenshot == null)
-        AddMessage(new Data.Message("Could not save screenshot.", Session.Get.WorldTime.TurnCounter, Color.Red));
-      else
-        AddMessage(new Data.Message(string.Format("screenshot {0} saved.", screenshot), Session.Get.WorldTime.TurnCounter, Color.Yellow));
+      AddMessage(null == screenshot ? new Data.Message("Could not save screenshot.", Session.Get.WorldTime.TurnCounter, Color.Red)
+                                    : new Data.Message(string.Format("screenshot {0} saved.", screenshot), Session.Get.WorldTime.TurnCounter, Color.Yellow));
       RedrawPlayScreen();
     }
 
     private string DoTakeScreenshot()
     {
       string newScreenshotName = GetUserNewScreenshotName();
-      if (m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) != null)
-        return newScreenshotName;
-      return null;
+      return null != m_UI.UI_SaveScreenshot(ScreenshotFilePath(newScreenshotName)) ? newScreenshotName : null;
     }
 
     private void HandleHelpMode()
@@ -3315,7 +3302,7 @@ namespace djack.RogueSurvivor.Engine
       gy1 += 14;
       m_UI.UI_DrawStringBold(Color.White, "preparing...", 0, gy1, new Color?());
       m_UI.UI_Repaint();
-      List<string> stringList = new List<string>();
+      var stringList = new List<string>();
       for (int index = 0; index < (int)AdvisorHint._COUNT; ++index) {
         GetAdvisorHintText((AdvisorHint) index, out string title, out string[] body);
         stringList.Add(string.Format("HINT {0} : {1}", index, title));
@@ -3599,7 +3586,7 @@ namespace djack.RogueSurvivor.Engine
       bool details(int index) {
         Gameplay.GameItems.IDs item_type = item_classes[index];
         Dictionary<Location, int> catalog = Player.Controller.WhereIs(item_type);
-        List<string> tmp = new List<string>();
+        var tmp = new List<string>();
         // for the same map, try to be useful by putting the "nearest" items first
         var distances = new Dictionary<string, int>();
         foreach(var loc_qty in catalog) {
@@ -3641,7 +3628,7 @@ namespace djack.RogueSurvivor.Engine
       string label(int index) { return allies[index].Name + (allies[index].HasLeader ? "(leader " + allies[index].Leader.Name + ")" : ""); }
       bool details(int index) {
         Actor a = allies[index];
-        List<string> tmp = new List<string>{a.Name};
+        var tmp = new List<string>{a.Name};
         ItemMeleeWeapon best_melee = a.GetBestMeleeWeapon();
         tmp.Add("melee: "+(null == best_melee ? "unarmed" : best_melee.Model.ID.ToString()));
         List<ItemRangedWeapon> ranged = a.Inventory.GetItemsByType<ItemRangedWeapon>();
@@ -3693,7 +3680,7 @@ namespace djack.RogueSurvivor.Engine
 
     private void HandleFactionInfo()
     {
-      List<string> options = new List<string> { "Status", "Enemies by aggression" };
+      var options = new List<string> { "Status", "Enemies by aggression" };
 
       string label(int index) { return options[index]; };
       bool details(int index) {
@@ -4444,7 +4431,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag2 = false;
       if (player.GetEquippedWeapon() is ItemGrenade || player.GetEquippedWeapon() is ItemGrenadePrimed)
         return HandlePlayerThrowGrenade(player);
-      ItemRangedWeapon itemRangedWeapon = player.GetEquippedWeapon() as ItemRangedWeapon;
+      var itemRangedWeapon = player.GetEquippedWeapon() as ItemRangedWeapon;
       if (itemRangedWeapon == null) {
         AddMessage(MakeErrorMessage("No weapon ready to fire."));
         RedrawPlayScreen();
@@ -4463,7 +4450,7 @@ namespace djack.RogueSurvivor.Engine
       }
       Attack attack = player.RangedAttack(0);
       int index = 0;
-      List<Point> LoF = new List<Point>(attack.Range);
+      var LoF = new List<Point>(attack.Range);
       FireMode mode = FireMode.DEFAULT;
       do {
         Actor actor = enemiesInFov[index];
@@ -4541,8 +4528,8 @@ namespace djack.RogueSurvivor.Engine
 
     private bool HandlePlayerThrowGrenade(Actor player)
     {
-      ItemGrenade itemGrenade = player.GetEquippedWeapon() as ItemGrenade;
-      ItemGrenadePrimed itemGrenadePrimed = player.GetEquippedWeapon() as ItemGrenadePrimed;
+      var itemGrenade = player.GetEquippedWeapon() as ItemGrenade;
+      var itemGrenadePrimed = player.GetEquippedWeapon() as ItemGrenadePrimed;
       if (itemGrenade == null && itemGrenadePrimed == null) {
         AddMessage(MakeErrorMessage("No grenade to throw."));
         RedrawPlayScreen();
@@ -4554,7 +4541,7 @@ namespace djack.RogueSurvivor.Engine
       Map map = player.Location.Map;
       Point point1 = player.Location.Position;
       int num = player.MaxThrowRange(itemGrenadeModel.MaxThrowDistance);
-      List<Point> LoF = new List<Point>();
+      var LoF = new List<Point>();
       do {
         LoF.Clear();
         bool flag3 = player.CanThrowTo(point1, out string reason, LoF);
@@ -5340,7 +5327,7 @@ namespace djack.RogueSurvivor.Engine
       bool flag1 = true;
       bool flag2 = false;
       Map map1 = player.Location.Map;
-      Point? nullable = new Point?();
+      Point? nullable = null;
       Color color = Color.White;
       do {
         ClearOverlays();
@@ -5650,14 +5637,11 @@ namespace djack.RogueSurvivor.Engine
         case AdvisorHint.SPRAYS_PAINT: return Player.Inventory.Has<ItemSprayPaint>();
         case AdvisorHint.SPRAYS_SCENT: return Player.Inventory.Has<ItemSprayScent>();
         case AdvisorHint.WEAPON_FIRE:
-          ItemRangedWeapon itemRangedWeapon = Player.GetEquippedWeapon() as ItemRangedWeapon;
-          if (itemRangedWeapon == null)
-            return false;
-          return itemRangedWeapon.Ammo >= 0;
+          return 0 < ((Player.GetEquippedWeapon() as ItemRangedWeapon)?.Ammo ?? 0);
         case AdvisorHint.WEAPON_RELOAD:
           if (!(Player.GetEquippedWeapon() is ItemRangedWeapon)) return false;
           Inventory inventory6 = Player.Inventory;
-          if (inventory6 == null || inventory6.IsEmpty) return false;
+          if (inventory6?.IsEmpty ?? true) return false;
           foreach (Item it in inventory6.Items) {
             if (it is ItemAmmo && Player.CanUse(it)) return true;
           }
@@ -6234,7 +6218,7 @@ namespace djack.RogueSurvivor.Engine
       m_UI.UI_PeekKey();
       Point mousePosition = m_UI.UI_GetMousePosition();
       mousePos = new Point(-1, -1);
-      mouseButtons = new MouseButtons?();
+      mouseButtons = null;
       do {
         KeyEventArgs keyEventArgs = m_UI.UI_PeekKey();
         if (keyEventArgs != null) {
@@ -6243,23 +6227,19 @@ namespace djack.RogueSurvivor.Engine
         }
         mousePos = m_UI.UI_GetMousePosition();
         mouseButtons = m_UI.UI_PeekMouseButtons();
-      }
-      while (mousePos == mousePosition && !mouseButtons.HasValue);
+      } while (mousePos == mousePosition && !mouseButtons.HasValue);
       key = null;
     }
 
     private Direction WaitDirectionOrCancel()
     {
       Direction direction;
-      do
-      {
+      do {
         KeyEventArgs key = m_UI.UI_WaitKey();
         PlayerCommand command = InputTranslator.KeyToCommand(key);
-        if (key.KeyCode == Keys.Escape)
-          return null;
-        direction = RogueGame.CommandToDirection(command);
-      }
-      while (direction == null);
+        if (key.KeyCode == Keys.Escape) return null;
+        direction = CommandToDirection(command);
+      } while (null == direction);
       return direction;
     }
 
@@ -6353,28 +6333,23 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeActor(Actor actor)
     {
-      List<string> stringList = new List<string>(10);
-      if (actor.Faction != null) {
-        if (actor.IsInAGang)
-          stringList.Add(string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, actor.GangID.Name()));
-        else
-          stringList.Add(string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
-      } else
-        stringList.Add(string.Format("{0}.", actor.Name.Capitalize()));
+      var stringList = new List<string>(10);
+      if (null != actor.Faction) {
+        stringList.Add(actor.IsInAGang ? string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, actor.GangID.Name())
+                                       : string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
+      } else stringList.Add(string.Format("{0}.", actor.Name.Capitalize()));
+
       stringList.Add(string.Format("{0}.", actor.Model.Name.Capitalize()));
       stringList.Add(string.Format("{0} since {1}.", actor.Model.Abilities.IsUndead ? "Undead" : "Staying alive", new WorldTime(actor.SpawnTime).ToString()));
       OrderableAI aiController = actor.Controller as OrderableAI;
       if (aiController?.Order != null) stringList.Add(string.Format("Order : {0}.", aiController.Order.ToString()));
       if (actor.HasLeader) {
         if (actor.Leader.IsPlayer) {
-          if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD)
-            stringList.Add("Trust : BOND.");
-          else if (actor.TrustInLeader >= Rules.TRUST_MAX)
-            stringList.Add("Trust : MAX.");
-          else
-            stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
-          if (aiController is OrderableAI orderableAi && orderableAi.DontFollowLeader)
-            stringList.Add("Ordered to not follow you.");
+          if (actor.TrustInLeader >= Actor.TRUST_BOND_THRESHOLD) stringList.Add("Trust : BOND.");
+          else if (actor.TrustInLeader >= Rules.TRUST_MAX) stringList.Add("Trust : MAX.");
+          else stringList.Add(string.Format("Trust : {0}/T:{1}-B:{2}.", actor.TrustInLeader, Actor.TRUST_TRUSTING_THRESHOLD, Rules.TRUST_MAX));
+
+          if (aiController is OrderableAI orderableAi && orderableAi.DontFollowLeader) stringList.Add("Ordered to not follow you.");
           stringList.Add(string.Format("Foo : {0} {1}h", actor.FoodPoints, actor.HoursUntilHungry));
           stringList.Add(string.Format("Slp : {0} {1}h", actor.SleepPoints, actor.HoursUntilSleepy));
           stringList.Add(string.Format("San : {0} {1}h", actor.Sanity, actor.HoursUntilUnstable));
@@ -6444,7 +6419,7 @@ namespace djack.RogueSurvivor.Engine
 
       // main stat block
       stringList.Add(string.Format("Spd : {0:F2}", (double)actor.Speed / Rules.BASE_SPEED));
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       int num1 = actor.MaxHPs;
       stringBuilder.Append(actor.HitPoints != num1
                          ? string.Format("HP  : {0:D2}/{1:D2}", actor.HitPoints, num1)
@@ -6517,13 +6492,13 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeMapObject(MapObject obj, Map map, Point mapPos)
     {
-      List<string> stringList = new List<string>(4) { string.Format("{0}.", obj.AName) };
+      var stringList = new List<string>(4) { string.Format("{0}.", obj.AName) };
       if (obj.IsJumpable) stringList.Add("Can be jumped on.");
       if (obj.IsCouch) stringList.Add("Is a couch.");
       if (obj.GivesWood) stringList.Add("Can be dismantled for wood.");
       if (obj.IsMovable) stringList.Add("Can be moved.");
       if (obj.StandOnFovBonus) stringList.Add("Increases view range.");
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       if (obj.BreakState == MapObject.Break.BROKEN) stringBuilder.Append("Broken! ");
       if (obj.FireState == MapObject.Fire.ONFIRE) stringBuilder.Append("On fire! ");
       else if (obj.FireState == MapObject.Fire.ASHES) stringBuilder.Append("Burnt to ashes! ");
@@ -6563,11 +6538,8 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeCorpses(List<Corpse> corpses)
     {
-      List<string> stringList = new List<string>(corpses.Count + 2);
-      if (corpses.Count > 1)
-        stringList.Add("There are corpses there...");
-      else
-        stringList.Add("There is a corpse here.");
+      var stringList = new List<string>(corpses.Count + 2);
+      stringList.Add(1 < corpses.Count ? "There are corpses there..." : "There is a corpse here.");
       stringList.Add(" ");
       foreach (Corpse corpse in corpses)
         stringList.Add(string.Format("- Corpse of {0}.", corpse.DeadGuy.Name));
@@ -6612,7 +6584,7 @@ namespace djack.RogueSurvivor.Engine
     private string[] DescribeCorpseLong(Corpse c, bool isInPlayerTile)
     {
       int skillLevel = Player.Sheet.SkillTable.GetSkillLevel(Skills.IDs.NECROLOGY);
-      List<string> stringList = new List<string>(10){
+      var stringList = new List<string>(10){
         string.Format("Corpse of {0}.", c.DeadGuy.Name),
         " ",
         string.Format("Death     : {0}.", (skillLevel > 0 ? WorldTime.MakeTimeDurationMessage(Session.Get.WorldTime.TurnCounter - c.Turn) : "???")),
@@ -6638,21 +6610,14 @@ namespace djack.RogueSurvivor.Engine
     static private string DescribeItemShort(Item it)
     {
       string str = it.Quantity > 1 ? it.Model.PluralName : it.AName;
-      if (it is ItemFood) {
-        ItemFood food = it as ItemFood;
-        if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
-          str += " (spoiled)";
-        else if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter))
-          str += " (expired)";
-      } else if (it is ItemRangedWeapon) {
-        ItemRangedWeapon itemRangedWeapon = it as ItemRangedWeapon;
+      if (it is ItemFood food) {
+        if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter)) str += " (spoiled)";
+        else if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter)) str += " (expired)";
+      } else if (it is ItemRangedWeapon itemRangedWeapon) {
         str += string.Format(" ({0}/{1})", itemRangedWeapon.Ammo, itemRangedWeapon.Model.MaxAmmo);
-      } else if (it is ItemTrap) {
-        ItemTrap itemTrap = it as ItemTrap;
-        if (itemTrap.IsActivated)
-          str += "(activated)";
-        if (itemTrap.IsTriggered)
-          str += "(triggered)";
+      } else if (it is ItemTrap itemTrap) {
+        if (itemTrap.IsActivated) str += "(activated)";
+        if (itemTrap.IsTriggered) str += "(triggered)";
       }
       if (it.Quantity > 1) return string.Format("{0} {1}", it.Quantity, str);
       return str;
@@ -6660,69 +6625,48 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemLong(Item it, bool isPlayerInventory)
     {
-      List<string> stringList = new List<string>();
+      var stringList = new List<string>();
       if (it.Model.IsStackable)
         stringList.Add(string.Format("{0} {1}/{2}", DescribeItemShort(it), it.Quantity, it.Model.StackingLimit));
       else
         stringList.Add(DescribeItemShort(it));
-      if (it.Model.IsUnbreakable)
-        stringList.Add("Unbreakable.");
+      if (it.Model.IsUnbreakable) stringList.Add("Unbreakable.");
       string str = null;
-      if (it is ItemWeapon)
-      {
+      if (it is ItemWeapon) {
         stringList.AddRange(DescribeItemWeapon(it as ItemWeapon));
-        if (it is ItemRangedWeapon)
-          str = string.Format("to fire : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
+        if (it is ItemRangedWeapon) str = string.Format("to fire : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
-      else if (it is ItemFood)
-        stringList.AddRange(DescribeItemFood(it as ItemFood));
-      else if (it is ItemMedicine)
-        stringList.AddRange(DescribeItemMedicine(it as ItemMedicine));
-      else if (it is ItemBarricadeMaterial)
-      {
+      else if (it is ItemFood) stringList.AddRange(DescribeItemFood(it as ItemFood));
+      else if (it is ItemMedicine) stringList.AddRange(DescribeItemMedicine(it as ItemMedicine));
+      else if (it is ItemBarricadeMaterial) {
         stringList.AddRange(DescribeItemBarricadeMaterial(it as ItemBarricadeMaterial));
         str = string.Format("to use : <{0}>/<{1}>/<{2}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.BARRICADE_MODE).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_SMALL_FORTIFICATION).ToString(), RogueGame.s_KeyBindings.Get(PlayerCommand.BUILD_LARGE_FORTIFICATION).ToString());
-      }
-      else if (it is ItemBodyArmor)
-        stringList.AddRange(DescribeItemBodyArmor(it as ItemBodyArmor));
-      else if (it is ItemSprayPaint)
-      {
+      } else if (it is ItemBodyArmor) stringList.AddRange(DescribeItemBodyArmor(it as ItemBodyArmor));
+      else if (it is ItemSprayPaint) {
         stringList.AddRange(DescribeItemSprayPaint(it as ItemSprayPaint));
         str = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
-      }
-      else if (it is ItemSprayScent)
-      {
+      } else if (it is ItemSprayScent) {
         stringList.AddRange(DescribeItemSprayScent(it as ItemSprayScent));
         str = string.Format("to spray : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.USE_SPRAY).ToString());
-      }
-      else if (it is ItemLight)
-        stringList.AddRange(DescribeItemLight(it as ItemLight));
-      else if (it is ItemTracker)
-        stringList.AddRange(DescribeItemTracker(it as ItemTracker));
-      else if (it is ItemAmmo)
-      {
+      } else if (it is ItemLight) stringList.AddRange(DescribeItemLight(it as ItemLight));
+      else if (it is ItemTracker) stringList.AddRange(DescribeItemTracker(it as ItemTracker));
+      else if (it is ItemAmmo) {
         stringList.AddRange(DescribeItemAmmo(it as ItemAmmo));
         str = "to reload : left-click.";
-      }
-      else if (it is ItemExplosive)
-      {
+      } else if (it is ItemExplosive) {
         stringList.AddRange(DescribeItemExplosive(it as ItemExplosive));
         str = string.Format("to throw : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.FIRE_MODE).ToString());
       }
-      else if (it is ItemTrap)
-        stringList.AddRange(DescribeItemTrap(it as ItemTrap));
-      else if (it is ItemEntertainment)
-        stringList.AddRange(DescribeItemEntertainment(it as ItemEntertainment));
+      else if (it is ItemTrap) stringList.AddRange(DescribeItemTrap(it as ItemTrap));
+      else if (it is ItemEntertainment) stringList.AddRange(DescribeItemEntertainment(it as ItemEntertainment));
       stringList.Add(" ");
       stringList.Add(it.Model.FlavorDescription);
-      if (isPlayerInventory)
-      {
+      if (isPlayerInventory) {
         stringList.Add(" ");
         stringList.Add("----");
         stringList.Add(string.Format("to give : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.GIVE_ITEM).ToString()));
         stringList.Add(string.Format("to trade : <{0}>.", RogueGame.s_KeyBindings.Get(PlayerCommand.INITIATE_TRADE).ToString()));
-        if (str != null)
-          stringList.Add(str);
+        if (str != null) stringList.Add(str);
       }
       return stringList.ToArray();
     }
@@ -6730,7 +6674,7 @@ namespace djack.RogueSurvivor.Engine
     static private string[] DescribeItemExplosive(ItemExplosive ex)
     {
       ItemExplosiveModel itemExplosiveModel = ex.Model;
-      List<string> stringList = new List<string>{ "> explosive" };
+      var stringList = new List<string>{ "> explosive" };
       if (itemExplosiveModel.BlastAttack.CanDamageObjects) stringList.Add("Can damage objects.");
       if (itemExplosiveModel.BlastAttack.CanDestroyWalls) stringList.Add("Can destroy walls.");
       ItemPrimedExplosive primed = ex as ItemPrimedExplosive;
@@ -6739,7 +6683,7 @@ namespace djack.RogueSurvivor.Engine
       else
         stringList.Add(string.Format("Fuse          : {0} turn(s)", itemExplosiveModel.FuseDelay));
       stringList.Add(string.Format("Blast radius  : {0}", itemExplosiveModel.BlastAttack.Radius));
-      StringBuilder stringBuilder = new StringBuilder();
+      var stringBuilder = new StringBuilder();
       for (int distance = 0; distance <= itemExplosiveModel.BlastAttack.Radius; ++distance)
         stringBuilder.Append(string.Format("{0};", itemExplosiveModel.BlastAttack.DamageAt(distance)));
       stringList.Add(string.Format("Blast damages : {0}", stringBuilder.ToString()));
@@ -6759,7 +6703,7 @@ namespace djack.RogueSurvivor.Engine
     static private string[] DescribeItemWeapon(ItemWeapon w)
     {
       ItemWeaponModel itemWeaponModel = w.Model;
-      List<string> stringList = new List<string>{
+      var stringList = new List<string>{
         "> weapon",
         string.Format("Atk : +{0}", itemWeaponModel.Attack.HitValue),
         string.Format("Dmg : +{0}", itemWeaponModel.Attack.DamageValue),
@@ -6769,7 +6713,7 @@ namespace djack.RogueSurvivor.Engine
         if (melee.IsFragile) stringList.Add("Breaks easily.");
         if (melee.Model.IsMartialArts) stringList.Add("Uses martial arts.");
       } else if (w is ItemRangedWeapon rw) {
-        ItemRangedWeaponModel rangedWeaponModel = w.Model as ItemRangedWeaponModel;
+        ItemRangedWeaponModel rangedWeaponModel = rw.Model;
         if (rangedWeaponModel.IsFireArm)
           stringList.Add("> firearm");
         else if (rangedWeaponModel.IsBow)
@@ -6796,7 +6740,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemFood(ItemFood f)
     {
-      List<string> stringList = new List<string>{ "> food" };
+      var stringList = new List<string>{ "> food" };
       if (f.IsPerishable) {
         if (f.IsStillFreshAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("Fresh.");
         else if (f.IsExpiredAt(Session.Get.WorldTime.TurnCounter)) stringList.Add("*Expired*");
@@ -6815,7 +6759,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemMedicine(ItemMedicine med)
     {
-      List<string> stringList = new List<string>{ "> medicine" };
+      var stringList = new List<string>{ "> medicine" };
       ItemMedicineModel itemMedicineModel = med.Model;
       int num1 = Player == null ? itemMedicineModel.Healing : Rules.ActorMedicineEffect(Player, itemMedicineModel.Healing);
       if (num1 == itemMedicineModel.Healing)
@@ -6849,7 +6793,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemBarricadeMaterial(ItemBarricadeMaterial bm)
     {
-      List<string> stringList = new List<string>{ "> barricade material" };
+      var stringList = new List<string>{ "> barricade material" };
       int barricade_value = bm.Model.BarricadingValue;
       int num = Player == null ? barricade_value : Rules.ActorBarricadingPoints(Player, barricade_value);
       if (num == barricade_value)
@@ -6861,7 +6805,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemBodyArmor(ItemBodyArmor b)
     {
-      List<string> lines = new List<string>{
+      var lines = new List<string>{
         "> body armor",
         string.Format("Protection vs Hits  : +{0}", b.Protection_Hit),
         string.Format("Protection vs Shots : +{0}", b.Protection_Shot),
@@ -6871,8 +6815,8 @@ namespace djack.RogueSurvivor.Engine
       if (b.IsNeutral) return lines.ToArray();
 
       // following general code is to be retained as-is; this is not a CPU-critical path.
-      List<string> unsuspicious = new List<string>(1);
-      List<string> suspicious = new List<string>(4);    // should be # of gangs
+      var unsuspicious = new List<string>(1);
+      var suspicious = new List<string>(4);    // should be # of gangs
       if (b.IsFriendlyForCops()) unsuspicious.Add("Cops");
       else if (b.IsHostileForCops()) suspicious.Add("Cops");
       foreach (GameGangs.IDs gangID in GameGangs.BIKERS) {
@@ -6896,7 +6840,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemSprayPaint(ItemSprayPaint sp)
     {
-      List<string> stringList = new List<string>{ "> spray paint" };
+      var stringList = new List<string>{ "> spray paint" };
       int max_paint = sp.Model.MaxPaintQuantity;
       if (sp.PaintQuantity < max_paint)
         stringList.Add(string.Format("Paint : {0}/{1}", sp.PaintQuantity, max_paint));
@@ -6907,7 +6851,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemSprayScent(ItemSprayScent sp)
     {
-      List<string> stringList = new List<string>{ "> spray scent" };
+      var stringList = new List<string>{ "> spray scent" };
       int max_spray = sp.Model.MaxSprayQuantity;
       if (sp.SprayQuantity < max_spray)
         stringList.Add(string.Format("Spray : {0}/{1}", sp.SprayQuantity, max_spray));
@@ -6918,7 +6862,7 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemLight(ItemLight lt)
     {
-      List<string> stringList = new List<string>{ "> light" };
+      var stringList = new List<string>{ "> light" };
       stringList.Add(DescribeBatteries(lt));
       stringList.Add(string.Format("FOV       : +{0}", lt.FovBonus));
       return stringList.ToArray();
@@ -6926,41 +6870,34 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemTracker(ItemTracker tr)
     {
-      List<string> stringList = new List<string>{ "> tracker" };
+      var stringList = new List<string>{ "> tracker" };
       stringList.Add(DescribeBatteries(tr));
       return stringList.ToArray();
     }
 
     static private string[] DescribeItemTrap(ItemTrap tr)
     {
-      List<string> stringList = new List<string>();
+      var stringList = new List<string>();
       ItemTrapModel itemTrapModel = tr.Model as ItemTrapModel;
       stringList.Add("> trap");
-      if (tr.IsActivated)
-        stringList.Add("** Activated! **");
-      if (itemTrapModel.IsOneTimeUse)
-        stringList.Add("Desactives when triggered.");
-      if (itemTrapModel.IsNoisy)
-        stringList.Add(string.Format("Makes {0} noise.", itemTrapModel.NoiseName));
-      if (itemTrapModel.UseToActivate)
-        stringList.Add("Use to activate.");
+      if (tr.IsActivated) stringList.Add("** Activated! **");
+      if (itemTrapModel.IsOneTimeUse) stringList.Add("Desactives when triggered.");
+      if (itemTrapModel.IsNoisy) stringList.Add(string.Format("Makes {0} noise.", itemTrapModel.NoiseName));
+      if (itemTrapModel.UseToActivate) stringList.Add("Use to activate.");
       stringList.Add(string.Format("Damage  : {0}", itemTrapModel.Damage));
       stringList.Add(string.Format("Trigger : {0}%", itemTrapModel.TriggerChance));
       stringList.Add(string.Format("Break   : {0}%", itemTrapModel.BreakChance));
-      if (itemTrapModel.BlockChance > 0)
-        stringList.Add(string.Format("Block   : {0}%", itemTrapModel.BlockChance));
-      if (itemTrapModel.BreakChanceWhenEscape > 0)
-        stringList.Add(string.Format("{0}% to break on escape", itemTrapModel.BreakChanceWhenEscape));
+      if (itemTrapModel.BlockChance > 0) stringList.Add(string.Format("Block   : {0}%", itemTrapModel.BlockChance));
+      if (itemTrapModel.BreakChanceWhenEscape > 0) stringList.Add(string.Format("{0}% to break on escape", itemTrapModel.BreakChanceWhenEscape));
       return stringList.ToArray();
     }
 
     static private string[] DescribeItemEntertainment(ItemEntertainment ent)
     {
-      List<string> stringList = new List<string>();
+      var stringList = new List<string>();
       ItemEntertainmentModel entertainmentModel = ent.Model;
       stringList.Add("> entertainment");
-      if (Player?.IsBoredOf(ent) ?? false)
-        stringList.Add("* BORED OF IT! *");
+      if (Player?.IsBoredOf(ent) ?? false) stringList.Add("* BORED OF IT! *");
       int ent_value = entertainmentModel.Value;
       int num = Player == null ? ent_value : Rules.ActorSanRegenValue(Player, ent_value);
       if (num != ent_value)
@@ -7396,12 +7333,12 @@ namespace djack.RogueSurvivor.Engine
         List<Point> pointList = null;
         if (Rules.IsAdjacent(from, fo.Location)) {
           pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo));
-          flag3 = pointList != null && pointList.Count != 0;
+          flag3 = (0 >= (pointList?.Count ?? 0));
         }
         if (!flag3) {
           (actorList ?? (actorList = new List<Actor>())).Add(fo);
         } else if (TryActorLeaveTile(fo)) {
-          Point position = pointList[m_Rules.Roll(0, pointList.Count)];
+          Point position = m_Rules.DiceRoller.Choose(pointList);
           to.Map.PlaceAt(fo, position);
           to.Map.MoveActorToFirstPosition(fo);
           OnActorEnterTile(fo);
@@ -7531,10 +7468,10 @@ namespace djack.RogueSurvivor.Engine
       target.MarkAsSelfDefenceFrom(aggressor);
       if (target.IsSleeping) return;
       Faction faction = target.Faction;
-      if (faction == GameFactions.ThePolice) {
+      if (GameFactions.ThePolice == faction) {
         if (aggressor.Model.Abilities.IsLawEnforcer && !Rules.IsMurder(aggressor, target)) return;
         OnMakeEnemyOfCop(aggressor, target, wasAlreadyEnemy);
-      } else if (faction == GameFactions.TheArmy) {
+      } else if (GameFactions.TheArmy == faction) {
         OnMakeEnemyOfSoldier(aggressor, target, wasAlreadyEnemy);
       }
       Actor leader = target.LiveLeader;
@@ -8576,8 +8513,7 @@ namespace djack.RogueSurvivor.Engine
     {
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       Item obj = it;
-      if (it is ItemTrap) {
-        ItemTrap itemTrap1 = it as ItemTrap;
+      if (it is ItemTrap itemTrap1) {
         ItemTrap itemTrap2 = itemTrap1.Clone();
         itemTrap2.IsActivated = itemTrap1.IsActivated;
         obj = itemTrap2;
@@ -8821,8 +8757,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(Rules.BASE_ACTION_COST);
       int num = actor.BarricadingMaterialNeedForFortification(isLarge);
       for (int index = 0; index < num; ++index) {
-        ItemBarricadeMaterial firstByType = actor.Inventory.GetFirst<ItemBarricadeMaterial>();
-        actor.Inventory.Consume(firstByType);
+        actor.Inventory.Consume(actor.Inventory.GetFirst<ItemBarricadeMaterial>());
       }
       Fortification fortification = isLarge ? BaseMapGenerator.MakeObjLargeFortification() : BaseMapGenerator.MakeObjSmallFortification();
       actor.Location.Map.PlaceAt(fortification, buildPos);  // XXX cross-map fortification change target
@@ -8885,8 +8820,7 @@ namespace djack.RogueSurvivor.Engine
       if (!actor.IsPlayer) {
         ItemMeleeWeapon bestMeleeWeapon = actor.GetBestMeleeWeapon();
         if (null!=bestMeleeWeapon) {
-          ItemMeleeWeapon equippedWeapon = actor.GetEquippedWeapon() as ItemMeleeWeapon;
-          if (equippedWeapon != bestMeleeWeapon) DoEquipItem(actor, bestMeleeWeapon);
+          if ((actor.GetEquippedWeapon() as ItemMeleeWeapon) != bestMeleeWeapon) DoEquipItem(actor, bestMeleeWeapon);
         }
       }
       Attack attack = actor.MeleeAttack();
@@ -9167,14 +9101,13 @@ namespace djack.RogueSurvivor.Engine
       }
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
       deadGuy.Location.Map.Remove(deadGuy);
-      if (deadGuy.Inventory != null && !deadGuy.Inventory.IsEmpty) {
+      if (!deadGuy.Inventory?.IsEmpty ?? false) {
         // the implicit police radio goes explicit on death, as a generic item
-        if ((int) GameFactions.IDs.ThePolice == deadGuy.Faction.ID) {
+        if (GameFactions.ThePolice == deadGuy.Faction) {
           Item it = BaseMapGenerator.MakeItemPoliceRadio();
           if (m_Rules.RollChance(ItemSurviveKillProbability(it, reason))) deadGuy.Location.Map.DropItemAt(BaseMapGenerator.MakeItemPoliceRadio(), deadGuy.Location.Position);
         }
-        Item[] objArray = deadGuy.Inventory.Items.ToArray();
-        foreach (Item it in objArray) {
+        foreach (Item it in deadGuy.Inventory.Items.ToArray()) {
           if (it.IsUseless) continue;   // if the drop command/behavior would trigger discard instead, omit
           if (it.Model.IsUnbreakable || it.IsUnique || m_Rules.RollChance(ItemSurviveKillProbability(it, reason)))
             DropItem(deadGuy, it);
@@ -9364,24 +9297,20 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Scoring.DeathPlace = zonesAt != null ? string.Format("{0} at {1}", Player.Location.Map.Name, zonesAt[0].Name) : Player.Location.Map.Name;
       Session.Get.Scoring.DeathReason = killer == null ? string.Format("Death by {0}", reason) : string.Format("{0} by {1} {2}", Rules.IsMurder(killer, Player) ? "Murdered" : "Killed", killer.Model.Name, killer.TheName);
       Session.Get.Scoring.AddEvent(Session.Get.WorldTime.TurnCounter, "Died.");
-      int index = m_Rules.Roll(0, GameTips.TIPS.Length);
-      AddOverlay(new OverlayPopup(new string[3]
-      {
+      AddOverlay(new OverlayPopup(new string[3] {
         "TIP OF THE DEAD",
         "Did you know that...",
-        GameTips.TIPS[index]
+        m_Rules.DiceRoller.Choose(GameTips.TIPS)
       }, Color.White, Color.White, POPUP_FILLCOLOR, new Point(0, 0)));
       ClearMessages();
       AddMessage(new Data.Message("**** YOU DIED! ****", Session.Get.WorldTime.TurnCounter, Color.Red));
-      if (killer != null)
-        AddMessage(new Data.Message(string.Format("Killer : {0}.", killer.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
+      if (killer != null) AddMessage(new Data.Message(string.Format("Killer : {0}.", killer.TheName), Session.Get.WorldTime.TurnCounter, Color.Red));
       AddMessage(new Data.Message(string.Format("Reason : {0}.", reason), Session.Get.WorldTime.TurnCounter, Color.Red));
       if (Player.Model.Abilities.IsUndead)
         AddMessage(new Data.Message("You die one last time... Game over!", Session.Get.WorldTime.TurnCounter, Color.Red));
       else
         AddMessage(new Data.Message("You join the realm of the undeads... Game over!", Session.Get.WorldTime.TurnCounter, Color.Red));
-      if (s_Options.IsPermadeathOn)
-        DeleteSavedGame(RogueGame.GetUserSave());
+      if (s_Options.IsPermadeathOn) DeleteSavedGame(GetUserSave());
       if (s_Options.IsDeathScreenshotOn) {
         RedrawPlayScreen();
         string screenshot = DoTakeScreenshot();
@@ -9409,7 +9338,7 @@ namespace djack.RogueSurvivor.Engine
       string @string = TimeSpanToString(Session.Get.Scoring.RealLifePlayingTime);
       Session.Get.Scoring.Side = Player.Model.Abilities.IsUndead ? DifficultySide.FOR_UNDEAD : DifficultySide.FOR_SURVIVOR;
       Session.Get.Scoring.DifficultyRating = Scoring.ComputeDifficultyRating(s_Options, Session.Get.Scoring.Side, Session.Get.Scoring.ReincarnationNumber);
-      TextFile textFile = new TextFile();
+      var textFile = new TextFile();
       textFile.Append(SetupConfig.GAME_NAME_CAPS+" "+SetupConfig.GAME_VERSION);
       textFile.Append("POST MORTEM");
       textFile.Append(string.Format("{0} was {1} and {2}.", name, Player.Model.Name.PrefixIndefiniteSingularArticle(), Player.Faction.MemberName.PrefixIndefiniteSingularArticle()));
@@ -9472,11 +9401,7 @@ namespace djack.RogueSurvivor.Engine
         textFile.Append(string.Format("{0} was humble. Or dirt poor.", str1));
       } else {
         foreach (Item it in Player.Inventory.Items) {
-          string str3 = DescribeItemShort(it);
-          if (it.IsEquipped)
-            textFile.Append(string.Format("- {0} (equipped).", str3));
-          else
-            textFile.Append(string.Format("- {0}.", str3));
+          textFile.Append(string.Format((it.IsEquipped ? "- {0} (equipped)." : "- {0}."), DescribeItemShort(it)));
         }
       }
       textFile.Append(" ");
@@ -9486,7 +9411,7 @@ namespace djack.RogueSurvivor.Engine
       if (0 >= count_followers) {
         textFile.Append(string.Format("{0} was doing fine alone. Or everyone else was dead.", str1));
       } else {
-        StringBuilder stringBuilder = new StringBuilder(string.Format("{0} was leading", str1));
+        var stringBuilder = new StringBuilder(string.Format("{0} was leading", str1));
         bool flag = true;
         int num = 0;
         foreach (Actor actor in Session.Get.Scoring.FollowersWhendDied) {
@@ -9585,7 +9510,7 @@ namespace djack.RogueSurvivor.Engine
         WaitEnter();
       }
       while (index < textFile.FormatedLines.Count);
-      StringBuilder stringBuilder1 = new StringBuilder();
+      var stringBuilder1 = new StringBuilder();
       if (Player.Sheet.SkillTable.Skills != null) {
         foreach (var skill in Player.Sheet.SkillTable.Skills)
           stringBuilder1.AppendFormat("{0}-{1} ", skill.Value, Skills.Name(skill.Key));
@@ -9737,10 +9662,8 @@ namespace djack.RogueSurvivor.Engine
           HandlePlayerDecideUpgrade(actor);
           continue;
         }
-        List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
-        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
-        if (upgrade2.HasValue)
-          actor.SkillUpgrade(upgrade2.Value);
+        Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, RollSkillsToUpgrade(actor, 300));
+        if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
       }
     }
 
@@ -9758,25 +9681,21 @@ namespace djack.RogueSurvivor.Engine
         }
         List<Skills.IDs> upgrade1 = RollSkillsToUpgrade(actor, 300);
         Skills.IDs? upgrade2 = NPCPickSkillToUpgrade(actor, upgrade1);
-        if (upgrade2.HasValue)
-          actor.SkillUpgrade(upgrade2.Value);
+        if (null != upgrade2) actor.SkillUpgrade(upgrade2.Value);
       }
     }
 
     private List<Skills.IDs> RollSkillsToUpgrade(Actor actor, int maxTries)
     {
       int capacity = actor.Model.Abilities.IsUndead ? Rules.UNDEAD_UPGRADE_SKILLS_TO_CHOOSE_FROM : Rules.UPGRADE_SKILLS_TO_CHOOSE_FROM;
-      List<Skills.IDs> idsList = new List<Skills.IDs>(capacity);
-      for (int index = 0; index < capacity; ++index)
-      {
+      var idsList = new List<Skills.IDs>(capacity);
+      for (int index = 0; index < capacity; ++index) {
         int num = 0;
         Skills.IDs? upgrade;
-        do
-        {
+        do {
           ++num;
           upgrade = RollRandomSkillToUpgrade(actor, maxTries);
-          if (!upgrade.HasValue)
-            return idsList;
+          if (null == upgrade) return idsList;
         }
         while (idsList.Contains(upgrade.Value) && num < maxTries);
         idsList.Add(upgrade.Value);
@@ -9786,22 +9705,17 @@ namespace djack.RogueSurvivor.Engine
 
     private Skills.IDs? NPCPickSkillToUpgrade(Actor npc, List<Skills.IDs> chooseFrom)
     {
-      if (chooseFrom == null || chooseFrom.Count == 0)
-        return new Skills.IDs?();
+      if (chooseFrom == null || chooseFrom.Count == 0) return null;
       int count = chooseFrom.Count;
       int[] numArray = new int[count];
       int num = -1;
-      for (int index = 0; index < count; ++index)
-      {
+      for (int index = 0; index < count; ++index) {
         numArray[index] = NPCSkillUtility(npc, chooseFrom[index]);
-        if (numArray[index] > num)
-          num = numArray[index];
+        if (numArray[index] > num) num = numArray[index];
       }
-      List<Skills.IDs> idsList = new List<Skills.IDs>(count);
-      for (int index = 0; index < count; ++index)
-      {
-        if (numArray[index] == num)
-          idsList.Add(chooseFrom[index]);
+      var idsList = new List<Skills.IDs>(count);
+      for (int index = 0; index < count; ++index) {
+        if (numArray[index] == num) idsList.Add(chooseFrom[index]);
       }
       return new Skills.IDs?(idsList[m_Rules.Roll(0, idsList.Count)]);
     }
@@ -10758,12 +10672,12 @@ namespace djack.RogueSurvivor.Engine
     public void DrawActorStatus(Actor actor, int gx, int gy)
     {
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}, {1}", actor.Name, actor.Faction.MemberName), gx, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       int maxValue1 = actor.MaxHPs;
       m_UI.UI_DrawStringBold(Color.White, string.Format("HP  {0}", actor.HitPoints), gx, gy, new Color?());
       DrawBar(actor.HitPoints, actor.PreviousHitPoints, maxValue1, 0, 100, 14, gx + 70, gy, Color.Red, Color.DarkRed, Color.OrangeRed, Color.Gray);
       m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue1), gx + 84 + 100, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.CanTire) {
         int maxValue2 = actor.MaxSTA;
         m_UI.UI_DrawStringBold(Color.White, string.Format("STA {0}", actor.StaminaPoints), gx, gy, new Color?());
@@ -10771,7 +10685,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorRunningStatus(actor), gx + 126 + 100, gy);
       }
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.HasToEat) {
         int maxValue2 = actor.MaxFood;
         m_UI.UI_DrawStringBold(Color.White, string.Format("FOO {0}", actor.FoodPoints), gx, gy, new Color?());
@@ -10785,7 +10699,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorRotHungerStatus(actor), gx + 126 + 100, gy);
       }
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.HasToSleep) {
         int maxValue2 = actor.MaxSleep;
         m_UI.UI_DrawStringBold(Color.White, string.Format("SLP {0}", actor.SleepPoints), gx, gy, new Color?());
@@ -10793,7 +10707,7 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}", maxValue2), gx + 84 + 100, gy, new Color?());
         m_UI.UI_DrawStringBold(ActorSleepStatus(actor), gx + 126 + 100, gy);
       }
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       if (actor.Model.Abilities.HasSanity) {
         int maxValue2 = actor.MaxSanity;
         m_UI.UI_DrawStringBold(Color.White, string.Format("SAN {0}", actor.Sanity), gx, gy, new Color?());
@@ -10804,23 +10718,21 @@ namespace djack.RogueSurvivor.Engine
       if (Session.Get.HasInfection && !actor.Model.Abilities.IsUndead) {
         int maxValue2 = actor.InfectionHPs;
         int refValue = Rules.INFECTION_LEVEL_1_WEAK * maxValue2 / 100;
-        gy += 14;
+        gy += BOLD_LINE_SPACING;
         m_UI.UI_DrawStringBold(Color.White, string.Format("INF {0}", actor.Infection), gx, gy, new Color?());
         DrawBar(actor.Infection, actor.Infection, maxValue2, refValue, 100, 14, gx + 70, gy, Color.Purple, Color.Black, Color.Black, Color.Gray);
         m_UI.UI_DrawStringBold(Color.White, string.Format("{0}%", actor.InfectionPercent), gx + 84 + 100, gy, new Color?());
       }
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       Attack attack1 = actor.MeleeAttack();
       int num1 = actor.DamageBonusVsUndeads;
       m_UI.UI_DrawStringBold(Color.White, string.Format("Melee  Atk {0:D2}  Dmg {1:D2}/{2:D2}", attack1.HitValue, attack1.DamageValue, attack1.DamageValue + num1), gx, gy, new Color?());
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       Attack attack2 = actor.RangedAttack(actor.CurrentRangedAttack.EfficientRange);
       if (actor.GetEquippedWeapon() is ItemRangedWeapon rw) {
-        int ammo = rw.Ammo;
-        int maxAmmo = rw.Model.MaxAmmo;
-        m_UI.UI_DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}", attack2.HitValue, attack2.DamageValue, attack2.DamageValue + num1, attack2.Range, attack2.EfficientRange, ammo, maxAmmo), gx, gy, new Color?());
+        m_UI.UI_DrawStringBold(Color.White, string.Format("Ranged Atk {0:D2}  Dmg {1:D2}/{2:D2} Rng {3}-{4} Amo {5}/{6}", attack2.HitValue, attack2.DamageValue, attack2.DamageValue + num1, attack2.Range, attack2.EfficientRange, rw.Ammo, rw.Model.MaxAmmo), gx, gy, new Color?());
       }
-      gy += 14;
+      gy += BOLD_LINE_SPACING;
       m_UI.UI_DrawStringBold(Color.White, ActorStatString(actor), gx, gy, new Color?());
     }
 
@@ -10834,9 +10746,7 @@ namespace djack.RogueSurvivor.Engine
 
     public void DrawInventory(Inventory inventory, string title, bool drawSlotsNumbers, int slotsPerLine, int maxSlots, int gx, int gy)
     {
-      gy -= 14;
-      m_UI.UI_DrawStringBold(Color.White, title, gx, gy, new Color?());
-      gy += 14;
+      m_UI.UI_DrawStringBold(Color.White, title, gx, gy-BOLD_LINE_SPACING, new Color?());
       int gx1 = gx;
       int gy1 = gy;
       int num1 = 0;
@@ -10856,23 +10766,18 @@ namespace djack.RogueSurvivor.Engine
       foreach (Item it in inventory.Items) {
         if (it.IsEquipped)
           m_UI.UI_DrawImage(GameImages.ITEM_EQUIPPED, gx2, gy2);
-        if (it is ItemRangedWeapon) {
-          ItemRangedWeapon itemRangedWeapon = it as ItemRangedWeapon;
-          if (itemRangedWeapon.Ammo <= 0)
-            m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_AMMO, gx2, gy2);
-          DrawBar(itemRangedWeapon.Ammo, itemRangedWeapon.Ammo, itemRangedWeapon.Model.MaxAmmo, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
-        } else if (it is ItemSprayPaint) {
-          ItemSprayPaint itemSprayPaint = it as ItemSprayPaint;
-          DrawBar(itemSprayPaint.PaintQuantity, itemSprayPaint.PaintQuantity, itemSprayPaint.Model.MaxPaintQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
-        } else if (it is ItemSprayScent) {
-          ItemSprayScent itemSprayScent = it as ItemSprayScent;
-          DrawBar(itemSprayScent.SprayQuantity, itemSprayScent.SprayQuantity, itemSprayScent.Model.MaxSprayQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
+        if (it is ItemRangedWeapon rw) {
+          if (0 >= rw.Ammo) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_AMMO, gx2, gy2);
+          DrawBar(rw.Ammo, rw.Ammo, rw.Model.MaxAmmo, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Blue, Color.Blue, Color.Blue, Color.DarkGray);
+        } else if (it is ItemSprayPaint sprayPaint) {
+          DrawBar(sprayPaint.PaintQuantity, sprayPaint.PaintQuantity, sprayPaint.Model.MaxPaintQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Gold, Color.Gold, Color.Gold, Color.DarkGray);
+        } else if (it is ItemSprayScent sprayScent) {
+          DrawBar(sprayScent.SprayQuantity, sprayScent.SprayQuantity, sprayScent.Model.MaxSprayQuantity, 0, 28, 3, gx2 + 2, gy2 + 27, Color.Cyan, Color.Cyan, Color.Cyan, Color.DarkGray);
         }
-        else if (it is BatteryPowered) {
-          BatteryPowered tmp = it as BatteryPowered;
+        else if (it is BatteryPowered electric) {
           Color bar_color = (it is ItemLight ? Color.Yellow : Color.Pink);
-          if (0 >= tmp.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
-          DrawBar(tmp.Batteries, tmp.Batteries, tmp.MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, bar_color, bar_color, bar_color, Color.DarkGray);
+          if (0 >= electric.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
+          DrawBar(electric.Batteries, electric.Batteries, electric.MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, bar_color, bar_color, bar_color, Color.DarkGray);
         } else if (it is ItemFood food) {
           if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_EXPIRED_FOOD, gx2, gy2);
@@ -11330,7 +11235,7 @@ namespace djack.RogueSurvivor.Engine
       int gx1 = gx + rightPadding;
       Color color = Color.FromArgb(entriesColor.A, entriesColor.R / 2, entriesColor.G / 2, entriesColor.B / 2);
       for (int index = 0; index < entries.Length; ++index) {
-        string text1 = index != currentChoice ? string.Format("     {0}", entries[index]) : string.Format("---> {0}", entries[index]);
+        string text1 = string.Format((index != currentChoice ? "     {0}" : "---> {0}"), entries[index]);
         m_UI.UI_DrawStringBold(entriesColor, text1, gx, gy, new Color?(color));
         if (values != null) {
           string text2 = index != currentChoice ? values[index] : string.Format("{0} <---", values[index]);
