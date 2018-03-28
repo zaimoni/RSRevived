@@ -6556,7 +6556,7 @@ namespace djack.RogueSurvivor.Engine
       var stringList = new List<string>(inv.CountItems);
       foreach (Item it in inv.Items) {
         stringList.Add(string.Format(it.IsEquipped ? "- {0} (equipped)"
-                                                   : "- {0}"), DescribeItemShort(it));
+                                                   : "- {0}", DescribeItemShort(it)));
       }
       return stringList.ToArray();
     }
@@ -10873,8 +10873,7 @@ namespace djack.RogueSurvivor.Engine
           Color bar_color = (it is ItemLight ? Color.Yellow : Color.Pink);
           if (0 >= tmp.Batteries) m_UI.UI_DrawImage(GameImages.ICON_OUT_OF_BATTERIES, gx2, gy2);
           DrawBar(tmp.Batteries, tmp.Batteries, tmp.MaxBatteries, 0, 28, 3, gx2 + 2, gy2 + 27, bar_color, bar_color, bar_color, Color.DarkGray);
-        } else if (it is ItemFood) {
-          ItemFood food = it as ItemFood;
+        } else if (it is ItemFood food) {
           if (food.IsExpiredAt(Session.Get.WorldTime.TurnCounter))
             m_UI.UI_DrawImage(GameImages.ICON_EXPIRED_FOOD, gx2, gy2);
           else if (food.IsSpoiledAt(Session.Get.WorldTime.TurnCounter))
@@ -11515,7 +11514,7 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.Reset();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       World world = Session.Get.World;
-      List<Point> pointList = new List<Point>();
+      var pointList = new List<Point>();
       for (int x = 0; x < world.Size; ++x) {
         for (int y = 0; y < world.Size; ++y)
           pointList.Add(new Point(x, y));
@@ -11743,17 +11742,16 @@ namespace djack.RogueSurvivor.Engine
     {
       Item it = new Item(GameItems.UNIQUE_SUBWAY_BADGE);
       // we intentionally do not take advantage of the current subway layout algorithm
-      List<Map> mapList = new List<Map>();
+      var mapList = new List<Map>();
       world.DoForAllDistricts(d=> {
-        if (!d.HasSubway) return;
-        mapList.Add(d.SubwayMap);
+        if (d.HasSubway) mapList.Add(d.SubwayMap);
       });
       if (0 >= mapList.Count)
         return new UniqueItem{
           TheItem = it,
           IsSpawned = false
         };
-      Map map = mapList[m_Rules.Roll(0, mapList.Count)];
+      Map map = m_Rules.DiceRoller.Choose(mapList);
       Rectangle bounds = map.GetZoneByPartialName("rails").Bounds;
       Point point = new Point(m_Rules.Roll(bounds.Left, bounds.Right), m_Rules.Roll(bounds.Top, bounds.Bottom));
       map.DropItemAt(it, point);
@@ -11776,14 +11774,12 @@ namespace djack.RogueSurvivor.Engine
         }
       });
       if (0 >= districtList.Count) throw new InvalidOperationException("world has no business districts with offices");
-      District district = districtList[m_Rules.Roll(0, districtList.Count)];
-      List<Zone> zoneList = new List<Zone>();
-      foreach (Zone zone in district.EntryMap.Zones)
-      {
-        if (zone.HasGameAttribute("CHAR Office"))
-          zoneList.Add(zone);
+      District district = m_Rules.DiceRoller.Choose(districtList);
+      var zoneList = new List<Zone>();
+      foreach (Zone zone in district.EntryMap.Zones) {
+        if (zone.HasGameAttribute("CHAR Office")) zoneList.Add(zone);
       }
-      Zone officeZone = zoneList[m_Rules.Roll(0, zoneList.Count)];
+      Zone officeZone = m_Rules.DiceRoller.Choose(zoneList);
       Map mapCharUnderground = m_TownGenerator.GenerateUniqueMap_CHARUnderground(district.EntryMap, officeZone);
       district.AddUniqueMap(mapCharUnderground);
       return new UniqueMap(mapCharUnderground);
@@ -11849,16 +11845,12 @@ namespace djack.RogueSurvivor.Engine
                if (IsInCHAROffice(new Location(map, pt))) return false;
                MapObject mapObjectAt = map.GetMapObjectAt(pt);
                if (m_CharGen.IsUndead) return mapObjectAt == null;
-               if (mapObjectAt != null) return mapObjectAt.IsCouch;
-               return false;
+               return mapObjectAt?.IsCouch ?? false;
              })
-          || MapGenerator.ActorPlace(roller, map, actor, pt => {
-              if (map.IsInsideAt(pt)) return !IsInCHAROffice(new Location(map, pt));
-              return false;
-             }))
+          || MapGenerator.ActorPlace(roller, map, actor, pt => map.IsInsideAt(pt) && !IsInCHAROffice(new Location(map, pt))))   // XXX failover only works for livings
         return;
       do;
-      while (!MapGenerator.ActorPlace(roller, map, actor, pt => !RogueGame.IsInCHAROffice(new Location(map, pt))));
+      while (!MapGenerator.ActorPlace(roller, map, actor, pt => !IsInCHAROffice(new Location(map, pt))));
     }
 
     private void RefreshPlayer()
@@ -12040,13 +12032,12 @@ namespace djack.RogueSurvivor.Engine
       m_MusicManager.StopAll();
       m_MusicManager.Play(musicId);
       string str = new string('*', Math.Max(FindLongestLine(text), 50));
-      List<string> stringList = new List<string>(text.Length + 3 + 2){
+      var stringList = new List<string>(text.Length + 3 + 2){
         str,
         string.Format("ACHIEVEMENT : {0}", name),
         "CONGRATULATIONS!"
       };
-      for (int index = 0; index < text.Length; ++index)
-        stringList.Add(text[index]);
+      stringList.AddRange(text);
       stringList.Add(string.Format("Achievements : {0}/{1}.", Session.Get.Scoring.CompletedAchievementsCount, (int)Achievement.IDs._COUNT));
       stringList.Add(str);
       Point screenPos = new Point(0, 0);
@@ -12371,12 +12362,10 @@ namespace djack.RogueSurvivor.Engine
           }
           var actorList1 = new List<Actor>(count_followers);
           foreach (Actor a in Session.Get.Scoring.FollowersWhendDied) {
-            if (IsSuitableReincarnation(a, true))
-              actorList1.Add(a);
+            if (IsSuitableReincarnation(a, true)) actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
-          if (actorList1.Count == 0) return null;
-          return actorList1[m_Rules.Roll(0, actorList1.Count)];
+          return 0 >= matchingActors ? null : actorList1[m_Rules.Roll(0, matchingActors)];
           } // scoping brace
         case GameOptions.ReincMode.KILLER:
           Actor killer = Session.Get.Scoring.Killer;
@@ -12398,19 +12387,16 @@ namespace djack.RogueSurvivor.Engine
         case GameOptions.ReincMode.RANDOM_UNDEAD:
         case GameOptions.ReincMode.RANDOM_ACTOR:
           bool asLiving = reincMode == GameOptions.ReincMode.RANDOM_LIVING || reincMode == GameOptions.ReincMode.RANDOM_ACTOR && m_Rules.RollChance(50);
-          List<Actor> actorList2 = new List<Actor>();
+          var actorList2 = new List<Actor>();
           // prior implementation iterated through all districts even though IsSuitableReincarnation requires m_Session.CurrentMap.District
           foreach (Map map in CurrentMap.District.Maps) {
             foreach (Actor actor in map.Actors) {
-              if (IsSuitableReincarnation(actor, asLiving))
-                actorList2.Add(actor);
+              if (IsSuitableReincarnation(actor, asLiving)) actorList2.Add(actor);
             }
           }
           matchingActors = actorList2.Count;
-          if (actorList2.Count == 0) return null;
-          return actorList2[m_Rules.Roll(0, actorList2.Count)];
-        default:
-          throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
+          return 0 >= matchingActors ? null : actorList2[m_Rules.Roll(0, matchingActors)];
+        default: throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
       }
     }
 
