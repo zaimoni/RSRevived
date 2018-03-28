@@ -636,7 +636,7 @@ namespace djack.RogueSurvivor.Data
 #if DEBUG
       if (null == fn) throw new ArgumentNullException(nameof(fn));
 #endif
-      Dictionary<Point,Exit> ret = new Dictionary<Point, Exit>();
+      var ret = new Dictionary<Point, Exit>();
       foreach(var x in m_Exits) {
         if (fn(x.Value)) ret[x.Key] = x.Value;
       }
@@ -738,9 +738,11 @@ namespace djack.RogueSurvivor.Data
 	public Zaimoni.Data.FloodfillPathfinder<Location> PathfindLocSteps(Actor actor)
 	{
       var already = new Dictionary<Location,ActorAction>();
-      Func<Location, Dictionary<Location,int>> fn = (loc=>OneStepForPathfinder(loc, actor, already));
+
+      Dictionary<Location,int> fn(Location loc) { return OneStepForPathfinder(loc, actor, already); }
+
 	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Location>(fn, fn, (loc=> loc.Map.IsInBounds(loc.Position)));
-      FloodfillPathfinder<Location> ret = new FloodfillPathfinder<Location>(m_StepPather);
+      var ret = new FloodfillPathfinder<Location>(m_StepPather);
       Rect.DoForEach(pt=>ret.Blacklist(new Location(this, pt)),pt=> {
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
@@ -754,9 +756,11 @@ namespace djack.RogueSurvivor.Data
 	public Zaimoni.Data.FloodfillPathfinder<Point> PathfindSteps(Actor actor)
 	{
       var already = new Dictionary<Point,ActorAction>();
-      Func<Point, Dictionary<Point,int>> fn = (pt=>OneStepForPathfinder(pt, actor, already));
+
+      Dictionary<Point,int> fn(Point pt) { return OneStepForPathfinder(pt, actor, already); }
+
 	  var m_StepPather = new Zaimoni.Data.FloodfillPathfinder<Point>(fn, fn, (pt=> this.IsInBounds(pt)));
-      FloodfillPathfinder<Point> ret = new FloodfillPathfinder<Point>(m_StepPather);
+      var ret = new FloodfillPathfinder<Point>(m_StepPather);
       Rect.DoForEach(pt=>ret.Blacklist(pt),pt=> {
         if (pt == actor.Location.Position && this == actor.Location.Map) return false;
         if (null != Engine.Rules.IsPathableFor(actor, new Location(this, pt))) return false;
@@ -771,7 +775,7 @@ namespace djack.RogueSurvivor.Data
     { // disallow secret maps
 	  // should be at least one by construction
 	  exits = new HashSet<Exit>(AI_exits.Get.Values.Where(e => string.IsNullOrEmpty(e.ReasonIsBlocked())));
-	  HashSet<Map> exit_maps = new HashSet<Map>(destination_maps.Get);
+	  var exit_maps = new HashSet<Map>(destination_maps.Get);
       if (1>=exit_maps.Count) return exit_maps;
 retry:
       if (exit_maps.Contains(dest)) {
@@ -784,7 +788,7 @@ retry:
       exits.RemoveWhere(e => !exit_maps.Contains(e.ToMap));
       if (1>=exit_maps.Count) return exit_maps;
 
-	  HashSet<Map> dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
+	  var dest_exit_maps = new HashSet<Map>(dest.destination_maps.Get);
       if (1 == dest_exit_maps.Count) {
         dest = dest_exit_maps.ToList()[0];
         goto retry;
@@ -879,7 +883,7 @@ retry:
 
       HashSet<Map> inv_exit_maps = dest._PathTo(this,out HashSet<Exit> inv_exits);
 
-      HashSet<Map> intersect = new HashSet<Map>(exit_maps);
+      var intersect = new HashSet<Map>(exit_maps);
       intersect.IntersectWith(inv_exit_maps);
       if (0<intersect.Count) {
         exit_maps = intersect;
@@ -1368,7 +1372,7 @@ retry:
 
     public Dictionary<Point, Inventory> GetAccessibleInventories(Point pt)
     {
-      Dictionary<Point,Inventory> ground_inv = new Dictionary<Point, Inventory>();
+      var ground_inv = new Dictionary<Point, Inventory>();
       Inventory inv = GetItemsAtExt(pt);
       if (!inv?.IsEmpty ?? false) ground_inv[pt] = inv;
       foreach(var dir in Direction.COMPASS) {
@@ -1386,8 +1390,7 @@ retry:
 
     public Engine.Items.ItemTrap GetActivatedTrapAt(Point pos)
     {
-      Inventory itemsAt = GetItemsAt(pos);
-      return itemsAt?.GetFirstMatching<Engine.Items.ItemTrap>(it => it.IsActivated);
+      return GetItemsAt(pos)?.GetFirstMatching<Engine.Items.ItemTrap>(it => it.IsActivated);
     }
 
     public Point? GetGroundInventoryPosition(Inventory groundInv)
@@ -1701,8 +1704,8 @@ retry:
 
     public void ApplyArtificialStench()
     {
-        Dictionary<Point,int> living_suppress = new Dictionary<Point,int>();
-        Dictionary<Point,int> living_generate = new Dictionary<Point,int>();
+        var living_suppress = new Dictionary<Point,int>();
+        var living_generate = new Dictionary<Point,int>();
         foreach(var tmp in m_ScentsByPosition) {
           living_suppress[tmp.Key] = 0;
           living_generate[tmp.Key] = 0;
@@ -1732,8 +1735,8 @@ retry:
 
     public void DecayScents(int odorDecayRate)
     {
-      List<OdorScent> discard = new List<OdorScent>();
-      List<Point> discard2 = new List<Point>();
+      var discard = new List<OdorScent>();
+      var discard2 = new List<Point>();
       foreach(var tmp in m_ScentsByPosition) {
         foreach(OdorScent scent in tmp.Value) {
           scent.Strength -= odorDecayRate;
@@ -1914,7 +1917,7 @@ retry:
       List<Point> inv_locs = (0<m_GroundItemsByPosition.Count ? new List<Point>(m_GroundItemsByPosition.Keys) : null);
       if (null==tmp_Actors && null==inv_locs) return;
       // we have one of actors or items here...full map has motivation
-      List<string> inv_data = new List<string>();
+      var inv_data = new List<string>();
       string[] actor_headers = { "pos", "name", "Priority", "AP", "HP", "Inventory" };  // XXX would be function-static in C++
       List<string> actor_data = new List<string>();
       string[][] ascii_map = new string[Height][];
@@ -2058,7 +2061,7 @@ retry:
               case Gameplay.GameActors.IDs.JASON_MYERS:
                 a_str = "<span style='background:darkred;color:white'>"+a_str+"</span>"; break;
             }
-            List<string> actor_stats = new List<string> { " " };
+            var actor_stats = new List<string> { " " };
 
             if (a.Model.Abilities.HasToEat) {
               if (a.IsStarving) actor_stats.Add("<span style='background-color:black; color:red'>H</span>");

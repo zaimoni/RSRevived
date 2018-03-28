@@ -64,7 +64,7 @@ namespace djack.RogueSurvivor.Data
     public Dictionary<Location, int> WhereIs(Gameplay.GameItems.IDs x) { return ItemMemory?.WhereIs(x); }
 
     public HashSet<Point> WhereIs(IEnumerable<Gameplay.GameItems.IDs> src, Map map) {
-      HashSet<Point> ret = new HashSet<Point>();
+      var ret = new HashSet<Point>();
       foreach(Gameplay.GameItems.IDs it in src) {
         Dictionary<Location, int> tmp = WhereIs(it);
         if (null == tmp) continue;

@@ -302,7 +302,7 @@ namespace djack.RogueSurvivor.Data
       // 3. Generate map.
       Gameplay.Generators.BaseTownGenerator.Parameters @params = m_TownGenerator.Params;
       m_TownGenerator.Params = parameters;
-      Map map = m_TownGenerator.Generate(seed, string.Format("{0}@{1}", (object)str, (object)World.CoordToString(x, y)));
+      Map map = m_TownGenerator.Generate(seed, string.Format("{0}@{1}", str, World.CoordToString(x, y)));
       m_TownGenerator.Params = @params;
 
       // done.

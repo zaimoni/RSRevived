@@ -59,7 +59,7 @@ namespace djack.RogueSurvivor.Data
 
 		public HashSet<Point> ThreatWhere(Map map)
 		{
-          HashSet<Point> ret = new HashSet<Point>();
+          var ret = new HashSet<Point>();
 		  lock(_threats) {
             foreach (var x in _threats) {
               if (!x.Value.ContainsKey(map)) continue;
@@ -71,8 +71,8 @@ namespace djack.RogueSurvivor.Data
 
 		public HashSet<Point> ThreatWhere(Map map, Rectangle view)  // we exploit Rectangle being value-copied rather than reference-copied here
 		{
-          HashSet<Point> ret = new HashSet<Point>();
-          Zaimoni.Data.Dataflow<Map,int> crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
+          var ret = new HashSet<Point>();
+          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
           if (0> view.Left) {
             if (0<pos.X && 0<crossdistrict_ok.Get) {
@@ -107,7 +107,7 @@ namespace djack.RogueSurvivor.Data
             view.Height = new_height;
           };
 		  lock(_threats) {
-            HashSet<Point> tmp = new HashSet<Point>();
+            var tmp = new HashSet<Point>();
             foreach (var x in _threats) {
               if (!x.Value.ContainsKey(map)) continue;
               tmp.UnionWith(x.Value[map]);
@@ -194,7 +194,7 @@ namespace djack.RogueSurvivor.Data
 		public void Cleared(Map m, IEnumerable<Point> pts)
         {
           lock(_threats) {
-            List<Actor> amnesia = new List<Actor>();
+            var amnesia = new List<Actor>();
             foreach(var x in _threats) {
               if (!x.Value.ContainsKey(m)) continue;
               x.Value[m].ExceptWith(pts);
@@ -209,9 +209,9 @@ namespace djack.RogueSurvivor.Data
           int crossdistrict_ok = Map.UsesCrossDistrictView(m);
           if (0 >= crossdistrict_ok) return;
           Point pos = m.District.WorldPosition;   // only used in denormalized cases
-          List<Point> invalid_xy = new List<Point>(pts.Count());
-          List<Point> invalid_x = new List<Point>(pts.Count());
-          List<Point> invalid_y = new List<Point>(pts.Count());
+          var invalid_xy = new List<Point>(pts.Count());
+          var invalid_x = new List<Point>(pts.Count());
+          var invalid_y = new List<Point>(pts.Count());
           int x_delta = 0;
           int y_delta = 0;
           foreach(Point pt in pts) {
@@ -321,8 +321,8 @@ namespace djack.RogueSurvivor.Data
 
       public HashSet<Point> In(Map map, Rectangle view)
 	  {
-          HashSet<Point> ret = new HashSet<Point>();
-          Zaimoni.Data.Dataflow<Map,int> crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
+          var ret = new HashSet<Point>();
+          var crossdistrict_ok = new Zaimoni.Data.Dataflow<Map,int>(map,Map.UsesCrossDistrictView);
           Point pos = map.District.WorldPosition;   // only used in denormalized cases
           if (0> view.Left) {
             if (0<pos.X && 0<crossdistrict_ok.Get) {
@@ -357,7 +357,7 @@ namespace djack.RogueSurvivor.Data
             view.Height = new_height;
           };
 		  lock(_locs) {
-            HashSet<Point> tmp = new HashSet<Point>();
+            var tmp = new HashSet<Point>();
             if (!_locs.TryGetValue(map,out HashSet<Point> tmp2)) return ret;
             tmp.UnionWith(tmp2);    // want a value copy here
 #if PROTOTYPE
