@@ -4235,7 +4235,7 @@ namespace djack.RogueSurvivor.Engine
         }
         // RS revived: Trading with inventory.
         Inventory ground_inv = player.Location.Map.GetItemsAtExt(point);
-        if (0 >= (inv?.CountItems ?? 0)) ground_inv = null;
+        if (inv?.IsEmpty ?? true) ground_inv = null;
         else if (direction != Direction.NEUTRAL) {
           MapObject obj = player.Location.Map.GetMapObjectAtExt(point);
           if (!obj?.IsContainer ?? true) ground_inv = null;
@@ -6469,7 +6469,7 @@ namespace djack.RogueSurvivor.Engine
           stringList.Add(string.Format("{0}-{1}", skill.Value, Skills.Name(skill.Key)));
         stringList.Add(" ");
       }
-      if (actor.Inventory != null && !actor.Inventory.IsEmpty) {
+      if (!actor.Inventory?.IsEmpty ?? false) {
         stringList.Add(string.Format("Items {0}/{1} : ", actor.Inventory.CountItems, actor.MaxInv));
         stringList.AddRange(DescribeInventory(actor.Inventory));
       }
@@ -6553,12 +6553,10 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeInventory(Inventory inv)
     {
-      List<string> stringList = new List<string>(inv.CountItems);
+      var stringList = new List<string>(inv.CountItems);
       foreach (Item it in inv.Items) {
-        if (it.IsEquipped)
-          stringList.Add(string.Format("- {0} (equipped)", DescribeItemShort(it)));
-        else
-          stringList.Add(string.Format("- {0}", DescribeItemShort(it)));
+        stringList.Add(string.Format(it.IsEquipped ? "- {0} (equipped)"
+                                                   : "- {0}"), DescribeItemShort(it));
       }
       return stringList.ToArray();
     }
@@ -7193,8 +7191,7 @@ namespace djack.RogueSurvivor.Engine
               flag = true;
               if (!TryEscapeTrap(trap, actor, out bool isDestroyed)) canLeave = false;
               else if (isDestroyed) {
-                if (objList == null) objList = new List<Item>(itemsAt.CountItems);
-                objList.Add(obj);
+                (objList ?? (objList = new List<Item>(itemsAt.CountItems))).Add(obj);
               }
             }
           }
@@ -8035,7 +8032,7 @@ namespace djack.RogueSurvivor.Engine
       if (itemsAt != null) {
         ExplosionChainReaction(itemsAt, location);
         int chance = num1;
-        List<Item> objList = new List<Item>(itemsAt.CountItems);
+        var objList = new List<Item>(itemsAt.CountItems);
         foreach (Item obj in itemsAt.Items) {
           if (!obj.IsUnique && !obj.Model.IsUnbreakable && (!(obj is ItemPrimedExplosive) || (obj as ItemPrimedExplosive).FuseTimeLeft > 0) && m_Rules.RollChance(chance))
             objList.Add(obj);
@@ -12431,8 +12428,8 @@ namespace djack.RogueSurvivor.Engine
           return new ActionBreak(actor, mapObjectAt);
         case 3:
           Inventory inventory = actor.Inventory;
-          if (inventory == null || inventory.CountItems == 0) return null;
-          Item it = inventory[m_Rules.Roll(0, inventory.CountItems)];
+          if (inventory?.IsEmpty ?? true) return null;
+          Item it = m_Rules.Choose(inventory.Items);
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsLegal()) return actionUseItem;
           if (it.IsEquipped) return new ActionUnequipItem(actor, it);

@@ -1346,7 +1346,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else if (percept.Percepted is Inventory) {
         Inventory inventory = percept.Percepted as Inventory;
         if (inventory.IsEmpty) return null;
-        Item it = inventory[game.Rules.Roll(0, inventory.CountItems)];
+        Item it = game.Rules.Choose(inventory.Items);
         if (!IsItemWorthTellingAbout(it)) return null;
         int num = actorAt1.FOVrange(map.LocalTime, Session.Get.World.Weather);
         if ((double) Rules.StdDistance(percept.Location, actorAt1.Location) <= (double) (2 + num)) return null;

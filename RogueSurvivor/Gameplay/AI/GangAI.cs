@@ -227,7 +227,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // rewriting this to work around a paradoxical bug indicating runtime state corruption
         Percept victimize = FilterNearest(FilterCurrent(percepts_all).FilterT<Actor>(a =>
         {
-          if (a.Inventory == null || a.Inventory.CountItems == 0 || IsFriendOf(a)) return false;
+          if ((a.Inventory?.IsEmpty ?? true) || IsFriendOf(a)) return false;
           if (!game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, a))) return HasAnyInterestingItem(a.Inventory);
           game.DoEmote(a, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
           return false;

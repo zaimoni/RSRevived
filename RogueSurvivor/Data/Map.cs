@@ -1988,7 +1988,7 @@ retry:
 #endregion
 #region map inventory
           Inventory inv = GetItemsAt(x,y);
-          if (null!=inv && 0<inv.CountItems) {
+          if (!inv?.IsEmpty ?? false) {
             string p_txt = '('+x.ToString()+','+y.ToString()+')';
             foreach (Item it in inv.Items) {
               inv_data.Add("<tr class='inv'><td>"+p_txt+"</td><td>"+it.ToString()+"</td></tr>");

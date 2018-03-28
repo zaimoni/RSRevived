@@ -2809,7 +2809,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Actor actor;
       if (m_DiceRoller.RollChance(Params.PolicemanChance)) {
         actor = CreateNewPoliceman(spawnTime);
-        for (int index = 0; index < itemsToCarry && actor.Inventory.CountItems < actor.Inventory.MaxCapacity; ++index)
+        for (int index = 0; index < itemsToCarry && !actor.Inventory.IsFull; ++index)
           GiveRandomItemToActor(m_DiceRoller, actor, spawnTime);
       } else
         actor = CreateNewCivilian(spawnTime, itemsToCarry, 1);
