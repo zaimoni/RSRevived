@@ -50,8 +50,6 @@ namespace djack.RogueSurvivor.Engine
     public static double SKILL_STRONG_PSYCHE_LEVEL_BONUS = 0.15;
     public static double SKILL_STRONG_PSYCHE_ENT_BONUS = 0.15;
     public static int SKILL_UNSUSPICIOUS_BONUS = 25;
-    public const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
-    public const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
     public static int SKILL_ZAGILE_DEF_BONUS = 2;
     public static double SKILL_ZEATER_REGEN_BONUS = 0.2f;
     public static int SKILL_ZLIGHT_FEET_TRAP_BONUS = 3;
@@ -713,22 +711,30 @@ namespace djack.RogueSurvivor.Engine
 
     public static int ActorUnsuspicousChance(Actor observer, Actor actor)
     {
-      int num1 = SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
-      int num2 = 0;
-      if (actor.GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor) {
-        if (observer.Faction.ID == (int) GameFactions.IDs.ThePolice) {
-          if (armor.IsHostileForCops())
-            num2 -= UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
-          else if (armor.IsFriendlyForCops())
-            num2 += UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
-        } else if (observer.Faction.ID == (int) GameFactions.IDs.TheBikers) {
-          if (armor.IsHostileForBiker(observer.GangID))
-            num2 -= UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
-          else if (armor.IsFriendlyForBiker(observer.GangID))
-            num2 += UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+      const int UNSUSPICIOUS_BAD_OUTFIT_PENALTY = 50;
+      const int UNSUSPICIOUS_GOOD_OUTFIT_BONUS = 50;
+      int baseChance = SKILL_UNSUSPICIOUS_BONUS * actor.Sheet.SkillTable.GetSkillLevel(Skills.IDs.UNSUSPICIOUS);
+
+      // retain general-purpose code within the cases
+      if (actor.GetEquippedItem(DollPart.TORSO) is ItemBodyArmor armor && !armor.IsNeutral) {
+        int bonus() {
+          switch((GameFactions.IDs)observer.Faction.ID) {
+            case GameFactions.IDs.ThePolice:
+              if (armor.IsHostileForCops()) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
+              else if (armor.IsFriendlyForCops()) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+              break;
+            case GameFactions.IDs.TheBikers: 
+            case GameFactions.IDs.TheGangstas: 
+              if (armor.IsHostileForBiker(observer.GangID)) return UNSUSPICIOUS_BAD_OUTFIT_PENALTY;
+              else if (armor.IsFriendlyForBiker(observer.GangID)) return UNSUSPICIOUS_GOOD_OUTFIT_BONUS;
+            break;
+          }
+          return 0;
         }
+
+        baseChance += bonus();
       }
-      return num1 + num2;
+      return baseChance;
     }
 
     public static int ActorSpotMurdererChance(Actor spotter, Actor murderer)

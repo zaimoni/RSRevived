@@ -14,13 +14,16 @@ namespace djack.RogueSurvivor.Engine.Items
   internal class ItemBodyArmor : Item
   {
     private static readonly GameItems.IDs[] BAD_POLICE_OUTFITS = new GameItems.IDs[]{
-      GameItems.IDs.ARMOR_FREE_ANGELS_JACKET,
-      GameItems.IDs.ARMOR_HELLS_SOULS_JACKET
+      GameItems.IDs.ARMOR_HELLS_SOULS_JACKET,
+      GameItems.IDs.ARMOR_FREE_ANGELS_JACKET
     };
     private static readonly GameItems.IDs[] GOOD_POLICE_OUTFITS = new GameItems.IDs[]{
       GameItems.IDs.ARMOR_POLICE_JACKET,
       GameItems.IDs.ARMOR_POLICE_RIOT
     };
+
+    private const int MIN_GANG_ARMOR_ID = (int)GameItems.IDs.ARMOR_HELLS_SOULS_JACKET;
+    private const int MIN_GANG_ID = (int)GameGangs.IDs.NONE+1;
 
     new public ItemBodyArmorModel Model { get {return base.Model as ItemBodyArmorModel; } }
     public int Protection_Hit { get { return Model.Protection_Hit; } }
@@ -34,7 +37,10 @@ namespace djack.RogueSurvivor.Engine.Items
     {
     }
 
-    // these four are actually functions of the body armor model.
+    // these five functions are actually functions of the body armor model.
+    // Callers should not assume the current overoptimization from C-level converisons will hold indefinitely.
+    // March 28 2018: armors that are !IsNeutral are guaranteed non-neutral to all factions that pay attention
+    // to such things.
     public bool IsHostileForCops()
     {
       return 0 <= Array.IndexOf<GameItems.IDs>(BAD_POLICE_OUTFITS, Model.ID);
@@ -45,14 +51,23 @@ namespace djack.RogueSurvivor.Engine.Items
       return 0 <= Array.IndexOf<GameItems.IDs>(GOOD_POLICE_OUTFITS, Model.ID);
     }
 
+    // Validity for these is enforced in GameItems.  The ordering of the armor ids was adjusted to make these valid.
+    // these never were valid for non-gang members
     public bool IsHostileForBiker(GameGangs.IDs gangID)
     {
-      return 0 <= Array.IndexOf<GameItems.IDs>(GameGangs.BAD_GANG_OUTFITS[(int) gangID], Model.ID);
+      return !IsNeutral && !IsFriendlyForBiker(gangID);
     }
 
     public bool IsFriendlyForBiker(GameGangs.IDs gangID)
     {
-      return 0 <= Array.IndexOf<GameItems.IDs>(GameGangs.GOOD_GANG_OUTFITS[(int) gangID], Model.ID);
+      return (int)Model.ID == (((int)gangID - MIN_GANG_ID) + MIN_GANG_ARMOR_ID);
+    }
+
+    public bool IsNeutral {
+      get {
+        int armor_index = (int)Model.ID- MIN_GANG_ARMOR_ID;
+        return -GOOD_POLICE_OUTFITS.Length > armor_index;
+      }
     }
   }
 }

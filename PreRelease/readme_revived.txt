@@ -6,6 +6,7 @@ REVIVED 0.10.0 CHANGES
 * names better matched to stereotypical English gender
 * key configuration files are not backward compatible.
 * even more AI overhaul.
+** Gangsters are now hostile to biker armor, as advertised
 * Closing the door behind you is now a free action.
 * Windows and glass doors are no longer perfect ablative armor
 * The CHAR Guard Manual is very interesting (0% boredom rate), but dry reading (only restores as much sanity as a magazine per reading).

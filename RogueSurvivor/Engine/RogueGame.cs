@@ -6356,7 +6356,7 @@ namespace djack.RogueSurvivor.Engine
       List<string> stringList = new List<string>(10);
       if (actor.Faction != null) {
         if (actor.IsInAGang)
-          stringList.Add(string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, GameGangs.NAMES[(int)actor.GangID]));
+          stringList.Add(string.Format("{0}, {1}-{2}.", actor.Name.Capitalize(), actor.Faction.MemberName, actor.GangID.Name()));
         else
           stringList.Add(string.Format("{0}, {1}.", actor.Name.Capitalize(), actor.Faction.MemberName));
       } else
@@ -6863,38 +6863,37 @@ namespace djack.RogueSurvivor.Engine
 
     static private string[] DescribeItemBodyArmor(ItemBodyArmor b)
     {
-      List<string> stringList1 = new List<string>{
+      List<string> lines = new List<string>{
         "> body armor",
         string.Format("Protection vs Hits  : +{0}", b.Protection_Hit),
         string.Format("Protection vs Shots : +{0}", b.Protection_Shot),
         string.Format("Encumbrance         : -{0} DEF", b.Encumbrance),
         string.Format("Weight              : -{0:F2} SPD", b.Weight/100.0f)
       };
-      List<string> stringList2 = new List<string>();
-      List<string> stringList3 = new List<string>();
-      if (b.IsFriendlyForCops()) stringList2.Add("Cops");
-      if (b.IsHostileForCops()) stringList3.Add("Cops");
+      if (b.IsNeutral) return lines.ToArray();
+
+      // following general code is to be retained as-is; this is not a CPU-critical path.
+      List<string> unsuspicious = new List<string>(1);
+      List<string> suspicious = new List<string>(4);    // should be # of gangs
+      if (b.IsFriendlyForCops()) unsuspicious.Add("Cops");
+      else if (b.IsHostileForCops()) suspicious.Add("Cops");
       foreach (GameGangs.IDs gangID in GameGangs.BIKERS) {
-        if (b.IsHostileForBiker(gangID)) stringList3.Add(GameGangs.NAMES[(int) gangID]);
-        if (b.IsFriendlyForBiker(gangID)) stringList2.Add(GameGangs.NAMES[(int) gangID]);
+        if (b.IsHostileForBiker(gangID)) suspicious.Add(gangID.Name());
+        else if (b.IsFriendlyForBiker(gangID)) unsuspicious.Add(gangID.Name());
       }
       foreach (GameGangs.IDs gangID in GameGangs.GANGSTAS) {
-        if (b.IsHostileForBiker(gangID)) stringList3.Add(GameGangs.NAMES[(int) gangID]);
-        if (b.IsFriendlyForBiker(gangID)) stringList2.Add(GameGangs.NAMES[(int) gangID]);
+        if (b.IsHostileForBiker(gangID)) suspicious.Add(gangID.Name());
+        else if (b.IsFriendlyForBiker(gangID)) unsuspicious.Add(gangID.Name());
       }
-      if (stringList2.Count > 0)
-      {
-        stringList1.Add("Unsuspicious to:");
-        foreach (string str in stringList2)
-          stringList1.Add("- " + str);
+      if (unsuspicious.Count > 0) {
+        lines.Add("Unsuspicious to:");
+        foreach (string str in unsuspicious) lines.Add("- " + str);
       }
-      if (stringList3.Count > 0)
-      {
-        stringList1.Add("Suspicious to:");
-        foreach (string str in stringList3)
-          stringList1.Add("- " + str);
+      if (suspicious.Count > 0) {
+        lines.Add("Suspicious to:");
+        foreach (string str in suspicious) lines.Add("- " + str);
       }
-      return stringList1.ToArray();
+      return lines.ToArray();
     }
 
     static private string[] DescribeItemSprayPaint(ItemSprayPaint sp)

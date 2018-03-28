@@ -614,6 +614,13 @@ namespace djack.RogueSurvivor.Gameplay
       if ((int)AmmoType.SHOTGUN - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_SHOTGUN - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
       if ((int)AmmoType.BOLT - (int)AmmoType.LIGHT_PISTOL != (int)IDs.AMMO_BOLTS - (int)IDs.AMMO_LIGHT_PISTOL) throw new InvalidOperationException("Reasonable C conversion between AmmoType and GameItems.IDs invalid");
 
+      if (1!=(int)GameGangs.IDs.BIKER_HELLS_SOULS-(int)GameGangs.IDs.NONE) throw new InvalidOperationException("Reasonable C conversion between gang id and their good armor is invalid");
+      if ((int)IDs.ARMOR_FREE_ANGELS_JACKET-(int)IDs.ARMOR_HELLS_SOULS_JACKET!=(int)GameGangs.IDs.BIKER_FREE_ANGELS-(int)GameGangs.IDs.BIKER_HELLS_SOULS) throw new InvalidOperationException("Reasonable C conversion between gang id and their good armor is invalid");
+      const int police_jacket_delta = (int)IDs.ARMOR_POLICE_JACKET-(int)IDs.ARMOR_HELLS_SOULS_JACKET;
+      const int police_riot_delta = (int)IDs.ARMOR_POLICE_RIOT-(int)IDs.ARMOR_HELLS_SOULS_JACKET;
+      if (-2 > police_jacket_delta || 0 <= police_jacket_delta) throw new InvalidOperationException("Reasonable C conversion between gang id and their good armor is invalid");
+      if (-2 > police_riot_delta || 0 <= police_riot_delta) throw new InvalidOperationException("Reasonable C conversion between gang id and their good armor is invalid");
+
       // no good place to do the Direction crosschecks so do them here
       if (1 != (int)(PlayerCommand.MOVE_NE) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
       if (2 != (int)(PlayerCommand.MOVE_E) - (int)(PlayerCommand.MOVE_N)) throw new InvalidOperationException("Reasonable C conversion between PlayerCommand and Direction invalid");
@@ -1104,13 +1111,13 @@ namespace djack.RogueSurvivor.Gameplay
       EXPLOSIVE_GRENADE = 30,
       EXPLOSIVE_GRENADE_PRIMED = 31,
       BAR_WOODEN_PLANK = 32,
-      ARMOR_ARMY_BODYARMOR = 33,
+      ARMOR_HUNTER_VEST = 33,
       ARMOR_CHAR_LIGHT_BODYARMOR = 34,
-      ARMOR_HELLS_SOULS_JACKET = 35,
-      ARMOR_FREE_ANGELS_JACKET = 36,
-      ARMOR_POLICE_JACKET = 37,
-      ARMOR_POLICE_RIOT = 38,
-      ARMOR_HUNTER_VEST = 39,
+      ARMOR_ARMY_BODYARMOR = 35,
+      ARMOR_POLICE_JACKET = 36,
+      ARMOR_POLICE_RIOT = 37,
+      ARMOR_HELLS_SOULS_JACKET = 38,
+      ARMOR_FREE_ANGELS_JACKET = 39,
       TRACKER_BLACKOPS = 40,
       TRACKER_CELL_PHONE = 41,
       TRACKER_ZTRACKER = 42,

@@ -10,7 +10,7 @@ namespace djack.RogueSurvivor.Gameplay
 {
   internal static class GameGangs
   {
-	private const int MAX_GANGS = 5;
+	private const int MAX_GANGS = (int)IDs.GANGSTA_FLOODS+1;
 
     public static readonly GameGangs.IDs[] GANGSTAS = new GameGangs.IDs[2]
     {
@@ -22,58 +22,18 @@ namespace djack.RogueSurvivor.Gameplay
       GameGangs.IDs.BIKER_HELLS_SOULS,
       GameGangs.IDs.BIKER_FREE_ANGELS
     };
-    public static readonly string[] NAMES = new string[MAX_GANGS]
-    {
+    private static readonly string[] NAMES = new string[MAX_GANGS] {
       "(no gang)",
       "Hell's Souls",
       "Free Angels",
       "Craps",
       "Floods"
     };
-    public static readonly GameItems.IDs[][] BAD_GANG_OUTFITS = new GameItems.IDs[MAX_GANGS][]
+
+    public static string Name(this IDs x)
     {
-      new GameItems.IDs[0],
-      new GameItems.IDs[3]
-      {
-        GameItems.IDs.ARMOR_FREE_ANGELS_JACKET,
-        GameItems.IDs.ARMOR_POLICE_JACKET,
-        GameItems.IDs.ARMOR_POLICE_RIOT
-      },
-      new GameItems.IDs[3]
-      {
-        GameItems.IDs.ARMOR_HELLS_SOULS_JACKET,
-        GameItems.IDs.ARMOR_POLICE_JACKET,
-        GameItems.IDs.ARMOR_POLICE_RIOT
-      },
-      new GameItems.IDs[4]
-      {
-        GameItems.IDs.ARMOR_FREE_ANGELS_JACKET,
-        GameItems.IDs.ARMOR_HELLS_SOULS_JACKET,
-        GameItems.IDs.ARMOR_POLICE_JACKET,
-        GameItems.IDs.ARMOR_POLICE_RIOT
-      },
-      new GameItems.IDs[4]
-      {
-        GameItems.IDs.ARMOR_FREE_ANGELS_JACKET,
-        GameItems.IDs.ARMOR_HELLS_SOULS_JACKET,
-        GameItems.IDs.ARMOR_POLICE_JACKET,
-        GameItems.IDs.ARMOR_POLICE_RIOT
-      }
-    };
-    public static readonly GameItems.IDs[][] GOOD_GANG_OUTFITS = new GameItems.IDs[MAX_GANGS][]
-    {
-      new GameItems.IDs[0],
-      new GameItems.IDs[1]
-      {
-        GameItems.IDs.ARMOR_HELLS_SOULS_JACKET
-      },
-      new GameItems.IDs[1]
-      {
-        GameItems.IDs.ARMOR_FREE_ANGELS_JACKET
-      },
-      new GameItems.IDs[0],
-      new GameItems.IDs[0]
-    };
+      return NAMES[(int)x];
+    }
 
     [Serializable]
     public enum IDs
