@@ -47,7 +47,7 @@ namespace djack.RogueSurvivor.Gameplay
 
     public static Skills.IDs RollLiving(DiceRoller roller)
     {
-      return (Skills.IDs) roller.Roll(0, (int)Skills.IDs_aux._LIVING_COUNT+1);
+      return (Skills.IDs) roller.Roll(0, (int)Skills.IDs_aux._LIVING_COUNT);
     }
 
     public static IDs RollUndead(DiceRoller roller)
