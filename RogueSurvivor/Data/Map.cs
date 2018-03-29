@@ -1077,17 +1077,15 @@ retry:
 
     public void Remove(Actor actor)
     {
+#if DEBUG
+      if (this!=actor.Location.Map) throw new InvalidOperationException("actor does not think he is in map to be removed from");
+#endif
       lock(m_aux_ActorsByPosition) {
         if (m_ActorsList.Remove(actor)) {
 #if DEBUG
-          if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) {
-            foreach(var x in m_aux_ActorsByPosition) {
-              if (x.Value==actor) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
-            }
-          }
-#else
-          m_aux_ActorsByPosition.Remove(actor.Location.Position);
+          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position) || m_aux_ActorsByPosition[actor.Location.Position]!=actor) throw new InvalidOperationException("map location cache out of sync");
 #endif
+          m_aux_ActorsByPosition.Remove(actor.Location.Position);
           m_iCheckNextActorIndex = 0;
           if (actor.IsPlayer) Players.Recalc();
           if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();

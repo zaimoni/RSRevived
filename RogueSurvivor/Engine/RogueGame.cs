@@ -9193,8 +9193,6 @@ namespace djack.RogueSurvivor.Engine
       }
 
       deadGuy.TargetActor = null; // savefile scanner said this wasn't covered.  Other fields targeted by Actor::OptimizeBeforeSaving are covered.
-      // this doesn't *look* safe, but it turns out we never have a foreach loop on the actors list when calling KillActor.
-      deadGuy.Location.Map.Remove(deadGuy);
 
       // achievement: killing the Sewers Thing
       if (Player == killer || Player == killer?.Leader) {
@@ -11023,6 +11021,13 @@ namespace djack.RogueSurvivor.Engine
       var players = new List<Actor>();
       survey.DoForEach(pt => {
         Actor player = map.GetActorAtExt(pt);
+#if DEBUG
+        // having problems with killed PCs showing up as viewpoints
+        if (player?.IsDead ?? false) throw new InvalidOperationException("dead player on map");
+        if (!player?.Location.Map.HasActor(player) ?? false) throw new InvalidOperationException("misplaced player on map");
+#else
+        if (player?.IsDead ?? true) return;
+#endif        
         if (!player?.IsPlayer ?? true) return;
         if (!player.Controller.CanSee(new Location(map, position))) return;
         players.Add(player);
