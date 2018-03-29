@@ -1083,7 +1083,8 @@ retry:
       lock(m_aux_ActorsByPosition) {
         if (m_ActorsList.Remove(actor)) {
 #if DEBUG
-          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position) || m_aux_ActorsByPosition[actor.Location.Position]!=actor) throw new InvalidOperationException("map location cache out of sync");
+          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) throw new InvalidOperationException("map location cache out of sync");
+          if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) throw new InvalidOperationException("map location cache out of sync");
 #endif
           m_aux_ActorsByPosition.Remove(actor.Location.Position);
           m_iCheckNextActorIndex = 0;

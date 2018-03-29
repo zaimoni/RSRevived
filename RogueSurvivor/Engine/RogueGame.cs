@@ -9203,6 +9203,19 @@ namespace djack.RogueSurvivor.Engine
         if (deadGuy == Session.Get.UniqueActors.TheSewersThing.TheActor) ShowNewAchievement(Achievement.IDs.KILLED_THE_SEWERS_THING);
       }
 
+      if (deadGuy.IsPlayer && (!killer?.IsPlayer ?? false)) {
+        // this may need to be multi-thread aware
+        Actor reinc = killer.LiveLeader ?? killer;
+        if (!reinc.IsPlayer && Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
+          AddMessage(MakeYesNoMessage("Use a reincarnation on your "+(killer==reinc ? " killer " : " killer's leader ")+reinc.Name));
+          RedrawPlayScreen();
+          if (WaitYesOrNo()) {
+            reinc.Controller = new PlayerController();
+            Session.Get.Scoring.UseReincarnation();
+          }
+        }
+      }
+
       // If m_Player has just died, then we should be in the current district and thus clear to find a player
       // furthermore, the viewport didn't pan away to another player
       if (Player == deadGuy) FindPlayer();
@@ -9849,7 +9862,7 @@ namespace djack.RogueSurvivor.Engine
       if (deadVictim.IsPlayer) {
         Session.Get.Scoring.SetZombifiedPlayer(actor);
         if (Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
-          AddMessage(MakeYesNoMessage("A former self rises as a zombie.  Use a reincarnation?"));
+          AddMessage(MakeYesNoMessage(deadVictim.Name+" rises as a zombie.  Use a reincarnation"));
           RedrawPlayScreen();
           if (WaitYesOrNo()) {
             actor.Controller = new PlayerController();
