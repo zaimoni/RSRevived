@@ -7666,12 +7666,16 @@ namespace djack.RogueSurvivor.Engine
                   AnimDelay(DELAY_LONG);
                 }
               }
+            // RS Alpha 9 had instant player zombification on kill even in infection mode.  It is still possible to play as your zombified self,
+            // but the game time has to elapse like for everyone else.
+#if OBSOLETE
             } else if (Player == defender && !defender.Model.Abilities.IsUndead && defender.Infection > 0) {  // the player is Especially Vulnerable (this may be going)
               defender.Location.Map.TryRemoveCorpseOf(defender);
               Zombify(null, defender, false);
               AddMessage(MakeMessage(defender, Conjugate(defender, "turn") + " into a Zombie!"));
               RedrawPlayScreen();
               AnimDelay(DELAY_LONG);
+#endif
             }
           } else if (player2 || player1) {
             AddMessage(MakeMessage(attacker, Conjugate(attacker, attack.Verb), defender, string.Format(" for {0} damage.", dmg)));
@@ -9842,8 +9846,18 @@ namespace djack.RogueSurvivor.Engine
       if (isStartingGame && null!=zombifier) throw new InvalidOperationException(nameof(isStartingGame)+" && null!="+nameof(zombifier));
 #endif
       Actor actor = BaseTownGenerator.MakeZombified(zombifier, deadVictim, isStartingGame ? 0 : deadVictim.Location.Map.LocalTime.TurnCounter);
+      if (deadVictim.IsPlayer) {
+        Session.Get.Scoring.SetZombifiedPlayer(actor);
+        if (Session.Get.Scoring.ReincarnationNumber < s_Options.MaxReincarnations) {
+          AddMessage(MakeYesNoMessage("A former self rises as a zombie.  Use a reincarnation?"));
+          RedrawPlayScreen();
+          if (WaitYesOrNo()) {
+            actor.Controller = new PlayerController();
+            Session.Get.Scoring.UseReincarnation();
+          }
+        }
+      }
       if (!isStartingGame) deadVictim.Location.Place(actor);
-      if (Player == deadVictim || deadVictim.IsPlayer) Session.Get.Scoring.SetZombifiedPlayer(actor);
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
       if (0 < (skillTable?.CountSkills ?? 0)) {
         int countSkills = skillTable.CountSkills;

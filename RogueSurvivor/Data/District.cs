@@ -176,7 +176,20 @@ namespace djack.RogueSurvivor.Data
         // this is evaluated once per scheduling, so we are uncachable.
         // 2017-09-28: grenades are an immediate issue.  melee/ranged combat and noise sources may not be
         // 2017-09-29: moving in PC line of sight is an immediate issue.
+
+        // PC rising as a zomnbie is a UI trigger now that PCs are not Specially Vulnerable
+        if (0 < PlayerCorpseCount) return true;
         return false;
+      }
+    }
+
+    public int PlayerCorpseCount {
+      get {
+        int ret = 0;
+        foreach(Map tmp in Maps) {
+          ret += tmp.PlayerCorpseCount;
+        }
+        return ret;
       }
     }
 

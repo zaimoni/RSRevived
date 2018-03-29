@@ -1149,6 +1149,13 @@ retry:
     }
 
     // tracking players on map
+    public int PlayerCorpseCount {
+      get {
+        int now = Engine.Session.Get.WorldTime.TurnCounter;
+        return m_CorpsesList.Count(c => c.DeadGuy.IsPlayer && Engine.Rules.CORPSE_ZOMBIFY_DELAY<= now - c.Turn);    // align with Rules::CorpseZombifyChance
+      }
+    }
+
     public int PlayerCount {
       get {
         return Players.Get.Count;

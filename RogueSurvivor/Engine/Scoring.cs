@@ -125,6 +125,11 @@ namespace djack.RogueSurvivor.Engine
       m_StartScoringTurn = gameTurn;
     }
 
+    public void UseReincarnation()
+    {
+      ++m_ReincarnationNumber;
+    }
+
     public bool HasCompletedAchievement(Achievement.IDs id)
     {
       return Achievements[(int) id].IsDone;

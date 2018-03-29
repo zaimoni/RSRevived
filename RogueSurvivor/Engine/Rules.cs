@@ -122,7 +122,7 @@ namespace djack.RogueSurvivor.Engine
     public const int MURDER_SPOTTING_MURDERCOUNTER_BONUS = 5;
     private const float INFECTION_BASE_FACTOR = 1f;
     private const int CORPSE_ZOMBIFY_BASE_CHANCE = 0;
-    private const int CORPSE_ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
+    public const int CORPSE_ZOMBIFY_DELAY = 6*WorldTime.TURNS_PER_HOUR;
     private const float CORPSE_ZOMBIFY_INFECTIONP_FACTOR = 1f;
     private const float CORPSE_ZOMBIFY_NIGHT_FACTOR = 2f;
     private const float CORPSE_ZOMBIFY_DAY_FACTOR = 0.01f;
