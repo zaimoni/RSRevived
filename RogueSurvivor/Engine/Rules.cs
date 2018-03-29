@@ -754,7 +754,7 @@ namespace djack.RogueSurvivor.Engine
 
     public static int InfectionForDamage(Actor infector, int dmg)
     {
-      return (int) ((1.0 + SKILL_ZINFECTOR_BONUS) * /* (int) */ (infector.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * dmg));
+      return dmg + (int) (SKILL_ZINFECTOR_BONUS * /* (int) */ (infector.Sheet.SkillTable.GetSkillLevel(Skills.IDs.Z_INFECTOR) * dmg));
     }
 
     public static int InfectionEffectTriggerChance1000(int infectionPercent)
