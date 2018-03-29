@@ -1039,37 +1039,64 @@ retry:
       Actor actorAt = GetActorAt(position);
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
-            lock (m_aux_ActorsByPosition) {
+      lock (m_aux_ActorsByPosition) {
         // test game behaved rather badly when a second Samantha Collins was imprisoned on turn 0
-        if (actor.Location.Map == this && HasActor(actor)) {
+        bool knows_on_map = actor.Location.Map == this;
+        bool already_on_map = false;
+        lock(m_ActorsList) {
+          already_on_map = m_ActorsList.Contains(actor);
+          if (already_on_map) {
 #if DEBUG
-          if (!m_aux_ActorsByPosition.Remove(actor.Location.Position)) {
-            foreach(var x in m_aux_ActorsByPosition) {
-              if (x.Value==actor) throw new InvalidOperationException(actor.Name+" and map disagree on where (s)he is");
+            if (!knows_on_map) throw new InvalidOperationException(actor.Name+" did not know s/he was in the map");
+            if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
+            if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
+              foreach(var x in m_aux_ActorsByPosition) {
+                if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
+              }
+              throw new InvalidOperationException("map location cache out of sync");
             }
-          }
-#else
-          m_aux_ActorsByPosition.Remove(actor.Location.Position);
+            if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) {
+              foreach(var x in m_aux_ActorsByPosition) {
+               if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
+              }
+              throw new InvalidOperationException("map location cache out of sync");
+            }
 #endif
+          } else {
+#if DEBUG
+            foreach(var x in m_aux_ActorsByPosition) {
+             if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
+            }
+#endif
+            if (!knows_on_map) actor.RemoveFromMap();
+            m_ActorsList.Add(actor);
+          }
+        }   // lock m_ActorList
+
+        if (already_on_map) {
+          m_aux_ActorsByPosition.Remove(actor.Location.Position);
         } else {
-          if (null != actor.Location.Map && this != actor.Location.Map) actor.Location.Map.Remove(actor);
-          m_ActorsList.Add(actor);
           Engine.LOS.Now(this);
           if (actor.IsPlayer) Players.Recalc();
           if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
         }
         m_aux_ActorsByPosition.Add(position, actor);
         actor.Location = new Location(this, position);
-      }
+      } // lock(m_aux_ActorsByPosition)
       m_iCheckNextActorIndex = 0;
     }
 
     public void MoveActorToFirstPosition(Actor actor)
     {
+#if DEBUG
       if (!m_ActorsList.Contains(actor)) throw new ArgumentException("actor not in map");
-      if (1 == m_ActorsList.Count) return;
-      m_ActorsList.Remove(actor);
-      m_ActorsList.Insert(0, actor);
+      if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
+#endif
+      lock(m_ActorsList) {
+        if (1 == m_ActorsList.Count) return;
+        m_ActorsList.Remove(actor);
+        m_ActorsList.Insert(0, actor);
+      }
       m_iCheckNextActorIndex = 0;
       if (actor.IsPlayer) Players.Recalc();
       if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
@@ -1078,13 +1105,32 @@ retry:
     public void Remove(Actor actor)
     {
 #if DEBUG
-      if (this!=actor.Location.Map) throw new InvalidOperationException("actor does not think he is in map to be removed from");
+      // why you *really* should be using Actor::RemoveFromMap()
+      if (this!=actor.Location.Map) throw new InvalidOperationException(actor.Name + " does not think he is in map to be removed from");
 #endif
       lock(m_aux_ActorsByPosition) {
-        if (m_ActorsList.Remove(actor)) {
+        bool removed = false;
+        lock(m_ActorsList) {
 #if DEBUG
-          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) throw new InvalidOperationException("map location cache out of sync");
-          if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) throw new InvalidOperationException("map location cache out of sync");
+          if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name+" is double-included");
+          removed = m_ActorsList.Remove(actor);
+#endif
+        }
+
+        if (removed) {
+#if DEBUG
+          if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
+            foreach(var x in m_aux_ActorsByPosition) {
+              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
+            }
+            throw new InvalidOperationException("map location cache out of sync");
+          }
+          if (m_aux_ActorsByPosition[actor.Location.Position]!=actor) {
+            foreach(var x in m_aux_ActorsByPosition) {
+              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
+            }
+            throw new InvalidOperationException("map location cache out of sync");
+          }
 #endif
           m_aux_ActorsByPosition.Remove(actor.Location.Position);
           m_iCheckNextActorIndex = 0;
@@ -1095,6 +1141,7 @@ retry:
         foreach(var x in m_aux_ActorsByPosition) {
           if (x.Value == actor) throw new InvalidOperationException(actor.Name+" still in position cache");
         }
+        if (m_ActorsList.Contains(actor)) throw new InvalidOperationException(actor.Name + " still in map");
 #endif
       }
     }

@@ -233,8 +233,7 @@ namespace djack.RogueSurvivor.Engine
           map.RemoveAllItemsAt(new Point(left,top));
           map.RemoveAllDecorationsAt(left, top);
           map.RemoveAllZonesAt(left, top);
-          Actor actorAt = map.GetActorAt(left, top);
-          if (actorAt != null) map.Remove(actorAt);
+          map.GetActorAt(left, top)?.RemoveFromMap();
         }
       }
     }

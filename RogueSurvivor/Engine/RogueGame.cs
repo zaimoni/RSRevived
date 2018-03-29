@@ -7296,7 +7296,7 @@ namespace djack.RogueSurvivor.Engine
 #endif
       if (ForceVisibleToPlayer(actor))
         AddMessage(MakeMessage(actor, string.Format("{0} {1}.", Conjugate(actor, VERB_LEAVE), map.Name)));
-      map.Remove(actor);
+      actor.RemoveFromMap();
       if (actor.DraggedCorpse != null) map.Remove(actor.DraggedCorpse);
 #if OBSOLETE
       if (isPlayer && exitAt.ToMap.District != map.District) OnPlayerLeaveDistrict();
@@ -7387,7 +7387,7 @@ namespace djack.RogueSurvivor.Engine
       actor.SpendActionPoints(2*Rules.BASE_ACTION_COST);
       Location a_loc = actor.Location;
       Location o_loc = other.Location;
-      o_loc.Map.Remove(other);
+      other.RemoveFromMap();
       o_loc.Place(actor);
       a_loc.Place(other);
       if (!IsVisibleToPlayer(actor) && !IsVisibleToPlayer(other)) return;
@@ -9104,7 +9104,7 @@ namespace djack.RogueSurvivor.Engine
         deadGuy.Leader.RemoveFollower(deadGuy);
       }
       deadGuy.RemoveAllAgressorSelfDefenceRelations();
-      deadGuy.Location.Map.Remove(deadGuy);
+      deadGuy.RemoveFromMap();
       if (!deadGuy.Inventory?.IsEmpty ?? false) {
         // the implicit police radio goes explicit on death, as a generic item
         if (GameFactions.ThePolice == deadGuy.Faction) {

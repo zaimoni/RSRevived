@@ -1351,6 +1351,11 @@ namespace djack.RogueSurvivor.Data
     }
 
     // map-related, loosely
+    public void RemoveFromMap()
+    {
+      Location.Map?.Remove(this);   // DuckMan and other uniques start with null map before spawning
+    }
+
     public bool WouldBeAdjacentToEnemy(Map map,Point p)
     {
       return map.HasAnyAdjacentInMap(p, (Predicate<Point>) (pt =>
@@ -3313,7 +3318,10 @@ namespace djack.RogueSurvivor.Data
 	// C# docs indicate using Actor as a key wants these
     public bool Equals(Actor x)
     {
-      return m_SpawnTime == x.m_SpawnTime && m_Name == x.m_Name;
+      if (m_SpawnTime != x.m_SpawnTime) return false;
+      if (m_Name != x.m_Name) return false;
+      if (Location!=x.Location) return false;
+      return true;
     }
 
     public override bool Equals(object obj)
