@@ -903,6 +903,11 @@ namespace djack.RogueSurvivor.Engine
       bool? isUndead = HandleNewCharacterRace(roller);
       if (null == isUndead) return false;
       m_CharGen.IsUndead = isUndead.Value;
+        // character 2 is the type
+        // Living: M)ale, F)emale
+        // Undead: Skeleton, Shambler, Zombie Master, z.man, z.woman
+        // Livings then specify a starting skill.
+
       if (isUndead.Value) {
         GameActors.IDs? undeadModel = HandleNewCharacterUndeadType(roller);
         if (null == undeadModel) return false;
@@ -960,6 +965,32 @@ namespace djack.RogueSurvivor.Engine
           "Remember to set them back ON again when you play other modes!"
         }
       };
+
+      bool command_line()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return false;
+        switch(x.Substring(0,1))
+        {
+        case "C":   // Classic
+          Session.Get.GameMode = GameMode.GM_STANDARD;
+          return true;
+        case "I":   // Infection
+          Session.Get.GameMode = GameMode.GM_CORPSES_INFECTION;
+          return true;
+        case "V":   // Vintage
+          Session.Get.GameMode = GameMode.GM_VINTAGE;
+          ApplyOptions(false);
+          return true;
+//      case "Z":   // World War Z, Resident Evil, etc: instant zombification w/corpses
+//        break;
+        default: return false;
+        }
+        // character 0 is the game mode.  Choice values are 0..2 currently
+        // we encode this as: C)lassic, I)nfection, V)intage, Z)-war
+      }
+
+      if (command_line()) return true;
+
       const int gx = 0;
 
       Func<int,bool?> setup_handler = (currentChoice => {
@@ -1009,6 +1040,22 @@ namespace djack.RogueSurvivor.Engine
       const int gx = 0;
       int gy1 = 0;
 
+      bool? command_line()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        switch(x.Substring(1,1))
+        {
+        case "L": return false;
+        case "Z": return true;
+        default: return null;
+        }
+        // character 1 is the race.  Choice values are 1..2
+        // we encode this as L)iving, Z)ombie
+      }
+
+      bool? ret = command_line();
+      if (null != ret) return ret;
+
       Func<int,bool?> setup_handler = (currentChoice => {
         m_UI.UI_Clear(Color.Black);
         gy1 = 0;
@@ -1051,6 +1098,21 @@ namespace djack.RogueSurvivor.Engine
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  maleStats.BaseHitPoints,  maleStats.BaseDefence.Value,  maleStats.UnarmedAttack.DamageValue),
         string.Format("HP:{0:D2}  Def:{1:D2}  Dmg:{2:D1}",  femaleStats.BaseHitPoints,  femaleStats.BaseDefence.Value,  femaleStats.UnarmedAttack.DamageValue)
       };
+
+      bool? command_line()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        switch(x.Substring(2,1))
+        {
+        case "M": return true;
+        case "F": return false;
+        default: return null;
+        }
+      }
+
+      bool? ret = command_line();
+      if (null != ret) return ret;
+
       const int gx = 0;
       int gy = 0;
 
@@ -1100,6 +1162,23 @@ namespace djack.RogueSurvivor.Engine
       string[] entries = (new string[] { "*Random*" }).Concat(undead.Select(x => x.Name)).ToArray();
       string[] values = (new string[] { "(picks a type at random for you)" }).Concat(undead.Select(x => DescribeUndeadModelStatLine(x))).ToArray();
 
+      GameActors.IDs? command_line()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        switch(x.Substring(2,1))
+        {
+        case "M": return GameActors.MaleZombified.ID;
+        case "F": return GameActors.FemaleZombified.ID;
+        case "s": return GameActors.Skeleton.ID;
+        case "S": return GameActors.Zombie.ID;
+        case "Z": return GameActors.ZombieMaster.ID;
+        default: return null;
+        }
+      }
+
+      GameActors.IDs? ret = command_line();
+      if (null != ret) return ret;
+
       const int gx = 0;
       int gy1 = 0;
 
@@ -1135,6 +1214,19 @@ namespace djack.RogueSurvivor.Engine
       Skills.IDs[] idsArray = Enumerable.Range(0, (int)Skills.IDs_aux._LIVING_COUNT).Select(id => (Skills.IDs)id).ToArray();
       string[] entries = (new string[] { "*Random*" }).Concat(idsArray.Select(id => Skills.Name(id))).ToArray();
       string[] values = (new string[] { "(picks a skill at random for you)" }).Concat(idsArray.Select(id => string.Format("{0} max - {1}", Skills.MaxSkillLevel(id), DescribeSkillShort(id)))).ToArray();
+
+      Skills.IDs? command_line()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return null;
+        try {
+          return (Skills.IDs)Enum.Parse(typeof(Skills.IDs), x.Substring(3));
+        } catch (ArgumentException) {
+          return null;
+        }
+      }
+
+      Skills.IDs? ret = command_line();
+      if (null != ret) return ret;
 
       const int gx = 0;
       int gy1 = 0;
@@ -11448,6 +11540,39 @@ namespace djack.RogueSurvivor.Engine
         m_UI.UI_DrawStringBold(Color.White, "Creating empty world...", 0, 0, new Color?());
         m_UI.UI_Repaint();
       }
+
+      void _validateCity()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("city",out string x)) return;
+        int split = x.IndexOf(",");
+        if (   1 > split || x.Length-2 < split
+            || !int.TryParse(x.Substring(0, split), out int city_size)
+            || !GameOptions.CitySize_ok(city_size)
+            || !int.TryParse(x.Substring(split + 1), out int district_size)
+            || !GameOptions.DistrictSize_ok(district_size)) {
+          Session.CommandLineOptions.Remove("city");
+          return;
+        }
+        s_Options.CitySize = city_size;
+        s_Options.DistrictSize = district_size;
+      }
+
+      void _validateSpawn()
+      {
+        if (!Session.CommandLineOptions.TryGetValue("spawn",out string x)) return;
+        // character 0 is the game mode.  Choice values are 0..2 currently
+        // we encode this as: C)lassic, I)nfection, V)intage, Z)-war
+        // character 1 is the race.  Choice values are 1..2
+        // we encode this as L)iving, Z)ombie
+        // character 2 is the type
+        // Living: M)ale, F)emale
+        // Undead: Skeleton, Shambler, Zombie Master, z.man, z.woman
+        // Livings then specify a starting skill.
+      }
+
+      _validateCity();  // use the --city option values if they are remotely valid
+      _validateSpawn(); // prepare to use the --spawn option
+
       Session.Get.Reset();
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       World world = Session.Get.World;

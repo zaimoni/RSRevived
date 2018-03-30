@@ -21,6 +21,35 @@ N+1 I get this crash ...
 Sorry, there is no --help or /?.  C# actively disables C stdout 
 for graphical programs.
 
+--city=[city size],[district size]
+Overrides the world generation options for city size and district size.  The default values of these options correspond to
+--city=5,50
+
+If either number does not parse, the whole option is dropped.
+
+--spawn=...
+Overrides the new game dialog data entry.
+
+The first character is the game type:
+C: Classic
+I: Infection
+V: Vintage
+Z: Classic w/corpses [VAPORWARE, not actually implemented yet]
+
+The second character is the race
+L: Living
+Z: zombie/undead
+
+The third character is the type.  For livings we have
+M: male
+F: female
+For undead, the above specify zombiefied versions.  Additional options for undead are
+s: Skeleton
+S: Shambler
+Z: Zombie master
+
+For livings, the starting skill is requested as a string representation of the Skills.IDs enumeration, starting at the fourth character.
+
 --no-spawn
 
 This will be ignored without --PC to nominate an NPC for player control.  The usual player character will not be created.

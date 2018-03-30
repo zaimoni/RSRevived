@@ -39,6 +39,9 @@ namespace djack.RogueSurvivor
           if (tmp.StartsWith("--spawn-district=") && !Engine.Session.CommandLineOptions.ContainsKey("spawn-district")) {
             Engine.Session.CommandLineOptions["spawn-district"] = tmp.Substring(17);
           }
+          if (tmp.StartsWith("--city=") && !Engine.Session.CommandLineOptions.ContainsKey("city")) {
+            Engine.Session.CommandLineOptions["city"] = tmp.Substring(7);
+          }
           if ("--subway-cop"==tmp) Engine.Session.CommandLineOptions["subway-cop"] = "";    // key just has to exist
           if ("--socrates-daimon"==tmp) Engine.Session.CommandLineOptions["socrates-daimon"] = "";    // key just has to exist
           if ("--no-spawn"==tmp) Engine.Session.CommandLineOptions["no-spawn"] = "";    // key just has to exist
@@ -48,6 +51,7 @@ namespace djack.RogueSurvivor
           // --spawn-district : override district and optionally position.  C2 is default.
           //    district-only override would be e.g. C1.  C1@5,6 would override both district and position (useful for starting in the police station)
           // --no-spawn : do not create a random PC.  requires a --PC option to be viable.  Incompatible with --spawn and --spawn-district
+          // --city : specify city size and dimensions; default is 5,50
         }
         if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
           if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")

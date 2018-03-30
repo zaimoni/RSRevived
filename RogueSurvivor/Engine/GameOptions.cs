@@ -165,6 +165,11 @@ namespace djack.RogueSurvivor.Engine
       }
     }
 
+    static public bool CitySize_ok(int x)
+    {
+      return 3<=x && 6 >= x;
+    }
+
     public int CitySize {
       get {
         return m_CitySize;
@@ -240,6 +245,11 @@ namespace djack.RogueSurvivor.Engine
         if (value > 100) value = 100;
         m_SpawnZombieMasterChance = value;
       }
+    }
+
+    static public bool DistrictSize_ok(int x)
+    {
+      return 0==(x%10) && 30 <= x && Math.Min(RogueGame.MAP_MAX_HEIGHT, RogueGame.MAP_MAX_WIDTH) >= x;
     }
 
     public int DistrictSize
