@@ -55,7 +55,7 @@ namespace djack.RogueSurvivor
         }
         if (Engine.Session.CommandLineOptions.ContainsKey("no-spawn")) {
           if (   !Engine.Session.CommandLineOptions.ContainsKey("PC")
-              ||  Engine.Session.CommandLineOptions.ContainsKey("spawn")
+//            ||  Engine.Session.CommandLineOptions.ContainsKey("spawn")    // turns out we do need the first character of this regardless
               ||  Engine.Session.CommandLineOptions.ContainsKey("spawn-district"))
             Engine.Session.CommandLineOptions.Remove("no-spawn");
         }

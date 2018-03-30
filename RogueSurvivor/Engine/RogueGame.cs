@@ -900,6 +900,7 @@ namespace djack.RogueSurvivor.Engine
     {
       DiceRoller roller = new DiceRoller();
       if (!HandleNewGameMode()) return false;
+      if (Session.CommandLineOptions.ContainsKey("no-spawn")) return true;
       bool? isUndead = HandleNewCharacterRace(roller);
       if (null == isUndead) return false;
       m_CharGen.IsUndead = isUndead.Value;
