@@ -2676,22 +2676,68 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == threats) return null;
       // 1) clear the current map, unless it's non-vintage sewers
       HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
-#if FALSE_POSITIVE
-      if (0<tainted.Count) {
-        ActorAction ret = BehaviorNavigate(tainted);
-        if (null == ret) {
-          List<string> locs = new List<string>(tainted.Count);
-          foreach(Point pt in tainted) {
-            locs.Add("\n"+(new Location(m_Actor.Location.Map,pt)).ToString());
+      if (0 >= tainted.Count) return null;
+      // threat hunting has some unusual features relative to other types of pathing
+      // * we are guaranteed that no condidate squares are in our LOS
+      // * we would rather not end our move adjacent to threat if we have a ranged weapon
+#if PROTOTYPE
+      List<Point> legal_steps = m_Actor.LegalSteps;
+      if (null == legal_steps) return null;
+
+      var exposed = new Dictionary<Point,int>();
+      var safe_exposed = new Dictionary<Point,int>();
+      foreach (Point pt in legal_steps) {
+        HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
+        los.IntersectWith(tainted);
+        if (0 >= los.Count) continue;
+        exposed[pt] = los.Count;
+        if (los.Any(pt2 => Rules.IsAdjacent(pt2,pt))) continue;
+        safe_exposed[pt] = los.Count;
+      }
+      if (0<safe_exposed.Count) {
+        var ret = new List<KeyValuePair<Point, int>>();
+        foreach(var x in safe_exposed) {
+          if (0 >= ret.Count || ret[0].Value==x.Value) {
+            ret.Add(x);
+            continue;
           }
-          throw new InvalidOperationException("unreachable threat destinations" + string.Concat(locs.ToArray()));
+          if (ret[0].Value > x.Value) continue;
+          ret.Clear();
+          ret.Add(x);
         }
-        return ret;
+
+        var costs = new Dictionary<Point,int>();
+        foreach(var x in ret) {
+          costs[x.Key] = 1;
+        }
+        ActorAction tmp = DecideMove(costs);
+#if DEBUG
+        if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+#endif
+        if (tmp is ActionMoveStep test) {
+          ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
+          m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+          ReserveSTA(0,0,0,0);
+        }
+      }
+#endif
+
+#if FALSE_POSITIVE
+      {
+      ActorAction ret = BehaviorNavigate(tainted);
+      if (null == ret) {
+        List<string> locs = new List<string>(tainted.Count);
+        foreach(Point pt in tainted) {
+          locs.Add("\n"+(new Location(m_Actor.Location.Map,pt)).ToString());
+        }
+        throw new InvalidOperationException("unreachable threat destinations" + string.Concat(locs.ToArray()));
+      }
+      return ret;
       }
 #else
-      if (0<tainted.Count) return BehaviorNavigate(tainted);
+      // this call is measuring as significant CPU on the larger maps
+      return BehaviorNavigate(tainted);
 #endif
-      return null;
     }
 
     protected bool HaveTourismInCurrentMap()

@@ -14,6 +14,7 @@
 // #define POLICE_NO_QUESTIONS_ASKED
 // #define REFUGEES_IN_SUBWAY
 // #define PANOPTIC_HOLYVISION
+// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine.Actions;
@@ -27,6 +28,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Permissions;
@@ -5598,6 +5600,10 @@ namespace djack.RogueSurvivor.Engine
       if (null == aiActor) throw new ArgumentNullException(nameof(aiActor));
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
 #endif
+#if TIME_TURNS
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": starting turn");
+      Stopwatch timer = Stopwatch.StartNew();
+#endif
       ActorAction actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);
@@ -5611,6 +5617,10 @@ namespace djack.RogueSurvivor.Engine
       if (!actorAction.IsLegal()) throw new InvalidOperationException(string.Format("AI attempted illegal action {0}; actorAI: {1}; fail reason : {2}.", actorAction.GetType().ToString(), aiActor.Controller.GetType().ToString(), actorAction.FailReason));
 #endif
       actorAction.Perform();
+#if TIME_TURNS
+      timer.Stop();
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
     }
 
     private void HandleAdvisor(Actor player)
