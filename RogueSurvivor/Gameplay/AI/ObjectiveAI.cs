@@ -1805,7 +1805,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         ret.Add(GameItems.IDs.MEDICINE_MEDIKIT);
         ret.Add(GameItems.IDs.MEDICINE_BANDAGES);
       }
-#if DEBUG
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
       // integrity check
       foreach(var x in ret) {
         if (3>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoINeedNow");
@@ -1886,7 +1886,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // only civilians use stench killer
       if (Gameplay.GameItems.IDs.SCENT_SPRAY_STENCH_KILLER == it.Model.ID && !(m_Actor.Controller is Gameplay.AI.CivilianAI)) return false;
 #endif
-#if DEBUG
+#if INTEGRITY_CHECK_ITEM_RETURN_CODE
       // integrity check
       foreach(var x in ret) {
         if (2>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoIWantNow");

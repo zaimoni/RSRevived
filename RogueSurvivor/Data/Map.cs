@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 #define NO_PEACE_WALLS
+// #define AUDIT_ACTOR_MOVEMENT
 
 using System;
 using System.Collections.Generic;
@@ -1034,8 +1035,6 @@ retry:
 #if DEBUG
       if (null == actor) throw new ArgumentNullException(nameof(actor));
       if (!IsInBounds(position)) throw new ArgumentOutOfRangeException(nameof(position),position, "!IsInBounds(position)");
-#endif
-#if DEBUG
       Actor actorAt = GetActorAt(position);
       if (null != actorAt) throw new ArgumentOutOfRangeException(nameof(position),position, (actorAt == actor ? "actor already at position" : "another actor already at position"));
 #endif
@@ -1046,8 +1045,8 @@ retry:
         lock(m_ActorsList) {
           already_on_map = m_ActorsList.Contains(actor);
           if (already_on_map) {
-#if DEBUG
             if (!knows_on_map) throw new InvalidOperationException(actor.Name+" did not know s/he was in the map");
+#if AUDIT_ACTOR_MOVEMENT
             if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
             if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
               foreach(var x in m_aux_ActorsByPosition) {
@@ -1063,7 +1062,7 @@ retry:
             }
 #endif
           } else {
-#if DEBUG
+#if AUDIT_ACTOR_MOVEMENT
             foreach(var x in m_aux_ActorsByPosition) {
              if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
             }
@@ -1090,6 +1089,8 @@ retry:
     {
 #if DEBUG
       if (!m_ActorsList.Contains(actor)) throw new ArgumentException("actor not in map");
+#endif
+#if AUDIT_ACTOR_MOVEMENT
       if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name + " is double-included");
 #endif
       lock(m_ActorsList) {
@@ -1111,14 +1112,14 @@ retry:
       lock(m_aux_ActorsByPosition) {
         bool removed = false;
         lock(m_ActorsList) {
-#if DEBUG
+#if AUDIT_ACTOR_MOVEMENT
           if (m_ActorsList.IndexOf(actor)<m_ActorsList.LastIndexOf(actor)) throw new InvalidOperationException(actor.Name+" is double-included");
-          removed = m_ActorsList.Remove(actor);
 #endif
+          removed = m_ActorsList.Remove(actor);
         }
 
         if (removed) {
-#if DEBUG
+#if AUDIT_ACTOR_MOVEMENT
           if (!m_aux_ActorsByPosition.ContainsKey(actor.Location.Position)) {
             foreach(var x in m_aux_ActorsByPosition) {
               if (x.Value==actor) new InvalidOperationException("map location cache out of sync");
@@ -1137,7 +1138,7 @@ retry:
           if (actor.IsPlayer) Players.Recalc();
           if ((int)Gameplay.GameFactions.IDs.ThePolice == actor.Faction.ID) Police.Recalc();
         }
-#if DEBUG
+#if AUDIT_ACTOR_MOVEMENT
         foreach(var x in m_aux_ActorsByPosition) {
           if (x.Value == actor) throw new InvalidOperationException(actor.Name+" still in position cache");
         }
