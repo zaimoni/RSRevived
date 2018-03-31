@@ -79,10 +79,16 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 
     private void _seeItems(List<Percept> perceptList)
     {
-      foreach (Point position in FOV) {
-        Inventory itemsAt = m_Actor.Location.Map.GetItemsAt(position);
+      foreach (Point pt in FOV) {
+        Location tmp = new Location(m_Actor.Location.Map,pt);
+        if (!tmp.Map.IsInBounds(pt)) {
+          Location? test = m_Actor.Location.Map.Normalize(pt);
+          if (null == test) continue;
+          tmp = test.Value;
+        }
+        Inventory itemsAt = tmp.Map.GetItemsAt(tmp.Position);
         if (null==itemsAt) continue;
-        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, new Location(m_Actor.Location.Map, position)));
+        perceptList.Add(new Percept(itemsAt, m_Actor.Location.Map.LocalTime.TurnCounter, tmp));
       }
     }
 

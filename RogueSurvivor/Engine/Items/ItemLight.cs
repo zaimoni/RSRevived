@@ -39,6 +39,17 @@ namespace djack.RogueSurvivor.Engine.Items
       get { return 0 >= m_Batteries; }
     }
 
+    // precondtion: neither is useless
+    public bool IsLessUsableThan(ItemLight rhs)
+    {
+      if (2 >= Batteries) return true;
+      else if (2 >= rhs.Batteries) return false;
+      if (FovBonus<rhs.FovBonus) return true;
+      else if (FovBonus > rhs.FovBonus) return false;
+      // Gresham's law: use the worst one first
+      return Batteries < rhs.Batteries;
+    }
+
     public ItemLight(ItemLightModel model)
       : base(model)
     {

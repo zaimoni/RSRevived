@@ -1239,27 +1239,23 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != equippedItem) game.DoUnequipItem(m_Actor, equippedItem);
     }
 
-    protected ItemLight GetEquippedLight()
+    protected ItemLight GetLight()
     {
       if (m_Actor.Inventory.IsEmpty) return null;
-      foreach (Item obj in m_Actor.Inventory.Items) {
-        if (obj.IsEquipped && obj is ItemLight) return obj as ItemLight;
+      ItemLight ret = null;
+      foreach(Item obj in m_Actor.Inventory.Items) { 
+        if (obj is ItemLight light && !light.IsUseless && (ret?.IsLessUsableThan(light) ?? true)) ret = light;
       }
-      return null;
+      return ret;
     }
 
     /// <returns>true if and only if light should be equipped</returns>
     protected bool BehaviorEquipLight()
     {
-      if (!NeedsLight()) return false;
-      ItemLight tmp = GetEquippedLight();
-      if (!tmp?.IsUseless ?? false) return true;
-      tmp = m_Actor.Inventory.GetFirstMatching<ItemLight>(it => !it.IsUseless);
-      if (tmp != null /* && m_Actor.CanEquip(tmp) */) {
-        RogueForm.Game.DoEquipItem(m_Actor, tmp);
-        return true;
-      }
-      return false;
+      ItemLight tmp = GetLight();
+      if (null == tmp || !NeedsLight()) return false;
+      if (!tmp.IsEquipped /* && (m_Actor.CanEquip(tmp)  */) RogueForm.Game.DoEquipItem(m_Actor, tmp);
+      return true;
     }
 
     /// <returns>true if and only if a cell phone is required to be equipped</returns>

@@ -15,6 +15,7 @@ using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 #if TIME_TURNS
 using System.Diagnostics;
 #endif
@@ -141,10 +142,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       ClearMovePlan();
       BehaviorEquipBodyArmor();
-
-#if TIME_TURNS
-      Stopwatch timer = Stopwatch.StartNew();   // above here tests negligible
-#endif
 
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight() && !BehaviorEquipStenchKiller(game)) {

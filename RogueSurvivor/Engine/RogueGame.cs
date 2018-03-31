@@ -322,6 +322,7 @@ namespace djack.RogueSurvivor.Engine
 
 #if DEBUG
     public static bool IsDebugging;
+    public static readonly Dictionary<long,long> TimingCache = new Dictionary<long, long>();
 #endif
     private readonly IRogueUI m_UI; // this cannot be static.
     private Rules m_Rules;
@@ -2976,6 +2977,13 @@ namespace djack.RogueSurvivor.Engine
 #if DEBUG
       if (null == player) throw new ArgumentNullException(nameof(player));
       if (player.IsSleeping) throw new InvalidOperationException("player.IsSleeping");
+      if (0< TimingCache.Count) {
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "Timing Cache: " + TimingCache.to_s());
+        long acc = 0;
+        foreach(var x in TimingCache) acc += x.Key*x.Value;
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, "Total: " + acc.ToString());
+        TimingCache.Clear();
+      }
 #endif
       player.Controller.UpdateSensors();
       m_Player = player;

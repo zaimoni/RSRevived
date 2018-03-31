@@ -322,9 +322,20 @@ namespace Zaimoni.Data
     // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
     public static string to_s<T>(this HashSet<T> x) {
       if (0 >= x.Count) return "{}";
-      List<string> tmp = new List<string>(x.Count);
+      var tmp = new List<string>(x.Count);
       foreach(T iter in x) {
-        tmp.Add(iter.ToString());
+        tmp.Add(iter.to_s());
+      }
+      tmp[0] = "{"+ tmp[0];
+      tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
+      return string.Join(",\n",tmp);
+    }
+
+    public static string to_s<T,U>(this Dictionary<T,U> x) {
+      if (0 >= x.Count) return "{}";
+      var tmp = new List<string>(x.Count);
+      foreach(var iter in x) {
+        tmp.Add(iter.Key.to_s()+":"+iter.Value.to_s());
       }
       tmp[0] = "{"+ tmp[0];
       tmp[tmp.Count-1] += "} ("+tmp.Count.ToString()+")";
@@ -333,6 +344,11 @@ namespace Zaimoni.Data
 
     public static string to_s(this Point x) {
       return "("+x.X.ToString()+","+x.Y.ToString()+")";
+    }
+
+    // ultimate fallback
+    public static string to_s<T>(this T x) {
+      return x.ToString();
     }
   } // ext_Drawing
 }   // Zaimoni.Data
