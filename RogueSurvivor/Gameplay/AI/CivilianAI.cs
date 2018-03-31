@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
-// #define TIME_TURNS
+#define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;

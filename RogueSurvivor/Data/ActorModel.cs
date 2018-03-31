@@ -52,14 +52,15 @@ namespace djack.RogueSurvivor.Data
       if (null == abilities) throw new ArgumentNullException(nameof(abilities));
       if (null == startingSheet) throw new ArgumentNullException(nameof(startingSheet));
       if (null == defaultController) throw new ArgumentNullException(nameof(defaultController));
-      if (!defaultController.IsSubclassOf(typeof(ActorController))) throw new ArgumentOutOfRangeException(nameof(defaultController), "!defaultController.IsSubclassOf(typeof(ActorController))");
-      if (abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)) throw new ArgumentOutOfRangeException(nameof(abilities)+","+nameof(startingSheet), "abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)");
-      if ((abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(startingSheet), "(abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)");
-      if (abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(startingSheet), "abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)");
-      if (abilities.HasSanity ^ (0 < startingSheet.BaseSanity)) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(startingSheet), "abilities.HasSanity ^ (0 < startingSheet.BaseSanity)");
-      if (abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(defaultController), "abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
-      if (!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(defaultController), "!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
-      if (!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new ArgumentOutOfRangeException(nameof(abilities) + "," + nameof(defaultController), "!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!defaultController.IsSubclassOf(typeof(ActorController))) throw new InvalidOperationException("!defaultController.IsSubclassOf(typeof(ActorController))");
+      if (abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)) throw new InvalidOperationException("abilities.HasInventory ^ (0 < startingSheet.BaseInventoryCapacity)");
+      if ((abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)) throw new InvalidOperationException("(abilities.HasToEat || abilities.IsRotting) ^ (0 < startingSheet.BaseFoodPoints)");
+      if (abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)) throw new InvalidOperationException("abilities.HasToSleep ^ (0 < startingSheet.BaseSleepPoints)");
+      if (abilities.HasSanity ^ (0 < startingSheet.BaseSanity)) throw new InvalidOperationException("abilities.HasSanity ^ (0 < startingSheet.BaseSanity)");
+      if (abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("abilities.CanTrade && !defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.CanBarricade && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!abilities.CanUseItems && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.CanUseItems && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
+      if (!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))) throw new InvalidOperationException("!abilities.HasInventory && defaultController.IsSubclassOf(typeof(Gameplay.AI.OrderableAI))");
 #endif
       ImageID = imageID;
       DollBody = body;

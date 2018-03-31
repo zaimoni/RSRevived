@@ -926,7 +926,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     private ActorAction Equip(ItemRangedWeapon rw) {
-      if (!rw.IsEquipped && m_Actor.CanEquip(rw)) RogueForm.Game.DoEquipItem(m_Actor, rw);
+      if (!rw.IsEquipped /* && m_Actor.CanEquip(rw) */) RogueForm.Game.DoEquipItem(m_Actor, rw);
       if (0 >= rw.Ammo) {
         ItemAmmo ammo = m_Actor.Inventory.GetCompatibleAmmoItem(rw);
         if (null != ammo) return new ActionUseItem(m_Actor, ammo);
@@ -1248,7 +1248,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ItemLight tmp = GetEquippedLight();
       if (!tmp?.IsUseless ?? false) return true;
       tmp = m_Actor.Inventory.GetFirstMatching<ItemLight>(it => !it.IsUseless);
-      if (tmp != null && m_Actor.CanEquip(tmp)) {
+      if (tmp != null /* && m_Actor.CanEquip(tmp) */) {
         RogueForm.Game.DoEquipItem(m_Actor, tmp);
         return true;
       }
@@ -1266,7 +1266,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
       if (!wantCellPhone) return false;
       ItemTracker firstTracker = m_Actor.Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
-      if (firstTracker != null && m_Actor.CanEquip(firstTracker)) {
+      if (firstTracker != null /* && m_Actor.CanEquip(firstTracker) */) {
         game.DoEquipItem(m_Actor, firstTracker);
         return true;
       }
@@ -2208,7 +2208,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!IsGoodStenchKillerSpot(m_Actor.Location.Map, m_Actor.Location.Position)) return false;
       if (GetEquippedStenchKiller() != null) return true;
       ItemSprayScent firstStenchKiller = GetFirstStenchKiller(it => !it.IsUseless);
-      if (firstStenchKiller != null && m_Actor.CanEquip(firstStenchKiller)) {
+      if (firstStenchKiller != null /* && m_Actor.CanEquip(firstStenchKiller) */) {
         game.DoEquipItem(m_Actor, firstStenchKiller);
         return true;
       }
