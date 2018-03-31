@@ -1259,12 +1259,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected bool BehaviorEquipCellPhone(RogueGame game)
     {
       bool wantCellPhone = m_Actor.NeedActiveCellPhone; // XXX could dial 911, at least while that desk is manned
-      ItemTracker equippedCellPhone = m_Actor.GetEquippedCellPhone();
-      if (equippedCellPhone != null) {
-        if (wantCellPhone) return true;
-        game.DoUnequipItem(m_Actor, equippedCellPhone);
-      }
       if (!wantCellPhone) return false;
+      ItemTracker equippedCellPhone = m_Actor.GetEquippedCellPhone();
+      if (null != equippedCellPhone) return true;
       ItemTracker firstTracker = m_Actor.Inventory.GetFirstMatching<ItemTracker>(it => it.CanTrackFollowersOrLeader && !it.IsUseless);
       if (firstTracker != null /* && m_Actor.CanEquip(firstTracker) */) {
         game.DoEquipItem(m_Actor, firstTracker);
