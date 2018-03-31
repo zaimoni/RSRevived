@@ -5620,7 +5620,7 @@ namespace djack.RogueSurvivor.Engine
       actorAction.Perform();
 #if TIME_TURNS
       timer.Stop();
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
+      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
 #endif
     }
 

@@ -635,9 +635,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return IsInterestingItem(offeredItem);
     }
 
-    protected void MaximizeRangedTargets(List<Point> dests, List<Percept> enemies)
+    private void MaximizeRangedTargets(List<Point> dests, List<Percept> enemies)
     {
-      if (null == dests || 2<=dests.Count) return;
+      if (null == dests || 2>dests.Count) return;
 
       var targets = new Dictionary<Point,int>();
       int max_range = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
@@ -863,7 +863,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         // ranged weapon: fast retreat ok
         // XXX but against ranged-weapon targets or no speed advantage may prefer one-shot kills, etc.
         // XXX we also want to be close enough to fire at all
+#if TIME_TURNS
+      Stopwatch timer = Stopwatch.StartNew();
+#endif
         tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
+#if TIME_TURNS
+        timer.Stop();
+        if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": DecideMove " + timer.ElapsedMilliseconds.ToString()+"ms; "+safe_run_retreat.ToString());
+#endif
         if (null != tmpAction) {
           if (tmpAction is ActionMoveStep test) {
             if (safe_run_retreat) RunIfPossible();
@@ -2957,6 +2964,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen = null, List<Location> goals = null)
     {
+      bool starting = (null == goals);
       if (null == goals) goals = new List<Location>();
       HashSet<Point> where_to_go = targets_at(dest);
       if (0 < where_to_go.Count) {
@@ -2965,6 +2973,30 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       if (null == already_seen) already_seen = new List<Map>{ dest };
       else already_seen.Add(dest);
+
+      // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
+      if (starting && 0==where_to_go.Count) {
+        var maps = new HashSet<Map>(dest.destination_maps.Get);
+        if (1<maps.Count) {
+          foreach(Map m in maps.ToList()) {
+            if (1<m.destination_maps.Get.Count) continue;
+            HashSet<Point> go_here = targets_at(m);
+            if (0<go_here.Count) {
+              foreach(Point pt in go_here) goals.Add(new Location(m,pt));
+              already_seen.Add(m);
+              continue;
+            }
+            maps.Remove(m);
+          }
+        }
+        if (1==maps.Count && 0==goals.Count) {
+          foreach(Exit e in maps.First().Exits) {
+            goals.Add(e.Location);
+          }
+          return goals;
+        }
+        // if that isn't enough, we could also use the police and hospital geometries
+      } 
 
       foreach(Map m in dest.destination_maps.Get) {
         if (already_seen.Contains(m)) continue;

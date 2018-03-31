@@ -5,7 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
-#define TIME_TURNS
+// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -160,18 +160,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TIME_TURNS
       timer.Stop();
       if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": percepts_all " + timer.ElapsedMilliseconds.ToString()+"ms");
-      timer.Restart();
 #endif
-      List<Percept> percepts1 = FilterCurrent(percepts_all);
+      List<Percept> percepts1 = FilterCurrent(percepts_all);    // this tests fast
 #if TIME_TURNS
-      timer.Stop();
-      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": percepts1 " + timer.ElapsedMilliseconds.ToString()+"ms");
       timer.Restart();
 #endif
       ReviewItemRatings();  // XXX highly inefficient when called here; should "update on demand"
 #if TIME_TURNS
       timer.Stop();
-      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": SelectAction prologue " + timer.ElapsedMilliseconds.ToString()+"ms");
+      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ReviewItemRatings " + timer.ElapsedMilliseconds.ToString()+"ms");
 #endif
 
 #if TRACE_SELECTACTION
@@ -228,7 +225,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1));
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts1)); // this tests fast
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == enemies ? "null == enemies" : enemies.Count.ToString()+" enemies"));
 #endif
@@ -236,7 +233,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != enemies) m_SafeTurns = 0;
       else ++m_SafeTurns;
 
-      if (null != enemies) m_LastEnemySaw = enemies[game.Rules.Roll(0, enemies.Count)];
+      if (null != enemies) m_LastEnemySaw = game.Rules.DiceRoller.Choose(enemies);
 
       if (!Directives.CanThrowGrenades && m_Actor.GetEquippedWeapon() is ItemGrenade grenade) game.DoUnequipItem(m_Actor, grenade);
 
@@ -246,9 +243,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       List<Point> legal_steps = m_Actor.LegalSteps;
-      Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
-      List<Actor> slow_melee_threat = new List<Actor>();
-      HashSet<Actor> immediate_threat = new HashSet<Actor>();
+      var damage_field = new Dictionary<Point, int>();
+      var slow_melee_threat = new List<Actor>();
+      var immediate_threat = new HashSet<Actor>();
       if (null != enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
       AddTrapsToDamageField(damage_field, percepts1);
       bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts_all);  // only civilians and soldiers respect explosives; CHAR and gang don't
@@ -300,7 +297,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       // if we have no enemies and have not fled an explosion, our friends can see that we're safe
       if (null == enemies) {
-        Dictionary<Actor,ThreatTracking> observers = new Dictionary<Actor, ThreatTracking>();
+        var observers = new Dictionary<Actor, ThreatTracking>();
         if (null != friends) {
           foreach(Percept fr in friends) {
             Actor friend = fr.Percepted as Actor;
@@ -328,8 +325,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       List<ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
+#if TIME_TURNS
+        timer.Restart();
+#endif
 
       tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, enemies, slow_melee_threat);
+#if TIME_TURNS
+        timer.Stop();
+        if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": ManageMeleeRisk " + timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
 #endif
@@ -706,11 +710,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
           // hunt down threats -- works for police
           if (m_Actor.Location.Map==m_Actor.Location.Map.District.EntryMap) {
+#if TIME_TURNS
+         timer.Restart();
+#endif
             tmpAction = BehaviorHuntDownThreatOtherMaps();
+#if TIME_TURNS
+         timer.Stop();
+         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorHuntDownThreatOtherMaps " + timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- on surface");
 #endif
-            if (null != tmpAction) return tmpAction;
+                        if (null != tmpAction) return tmpAction;
           }
         }
 
