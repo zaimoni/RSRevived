@@ -8,6 +8,7 @@
 // #define TRACE_NAVIGATE
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TRACE_BEHAVIORPATHTO
+// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -18,6 +19,9 @@ using djack.RogueSurvivor.Engine.MapObjects;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+#if TIME_TURNS
+using System.Diagnostics;
+#endif
 using System.Linq;
 using Zaimoni.Data;
 
@@ -2670,72 +2674,115 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return 0<tainted.Count;   // XXX could be more efficient?
     }
 
+    private ActorAction GreedyStep(Dictionary<Point, int> move_scores)
+    {
+#if DEBUG
+      if (0 >= (move_scores?.Count ?? 0)) throw new ArgumentNullException(nameof(move_scores));
+#endif
+      var ret = new List<KeyValuePair<Point, int>>();
+      foreach(var x in move_scores) {
+        if (0 >= ret.Count || ret[0].Value==x.Value) {
+          ret.Add(x);
+          continue;
+        }
+        if (ret[0].Value > x.Value) continue;
+        ret.Clear();
+        ret.Add(x);
+      }
+
+      var dests = new List<Point>();
+      foreach(var x in ret) dests.Add(x.Key);
+
+      ActorAction tmp = DecideMove(dests);
+#if DEBUG
+      if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+#endif
+      if (tmp is ActionMoveStep test) {
+        ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
+        m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
+        ReserveSTA(0,0,0,0);
+      }
+      return tmp;
+    }
+
     protected ActorAction BehaviorHuntDownThreatCurrentMap()
     {
       ThreatTracking threats = m_Actor.Threats;
       if (null == threats) return null;
       // 1) clear the current map, unless it's non-vintage sewers
+#if TIME_TURNS
+      Stopwatch timer = Stopwatch.StartNew();
+#endif
       HashSet<Point> tainted = ((m_Actor.Location.Map!=m_Actor.Location.Map.District.SewersMap || !Session.Get.HasZombiesInSewers) ? threats.ThreatWhere(m_Actor.Location.Map) : new HashSet<Point>());
+#if TIME_TURNS
+      timer.Stop();
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": obtain tainted "+timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
       if (0 >= tainted.Count) return null;
       // threat hunting has some unusual features relative to other types of pathing
       // * we are guaranteed that no condidate squares are in our LOS
       // * we would rather not end our move adjacent to threat if we have a ranged weapon
-#if PROTOTYPE
-      List<Point> legal_steps = m_Actor.LegalSteps;
-      if (null == legal_steps) return null;
-
-      var exposed = new Dictionary<Point,int>();
-      var safe_exposed = new Dictionary<Point,int>();
-      foreach (Point pt in legal_steps) {
-        HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
-        los.IntersectWith(tainted);
-        if (0 >= los.Count) continue;
-        exposed[pt] = los.Count;
-        if (los.Any(pt2 => Rules.IsAdjacent(pt2,pt))) continue;
-        safe_exposed[pt] = los.Count;
-      }
-      if (0<safe_exposed.Count) {
-        var ret = new List<KeyValuePair<Point, int>>();
-        foreach(var x in safe_exposed) {
-          if (0 >= ret.Count || ret[0].Value==x.Value) {
-            ret.Add(x);
-            continue;
-          }
-          if (ret[0].Value > x.Value) continue;
-          ret.Clear();
-          ret.Add(x);
-        }
-
-        var costs = new Dictionary<Point,int>();
-        foreach(var x in ret) {
-          costs[x.Key] = 1;
-        }
-        ActorAction tmp = DecideMove(costs);
 #if DEBUG
-        if (null == tmp) throw new ArgumentNullException(nameof(tmp));
+      int fov = m_Actor.FOVrange(m_Actor.Location.Map.LocalTime, Session.Get.World.Weather);
+#if TIME_TURNS
+      timer.Restart();
 #endif
-        if (tmp is ActionMoveStep test) {
-          ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
-          m_Actor.IsRunning = RunIfAdvisable(test.dest.Position); // XXX should be more tactically aware
-          ReserveSTA(0,0,0,0);
+      var near_tainted = new HashSet<Point>();
+      foreach(Point pt in tainted) {
+        if (fov+1 >= Rules.GridDistance(pt,m_Actor.Location.Position)) near_tainted.Add(pt);
+      }
+#if TIME_TURNS
+      timer.Stop();
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": near-tainted "+timer.ElapsedMilliseconds.ToString()+"ms, "+near_tainted.Count.ToString());
+#endif
+      if (0<near_tainted.Count) {
+        
+
+#if TIME_TURNS
+        timer.Restart();
+#endif
+        List<Point> legal_steps = m_Actor.LegalSteps;
+#if TIME_TURNS
+        timer.Stop();
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": LegalSteps "+timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
+        if (null == legal_steps) return null;
+
+        var exposed = new Dictionary<Point,int>();
+        var safe_exposed = new Dictionary<Point,int>();
+#if TIME_TURNS
+        timer.Restart();
+#endif
+        foreach (Point pt in legal_steps) {
+          HashSet<Point> los = LOS.ComputeFOVFor(m_Actor, new Location(m_Actor.Location.Map,pt));
+          los.IntersectWith(near_tainted);
+          if (0 >= los.Count) continue;
+          exposed[pt] = los.Count;
+          if (   m_Actor.RunIsFreeMove
+              || !los.Any(pt2 => Rules.IsAdjacent(pt2, pt))
+              || (m_Actor.Location.Map.GetMapObjectAtExt(pt) is DoorWindow door && door.IsClosed)) {
+            safe_exposed[pt] = los.Count;
+          }
         }
+#if TIME_TURNS
+        timer.Stop();
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": safe_exposed "+timer.ElapsedMilliseconds.ToString()+"ms, "+safe_exposed.Count.ToString());
+#endif
+        if (0<safe_exposed.Count) return GreedyStep(safe_exposed);
+        if (0<exposed.Count) return GreedyStep(exposed);
       }
 #endif
 
-#if FALSE_POSITIVE
+      // this call is measuring as significant CPU on the larger maps
+#if TIME_TURNS
+      timer.Restart();
       {
-      ActorAction ret = BehaviorNavigate(tainted);
-      if (null == ret) {
-        List<string> locs = new List<string>(tainted.Count);
-        foreach(Point pt in tainted) {
-          locs.Add("\n"+(new Location(m_Actor.Location.Map,pt)).ToString());
-        }
-        throw new InvalidOperationException("unreachable threat destinations" + string.Concat(locs.ToArray()));
-      }
+      var ret = BehaviorNavigate(tainted);
+      timer.Stop();
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": BehaviorNavigate "+timer.ElapsedMilliseconds.ToString()+"ms");
       return ret;
       }
 #else
-      // this call is measuring as significant CPU on the larger maps
       return BehaviorNavigate(tainted);
 #endif
     }

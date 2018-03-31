@@ -5,6 +5,7 @@
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
 // #define TRACE_SELECTACTION
+// #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
@@ -14,6 +15,9 @@ using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
+#if TIME_TURNS
+using System.Diagnostics;
+#endif
 using System.Drawing;
 using System.Linq;
 using Zaimoni.Data;
@@ -138,14 +142,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ClearMovePlan();
       BehaviorEquipBodyArmor();
 
+#if TIME_TURNS
+      Stopwatch timer = Stopwatch.StartNew();   // above here tests negligible
+#endif
+
       // start item juggling
       if (!BehaviorEquipCellPhone(game) && !BehaviorEquipLight() && !BehaviorEquipStenchKiller(game)) {
         BehaviorUnequipLeftItem(game);
       }
+#if TIME_TURNS
+      timer.Stop();
+      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorUnequipLeftItem " + timer.ElapsedMilliseconds.ToString()+"ms");
+      timer.Restart();
+#endif
       // end item juggling check
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
+#if TIME_TURNS
+      timer.Stop();
+      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": percepts_all " + timer.ElapsedMilliseconds.ToString()+"ms");
+      timer.Restart();
+#endif
       List<Percept> percepts1 = FilterCurrent(percepts_all);
+#if TIME_TURNS
+      timer.Stop();
+      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": percepts1 " + timer.ElapsedMilliseconds.ToString()+"ms");
+      timer.Restart();
+#endif
       ReviewItemRatings();  // XXX highly inefficient when called here; should "update on demand"
+#if TIME_TURNS
+      timer.Stop();
+      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": SelectAction prologue " + timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
 
 #if TRACE_SELECTACTION
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
@@ -663,7 +690,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
         critical.IntersectWith(GameItems.ammo);
         if (0 >= critical.Count) {
           // hunt down threats -- works for police
-          tmpAction = BehaviorHuntDownThreatCurrentMap();
+#if TIME_TURNS
+         timer.Restart();
+#endif
+         tmpAction = BehaviorHuntDownThreatCurrentMap();
+#if TIME_TURNS
+         timer.Stop();
+         if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": BehaviorHuntDownThreatCurrentMap " + timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
+
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map");
 #endif

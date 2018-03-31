@@ -28,7 +28,9 @@ using System;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Drawing;
+#if TIME_TURNS
 using System.Diagnostics;
+#endif
 using System.IO;
 using System.Linq;
 using System.Security.Permissions;
@@ -5601,7 +5603,6 @@ namespace djack.RogueSurvivor.Engine
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
 #endif
 #if TIME_TURNS
-      Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": starting turn");
       Stopwatch timer = Stopwatch.StartNew();
 #endif
       ActorAction actorAction = aiActor.Controller.GetAction(this);
