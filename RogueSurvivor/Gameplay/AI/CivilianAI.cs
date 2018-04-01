@@ -15,7 +15,6 @@ using djack.RogueSurvivor.Engine.Items;
 using djack.RogueSurvivor.Gameplay.AI.Sensors;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 #if TIME_TURNS
 using System.Diagnostics;
 #endif
