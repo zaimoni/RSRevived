@@ -8551,6 +8551,7 @@ namespace djack.RogueSurvivor.Engine
         AddMessage(MakeMessage(actor, Conjugate(actor, VERB_TAKE), it));
       if (!it.Model.DontAutoEquip && actor.CanEquip(it) && actor.GetEquippedItem(it.Model.EquipmentPart) == null)
         DoEquipItem(actor, it);
+      if (actor.IsPlayer) RedrawPlayScreen();
 #if DEBUG
       if (0< (map.GetItemsAt(position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + map.GetItemsAt(position).ToString());
 #endif
@@ -8648,6 +8649,7 @@ namespace djack.RogueSurvivor.Engine
       if (obj == it) DropItem(actor, it);
       else DropCloneItem(actor, it, obj);
       if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, Conjugate(actor, VERB_DROP), obj));
+      if (actor.IsPlayer) RedrawPlayScreen();
 #if DEBUG
       if (0< (actor.Location.Map.GetItemsAt(actor.Location.Position)?.Items.Intersect(actor.Inventory.Items).Count() ?? 0)) throw new InvalidOperationException("inventories not disjoint after:\n"+actor.Name + "'s inventory: " + actor.Inventory.ToString() + "\nstack inventory: " + actor.Location.Map.GetItemsAt(actor.Location.Position).ToString());
 #endif

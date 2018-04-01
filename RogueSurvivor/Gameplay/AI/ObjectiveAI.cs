@@ -375,6 +375,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
        		 tmp.RemoveAt(i);
              continue;
            }
+           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
+           // target should not be sleeping; check for that anyway
+           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
+
            if (   null == ok_dests // shove is rude
                || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
                 {
@@ -464,6 +468,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
        		 tmp.RemoveAt(i);
              continue;
            }
+           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
+           // target should not be sleeping; check for that anyway
+           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) continue;
+
            if (   null == ok_dests // shove is rude
                || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
                 {
