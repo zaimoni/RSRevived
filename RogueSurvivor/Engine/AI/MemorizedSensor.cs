@@ -8,6 +8,7 @@ using djack.RogueSurvivor.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Drawing;
 
 using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
 
@@ -38,15 +39,25 @@ namespace djack.RogueSurvivor.Engine.AI
 
     public void Forget(Actor actor)
     {
+      // memorized sensor is only used for vision
+      HashSet<Point> FOV = LOS.ComputeFOVFor(actor);
       var tmp = new List<Percept>(m_Percepts.Count);
       foreach(var p in m_Percepts) {
         if (p.GetAge(actor.Location.Map.LocalTime.TurnCounter)>m_Persistance) continue;
         if (p.Percepted is Actor a) {
           if (a.IsDead) continue;
           if (a.Location.Map != actor.Location.Map) continue;   // XXX valid for RS Alpha 6, invalid for RS Revived; want to verify other changes first
+        } else {    // actors need a different test than the following
+          if (p.Location.Map==actor.Location.Map) {
+            if (FOV.Contains(p.Location.Position)) continue;
+          } else {
+            Location? test = actor.Location.Map.Denormalize(p.Location);
+            if (null != test && FOV.Contains(test.Value.Position)) continue;
+          }
         }
         if (p.Percepted is Inventory inv && inv.IsEmpty) continue;
         if (p.Percepted is List<Corpse> corpses && 0>=corpses.Count) continue;
+
         tmp.Add(p);
       }
       m_Percepts = tmp;
