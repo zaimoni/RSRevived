@@ -1936,7 +1936,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (!loc.Map.IsInsideAtExt(loc.Position)) return 0;
       if (!loc.Map.GetTileModelAtExt(loc.Position).IsWalkable) return 0;
       // we don't want to sleep next to anything that looks like an ex-door
-      bool[] walls = Direction.COMPASS.Select(dir => loc.Map.GetTileModelAtExt(loc.Position+dir).IsWalkable).ToArray();
+      bool[] walls = new bool[Direction.COMPASS.Length];
+      foreach(Direction dir in Direction.COMPASS) {
+        Point pt = loc.Position+dir;
+        walls[dir.Index] = loc.Map.IsValid(pt) ? !loc.Map.GetTileModelAtExt(pt).IsWalkable
+                                               : false;
+      }
 
       // reference code...likely not optimal, but easy to verify
       if (walls[Direction.N.Index] && walls[Direction.S.Index]) return 0;
