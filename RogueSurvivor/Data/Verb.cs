@@ -11,7 +11,7 @@ namespace djack.RogueSurvivor.Data
   [Serializable]
   sealed internal class Verb
   {
-    public readonly string YouForm;   // 2nd person singular
+    public readonly string YouForm;   // 2nd person singular; in English typically also 3rd person plural
     public readonly string HeForm;    // 3rd person singular
 
     public Verb(string youForm, string heForm)
