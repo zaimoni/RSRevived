@@ -4,11 +4,9 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
 // #define TRACE_NAVIGATE
-#define TRACE_GOALS
+// #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
-// #define TRACE_BEHAVIORPATHTO
 // #define TIME_TURNS
 
 using djack.RogueSurvivor.Data;
@@ -1755,24 +1753,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return BehaviorPathTo(m => (m==dest.Map ? new HashSet<Point> { dest.Position } : new HashSet<Point>()));
       }
 
-      Zaimoni.Data.FloodfillPathfinder<Point> navigate = m_Actor.Location.Map.PathfindSteps(m_Actor);
-      Map a_map = m_Actor.Location.Map;
-	  navigate.GoalDistance(dest.Position, m_Actor.Location.Position);
-
-#if TRACE_BEHAVIORPATHTO
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "In domain: "+ navigate.Domain.Contains(m_Actor.Location.Position).ToString());
-#endif
-      if (!navigate.Domain.Contains(m_Actor.Location.Position)) return null;
-#if TRACE_BEHAVIORPATHTO
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "apparent range: "+ dist.ToString() + " <=> " + navigate.Cost(m_Actor.Location.Position).ToString());
-#endif
-      if (dist >= navigate.Cost(m_Actor.Location.Position)) return null;
-      // XXX telepathy: do not block an exit which has a non-enemy at the other destination
-      ActorAction tmp3 = DecideMove(PlanApproach(navigate));   // only called when no enemies in sight anyway
-      if (null == tmp3) tmp3 = PlanApproachFailover(navigate);
-      if (null == tmp3) return null;
-      if (VetoAction(tmp3)) return null;
-      return tmp3;
+      return BehaviorNavigate(new Point[1]{ dest.Position });
 	}
 
     protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
@@ -2812,7 +2793,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       allies.IntersectWith(allies.Where(a => !a.HasLeader));
       var covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
       covered.RemoveWhere(m => m==m.District.EntryMap);
-      return BehaviorPathTo(m => (covered.Contains(m) || (Session.Get.HasZombiesInSewers && m.District.SewersMap==m) ? null : threats.ThreatWhere(m)));
+      return BehaviorPathTo(m => (covered.Contains(m) || (Session.Get.HasZombiesInSewers && m.District.SewersMap==m) ? new HashSet<Point>() : threats.ThreatWhere(m)));
     }
 
     // XXX sewers are not guaranteed to be fully connected, so we want reachable exits
