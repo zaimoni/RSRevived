@@ -5610,6 +5610,7 @@ namespace djack.RogueSurvivor.Engine
       if (null == aiActor) throw new ArgumentNullException(nameof(aiActor));
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
 #endif
+      if (aiActor.IsDebuggingTarget) Session.Get.World.DaimonMap(); // so we have a completely correct map when things go wrong
 #if TIME_TURNS
       Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": timing");
       Stopwatch timer = Stopwatch.StartNew();

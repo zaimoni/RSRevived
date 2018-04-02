@@ -595,11 +595,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.HasLeader && !DontFollowLeader) {
         // \todo interposition target for pathing hints, etc. from leader
         int maxDist = m_Actor.Leader.IsPlayer ? FOLLOW_PLAYERLEADER_MAXDIST : FOLLOW_NPCLEADER_MAXDIST;
-        tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
-        if (null != tmpAction) {
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "following leader");
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorFollowActor");
 #endif
+        tmpAction = BehaviorFollowActor(m_Actor.Leader, maxDist);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorFollowActor: "+(tmpAction?.ToString() ?? "null"));
+#endif
+        if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;
           return tmpAction;
@@ -607,7 +610,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       } else if (m_Actor.CountFollowers < m_Actor.MaxFollowers) {
         Percept target = FilterNearest(friends);
         if (target != null) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorLeadActor");
+#endif
           tmpAction = BehaviorLeadActor(target);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorLeadActor: " + (tmpAction?.ToString() ?? "null"));
+#endif
           if (null != tmpAction) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "taking lead");
