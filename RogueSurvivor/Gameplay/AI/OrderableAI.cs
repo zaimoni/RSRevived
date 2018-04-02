@@ -1740,32 +1740,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return null;
     }
 
-    protected bool VetoAction(ActorAction x)
-    {
-      if (x is ActionMoveStep step) {
-        Exit exitAt = m_Actor.Location.Map.GetExitAt(step.dest.Position);
-        Actor actorAt = exitAt?.Location.Actor;
-        if (null!=actorAt && !m_Actor.IsEnemyOf(actorAt)) return true;
-      }
-      if (x is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
-         Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
-         if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
-           // non-moving shove...would rather not spend the stamina if there is a better option
-           if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) return false; // shove is to a wanted destination
-           return true;
-         }
-         // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
-         // target should not be sleeping; check for that anyway
-         if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return true;
-/*
-           if (   null == ok_dests // shove is rude
-               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
-               return tmp;
-*/
-      }
-      return false;
-    }
-
 	protected ActorAction BehaviorPathTo(Location dest,int dist=0)
 	{
       if (dest.Map!=m_Actor.Location.Map) {

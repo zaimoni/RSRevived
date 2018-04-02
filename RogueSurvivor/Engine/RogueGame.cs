@@ -5615,6 +5615,10 @@ namespace djack.RogueSurvivor.Engine
       Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": timing");
       Stopwatch timer = Stopwatch.StartNew();
 #endif
+#if DEBUG
+      int AP_checkpoint = aiActor.ActionPoints;
+      Location loc_checkpoint = aiActor.Location;
+#endif
       ActorAction actorAction = aiActor.Controller.GetAction(this);
       if (aiActor.IsInsane && m_Rules.RollChance(Rules.SANITY_INSANE_ACTION_CHANCE)) {
         ActorAction insaneAction = GenerateInsaneAction(aiActor);
@@ -5631,6 +5635,11 @@ namespace djack.RogueSurvivor.Engine
 #if TIME_TURNS
       timer.Stop();
       /* if (0<timer.ElapsedMilliseconds) */ Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
+#endif
+#if DEBUG
+      if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor)) {
+        throw new InvalidOperationException(aiActor.Name+" got a free action "+actorAction.ToString());
+      }
 #endif
     }
 

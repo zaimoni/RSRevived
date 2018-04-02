@@ -48,6 +48,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_prevLocation.Map == null) m_prevLocation = m_Actor.Location;
       m_Actor.TargetActor = null;
       ActorAction actorAction = SelectAction(game);
+      if ((this as ObjectiveAI)?.VetoAction(actorAction) ?? false) actorAction = null;
 #if DEBUG
       if (!actorAction?.IsLegal() ?? false) throw new InvalidOperationException("illegal action returned from SelectAction");
 #endif
