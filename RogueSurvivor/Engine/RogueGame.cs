@@ -7387,6 +7387,7 @@ namespace djack.RogueSurvivor.Engine
         if (isPlayer) AddMessage(MakeErrorMessage("There is nowhere to go there."));
         return true;
       }
+      Location origin = actor.Location;
       Map map = actor.Location.Map;
       if (isPlayer && askForConfirmation) {
         ClearMessages();
@@ -7441,7 +7442,7 @@ namespace djack.RogueSurvivor.Engine
         SetCurrentMap(exitAt.ToMap);
       }
       OnActorEnterTile(actor);
-      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, (actor.Controller as BaseAI).PrevLocation);
+      if (actor.CountFollowers > 0) DoFollowersEnterMap(actor, exitAt.Location, origin);
       return true;
     }
 
@@ -7456,8 +7457,9 @@ namespace djack.RogueSurvivor.Engine
         List<Point> pointList = null;
         if (Rules.IsAdjacent(from, fo.Location)) {
           pointList = to.Map.FilterAdjacentInMap(to.Position, pt => to.Map.IsWalkableFor(pt, fo));
-          flag3 = (0 >= (pointList?.Count ?? 0));
+          flag3 = (0 < (pointList?.Count ?? 0));
         }
+
         if (!flag3) {
           (actorList ?? (actorList = new List<Actor>())).Add(fo);
         } else if (TryActorLeaveTile(fo)) {
