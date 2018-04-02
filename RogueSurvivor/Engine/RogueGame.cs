@@ -5611,6 +5611,7 @@ namespace djack.RogueSurvivor.Engine
       if (aiActor.IsSleeping) throw new ArgumentOutOfRangeException(nameof(aiActor),"cannot act while sleeping");
 #endif
 #if TIME_TURNS
+      Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": timing");
       Stopwatch timer = Stopwatch.StartNew();
 #endif
       ActorAction actorAction = aiActor.Controller.GetAction(this);
@@ -5628,7 +5629,7 @@ namespace djack.RogueSurvivor.Engine
       actorAction.Perform();
 #if TIME_TURNS
       timer.Stop();
-      if (0<timer.ElapsedMilliseconds) Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
+      /* if (0<timer.ElapsedMilliseconds) */ Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
 #endif
     }
 

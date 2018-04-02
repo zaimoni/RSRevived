@@ -6,6 +6,7 @@
 
 // #define TRACE_IGNORE_MAPS_COVERED_BY_ALLIES
 // #define TRACE_NAVIGATE
+#define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TRACE_BEHAVIORPATHTO
 // #define TIME_TURNS
@@ -2966,11 +2967,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen = null, List<Location> goals = null)
     {
       bool starting = (null == goals);
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals; " + starting.ToString());
+#endif
       if (null == goals) goals = new List<Location>();
       HashSet<Point> where_to_go = targets_at(dest);
       if (0 < where_to_go.Count) {
         foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
       }
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
+#endif
 
       if (null == already_seen) already_seen = new List<Map>{ dest };
       else already_seen.Add(dest);
@@ -2994,6 +3001,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
           foreach(Exit e in maps.First().Exits) {
             goals.Add(e.Location);
           }
+#if TRACE_GOALS
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());
+#endif
           return goals;
         }
         // if that isn't enough, we could also use the police and hospital geometries

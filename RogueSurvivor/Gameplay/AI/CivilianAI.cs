@@ -693,6 +693,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TIME_TURNS
          timer.Restart();
 #endif
+#if TRACE_SELECTACTION
+         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "ammo not critically low");
+#endif
          tmpAction = BehaviorHuntDownThreatCurrentMap();
 #if TIME_TURNS
          timer.Stop();
@@ -700,7 +703,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map");
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map: "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null != tmpAction) return tmpAction;
 
@@ -717,14 +720,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- on surface");
 #endif
-                        if (null != tmpAction) return tmpAction;
+            if (null != tmpAction) return tmpAction;
           }
         }
 
         // tourism -- works for police
         tmpAction = BehaviorTourismCurrentMap();
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, current map");
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, current map: "+(tmpAction?.ToString() ?? "null"));
 #endif
         if (null != tmpAction) return tmpAction;
 
@@ -735,8 +738,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         if (HasBehaviorThatRecallsToSurface && m_Actor.Location.Map.District.HasAccessiblePowerGenerators) {
           if (WantToRecharge()) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering recharge");
+#endif
             FloodfillPathfinder<Point> navigate = PathfinderFor(m => new HashSet<Point>(m.PowerGenerators.Get.Select(obj => obj.Location.Position)));
             tmpAction = BehaviorPathTo(navigate);
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering recharge: "+(tmpAction?.ToString() ?? "null"));
+#endif
             if (null != tmpAction) return tmpAction;
           }
 #if FAIL
@@ -760,8 +769,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
             tmpAction = BehaviorResupply(want);
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok");
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resupplying: "+tmpAction.ToString());
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok: "+(tmpAction?.ToString() ?? "null"));
 #endif
             if (null != tmpAction) return tmpAction;
           }
@@ -770,18 +778,24 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (0 >= critical.Count) {
           // hunt down threats -- works for police
           if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
+#if TRACE_SELECTACTION
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorHuntDownThreatOtherMaps");
+#endif
             tmpAction = BehaviorHuntDownThreatOtherMaps();
 #if TRACE_SELECTACTION
-            if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface");
+            if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface: "+(tmpAction?.ToString() ?? "null"));
 #endif
             if (null != tmpAction) return tmpAction;
           }
         }
 
         // tourism -- works for police
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorTourismOtherMaps");
+#endif
         tmpAction = BehaviorTourismOtherMaps();
 #if TRACE_SELECTACTION
-        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, other map");
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "tourism, other map: "+(tmpAction?.ToString() ?? "null"));
 #endif
         if (null != tmpAction) return tmpAction;
 #if TRACE_SELECTACTION
@@ -790,17 +804,20 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
         // if we cannot do anyting constructive, hunt down threat even if critical shortage
         if (0 < critical.Count) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat even though unprepared");
+#endif
           // hunt down threats -- works for police
           tmpAction = BehaviorHuntDownThreatCurrentMap();
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map");
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, current map: "+(tmpAction?.ToString() ?? "null"));
 #endif
           if (null != tmpAction) return tmpAction;
 
           // hunt down threats -- works for police
           tmpAction = BehaviorHuntDownThreatOtherMaps();
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- cannot prepare");
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- cannot prepare: " + (tmpAction?.ToString() ?? "null"));
 #endif
           if (null != tmpAction) return tmpAction;
         }
