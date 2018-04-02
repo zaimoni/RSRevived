@@ -2874,6 +2874,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
       ThreatTracking threats = m_Actor.Threats;
       if (null == threats) return null;
 
+#if DEBUG
+      Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+      if (0 < (stacks?.Count ?? 0)) {
+        foreach(var x in stacks) {
+          Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
+          if (null == loc) throw new ArgumentNullException(nameof(loc));
+          ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
+          if (null != tmpAction) return tmpAction;
+        }
+      }
+      return BehaviorPathTo(m => (Session.Get.HasZombiesInSewers && m.District.SewersMap==m ? null : threats.ThreatWhere(m)));
+#else
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       // XXX probably should exclude secret maps
       var possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
@@ -2908,6 +2920,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       valid_exits.OnlyIf(e=>unhandled.Contains(e.ToMap));
       return BehaviorHeadForExit(valid_exits);
+#endif
     }
 
     // XXX sewers are not guaranteed to be fully connected, so we want reachable exits
@@ -2916,6 +2929,22 @@ namespace djack.RogueSurvivor.Gameplay.AI
       LocationSet sights_to_see = m_Actor.InterestingLocs;
       if (null == sights_to_see) return null;
 
+#if DEBUG
+      Dictionary<Point, Inventory> stacks = m_Actor.Location.Map.GetAccessibleInventories(m_Actor.Location.Position);
+      if (0 < (stacks?.Count ?? 0)) {
+        foreach(var x in stacks) {
+          Location? loc = (m_Actor.Location.Map.IsInBounds(x.Key) ? new Location(m_Actor.Location.Map,x.Key) : m_Actor.Location.Map.Normalize(x.Key));
+          if (null == loc) throw new ArgumentNullException(nameof(loc));
+          ActorAction tmpAction = BehaviorGrabFromAccessibleStack(loc.Value, x.Value);
+          if (null != tmpAction) return tmpAction;
+        }
+      }
+
+      HashSet<Actor> allies = m_Actor.Allies ?? new HashSet<Actor>();
+      allies.IntersectWith(allies.Where(a => !a.HasLeader));
+      var covered = new HashSet<Map>(allies.Select(a => a.Location.Map));
+      return BehaviorPathTo(m => covered.Contains(m) ? new HashSet<Point>() : sights_to_see.In(m));
+#else
       Dictionary<Point,Exit> valid_exits = m_Actor.Location.Map.AI_exits.Get;
       // XXX probably should exclude secret maps
       var possible_destinations = new HashSet<Map>(m_Actor.Location.Map.destination_maps.Get);
@@ -2962,28 +2991,27 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #else
       return null;    // XXX should use Map::PathTo but it doesn't have the ordering knowledge required yet
 #endif
+#endif
     }
 
-    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen = null, List<Location> goals = null)
+    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest)
     {
-      bool starting = (null == goals);
 #if TRACE_GOALS
-      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals; " + starting.ToString());
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 1)");
 #endif
-      if (null == goals) goals = new List<Location>();
+      var goals = new List<Location>();
       HashSet<Point> where_to_go = targets_at(dest);
-      if (0 < where_to_go.Count) {
-        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
-      }
 #if TRACE_GOALS
       if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
 #endif
+      if (0 < where_to_go.Count) {
+        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
+      }
 
-      if (null == already_seen) already_seen = new List<Map>{ dest };
-      else already_seen.Add(dest);
+      var already_seen = new List<Map>{ dest };
 
       // The SWAT team can have a fairly impressive pathing degeneration at game start (they want their heavy hammers, etc.)
-      if (starting && 0==where_to_go.Count) {
+      if (0==where_to_go.Count) {
         var maps = new HashSet<Map>(dest.destination_maps.Get);
         if (1<maps.Count) {
           foreach(Map m in maps.ToList()) {
@@ -2998,8 +3026,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (1==maps.Count && 0==goals.Count) {
-          foreach(Exit e in maps.First().Exits) {
-            goals.Add(e.Location);
+          Dictionary<Point,Exit> exits = dest.GetExits(e => maps.Contains(e.ToMap));
+          foreach(var pos_exit in exits) {
+            Location loc = new Location(dest, pos_exit.Key);
+            goals.Add(loc==m_Actor.Location ? pos_exit.Value.Location : loc);
           }
 #if TRACE_GOALS
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name + ": short-circuit exit " + goals.to_s());
@@ -3016,13 +3046,34 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return goals;
     }
 
-    protected FloodfillPathfinder<Location> PathfinderFor(Func<Map, HashSet<Point>> targets_at, Map dest)
+    private List<Location> Goals(Func<Map, HashSet<Point>> targets_at, Map dest, List<Map> already_seen, List<Location> goals)
+    {
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": OrderableAI::Goals (depth 2+)");
+#endif
+      HashSet<Point> where_to_go = targets_at(dest);
+      if (0 < where_to_go.Count) {
+        foreach(Point pt in where_to_go) goals.Add(new Location(dest,pt));
+      }
+#if TRACE_GOALS
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+ ": where_to_go " + where_to_go.to_s());
+#endif
+
+      already_seen.Add(dest);
+
+      foreach(Map m in dest.destination_maps.Get) {
+        if (already_seen.Contains(m)) continue;
+        Goals(targets_at,m,already_seen,goals);
+      }
+      return goals;
+    }
+
+    protected FloodfillPathfinder<Location> PathfinderFor(List<Location> goals, Map dest)
     {
 #if DEBUG
-      if (null == targets_at) throw new ArgumentNullException(nameof(targets_at));
+      if (0 >= (goals?.Count ?? 0)) throw new ArgumentNullException(nameof(goals));
 #endif
       var navigate = dest.PathfindLocSteps(m_Actor);
-      var goals = Goals(targets_at, dest);
 
       navigate.GoalDistance(goals, m_Actor.Location);
       return navigate;
@@ -3122,11 +3173,37 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public ActorAction BehaviorPathTo(Func<Map,HashSet<Point>> targets_at)
     {
-#if DEBUG
-      return BehaviorPathTo(PathfinderFor(targets_at,m_Actor.Location.Map));
-#else
-      return BehaviorPathTo(PathfinderFor(targets_at));
-#endif
+      List<Location> goals = Goals(targets_at, m_Actor.Location.Map);
+      if (0 >= goals.Count) return null;
+      {
+      var already = new Dictionary<Location, ActorAction>();
+      Dictionary<Location, ActorAction> moves = m_Actor.OnePath(m_Actor.Location, already);
+      foreach(Location loc in goals) {
+        if (moves.ContainsKey(loc)) {
+          ActorAction tmp = moves[loc];
+          if (!tmp.IsLegal()) return null;
+          if (tmp is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
+           Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
+           if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
+             // non-moving shove...would rather not spend the stamina if there is a better option
+             if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) return tmp; // shove is to a wanted destination
+             return null;
+           }
+           // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
+           // target should not be sleeping; check for that anyway
+           if (null!=shove.Target.Location.Exit && !shove.Target.IsSleeping) return null;
+/*
+           if (   null == ok_dests // shove is rude
+               || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
+               return tmp;
+*/
+          }
+          return tmp;
+        }
+      }
+      }
+
+      return BehaviorPathTo(PathfinderFor(goals,m_Actor.Location.Map));
     }
 
     protected ActorAction BehaviorResupply(HashSet<GameItems.IDs> critical)
