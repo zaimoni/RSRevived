@@ -509,6 +509,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
                return tmp;
 */
       }
+      if (x is ActionUseExit exit && exit.IsBlocked) return true;
+
       return false;
     }
 

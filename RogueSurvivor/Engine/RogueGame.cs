@@ -5637,7 +5637,7 @@ namespace djack.RogueSurvivor.Engine
       /* if (0<timer.ElapsedMilliseconds) */ Logger.WriteLine(Logger.Stage.RUN_MAIN, aiActor.Name+": "+timer.ElapsedMilliseconds.ToString()+"ms");
 #endif
 #if DEBUG
-      if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor)) {
+      if (AP_checkpoint == aiActor.ActionPoints && loc_checkpoint == aiActor.Location && !(actorAction is ActionCloseDoor || actorAction is ActionSay)) {
         throw new InvalidOperationException(aiActor.Name+" got a free action "+actorAction.ToString());
       }
 #endif
@@ -11175,6 +11175,7 @@ namespace djack.RogueSurvivor.Engine
       var players = new List<Actor>();
       survey.DoForEach(pt => {
         Actor player = map.GetActorAtExt(pt);
+        if (!player?.IsPlayer ?? true) return;
 #if DEBUG
         // having problems with killed PCs showing up as viewpoints
         if (player?.IsDead ?? false) throw new InvalidOperationException("dead player on map");
@@ -11182,7 +11183,6 @@ namespace djack.RogueSurvivor.Engine
 #else
         if (player?.IsDead ?? true) return;
 #endif        
-        if (!player?.IsPlayer ?? true) return;
         if (!player.Controller.CanSee(new Location(map, position))) return;
         players.Add(player);
       });
