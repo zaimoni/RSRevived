@@ -1893,10 +1893,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
     protected int SleepLocationRating(Location loc)
     {
       // the legacy tests
-      if (loc.Map.GetMapObjectAtExt(loc.Position) is DoorWindow) return -1;  // contextual; need to be aware of doors
+      MapObject obj = loc.Map.GetMapObjectAtExt(loc.Position);
+      if (obj is DoorWindow) return -1;  // contextual; need to be aware of doors
       if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return 0;
       if (loc.Map.HasExitAtExt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
       if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
+      if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad
 
       // geometric code (walls, etc)
       if (!loc.Map.IsInsideAtExt(loc.Position)) return 0;
@@ -1916,6 +1918,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (walls[Direction.S.Index] && walls[Direction.SW.Index] != walls[Direction.SE.Index]) return 0;
       if (walls[Direction.W.Index] && walls[Direction.NW.Index] != walls[Direction.SW.Index]) return 0;
       if (walls[Direction.E.Index] && walls[Direction.NE.Index] != walls[Direction.SE.Index]) return 0;
+      if (!walls[Direction.N.Index] && walls[Direction.NW.Index] && walls[Direction.NE.Index]) return 0;
+      if (!walls[Direction.S.Index] && walls[Direction.SW.Index] && walls[Direction.SE.Index]) return 0;
+      if (!walls[Direction.W.Index] && walls[Direction.NW.Index] && walls[Direction.SW.Index]) return 0;
+      if (!walls[Direction.E.Index] && walls[Direction.NE.Index] && walls[Direction.SE.Index]) return 0;
 
       // contextual code.  Context-free version would return int.MaxValue to request this.  static value would asusmed "passed"
       // XXX \todo if the LOS has a non-broken door then we're on the wrong side.  We should be pathing to it, but *not* securing the perimter.
