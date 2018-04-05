@@ -1802,28 +1802,38 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     // belongs with CivilianAI, or possibly OrderableAI but NatGuard may not have access to the crime listings
-    protected ActorAction BehaviorEnforceLaw(RogueGame game, List<Percept> percepts)
+    protected ActorAction BehaviorEnforceLaw()
     {
 #if DEBUG
       if (!m_Actor.Model.Abilities.IsLawEnforcer) throw new InvalidOperationException("!m_Actor.Model.Abilities.IsLawEnforcer");
 #endif
-      if (percepts == null) return null;
-      List<Percept> percepts1 = percepts.FilterT<Actor>(a => 0< a.MurdersCounter && !m_Actor.IsEnemyOf(a));
-      if (null == percepts1) return null;
-      if (!game.Rules.RollChance(LAW_ENFORCE_CHANCE)) return null;
-      // XXX V.0.10.0 this needs a rethinking (a well-armed murderer may be of more use killing z, a weak one should be assassinated)
-      Percept percept = FilterNearest(percepts1);
-      Actor target = percept.Percepted as Actor;
-      if (game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, target))) {
-        game.DoEmote(target, string.Format("moves unnoticed by {0}.", (object)m_Actor.Name));
-        return null;
+      Dictionary<Point,Actor> friends = friends_in_FOV;
+      if (null == friends) return null;
+      Dictionary<Point,Actor> murderers = null;
+      foreach(var x in friends) {
+        if (0 >= x.Value.MurdersCounter) continue;
+        (murderers ?? (murderers = new Dictionary<Point, Actor>()))[x.Key] = x.Value;
       }
-      game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", (object) target.Name));
-      if (!game.Rules.RollChance(Rules.ActorSpotMurdererChance(m_Actor, target))) return null;
-      game.DoMakeAggression(m_Actor, target);
-      m_Actor.TargetActor = target;
-      // players are special: they get to react to this first
-      return new ActionSay(m_Actor, target, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(target.MurdersCounter).ToUpper()), (target.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
+      if (null == murderers) return null;
+      RogueGame game = RogueForm.Game;
+      if (!game.Rules.RollChance(LAW_ENFORCE_CHANCE)) return null;
+      friends = null;  // enable auto GC
+      foreach(var x in murderers) {
+        if (game.Rules.RollChance(Rules.ActorUnsuspicousChance(m_Actor, x.Value))) game.DoEmote(x.Value, string.Format("moves unnoticed by {0}.", m_Actor.Name));
+        else (friends ?? new Dictionary<Point, Actor>())[x.Key] = x.Value;
+      }
+      if (null == friends) return null;
+      // at this point, entries in friends are murderers that have elicited suspicion
+      foreach(var x in friends) {
+        game.DoEmote(m_Actor, string.Format("takes a closer look at {0}.", x.Value.Name));
+        if (!game.Rules.RollChance(Rules.ActorSpotMurdererChance(m_Actor, x.Value))) continue;
+        // XXX \todo V.0.10.0 this needs a rethinking (a well-armed murderer may be of more use killing z, a weak one should be assassinated)
+        game.DoMakeAggression(m_Actor, x.Value);
+        m_Actor.TargetActor = x.Value;
+        // players are special: they get to react to this first
+        return new ActionSay(m_Actor, x.Value, string.Format("HEY! YOU ARE WANTED FOR {0}!", "murder".QtyDesc(x.Value.MurdersCounter).ToUpper()), (x.Value.IsPlayer ? RogueGame.Sayflags.IS_IMPORTANT : RogueGame.Sayflags.IS_IMPORTANT | RogueGame.Sayflags.IS_FREE_ACTION));
+      }
+      return null;
     }
 
     protected ActorAction BehaviorBuildLargeFortification(RogueGame game, int startLineChance)

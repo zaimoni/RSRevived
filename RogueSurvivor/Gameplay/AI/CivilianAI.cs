@@ -676,15 +676,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       });
       if (percept1 != null) m_LastSoldierSaw = percept1;
 
-	  if (null != friends) {
-        if (m_Actor.Model.Abilities.IsLawEnforcer) {
-          tmpAction = BehaviorEnforceLaw(game, friends);
+      if (m_Actor.Model.Abilities.IsLawEnforcer) {
+        tmpAction = BehaviorEnforceLaw();
 #if TRACE_SELECTACTION
-          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law");
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "enforcing law");
 #endif
-          if (null != tmpAction) return tmpAction;
-        }
-	  }
+        if (null != tmpAction) return tmpAction;
+      }
 
       // XXX civilians that start in a boarded-up building (sewer maintenance, gun shop, hardware store
       // should stay there until they get the all-clear from the police
