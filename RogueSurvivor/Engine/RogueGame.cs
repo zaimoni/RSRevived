@@ -3562,6 +3562,7 @@ namespace djack.RogueSurvivor.Engine
           m_UI.UI_DrawStringBold(color, string.Format("{0}{1}{2}", ch, str, ch), num4 + index2 * 48, num5 + (index1 * 3 + 1) * BOLD_LINE_SPACING, new Color?());
           m_UI.UI_DrawStringBold(color, text, num4 + index2 * 48, num5 + (index1 * 3 + 2) * BOLD_LINE_SPACING, new Color?());
         }
+      }
 
         int num6 = Session.Get.World.Size / 2;
         for (int index = 1; index < Session.Get.World.Size; ++index)
@@ -3636,7 +3637,6 @@ namespace djack.RogueSurvivor.Engine
             }
           }
         }
-      }
       DrawFootnote(Color.White, "press ESC to leave");
       m_UI.UI_Repaint();
       WaitEscape();
