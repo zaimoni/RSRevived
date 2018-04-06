@@ -363,16 +363,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = Rules.IsPathableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
-        if (null == ret || !ret.IsLegal()) {    // not really an option
-		  tmp.RemoveAt(i);
-          continue;
-        }
+        tmp.RemoveAt(i);
+        if (!ret?.IsLegal() ?? true) continue;  // not really an option
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
            if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
              if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
-       		 tmp.RemoveAt(i);
              continue;
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
@@ -383,7 +380,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
                 {
                 secondary.Add(ret);
-    		    tmp.RemoveAt(i);
                 continue;
                 }
         }
@@ -452,12 +448,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 	  while(0<tmp.Count) {
 	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
 		ActorAction ret = (legal_steps.ContainsKey(tmp[i]) ? legal_steps[tmp[i]] : null);
-        if (!ret?.IsLegal() ?? true) {    // not really an option
-		  tmp.RemoveAt(i);
-          continue;
-        }
+        tmp.RemoveAt(i);
+        if (!ret?.IsLegal() ?? true) continue; // not really an option
         if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
-		  tmp.RemoveAt(i);
           continue;
         };
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
@@ -465,7 +458,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
            if (Rules.IsAdjacent(shove.To,m_Actor.Location.Position)) {
              // non-moving shove...would rather not spend the stamina if there is a better option
              if (null != ok_dests  && ok_dests.ContainsKey(shove.To)) secondary.Add(ret); // shove is to a wanted destination
-       		 tmp.RemoveAt(i);
              continue;
            }
            // discard action if the target is on an in-bounds exit (target is likely pathing through the chokepoint)
@@ -476,7 +468,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
                || !ok_dests.ContainsKey(shove.To)) // shove is not to a wanted destination
                 {
                 secondary.Add(ret);
-    		    tmp.RemoveAt(i);
                 continue;
                 }
         }

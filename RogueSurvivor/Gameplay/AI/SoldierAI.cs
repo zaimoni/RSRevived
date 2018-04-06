@@ -4,6 +4,8 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
+// #define TRACE_SELECTACTION
+
 using djack.RogueSurvivor.Data;
 using djack.RogueSurvivor.Engine;
 using djack.RogueSurvivor.Engine.Actions;
@@ -74,6 +76,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> percepts_all = FilterSameMap(UpdateSensors());
 
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": "+m_Actor.Location.Map.LocalTime.TurnCounter.ToString());
+#endif
+
       // OrderableAI specific: respond to orders
       if (null != Order) {
         ActorAction actorAction = ExecuteOrder(game, Order, percepts_all);
@@ -90,6 +96,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       m_Exploration.Update(m_Actor.Location);
 
       // New objectives system
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, Objectives.Count.ToString()+" objectives");
+#endif
       if (0<Objectives.Count) {
         ActorAction goal_action = null;
         foreach(Objective o in new List<Objective>(Objectives)) {
@@ -108,6 +117,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
       List<Percept> old_enemies = FilterEnemies(percepts_all);
       List<Percept> current_enemies = SortByGridDistance(FilterCurrent(old_enemies));
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == old_enemies ? "null == current_enemies" : old_enemies.Count.ToString()+" enemies"));
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, (null == current_enemies ? "null == current_enemies" : current_enemies.Count.ToString()+" enemies"));
+#endif
 
       ActorAction tmpAction = null;
 
@@ -115,9 +128,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // if energy above 50, then we have a free move (range 2 evasion, or range 1/attack), otherwise range 1
       // must be above equip weapon check as we don't want to reload in an avoidably dangerous situation
       List<Point> legal_steps = m_Actor.LegalSteps;
-      Dictionary<Point,int> damage_field = new Dictionary<Point, int>();
-      List<Actor> slow_melee_threat = new List<Actor>();
-      HashSet<Actor> immediate_threat = new HashSet<Actor>();
+      var damage_field = new Dictionary<Point, int>();
+      var slow_melee_threat = new List<Actor>();
+      var immediate_threat = new HashSet<Actor>();
       if (null != current_enemies) VisibleMaximumDamage(damage_field, slow_melee_threat, immediate_threat);
       AddTrapsToDamageField(damage_field, percepts_all);
       bool in_blast_field = AddExplosivesToDamageField(damage_field, percepts_all);  // only civilians and soldiers respect explosives; CHAR and gang don't
@@ -158,6 +171,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (in_blast_field) {
         tmpAction = (safe_run_retreat ? DecideMove(legal_steps, run_retreat) : ((null != retreat) ? DecideMove(retreat) : null));
         if (null != tmpAction) {
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "fleeing explosives");
+#endif
           if (tmpAction is ActionMoveStep) RunIfPossible();
           m_Actor.Activity = Activity.FLEEING_FROM_EXPLOSIVE;
           return tmpAction;
@@ -167,38 +183,70 @@ namespace djack.RogueSurvivor.Gameplay.AI
       List<Engine.Items.ItemRangedWeapon> available_ranged_weapons = GetAvailableRangedWeapons();
 
       tmpAction = ManageMeleeRisk(legal_steps, retreat, run_retreat, safe_run_retreat, available_ranged_weapons, current_enemies, slow_melee_threat);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "managing melee risk");
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (null != current_enemies) {
         tmpAction = BehaviorThrowGrenade(game, current_enemies);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
       tmpAction = BehaviorEquipWeapon(game, legal_steps, available_ranged_weapons, current_enemies, immediate_threat);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "probably reloading");
+#endif
       if (null != tmpAction) return tmpAction;
 
       // all free actions have to be before targeting enemies
       if (null != current_enemies) {
         if (null != friends && game.Rules.RollChance(50)) {
           tmpAction = BehaviorWarnFriends(friends, FilterNearest(current_enemies).Percepted as Actor);
+#if TRACE_SELECTACTION
+          if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "warning friends");
+#endif
           if (null != tmpAction) return tmpAction;
         }
         tmpAction = BehaviorFightOrFlee(game, current_enemies, damage_field, ActorCourage.COURAGEOUS, SoldierAI.FIGHT_EMOTES);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "having to fight w/o ranged weapons");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
       tmpAction = BehaviorUseMedecine(2, 1, 2, 4, 2);
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorUseMedecine ok"); // TRACER
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "medicating");
+#endif
       if (null != tmpAction) return tmpAction;
       tmpAction = BehaviorRestIfTired();
+#if TRACE_SELECTACTION
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorRestIfTired ok"); // TRACER
+      if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "resting");
+#endif
       if (null != tmpAction) return tmpAction;
 
       if (null != old_enemies) {
         tmpAction = BehaviorChargeEnemy(FilterNearest(old_enemies));
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget ) Logger.WriteLine(Logger.Stage.RUN_MAIN, "charging enemies");
+#endif
         if (null != tmpAction) return tmpAction;
       }
 
       if (null == old_enemies && WantToSleepNow) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorNavigateToSleep");
+#endif
         tmpAction = BehaviorNavigateToSleep();
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "navigating to sleep");
+#endif
         if (null != tmpAction) return tmpAction;
       }
       tmpAction = BehaviorDropUselessItem();
@@ -232,7 +280,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (m_Actor.HasLeader && !DontFollowLeader) {
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorHangAroundActor");
+#endif
         tmpAction = BehaviorHangAroundActor(game, m_Actor.Leader, FOLLOW_LEADER_MIN_DIST, FOLLOW_LEADER_MAX_DIST);    // SoldierAI difference here probably ok
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorHangAroundActor: "+(tmpAction?.ToString() ?? "null"));
+#endif
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FOLLOWING;
           m_Actor.TargetActor = m_Actor.Leader;

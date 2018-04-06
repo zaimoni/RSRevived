@@ -4,7 +4,7 @@
 // MVID: D2AE4FAE-2CA8-43FF-8F2F-59C173341976
 // Assembly location: C:\Private.app\RS9Alpha.Hg\RogueSurvivor.exe
 
-// #define TRACE_NAVIGATE
+#define TRACE_NAVIGATE
 // #define TRACE_GOALS
 #define INTEGRITY_CHECK_ITEM_RETURN_CODE
 // #define TIME_TURNS
@@ -1758,7 +1758,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected ActorAction BehaviorHangAroundActor(RogueGame game, Actor other, int minDist, int maxDist)
     {
-      if (other == null || other.IsDead) return null;
+      if (other?.IsDead ?? true) return null;
       Point otherPosition = other.Location.Position;
       int num = 0;
       Location loc;
@@ -2594,11 +2594,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (m_Actor.IsDebuggingTarget && 0 >= dest.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no possible moves for navigation");
       if (m_Actor.IsDebuggingTarget && 0 >= exposed.Count) Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": no acceptable moves for navigation");
       if (m_Actor.IsDebuggingTarget && 0 < exposed.Count) {
-        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": consdiring navigation from ("+m_Actor.Location.Position.X.ToString()+","+ m_Actor.Location.Position.Y.ToString() + ")");
+        Logger.WriteLine(Logger.Stage.RUN_MAIN, m_Actor.Name+": considering navigation from "+m_Actor.Location.Position.to_s());
         List<string> msg = new List<string>();
-        msg.Add("src:(" + m_Actor.Location.Position.X.ToString() + "," + m_Actor.Location.Position.Y.ToString() + "): " + navigate.Cost(m_Actor.Location.Position).ToString());
+        msg.Add("src:" + m_Actor.Location.Position.to_s() + ": " + navigate.Cost(m_Actor.Location.Position).ToString());
         foreach(Point pt in exposed.Keys) {
-          msg.Add("(" + pt.X.ToString() + "," + pt.Y.ToString() + "): " + navigate.Cost(pt).ToString() + "," + exposed[pt].ToString());
+          msg.Add(pt.to_s() + ": " + navigate.Cost(pt).ToString() + "," + exposed[pt].ToString());
         }
         msg.Sort();
         foreach(string x in msg) {
@@ -2615,8 +2615,17 @@ namespace djack.RogueSurvivor.Gameplay.AI
       foreach(Point pt in exposed.Keys) {
         costs[pt] = navigate.Cost(pt);
       }
+#if TRACE_NAVIGATE
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling DecideMove");
+#endif
       ActorAction ret = DecideMove(costs);
+#if TRACE_NAVIGATE
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "DecideMove: "+(ret?.ToString() ?? "null"));
+#endif
       if (null == ret) ret = PlanApproachFailover(navigate);
+#if TRACE_NAVIGATE
+      if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "final: "+(ret?.ToString() ?? "null"));
+#endif
       if (null == ret) return null; // can happen due to postprocessing
       if (ret is ActionMoveStep test) {
         ReserveSTA(0,1,0,0);    // for now, assume we must reserve one melee attack of stamina (which is at least as much as one push/jump, typically)
