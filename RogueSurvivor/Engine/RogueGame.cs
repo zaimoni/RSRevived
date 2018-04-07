@@ -9997,7 +9997,12 @@ namespace djack.RogueSurvivor.Engine
           }
         }
       }
-      if (!isStartingGame) deadVictim.Location.Place(actor);
+      if (!isStartingGame) {
+        deadVictim.Location.Place(actor);
+#if ENABLE_THREAT_TRACKING
+	    Session.Get.PoliceTrackingThroughExitSpawn(actor);
+#endif
+      }
       SkillTable skillTable = deadVictim.Sheet.SkillTable;
       if (0 < (skillTable?.CountSkills ?? 0)) {
         int countSkills = skillTable.CountSkills;
