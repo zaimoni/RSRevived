@@ -696,9 +696,18 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "considering advanced pathing");
 #endif
-        HashSet<GameItems.IDs> critical = WhatDoINeedNow();
-        critical.IntersectWith(GameItems.ammo);
-        if (0 >= critical.Count) {
+        HashSet<GameItems.IDs> combat_critical = WhatDoINeedNow();
+        combat_critical.IntersectWith(GameItems.ammo);
+        HashSet<Gameplay.GameItems.IDs> want = (null != items ? WhatDoIWantNow() : new HashSet<Gameplay.GameItems.IDs>());    // non-emergency things
+        // while we want to account for what our followers want, we don't want to block our followers from the items either
+        if (null != items) want.IntersectWith(items);
+        bool early_hunt_threat_other_maps = (m_Actor.Location.Map == m_Actor.Location.Map.District.EntryMap && 0 >= want.Count);
+#if TRACE_SELECTACTION
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "critical: "+combat_critical.to_s());
+        if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "want: "+want.to_s());
+#endif
+
+        if (0 >= combat_critical.Count) {
           // hunt down threats -- works for police
 #if TIME_TURNS
          timer.Restart();
@@ -718,7 +727,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
           if (null != tmpAction) return tmpAction;
 
           // hunt down threats -- works for police
-          if (m_Actor.Location.Map==m_Actor.Location.Map.District.EntryMap) {
+          if (early_hunt_threat_other_maps) {
 #if TIME_TURNS
          timer.Restart();
 #endif
@@ -769,11 +778,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         }
 
-        if (null != items) {
-          HashSet<Gameplay.GameItems.IDs> want = WhatDoIWantNow();    // non-emergency things
-          // while we want to account for what our followers want, we don't want to block our followers from the items either
-          want.IntersectWith(items);
-          if (0 < want.Count) {
+        if (0 < want.Count) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorResupply (want)");
 #endif
@@ -782,12 +787,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "BehaviorResupply ok: "+(tmpAction?.ToString() ?? "null"));
 #endif
             if (null != tmpAction) return tmpAction;
-          }
         }
 
-        if (0 >= critical.Count) {
+        if (0 >= combat_critical.Count && !early_hunt_threat_other_maps) {
           // hunt down threats -- works for police
-          if (m_Actor.Location.Map!=m_Actor.Location.Map.District.EntryMap) {
 #if TRACE_SELECTACTION
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "calling BehaviorHuntDownThreatOtherMaps");
 #endif
@@ -796,7 +799,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat, other maps -- not on surface: "+(tmpAction?.ToString() ?? "null"));
 #endif
             if (null != tmpAction) return tmpAction;
-          }
         }
 
         // tourism -- works for police
@@ -813,7 +815,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
 
         // if we cannot do anyting constructive, hunt down threat even if critical shortage
-        if (0 < critical.Count) {
+        if (0 < combat_critical.Count) {
 #if TRACE_SELECTACTION
           if (m_Actor.IsDebuggingTarget) Logger.WriteLine(Logger.Stage.RUN_MAIN, "hunting down threat even though unprepared");
 #endif
