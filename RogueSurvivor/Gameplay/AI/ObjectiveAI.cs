@@ -2154,7 +2154,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     public HashSet<GameItems.IDs> WhatDoINeedNow()
     {
       HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
-
+#if OBSOLETE
       if (/* m_Actor.Model.Abilities.HasToEat && */ m_Actor.IsHungry) {
         ret.UnionWith(GameItems.food);
       }
@@ -2214,6 +2214,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (3>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoINeedNow");
       }
 #endif
+#else
+      GameItems.IDs i = GameItems.IDs._COUNT;
+      while(0 < i--) {
+        if (3==ItemRatingCode(i)) ret.Add(i);
+      }
+#endif
       return ret;
     }
 
@@ -2223,6 +2229,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       HashSet<GameItems.IDs> ret = new HashSet<GameItems.IDs>();
 
+#if OBSOLETE
       if (/* m_Actor.Model.Abilities.HasToEat && */ !m_Actor.HasEnoughFoodFor(m_Actor.Sheet.BaseFoodPoints / 2)) {
         ret.UnionWith(GameItems.food);
       }
@@ -2293,6 +2300,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // integrity check
       foreach(var x in ret) {
         if (2>RatingCode(x)) throw new InvalidOperationException("ObjectiveAI::ItemRatingCode disagrees with ObjectiveAI::WhatDoIWantNow");
+      }
+#endif
+#else
+      GameItems.IDs i = GameItems.IDs._COUNT;
+      while(0 < i--) {
+        if (2==ItemRatingCode(i)) ret.Add(i);
       }
 #endif
       return ret;
