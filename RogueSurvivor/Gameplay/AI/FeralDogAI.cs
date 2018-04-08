@@ -46,9 +46,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override List<Percept> UpdateSensors()
     {
-      List<Percept> perceptList = m_LOSSensor.Sense(m_Actor);
-      perceptList.AddRange(m_LivingSmellSensor.Sense(m_Actor));
-      return perceptList;
+      m_LivingSmellSensor.Sense(m_Actor);
+      return m_LOSSensor.Sense(m_Actor);
     }
 
     protected override ActorAction SelectAction(RogueGame game)

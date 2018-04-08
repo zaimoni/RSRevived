@@ -122,20 +122,15 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return percepts.Minimize(p=>Rules.StdDistance(m_Actor.Location, p.Location));
     }
 
-    static protected Percept FilterStrongestScent(List<Percept> scents)
+    static private Percept_<AIScent> FilterStrongestScent(List<Percept_<AIScent>> scents)
     {
-      if (scents == null || scents.Count == 0) return null;
-      Percept percept = null;
-      int scent_strength = 0;   // minimum valid scent strength is 1
-      foreach (Percept scent in scents) {
-        SmellSensor.AIScent aiScent2 = scent.Percepted as SmellSensor.AIScent;
 #if DEBUG
-        if (aiScent2 == null) throw new InvalidOperationException("percept not an aiScent");
+      if (0 >= (scents?.Count ?? 0)) throw new ArgumentNullException(nameof(scents));
 #endif
-        if (aiScent2.Strength > scent_strength) {
-          scent_strength = aiScent2.Strength;
-          percept = scent;
-        }
+      Percept_<AIScent> percept = null;
+      foreach (var scent in scents) {
+        // minimum valid scent strength is 1
+        if (scent.Percepted.Strength > (percept?.Percepted.Strength ?? 0)) percept = scent;
       }
       return percept;
     }
@@ -572,10 +567,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return actorAction;
     }
 
-    protected ActorAction BehaviorTrackScent(List<Percept> scents)
+    protected ActorAction BehaviorTrackScent(List<Percept_<AIScent>> scents)
     {
       if (0 >= (scents?.Count ?? 0)) return null;
-      Percept percept = FilterStrongestScent(scents);
+      Percept_<AIScent> percept = FilterStrongestScent(scents);
       if (m_Actor.Location != percept.Location) return BehaviorIntelligentBumpToward(percept.Location);
       if (m_Actor.Location.Map.HasExitAt(m_Actor.Location.Position) && m_Actor.Model.Abilities.AI_CanUseAIExits)
         return BehaviorUseExit(UseExitFlags.BREAK_BLOCKING_OBJECTS | UseExitFlags.ATTACK_BLOCKING_ENEMIES);

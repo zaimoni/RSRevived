@@ -39,10 +39,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     public override List<Percept> UpdateSensors()
     {
-      List<Percept> perceptList = m_MemLOSSensor.Sense(m_Actor);
-      perceptList.AddRange(m_LivingSmellSensor.Sense(m_Actor));
-      perceptList.AddRange(m_MasterSmellSensor.Sense(m_Actor));
-      return perceptList;
+      m_LivingSmellSensor.Sense(m_Actor);
+      m_MasterSmellSensor.Sense(m_Actor);
+      return m_MemLOSSensor.Sense(m_Actor);
     }
 
     public override HashSet<Point> FOV { get { return (m_MemLOSSensor.Sensor as LOSSensor).FOV; } }

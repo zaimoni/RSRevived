@@ -35,7 +35,7 @@ namespace djack.RogueSurvivor.Engine.AI
   }
 
   [Serializable]
-  internal class Percept_<_T_> : WhereWhen where _T_:class
+  internal class Percept_<_T_> : WhereWhen
   {
     readonly private _T_ m_Percepted;
 

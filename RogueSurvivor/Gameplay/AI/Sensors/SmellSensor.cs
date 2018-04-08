@@ -7,30 +7,40 @@
 #define XDISTRICT_PATHING
 
 using djack.RogueSurvivor.Data;
+using djack.RogueSurvivor.Engine.AI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using Zaimoni.Data;
 
-using Percept = djack.RogueSurvivor.Engine.AI.Percept_<object>;
-using Sensor = djack.RogueSurvivor.Engine.AI.Sensor;
 
 namespace djack.RogueSurvivor.Gameplay.AI.Sensors
 {
   [Serializable]
-  internal class SmellSensor : Sensor
+  internal struct AIScent
+  {
+    public readonly int Strength;
+
+    public AIScent(int strength)
+    {
+      Strength = strength;
+    }
+  }
+
+  [Serializable]
+  internal class SmellSensor
   {
     private readonly Odor m_OdorToSmell;
-    private readonly List<Percept> m_List = new List<Percept>(9);   // XXX it would be nice if we could afford to correctly type this, but savefile would bloat for ZM's
+    private readonly List<Percept_<AIScent>> m_List = new List<Percept_<AIScent>>(9);
 
-    public List<Percept> Scents { get { return m_List; } }
+    public List<Percept_<AIScent>> Scents { get { return m_List; } }
 
     public SmellSensor(Odor odorToSmell)
     {
       m_OdorToSmell = odorToSmell;
     }
 
-    public List<Percept> Sense(Actor actor)
+    public List<Percept_<AIScent>> Sense(Actor actor)
     {
 #if DEBUG
       if (OdorScent.MIN_STRENGTH > actor.SmellThreshold) throw new ArgumentOutOfRangeException(nameof(actor), OdorScent.MIN_STRENGTH.ToString()+" > actor.SmellThreshold");
@@ -46,25 +56,12 @@ namespace djack.RogueSurvivor.Gameplay.AI.Sensors
       int turnCounter = actor.Location.Map.LocalTime.TurnCounter;
       int scentByOdorAt = 0;
       survey.DoForEach(pt => { 
-        m_List.Add(new Percept(new AIScent(m_OdorToSmell, scentByOdorAt), turnCounter, new Location(map, pt)));
+        m_List.Add(new Percept_<AIScent>(new AIScent(scentByOdorAt), turnCounter, new Location(map, pt)));
       },pt => { 
         scentByOdorAt = map.GetScentByOdorAt(m_OdorToSmell, pt); // XXX 0 is the no-scent value
         return scentByOdorAt >= num;
       });
       return m_List;
-    }
-
-    [Serializable]
-    public class AIScent
-    {
-      public readonly Odor Odor;
-      public readonly int Strength;
-
-      public AIScent(Odor odor, int strength)
-      {
-        Odor = odor;
-        Strength = strength;
-      }
     }
   }
 }
