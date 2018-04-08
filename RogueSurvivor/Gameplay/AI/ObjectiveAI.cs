@@ -940,7 +940,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
       if (ItemIsUseless(it.Model)) return true;
 
-      if (it is ItemTrap && (it as ItemTrap).IsActivated) return true;
+      if (it is ItemTrap trap && trap.IsActivated) return true;
       if (it.IsUseless || it is ItemPrimedExplosive || m_Actor.IsBoredOf(it)) return true;
 
       return false;
@@ -1403,12 +1403,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return true;
       }
 
-      if (rhs is ItemBodyArmor)
+      {
+      if (rhs is ItemBodyArmor rhs_armor)
         {
-        if (!(lhs is ItemBodyArmor)) return false;
-        return (lhs as ItemBodyArmor).Rating < (rhs as ItemBodyArmor).Rating;
+        if (lhs is ItemBodyArmor lhs_armor) return lhs_armor.Rating < rhs_armor.Rating;
+        return false;
         }
       else if (lhs is ItemBodyArmor) return false;
+      }
 
       if (rhs is ItemGrenade) return !(lhs is ItemGrenade);
       else if (lhs is ItemGrenade) return false;
@@ -1456,6 +1458,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == it) throw new ArgumentNullException(nameof(it));
       if (!m_Actor.Inventory.IsFull) throw new InvalidOperationException("already have room for "+it.ToString());
       if (m_Actor.CanGet(it)) throw new InvalidOperationException("already could get "+it.ToString());
+      if (ItemIsUseless(it)) throw new InvalidOperationException(it.ToString()+" is useless and need not have room made for it");
       // also should require IsInterestingItem(it), but that's infinite recursion for reasonable use cases
 #endif
       Inventory inv = m_Actor.Inventory;
@@ -1475,14 +1478,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null != melee) {
           ItemMeleeWeapon weapon = m_Actor.GetWorstMeleeWeapon();
           if (2<=melee.Count) return _BehaviorDropOrExchange(weapon, it, position);
-          if (it is ItemMeleeWeapon && weapon.Model.Attack.Rating < (it.Model as ItemMeleeWeaponModel).Attack.Rating) return _BehaviorDropOrExchange(weapon, it, position);
+          if (it is ItemMeleeWeapon new_melee && weapon.Model.Attack.Rating < new_melee.Model.Attack.Rating) return _BehaviorDropOrExchange(weapon, it, position);
         }
       }
 
       // another behavior is responsible for pre-emptively eating perishable food
       // canned food is normally eaten at the last minute
       {
-      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(it) is ItemFood food) {
+      if (GameItems.IDs.FOOD_CANNED_FOOD == it.Model.ID && inv.GetBestDestackable(it) is ItemFood food) {
         // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
         int need = m_Actor.MaxFood - m_Actor.FoodPoints;
         int num4 = m_Actor.CurrentNutritionOf(food);
@@ -1498,7 +1501,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       { // see if we can eat our way to a free slot
-      if (m_Actor.Model.Abilities.HasToEat && inv.GetBestDestackable(GameItems.CANNED_FOOD) is ItemFood food) {
+      if (inv.GetBestDestackable(GameItems.CANNED_FOOD) is ItemFood food) {
         // inline part of OrderableAI::GetBestPerishableItem, OrderableAI::BehaviorEat
         int need = m_Actor.MaxFood - m_Actor.FoodPoints;
         int num4 = m_Actor.CurrentNutritionOf(food);
