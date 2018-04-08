@@ -12699,8 +12699,21 @@ namespace djack.RogueSurvivor.Engine
       Session.Get.UniqueMaps.Hospital_Offices.TheMap.Illuminate(true);
       Session.Get.UniqueMaps.Hospital_Patients.TheMap.Illuminate(true);
       Session.Get.UniqueMaps.Hospital_Power.TheMap.Illuminate(true);
-      Session.Get.UniqueMaps.Hospital_Storage.TheMap.Illuminate(true);
-      Session.Get.UniqueMaps.Hospital_Storage.TheMap.OpenAllGates();    // other hospital maps do not have gates so no-op
+      Map storage = Session.Get.UniqueMaps.Hospital_Storage.TheMap;
+      storage.Illuminate(true);
+      storage.OpenAllGates();    // other hospital maps do not have gates so no-op
+#if PROTOTYPE
+      if (3>Session.Get.ScriptStage_HospitalPowerup) {
+        Session.Get.ScriptStage_HospitalPowerup = 3;    // hospital has regained power
+        foreach(Zone z in storage.Zones) {
+          if ("storage@" != z.Name.Substring(0, "storage@".Length)) continue;
+          z.Bounds.DoForEach(pt => {
+            if (!storage.IsWalkable(pt) || CountAdjDoors(storage, pt.X, pt.Y) > 0) return;
+            Session.Get.PoliceInvestigate.Record(storage, pt);
+          });
+        }
+      }
+#endif
     }
 
     private void DoHospitalPowerOff()
