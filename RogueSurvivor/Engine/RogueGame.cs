@@ -7172,11 +7172,8 @@ namespace djack.RogueSurvivor.Engine
         actionCost /= 2;
         actor.SpendStaminaPoints(Rules.STAMINA_COST_RUNNING);
       }
-      bool flag = false;
       MapObject mapObjectAt = newLocation.Map.GetMapObjectAt(newLocation.Position);
-      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable)
-        flag = true;
-      if (flag) {
+      if (mapObjectAt != null && !mapObjectAt.IsWalkable && mapObjectAt.IsJumpable) {
         actor.SpendStaminaPoints(Rules.STAMINA_COST_JUMP);
         if (ForceVisibleToPlayer(actor))
           AddMessage(MakeMessage(actor, Conjugate(actor, VERB_JUMP_ON), mapObjectAt));
@@ -12688,18 +12685,20 @@ namespace djack.RogueSurvivor.Engine
       Map storage = Session.Get.UniqueMaps.Hospital_Storage.TheMap;
       storage.Illuminate(true);
       storage.OpenAllGates();    // other hospital maps do not have gates so no-op
-#if PROTOTYPE
+
+      // handwaving police investigation of hospital storage for now
+      // XXX \todo it should be obvious that the generators have been turned on from outside.  We then can trigger this
+      // by a policeman sighting this.
       if (3>Session.Get.ScriptStage_HospitalPowerup) {
         Session.Get.ScriptStage_HospitalPowerup = 3;    // hospital has regained power
         foreach(Zone z in storage.Zones) {
           if ("storage@" != z.Name.Substring(0, "storage@".Length)) continue;
           z.Bounds.DoForEach(pt => {
-            if (!storage.IsWalkable(pt) || CountAdjDoors(storage, pt.X, pt.Y) > 0) return;
+            if (!storage.IsWalkable(pt) || storage.AnyAdjacent<DoorWindow>(pt)) return;
             Session.Get.PoliceInvestigate.Record(storage, pt);
           });
         }
       }
-#endif
     }
 
     private void DoHospitalPowerOff()

@@ -611,8 +611,10 @@ namespace djack.RogueSurvivor.Gameplay.Generators
 
     static private bool IsThereASpecialBuilding(Map map, Rectangle rect)
     {
-      List<Zone> zonesAt = map.GetZonesAt(rect.Left, rect.Top);
-      if (null != zonesAt && zonesAt.Any(zone=> zone.Name.Contains("Sewers Maintenance") || zone.Name.Contains("Subway Station") || zone.Name.Contains("office") || zone.Name.Contains("shop")))
+      if (map.GetZonesAt(rect.Left, rect.Top)?.Any(zone=> zone.Name.Contains("Sewers Maintenance")
+                                                       || zone.Name.Contains("Subway Station")
+                                                       || zone.Name.Contains("office")
+                                                       || zone.Name.Contains("shop")) ?? false)
         return true;
       return map.HasAnExitIn(rect); // relatively slow compared to above
     }
