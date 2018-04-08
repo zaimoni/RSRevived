@@ -16,6 +16,7 @@ using System.Runtime.Serialization;
 using System.Linq;
 using Zaimoni.Data;
 
+using MapObject = djack.RogueSurvivor.Data.MapObject;
 using DoorWindow = djack.RogueSurvivor.Engine.MapObjects.DoorWindow;
 
 namespace djack.RogueSurvivor.Data
@@ -1961,6 +1962,33 @@ retry:
     {
       return CountAdjacentTo(new Point(x,y), predicateFn);
     }
+
+    public int CountAdjacent<T>(Point pos) where T:MapObject
+    {
+      return CountAdjacentTo(pos, pt => GetMapObjectAt(pt) is T);
+    }
+
+    public int CountAdjacent<T>(Point pos,Predicate<T> test) where T:MapObject
+    {
+#if DEBUG
+      if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+      return CountAdjacentTo(pos, pt => GetMapObjectAt(pt) is T obj && test(obj));
+    }
+
+    public bool AnyAdjacent<T>(Point pos) where T:MapObject
+    {
+      return HasAnyAdjacentInMap(pos, pt => GetMapObjectAt(pt) is T);
+    }
+
+    public bool AnyAdjacent<T>(Point pos,Predicate<T> test) where T:MapObject
+    {
+#if DEBUG
+      if (null == test) throw new ArgumentNullException(nameof(test));
+#endif
+      return HasAnyAdjacentInMap(pos, pt => GetMapObjectAt(pt) is T obj && test(obj));
+    }
+
 
     public void ForEachAdjacent(Point position, Action<Point> fn)
     {
