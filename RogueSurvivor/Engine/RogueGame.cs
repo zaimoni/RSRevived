@@ -5711,9 +5711,7 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.MOVE_RESTING: return Player.IsTired;
         case AdvisorHint.MOVE_JUMP:
-          if (!Player.IsTired)
-            return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt)?.IsJumpable ?? false);
-          return false;
+          return Player.IsTired ? false : map.AnyAdjacent<MapObject>(position, obj => obj.IsJumpable);
         case AdvisorHint.ITEM_GRAB_CONTAINER:
           return map.HasAnyAdjacentInMap(position, pt => Player.CanGetFromContainer(pt));
         case AdvisorHint.ITEM_GRAB_FLOOR:
@@ -5771,23 +5769,15 @@ namespace djack.RogueSurvivor.Engine
           return false;
         case AdvisorHint.GRENADE: return Player.Has<ItemGrenade>();
         case AdvisorHint.DOORWINDOW_OPEN:
-          return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt) is DoorWindow door && Player.CanOpen(door));
+          return map.AnyAdjacent<DoorWindow>(position, door => Player.CanOpen(door));
         case AdvisorHint.DOORWINDOW_CLOSE:
-          return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt) is DoorWindow door && Player.CanClose(door));
+          return map.AnyAdjacent<DoorWindow>(position, door => Player.CanClose(door));
         case AdvisorHint.OBJECT_PUSH:
-          return map.HasAnyAdjacentInMap(position, pt =>
-         {
-             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-             return null != mapObjectAt && Player.CanPush(mapObjectAt);
-         });
+          return map.AnyAdjacent<MapObject>(position, mapObjectAt => Player.CanPush(mapObjectAt));
         case AdvisorHint.OBJECT_BREAK:
-          return map.HasAnyAdjacentInMap(position, pt =>
-         {
-             MapObject mapObjectAt = map.GetMapObjectAt(pt);
-             return null != mapObjectAt && Player.CanBreak(mapObjectAt);
-         });
+          return map.AnyAdjacent<MapObject>(position, mapObjectAt => Player.CanBreak(mapObjectAt));
         case AdvisorHint.BARRICADE:
-          return map.HasAnyAdjacentInMap(position, pt => map.GetMapObjectAt(pt) is DoorWindow door && Player.CanBarricade(door));
+          return map.AnyAdjacent<DoorWindow>(position, door => Player.CanBarricade(door));
         case AdvisorHint.EXIT_STAIRS_LADDERS: return map.HasExitAt(position);
         case AdvisorHint.EXIT_LEAVING_DISTRICT:
           foreach (Direction direction in Direction.COMPASS) {
@@ -12214,7 +12204,7 @@ namespace djack.RogueSurvivor.Engine
         switch (Session.Get.ScriptStage_PoliceStationPrisoner)
         {
           case 0:
-            if (map.HasAnyAdjacentInMap(player.Location.Position, pt => map.GetMapObjectAt(pt) is PowerGenerator) && !theActor.IsSleeping)
+            if (map.AnyAdjacent<PowerGenerator>(player.Location.Position) && !theActor.IsSleeping)
             {
               lock (Session.Get)
               {
@@ -12300,11 +12290,7 @@ namespace djack.RogueSurvivor.Engine
       if (Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem.IsEquipped && (player.Location.Map == player.Location.Map.District.SubwayMap && player.Inventory.Contains(Session.Get.UniqueItems.TheSubwayWorkerBadge.TheItem)))
       {
         Map map = player.Location.Map;
-        if (map.HasAnyAdjacentInMap(player.Location.Position, pt => {
-          MapObject mapObjectAt = map.GetMapObjectAt(pt);
-          if (mapObjectAt == null) return false;
-          return MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID;
-        })) {
+        if (map.AnyAdjacent<MapObject>(player.Location.Position, mapObjectAt => MapObject.IDs.IRON_GATE_CLOSED == mapObjectAt.ID)) {
           DoTurnAllGeneratorsOn(map);
           AddMessage(new Data.Message("The gate system scanned your badge and turned the power on!", Session.Get.WorldTime.TurnCounter, Color.Green));
         }

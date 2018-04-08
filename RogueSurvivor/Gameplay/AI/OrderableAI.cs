@@ -1847,7 +1847,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (!map.IsInBounds(point) || !map.IsWalkable(point) || map.IsOnMapBorder(point.X, point.Y) || map.HasActorAt(point) || (map.HasExitAt(point) || map.IsInsideAt(point)))
           return false;
         int num1 = map.CountAdjacentTo(point, ptAdj => !map.GetTileModelAt(ptAdj).IsWalkable); // allows IsInBounds above
-        int num2 = map.CountAdjacentTo(point, ptAdj => map.GetMapObjectAt(ptAdj) is Fortification fortification && !fortification.IsTransparent);
+        int num2 = map.CountAdjacent<Fortification>(point, fortification => !fortification.IsTransparent);
         return (num1 == 3 && num2 == 0 && game.Rules.RollChance(startLineChance)) || (num1 == 0 && num2 == 1);
       }, dir => game.Rules.Roll(0, 666), (a, b) => a > b);
       if (choiceEval == null) return null;
@@ -1905,7 +1905,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       // the legacy tests
       MapObject obj = loc.Map.GetMapObjectAtExt(loc.Position);
       if (obj is DoorWindow) return -1;  // contextual; need to be aware of doors
-      if (loc.Map.HasAnyAdjacentInMap(loc.Position, pt => loc.Map.GetMapObjectAtExt(pt) is DoorWindow)) return 0;
+      if (loc.Map.AnyAdjacentExt<DoorWindow>(loc.Position)) return 0;
       if (loc.Map.HasExitAtExt(loc.Position)) return 0;    // both unsafe, and problematic for pathing in general
       if (m_Actor.Location!=loc && loc.Map.HasActorAt(loc.Position)) return 0;  // contextual
       if (obj?.IsCouch ?? false) return 1;  // jail cells are ok even though their geometry is bad

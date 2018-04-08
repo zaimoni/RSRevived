@@ -254,11 +254,6 @@ namespace djack.RogueSurvivor.Engine
       return map.CountAdjacentTo(x, y, pt => map.GetTileModelAt(pt).IsWalkable);
     }
 
-    protected static int CountAdjDoors(Map map, int x, int y)
-    {
-      return map.CountAdjacentTo(x, y, pt => map.GetMapObjectAt(pt) is DoorWindow);
-    }
-
     protected static void PlaceIf(Map map, int x, int y, TileModel floor, Func<int, int, bool> predicateFn, Func<int, int, MapObject> createFn)
     {
 #if DEBUG

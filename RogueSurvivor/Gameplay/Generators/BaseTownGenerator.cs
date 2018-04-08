@@ -470,7 +470,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         subway.AddZone(MakeUniqueZone("tools room", rect));
         DoForEachTile(rect, (Action<Point>) (pt =>
         {
-          if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt.X, pt.Y) == 0 || CountAdjDoors(subway, pt.X, pt.Y) > 0) return;
+          if (!subway.IsWalkable(pt.X, pt.Y) || CountAdjWalls(subway, pt.X, pt.Y) == 0 || subway.AnyAdjacent<DoorWindow>(pt)) return;
           subway.PlaceAt(MakeObjShelf(), pt);
           subway.DropItemAt(MakeShopConstructionItem(), pt);
         }));
@@ -686,7 +686,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       }
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
-        if (map.HasMapObjectAt(x, y) || CountAdjDoors(map, x, y) < 1) return null;
+        if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
         return shopImage;
       }));
       Rectangle rectangle;
@@ -829,7 +829,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
-        if (map.HasMapObjectAt(x, y) || CountAdjDoors(map, x, y) < 1) return null;
+        if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
         return GameImages.DECO_CHAR_OFFICE;
       }));
       MapObjectFill(map, b.InsideRect, (Func<Point, MapObject>) (pt =>
@@ -840,7 +840,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       TileFill(map, GameTiles.WALL_CHAR_OFFICE, new Rectangle(b.InsideRect.Left + b.InsideRect.Width / 2 - 1, b.InsideRect.Top + b.InsideRect.Height / 2 - 1, 3, 2), (Action<Tile, TileModel, int, int>) ((tile, model, x, y) => tile.AddDecoration(m_DiceRoller.Choose(CHAR_POSTERS))));
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
-        if (CountAdjDoors(map, x, y) > 0) return null;
+        if (map.AnyAdjacent<DoorWindow>(new Point(x,y))) return null;
         if (m_DiceRoller.RollChance(25)) return m_DiceRoller.Choose(CHAR_POSTERS);
         return null;
       }));
@@ -866,7 +866,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       Direction direction = PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
-        if (map.HasMapObjectAt(x, y) || CountAdjDoors(map, x, y) < 1) return null;
+        if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
         return GameImages.DECO_CHAR_OFFICE;
       }));
       BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
@@ -1170,7 +1170,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       for (int index = 0; index < num; ++index)
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeShopConstructionItem(), pt);
@@ -1180,11 +1180,11 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       if (m_DiceRoller.RollChance(33)) {
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjBed(GameImages.OBJ_BED)));
         MapObjectPlaceInGoodPosition(map, b.InsideRect, (Func<Point, bool>) (pt =>
         {
-          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+          return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
         }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
         {
           map.DropItemAt(MakeItemCannedFood(), pt);
@@ -1314,14 +1314,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         MapObjectFill(map, rect2, (Func<Point, MapObject>) (pt =>
         {
           if (!map.GetTileModelAt(pt).IsWalkable) return null;
-          if (CountAdjWalls(map, pt.X, pt.Y) < 3 || CountAdjDoors(map, pt.X, pt.Y) > 0) return null;
+          if (CountAdjWalls(map, pt.X, pt.Y) < 3 || map.AnyAdjacent<DoorWindow>(pt)) return null;
           return MakeObjPowerGenerator();
         }));
         DoForEachTile(rect2, pt => Session.Get.ForcePoliceKnown(new Location(map, pt)));
       }
       for (int left = b.InsideRect.Left; left < b.InsideRect.Right; ++left) {
         for (int y = b.InsideRect.Top + 1; y < b.InsideRect.Bottom - 1; ++y) {
-          if (CountAdjWalls(map, left, y) >= 2 && CountAdjDoors(map, left, y) <= 0 && !Rules.IsAdjacent(new Point(left, y), doorAt))
+          if (CountAdjWalls(map, left, y) >= 2 && !map.AnyAdjacent<DoorWindow>(new Point(left, y)) && !Rules.IsAdjacent(new Point(left, y), doorAt))
             map.PlaceAt(MakeObjIronBench(), new Point(left, y));
         }
       }
@@ -1371,7 +1371,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       });
       int x1 = roomRect.Left + roomRect.Width / 2;
       int y1 = roomRect.Top + roomRect.Height / 2;
-      bool door_window_ok(int x, int y) { return !map.HasMapObjectAt(x, y) && IsAccessible(map, x, y) && 0 == CountAdjDoors(map, x, y); };
+      bool door_window_ok(int x, int y) { return !map.HasMapObjectAt(x, y) && IsAccessible(map, x, y) && !map.AnyAdjacent<DoorWindow>(new Point(x, y)); };
       MapObject make_door_window(int x, int y) { return ((!IsInside(map, x, y) && !m_DiceRoller.RollChance(25)) ? MakeObjWindow() : MakeObjWoodenDoor()); };
 
       PlaceIf(map, x1, roomRect.Top, floor, door_window_ok, make_door_window);
@@ -1394,14 +1394,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           for (int index = 0; index < num1; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 3 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+              return CountAdjWalls(map, pt.X, pt.Y) >= 3 && !map.AnyAdjacent<DoorWindow>(pt);
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               Rectangle rect = new Rectangle(pt.X - 1, pt.Y - 1, 3, 3);
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0 &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0;
+                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2) &&  CountAdjWalls(map, pt2.X, pt2.Y) > 0;
               }), m_DiceRoller, (Func<Point, MapObject>) (pt2 =>
               {
                 map.DropItemAt(MakeRandomBedroomItem(), pt2);
@@ -1414,7 +1414,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           for (int index = 0; index < num2; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt);
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               map.DropItemAt(MakeRandomBedroomItem(), pt);
@@ -1429,7 +1429,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           for (int index1 = 0; index1 < num3; ++index1)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) == 0 &&  CountAdjDoors(map, pt.X, pt.Y) == 0;
+              return CountAdjWalls(map, pt.X, pt.Y) == 0 &&  !map.AnyAdjacent<DoorWindow>(pt);
             }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
             {
               for (int index = 0; index < HOUSE_LIVINGROOM_ITEMS_ON_TABLE; ++index) {
@@ -1440,7 +1440,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
               rect.Intersect(insideRoom);
               MapObjectPlaceInGoodPosition(map, rect, (Func<Point, bool>) (pt2 =>
               {
-                return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
+                return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2);
               }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
               return MakeObjTable(GameImages.OBJ_TABLE);
             }));
@@ -1448,14 +1448,14 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           for (int index = 0; index < num4; ++index)
             MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
             {
-              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+              return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt);
             }), m_DiceRoller, (Func<Point, MapObject>) (pt => MakeObjDrawer()));
           break;
         case 8:
         case 9:
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt.X, pt.Y) == 0 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+            return CountAdjWalls(map, pt.X, pt.Y) == 0 && !map.AnyAdjacent<DoorWindow>(pt);
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_ON_TABLE; ++index) {
@@ -1464,13 +1464,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
             Session.Get.PoliceInvestigate.Record(map, pt);
             MapObjectPlaceInGoodPosition(map, new Rectangle(pt.X - 1, pt.Y - 1, 3, 3), (Func<Point, bool>) (pt2 =>
             {
-              return pt2 != pt && CountAdjDoors(map, pt2.X, pt2.Y) == 0;
+              return pt2 != pt && !map.AnyAdjacent<DoorWindow>(pt2);
             }), m_DiceRoller, pt2 => MakeObjChair(GameImages.OBJ_CHAIR));
             return MakeObjTable(GameImages.OBJ_TABLE);
           }));
           MapObjectPlaceInGoodPosition(map, insideRoom, (Func<Point, bool>) (pt =>
           {
-            return CountAdjWalls(map, pt.X, pt.Y) >= 2 && CountAdjDoors(map, pt.X, pt.Y) == 0;
+            return CountAdjWalls(map, pt.X, pt.Y) >= 2 && !map.AnyAdjacent<DoorWindow>(pt);
           }), m_DiceRoller, (Func<Point, MapObject>) (pt =>
           {
             for (int index = 0; index < HOUSE_KITCHEN_ITEMS_IN_FRIDGE; ++index) {
@@ -2150,7 +2150,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       PlaceDoor(surfaceMap, point.X, point.Y, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       DoForEachTile(rect, (Action<Point>) (pt =>
       {
-        if (!surfaceMap.IsWalkable(pt.X, pt.Y) || CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || CountAdjDoors(surfaceMap, pt.X, pt.Y) > 0)
+        if (!surfaceMap.IsWalkable(pt.X, pt.Y) || CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))
           return;
         surfaceMap.PlaceAt(MakeObjBench(), pt);
       }));
@@ -2193,7 +2193,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
           TileRectangle(map, GameTiles.WALL_POLICE_STATION, rect2);
           PlaceDoor(map, rect2.Left, rect2.Top + rect2.Height / 2, GameTiles.FLOOR_CONCRETE, MakeObjIronDoor());
           DoForEachTile(rect3, pt => {
-            if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || CountAdjDoors(map, pt.X, pt.Y) > 0) return;
+            if (!map.IsWalkable(pt.X, pt.Y) || CountAdjWalls(map, pt.X, pt.Y) == 0 || map.AnyAdjacent<DoorWindow>(pt)) return;
             map.PlaceAt(MakeObjShelf(), pt);
             map.DropItemAt(stock_armory(), pt);
           });
@@ -2213,13 +2213,13 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         // Try to leave a non-jumping path to the doors
         // \todo this is optimizable, but level generation is only done once
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0;
+          return map.IsWalkable(pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt);
         }, m_DiceRoller, pt => MakeObjTable(GameImages.OBJ_TABLE));
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0 && 0 == map.CreatesPathingChokepoint(pt);
+          return map.IsWalkable(pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt) && 0 == map.CreatesPathingChokepoint(pt);
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         MapObjectPlaceInGoodPosition(map, rect3, pt => {
-          return map.IsWalkable(pt.X, pt.Y) && CountAdjDoors(map, pt.X, pt.Y) == 0 && 0 == map.CreatesPathingChokepoint(pt);
+          return map.IsWalkable(pt.X, pt.Y) && !map.AnyAdjacent<DoorWindow>(pt) && 0 == map.CreatesPathingChokepoint(pt);
         }, m_DiceRoller, pt => MakeObjChair(GameImages.OBJ_CHAIR));
         map.AddZone(MakeUniqueZone("office", rect3));
       }
@@ -2492,7 +2492,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       PlaceDoor(surfaceMap, point2.X, point2.Y, GameTiles.FLOOR_TILES, MakeObjGlassDoor());
       DoForEachTile(rect, (Action<Point>) (pt =>
       {
-        if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || CountAdjDoors(surfaceMap, pt.X, pt.Y) > 0)))
+        if (pt.Y == block.InsideRect.Top || (pt.Y == block.InsideRect.Bottom - 1 || !surfaceMap.IsWalkable(pt.X, pt.Y) || (CountAdjWalls(surfaceMap, pt.X, pt.Y) == 0 || surfaceMap.AnyAdjacent<DoorWindow>(pt))))
           return;
         surfaceMap.PlaceAt(MakeObjIronBench(), pt);
       }));
@@ -2754,7 +2754,7 @@ namespace djack.RogueSurvivor.Gameplay.Generators
       PlaceDoor(map, room.Left + 2, room.Top, GameTiles.FLOOR_TILES, MakeObjHospitalDoor());
       DoForEachTile(room, (Action<Point>) (pt =>
       {
-        if (!map.IsWalkable(pt) || CountAdjDoors(map, pt.X, pt.Y) > 0) return;
+        if (!map.IsWalkable(pt) || map.AnyAdjacent<DoorWindow>(pt)) return;
         map.PlaceAt(MakeObjShelf(), pt);
         Item it = m_DiceRoller.RollChance(80) ? MakeHospitalItem() : MakeItemCannedFood();
         if (it.Model.IsStackable)

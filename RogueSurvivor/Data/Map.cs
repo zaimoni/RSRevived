@@ -1981,6 +1981,11 @@ retry:
       return HasAnyAdjacentInMap(pos, pt => GetMapObjectAt(pt) is T);
     }
 
+    public bool AnyAdjacentExt<T>(Point pos) where T:MapObject
+    {
+      return HasAnyAdjacentInMap(pos, pt => GetMapObjectAtExt(pt) is T);
+    }
+
     public bool AnyAdjacent<T>(Point pos,Predicate<T> test) where T:MapObject
     {
 #if DEBUG
