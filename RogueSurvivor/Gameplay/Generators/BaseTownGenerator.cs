@@ -652,95 +652,70 @@ namespace djack.RogueSurvivor.Gameplay.Generators
         return null;
       });
       PlaceShoplikeEntrance(map, b, GameTiles.FLOOR_WALKWAY, MakeObjGlassDoor);
-      string basename;
-      string shopImage;
-      switch (shopType) {
-        case ShopType.GENERAL_STORE:
-          shopImage = GameImages.DECO_SHOP_GENERAL_STORE;
-          basename = "GeneralStore";
-          break;
-        case ShopType.GROCERY:
-          shopImage = GameImages.DECO_SHOP_GROCERY;
-          basename = "Grocery";
-          break;
-        case ShopType.SPORTSWEAR:
-          shopImage = GameImages.DECO_SHOP_SPORTSWEAR;
-          basename = "Sportswear";
-          break;
-        case ShopType.PHARMACY:
-          shopImage = GameImages.DECO_SHOP_PHARMACY;
-          basename = "Pharmacy";
-          break;
-        case ShopType.CONSTRUCTION:
-          shopImage = GameImages.DECO_SHOP_CONSTRUCTION;
-          basename = "Construction";
-          break;
-        case ShopType.GUNSHOP:
-          shopImage = GameImages.DECO_SHOP_GUNSHOP;
-          basename = "Gunshop";
-          break;
-        case ShopType.HUNTING:
-          shopImage = GameImages.DECO_SHOP_HUNTING;
-          basename = "Hunting Shop";
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("unhandled shoptype");
+
+      // \todo pull additional shop types from Staying Alive
+      // Horticulture/gardening store
+      // * grow lights require a working generator.
+      // * bamboo can provide "wood".  At one foot per day (i.e. it actually *recovers* if only damaged, and can spread if planted in parks)
+      KeyValuePair<string,string> shopNameImage() {
+        switch (shopType) {
+          case ShopType.GENERAL_STORE: return new KeyValuePair<string,string>("GeneralStore", GameImages.DECO_SHOP_GENERAL_STORE);
+          case ShopType.GROCERY: return new KeyValuePair<string,string>("Grocery", GameImages.DECO_SHOP_GROCERY);
+          case ShopType.SPORTSWEAR: return new KeyValuePair<string,string>("Sportswear", GameImages.DECO_SHOP_SPORTSWEAR);
+          case ShopType.PHARMACY: return new KeyValuePair<string,string>("Pharmacy", GameImages.DECO_SHOP_PHARMACY);
+          case ShopType.CONSTRUCTION: return new KeyValuePair<string,string>("Construction", GameImages.DECO_SHOP_CONSTRUCTION);
+          case ShopType.GUNSHOP: return new KeyValuePair<string,string>("Gunshop", GameImages.DECO_SHOP_GUNSHOP);
+          case ShopType.HUNTING: return new KeyValuePair<string,string>("Hunting Shop", GameImages.DECO_SHOP_HUNTING);
+          default: throw new ArgumentOutOfRangeException("unhandled shoptype");
+        }
       }
+
+      KeyValuePair<string,string> shop_name_image = shopNameImage();
       DecorateOutsideWalls(map, b.BuildingRect, (Func<int, int, string>) ((x, y) =>
       {
         if (map.HasMapObjectAt(x, y) || !map.AnyAdjacent<DoorWindow>(new Point(x, y))) return null;
-        return shopImage;
+        return shop_name_image.Value;
       }));
-      Rectangle rectangle;
-      if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE)) {
-        int x2;
-        int y2;
-        rectangle = b.BuildingRect;
-        switch (m_DiceRoller.Roll(0, 4)) {
-          case 0:
-            x2 = rectangle.Left + rectangle.Width / 2;
-            y2 = rectangle.Top;
-            break;
-          case 1:
-            x2 = rectangle.Left + rectangle.Width / 2;
-            y2 = rectangle.Bottom - 1;
-            break;
-          case 2:
-            x2 = rectangle.Left;
-            y2 = rectangle.Top + rectangle.Height / 2;
-            break;
+
+      Point wall_midpoint(int dir_code) {
+        Rectangle rectangle = b.BuildingRect;
+          
+        switch (dir_code) {
+          case 0: return new Point(rectangle.Left + rectangle.Width / 2, rectangle.Top);
+          case 1: return new Point(rectangle.Left + rectangle.Width / 2, rectangle.Bottom - 1);
+          case 2: return new Point(rectangle.Left, rectangle.Top + rectangle.Height / 2);
 #if DEBUG
           case 3:
 #else
           default:
 #endif
-            x2 = rectangle.Right - 1;
-            y2 = rectangle.Top + rectangle.Height / 2;
-            break;
+            return new Point(rectangle.Right - 1, rectangle.Top + rectangle.Height / 2);
 #if DEBUG
-          default:
-            throw new ArgumentOutOfRangeException("unhandled side");
+          default: throw new ArgumentOutOfRangeException("unhandled side");
 #endif
         }
-        if (!map.GetTileModelAt(x2, y2).IsWalkable)
-          PlaceDoor(map, x2, y2, GameTiles.FLOOR_TILES, MakeObjWindow());
       }
-      if (shopType == ShopType.GUNSHOP)
-        BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
+
+      if (m_DiceRoller.RollChance(SHOP_WINDOW_CHANCE)) {
+        Point doorAt = wall_midpoint(m_DiceRoller.Roll(0, 4));
+
+        if (!map.GetTileModelAt(doorAt).IsWalkable) PlaceDoor(map, doorAt.X, doorAt.Y, GameTiles.FLOOR_TILES, MakeObjWindow());
+      }
+      if (shopType == ShopType.GUNSHOP) BarricadeDoors(map, b.BuildingRect, Rules.BARRICADING_MAX);
       ItemsDrop(map, b.InsideRect, pt => {
         MapObject mapObjectAt = map.GetMapObjectAt(pt);
         if (mapObjectAt == null || MapObject.IDs.SHOP_SHELF != mapObjectAt.ID) return false;
         return m_DiceRoller.RollChance(m_Params.ItemInShopShelfChance);
       }, pt => MakeRandomShopItem(shopType));
-      map.AddZone(MakeUniqueZone(basename, b.BuildingRect));
+      map.AddZone(MakeUniqueZone(shop_name_image.Key, b.BuildingRect));
       MakeWalkwayZones(map, b);
       DoForEachTile(b.BuildingRect,pt => {
           Session.Get.ForcePoliceKnown(new Location(map, pt));  // XXX exceptionally cheating police AI
       });
       if (m_DiceRoller.RollChance(SHOP_BASEMENT_CHANCE)) {
-        int seed = map.Seed << 1 ^ basename.GetHashCode();
-        string name = "basement-" + basename + string.Format("{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object)(b.BuildingRect.Left + b.BuildingRect.Width / 2), (object)(b.BuildingRect.Top + b.BuildingRect.Height / 2));
-        rectangle = b.BuildingRect;
+        int seed = map.Seed << 1 ^ shop_name_image.Key.GetHashCode();
+        string name = "basement-" + shop_name_image.Key + string.Format("{0}{1}@{2}-{3}", (object)m_Params.District.WorldPosition.X, (object)m_Params.District.WorldPosition.Y, (object)(b.BuildingRect.Left + b.BuildingRect.Width / 2), (object)(b.BuildingRect.Top + b.BuildingRect.Height / 2));
+        Rectangle rectangle = b.BuildingRect;
         int width = rectangle.Width;
         int height = rectangle.Height;
         Map shopBasement = new Map(seed, name, map.District, width, height, Lighting.DARKNESS);
