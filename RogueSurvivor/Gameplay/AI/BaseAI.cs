@@ -840,6 +840,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
+      if (1 == ret_from.Count) return ret_from[0];
       return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
     }
 

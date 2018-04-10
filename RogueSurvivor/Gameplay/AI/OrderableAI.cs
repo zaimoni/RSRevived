@@ -1608,21 +1608,13 @@ namespace djack.RogueSurvivor.Gameplay.AI
           }
         }
         if (0 < close_doors.Count) {
-          int i = game.Rules.Roll(0, close_doors.Count);
-          foreach(DoorWindow door in close_doors.Values) {
-            if (0 >= i--) {
-              Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
-              return new ActionCloseDoor(m_Actor, door, m_Actor.Location == PrevLocation);
-            }
-          }
+          var dest = game.Rules.DiceRoller.Choose(close_doors);
+          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Value.Location));
+          return new ActionCloseDoor(m_Actor, dest.Value, m_Actor.Location == PrevLocation);
         } else if (0 < barricade_doors.Count) {
-          int i = game.Rules.Roll(0, barricade_doors.Count);
-          foreach(DoorWindow door in barricade_doors.Values) {
-            if (0 >= i--) {
-              Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, door.Location));
-              return new ActionBarricadeDoor(m_Actor, door);
-            }
-          }
+          var dest = game.Rules.DiceRoller.Choose(barricade_doors);
+          Objectives.Insert(0,new Goal_BreakLineOfSight(m_Actor.Location.Map.LocalTime.TurnCounter, m_Actor, dest.Value.Location));
+          return new ActionBarricadeDoor(m_Actor, dest.Value);
         }
         }   // enable automatic GC
         if (m_Actor.Model.Abilities.AI_CanUseAIExits && (Lighting.DARKNESS== m_Actor.Location.Map.Lighting || game.Rules.RollChance(FLEE_THROUGH_EXIT_CHANCE))) {
