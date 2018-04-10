@@ -1340,7 +1340,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.IsEnemyOf(a) ? null : a);
       });
       if (0 >= friends.Count) return null;
-      Actor actorAt1 = RogueForm.Game.Rules.Choose(friends).Value;
+      Actor actorAt1 = RogueForm.Game.Rules.DiceRoller.Choose(friends).Value;
       string str1 = MakeCentricLocationDirection(m_Actor.Location, percept.Location);
       string str2 = string.Format("{0} ago", (object) WorldTime.MakeTimeDurationMessage(m_Actor.Location.Map.LocalTime.TurnCounter - percept.Turn));
       string text;
@@ -1349,7 +1349,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       else if (percept.Percepted is Inventory) {
         Inventory inventory = percept.Percepted as Inventory;
         if (inventory.IsEmpty) return null;
-        Item it = game.Rules.Choose(inventory.Items);
+        Item it = game.Rules.DiceRoller.Choose(inventory.Items);
         if (!IsItemWorthTellingAbout(it)) return null;
         int num = actorAt1.FOVrange(map.LocalTime, Session.Get.World.Weather);
         if ((double) Rules.StdDistance(percept.Location, actorAt1.Location) <= (double) (2 + num)) return null;
@@ -1724,7 +1724,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
             if (!attack_possible.Any()) return new ActionWait(m_Actor);
             // XXX could filter down attack_possible some more
             m_Actor.IsRunning = true;
-            return dash_attack[attack_possible[game.Rules.Roll(0,attack_possible.Count)]];
+            return dash_attack[game.Rules.DiceRoller.Choose(attack_possible)];
           }
       }
 

@@ -235,10 +235,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int min_cost = costs.Values.Min();
         if (int.MaxValue == min_cost) return null;
         costs.OnlyIf(val => val <= min_cost);
-        if (0<costs.Count) {
-          var dests = costs.Keys.ToList();
-          return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,dests[RogueForm.Game.Rules.Roll(0,dests.Count)]));
-        }
+        if (0<costs.Count) return Rules.IsPathableFor(m_Actor,new Location(m_Actor.Location.Map,RogueForm.Game.Rules.DiceRoller.Choose(costs.Keys.ToList())));
       }
       return null;
     }
@@ -254,10 +251,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         int min_cost = costs.Values.Min();
         if (int.MaxValue == min_cost) return null;
         costs.OnlyIf(val => val <= min_cost);
-        if (0<costs.Count) {
-          var dests = costs.Keys.ToList();
-          return legal_steps[RogueForm.Game.Rules.Choose(dests)];
-        }
+        if (0<costs.Count) return legal_steps[RogueForm.Game.Rules.DiceRoller.Choose(costs.Keys.ToList())];
       }
       return null;
     }
@@ -385,8 +379,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 		return ret;
 	  }
-      if (0<secondary.Count) return secondary[RogueForm.Game.Rules.Roll(0,secondary.Count)];
-	  return null;
+      return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
     }
 
     protected ActorAction DecideMove(IEnumerable<Point> src)
@@ -473,8 +466,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
 		return ret;
 	  }
-      if (0<secondary.Count) return secondary[RogueForm.Game.Rules.Roll(0,secondary.Count)];
-	  return null;
+      return 0 < secondary.Count ? RogueForm.Game.Rules.DiceRoller.Choose(secondary) : null;
     }
 
     public bool VetoAction(ActorAction x)
@@ -900,7 +892,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 #endif
         has_container.Add(pos);
       }
-      if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, has_container[RogueForm.Game.Rules.Roll(0, has_container.Count)]);
+      if (0 < has_container.Count) return new ActionPutInContainer(m_Actor, it, RogueForm.Game.Rules.DiceRoller.Choose(has_container));
 
       return (m_Actor.CanDrop(it) ? new ActionDropItem(m_Actor, it) : null);
     }

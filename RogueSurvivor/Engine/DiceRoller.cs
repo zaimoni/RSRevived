@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace djack.RogueSurvivor.Engine
 {
@@ -55,6 +56,14 @@ namespace djack.RogueSurvivor.Engine
       int n = (src?.Length ?? 0);
       if (0 >= n) throw new ArgumentNullException(nameof(src));
       return src[Roll(0, n)];
+    }
+
+    public T Choose<T>(IEnumerable<T> src) {
+      int n = (src?.Count() ?? 0);
+      if (0 >= n) throw new ArgumentNullException(nameof(src));
+      n = Roll(0, n);
+      foreach(var x in src) if (0 >= n--) return x;
+      throw new ArgumentNullException(nameof(src)); // unreachable with a sufficiently correct compiler
     }
   }
 }

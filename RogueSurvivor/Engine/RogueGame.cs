@@ -2669,7 +2669,7 @@ namespace djack.RogueSurvivor.Engine
       dropPoint = new Point();
       var pts = map.Rect.Where(pt => IsSuitableDropSuppliesPoint(map, pt));
       if (0 >= pts.Count) return false;
-      dropPoint = pts[m_Rules.Roll(0,pts.Count)];
+      dropPoint = m_Rules.DiceRoller.Choose(pts);
       return true;
     }
 
@@ -2817,8 +2817,7 @@ namespace djack.RogueSurvivor.Engine
          return true;
       });
       if (0 >= tmp.Count) return false;
-      Point point = tmp[m_Rules.Roll(0,tmp.Count)];
-      map.PlaceAt(actorToSpawn, point);
+      map.PlaceAt(actorToSpawn, m_Rules.DiceRoller.Choose(tmp));
       OnActorEnterTile(actorToSpawn);
       return true;
     }
@@ -4152,7 +4151,6 @@ namespace djack.RogueSurvivor.Engine
         if (!player) return;
         AddMessage(MakeMessage(actor, string.Format("{0} not enough room for reviving {1}.", Conjugate(actor, VERB_HAVE), corpse.DeadGuy.Name)));
       } else {
-        Point position = pointList[m_Rules.Roll(0, pointList.Count)];
         int chance = m_Rules.CorpseReviveChance(actor, corpse);
         Item firstMatching = actor.Inventory.GetFirstByModel(GameItems.MEDIKIT);
         actor.Inventory.Consume(firstMatching);
@@ -4163,7 +4161,7 @@ namespace djack.RogueSurvivor.Engine
           corpse.DeadGuy.Activity = Activity.IDLE;
           corpse.DeadGuy.TargetActor = null;
           map.Remove(corpse);
-          map.PlaceAt(corpse.DeadGuy, position);
+          map.PlaceAt(corpse.DeadGuy, m_Rules.DiceRoller.Choose(pointList));
           if (player)
             AddMessage(MakeMessage(actor, Conjugate(actor, VERB_REVIVE), corpse.DeadGuy));
           if (actor.IsEnemyOf(corpse.DeadGuy)) return;
@@ -8382,7 +8380,7 @@ namespace djack.RogueSurvivor.Engine
           negotiate.Add(new KeyValuePair<Item,Item>(s_item,b_item));
         }
       }
-      return negotiate[Rules.Roll(0,negotiate.Count)];
+      return Rules.DiceRoller.Choose(negotiate);
     }
 
     private Item PickItemToTrade(Actor speaker, Actor buyer, Item itSpeaker)
@@ -9846,7 +9844,7 @@ namespace djack.RogueSurvivor.Engine
       for (int index = 0; index < count; ++index) {
         if (numArray[index] == num) idsList.Add(chooseFrom[index]);
       }
-      return new Skills.IDs?(idsList[m_Rules.Roll(0, idsList.Count)]);
+      return new Skills.IDs?(m_Rules.DiceRoller.Choose(idsList));
     }
 
     static private int NPCSkillUtility(Actor actor, Skills.IDs skID)
@@ -9945,8 +9943,7 @@ namespace djack.RogueSurvivor.Engine
     {
       int[] skillsList = actor.Sheet.SkillTable.SkillsList;
       if (skillsList == null) return;
-      int index = m_Rules.Roll(0, skillsList.Length);
-      Skills.IDs id = (Skills.IDs) skillsList[index];
+      Skills.IDs id = (Skills.IDs) m_Rules.DiceRoller.Choose(skillsList);
       actor.Sheet.SkillTable.DecOrRemoveSkill(id);
       if (!ForceVisibleToPlayer(actor)) return;
       AddMessage(MakeMessage(actor, string.Format("regressed in {0}!", Skills.Name(id))));
@@ -12451,7 +12448,7 @@ namespace djack.RogueSurvivor.Engine
             if (IsSuitableReincarnation(a, true)) actorList1.Add(a);
           }
           matchingActors = actorList1.Count;
-          return 0 >= matchingActors ? null : actorList1[m_Rules.Roll(0, matchingActors)];
+          return 0 >= matchingActors ? null : m_Rules.DiceRoller.Choose(actorList1);
           } // scoping brace
         case GameOptions.ReincMode.KILLER:
           Actor killer = Session.Get.Scoring.Killer;
@@ -12481,7 +12478,7 @@ namespace djack.RogueSurvivor.Engine
             }
           }
           matchingActors = actorList2.Count;
-          return 0 >= matchingActors ? null : actorList2[m_Rules.Roll(0, matchingActors)];
+          return 0 >= matchingActors ? null : m_Rules.DiceRoller.Choose(actorList2);
         default: throw new ArgumentOutOfRangeException("unhandled reincarnation mode " + reincMode.ToString());
       }
     }
@@ -12501,7 +12498,7 @@ namespace djack.RogueSurvivor.Engine
         case 3:
           Inventory inventory = actor.Inventory;
           if (inventory?.IsEmpty ?? true) return null;
-          Item it = m_Rules.Choose(inventory.Items);
+          Item it = m_Rules.DiceRoller.Choose(inventory.Items);
           ActionUseItem actionUseItem = new ActionUseItem(actor, it);
           if (actionUseItem.IsLegal()) return actionUseItem;
           if (it.IsEquipped) return new ActionUnequipItem(actor, it);

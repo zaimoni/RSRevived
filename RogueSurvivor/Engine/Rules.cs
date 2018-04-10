@@ -187,14 +187,6 @@ namespace djack.RogueSurvivor.Engine
     }
 #endif
 
-    public T Choose<T>(IEnumerable<T> src) {
-      int n = (src?.Count() ?? 0);
-      if (0 >= n) throw new ArgumentNullException(nameof(src));
-      n = m_DiceRoller.Roll(0, n);
-      foreach(var x in src) if (0 >= n--) return x;
-      throw new ArgumentNullException(nameof(src)); // unreachable with a sufficiently correct compiler
-    }
-
     public Direction RollDirection()
     {
       return m_DiceRoller.Choose(Direction.COMPASS);
@@ -465,7 +457,7 @@ namespace djack.RogueSurvivor.Engine
              } else candidates = candidates_2.ToList();
              // end function target
 
-             return new ActionShove(actor,actorAt,candidates[RogueForm.Game.Rules.Roll(0,candidates.Count)].Value);
+             return new ActionShove(actor,actorAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
            }
         }
         // consider re-legalizing chat here
@@ -520,11 +512,11 @@ namespace djack.RogueSurvivor.Engine
                } else candidates = candidates_2.ToList();
                // end function target
 
-               return new ActionPush(actor,mapObjectAt,candidates[RogueForm.Game.Rules.Roll(0,candidates.Count)].Value);
+               return new ActionPush(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(candidates).Value);
              }
              // placeholder
              List<Direction> candidate_dirs = push_dest.Values.ToList();
-             return new ActionPush(actor,mapObjectAt,candidate_dirs[RogueForm.Game.Rules.Roll(0,candidate_dirs.Count)]);
+             return new ActionPush(actor,mapObjectAt,RogueForm.Game.Rules.DiceRoller.Choose(candidate_dirs));
            }
         }
 

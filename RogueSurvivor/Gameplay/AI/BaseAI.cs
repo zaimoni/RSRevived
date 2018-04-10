@@ -425,7 +425,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return ((doorWindow?.IsBarricaded ?? false) ? doorWindow : null);
       });
       if (0 >= doors.Count) return null;
-      DoorWindow doorWindow1 = RogueForm.Game.Rules.Choose(doors).Value;
+      DoorWindow doorWindow1 = RogueForm.Game.Rules.DiceRoller.Choose(doors).Value;
       return (m_Actor.CanBreak(doorWindow1) ? new ActionBreak(m_Actor, doorWindow1) : null);
     }
 
@@ -459,7 +459,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
-      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
+      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
       return (tmp.IsLegal() ? tmp : null);
     }
 
@@ -475,7 +475,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         return (m_Actor.CanPush(o) ? o : null);
       });
       if (0 >= objs.Count) return null;
-      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
+      ActionPush tmp = new ActionPush(m_Actor, RogueForm.Game.Rules.DiceRoller.Choose(objs).Value, RogueForm.Game.Rules.RollDirection());
       return (tmp.IsLegal() ? tmp : null);
     }
 
@@ -840,8 +840,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_T_>> ret_from)) return null;
-      if (1 == ret_from.Count) return ret_from[0];
-      return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
+      return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
     }
 
     static protected ChoiceEval<_T_> Choose<_T_>(IEnumerable<_T_> listOfChoices, Func<_T_, float> evalChoiceFn, Func<float, float, bool> isBetterEvalThanFn)
@@ -865,7 +864,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         candidates.Add(new ChoiceEval<_T_>(tmp, f));
       }
       if (0 >= candidates.Count) return null;
-      return candidates[RogueForm.Game.Rules.Roll(0, candidates.Count)];
+      return RogueForm.Game.Rules.DiceRoller.Choose(candidates);
     }
 
     // isBetterThanEvalFn will never see NaN
@@ -902,8 +901,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       }
 
       if (!choiceEvalDict.TryGetValue(num, out List<ChoiceEval<_DATA_>> ret_from)) return null;
-      if (1 == ret_from.Count) return ret_from[0];
-      return ret_from[RogueForm.Game.Rules.Roll(0, ret_from.Count)];
+      return RogueForm.Game.Rules.DiceRoller.Choose(ret_from);
     }
 
     static protected bool IsValidFleeingAction(ActorAction a)
