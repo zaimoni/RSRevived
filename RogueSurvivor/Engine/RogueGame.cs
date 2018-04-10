@@ -11606,10 +11606,8 @@ namespace djack.RogueSurvivor.Engine
           pointList.Add(new Point(x, y));
       }
       // Cf. BaseMapGenerator::RandomDistrictInCity().  Not usable here due to sequential choice without replacement.
-      Point policeStationDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
-      pointList.Remove(policeStationDistrictPos);
-      Point hospitalDistrictPos = pointList[m_Rules.Roll(0, pointList.Count)];
-      pointList.Remove(hospitalDistrictPos);
+      Point policeStationDistrictPos = m_Rules.DiceRoller.ChooseWithoutReplacement(pointList);
+      Point hospitalDistrictPos = m_Rules.DiceRoller.ChooseWithoutReplacement(pointList);
       for (int index1 = 0; index1 < world.Size; ++index1) {
         for (int index2 = 0; index2 < world.Size; ++index2) {
           if (isVerbose) {

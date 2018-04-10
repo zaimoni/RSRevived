@@ -46,6 +46,15 @@ namespace djack.RogueSurvivor.Engine
       return Roll(0, 100) < chance; // mathematical range 0, ..., 99 allows above specializations
     }
 
+    public T ChooseWithoutReplacement<T>(List<T> src) {
+      int n = (src?.Count ?? 0);
+      if (0 >= n) throw new ArgumentNullException(nameof(src));
+      int k = Roll(0, n);
+      T ret = src[k];
+      src.RemoveAt(k);
+      return ret;
+    }
+
     public T Choose<T>(List<T> src) {
       int n = (src?.Count ?? 0);
       if (0 >= n) throw new ArgumentNullException(nameof(src));

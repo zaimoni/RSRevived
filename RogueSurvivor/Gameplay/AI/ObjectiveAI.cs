@@ -355,9 +355,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 	  var secondary = new List<ActorAction>();
 	  while(0<tmp.Count) {
-	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
-		ActorAction ret = Rules.IsPathableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
-        tmp.RemoveAt(i);
+		ActorAction ret = Rules.IsPathableFor(m_Actor, new Location(m_Actor.Location.Map, RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)));
         if (!ret?.IsLegal() ?? true) continue;  // not really an option
         if (ret is ActionShove shove && shove.Target.Controller is ObjectiveAI ai) {
            Dictionary<Point, int> ok_dests = ai.MovePlanIf(shove.Target.Location.Position);
@@ -439,9 +437,8 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
 	  var secondary = new List<ActorAction>();
 	  while(0<tmp.Count) {
-	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
-		ActorAction ret = (legal_steps.ContainsKey(tmp[i]) ? legal_steps[tmp[i]] : null);
-        tmp.RemoveAt(i);
+        var dest = RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp);
+		ActorAction ret = (legal_steps.ContainsKey(dest) ? legal_steps[dest] : null);
         if (!ret?.IsLegal() ?? true) continue; // not really an option
         if (ret is ActionUseExit use_exit && string.IsNullOrEmpty(use_exit.Exit.ReasonIsBlocked(m_Actor))) {
           continue;
@@ -577,13 +574,11 @@ namespace djack.RogueSurvivor.Gameplay.AI
       var tmp = tmp3.ToList();
 
       while (0<tmp.Count) {
-	    int i = RogueForm.Game.Rules.Roll(0, tmp.Count);
-		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, tmp[i]));
+		ActorAction ret = Rules.IsBumpableFor(m_Actor, new Location(m_Actor.Location.Map, RogueForm.Game.Rules.DiceRoller.ChooseWithoutReplacement(tmp)));
         if (ret is ActionMoveStep step && step.IsLegal()) {
           RunIfPossible();
           return step;
         }
-		tmp.RemoveAt(i);
 	  }
 	  return null;
     }
