@@ -519,8 +519,10 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null == legal_steps) throw new ArgumentNullException(nameof(legal_steps));
       if (!damage_field.ContainsKey(m_Actor.Location.Position)) throw new InvalidOperationException("!damage_field.ContainsKey(m_Actor.Location.Position)");
 #endif
-      HashSet<Point> ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor)));
-      ret.RemoveWhere(pt => !legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());
+      var ret = new HashSet<Point>(Enumerable.Range(0, 16).Select(i => m_Actor.Location.Position.RadarSweep(2, i)).Where(pt => m_Actor.Location.Map.IsWalkableFor(pt, m_Actor)));
+//    ret.RemoveWhere(pt => !legal_steps.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());    // predicted to work but fails due to MS C# compiler bug April 12 2018
+      ret.RemoveWhere(pt => !legal_steps.Any(pt2 => Rules.IsAdjacent(pt,pt2))); // this does work and would be more efficient than the broken version above
+
       IEnumerable<Point> tmp_point = ret.Where(pt=>!damage_field.ContainsKey(pt));
       if (tmp_point.Any()) return tmp_point.ToList();
       tmp_point = ret.Where(pt=> damage_field[pt] < damage_field[m_Actor.Location.Position]);
@@ -531,7 +533,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (2 > (retreat?.Count ?? 0)) return;
 
-      HashSet<Point> cornered = new HashSet<Point>(retreat);
+      var cornered = new HashSet<Point>(retreat);
       foreach(Point pt in Enumerable.Range(0,16).Select(i=>m_Actor.Location.Position.RadarSweep(2,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
         if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
       }
@@ -543,7 +545,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       if (2 > (run_retreat?.Count ?? 0)) return;
 
-      HashSet<Point> cornered = new HashSet<Point>(run_retreat);
+      var cornered = new HashSet<Point>(run_retreat);
       foreach(Point pt in Enumerable.Range(0,24).Select(i=>m_Actor.Location.Position.RadarSweep(3,i)).Where(pt=>m_Actor.Location.Map.IsWalkableFor(pt,m_Actor))) {
         if (0<cornered.RemoveWhere(pt2=>Rules.IsAdjacent(pt,pt2)) && 0>=cornered.Count) return;
       }
@@ -553,7 +555,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
 
     protected virtual ActorAction BehaviorFollowActor(Actor other, int maxDist)
     {
-      if (other == null || other.IsDead) return null;
+      if (other?.IsDead ?? true) return null;
       int num = Rules.GridDistance(m_Actor.Location, other.Location);
       if (CanSee(other.Location) && num <= maxDist) return new ActionWait(m_Actor);
       if (other.Location.Map != m_Actor.Location.Map) {

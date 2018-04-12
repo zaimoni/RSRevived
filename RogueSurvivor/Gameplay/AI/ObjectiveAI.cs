@@ -569,7 +569,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     private ActionMoveStep _finalDecideMove(IEnumerable<Point> src, List<Point> tmp2)
     {
       // filter down intermediate destinations
-      IEnumerable<Point> tmp3 = src.Where(pt => tmp2.Select(pt2 => Rules.IsAdjacent(pt,pt2)).Any());
+      IEnumerable<Point> tmp3 = src.Where(pt => tmp2.Any(pt2 => Rules.IsAdjacent(pt,pt2)));
       if (!tmp3.Any()) return null;
       var tmp = tmp3.ToList();
 

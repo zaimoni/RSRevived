@@ -321,6 +321,7 @@ namespace Zaimoni.Data
     // Some library classes have less than useful ToString() overrides.
     // We go with Ruby syntax x.to_s() rather than Python syntax str(x)
     public static string to_s<T>(this HashSet<T> x) {
+      if (null == x) return "null";
       if (0 >= x.Count) return "{}";
       var tmp = new List<string>(x.Count);
       foreach(T iter in x) {
@@ -332,6 +333,7 @@ namespace Zaimoni.Data
     }
 
     public static string to_s<T>(this List<T> x) {
+      if (null == x) return "null";
       if (0 >= x.Count) return "[]";
       var tmp = new List<string>(x.Count);
       foreach(T iter in x) {
@@ -343,6 +345,7 @@ namespace Zaimoni.Data
     }
 
     public static string to_s<T,U>(this Dictionary<T,U> x) {
+      if (null == x) return "null";
       if (0 >= x.Count) return "{}";
       var tmp = new List<string>(x.Count);
       foreach(var iter in x) {
@@ -353,12 +356,25 @@ namespace Zaimoni.Data
       return string.Join(",\n",tmp);
     }
 
+    public static string to_s<T>(this IEnumerable<T> x) {
+      if (null == x) return "null";
+      if (0 >= x.Count()) return "[]";
+      var tmp = new List<string>(x.Count());
+      foreach(T iter in x) {
+        tmp.Add(iter.to_s());
+      }
+      tmp[0] = "["+ tmp[0];
+      tmp[tmp.Count-1] += "] ("+tmp.Count.ToString()+")";
+      return string.Join(",\n",tmp);
+    }
+
     public static string to_s(this Point x) {
       return "("+x.X.ToString()+","+x.Y.ToString()+")";
     }
 
     // ultimate fallback
     public static string to_s<T>(this T x) {
+      if (null == x) return "null";
       return x.ToString();
     }
   } // ext_Drawing
