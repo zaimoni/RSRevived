@@ -2195,30 +2195,18 @@ namespace djack.RogueSurvivor.Engine
 #endregion
 #region 4. Actor gauges & states
         List<Actor> actorList1 = null;
-        foreach (Actor actor in map.Actors)
-        {
+        foreach (Actor actor in map.Actors) {
 #region hunger & rot
-          if (actor.Model.Abilities.HasToEat)
-          {
+          if (actor.Model.Abilities.HasToEat) {
             actor.Appetite(1);
-            if (actor.IsStarving && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE) && (actor.IsPlayer || s_Options.NPCCanStarveToDeath))
-            {
-              if (actorList1 == null)
-                actorList1 = new List<Actor>();
-              actorList1.Add(actor);
+            if (actor.IsStarving && (actor.IsPlayer || s_Options.NPCCanStarveToDeath) && m_Rules.RollChance(Rules.FOOD_STARVING_DEATH_CHANCE)) {
+              (actorList1 ?? (actorList1 = new List<Actor>())).Add(actor);
             }
-          }
-          else if (actor.Model.Abilities.IsRotting)
-          {
+          } else if (actor.Model.Abilities.IsRotting) {
             actor.Appetite(1);
-            if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE)
-            {
-              if (ForceVisibleToPlayer(actor))
-                AddMessage(MakeMessage(actor, "is rotting away."));
-              if (--actor.HitPoints <= 0) {
-                  if (actorList1 == null) actorList1 = new List<Actor>();
-                  actorList1.Add(actor);
-              }
+            if (actor.IsRotStarving && m_Rules.Roll(0, 1000) < Rules.ROT_STARVING_HP_CHANCE) {
+              if (ForceVisibleToPlayer(actor)) AddMessage(MakeMessage(actor, "is rotting away."));
+              if (--actor.HitPoints <= 0) (actorList1 ?? (actorList1 = new List<Actor>())).Add(actor);
             }
             else if (actor.IsRotHungry && m_Rules.Roll(0, 1000) < Rules.ROT_HUNGRY_SKILL_CHANCE)
               DoLooseRandomSkill(actor);
