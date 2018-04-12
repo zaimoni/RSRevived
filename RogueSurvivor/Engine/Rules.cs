@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Serialization;
 using Zaimoni.Data;
 
 namespace djack.RogueSurvivor.Engine
@@ -132,9 +133,19 @@ namespace djack.RogueSurvivor.Engine
     private const float CORPSE_DECAY_PER_TURN = 0.005555556f;   // 1/180 per turn
     public const int GIVE_RARE_ITEM_DAY = 7;
     public const int GIVE_RARE_ITEM_CHANCE = 5;
-    // \todo NEXT SAVEFILE BREAK? relocate m_DiceRoller to Session from Rules
-    // we can auto-detect when the library locking fails.
-    private readonly DiceRoller m_DiceRoller;
+    private DiceRoller m_DiceRoller;
+
+#region Session save/load assistants
+    public void Load(SerializationInfo info, StreamingContext context)
+    {
+      m_DiceRoller = (DiceRoller) info.GetValue("m_DiceRoller", typeof(DiceRoller));
+    }
+
+    public void Save(SerializationInfo info, StreamingContext context)
+    {
+      info.AddValue("m_DiceRoller", DiceRoller,typeof(DiceRoller));
+    }
+#endregion
 
     public DiceRoller DiceRoller {
       get {

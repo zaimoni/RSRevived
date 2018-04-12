@@ -330,7 +330,7 @@ namespace djack.RogueSurvivor.Engine
     private readonly MessageManager m_MessageManager;
     private bool m_HasLoadedGame;
 
-    // We're a singleton.  Do these three as static to help with loading savefiles.
+    // We're a singleton.  Do these three as static to help with loading savefiles. m_Player has warning issues as static, however.
     private static Actor m_Player;
     private static Map m_CurrentMap;    // Formerly Session.Get.CurrentMap
     private static Rectangle m_MapViewRect;    // morally anchored to m_CurrentMap
@@ -382,7 +382,6 @@ namespace djack.RogueSurvivor.Engine
       m_CurrentMap = null;
     }
 #endregion
-
 
     public RogueGame(IRogueUI UI)
     {
@@ -11291,9 +11290,11 @@ namespace djack.RogueSurvivor.Engine
       if (!Session.Load(saveName, Session.SaveFormat.FORMAT_BIN)) return false;
       // command line option --PC requests converting an NPC to a PC
       if (Session.CommandLineOptions.ContainsKey("PC")) Session.Get.World.MakePC();
+#if OBSOLETE
       m_Rules = new Rules(new DiceRoller(Session.Get.Seed));
       m_Player = null;
       RefreshPlayer();
+#endif
       AddMessage(new Data.Message("LOADING DONE.", Session.Get.WorldTime.TurnCounter, Color.Yellow));
       AddMessage(new Data.Message("Welcome back to "+SetupConfig.GAME_NAME+"!", Session.Get.WorldTime.TurnCounter, Color.LightGreen));
       RedrawPlayScreen();

@@ -86,6 +86,7 @@ namespace djack.RogueSurvivor.Engine
       CHARUndergroundFacility_Activated = info.GetBoolean("CHARUndergroundFacility_Activated");
       m_CommandLineOptions = (System.Collections.ObjectModel.ReadOnlyDictionary<string, string>) info.GetValue("CommandLineOptions", typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Load(info,context);
+      RogueForm.Game.Rules.Load(info,context);
       World = (World) info.GetValue("World",typeof(World));
       RogueGame.Load(info, context);
       UniqueActors = (UniqueActors) info.GetValue("UniqueActors",typeof(UniqueActors));
@@ -112,6 +113,7 @@ namespace djack.RogueSurvivor.Engine
       info.AddValue("CHARUndergroundFacility_Activated",CHARUndergroundFacility_Activated);
       info.AddValue("CommandLineOptions", m_CommandLineOptions,typeof(System.Collections.ObjectModel.ReadOnlyDictionary<string, string>));
       ActorModel.Save(info,context);
+      RogueForm.Game.Rules.Save(info,context);
       info.AddValue("World",World,typeof(World));
       RogueGame.Save(info, context);
       info.AddValue("UniqueActors",UniqueActors,typeof(UniqueActors));
