@@ -796,11 +796,12 @@ namespace djack.RogueSurvivor.Gameplay.AI
       return AddExplosivesToDamageField(damage_field, percepts.FilterCast<Inventory>(inv => inv.Has<ItemPrimedExplosive>()));
     }
 
-    static protected void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
+    protected void AddTrapsToDamageField(Dictionary<Point,int> damage_field, List<Percept> percepts)
     {
       List<Percept> goals = percepts.FilterT<Inventory>(inv => inv.Has<ItemTrap>());
       if (null == goals) return;
       foreach(Percept p in goals) {
+        if (p.Location==m_Actor.Location) continue; // trap has already triggered, or not: safe
         List<ItemTrap> tmp = (p.Percepted as Inventory).GetItemsByType<ItemTrap>();
         if (null == tmp) continue;
         int damage = tmp.Sum(trap => (trap.IsActivated ? trap.Model.Damage : 0));   // XXX wrong for barbed wire
