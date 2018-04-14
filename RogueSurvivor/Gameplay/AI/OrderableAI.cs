@@ -1568,12 +1568,14 @@ namespace djack.RogueSurvivor.Gameplay.AI
     {
       Inventory inventory = m_Actor.Inventory;
       if (inventory?.IsEmpty ?? true) return null;
+      // \todo should be less finicky about SLP/Inf/SAN when enemies in sight
       bool needHP = m_Actor.HitPoints < m_Actor.MaxHPs;
       bool needSTA = m_Actor.IsTired;
       bool needSLP = m_Actor.WouldLikeToSleep;
       bool needCure = m_Actor.Infection > 0;
       bool needSan = m_Actor.Model.Abilities.HasSanity && m_Actor.Sanity < 3*m_Actor.MaxSanity/4;
       if (!needHP && !needSTA && (!needSLP && !needCure) && !needSan) return null;
+      // XXX \todo following does not handle bandaids vs. medikit properly at low hp deficits
       ChoiceEval<ItemMedicine> choiceEval = Choose(inventory.GetItemsByType<ItemMedicine>(), it =>
       {
         int num = 0;
@@ -1609,8 +1611,6 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (null == tmpAction) return null;
         if (m_Actor.CurrentRangedAttack.Range < actor.CurrentRangedAttack.Range) RunIfPossible();
         return tmpAction;
-      } catch(System.Exception) {
-        throw;
       } finally {
         if (null != tmpAction) {
           m_Actor.Activity = Activity.FIGHTING;
