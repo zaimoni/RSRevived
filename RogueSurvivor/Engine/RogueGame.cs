@@ -12678,7 +12678,8 @@ namespace djack.RogueSurvivor.Engine
         foreach(Zone z in storage.Zones) {
           if ("storage@" != z.Name.Substring(0, "storage@".Length)) continue;
           z.Bounds.DoForEach(pt => {
-            if (!storage.IsWalkable(pt) || storage.AnyAdjacent<DoorWindow>(pt)) return;
+            if (!storage.GetTileModelAt(pt).IsWalkable) return;  // storage.IsWalkable(pt) fails for intact containers
+            if (storage.AnyAdjacent<DoorWindow>(pt)) return;
             Session.Get.PoliceInvestigate.Record(storage, pt);
           });
         }
