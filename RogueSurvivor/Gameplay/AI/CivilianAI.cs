@@ -338,7 +338,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
       if (null != tmpAction) return tmpAction;
 
       if (null != enemies && Directives.CanThrowGrenades) {
-        tmpAction = BehaviorThrowGrenade(game, enemies);
+        tmpAction = BehaviorThrowGrenade(game, enemies, blast_field);
 #if TRACE_SELECTACTION
         if (m_Actor.IsDebuggingTarget && null!=tmpAction) Logger.WriteLine(Logger.Stage.RUN_MAIN, "toss grenade");
 #endif

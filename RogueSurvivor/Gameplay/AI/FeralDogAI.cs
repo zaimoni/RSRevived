@@ -69,7 +69,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         }
       }
 
-      List<Percept> enemies = FilterEnemies(percepts_all);
+      List<Percept> enemies = SortByGridDistance(FilterEnemies(percepts_all));
       // dogs cannot order their followers to stay behind
       if (enemies != null) {
         ActorAction actorAction = BehaviorFightOrFlee(game, enemies, FeralDogAI.FIGHT_EMOTES);

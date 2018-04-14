@@ -1273,7 +1273,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
     }
 
     /// <returns>null, or a legal ActionThrowGrenade</returns>
-    protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies)
+    protected ActorAction BehaviorThrowGrenade(RogueGame game, List<Percept> enemies, HashSet<Point> blast_field)
     {
       if (3 > (enemies?.Count ?? 0)) return null;
       ItemGrenade firstGrenade = m_Actor.Inventory.GetFirstMatching<ItemGrenade>();
@@ -1287,6 +1287,7 @@ namespace djack.RogueSurvivor.Gameplay.AI
         if (itemGrenadeModel.BlastAttack.Radius >= my_dist) continue;
         if (maxRange < my_dist) continue;
         if (!LOS.CanTraceThrowLine(m_Actor.Location, point, maxRange)) continue;
+        if (blast_field?.Contains(point) ?? false) continue;
         int score = 0;
         Rectangle blast_zone = new Rectangle(point.X-itemGrenadeModel.BlastAttack.Radius, point.Y-itemGrenadeModel.BlastAttack.Radius, 2*itemGrenadeModel.BlastAttack.Radius+1, 2*itemGrenadeModel.BlastAttack.Radius+1);
         // XXX \todo we want to evaluate the damage for where threat is *when the grenade explodes*
@@ -1664,10 +1665,9 @@ namespace djack.RogueSurvivor.Gameplay.AI
         IEnumerable<Point> test = legal_steps.Where(pt => !blast_field.Contains(pt));
         legal_steps = (test.Any() ? test.ToList() : null);
       }
-      // enemies list is sorted by grid distance; and preclude their grids from being legal steps
 
       // this needs a serious rethinking; dashing into an ally's line of fire is immersion-breaking.
-      Percept target = FilterNearest(enemies);
+      Percept target = FilterNearest(enemies);  // may not be enemies[0] due to this using StdDistance rather than GridDistance
       Actor enemy = target.Percepted as Actor;
 
       bool doRun = false;	// only matters when fleeing
@@ -1706,6 +1706,25 @@ namespace djack.RogueSurvivor.Gameplay.AI
         tmpAction = BehaviorFlee(enemy, damage_field, LoF_reserve, doRun, emotes);
         if (null != tmpAction) return tmpAction;
       }
+
+      List<Percept> approachable_enemies = null;
+
+      // enemies list is sorted by grid distance; and preclude their grids from being legal steps
+      if (1 < Rules.GridDistance(m_Actor.Location, enemies[0].Location)) {
+        if (null != legal_steps) {
+          // nearest enemy is not adjacent.  Filter by whether it's legal to approach.
+          approachable_enemies = enemies.Where(p => {
+            int dist = Rules.GridDistance(m_Actor.Location,p.Location);
+            return legal_steps.Any(pt => dist>Rules.GridDistance(new Location(m_Actor.Location.Map,pt),p.Location));
+          }).ToList();
+          if (0 >= approachable_enemies.Count) approachable_enemies = null;
+        }
+      } else {
+        approachable_enemies = enemies.Where(p => 1==Rules.GridDistance(m_Actor.Location,p.Location)).ToList();
+      }
+
+      // if enemy is not approachable then following checks are invalid
+      if (!approachable_enemies?.Contains(target) ?? true) return new ActionWait(m_Actor);
 
       // redo the pause check
       if (m_Actor.Speed > enemy.Speed && 2 == Rules.GridDistance(m_Actor.Location, target.Location)) {
